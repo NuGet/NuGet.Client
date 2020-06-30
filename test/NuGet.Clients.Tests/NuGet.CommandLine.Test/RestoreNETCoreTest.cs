@@ -9753,8 +9753,216 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 var restoreResult = Util.RestoreSolution(pathContext);
-                
+
                 Assert.True(restoreResult.AllOutput.Contains("NU1605"));
+            }
+        }
+
+        /// <summary>
+        /// A more complex graph with linked central transitive dependecies
+        /// 
+        /// A -> B 1.0.0 -> C 1.0.0 -> D 1.0.0 -> E 1.0.0
+        ///              -> P 2.0.0           
+        ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0 -> M 2.0.0 -> N 2.0.0
+        ///   -> G 1.0.0 -> H 1.0.0 -> D 1.0.0
+        ///   -> X 1.0.0 -> Y 1.0.0 -> Z 1.0.0
+        ///                         -> T 1.0.0
+        ///   -> U 1.0.0 -> V 1.0.0
+        ///              -> O 1.0.0 -> R 1.0.0 -> S 1.0.0 -> SS 1.0.0
+        ///   
+        ///         D has version defined centrally 2.0.0
+        ///         E has version defined centrally 3.0.0
+        ///         M has version defined centrally 2.0.0
+        ///         P has version defined centrally 3.0.0
+        ///         Z has version defined centrally 3.0.0
+        ///         T has version defined centrally 3.0.0
+        ///         R has version defined centrally 3.0.0
+        ///         S has version defined centrally 3.0.0
+        /// 
+        ///  D 2.0.0 -> I 2.0.0 -> E 2.0.0
+        ///  M 2.0.0 -> N 2.0.0
+        ///  P 3.0.0 -> H 3.0.0
+        ///          -> Y 3.0.0
+        ///          -> O 3.0.0 -> S 3.0.0 -> SS 3.0.0
+        ///  Z 3.0.0 -> V 3.0.0
+        ///  T 3.0.0 -> W 3.0.0
+        ///          -> C 1.0.0
+        ///  S 3.0.0 -> SS 3.0.0
+        ///  
+        ///  D will be rejected (because its parents C 1.0.0, H 1.0.0 are rejected)
+        ///  E will be rejected (because its parent D was rejected)
+        ///  M will be rejected (because its parent lost the dispute with H 3.0.0)
+        ///  T will be rejected (because its parent lost the dispute with Y 3.0.0)
+        ///  Z will be rejected (because its parent lost the dispute with Y 3.0.0)
+        ///  
+        ///  P will be accepted (because its parent B is Accepted)
+        ///  S will be accepted (because its parent O 300 is Accepted) 
+        /// </summary>
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_MultipleLinkedCentralTransitiveDepenencies()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var version100 = "1.0.0";
+                var version200 = "2.0.0";
+                var version300 = "3.0.0";
+
+                var packagesForSource = new List<SimpleTestPackageContext>();
+                var packagesForProject = new List<SimpleTestPackageContext>();
+                var framework = NuGetFramework.Parse("netcoreapp2.0");
+
+                SimpleTestPackageContext createTestPackage(string name, string version, List<SimpleTestPackageContext> source)
+                {
+                    var result = new SimpleTestPackageContext()
+                    {
+                        Id = name,
+                        Version = version
+                    };
+                    result.Files.Clear();
+                    source.Add(result);
+                    return result;
+                };
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "projectA",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("netcoreapp2.0"));
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+
+                // the package references defined in the project should not have version 
+                var packageBNoVersion = createTestPackage("B", null, packagesForProject);
+                var packageFNoVersion = createTestPackage("F", null, packagesForProject);
+                var packageGNoVersion = createTestPackage("G", null, packagesForProject);
+                var packageUNoVersion = createTestPackage("U", null, packagesForProject);
+                var packageXNoVersion = createTestPackage("X", null, packagesForProject);
+
+                var packageB100 = createTestPackage("B", version100, packagesForSource);
+                var packageC100 = createTestPackage("C", version100, packagesForSource);
+                var packageD100 = createTestPackage("D", version100, packagesForSource);
+                var packageE100 = createTestPackage("E", version100, packagesForSource);
+                var packageF100 = createTestPackage("F", version100, packagesForSource);
+                var packageG100 = createTestPackage("G", version100, packagesForSource);
+                var packageH100 = createTestPackage("H", version100, packagesForSource);
+                var packageX100 = createTestPackage("X", version100, packagesForSource);
+                var packageY100 = createTestPackage("Y", version100, packagesForSource);
+                var packageZ100 = createTestPackage("Z", version100, packagesForSource);
+                var packageV100 = createTestPackage("V", version100, packagesForSource);
+                var packageT100 = createTestPackage("T", version100, packagesForSource);
+                var packageU100 = createTestPackage("U", version100, packagesForSource);
+                var packageO100 = createTestPackage("O", version100, packagesForSource);
+                var packageR100 = createTestPackage("R", version100, packagesForSource);
+                var packageS100 = createTestPackage("S", version100, packagesForSource);
+                var packageSS100 = createTestPackage("SS", version100, packagesForSource);
+
+                var packageC200 = createTestPackage("C", version200, packagesForSource);
+                var packageD200 = createTestPackage("D", version200, packagesForSource);
+                var packageE200 = createTestPackage("E", version200, packagesForSource);
+                var packageI200 = createTestPackage("I", version200, packagesForSource);
+                var packageH200 = createTestPackage("H", version200, packagesForSource);
+                var packageM200 = createTestPackage("M", version200, packagesForSource);
+                var packageN200 = createTestPackage("N", version200, packagesForSource);
+                var packageP200 = createTestPackage("P", version200, packagesForSource);              
+
+                var packageE300 = createTestPackage("E", version300, packagesForSource);
+                var packageP300 = createTestPackage("P", version300, packagesForSource);
+                var packageH300 = createTestPackage("H", version300, packagesForSource);
+                var packageZ300 = createTestPackage("Z", version300, packagesForSource);
+                var packageV300 = createTestPackage("V", version300, packagesForSource);
+                var packageT300 = createTestPackage("T", version300, packagesForSource);
+                var packageW300 = createTestPackage("W", version300, packagesForSource);
+                var packageY300 = createTestPackage("Y", version300, packagesForSource);
+                var packageO300 = createTestPackage("O", version300, packagesForSource);
+                var packageR300 = createTestPackage("R", version300, packagesForSource);
+                var packageS300 = createTestPackage("S", version300, packagesForSource);
+                var packageSS300 = createTestPackage("SS", version300, packagesForSource);
+
+                packageB100.Dependencies.Add(packageC100);
+                packageC100.Dependencies.Add(packageD100);
+                packageD100.Dependencies.Add(packageE100);
+
+                packageB100.Dependencies.Add(packageP200);
+
+                packageF100.Dependencies.Add(packageC200);
+                packageC200.Dependencies.Add(packageH200);
+                packageH200.Dependencies.Add(packageM200);
+                packageM200.Dependencies.Add(packageN200);
+
+                packageG100.Dependencies.Add(packageH100);
+                packageH100.Dependencies.Add(packageD100);
+
+                packageX100.Dependencies.Add(packageY100);
+                packageY100.Dependencies.Add(packageZ100);
+                packageY100.Dependencies.Add(packageT100);
+
+                packageU100.Dependencies.Add(packageV100);
+                packageU100.Dependencies.Add(packageO100);
+                packageO100.Dependencies.Add(packageR100);
+                packageR100.Dependencies.Add(packageS100);
+                packageS100.Dependencies.Add(packageSS100);
+
+                packageD200.Dependencies.Add(packageI200);
+                packageI200.Dependencies.Add(packageE200);
+
+                packageP300.Dependencies.Add(packageH300);
+                packageP300.Dependencies.Add(packageY300);
+                packageP300.Dependencies.Add(packageO300);
+                packageO300.Dependencies.Add(packageS300);
+                packageS300.Dependencies.Add(packageSS300);
+
+                packageZ300.Dependencies.Add(packageV300);
+
+                packageT300.Dependencies.Add(packageW300);
+                packageT300.Dependencies.Add(packageC100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packagesForSource.ToArray());
+
+                projectA.AddPackageToAllFrameworks(packagesForProject.ToArray());
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("B", version100)
+                    .AddPackageVersion("F", version100)
+                    .AddPackageVersion("G", version100)
+                    .AddPackageVersion("E", version300)
+                    .AddPackageVersion("D", version200)
+                    .AddPackageVersion("M", version200)
+                    .AddPackageVersion("P", version300)
+                    .AddPackageVersion("Z", version300)
+                    .AddPackageVersion("T", version300)
+                    .AddPackageVersion("X", version100)
+                    .AddPackageVersion("U", version100)
+                    .AddPackageVersion("R", version300)
+                    .AddPackageVersion("S", version300);
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                var assetFileReader = new LockFileFormat();
+                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+
+                var expectedLibraries = new List<string>() { "B.1.0.0", "C.2.0.0", "F.1.0.0", "G.1.0.0", "H.3.0.0", "O.3.0.0", "P.3.0.0", "S.3.0.0", "SS.3.0.0",  "U.1.0.0", "V.1.0.0", "X.1.0.0", "Y.3.0.0" };
+                var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
+                Assert.Equal(expectedLibraries, libraries);
+
+                var centralfileDependencyGroups = assetsFile
+                    .CentralTransitiveDependencyGroups
+                    .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
+
+                var expectedCentralfileDependencyGroups = new List<string>() { $"{framework.DotNetFrameworkName}_P.[3.0.0, )", $"{framework.DotNetFrameworkName}_S.[3.0.0, )" };
+
+                Assert.Equal(expectedCentralfileDependencyGroups, centralfileDependencyGroups);
             }
         }
 
