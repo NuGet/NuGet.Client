@@ -26,8 +26,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 NuGetVersionFormatter.Instance,
                 PackageIdentityFormatter.Instance,
                 PackageReferenceFormatter.Instance,
-                NuGetFrameworkFormatter.Instance,
-                IVsPackageManagerProviderFormatter.Instance
+                NuGetFrameworkFormatter.Instance
             };
             var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
 
