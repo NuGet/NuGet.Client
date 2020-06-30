@@ -277,9 +277,7 @@ namespace NuGet.CommandLine
 
                     string content;
 
-                    // Text we can print without overflowing the System.Console, excluding new line characters.
-                    //int newLineIndex = text.IndexOf(Environment.NewLine, 0, length, StringComparison.OrdinalIgnoreCase);
-
+                    // Get the index of the newLine character upto 'length' characters
                     (int newLineIndex, bool rn) = NewLineIndex(text, length);
 
                     if (newLineIndex == 0)
@@ -292,7 +290,6 @@ namespace NuGet.CommandLine
                     {
                         content = text.Substring(0, newLineIndex);
                     }
-                    
                     else
                     {
                         content = text.Substring(0, length);
@@ -307,6 +304,7 @@ namespace NuGet.CommandLine
                     {
                         break;
                     }
+
                     // Get the next substring to be printed
                     text = text.Substring(newLineIndex == -1 ? content.Length : rn ? content.Length + 2 : content.Length + 1);
                 }
@@ -316,8 +314,6 @@ namespace NuGet.CommandLine
 
         private (int, bool) NewLineIndex(string text, int length)
         {
-
-            //int rnIndex = text.IndexOf("\r\n", 0, length, StringComparison.OrdinalIgnoreCase);
             int nIndex = text.IndexOf("\n", 0, length, StringComparison.OrdinalIgnoreCase);
             int rIndex = text.IndexOf("\r", 0, length, StringComparison.OrdinalIgnoreCase);
 
@@ -328,12 +324,10 @@ namespace NuGet.CommandLine
                 rn = true;
             }
 
-
             if (nIndex == -1 && rIndex == -1)
             {
                 return (-1, rn);
             }
-
             else if (nIndex > -1 && rIndex > -1)
             {
                 if (nIndex < rIndex)
@@ -343,15 +337,16 @@ namespace NuGet.CommandLine
 
                 return (rIndex, rn);
             }
-
             else if (nIndex > -1)
             {
                 return (nIndex, rn);
             }
-
-            return (rIndex, rn);
+            else
+            {
+                return (rIndex, rn);
+            }
+            
         }
-
 
 
         public bool Confirm(string description)
