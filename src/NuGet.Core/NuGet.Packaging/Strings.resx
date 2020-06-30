@@ -839,7 +839,4 @@ Valid from:</comment>
     <value>The timestamp service responded with HTTP status code '{0}' ('{1}').</value>
     <comment>{0} is the httpResponse.StatusCode, {1} is the httpResponse.ReasonPhrase.</comment>
   </data>
-  <data name="TimestampServiceRespondedInvalidFormat" xml:space="preserve">
-    <value>The reply from the timestamp server was invalid.</value>
-  </data>
 </root>
