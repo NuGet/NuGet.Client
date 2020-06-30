@@ -24,6 +24,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio.Implementation.Resources;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio
 {
@@ -37,6 +38,7 @@ namespace NuGet.VisualStudio
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<ILogger> _logger;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<ISettings> _userWideSettings;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         private readonly Lazy<INuGetProjectContext> _projectContext;
@@ -47,25 +49,31 @@ namespace NuGet.VisualStudio
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
-            Lazy<ILogger> logger)
+            Lazy<ILogger> logger,
+            Lazy<IMachineWideSettings> machineWideSettings)
             : this(AsyncServiceProvider.GlobalProvider,
                   settings,
                   solutionManager,
-                  logger)
+                  logger,
+                  machineWideSettings)
         { }
 
         public VsPathContextProvider(
             IAsyncServiceProvider asyncServiceProvider,
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
-            Lazy<ILogger> logger)
+            Lazy<ILogger> logger,
+            Lazy<IMachineWideSettings> machineWideSettings)
         {
             _asyncServiceprovider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
-
+            if (machineWideSettings == null)
+            {
+                throw new ArgumentNullException(nameof(machineWideSettings));
+            }
             _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext
             {
                 PackageExtractionContext = new PackageExtractionContext(
@@ -74,6 +82,7 @@ namespace NuGet.VisualStudio
                         ClientPolicyContext.GetClientPolicy(_settings.Value, NullLogger.Instance),
                         NullLogger.Instance)
             });
+            _userWideSettings = new Microsoft.VisualStudio.Threading.AsyncLazy<ISettings>(() => Task.FromResult(Settings.LoadDefaultSettings(null, null, machineWideSettings.Value)), NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         /// <summary>
@@ -317,6 +326,24 @@ namespace NuGet.VisualStudio
             IEnumerable<Project> allProjects = await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte);
             IEnumerable<Project> supportedProjects = allProjects.Where(EnvDTEProjectUtility.IsSupported);
             return supportedProjects;
+        }
+
+        public bool TryCreateNoSolutionContext(out IVsPathContext vsPathContext)
+        {
+            // invoke async operation from within synchronous method
+            vsPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => TryCreateUserWideContextAsync());
+
+            return vsPathContext != null;
+        }
+
+        private async Task<IVsPathContext> TryCreateUserWideContextAsync()
+        {
+            // It's acceptable to cache these results cause currently:
+            // 1. We do not reload configs
+            // 2. There is no way to edit gpf/fallback folders through the PM UI.
+            var settings = await _userWideSettings.GetValueAsync();
+            var outputPathContext = new VsPathContext(NuGetPathContext.Create(settings));
+            return outputPathContext;
         }
     }
 }
