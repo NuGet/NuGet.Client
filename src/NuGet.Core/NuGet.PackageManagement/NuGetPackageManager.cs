@@ -956,7 +956,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesForClassicAsync(
                 string packageId,
-                List<PackageIdentity> packageIdentities,
+                IReadOnlyList<PackageIdentity> packageIdentities,
                 NuGetProject nuGetProject,
                 ResolutionContext resolutionContext,
                 INuGetProjectContext nuGetProjectContext,
