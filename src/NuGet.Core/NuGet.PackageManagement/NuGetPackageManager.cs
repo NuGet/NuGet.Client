@@ -691,13 +691,13 @@ namespace NuGet.PackageManagement
                 // project.json based projects are handled here
                 tasks.Add(Task.Run(async ()
                     => await PreviewUpdatePackagesForBuildIntegratedAsync(
-                        packageId,
-                        packagesToUpdateInProject,
-                        project,
-                        updatedResolutionContext,
-                        nuGetProjectContext,
-                        primarySources,
-                        token)));
+                            packageId,
+                            packagesToUpdateInProject,
+                            project,
+                            updatedResolutionContext,
+                            nuGetProjectContext,
+                            primarySources,
+                            token)));
             }
 
             // Wait for all restores to finish
@@ -780,7 +780,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesForBuildIntegratedAsync(
             string packageId,
-            List<PackageIdentity> packageIdentities,
+            IReadOnlyList<PackageIdentity> packageIdentities,
             NuGetProject nuGetProject,
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
@@ -888,7 +888,10 @@ namespace NuGet.PackageManagement
                             }
                             else if (installedPackageReference.PackageIdentity.Version < resolvedPackage.LatestVersion)
                             {
-                                packageIdentities.Add(new PackageIdentity(packageId, resolvedPackage.LatestVersion));
+                                // The same instance of packageIdentities might be used by multiple tasks in parallel,
+                                // so it's unsafe to modify, hence which it's IReadOnlyList and not just List.
+                                // Therefore, treat the list as immutable (need a new instance with changes).
+                                packageIdentities = packageIdentities.Concat(new[] { new PackageIdentity(packageId, resolvedPackage.LatestVersion) }).ToList();
                             }
                         }
                     }
