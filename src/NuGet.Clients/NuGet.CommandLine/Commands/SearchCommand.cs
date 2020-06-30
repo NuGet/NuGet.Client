@@ -44,84 +44,73 @@ namespace NuGet.CommandLine
             set;
         }
 
-        //private static string BoldStart = "\x1B[1m";
-        //private static string BoldEnd = "\x1B[22m";
-
-        //private string Bold(string text)
-        //{
-        //    return BoldStart + text + BoldEnd;
-        //}
 
         public override async Task ExecuteCommandAsync()
         {
-
             ILogger logger = NullLogger.Instance;
             CancellationToken cancellationToken = CancellationToken.None;
 
             foreach (var source in SourceProvider.LoadPackageSources())
             {
-                using (Process myProcess = new Process())
+                var target = source.Source;
+                var name = source.Name;
+
+                SourceRepository repository = Repository.Factory.GetCoreV3(target);
+                PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
+
+                if (resource is null)
                 {
-                    myProcess.StartInfo.FileName = "cmd"; // TODO: Move outside the loop
-                    myProcess.StartInfo.Arguments = "/c more";
-                    myProcess.StartInfo.UseShellExecute = false;
-                    myProcess.StartInfo.RedirectStandardInput = true;
-
-                    myProcess.Start();
-
-                    StreamWriter myStreamWriter = myProcess.StandardInput;
-
-                    var target = source.Source;
-                    var name = source.Name;
-
-                    SourceRepository repository = Repository.Factory.GetCoreV3(target);
-                    PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
-
-                    if (resource is null)
-                    {
-                        continue;
-                    }
-
-                    SearchFilter searchFilter = new SearchFilter(includePrerelease: true);
-
-                    IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
-                        Arguments[0],
-                        searchFilter,
-                        skip: 0,
-                        take: 20,
-                        logger,
-                        cancellationToken);
-
-
-                    myStreamWriter.WriteLine(new string('=', 20));
-                    myStreamWriter.WriteLine($"Source: {source.Name}");
-
-                    if (!results.Any())
-                    {
-                        myStreamWriter.WriteLine(new string('-', 20));
-                        myStreamWriter.WriteLine("No results found.");
-                    }
-
-
-                    foreach (IPackageSearchMetadata result in results)
-                    {
-                        myStreamWriter.WriteLine(new string('-', 20));
-                        myStreamWriter.WriteLine($"> {result.Identity.Id} | v{result.Identity.Version} | DLs: {result.DownloadCount}"); // TODO: '>' and 'v' necessary or not?
-                        myStreamWriter.WriteLine($"{result.Description}\n");
-
-                    }
-
-                    myStreamWriter.Close();
-
-                    // Wait for the sort process to write the sorted text lines.
-                    myProcess.WaitForExit();
+                    continue;
                 }
 
-            }
+                SearchFilter searchFilter = new SearchFilter(includePrerelease: true);
 
-            Thread.Sleep(5000);
+                IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
+                    Arguments[0],
+                    searchFilter,
+                    skip: 0,
+                    take: 20,
+                    logger,
+                    cancellationToken);
+
+                Console.WriteLine(new string('=', 20));
+                Console.WriteLine($"Source: {source.Name}");
+
+                if (!results.Any())
+                {
+                    Console.WriteLine(new string('-', 20));
+                    Console.WriteLine("No results found.");
+                    Console.WriteLine(new string('-', 20) + "\n");
+                }
+                else
+                {
+                    PrintResults(results);
+                }
+                
+            }
         }
 
+
+        private void PrintResults(IEnumerable<IPackageSearchMetadata> results)
+        {
+            foreach (IPackageSearchMetadata result in results)
+            {
+                Console.WriteLine(new string('-', 20));
+                Console.WriteLine($"> {result.Identity.Id} | {result.Identity.Version.ToNormalizedString()} | Downloads: {result.DownloadCount}");
+
+                string description = result.Description;
+
+                if (description.Length > 100)
+                {
+                    description = description.Substring(0, 100) + "...";
+                }
+
+                Console.PrintJustified(2, description);
+            }
+
+            Console.WriteLine(new string('-', 20));
+            Console.WriteLine("");
+        }
 
         public override bool IncludedInHelp(string optionName)
         {

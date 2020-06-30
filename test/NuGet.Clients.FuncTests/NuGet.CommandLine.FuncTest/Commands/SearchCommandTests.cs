@@ -39,20 +39,23 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     waitForExit: true);
 
                 string index = $@"
-{{""version"": ""3.0.0"",
-  ""resources"": [
-    {{
-      ""@id"": ""{server.Uri + "search/query"}"",
-      ""@type"": ""SearchQueryService/Versioned"",
-      ""comment"": ""Query endpoint of NuGet Search service (primary)""
-    }}
-    ],
-    ""@context"": {{
-    ""@vocab"": ""http://schema.nuget.org/services#"",
-    ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-  }}
-        }}
-            ";
+                {{
+                    ""version"": ""3.0.0"",
+
+                    ""resources"": [
+                    {{
+                        ""@id"": ""{server.Uri + "search/query"}"",
+                        ""@type"": ""SearchQueryService/Versioned"",
+                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
+                    }}
+                    ],
+
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/services#"",
+                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+                    }}
+                }}";
 
                 server.Get.Add("/v3/index.json", r => index);
 
