@@ -334,7 +334,6 @@ namespace NuGet.VisualStudio
             vsPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => TryCreateUserWideContextAsync());
 
             return vsPathContext != null;
-
         }
 
         private async Task<IVsPathContext> TryCreateUserWideContextAsync()
