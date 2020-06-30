@@ -119,9 +119,13 @@ namespace Test.Utility
             return null;
         }
 
+        public int GraphCount => _graph.Count;
+
         public class TestPackage
         {
             private List<LibraryDependency> _dependencies;
+
+            public int DependenciesCount => _dependencies.Count;
 
             public TestPackage(List<LibraryDependency> dependencies)
             {
