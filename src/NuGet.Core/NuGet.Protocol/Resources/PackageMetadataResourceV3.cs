@@ -149,6 +149,11 @@ namespace NuGet.Protocol
         {
             token.ThrowIfCancellationRequested();
 
+            if (stream == null)
+            {
+                return default(T);
+            }
+
             using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
             {
