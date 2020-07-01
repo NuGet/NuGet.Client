@@ -26,11 +26,11 @@ namespace NuGet.MicroBenchmarks.Tests
         }
 
         [Theory]
-        [InlineData(0, 2, 10, 2)] // there wil be 2^11-1 = 2,047  nodes in the graph
-        //[InlineData(100, 2, 10, 2)] // there wil be 2^11-1 = 2,047  nodes in the graph
+        [InlineData(0, 2, 10, 2)] 
+        //[InlineData(100, 2, 10, 2)] // there will be 2^11-1 = 2,047  nodes in the graph
         //[InlineData(100, 2, 10, 4)]
         //[InlineData(100, 2, 10, 6)]
-        //[InlineData(100, 4, 6, 2)] // there wil be (4^7-1)/3 =  5,461 nodes in the graph
+        //[InlineData(100, 4, 6, 2)] // there will be (4^7-1)/3 =  5,461 nodes in the graph
         //[InlineData(100, 4, 6, 4)]      
         public async Task WalkAsync_WithoutAmbiguousNodes(int iterations, int childNodeCount, int graphDepth, int depthOfCentralDependencies)
         {
@@ -67,7 +67,7 @@ namespace NuGet.MicroBenchmarks.Tests
 
         [Theory]
         [InlineData(0, 2, 10, 2)]
-        //[InlineData(100, 2, 10, 2)] // there wil be 2^11-1 = 2,047 in the graph. Half of the transitive will be ambigous and eventually will get rejected
+        //[InlineData(100, 2, 10, 2)] // there will be 2^11-1 = 2,047 in the graph. Half of the transitive will be ambigous and eventually will get rejected
         //[InlineData(100, 2, 10, 4)]
         //[InlineData(100, 2, 10, 6)]
         public async Task WalkAsync_WithAmbiguousNodes(int iterations, int childNodeCount, int graphDepth, int depthOfCentralDependencies)
@@ -127,7 +127,7 @@ namespace NuGet.MicroBenchmarks.Tests
         /// <summary>
         /// The direct nodes will be split in two
         /// The first half will add a graph with one version 1.0.0
-        /// The other half wil have the same Transitive packages but with higher version 2.0.0
+        /// The other half will have the same Transitive packages but with higher version 2.0.0
         /// </summary>
         /// <param name="childNodeCount">ChildCount.</param>
         /// <param name="depth">The depth of the graph.</param>
@@ -169,7 +169,7 @@ namespace NuGet.MicroBenchmarks.Tests
         /// <summary>
         /// The direct nodes will be split in two
         /// The first half will add a graph with one version 1.0.0
-        /// The other half wil have the same Transitive packages but with higher version 2.0.0
+        /// The other half will have the same Transitive packages but with higher version 2.0.0
         /// At a certain depth "depthOfCentralDependencies" the transitive dependencies become central
         /// The central transitive deps will have half of parents rejected and half of them accepted
         /// </summary>
@@ -202,7 +202,7 @@ namespace NuGet.MicroBenchmarks.Tests
             CreatePackageGraphFromDirectNodes(provider, root, directNodes, childNodeCount, depth, "TransitiveDep", version200);
 
             // add the transitive dependencies; in normal case it should be power of"depthOfCentralDependencies+1" but the direct dependencies were split in 2 so the pwer decreased to depthOfCentralDependencies
-            // the central transitive dependencies will have two parents each - one is going to be rejected and one accepted
+            // the central transitive dependencies will have two parents each - one will be rejected and one accepted
             var centralTransitiveDependenciesChildren = (int)Math.Pow(childNodeCount, depthOfCentralDependencies);
             AddCentralTransitivePackagesToProject(root,
                 Enumerable.Range(0, centralTransitiveDependenciesChildren)
@@ -230,7 +230,7 @@ namespace NuGet.MicroBenchmarks.Tests
             var rootNode = await DoWalkAsync(walker, "ProjectStart", framework);
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            // After the Ananlyze step the graph will be ; the ** marked nodes wil be rejected 
+            // After the Ananlyze step the graph will be ; the ** marked nodes will be rejected 
             //                                                              root
             //                               /                          /         \           \        \      \
             //                             /                           /           \           \        \      \
@@ -245,7 +245,7 @@ namespace NuGet.MicroBenchmarks.Tests
         /// <summary>
         /// The direct nodes will be split in two
         /// The first half will add a graph with one version 1.0.0
-        /// The other half wil have the same Transitive packages but with higher version 2.0.0
+        /// The other half will have the same Transitive packages but with higher version 2.0.0
         /// At a certain depth "depthOfCentralDependencies" the transitive dependencies of the subtree of version 1 become central
         /// The central transitive deps will become rejected as the parents will be rejected
         /// </summary>
@@ -286,7 +286,7 @@ namespace NuGet.MicroBenchmarks.Tests
             CreatePackageGraphFromDirectNodes(provider, root, directNodes, childNodeCount, depth, "TransitiveDep", version200);
 
             // add the transitive dependencies; in normal case it should be power of"depthOfCentralDependencies+1" but the direct dependencies were split in 2 so the power decreased to depthOfCentralDependencies
-            // the central transitive dependencies will have two parents each - one is gong to be rejected and one accepted
+            // the central transitive dependencies will have two parents each - one will be rejected and one accepted
             var centralTransitiveDependenciesChildren = (int)Math.Pow(childNodeCount, depthOfCentralDependencies);
             AddCentralTransitivePackagesToProject(root,
                 Enumerable.Range(0, centralTransitiveDependenciesChildren)
@@ -316,7 +316,7 @@ namespace NuGet.MicroBenchmarks.Tests
             var rootNode = await DoWalkAsync(walker, "ProjectStart", framework);
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            // After the Ananlyze step the graph will be ; the ** marked nodes wil be rejected 
+            // After the Ananlyze step the graph will be ; the ** marked nodes will be rejected 
             //                                                              root
             //                               /                          /         \           \        \      \
             //                             /                           /           \           \        \      \
