@@ -282,7 +282,7 @@ namespace NuGet.CommandLine
 
                     if (newLineIndex == 0)
                     {
-                        Out.WriteLine("");
+                        Out.WriteLine(string.Empty);
                         text = text.Substring(rn ? 2 : 1);
                         continue;
                     }
