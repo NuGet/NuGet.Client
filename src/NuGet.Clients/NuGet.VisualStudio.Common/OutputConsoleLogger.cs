@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -63,7 +64,9 @@ namespace NuGet.VisualStudio.Common
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
 
-            Run(nameof(OutputConsoleLogger), async () =>
+            ErrorListTableDataSource = errorListDataSource;
+
+            Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -93,7 +96,7 @@ namespace NuGet.VisualStudio.Common
 
         public void End()
         {
-            Run(nameof(End), async () =>
+            Run(async () =>
             {
                 await OutputConsole.WriteLineAsync(Resources.Finished);
                 await OutputConsole.WriteLineAsync(string.Empty);
@@ -106,7 +109,7 @@ namespace NuGet.VisualStudio.Common
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            Run($"{nameof(Log)}/{nameof(String)}", async () =>
+            Run(async () =>
             {
                 if (level == MessageLevel.Info
                     || level == MessageLevel.Error
@@ -120,12 +123,13 @@ namespace NuGet.VisualStudio.Common
 
                     await OutputConsole.WriteLineAsync(message);
                 }
-            });
+            },
+            $"{nameof(Log)}/{nameof(String)}");
         }
 
         public void Log(ILogMessage message)
         {
-            Run($"{nameof(Log)}/{nameof(ILogMessage)}", async () =>
+            Run(async () =>
             {
                 if (message.Level == LogLevel.Information
                     || message.Level == LogLevel.Error
@@ -140,12 +144,13 @@ namespace NuGet.VisualStudio.Common
                         ReportError(message);
                     }
                 }
-            });
+            },
+            $"{nameof(Log)}/{nameof(ILogMessage)}");
         }
 
         public void Start()
         {
-            Run(nameof(Start), async () =>
+            Run(async () =>
             {
                 await OutputConsole.ActivateAsync();
                 await OutputConsole.ClearAsync();
@@ -172,27 +177,29 @@ namespace NuGet.VisualStudio.Common
 
         public void ReportError(string message)
         {
-            Run($"{nameof(ReportError)}/{nameof(String)}", async () =>
+            Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
                 ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
-            });
+            },
+            $"{nameof(ReportError)}/{nameof(String)}");
         }
 
         public void ReportError(ILogMessage message)
         {
-            Run($"{nameof(ReportError)}/{nameof(ILogMessage)}", async () =>
+            Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var errorListEntry = new ErrorListTableEntry(message);
                 ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
-            });
+            },
+            $"{nameof(ReportError)}/{nameof(ILogMessage)}");
         }
 
-        private void Run(string methodName, Func<Task> action)
+        private void Run(Func<Task> action, [CallerMemberName] string methodName = null)
         {
             NuGetUIThreadHelper.JoinableTaskFactory
                                .RunAsync(() => _semaphore.ExecuteAsync(action))
