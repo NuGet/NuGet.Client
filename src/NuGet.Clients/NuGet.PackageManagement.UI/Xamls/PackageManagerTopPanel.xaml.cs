@@ -3,11 +3,9 @@
 
 using System;
 using System.Globalization;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using NuGet.VisualStudio;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
@@ -170,7 +168,6 @@ namespace NuGet.PackageManagement.UI
 
         // Indicates if the control is hosted in solution package manager.
         private bool _isSolution;
-        private bool _tabSwitchInProgress;
 
         public bool IsSolution
         {
@@ -225,7 +222,6 @@ namespace NuGet.PackageManagement.UI
         public event EventHandler<EventArgs> PrereleaseCheckChanged;
 
         public event EventHandler<EventArgs> SourceRepoListSelectionChanged;
-        private Action _queuedSelectionChange;
 
         public void SelectFilter(ItemFilter selectedFilter)
         {
@@ -262,44 +258,22 @@ namespace NuGet.PackageManagement.UI
 
         private void TabsPackageManagement_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            TabItem previousTabItem = e.RemovedItems.Count > 0 ? e.RemovedItems[0] as TabItem : null;
+            TabItem selectedTabItem = e.AddedItems.Count > 0 ? e.AddedItems[0] as TabItem : null;
+
+            //Store the tag for calculating the ItemFilter without having to access the UI Thread.
+            Filter = GetItemFilter(selectedTabItem);
+
+            if (previousTabItem != null)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                if (!_tabSwitchInProgress)
+                if (FilterChanged != null)
                 {
-                    _tabSwitchInProgress = true;
-                    TabItem previousTabItem = e.RemovedItems.Count > 0 ? e.RemovedItems[0] as TabItem : null;
-                    TabItem selectedTabItem = e.AddedItems.Count > 0 ? e.AddedItems[0] as TabItem : null;
-
-                    //Store the tag for calculating the ItemFilter without having to access the UI Thread.
-                    Filter = GetItemFilter(selectedTabItem);
-
-                    if (previousTabItem != null)
-                    {
-                        if (FilterChanged != null)
-                        {
-                            ItemFilter previousFilter = GetItemFilter(previousTabItem);
-                            FilterChanged(this, new FilterChangedEventArgs(previousFilter));
-                        }
-                    }
-                    _tabSwitchInProgress = false;
-                    if (_queuedSelectionChange != null)
-                    {
-                        _queuedSelectionChange.Invoke();
-                    }
+                    ItemFilter previousFilter = GetItemFilter(previousTabItem);
+                    FilterChanged(this, new FilterChangedEventArgs(previousFilter));
                 }
-                else //Another event handler is in progress, queue up this event.
-                {
-                    _queuedSelectionChange = null; //The last event is the only one we need to eventually execute.
-                    _queuedSelectionChange = () =>
-                    {
-                        _queuedSelectionChange = null;
-                        TabsPackageManagement_SelectionChanged(sender, e);
-                    };
-                }
-            });
+            }
         }
-        
+
         private static ItemFilter GetItemFilter(TabItem item)
         {
             return (ItemFilter)item.Tag;
