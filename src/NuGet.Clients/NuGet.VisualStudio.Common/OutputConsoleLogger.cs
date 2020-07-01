@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -62,7 +63,7 @@ namespace NuGet.VisualStudio.Common
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
 
-            _semaphore.ExecuteAsync(async () =>
+            Run(nameof(OutputConsoleLogger), async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -72,8 +73,7 @@ namespace NuGet.VisualStudio.Common
                 _solutionEvents = _dte.Events.SolutionEvents;
                 _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
                 OutputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
-            }
-            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(OutputConsoleLogger)));
+            });
         }
 
         public void Dispose()
@@ -93,22 +93,20 @@ namespace NuGet.VisualStudio.Common
 
         public void End()
         {
-            _semaphore.ExecuteAsync(async () =>
+            Run(nameof(End), async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 await OutputConsole.WriteLineAsync(Resources.Finished);
                 await OutputConsole.WriteLineAsync(string.Empty);
 
                 // Give the error list focus
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
-            }
-            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(End)));
+            });
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            _semaphore.ExecuteAsync(async () =>
+            Run($"{nameof(Log)}/{nameof(String)}", async () =>
             {
                 if (level == MessageLevel.Info
                     || level == MessageLevel.Error
@@ -120,23 +118,20 @@ namespace NuGet.VisualStudio.Common
                         message = string.Format(CultureInfo.CurrentCulture, message, args);
                     }
 
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     await OutputConsole.WriteLineAsync(message);
                 }
-            }
-            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), $"{nameof(Log)}/{nameof(MessageLevel)}"));
+            });
         }
 
         public void Log(ILogMessage message)
         {
-            _semaphore.ExecuteAsync(async () =>
+            Run($"{nameof(Log)}/{nameof(ILogMessage)}", async () =>
             {
                 if (message.Level == LogLevel.Information
                     || message.Level == LogLevel.Error
                     || message.Level == LogLevel.Warning
                     || _verbosityLevel > DefaultVerbosityLevel)
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     await OutputConsole.WriteLineAsync(message.FormatWithCode());
 
                     if (message.Level == LogLevel.Error ||
@@ -145,22 +140,20 @@ namespace NuGet.VisualStudio.Common
                         ReportError(message);
                     }
                 }
-            }
-            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), $"{nameof(Log)}/{nameof(ILogMessage)}"));
+            });
         }
 
         public void Start()
         {
-            _semaphore.ExecuteAsync(async () =>
+            Run(nameof(Start), async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 await OutputConsole.ActivateAsync();
                 await OutputConsole.ClearAsync();
                 _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
+
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 ErrorListTableDataSource.Value.ClearNuGetEntries();
-            }
-            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(Start)));
+            });
         }
 
         private async Task<int> GetMSBuildVerbosityLevelAsync()
@@ -179,26 +172,31 @@ namespace NuGet.VisualStudio.Common
 
         public void ReportError(string message)
         {
-            _semaphore.ExecuteAsync(async () =>
+            Run($"{nameof(ReportError)}/{nameof(String)}", async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
                 ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
-            }
-            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), $"{nameof(ReportError)}/{nameof(String)}"));
+            });
         }
 
         public void ReportError(ILogMessage message)
         {
-            _semaphore.ExecuteAsync(async () =>
+            Run($"{nameof(ReportError)}/{nameof(ILogMessage)}", async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var errorListEntry = new ErrorListTableEntry(message);
                 ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
-            }
-            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), $"{nameof(ReportError)}/{nameof(ILogMessage)}"));
+            });
+        }
+
+        private void Run(string methodName, Func<Task> action)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory
+                               .RunAsync(() => _semaphore.ExecuteAsync(action))
+                               .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), methodName));
         }
     }
 }
