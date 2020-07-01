@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -26,31 +27,72 @@ using NuGet.Versioning;
 namespace NuGet.CommandLine
 {
 
-    [Command(typeof(NuGetCommand), "search", "SearchCommandDescription", MaxArgs = 1,
+    [Command(typeof(NuGetCommand), "search", "SearchCommandDescription",
             UsageSummaryResourceName = "SearchCommandUsageSummary", UsageExampleResourceName = "SearchCommandUsageExamples")]
     public class SearchCommand : Command
     {
         [Option(typeof(NuGetCommand), "SearchCommandAssemblyPathDescription")]
         public string AssemblyPath
-        {
-            get;
-            set;
-        }
+        { get; set; }
 
         [Option(typeof(NuGetCommand), "SearchCommandForceDescription")]
         public bool Force
+        { get; set; }
+
+        private readonly List<string> _sources = new List<string>();
+
+        [Option(typeof(NuGetCommand), "ListCommandSourceDescription")]
+        public ICollection<string> Source
         {
-            get;
-            set;
+            get { return _sources; }
         }
 
+        // -Source "https://api.nuget.org/v3/index.json"
+
+
+        [Option(typeof(NuGetCommand), "ListCommandPreRelease")]
+        public bool PreRelease { get; set; } = false;
+
+
+        [Option(typeof(NuGetCommand), "ListCommandTake")]
+        public int Take { get; set; } = 20;
+
+
+        [Option(typeof(NuGetCommand), "ListCommandPackageTypes")]
+        public IEnumerable<string> PackageTypes { get; set; } = Enumerable.Empty<string>();
+
+
+        private IList<PackageSource> GetEndpointsAsync()
+        {
+            var configurationSources = SourceProvider.LoadPackageSources()
+                .Where(p => p.IsEnabled)
+                .ToList();
+
+            IList<PackageSource> packageSources;
+            if (Source.Count > 0)
+            {
+                packageSources = Source
+                    .Select(s => PackageSourceProviderExtensions.ResolveSource(configurationSources, s))
+                    .ToList();
+            }
+            else
+            {
+                packageSources = configurationSources;
+            }
+            return packageSources;
+        }
 
         public override async Task ExecuteCommandAsync()
         {
             ILogger logger = NullLogger.Instance;
             CancellationToken cancellationToken = CancellationToken.None;
 
-            foreach (var source in SourceProvider.LoadPackageSources())
+            SearchFilter searchFilter = new SearchFilter(includePrerelease: PreRelease);
+            searchFilter.PackageTypes = PackageTypes;
+
+            var listEndpoints = GetEndpointsAsync();
+
+            foreach (var source in listEndpoints)
             {
                 var target = source.Source;
                 var name = source.Name;
@@ -63,13 +105,11 @@ namespace NuGet.CommandLine
                     continue;
                 }
 
-                SearchFilter searchFilter = new SearchFilter(includePrerelease: false);
-
                 IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
                     Arguments[0],
                     searchFilter,
                     skip: 0,
-                    take: 20,
+                    take: Take,
                     logger,
                     cancellationToken);
 
@@ -86,7 +126,6 @@ namespace NuGet.CommandLine
                 {
                     PrintResults(results);
                 }
-                
             }
         }
 
@@ -96,16 +135,30 @@ namespace NuGet.CommandLine
             foreach (IPackageSearchMetadata result in results)
             {
                 Console.WriteLine(new string('-', 20));
-                Console.WriteLine($"> {result.Identity.Id} | {result.Identity.Version.ToNormalizedString()} | Downloads: {result.DownloadCount}");
 
-                string description = result.Description;
+                CultureInfo culture = CultureInfo.CurrentCulture;
 
-                if (description.Length > 100)
+                string printBasicInfo = $"> {result.Identity.Id} | {result.Identity.Version.ToNormalizedString()}";
+
+                string downloads = string.Format(culture, "{0:N}", result.DownloadCount);
+                string printDownloads = $" | Downloads: {downloads.Substring(0, downloads.Length - 3)}";
+
+                Console.WriteLine(Verbosity != Verbosity.Quiet ? printBasicInfo + printDownloads : printBasicInfo);
+
+                if (Verbosity != Verbosity.Quiet)
                 {
-                    description = description.Substring(0, 100) + "...";
-                }
+                    string description = result.Description;
 
-                Console.PrintJustified(2, description);
+                    if (Verbosity == Verbosity.Normal)
+                    {
+                        if (description.Length > 100)
+                        {
+                            description = description.Substring(0, 100) + "...";
+                        }
+                    }
+
+                    Console.PrintJustified(2, description);
+                }
             }
 
             Console.WriteLine(new string('-', 20));
