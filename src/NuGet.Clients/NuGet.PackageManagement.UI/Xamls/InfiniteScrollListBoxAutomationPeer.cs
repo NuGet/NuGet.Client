@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.UI
                         var listCollectionView = (ListCollectionView)CollectionViewSource.GetDefaultView(items);
                         // Don't return the LoadingStatusIndicator as an AutomationPeer, otherwise narrator will report it as an item in the list of packages, even when not visible
                         IEnumerable<AutomationPeer> packageItemsInView = items.Where(item => ((ListBoxItemAutomationPeer)item).Item is PackageItemListViewModel
-                                                                                             && listCollectionView.Contains(item));
+                                && listCollectionView.Contains(item));
                         value = packageItemsInView.ToList();
                     }
 
