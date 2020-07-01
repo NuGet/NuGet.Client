@@ -4,8 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -34,7 +38,7 @@ namespace NuGet.Protocol.Tests
             // Act
             using (var sourceCacheContext = new SourceCacheContext())
             {
-                var result = (PackageSearchMetadataRegistration)await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+                var result = (PackageSearchMetadataRegistration) await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
                 // Assert
                 Assert.Equal("deepequal", result.Identity.Id, StringComparer.OrdinalIgnoreCase);
@@ -44,8 +48,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Null(result.IconUrl);
                 Assert.Null(result.LicenseUrl);
                 Assert.Equal("http://github.com/jamesfoster/DeepEqual", result.ProjectUrl.ToString());
-                Assert.Equal("https://api.nuget.org/v3/catalog0/data/2015.02.03.18.34.51/deepequal.0.9.0.json",
-                    result.CatalogUri.ToString());
+                Assert.Equal("https://api.nuget.org/v3/catalog0/data/2015.02.03.18.34.51/deepequal.0.9.0.json", result.CatalogUri.ToString());
                 Assert.Equal(DateTimeOffset.Parse("2013-08-28T09:19:10.013Z"), result.Published);
                 Assert.False(result.RequireLicenseAcceptance);
                 Assert.Equal(result.Description, result.Summary);
@@ -71,7 +74,7 @@ namespace NuGet.Protocol.Tests
             // Act
             using (var sourceCacheContext = new SourceCacheContext())
             {
-                var result = (PackageSearchMetadataRegistration)await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+                var result = (PackageSearchMetadataRegistration) await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
                 // Assert
                 Assert.False(result.IsListed);
@@ -93,7 +96,8 @@ namespace NuGet.Protocol.Tests
             // Act
             using (var sourceCacheContext = new SourceCacheContext())
             {
-                var result = (IEnumerable<PackageSearchMetadataRegistration>)await resource.GetMetadataAsync("afine", true, true, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+                var result = (IEnumerable<PackageSearchMetadataRegistration>) await resource.GetMetadataAsync("afine", true, true, sourceCacheContext, Common.NullLogger.Instance,
+                    CancellationToken.None);
 
                 var first = result.ElementAt(0);
                 var second = result.ElementAt(1);
@@ -137,8 +141,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageMetadataResourceV3_GetMetadataAsync_ParsesLicenseExpression(string expression, string version)
         {
 
-            var licenseData = $@"""{JsonProperties.LicenseExpression}"": ""{expression}""," +
-                              (version != null ? $@"""{JsonProperties.LicenseExpressionVersion}"": ""{version}""," : "");
+            var licenseData = $@"""{JsonProperties.LicenseExpression}"": ""{expression}""," + (version != null ? $@"""{JsonProperties.LicenseExpressionVersion}"": ""{version}""," : "");
 
             var sourceName = $"http://{Guid.NewGuid().ToString()}.com/v3/index.json";
 
@@ -186,8 +189,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageMetadataResourceV3_GetMetadataAsync_ParsesLicenseExpressionWithWarnings(string expression, string version, int errorCount, string errorMessage)
         {
 
-            var licenseData = $@"""{JsonProperties.LicenseExpression}"": ""{expression}""," +
-                              (version != null ? $@"""{JsonProperties.LicenseExpressionVersion}"": ""{version}""," : "");
+            var licenseData = $@"""{JsonProperties.LicenseExpression}"": ""{expression}""," + (version != null ? $@"""{JsonProperties.LicenseExpressionVersion}"": ""{version}""," : "");
 
             var sourceName = $"http://{Guid.NewGuid().ToString()}.com/v3/index.json";
 
@@ -225,6 +227,130 @@ namespace NuGet.Protocol.Tests
 
                 Assert.Equal(errorCount, result.LicenseMetadata.WarningsAndErrors.Count);
                 Assert.Contains(errorMessage, result.LicenseMetadata.WarningsAndErrors[0]);
+            }
+        }
+
+        [Fact]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_NothingMatchesHandleNullStream()
+        {
+            // Arrange
+            var additionalProviders = new[]
+            {
+                new Lazy<INuGetResourceProvider>(() => new FakeHttpHandlerProvider())
+            };
+
+            var resourceProviders = Repository.Provider.GetCoreV3().Concat(additionalProviders);
+            //var resourceProviders = additionalProviders;
+            var source = new PackageSource("https://api.nuget.org/v3/index.json");
+            var repo = new SourceRepository(source, resourceProviders);
+
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            var package = new PackageIdentity("NotFoundPackage", NuGetVersion.Parse("1.0.0"));
+
+            //Act
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var metadata = await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+
+                //Assert
+                Assert.Null(metadata);
+            }
+        }
+
+        [Fact]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_NothingMatchesHandleNullStream2()
+        {
+            // Arrange
+            //var responses = new Dictionary<string, string>();
+            //responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
+            //responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", JsonData.DeepEqualRegistationIndex);
+
+            //var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
+
+            var notExistPackage = "NotExistPackage";
+            var package = new PackageIdentity(notExistPackage, NuGetVersion.Parse("1.0.0"));
+            var source = "http://testsource.com/v3/index.json";
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+            {
+                {
+                    source,
+                    _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new TestContent(JsonData.IndexWithoutFlatContainer)
+                    })
+                },
+                {
+                    $"https://api.nuget.org/v3/registration0/{notExistPackage.ToLowerInvariant()}/index.json",
+                    _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))
+                }
+            };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            //Act
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var metadata = await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+
+                //Assert
+                Assert.Null(metadata);
+            }
+        }
+
+        internal class FakeNuGetHttpHander : HttpHandlerResource
+        {
+            public override HttpClientHandler ClientHandler => new HttpClientHandler();
+
+            public override HttpMessageHandler MessageHandler => new FakeHttpMessageHandler();
+        }
+
+        internal class FakeHttpHandlerProvider : ResourceProvider
+        {
+            public FakeHttpHandlerProvider()
+                : base(resourceType: typeof(HttpHandlerResource), name: nameof(FakeNuGetHttpHander), before: nameof(HttpHandlerResourceV3))
+            {
+            }
+
+            public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+            {
+                return Task.FromResult(new Tuple<bool, INuGetResource>(true, new FakeNuGetHttpHander()));
+            }
+        }
+
+        internal class FakeHttpMessageHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                string responseString;
+
+                switch (request.RequestUri.OriginalString)
+                {
+                    case "https://api.nuget.org/v3/index.json":
+                        responseString = JsonData.IndexWithoutFlatContainer;
+                        break;
+                    case "https://api.nuget.org/v3/registration0/notfoundpackage/index.json":
+                        responseString = null;
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+
+                var responseMessage = new HttpResponseMessage();
+
+                if (responseString == null)
+                {
+                    responseMessage.StatusCode = System.Net.HttpStatusCode.NotFound;
+                }
+                else
+                {
+                    responseMessage.StatusCode = System.Net.HttpStatusCode.OK;
+                    responseMessage.Content = new StringContent(responseString);
+                }
+
+                return Task.FromResult(responseMessage);
             }
         }
     }
