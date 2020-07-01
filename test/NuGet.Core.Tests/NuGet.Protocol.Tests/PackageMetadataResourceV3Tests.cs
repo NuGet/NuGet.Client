@@ -231,7 +231,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task PackageMetadataResourceV3_GetMetadataAsync_NothingMatchesHandleNullStream()
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_NotFoundHandleNullStream()
         {
             // Arrange
             var notExistPackage = "NotExistPackage";
