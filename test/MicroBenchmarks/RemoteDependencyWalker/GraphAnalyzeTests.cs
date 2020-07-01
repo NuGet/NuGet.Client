@@ -32,36 +32,36 @@ namespace NuGet.MicroBenchmarks.Tests
         //[InlineData(100, 2, 10, 6)]
         //[InlineData(100, 4, 6, 2)] // there will be (4^7-1)/3 =  5,461 nodes in the graph
         //[InlineData(100, 4, 6, 4)]      
-        public async Task WalkAsync_WithoutAmbiguousNodes(int iterations, int childNodeCount, int graphDepth, int depthOfCentralDependencies)
+        public async Task WalkAsync_WithoutAmbiguousNodes(int iterations, int innerNodesCount, int graphDepth, int depthOfCentralDependencies)
         {
             // warm - up
-            var analyseGraphWithOneTransitiveDependencyMultipleParentsResult = await AnalyseGraphWithOneCentralTransitiveDependencyMultipleParents(childNodeCount, graphDepth, depthOfCentralDependencies);
+            var analyseGraphWithOneTransitiveDependencyMultipleParentsResult = await AnalyseGraphWithOneCentralTransitiveDependencyMultipleParents(innerNodesCount, graphDepth, depthOfCentralDependencies);
 
-            var analyseGraphWithoutTransitiveDepsAsyncResult = await AnalyseGraphWithoutCentralTransitiveDepsAsync(childNodeCount, graphDepth); ;
-            var analyseGraphWithMultipleTransitiveDependenciesOneParentResult = await AnalyseGraphWithMultipleCentralTransitiveDependenciesOneParent(childNodeCount, graphDepth, depthOfCentralDependencies); ;
+            var analyseGraphWithoutTransitiveDepsAsyncResult = await AnalyseGraphWithoutCentralTransitiveDepsAsync(innerNodesCount, graphDepth); ;
+            var analyseGraphWithMultipleTransitiveDependenciesOneParentResult = await AnalyseGraphWithMultipleCentralTransitiveDependenciesOneParent(innerNodesCount, graphDepth, depthOfCentralDependencies); ;
 
             // minimal validation
-            Assert.Equal(childNodeCount, analyseGraphWithoutTransitiveDepsAsyncResult.root.InnerNodes.Count);
-            Assert.Equal(childNodeCount + Math.Pow(childNodeCount, depthOfCentralDependencies + 1), analyseGraphWithMultipleTransitiveDependenciesOneParentResult.root.InnerNodes.Count);
-            Assert.Equal(childNodeCount + 1, analyseGraphWithOneTransitiveDependencyMultipleParentsResult.root.InnerNodes.Count);
+            Assert.Equal(innerNodesCount, analyseGraphWithoutTransitiveDepsAsyncResult.root.InnerNodes.Count);
+            Assert.Equal(innerNodesCount + Math.Pow(innerNodesCount, depthOfCentralDependencies + 1), analyseGraphWithMultipleTransitiveDependenciesOneParentResult.root.InnerNodes.Count);
+            Assert.Equal(innerNodesCount + 1, analyseGraphWithOneTransitiveDependencyMultipleParentsResult.root.InnerNodes.Count);
 
             var centralTransitiveDep = analyseGraphWithOneTransitiveDependencyMultipleParentsResult.root.InnerNodes.Where(n => n.Item.IsCentralTransitive).First();
             var parents = (List<GraphNode<RemoteResolveResult>>)centralTransitiveDep.GetType().GetProperty("ParentNodes", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(centralTransitiveDep);
 
-            Assert.Equal(Math.Pow(childNodeCount, depthOfCentralDependencies), parents.Count);
+            Assert.Equal(Math.Pow(innerNodesCount, depthOfCentralDependencies), parents.Count);
 
             Execute(iterations,
-                $"{nameof(WalkAsync_WithoutAmbiguousNodes)}_CC{childNodeCount}_GD{graphDepth}",
+                $"{nameof(WalkAsync_WithoutAmbiguousNodes)}_CC{innerNodesCount}_GD{graphDepth}",
                 async (csvWriter) =>
                 {
-                    analyseGraphWithoutTransitiveDepsAsyncResult = await AnalyseGraphWithoutCentralTransitiveDepsAsync(childNodeCount, graphDepth);
-                    csvWriter.Write($"{childNodeCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWithoutCentralTransitiveDepsAsync", analyseGraphWithoutTransitiveDepsAsyncResult.executionElapsedMilliseconds);
+                    analyseGraphWithoutTransitiveDepsAsyncResult = await AnalyseGraphWithoutCentralTransitiveDepsAsync(innerNodesCount, graphDepth);
+                    csvWriter.Write($"{innerNodesCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWithoutCentralTransitiveDepsAsync", analyseGraphWithoutTransitiveDepsAsyncResult.executionElapsedMilliseconds);
 
-                    analyseGraphWithMultipleTransitiveDependenciesOneParentResult = await AnalyseGraphWithMultipleCentralTransitiveDependenciesOneParent(childNodeCount, graphDepth, depthOfCentralDependencies);
-                    csvWriter.Write($"{childNodeCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWith{Math.Pow(childNodeCount, depthOfCentralDependencies + 1)}CentralTransitiveDependenciesOneParent", analyseGraphWithMultipleTransitiveDependenciesOneParentResult.executionElapsedMilliseconds);
+                    analyseGraphWithMultipleTransitiveDependenciesOneParentResult = await AnalyseGraphWithMultipleCentralTransitiveDependenciesOneParent(innerNodesCount, graphDepth, depthOfCentralDependencies);
+                    csvWriter.Write($"{innerNodesCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWith{Math.Pow(innerNodesCount, depthOfCentralDependencies + 1)}CentralTransitiveDependenciesOneParent", analyseGraphWithMultipleTransitiveDependenciesOneParentResult.executionElapsedMilliseconds);
 
-                    analyseGraphWithOneTransitiveDependencyMultipleParentsResult = await AnalyseGraphWithOneCentralTransitiveDependencyMultipleParents(childNodeCount, graphDepth, depthOfCentralDependencies);
-                    csvWriter.Write($"{childNodeCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWithOneCentralTransitiveDependency{Math.Pow(childNodeCount, depthOfCentralDependencies)}Parents", analyseGraphWithOneTransitiveDependencyMultipleParentsResult.executionElapsedMilliseconds);
+                    analyseGraphWithOneTransitiveDependencyMultipleParentsResult = await AnalyseGraphWithOneCentralTransitiveDependencyMultipleParents(innerNodesCount, graphDepth, depthOfCentralDependencies);
+                    csvWriter.Write($"{innerNodesCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWithOneCentralTransitiveDependency{Math.Pow(innerNodesCount, depthOfCentralDependencies)}Parents", analyseGraphWithOneTransitiveDependencyMultipleParentsResult.executionElapsedMilliseconds);
                 });
         }
 
@@ -70,19 +70,19 @@ namespace NuGet.MicroBenchmarks.Tests
         //[InlineData(100, 2, 10, 2)] // there will be 2^11-1 = 2,047 in the graph. Half of the transitive will be ambigous and eventually will get rejected
         //[InlineData(100, 2, 10, 4)]
         //[InlineData(100, 2, 10, 6)]
-        public async Task WalkAsync_WithAmbiguousNodes(int iterations, int childNodeCount, int graphDepth, int depthOfCentralDependencies)
+        public async Task WalkAsync_WithAmbiguousNodes(int iterations, int innerNodesCount, int graphDepth, int depthOfCentralDependencies)
         {
             // warm-up
-            var analyseGraphWithMultipleRejectedCentralTransitiveDepsResult = await AnalyseGraphWithMultipleRejectedCentralTransitiveDepsAsync(childNodeCount, graphDepth, depthOfCentralDependencies);
-            var analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult = await AnalyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejected(childNodeCount, graphDepth);
-            var analyseGraphWithMultipleAcceptedCentralTransitiveDepsResult = await AnalyseGraphWithMultipleAcceptedCentralTransitiveDepsAsync(childNodeCount, graphDepth, depthOfCentralDependencies);
+            var analyseGraphWithMultipleRejectedCentralTransitiveDepsResult = await AnalyseGraphWithMultipleRejectedCentralTransitiveDepsAsync(innerNodesCount, graphDepth, depthOfCentralDependencies);
+            var analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult = await AnalyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejected(innerNodesCount, graphDepth);
+            var analyseGraphWithMultipleAcceptedCentralTransitiveDepsResult = await AnalyseGraphWithMultipleAcceptedCentralTransitiveDepsAsync(innerNodesCount, graphDepth, depthOfCentralDependencies);
 
             // minimal validation
-            Assert.Equal(childNodeCount, analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult.root.InnerNodes.Count);
+            Assert.Equal(innerNodesCount, analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult.root.InnerNodes.Count);
             var areAnyNotRejectedNodesInTheFirstHalfGraph = analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult
                         .root
                         .InnerNodes
-                        .Take(childNodeCount / 2)
+                        .Take(innerNodesCount / 2)
                         .SelectMany(n => n.InnerNodes)
                         .Any(n => n.Disposition != Disposition.Rejected);
             Assert.False(areAnyNotRejectedNodesInTheFirstHalfGraph);
@@ -95,7 +95,7 @@ namespace NuGet.MicroBenchmarks.Tests
                         .InnerNodes
                         .Where(n => n.Item.IsCentralTransitive && n.Disposition != Disposition.Accepted)
                         .ToList();
-            Assert.Equal(Math.Pow(childNodeCount, depthOfCentralDependencies), acceptedCentralTransitiveDependencies.Count);
+            Assert.Equal(Math.Pow(innerNodesCount, depthOfCentralDependencies), acceptedCentralTransitiveDependencies.Count);
             Assert.Equal(0, notAcceptedCentralTransitiveDependencies.Count);
 
             var rejectedCentralTransitiveDependencies = analyseGraphWithMultipleRejectedCentralTransitiveDepsResult.root
@@ -106,21 +106,21 @@ namespace NuGet.MicroBenchmarks.Tests
                         .InnerNodes
                         .Where(n => n.Item.IsCentralTransitive && n.Disposition != Disposition.Rejected)
                         .ToList();
-            Assert.Equal(Math.Pow(childNodeCount, depthOfCentralDependencies), rejectedCentralTransitiveDependencies.Count);
+            Assert.Equal(Math.Pow(innerNodesCount, depthOfCentralDependencies), rejectedCentralTransitiveDependencies.Count);
             Assert.Equal(0, notRejectedCentralTransitiveDependencies.Count);
 
             Execute(iterations,
-                $"{nameof(WalkAsync_WithAmbiguousNodes)}_CC{childNodeCount}_GD{graphDepth}",
+                $"{nameof(WalkAsync_WithAmbiguousNodes)}_CC{innerNodesCount}_GD{graphDepth}",
                 async (csvWriter) =>
                 {
-                    analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult = await AnalyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejected(childNodeCount, graphDepth);
-                    csvWriter.Write($"{childNodeCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejected", analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult.executionElapsedMilliseconds);
+                    analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult = await AnalyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejected(innerNodesCount, graphDepth);
+                    csvWriter.Write($"{innerNodesCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejected", analyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejectedResult.executionElapsedMilliseconds);
 
-                    analyseGraphWithMultipleAcceptedCentralTransitiveDepsResult = await AnalyseGraphWithMultipleAcceptedCentralTransitiveDepsAsync(childNodeCount, graphDepth, depthOfCentralDependencies);
-                    csvWriter.Write($"{childNodeCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWith{Math.Pow(childNodeCount, depthOfCentralDependencies)}AcceptedCentralTransitiveDeps", analyseGraphWithMultipleAcceptedCentralTransitiveDepsResult.executionElapsedMilliseconds);
+                    analyseGraphWithMultipleAcceptedCentralTransitiveDepsResult = await AnalyseGraphWithMultipleAcceptedCentralTransitiveDepsAsync(innerNodesCount, graphDepth, depthOfCentralDependencies);
+                    csvWriter.Write($"{innerNodesCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWith{Math.Pow(innerNodesCount, depthOfCentralDependencies)}AcceptedCentralTransitiveDeps", analyseGraphWithMultipleAcceptedCentralTransitiveDepsResult.executionElapsedMilliseconds);
 
-                    analyseGraphWithMultipleRejectedCentralTransitiveDepsResult = await AnalyseGraphWithMultipleRejectedCentralTransitiveDepsAsync(childNodeCount, graphDepth, depthOfCentralDependencies);
-                    csvWriter.Write($"{childNodeCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWith{Math.Pow(childNodeCount, depthOfCentralDependencies)}RejectedCentralTransitiveDependencies", analyseGraphWithMultipleRejectedCentralTransitiveDepsResult.executionElapsedMilliseconds);
+                    analyseGraphWithMultipleRejectedCentralTransitiveDepsResult = await AnalyseGraphWithMultipleRejectedCentralTransitiveDepsAsync(innerNodesCount, graphDepth, depthOfCentralDependencies);
+                    csvWriter.Write($"{innerNodesCount}_{graphDepth}_{depthOfCentralDependencies}_AnalyseGraphWith{Math.Pow(innerNodesCount, depthOfCentralDependencies)}RejectedCentralTransitiveDependencies", analyseGraphWithMultipleRejectedCentralTransitiveDepsResult.executionElapsedMilliseconds);
                 });
         }
 
@@ -129,10 +129,10 @@ namespace NuGet.MicroBenchmarks.Tests
         /// The first half will add a graph with one version 1.0.0
         /// The other half will have the same Transitive packages but with higher version 2.0.0
         /// </summary>
-        /// <param name="childNodeCount">ChildCount.</param>
+        /// <param name="innerNodesCount">innerNodes Count.</param>
         /// <param name="depth">The depth of the graph.</param>
         /// <returns></returns>
-        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejected(int childNodeCount, int depth)
+        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithoutCentralTransitiveDepsAsync_HalfGraphRejected(int innerNodesCount, int depth)
         {
             var framework = NuGetFramework.Parse("net45");
             var version100 = "1.0.0";
@@ -141,21 +141,21 @@ namespace NuGet.MicroBenchmarks.Tests
             var provider = new DependencyProvider();
             var rootNoTransitiveDepencies = provider.Package("ProjectStart", version100);
             List<(string id, string version)> directNodes = new List<(string id, string version)>();
-            int halfChildrenCount = childNodeCount / 2;
+            int halfInnerNodesCount = innerNodesCount / 2;
 
-            for (int i = 1; i <= halfChildrenCount; i++)
+            for (int i = 1; i <= halfInnerNodesCount; i++)
             {
                 directNodes.Add(($"FirstDirectHalf{i}", version100));
             }
-            CreatePackageGraphFromDirectNodes(provider, rootNoTransitiveDepencies, directNodes, childNodeCount, depth, "TransitiveDep", version100);
+            CreatePackageGraphFromDirectNodes(provider, rootNoTransitiveDepencies, directNodes, innerNodesCount, depth, "TransitiveDep", version100);
 
-            //add seconf half of the graph
+            //add second half of the graph
             directNodes.Clear();
-            for (int i = 1; i <= halfChildrenCount; i++)
+            for (int i = 1; i <= halfInnerNodesCount; i++)
             {
                 directNodes.Add(($"SecondDirectHalf{i}", version100));
             }
-            CreatePackageGraphFromDirectNodes(provider, rootNoTransitiveDepencies, directNodes, childNodeCount, depth, "TransitiveDep", version200);
+            CreatePackageGraphFromDirectNodes(provider, rootNoTransitiveDepencies, directNodes, innerNodesCount, depth, "TransitiveDep", version200);
 
             context.LocalLibraryProviders.Add(provider);
             var walker = new RemoteDependencyWalker(context);
@@ -174,7 +174,7 @@ namespace NuGet.MicroBenchmarks.Tests
         /// The central transitive deps will have half of parents rejected and half of them accepted
         /// </summary>
         /// <returns></returns>
-        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithMultipleAcceptedCentralTransitiveDepsAsync(int childNodeCount, int depth, int depthOfCentralDependencies)
+        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithMultipleAcceptedCentralTransitiveDepsAsync(int innerNodesCount, int depth, int depthOfCentralDependencies)
         {
             var framework = NuGetFramework.Parse("net45");
             var version100 = "1.0.0";
@@ -183,27 +183,25 @@ namespace NuGet.MicroBenchmarks.Tests
             var provider = new DependencyProvider();
             var root = provider.Package("ProjectStart", version100);
             List<(string id, string version)> directNodes = new List<(string id, string version)>();
-            for (int i = 1; i <= childNodeCount / 2; i++)
+            for (int i = 1; i <= innerNodesCount / 2; i++)
             {
                 directNodes.Add(($"FirstDirectHalf{i}", version100));
             }
 
-            //the transitive nodes are created with ids like $"{packageIdPrefix}_{currentDepth}x{currentChildCount}"
-            CreatePackageGraphFromDirectNodes(provider, root, directNodes, childNodeCount, depth, "TransitiveDep", version100);
+            CreatePackageGraphFromDirectNodes(provider, root, directNodes, innerNodesCount, depth, "TransitiveDep", version100);
 
-            // add seconf half
+            // add second half
             directNodes.Clear();
-            for (int i = 1; i <= childNodeCount / 2; i++)
+            for (int i = 1; i <= innerNodesCount / 2; i++)
             {
                 directNodes.Add(($"SecondDirectHalf{i}", version200));
             }
 
-            //the transitive nodes are created with ids like $"{packageIdPrefix}_{currentDepth}x{currentChildCount}"
-            CreatePackageGraphFromDirectNodes(provider, root, directNodes, childNodeCount, depth, "TransitiveDep", version200);
+            CreatePackageGraphFromDirectNodes(provider, root, directNodes, innerNodesCount, depth, "TransitiveDep", version200);
 
             // add the transitive dependencies; in normal case it should be power of"depthOfCentralDependencies+1" but the direct dependencies were split in 2 so the pwer decreased to depthOfCentralDependencies
             // the central transitive dependencies will have two parents each - one will be rejected and one accepted
-            var centralTransitiveDependenciesChildren = (int)Math.Pow(childNodeCount, depthOfCentralDependencies);
+            var centralTransitiveDependenciesChildren = (int)Math.Pow(innerNodesCount, depthOfCentralDependencies);
             AddCentralTransitivePackagesToProject(root,
                 Enumerable.Range(0, centralTransitiveDependenciesChildren)
                 .Select(i => ($"TransitiveDep_{depthOfCentralDependencies}x{i}", version200)).ToList());
@@ -211,7 +209,7 @@ namespace NuGet.MicroBenchmarks.Tests
             context.LocalLibraryProviders.Add(provider);
             var walker = new RemoteDependencyWalker(context);
 
-            // the input graph for a test with child count = 2 and the depth 3 
+            // the input graph for a test with inner nodes count = 2 and the depth 3 
             //                                      root
             //                             /                     \
             //                         D1                            D2
@@ -250,7 +248,7 @@ namespace NuGet.MicroBenchmarks.Tests
         /// The central transitive deps will become rejected as the parents will be rejected
         /// </summary>
         /// <returns></returns>
-        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithMultipleRejectedCentralTransitiveDepsAsync(int childNodeCount, int depth, int depthOfCentralDependencies)
+        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithMultipleRejectedCentralTransitiveDepsAsync(int innerNodesCount, int depth, int depthOfCentralDependencies)
         {
             var framework = NuGetFramework.Parse("net45");
             var version100 = "1.0.0";
@@ -259,35 +257,33 @@ namespace NuGet.MicroBenchmarks.Tests
             var provider = new DependencyProvider();
             var root = provider.Package("ProjectStart", version100);
             List<(string id, string version)> directNodes = new List<(string id, string version)>();
-            for (int i = 1; i <= childNodeCount / 2; i++)
+            for (int i = 1; i <= innerNodesCount / 2; i++)
             {
                 directNodes.Add(($"FirstDirectHalf{i}", version100));
             }
 
-            //the transitive nodes are created with ids like $"{packageIdPrefix}_{currentDepth}x{currentChildCount}"
             CreatePackageGraphFromDirectNodesWithTransitiveIdChanged(provider,
                 root,
                 directNodes,
-                childNodeCount,
+                innerNodesCount,
                 depth,
                 "TransitiveDep",
                 version100,
                 changedTransitivePackageIdPrefix: "CentralTransitiveDep",
                 changedFromDepth: depthOfCentralDependencies);
 
-            // add seconf half
+            // add second half
             directNodes.Clear();
-            for (int i = 1; i <= childNodeCount / 2; i++)
+            for (int i = 1; i <= innerNodesCount / 2; i++)
             {
                 directNodes.Add(($"SecondDirectHalf{i}", version200));
             }
 
-            //the transitive nodes are created with ids like $"{packageIdPrefix}_{currentDepth}x{currentChildCount}"
-            CreatePackageGraphFromDirectNodes(provider, root, directNodes, childNodeCount, depth, "TransitiveDep", version200);
+            CreatePackageGraphFromDirectNodes(provider, root, directNodes, innerNodesCount, depth, "TransitiveDep", version200);
 
             // add the transitive dependencies; in normal case it should be power of"depthOfCentralDependencies+1" but the direct dependencies were split in 2 so the power decreased to depthOfCentralDependencies
             // the central transitive dependencies will have two parents each - one will be rejected and one accepted
-            var centralTransitiveDependenciesChildren = (int)Math.Pow(childNodeCount, depthOfCentralDependencies);
+            var centralTransitiveDependenciesChildren = (int)Math.Pow(innerNodesCount, depthOfCentralDependencies);
             AddCentralTransitivePackagesToProject(root,
                 Enumerable.Range(0, centralTransitiveDependenciesChildren)
                 .Select(i => ($"CentralTransitiveDep_{depthOfCentralDependencies}x{i}", version100)).ToList());
@@ -295,7 +291,7 @@ namespace NuGet.MicroBenchmarks.Tests
             context.LocalLibraryProviders.Add(provider);
             var walker = new RemoteDependencyWalker(context);
 
-            // the input graph for a test with child count = 2 and the depth 3 
+            // the input graph for a test with inner nodes count = 2 and the depth 3 
             //                                      root
             //                             /                     \
             //                         D1                            D2
@@ -330,7 +326,7 @@ namespace NuGet.MicroBenchmarks.Tests
             return (sw.ElapsedMilliseconds, result, rootNode);
         }
 
-        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithoutCentralTransitiveDepsAsync(int childNodeCount, int depth)
+        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithoutCentralTransitiveDepsAsync(int innerNodesCount, int depth)
         {
             var framework = NuGetFramework.Parse("net45");
             var version100 = "1.0.0";
@@ -338,11 +334,11 @@ namespace NuGet.MicroBenchmarks.Tests
             var provider = new DependencyProvider();
             var rootNoTransitiveDepencies = provider.Package("ProjectStart", version100);
             List<(string id, string version)> directNodes = new List<(string id, string version)>();
-            for (int i = 1; i <= childNodeCount; i++)
+            for (int i = 1; i <= innerNodesCount; i++)
             {
                 directNodes.Add(($"Direct{i}", version100));
             }
-            CreatePackageGraphFromDirectNodes(provider, rootNoTransitiveDepencies, directNodes, childNodeCount, depth, "TransitiveDep", version100);
+            CreatePackageGraphFromDirectNodes(provider, rootNoTransitiveDepencies, directNodes, innerNodesCount, depth, "TransitiveDep", version100);
 
             context.LocalLibraryProviders.Add(provider);
             var walker = new RemoteDependencyWalker(context);
@@ -357,7 +353,7 @@ namespace NuGet.MicroBenchmarks.Tests
         /// The transitive dependencies at a specific level will be central
         /// Each central dependency will have one parent
         /// </summary>
-        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithMultipleCentralTransitiveDependenciesOneParent(int childNodeCount, int depth, int depthOfCentralDependencies)
+        private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithMultipleCentralTransitiveDependenciesOneParent(int innerNodesCount, int depth, int depthOfCentralDependencies)
         {
             var framework = NuGetFramework.Parse("net45");
             var version100 = "1.0.0";
@@ -365,15 +361,14 @@ namespace NuGet.MicroBenchmarks.Tests
             var provider = new DependencyProvider();
             var root = provider.Package("ProjectStart", version100);
             List<(string id, string version)> directNodes = new List<(string id, string version)>();
-            for (int i = 1; i <= childNodeCount; i++)
+            for (int i = 1; i <= innerNodesCount; i++)
             {
                 directNodes.Add(($"Direct{i}", version100));
             }
 
-            //the transitive nodes are created with ids like $"{packageIdPrefix}_{currentDepth}x{currentChildCount}"
-            CreatePackageGraphFromDirectNodes(provider, root, directNodes, childNodeCount, depth, "TransitiveDep", version100);
+            CreatePackageGraphFromDirectNodes(provider, root, directNodes, innerNodesCount, depth, "TransitiveDep", version100);
             // add the transitive dependencies; because the first level is for direct dependencies use depthOfCentralDependencies + 1 
-            var centralTransitiveDependenciesChildren = (int)Math.Pow(childNodeCount, depthOfCentralDependencies + 1);
+            var centralTransitiveDependenciesChildren = (int)Math.Pow(innerNodesCount, depthOfCentralDependencies + 1);
             AddCentralTransitivePackagesToProject(root,
                 Enumerable.Range(0, centralTransitiveDependenciesChildren)
                 .Select(i => ($"TransitiveDep_{depthOfCentralDependencies}x{i}", version100)).ToList());
@@ -389,10 +384,10 @@ namespace NuGet.MicroBenchmarks.Tests
 
         /// <summary>
         /// The transitive dependencies at a specific level will have one common central dependency 
-        /// The central transitive depencency will have a set of childNodeCount^depthOfCentralDependencies parents
+        /// The central transitive depencency will have a set of innerNodesCount^depthOfCentralDependencies parents
         /// </summary>
         private async Task<(long executionElapsedMilliseconds, AnalyzeResult<RemoteResolveResult> result, GraphNode<RemoteResolveResult> root)> AnalyseGraphWithOneCentralTransitiveDependencyMultipleParents(
-            int childNodeCount,
+            int innerNodesCount,
             int depth,
             int depthOfCentralDependencies)
         {
@@ -402,16 +397,15 @@ namespace NuGet.MicroBenchmarks.Tests
             var provider = new DependencyProvider();
             var root = provider.Package("ProjectStart", version100);
             List<(string id, string version)> directNodes = new List<(string id, string version)>();
-            for (int i = 1; i <= childNodeCount; i++)
+            for (int i = 1; i <= innerNodesCount; i++)
             {
                 directNodes.Add(($"Direct{i}", version100));
             }
 
-            //the transitive nodes are created with ids like $"{packageIdPrefix}_{currentDepth}x{currentChildCount}"
             CreatePackageGraphFromDirectNodes(provider,
                 root,
                 directNodes,
-                childNodeCount,
+                innerNodesCount,
                 depth,
                 "TransitiveDep",
                 version100,
@@ -432,8 +426,8 @@ namespace NuGet.MicroBenchmarks.Tests
         private void CreatePackageGraphFromDirectNodes(DependencyProvider provider,
             DependencyProvider.TestPackage root,
             List<(string id, string version)> directNodes,
-            int childNodeCount,
-            int treeDepth,
+            int innerNodesCount,
+            int graphDepth,
             string transitivePackageIdPrefix,
             string transitivePackageVersion)
         {
@@ -445,10 +439,10 @@ namespace NuGet.MicroBenchmarks.Tests
                 CreatePackageGraph(
                     provider,
                     directDep,
-                    childNodeCount: childNodeCount,
+                    innerNodesCount: innerNodesCount,
                     currentDepth: 1,
-                    currentBreath: index,
-                    treeDepth: treeDepth - 1,
+                    currentBreadth: index,
+                    graphDepth: graphDepth - 1,
                     transitivePackageIdPrefix,
                     transitivePackageVersion);
                 index++;
@@ -458,8 +452,8 @@ namespace NuGet.MicroBenchmarks.Tests
         private void CreatePackageGraphFromDirectNodesWithTransitiveIdChanged(DependencyProvider provider,
            DependencyProvider.TestPackage root,
            List<(string id, string version)> directNodes,
-           int childNodeCount,
-           int treeDepth,
+           int innerNodesCount,
+           int graphDepth,
            string transitivePackageIdPrefix,
            string transitivePackageVersion,
            string changedTransitivePackageIdPrefix,
@@ -473,10 +467,10 @@ namespace NuGet.MicroBenchmarks.Tests
                 CreatePackageGraphWithTransitiveIdChanged(
                     provider,
                     directDep,
-                    childNodeCount: childNodeCount,
+                    innerNodesCount: innerNodesCount,
                     currentDepth: 1,
-                    currentBreath: index,
-                    treeDepth: treeDepth - 1,
+                    currentBreadth: index,
+                    graphDepth: graphDepth - 1,
                     transitivePackageIdPrefix,
                     transitivePackageVersion,
                     changedTransitivePackageIdPrefix,
@@ -488,8 +482,8 @@ namespace NuGet.MicroBenchmarks.Tests
         private void CreatePackageGraphFromDirectNodes(DependencyProvider provider,
             DependencyProvider.TestPackage root,
             List<(string id, string version)> directNodes,
-            int childNodeCount,
-            int treeDepth,
+            int innerNodesCount,
+            int graphDepth,
             string transitivePackageIdPrefix,
             string transitivePackageVersion,
             string enforcedTransitivePackageId,
@@ -506,10 +500,10 @@ namespace NuGet.MicroBenchmarks.Tests
                 CreatePackageGraph(
                                    provider,
                                    directDep,
-                                   childNodeCount: childNodeCount,
+                                   innerNodesCount: innerNodesCount,
                                    currentDepth: 1,
-                                   currentBreath: index,
-                                   treeDepth: treeDepth - 1,
+                                   currentBreadth: index,
+                                   graphDepth: graphDepth - 1,
                                    transitivePackageIdPrefix,
                                    transitivePackageVersion,
                                    enforcedTransitivePackageId,
@@ -523,28 +517,28 @@ namespace NuGet.MicroBenchmarks.Tests
         private void CreatePackageGraph(
             DependencyProvider provider,
             DependencyProvider.TestPackage root,
-            int childNodeCount,
+            int innerNodesCount,
             int currentDepth,
-            int currentBreath,
-            int treeDepth,
+            int currentBreadth,
+            int graphDepth,
             string packageIdPrefix,
             string packageVersion)
         {
-            if (currentDepth > treeDepth)
+            if (currentDepth > graphDepth)
             {
                 return;
             }
-            for (int i = 0; i < childNodeCount; i++)
+            for (int i = 0; i < innerNodesCount; i++)
             {
-                var nodeBreath = currentBreath * childNodeCount + i;
-                var package = provider.Package($"{packageIdPrefix}_{currentDepth}x{nodeBreath}", $"{packageVersion}");
-                root.DependsOn($"{packageIdPrefix}_{currentDepth}x{nodeBreath}", $"{packageVersion}");
+                var nodeBreadth = currentBreadth * innerNodesCount + i;
+                var package = provider.Package($"{packageIdPrefix}_{currentDepth}x{nodeBreadth}", $"{packageVersion}");
+                root.DependsOn($"{packageIdPrefix}_{currentDepth}x{nodeBreadth}", $"{packageVersion}");
                 CreatePackageGraph(provider,
                     package,
-                    childNodeCount,
+                    innerNodesCount,
                     currentDepth: currentDepth + 1,
-                    currentBreath: nodeBreath,
-                    treeDepth: treeDepth,
+                    currentBreadth: nodeBreadth,
+                    graphDepth: graphDepth,
                     packageIdPrefix,
                     packageVersion);
             }
@@ -553,34 +547,34 @@ namespace NuGet.MicroBenchmarks.Tests
         private void CreatePackageGraphWithTransitiveIdChanged(
            DependencyProvider provider,
            DependencyProvider.TestPackage root,
-           int childNodeCount,
+           int innerNodesCount,
            int currentDepth,
-           int currentBreath,
-           int treeDepth,
+           int currentBreadth,
+           int graphDepth,
            string packageIdPrefix,
            string packageVersion,
            string changedTransitivePackageIdPrefix,
            int changedFromDepth)
         {
-            if (currentDepth > treeDepth)
+            if (currentDepth > graphDepth)
             {
                 return;
             }
-            for (int i = 0; i < childNodeCount; i++)
+            for (int i = 0; i < innerNodesCount; i++)
             {
-                var nodeBreath = currentBreath * childNodeCount + i;
+                var nodeBreadth = currentBreadth * innerNodesCount + i;
                 var packageId = currentDepth >= changedFromDepth ?
-                    $"{changedTransitivePackageIdPrefix}_{currentDepth}x{nodeBreath}" :
-                    $"{packageIdPrefix}_{currentDepth}x{nodeBreath}";
+                    $"{changedTransitivePackageIdPrefix}_{currentDepth}x{nodeBreadth}" :
+                    $"{packageIdPrefix}_{currentDepth}x{nodeBreadth}";
 
                 var package = provider.Package(packageId, $"{packageVersion}");
                 root.DependsOn(packageId, $"{packageVersion}");
                 CreatePackageGraphWithTransitiveIdChanged(provider,
                     package,
-                    childNodeCount,
+                    innerNodesCount,
                     currentDepth: currentDepth + 1,
-                    currentBreath: nodeBreath,
-                    treeDepth: treeDepth,
+                    currentBreadth: nodeBreadth,
+                    graphDepth: graphDepth,
                     packageIdPrefix,
                     packageVersion,
                     changedTransitivePackageIdPrefix,
@@ -591,34 +585,34 @@ namespace NuGet.MicroBenchmarks.Tests
         private void CreatePackageGraph(
             DependencyProvider provider,
             DependencyProvider.TestPackage root,
-            int childNodeCount,
+            int innerNodesCount,
             int currentDepth,
-            int currentBreath,
-            int treeDepth,
+            int currentBreadth,
+            int graphDepth,
             string packageIdPrefix,
             string packageVersion,
             string enforcedTransitivePackageId,
             string enforcedTransitivePackageVersion,
             int enforcedTransitivePackageDepth)
         {
-            if (currentDepth > treeDepth)
+            if (currentDepth > graphDepth)
             {
                 return;
             }
             bool depthContainsEnforcedTransitivePackage = enforcedTransitivePackageDepth == currentDepth;
-            int iterationCount = depthContainsEnforcedTransitivePackage ? childNodeCount - 1 : childNodeCount;
+            int iterationCount = depthContainsEnforcedTransitivePackage ? innerNodesCount - 1 : innerNodesCount;
             for (int i = 0; i < iterationCount; i++)
             {
-                var nodeBreath = currentBreath * childNodeCount + i;
+                var nodeBreadth = currentBreadth * innerNodesCount + i;
 
-                var package = provider.Package($"{packageIdPrefix}_{currentDepth}x{nodeBreath}", $"{packageVersion}");
-                root.DependsOn($"{packageIdPrefix}_{currentDepth}x{nodeBreath}", $"{packageVersion}");
+                var package = provider.Package($"{packageIdPrefix}_{currentDepth}x{nodeBreadth}", $"{packageVersion}");
+                root.DependsOn($"{packageIdPrefix}_{currentDepth}x{nodeBreadth}", $"{packageVersion}");
                 CreatePackageGraph(provider,
                     package,
-                    childNodeCount: childNodeCount,
+                    innerNodesCount: innerNodesCount,
                     currentDepth: currentDepth + 1,
-                    currentBreath: nodeBreath,
-                    treeDepth: treeDepth,
+                    currentBreadth: nodeBreadth,
+                    graphDepth: graphDepth,
                     packageIdPrefix,
                     packageVersion,
                     enforcedTransitivePackageId,
@@ -629,42 +623,19 @@ namespace NuGet.MicroBenchmarks.Tests
             {
                 var package = provider.Package(enforcedTransitivePackageId, enforcedTransitivePackageVersion);
                 root.DependsOn(enforcedTransitivePackageId, enforcedTransitivePackageVersion);
-                // do not create more children that needed
-                if (package.DependenciesCount < childNodeCount)
+                if (package.DependenciesCount < innerNodesCount)
                 {
                     CreatePackageGraph(provider,
                         package,
-                        childNodeCount: childNodeCount,
+                        innerNodesCount: innerNodesCount,
                         currentDepth: currentDepth + 1,
-                        currentBreath: currentBreath * childNodeCount + childNodeCount - 1,
-                        treeDepth: treeDepth,
+                        currentBreadth: currentBreadth * innerNodesCount + innerNodesCount - 1,
+                        graphDepth: graphDepth,
                         packageIdPrefix,
                         packageVersion);
                 }
             }
         }
-
-        //private void CreateCentralTransitivePackage(
-        //    DependencyProvider provider,
-        //    int childNodeCount,
-        //    int treeDepth,
-        //    string packageIdPrefix,
-        //    string packageVersion,
-        //    string enforcedTransitivePackageId,
-        //    string enforcedTransitivePackageVersion,
-        //    int enforcedTransitivePackageDepth)
-        //{
-        //    var package = provider.Package(enforcedTransitivePackageId, enforcedTransitivePackageVersion);
-        //    CreatePackageGraph(provider,
-        //        package,
-        //        childNodeCount: childNodeCount,
-        //        currentDepth: enforcedTransitivePackageDepth + 1,
-        //        currentBreath: 0,
-        //        treeDepth: treeDepth,
-        //        enforcedTransitivePackageId,
-        //        enforcedTransitivePackageVersion);
-        //}
-
         private void AddCentralTransitivePackagesToProject(DependencyProvider.TestPackage project, List<(string id, string version)> centralTransitivePackages)
         {
             foreach (var p in centralTransitivePackages)
