@@ -26,10 +26,18 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         protected override bool TryGetIdentity(Properties properties, out string identity)
         {
-            if (properties.Item("Identity")?.Value is string identityString)
+            try
             {
-                identity = identityString;
-                return true;
+                if (properties.Item("Identity")?.Value is string identityString)
+                {
+                    identity = identityString;
+                    return true;
+                }
+            }
+            catch (Microsoft.VisualStudio.ProjectSystem.ProjectException)
+            {
+                // Work around https://github.com/dotnet/project-system/issues/6311
+                // "Could not find project item with item type 'ProjectReference' and include value '...'.
             }
 
             identity = null!;
