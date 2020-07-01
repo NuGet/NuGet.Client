@@ -70,11 +70,6 @@ namespace NuGet.Packaging.Signing
                                 httpResponse.ReasonPhrase));
                     }
 
-                    if (!string.Equals(httpResponse.Content.Headers.ContentType.MediaType, "application/timestamp-response", StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new CryptographicException(Strings.TimestampServiceRespondedInvalidFormat);
-                    }
-
                     var data = await httpResponse.Content.ReadAsByteArrayAsync();
 
                     System.Security.Cryptography.Pkcs.Rfc3161TimestampToken response = _rfc3161TimestampRequest.ProcessResponse(data, out var _);
