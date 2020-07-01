@@ -63,7 +63,7 @@ namespace NuGet.CommandLine
                     continue;
                 }
 
-                SearchFilter searchFilter = new SearchFilter(includePrerelease: true);
+                SearchFilter searchFilter = new SearchFilter(includePrerelease: false);
 
                 IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
                     Arguments[0],
