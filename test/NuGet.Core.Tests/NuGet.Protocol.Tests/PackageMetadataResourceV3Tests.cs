@@ -36,7 +36,7 @@ namespace NuGet.Protocol.Tests
             // Act
             using (var sourceCacheContext = new SourceCacheContext())
             {
-                var result = (PackageSearchMetadataRegistration) await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+                var result = (PackageSearchMetadataRegistration)await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
                 // Assert
                 Assert.Equal("deepequal", result.Identity.Id, StringComparer.OrdinalIgnoreCase);
@@ -46,7 +46,8 @@ namespace NuGet.Protocol.Tests
                 Assert.Null(result.IconUrl);
                 Assert.Null(result.LicenseUrl);
                 Assert.Equal("http://github.com/jamesfoster/DeepEqual", result.ProjectUrl.ToString());
-                Assert.Equal("https://api.nuget.org/v3/catalog0/data/2015.02.03.18.34.51/deepequal.0.9.0.json", result.CatalogUri.ToString());
+                Assert.Equal("https://api.nuget.org/v3/catalog0/data/2015.02.03.18.34.51/deepequal.0.9.0.json",
+                    result.CatalogUri.ToString());
                 Assert.Equal(DateTimeOffset.Parse("2013-08-28T09:19:10.013Z"), result.Published);
                 Assert.False(result.RequireLicenseAcceptance);
                 Assert.Equal(result.Description, result.Summary);
@@ -72,7 +73,7 @@ namespace NuGet.Protocol.Tests
             // Act
             using (var sourceCacheContext = new SourceCacheContext())
             {
-                var result = (PackageSearchMetadataRegistration) await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+                var result = (PackageSearchMetadataRegistration)await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
                 // Assert
                 Assert.False(result.IsListed);
@@ -94,8 +95,7 @@ namespace NuGet.Protocol.Tests
             // Act
             using (var sourceCacheContext = new SourceCacheContext())
             {
-                var result = (IEnumerable<PackageSearchMetadataRegistration>) await resource.GetMetadataAsync("afine", true, true, sourceCacheContext, Common.NullLogger.Instance,
-                    CancellationToken.None);
+                var result = (IEnumerable<PackageSearchMetadataRegistration>)await resource.GetMetadataAsync("afine", true, true, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
                 var first = result.ElementAt(0);
                 var second = result.ElementAt(1);
@@ -139,7 +139,8 @@ namespace NuGet.Protocol.Tests
         public async Task PackageMetadataResourceV3_GetMetadataAsync_ParsesLicenseExpression(string expression, string version)
         {
 
-            var licenseData = $@"""{JsonProperties.LicenseExpression}"": ""{expression}""," + (version != null ? $@"""{JsonProperties.LicenseExpressionVersion}"": ""{version}""," : "");
+            var licenseData = $@"""{JsonProperties.LicenseExpression}"": ""{expression}""," +
+                              (version != null ? $@"""{JsonProperties.LicenseExpressionVersion}"": ""{version}""," : "");
 
             var sourceName = $"http://{Guid.NewGuid().ToString()}.com/v3/index.json";
 
@@ -187,7 +188,8 @@ namespace NuGet.Protocol.Tests
         public async Task PackageMetadataResourceV3_GetMetadataAsync_ParsesLicenseExpressionWithWarnings(string expression, string version, int errorCount, string errorMessage)
         {
 
-            var licenseData = $@"""{JsonProperties.LicenseExpression}"": ""{expression}""," + (version != null ? $@"""{JsonProperties.LicenseExpressionVersion}"": ""{version}""," : "");
+            var licenseData = $@"""{JsonProperties.LicenseExpression}"": ""{expression}""," +
+                              (version != null ? $@"""{JsonProperties.LicenseExpressionVersion}"": ""{version}""," : "");
 
             var sourceName = $"http://{Guid.NewGuid().ToString()}.com/v3/index.json";
 
