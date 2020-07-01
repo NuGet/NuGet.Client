@@ -78,18 +78,7 @@ namespace NuGet.Build.Tasks
             var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
             if (!string.IsNullOrEmpty(debugRestoreTask) && debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
-#if IS_CORECLR
-                Console.WriteLine("Waiting for debugger to attach.");
-                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
-
-                while (!Debugger.IsAttached)
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-                Debugger.Break();
-#else
                 Debugger.Launch();
-#endif
             }
 #endif
             var log = new MSBuildLogger(Log);
