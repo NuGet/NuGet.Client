@@ -263,5 +263,41 @@ namespace NuGet.Protocol.Tests
                 Assert.Null(metadata);
             }
         }
+
+        [Fact]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_NoContentHandleNullStream()
+        {
+            // Arrange
+            var noContentPackage = "NoContentPackage";
+            var package = new PackageIdentity(noContentPackage, NuGetVersion.Parse("1.0.0"));
+            var source = "http://testsource.com/v3/index.json";
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+            {
+                {
+                    source,
+                    _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new TestContent(JsonData.IndexWithoutFlatContainer)
+                    })
+                },
+                {
+                    $"https://api.nuget.org/v3/registration0/{noContentPackage.ToLowerInvariant()}/index.json",
+                    _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent))
+                }
+            };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            //Act
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var metadata = await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+
+                //Assert
+                Assert.Null(metadata);
+            }
+        }
     }
 }
