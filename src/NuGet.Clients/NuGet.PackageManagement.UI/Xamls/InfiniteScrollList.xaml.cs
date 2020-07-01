@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.UI
 
         /// <summary>
         /// This exists only to facilitate unit testing.
-        /// It is triggered at <see cref="LoadItems(PackageItemListViewModel, CancellationToken)" />, just before it is finished
+        /// It is triggered at <see cref="LoadItemsAsync(PackageItemListViewModel, CancellationToken)" />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
@@ -200,7 +200,7 @@ namespace NuGet.PackageManagement.UI
             _selectedCount = 0;
 
             // triggers the package list loader
-            await LoadItems(selectedPackageItem, token);
+            await LoadItemsAsync(selectedPackageItem, token);
         }
 
         /// <summary>
@@ -221,20 +221,16 @@ namespace NuGet.PackageManagement.UI
             _list.SelectedItem = selectedItem ?? PackageItemsFiltered.FirstOrDefault();
         }
 
-        private async Task LoadItems(PackageItemListViewModel selectedPackageItem, CancellationToken token)
+        private async Task LoadItemsAsync(PackageItemListViewModel selectedPackageItem, CancellationToken token)
         {
             // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
-            var currentLoader = _loader;
-
-            await _joinableTaskFactory.Value.RunAsync(
-                    async () => await RepopulatePackageList(selectedPackageItem, currentLoader, loadCts)
-                );
+            await RepopulatePackageListAsync(selectedPackageItem, _loader, loadCts);
         }
 
-        private async Task RepopulatePackageList(PackageItemListViewModel selectedPackageItem, IPackageItemLoader currentLoader, CancellationTokenSource loadCts)
+        private async Task RepopulatePackageListAsync(PackageItemListViewModel selectedPackageItem, IPackageItemLoader currentLoader, CancellationTokenSource loadCts)
         {
             await TaskScheduler.Default;
 
@@ -725,7 +721,7 @@ namespace NuGet.PackageManagement.UI
                 if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                        await LoadItems(selectedPackageItem: null, token: CancellationToken.None)
+                        await LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
                     );
                 }
             }
