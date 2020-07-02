@@ -254,7 +254,13 @@ namespace NuGet.Options
             {
                 if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-                    await _nugetSourcesService.SavePackageSourcesAsync(packageSources, cancellationToken);
+                    var packageSourceTransactions = new List<PackageSourceTransaction>(packageSources.Count);
+                    foreach(var source in packageSources)
+                    {
+                        packageSourceTransactions.Add(new PackageSourceTransaction(source, updateCredentials: false));
+                    }
+
+                    await _nugetSourcesService.SavePackageSourcesAsync(packageSourceTransactions, cancellationToken);
                 }
             }
             // Thrown during creating or saving NuGet.Config.

@@ -39,11 +39,21 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageSources.PackageSourceProvider.LoadPackageSources().ToList();
         }
 
-        public async ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, CancellationToken cancellationToken)
+        public async ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSourceTransaction> sources, CancellationToken cancellationToken)
         {
             var packageSources = await ServiceLocator.GetInstanceAsync<ISourceRepositoryProvider>();
             Assumes.NotNull(packageSources);
-            packageSources.PackageSourceProvider.SavePackageSources(sources);
+
+            var packageSources2 = packageSources.PackageSourceProvider as IPackageSourceProvider2;
+            if(packageSources2 != null)
+            {
+                packageSources2.SavePackageSources(sources);
+            }
+            else
+            {
+                packageSources.PackageSourceProvider.SavePackageSources(sources.Select(s => s.PackageSource).ToList());
+            }
+            
         }
 
         protected virtual void Dispose(bool disposing)
