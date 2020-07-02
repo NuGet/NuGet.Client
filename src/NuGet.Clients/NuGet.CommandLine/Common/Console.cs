@@ -275,12 +275,12 @@ namespace NuGet.CommandLine
                     string content;
 
                     // Get the index of the newLine character upto 'length' characters
-                    (int newLineIndex, bool newLine) = NewLineIndex(text, length);
+                    (int newLineIndex, bool crlf) = NewLineIndex(text, length);
 
                     if (newLineIndex == 0)
                     {
                         Out.WriteLine(string.Empty);
-                        text = text.Substring(newLine ? 2 : 1);
+                        text = text.Substring(crlf ? 2 : 1);
                         continue;
                     }
                     else if (newLineIndex > -1)
@@ -303,7 +303,7 @@ namespace NuGet.CommandLine
                     }
 
                     // Get the next substring to be printed
-                    text = text.Substring(newLineIndex == -1 ? content.Length : newLine ? content.Length + 2 : content.Length + 1);
+                    text = text.Substring(newLineIndex == -1 ? content.Length : crlf ? content.Length + 2 : content.Length + 1);
                 }
             }
         }
@@ -314,33 +314,33 @@ namespace NuGet.CommandLine
             int nIndex = text.IndexOf("\n", 0, length, StringComparison.OrdinalIgnoreCase);
             int rIndex = text.IndexOf("\r", 0, length, StringComparison.OrdinalIgnoreCase);
 
-            bool newLine = false; // \r\n
+            bool crlf = false; // \r\n
 
             if (nIndex == rIndex + 1 && nIndex > 0)
             {
-                newLine = true;
+                crlf = true;
             }
 
             if (nIndex == -1 && rIndex == -1)
             {
-                return (-1, newLine);
+                return (-1, crlf);
             }
             else if (nIndex > -1 && rIndex > -1)
             {
                 if (nIndex < rIndex)
                 {
-                    return (nIndex, newLine);
+                    return (nIndex, crlf);
                 }
 
-                return (rIndex, newLine);
+                return (rIndex, crlf);
             }
             else if (nIndex > -1)
             {
-                return (nIndex, newLine);
+                return (nIndex, crlf);
             }
             else
             {
-                return (rIndex, newLine);
+                return (rIndex, crlf);
             }
             
         }
