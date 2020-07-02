@@ -9,7 +9,7 @@ using NuGet.Common;
 
 namespace NuGet.Configuration
 {
-    public class PackageSourceProvider : IPackageSourceProvider
+    public class PackageSourceProvider : IPackageSourceProvider, IPackageSourceProvider2
     {
         public ISettings Settings { get; private set; }
 
@@ -652,11 +652,11 @@ namespace NuGet.Configuration
             }
         }
 
-        public void SavePackageSources(IEnumerable<PackageSource> sources)
+        public void SavePackageSources(IEnumerable<PackageSourceTransaction> transactions)
         {
-            if (sources == null)
+            if (transactions == null)
             {
-                throw new ArgumentNullException(nameof(sources));
+                throw new ArgumentNullException(nameof(transactions));
             }
 
             var isDirty = false;
@@ -670,40 +670,40 @@ namespace NuGet.Configuration
             var existingCredentials = credentialsSection?.Items.OfType<CredentialsItem>();
             var existingCredentialsLookup = existingCredentials?.ToDictionary(setting => setting.ElementName, StringComparer.OrdinalIgnoreCase);
 
-            foreach (var source in sources)
+            foreach (var transaction in transactions)
             {
                 AddItem existingDisabledSourceItem = null;
                 SourceItem existingSourceItem = null;
                 CredentialsItem existingCredentialsItem = null;
 
-                var existingSourceIsEnabled = existingDisabledSourcesLookup == null || existingDisabledSourcesLookup.TryGetValue(source.Name, out existingDisabledSourceItem);
+                var existingSourceIsEnabled = existingDisabledSourcesLookup == null || existingDisabledSourcesLookup.TryGetValue(transaction.PackageSource.Name, out existingDisabledSourceItem);
 
                 if (existingSettingsLookup != null &&
-                    existingSettingsLookup.TryGetValue(source.Name, out existingSourceItem) &&
-                    ReadProtocolVersion(existingSourceItem) == source.ProtocolVersion)
+                    existingSettingsLookup.TryGetValue(transaction.PackageSource.Name, out existingSourceItem) &&
+                    ReadProtocolVersion(existingSourceItem) == transaction.PackageSource.ProtocolVersion)
                 {
                     var oldPackageSource = ReadPackageSource(existingSourceItem, existingSourceIsEnabled, Settings);
 
-                    existingCredentialsLookup?.TryGetValue(source.Name, out existingCredentialsItem);
+                    existingCredentialsLookup?.TryGetValue(transaction.PackageSource.Name, out existingCredentialsItem);
 
                     UpdatePackageSource(
-                        source,
+                        transaction.PackageSource,
                         oldPackageSource,
                         existingDisabledSourceItem,
                         existingCredentialsItem,
-                        updateEnabled: true,
-                        updateCredentials: true,
+                        updateEnabled: transaction.UpdateEnabled,
+                        updateCredentials: transaction.UpdateCredentials,
                         shouldSkipSave: true,
                         isDirty: ref isDirty);
                 }
                 else
                 {
-                    AddPackageSource(source, shouldSkipSave: true, isDirty: ref isDirty);
+                    AddPackageSource(transaction.PackageSource, shouldSkipSave: true, isDirty: ref isDirty);
                 }
 
                 if (existingSourceItem != null)
                 {
-                    existingSettingsLookup.Remove(source.Name);
+                    existingSettingsLookup.Remove(transaction.PackageSource.Name);
                 }
             }
 
@@ -733,13 +733,28 @@ namespace NuGet.Configuration
                 }
             }
 
-
             if (isDirty)
             {
                 Settings.SaveToDisk();
                 OnPackageSourcesChanged();
                 isDirty = false;
             }
+        }
+
+        public void SavePackageSources(IEnumerable<PackageSource> sources)
+        {
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            var transactions = new List<PackageSourceTransaction>(sources.Count());
+            foreach(var source in sources)
+            {
+                transactions.Add(new PackageSourceTransaction(source));
+            }
+
+            SavePackageSources(transactions);
         }
 
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()

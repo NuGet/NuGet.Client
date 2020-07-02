@@ -19,7 +19,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         static NuGetServiceMessagePackRpcDescriptor()
         {
-            var formatters = new IMessagePackFormatter[] { PackageSourceFormatter.Instance };
+            var formatters = new IMessagePackFormatter[]
+            {
+                PackageSourceFormatter.Instance,
+                PackageSourceTransactionFormatter.Instance
+            };
             var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
 
             MessagePackSerializerOptions = MessagePackSerializerOptions.Standard.WithSecurity(MessagePackSecurity.UntrustedData).WithResolver(CompositeResolver.Create(formatters, resolvers));
