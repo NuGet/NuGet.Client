@@ -351,6 +351,33 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageSummary" xml:space="preserve">
     <value>&lt;package path&gt; [API key] [options]</value>
   </data>
+  <data name="SearchCommandDescription" xml:space="preserve">
+    <value>Searches a given source using the query string provided. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed.</value>
+    <comment>Please don't localize "%AppData%\NuGet\NuGet.config", "NuGet.config".</comment>
+  </data>
+  <data name="SearchCommandPreRelease" xml:space="preserve">
+    <value>Allow prerelease packages to be shown.</value>
+  </data>
+  <data name="SearchCommandSourceDescription" xml:space="preserve">
+    <value>A list of packages sources to search.</value>
+  </data>
+  <data name="SearchCommandTake" xml:space="preserve">
+    <value>Number of results to display.</value>
+  </data>
+  <data name="SearchCommandUsageDescription" xml:space="preserve">
+    <value>Specify search terms.</value>
+  </data>
+  <data name="SearchCommandUsageExamples" xml:space="preserve">
+    <value>nuget search foo
+
+nuget search foo -Verbosity detailed
+
+nuget search foo -PreRelease -Take 5</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="SearchCommandUsageSummary" xml:space="preserve">
+    <value>[search terms] [options]</value>
+  </data>
   <data name="SetApiKeyCommandDescription" xml:space="preserve">
     <value>Saves an API key for a given server URL. When no URL is provided API key is saved for the NuGet gallery.</value>
   </data>

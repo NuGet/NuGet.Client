@@ -31,17 +31,9 @@ namespace NuGet.CommandLine
             UsageSummaryResourceName = "SearchCommandUsageSummary", UsageExampleResourceName = "SearchCommandUsageExamples")]
     public class SearchCommand : Command
     {
-        [Option(typeof(NuGetCommand), "SearchCommandAssemblyPathDescription")]
-        public string AssemblyPath
-        { get; set; }
-
-        [Option(typeof(NuGetCommand), "SearchCommandForceDescription")]
-        public bool Force
-        { get; set; }
-
         private readonly List<string> _sources = new List<string>();
 
-        [Option(typeof(NuGetCommand), "ListCommandSourceDescription")]
+        [Option(typeof(NuGetCommand), "SearchCommandSourceDescription")]
         public ICollection<string> Source
         {
             get { return _sources; }
@@ -50,16 +42,12 @@ namespace NuGet.CommandLine
         // -Source "https://api.nuget.org/v3/index.json"
 
 
-        [Option(typeof(NuGetCommand), "ListCommandPreRelease")]
+        [Option(typeof(NuGetCommand), "SearchCommandPreRelease")]
         public bool PreRelease { get; set; } = false;
 
 
-        [Option(typeof(NuGetCommand), "ListCommandTake")]
+        [Option(typeof(NuGetCommand), "SearchCommandTake")]
         public int Take { get; set; } = 20;
-
-
-        [Option(typeof(NuGetCommand), "ListCommandPackageTypes")]
-        public IEnumerable<string> PackageTypes { get; set; } = Enumerable.Empty<string>();
 
 
         private IList<PackageSource> GetEndpointsAsync()
@@ -88,7 +76,6 @@ namespace NuGet.CommandLine
             CancellationToken cancellationToken = CancellationToken.None;
 
             SearchFilter searchFilter = new SearchFilter(includePrerelease: PreRelease);
-            searchFilter.PackageTypes = PackageTypes;
 
             var listEndpoints = GetEndpointsAsync();
 
@@ -106,7 +93,7 @@ namespace NuGet.CommandLine
                 }
 
                 IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
-                    Arguments[0],
+                    string.Join("+", Arguments).Trim().Replace(' ', '+'),
                     searchFilter,
                     skip: 0,
                     take: Take,
@@ -124,6 +111,11 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
+                    if (Verbosity == Verbosity.Quiet)
+                    {
+                        System.Console.WriteLine($"Source: {source.Name}");
+                        System.Console.WriteLine(new string('-', 20));
+                    }
                     PrintResults(results);
                 }
             }
@@ -143,7 +135,7 @@ namespace NuGet.CommandLine
                 string downloads = string.Format(culture, "{0:N}", result.DownloadCount);
                 string printDownloads = $" | Downloads: {downloads.Substring(0, downloads.Length - 3)}";
 
-                Console.WriteLine(Verbosity != Verbosity.Quiet ? printBasicInfo + printDownloads : printBasicInfo);
+                System.Console.WriteLine(Verbosity != Verbosity.Quiet ? printBasicInfo + printDownloads : printBasicInfo); // System.Console is used so that output is not suppressed by Verbosity.Quiet
 
                 if (Verbosity != Verbosity.Quiet)
                 {
@@ -162,8 +154,9 @@ namespace NuGet.CommandLine
             }
 
             Console.WriteLine(new string('-', 20));
-            Console.WriteLine("");
+            System.Console.WriteLine("");
         }
+
 
         public override bool IncludedInHelp(string optionName)
         {
