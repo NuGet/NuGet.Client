@@ -88,10 +88,7 @@ namespace NuGet.CommandLine
         }
 
 
-        internal int? MockWindowWidth
-        {
-            get; set;
-        }
+        internal int? MockWindowWidth { get; set; }
 
         private Verbosity _verbosity;
 
@@ -278,12 +275,12 @@ namespace NuGet.CommandLine
                     string content;
 
                     // Get the index of the newLine character upto 'length' characters
-                    (int newLineIndex, bool rn) = NewLineIndex(text, length);
+                    (int newLineIndex, bool newLine) = NewLineIndex(text, length);
 
                     if (newLineIndex == 0)
                     {
                         Out.WriteLine(string.Empty);
-                        text = text.Substring(rn ? 2 : 1);
+                        text = text.Substring(newLine ? 2 : 1);
                         continue;
                     }
                     else if (newLineIndex > -1)
@@ -306,7 +303,7 @@ namespace NuGet.CommandLine
                     }
 
                     // Get the next substring to be printed
-                    text = text.Substring(newLineIndex == -1 ? content.Length : rn ? content.Length + 2 : content.Length + 1);
+                    text = text.Substring(newLineIndex == -1 ? content.Length : newLine ? content.Length + 2 : content.Length + 1);
                 }
             }
         }
@@ -317,33 +314,33 @@ namespace NuGet.CommandLine
             int nIndex = text.IndexOf("\n", 0, length, StringComparison.OrdinalIgnoreCase);
             int rIndex = text.IndexOf("\r", 0, length, StringComparison.OrdinalIgnoreCase);
 
-            bool rn = false;
+            bool newLine = false; // \r\n
 
             if (nIndex == rIndex + 1 && nIndex > 0)
             {
-                rn = true;
+                newLine = true;
             }
 
             if (nIndex == -1 && rIndex == -1)
             {
-                return (-1, rn);
+                return (-1, newLine);
             }
             else if (nIndex > -1 && rIndex > -1)
             {
                 if (nIndex < rIndex)
                 {
-                    return (nIndex, rn);
+                    return (nIndex, newLine);
                 }
 
-                return (rIndex, rn);
+                return (rIndex, newLine);
             }
             else if (nIndex > -1)
             {
-                return (nIndex, rn);
+                return (nIndex, newLine);
             }
             else
             {
-                return (rIndex, rn);
+                return (rIndex, newLine);
             }
             
         }
