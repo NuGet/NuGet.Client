@@ -72,7 +72,7 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
-            ILogger logger = NullLogger.Instance;
+            ILogger logger = Console;
             CancellationToken cancellationToken = CancellationToken.None;
 
             SearchFilter searchFilter = new SearchFilter(includePrerelease: PreRelease);
@@ -132,8 +132,17 @@ namespace NuGet.CommandLine
 
                 string printBasicInfo = $"> {result.Identity.Id} | {result.Identity.Version.ToNormalizedString()}";
 
-                string downloads = string.Format(culture, "{0:N}", result.DownloadCount);
-                string printDownloads = $" | Downloads: {downloads.Substring(0, downloads.Length - 3)}";
+                string downloads, printDownloads;
+
+                if (result.DownloadCount != null)
+                {
+                    downloads = string.Format(culture, "{0:N}", result.DownloadCount);
+                    printDownloads = $" | Downloads: {downloads.Substring(0, downloads.Length - 3)}";
+                }
+                else
+                {
+                    printDownloads = "0";
+                }
 
                 System.Console.WriteLine(Verbosity != Verbosity.Quiet ? printBasicInfo + printDownloads : printBasicInfo); // System.Console is used so that output is not suppressed by Verbosity.Quiet
 
