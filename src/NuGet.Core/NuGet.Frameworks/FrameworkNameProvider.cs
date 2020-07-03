@@ -134,6 +134,20 @@ namespace NuGet.Frameworks
             return TryConvertOrNormalize(profile, _profilesToShortName, _profileShortToLong, out profileShortName);
         }
 
+        public bool TryGetShortPlatform(string frameworkIdentifier, Version frameworkVersion, string platformIdentifier, out string platformShortName)
+        {
+            if (StringComparer.OrdinalIgnoreCase.Equals(frameworkIdentifier, FrameworkConstants.FrameworkIdentifiers.NetCoreApp) && frameworkVersion.Major >= 5)
+            {
+                platformShortName = platformIdentifier.ToLowerInvariant();
+                return true;
+            }
+            else
+            {
+                platformShortName = null;
+                return false;
+            }
+        }
+
         public bool TryGetVersion(string versionString, out Version version)
         {
             version = null;

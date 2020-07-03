@@ -10,9 +10,14 @@ namespace NuGet.Packaging
     public static class FrameworksExtensions
     {
         // NuGet.Frameworks doesn't have the equivalent of the old VersionUtility.GetFrameworkString
-        // which is relevant for building packages
+        // which is relevant for building packages. This isn't needed for net5.0+ frameworks.
         public static string GetFrameworkString(this NuGetFramework self)
         {
+            if (self.Version.Major >= 5)
+            {
+                return self.DotNetFrameworkName;
+            }
+
             var frameworkName = new FrameworkName(self.DotNetFrameworkName);
             string name = frameworkName.Identifier + frameworkName.Version;
             if (string.IsNullOrEmpty(frameworkName.Profile))

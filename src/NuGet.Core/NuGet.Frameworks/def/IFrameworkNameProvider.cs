@@ -34,6 +34,11 @@ namespace NuGet.Frameworks
         bool TryGetShortProfile(string frameworkIdentifier, string profile, out string profileShortName);
 
         /// <summary>
+        /// Get the official platform name from the short name.
+        /// </summary>
+        bool TryGetShortPlatform(string frameworkIdentifier, Version version, string platform, out string platformShortName);
+
+        /// <summary>
         /// Parses a version string using single digit rules if no dots exist
         /// </summary>
         bool TryGetVersion(string versionString, out Version version);

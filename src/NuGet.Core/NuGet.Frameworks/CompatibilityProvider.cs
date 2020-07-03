@@ -181,18 +181,18 @@ namespace NuGet.Frameworks
 
         private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate)
         {
-            if (target.IsNet5Era)
-            {
-                return NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
-                    && IsVersionCompatible(target.Version, candidate.Version)
-                    && (!candidate.HasProfile || StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile));
-            }
-            else
-            {
-                return NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
+            bool result = NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
                     && IsVersionCompatible(target.Version, candidate.Version)
                     && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile);
+
+            if (target.IsNet5Era && candidate.HasPlatform)
+            {
+                result = result
+                    && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, candidate.Platform)
+                    && IsVersionCompatible(target.PlatformVersion, candidate.PlatformVersion);
             }
+
+            return result;
         }
 
         private static bool IsVersionCompatible(Version target, Version candidate)
