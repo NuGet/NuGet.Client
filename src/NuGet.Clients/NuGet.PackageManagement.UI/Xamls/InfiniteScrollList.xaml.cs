@@ -116,15 +116,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                if (CollectionView.Filter != null)
-                {
-                    var listCollectionView = (ListCollectionView)CollectionView;
-                    return listCollectionView.OfType<PackageItemListViewModel>().Count();
-                }
-                else
-                {
-                    return Items.OfType<PackageItemListViewModel>().Count();
-                }
+                return PackageItemsFiltered.Count();
             }
         }
 
@@ -720,8 +712,8 @@ namespace NuGet.PackageManagement.UI
                 var last = _scrollViewer.ViewportHeight + first;
                 if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                        await LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
+                        LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
                     );
                 }
             }
