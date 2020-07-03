@@ -1485,18 +1485,8 @@ namespace NuGet.PackageManagement.UI
         {
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
             ResetTabLoadFlags();
-            try
-            {
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-                RefreshConsolidatablePackagesCount();
-            }
-            catch (OperationCanceledException)
-            {
-                //Invalidate cache.
-                Model.CachedUpdates = null;
-                ResetTabLoadFlags();
-                throw;
-            }
+            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+            RefreshConsolidatablePackagesCount();
         }
 
         internal void InstallPackage(string packageId, NuGetVersion version)
