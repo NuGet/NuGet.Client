@@ -308,10 +308,10 @@ namespace NuGet.CommandLine
             }
         }
 
-        // The input string to PrintJustified could use different newline variables than the
-        // client's environment does. The previous implementation used Environment.Newline
-        // to find the index of the newline character, but would fail to do so if there was
-        // a mismatch. This method returns the correct result regardless of the client's environment.
+        /// The input string to PrintJustified could use different newline variables than the
+        /// client's environment does. The previous implementation used Environment.Newline
+        /// to find the index of the newline character, but would fail to do so if there was
+        /// a mismatch. This method returns the correct result regardless of the client's environment.
         private (int, bool) NewLineIndex(string text, int length)
         {
             int nIndex = text.IndexOf("\n", 0, length, StringComparison.OrdinalIgnoreCase);
