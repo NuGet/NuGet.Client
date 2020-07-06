@@ -141,12 +141,12 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    printDownloads = "0";
+                    printDownloads = " | Downloads: N/A";
                 }
 
                 System.Console.WriteLine(Verbosity != Verbosity.Quiet ? printBasicInfo + printDownloads : printBasicInfo); // System.Console is used so that output is not suppressed by Verbosity.Quiet
 
-                if (Verbosity != Verbosity.Quiet)
+                if (Verbosity != Verbosity.Quiet && result.Description != null)
                 {
                     string description = result.Description;
 
@@ -157,7 +157,6 @@ namespace NuGet.CommandLine
                             description = description.Substring(0, 100) + "...";
                         }
                     }
-
                     Console.PrintJustified(2, description);
                 }
             }
@@ -165,7 +164,6 @@ namespace NuGet.CommandLine
             Console.WriteLine(new string('-', 20));
             System.Console.WriteLine("");
         }
-
 
         public override bool IncludedInHelp(string optionName)
         {
