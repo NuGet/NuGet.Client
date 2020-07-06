@@ -26,21 +26,15 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Constructs and Registers ("Advises") for Project retargeting events if the IVsSolutionEvents service is available
         /// Otherwise, it simply exits
         /// </summary>
-        public ProjectUpgradeHandler(IServiceProvider serviceProvider, ISolutionManager solutionManager)
+        public ProjectUpgradeHandler(ISolutionManager solutionManager, IVsSolution2 vsSolution2)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
 
             if (solutionManager == null)
             {
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
-            var vsSolution2 = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution2;
             if (vsSolution2 != null)
             {
                 _vsSolution2 = vsSolution2;

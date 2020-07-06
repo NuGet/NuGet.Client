@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Otherwise, it simply exits
         /// </summary>
         /// <param name="dte"></param>
-        public ProjectRetargetingHandler(DTE dte, ISolutionManager solutionManager, IServiceProvider serviceProvider, IComponentModel componentModel)
+        public ProjectRetargetingHandler(DTE dte, ISolutionManager solutionManager, IServiceProvider serviceProvider, IComponentModel componentModel, IVsTrackProjectRetargeting vsTrackProjectRetargeting, IVsMonitorSelection vsMonitorSelection)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -55,25 +55,19 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
             if (componentModel == null)
             {
                 throw new ArgumentNullException(nameof(componentModel));
             }
 
+            _vsMonitorSelection = vsMonitorSelection;
+            Assumes.Present(_vsMonitorSelection);
+
             _solutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(
                 () => componentModel.GetService<ISolutionRestoreWorker>());
 
-            var vsTrackProjectRetargeting = serviceProvider.GetService(typeof(SVsTrackProjectRetargeting)) as IVsTrackProjectRetargeting;
             if (vsTrackProjectRetargeting != null)
             {
-                _vsMonitorSelection = serviceProvider.GetService(typeof(IVsMonitorSelection)) as IVsMonitorSelection;
-                Assumes.Present(_vsMonitorSelection);
-
                 _errorListProvider = new ErrorListProvider(serviceProvider);
                 _dte = dte;
                 _solutionManager = solutionManager;
