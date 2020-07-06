@@ -158,7 +158,6 @@ namespace NuGet.PackageManagement.VisualStudio
             // Take the package from the first source it is found in
             foreach (var source in sources)
             {
-                cancellationToken.ThrowIfCancellationRequested();
                 var result = await source.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
 
                 if (result != null)
