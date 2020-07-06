@@ -110,7 +110,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     ]
                 }}";
 
-                server.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=true&semVerLevel=2.0.0", r => queryResult);
+                server.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => queryResult);
 
 
                 server.Start();
@@ -223,7 +223,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     ]
                 }}";
 
-                server.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=true&semVerLevel=2.0.0", r => queryResult);
+                server.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => queryResult);
 
 
                 server.Start();
@@ -248,8 +248,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
                 Assert.Contains("Fake.Newtonsoft.Json", $"{result.Item2} {result.Item3}");
-                Assert.Contains("531607259", $"{result.Item2} {result.Item3}");
-                Assert.Contains("detailed", $"{result.Item2} {result.Item3}");
+                Assert.Contains("Downloads", $"{result.Item2} {result.Item3}");
+                Assert.Contains("detailed properly.", $"{result.Item2} {result.Item3}");
                 Assert.DoesNotContain("...", $"{result.Item2} {result.Item3}");
                 Assert.Contains("Querying", $"{result.Item2} {result.Item3}");
             }
