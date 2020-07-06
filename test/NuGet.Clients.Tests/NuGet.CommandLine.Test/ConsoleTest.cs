@@ -16,7 +16,6 @@ namespace NuGet.CommandLine.Test
             Assert.NotEqual(0, new Console().WindowWidth);
         }
 
-
         [Theory]
         [InlineData(2, "abcd\nwxyz", "  abcdXXX  wxyzXXX", 10)]
         [InlineData(3, "abcde\n\nwcjb", "   abcdeXXXXXX   wcjbXXX", 10)]
@@ -34,6 +33,5 @@ namespace NuGet.CommandLine.Test
 
             Assert.Equal(expected.Replace("XXX", Environment.NewLine), sw.ToString());
         }
-
     }
 }
