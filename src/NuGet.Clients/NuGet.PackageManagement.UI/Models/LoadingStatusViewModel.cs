@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
@@ -23,10 +23,15 @@ namespace NuGet.PackageManagement.UI
             ItemsFound = loaderState.ItemsCount;
 
             var convertedList = new System.Collections.SortedList();
-            foreach( var kv in loaderState.SourceLoadingStatus)
+
+            if (loaderState.SourceLoadingStatus != null)
             {
-                convertedList.Add(kv.Key, Convert(kv.Value));
+                foreach( var kv in loaderState.SourceLoadingStatus)
+                {
+                    convertedList.Add(kv.Key, Convert(kv.Value));
+                }
             }
+
             SourceLoadingStatus = convertedList;
         }
 

@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Protocol;
 using Microsoft.VisualStudio.Experimentation;
+using System.ComponentModel;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -390,6 +391,9 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
         {
+            Model.CachedUpdates?.Dispose();
+            Model.CachedUpdates = null;
+            Model.Close();
             Unloaded -= PackageManagerUnloaded;
         }
 
@@ -818,6 +822,8 @@ namespace NuGet.PackageManagement.UI
             if (!useCacheForUpdates)
             {
                 // clear existing caches
+                
+                Model.CachedUpdates?.Dispose();
                 Model.CachedUpdates = null;
 
                 if (_topPanel.Filter.Equals(ItemFilter.UpdatesAvailable))
