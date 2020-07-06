@@ -217,8 +217,22 @@ namespace NuGetVSExtension
                 await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
             }
 
-            ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager.Value, this, componentModel);
-            ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager.Value);
+            var vsTrackProjectRetargeting = await GetServiceAsync(typeof(SVsTrackProjectRetargeting)) as IVsTrackProjectRetargeting;
+            var vsMonitorSelection = vsTrackProjectRetargeting != null
+                ? await GetServiceAsync(typeof(IVsMonitorSelection)) as IVsMonitorSelection
+                : null;
+            ProjectRetargetingHandler = new ProjectRetargetingHandler(
+                    _dte,
+                    SolutionManager.Value,
+                    this,
+                    componentModel,
+                    vsTrackProjectRetargeting,
+                    vsMonitorSelection);
+
+            var vsSolution2 = await GetServiceAsync(typeof(SVsSolution)) as IVsSolution2;
+            ProjectUpgradeHandler = new ProjectUpgradeHandler(
+                SolutionManager.Value,
+                vsSolution2);
 
             SolutionUserOptions.Value.LoadSettings();
         }
