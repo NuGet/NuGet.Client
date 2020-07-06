@@ -52,7 +52,7 @@ namespace NuGet.CommandLine
 
         private IList<PackageSource> GetEndpointsAsync()
         {
-            var configurationSources = SourceProvider.LoadPackageSources()
+            List<PackageSource> configurationSources = SourceProvider.LoadPackageSources()
                 .Where(p => p.IsEnabled)
                 .ToList();
 
@@ -77,12 +77,12 @@ namespace NuGet.CommandLine
 
             SearchFilter searchFilter = new SearchFilter(includePrerelease: PreRelease);
 
-            var listEndpoints = GetEndpointsAsync();
+            IList<PackageSource> listEndpoints = GetEndpointsAsync();
 
-            foreach (var source in listEndpoints)
+            foreach (PackageSource source in listEndpoints)
             {
-                var target = source.Source;
-                var name = source.Name;
+                string target = source.Source;
+                string name = source.Name;
 
                 SourceRepository repository = Repository.Factory.GetCoreV3(target);
                 PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
@@ -93,7 +93,8 @@ namespace NuGet.CommandLine
                 }
 
                 IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
-                    string.Join("+", Arguments).Trim().Replace(' ', '+'),
+                    string.Join("+", Arguments).Trim().Replace(' ', '+'), // The arguments (query strings) are joined with '+' so that the queries are passed to the
+                                                                          // search query url with the correct format (eg. "logging extensions" --> "logging+extensions")
                     searchFilter,
                     skip: 0,
                     take: Take,
@@ -120,7 +121,6 @@ namespace NuGet.CommandLine
                 }
             }
         }
-
 
         private void PrintResults(IEnumerable<IPackageSearchMetadata> results)
         {
