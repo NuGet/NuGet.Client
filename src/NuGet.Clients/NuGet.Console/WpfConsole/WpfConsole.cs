@@ -91,12 +91,30 @@ namespace NuGetConsole.Implementation.Console
         [Obsolete]
         public IVsUIShell VsUIShell
         {
-            get { return ServiceProvider.GetService<IVsUIShell>(typeof(SVsUIShell)); }
+            get
+            {
+                IVsUIShell svc = null;
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    svc = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+                });
+                return svc;
+            }
         }
 
         private IOleServiceProvider OleServiceProvider
         {
-            get { return ServiceProvider.GetService<IOleServiceProvider>(typeof(IOleServiceProvider)); }
+            get
+            {
+                IOleServiceProvider svc = null;
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    svc = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IOleServiceProvider>();
+                });
+                return svc;
+            }
         }
 
         private IContentType ContentType
