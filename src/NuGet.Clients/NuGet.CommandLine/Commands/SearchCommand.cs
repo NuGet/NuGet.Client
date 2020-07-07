@@ -22,7 +22,7 @@ using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-
+using System.Text;
 
 namespace NuGet.CommandLine
 {
@@ -39,16 +39,11 @@ namespace NuGet.CommandLine
             get { return _sources; }
         }
 
-        // -Source "https://api.nuget.org/v3/index.json"
-
-
         [Option(typeof(NuGetCommand), "SearchCommandPreRelease")]
         public bool PreRelease { get; set; } = false;
 
-
         [Option(typeof(NuGetCommand), "SearchCommandTake")]
         public int Take { get; set; } = 20;
-
 
         private IList<PackageSource> GetEndpointsAsync()
         {
@@ -72,6 +67,10 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
+            int lineSeparatorLength = 20;
+            string sourceSeparator = new string('=', lineSeparatorLength);
+            string packageSeparator = new string('-', lineSeparatorLength);
+
             ILogger logger = Console;
             CancellationToken cancellationToken = CancellationToken.None;
 
@@ -81,10 +80,7 @@ namespace NuGet.CommandLine
 
             foreach (PackageSource source in listEndpoints)
             {
-                string target = source.Source;
-                string name = source.Name;
-
-                SourceRepository repository = Repository.Factory.GetCoreV3(target);
+                SourceRepository repository = Repository.Factory.GetCoreV3(source);
                 PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
 
                 if (resource is null)
@@ -101,21 +97,21 @@ namespace NuGet.CommandLine
                     logger,
                     cancellationToken);
 
-                Console.WriteLine(new string('=', 20));
+                Console.WriteLine(sourceSeparator);
                 Console.WriteLine($"Source: {source.Name}");
 
                 if (!results.Any())
                 {
-                    Console.WriteLine(new string('-', 20));
+                    Console.WriteLine(packageSeparator);
                     Console.WriteLine("No results found.");
-                    Console.WriteLine(new string('-', 20) + "\n");
+                    Console.WriteLine(packageSeparator + "\n");
                 }
                 else
                 {
                     if (Verbosity == Verbosity.Quiet)
                     {
                         System.Console.WriteLine($"Source: {source.Name}");
-                        System.Console.WriteLine(new string('-', 20));
+                        System.Console.WriteLine(packageSeparator);
                     }
                     PrintResults(results);
                 }
@@ -124,27 +120,32 @@ namespace NuGet.CommandLine
 
         private void PrintResults(IEnumerable<IPackageSearchMetadata> results)
         {
+            int lineSeparatorLength = 20;
+            string packageSeparator = new string('-', lineSeparatorLength);
+
             foreach (IPackageSearchMetadata result in results)
             {
-                Console.WriteLine(new string('-', 20));
+                Console.WriteLine(packageSeparator);
 
                 CultureInfo culture = CultureInfo.CurrentCulture;
 
-                string printBasicInfo = $"> {result.Identity.Id} | {result.Identity.Version.ToNormalizedString()}";
+                StringBuilder content = new StringBuilder();
+                content.Append($"> {result.Identity.Id} | {result.Identity.Version.ToNormalizedString()}"); // Basic info (Name | Version)
 
-                string downloads, printDownloads;
-
-                if (result.DownloadCount != null)
+                if (Verbosity != Verbosity.Quiet)
                 {
-                    downloads = string.Format(culture, "{0:N}", result.DownloadCount);
-                    printDownloads = $" | Downloads: {downloads.Substring(0, downloads.Length - 3)}";
-                }
-                else
-                {
-                    printDownloads = " | Downloads: N/A";
+                    if (result.DownloadCount != null)
+                    {
+                        string downloads = string.Format(culture, "{0:N}", result.DownloadCount);
+                        content.Append($" | Downloads: {downloads.Substring(0, downloads.Length - 3)}");
+                    }
+                    else
+                    {
+                        content.Append(" | Downloads: N/A");
+                    }
                 }
 
-                System.Console.WriteLine(Verbosity != Verbosity.Quiet ? printBasicInfo + printDownloads : printBasicInfo); // System.Console is used so that output is not suppressed by Verbosity.Quiet
+                System.Console.WriteLine(content.ToString()); // System.Console is used so that output is not suppressed by Verbosity.Quiet
 
                 if (Verbosity != Verbosity.Quiet && result.Description != null)
                 {
@@ -161,8 +162,8 @@ namespace NuGet.CommandLine
                 }
             }
 
-            Console.WriteLine(new string('-', 20));
-            System.Console.WriteLine("");
+            Console.WriteLine(packageSeparator);
+            System.Console.WriteLine();
         }
 
         public override bool IncludedInHelp(string optionName)
@@ -174,35 +175,5 @@ namespace NuGet.CommandLine
 
             return base.IncludedInHelp(optionName);
         }
-        
-        private static string RemoveSchemaNamespace(string content)
-        {
-            // This seems to be the only way to clear out xml namespaces.
-            return Regex.Replace(content, @"(xmlns:?[^=]*=[""][^""]*[""])", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.CultureInvariant);
-        }
-
-        private static IList<Resource> Deserialize(string value)
-        {
-            return JsonConvert.DeserializeObject<IndexJson>(value).Resources;
-        }
-
-        private sealed class IndexJson
-        {
-            [JsonProperty("resources")]
-            public IList<Resource> Resources { get; set; }
-        }
-
-        private sealed class Resource
-        {
-            [JsonProperty("@type")]
-            public string Type { get; set; }
-
-            [JsonProperty("@id")]
-            public string Id { get; set; }
-        }
-
-
     }
-
-    
 }

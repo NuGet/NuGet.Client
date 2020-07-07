@@ -352,17 +352,17 @@ nuget push foo.nupkg -Timeout 360</value>
     <value>&lt;package path&gt; [API key] [options]</value>
   </data>
   <data name="SearchCommandDescription" xml:space="preserve">
-    <value>Searches a given source using the query string provided. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed.</value>
+    <value>Searches a given source using the query string provided. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used.</value>
     <comment>Please don't localize "%AppData%\NuGet\NuGet.config", "NuGet.config".</comment>
   </data>
   <data name="SearchCommandPreRelease" xml:space="preserve">
-    <value>Allow prerelease packages to be shown.</value>
+    <value>Include prerelease packages.</value>
   </data>
   <data name="SearchCommandSourceDescription" xml:space="preserve">
-    <value>A list of packages sources to search.</value>
+    <value>A list of package sources to search.</value>
   </data>
   <data name="SearchCommandTake" xml:space="preserve">
-    <value>Number of results to display.</value>
+    <value>The number of results to return. The default value is 20.</value>
   </data>
   <data name="SearchCommandUsageDescription" xml:space="preserve">
     <value>Specify search terms.</value>
