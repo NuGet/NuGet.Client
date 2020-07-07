@@ -722,7 +722,7 @@ namespace NuGet.PackageManagement.UI
         private void InfinitScrollListUnloaded(object sender, RoutedEventArgs e)
         {
             Items.Clear();
-            _loader.Reset();
+            _loader = null;
             Unloaded -= InfinitScrollListUnloaded;
         }
     }

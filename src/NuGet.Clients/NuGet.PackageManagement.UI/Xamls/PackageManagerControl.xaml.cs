@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI
 
         private (string modelVersion, string vsixVersion)? _recommenderVersion;
 
-        public PackageManagerModel Model { get; }
+        public PackageManagerModel Model { get; private set;}
 
         public ISettings Settings { get; }
 
@@ -390,12 +390,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
         {
-            if (Model.CachedUpdates != null)
-            {
-                Model.CachedUpdates.Packages = null;
-                Model.CachedUpdates = null;
-            }
-
+            Model =  null;
             Unloaded -= PackageManagerUnloaded;
         }
 
