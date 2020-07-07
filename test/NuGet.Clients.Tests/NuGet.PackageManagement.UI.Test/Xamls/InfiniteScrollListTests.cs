@@ -17,6 +17,7 @@ using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.UI.Test
 {
+    [Collection(MockedVS.Collection)]
     public class InfiniteScrollListTests : IDisposable
     {
         private JoinableTaskContext _joinableTaskContext;

@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.UI
         private readonly bool _initialized;
 
         private CancellationTokenSource _refreshCts;
-        private CancellationTokenSource _loadCts;
+        internal CancellationTokenSource _loadCts;
 
         // used to prevent starting new search when we update the package sources
         // list in response to PackageSourcesChanged event.
@@ -727,6 +727,13 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                var loadCts = new CancellationTokenSource();
+                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+                oldCts?.Cancel();
+                oldCts?.Dispose();
+
                 await SearchPackagesAndRefreshUpdateCountAsync(
                     searchText: _windowSearchHost.SearchQuery.SearchString,
                     useCacheForUpdates: useCacheForUpdates,
@@ -798,10 +805,6 @@ namespace NuGet.PackageManagement.UI
             var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                 ? Resx.Resources.Text_Loading
                 : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-
-            // Set a new cancellation token source which will be used to cancel this task in case
-            // new loading task starts or manager ui is closed while loading packages.
-            _loadCts = new CancellationTokenSource();
 
             // start SearchAsync task for initial loading of packages
             var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);

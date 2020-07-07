@@ -100,8 +100,17 @@ namespace NuGet.Protocol
             return new Tuple<bool, INuGetResource>(index != null, index);
         }
 
-        // Read the source's end point to get the index json.
-        // An exception will be thrown on failure.
+        /// <summary>
+        /// Read the source's end point to get the index json.
+        /// Retries are logged to any provided <paramref name="log"/> as LogMinimal.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="utcNow"></param>
+        /// <param name="log"></param>
+        /// <param name="token"></param>
+        /// <exception cref="OperationCanceledException">Logged to any provided <paramref name="log"/> as LogMinimal prior to throwing.</exception>
+        /// <exception cref="FatalProtocolException">Encapsulates all other exceptions.</exception>
+        /// <returns></returns>
         private async Task<ServiceIndexResourceV3> GetServiceIndexResourceV3(
             SourceRepository source,
             DateTime utcNow,
@@ -140,6 +149,12 @@ namespace NuGet.Protocol
                             },
                             log,
                             token);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        var message = ExceptionUtilities.DisplayMessage(ex);
+                        log.LogMinimal(message);
+                        throw;
                     }
                     catch (Exception ex) when (retry < maxRetries)
                     {
