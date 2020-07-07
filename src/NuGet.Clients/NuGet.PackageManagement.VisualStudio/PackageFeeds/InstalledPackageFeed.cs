@@ -42,8 +42,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(logger));
             }
             _logger = logger;
-
-            PageSize = 25;
         }
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
@@ -59,43 +57,24 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(p => p.Id.IndexOf(searchToken.SearchString, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id)
                 .Skip(searchToken.StartIndex)
-                .Take(PageSize + 1)
                 .ToArray();
-
-            var hasMoreItems = packages.Length > PageSize;
-            if (hasMoreItems)
-            {
-                packages = packages.Take(packages.Length - 1).ToArray();
-            }
 
             var items = await TaskCombinators.ThrottledAsync(
                 packages,
                 (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
-            //  The packages were originally sorted which is important because we Skip and Take based on that sort
+            //  The packages were originally sorted which is important because we Skip based on that sort
             //  however the asynchronous execution has randomly reordered the set. So we need to resort. 
             var result = SearchResult.FromItems(items.OrderBy(p => p.Identity.Id).ToArray());
 
-            var loadingStatus = hasMoreItems
-                ? LoadingStatus.Ready
-                : packages.Length == 0
+            var loadingStatus = packages.Length == 0
                 ? LoadingStatus.NoItemsFound
                 : LoadingStatus.NoMoreItems;
             result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
             {
                 { "Installed", loadingStatus }
             };
-
-            if (hasMoreItems)
-            {
-                result.NextToken = new FeedSearchContinuationToken
-                {
-                    SearchString = searchToken.SearchString,
-                    SearchFilter = searchToken.SearchFilter,
-                    StartIndex = searchToken.StartIndex + packages.Length
-                };
-            }
 
             return result;
         }
