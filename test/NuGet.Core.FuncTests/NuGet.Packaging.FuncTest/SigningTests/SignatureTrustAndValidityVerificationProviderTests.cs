@@ -181,7 +181,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9763
         public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestampWithTooLargeRange_FailsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
