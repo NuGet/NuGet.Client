@@ -34,7 +34,7 @@
     <VsTargetBranch>master</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
 
-    <!-- These branches are used for creating insertion PRs - no need to edit -->
+    <!-- These branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
 
