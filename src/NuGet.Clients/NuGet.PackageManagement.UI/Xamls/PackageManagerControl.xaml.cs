@@ -393,7 +393,6 @@ namespace NuGet.PackageManagement.UI
         {
             Model.CachedUpdates?.Dispose();
             Model.CachedUpdates = null;
-            Model.Close();
             Unloaded -= PackageManagerUnloaded;
         }
 

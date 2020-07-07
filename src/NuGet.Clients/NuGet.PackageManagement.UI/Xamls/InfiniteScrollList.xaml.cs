@@ -69,6 +69,7 @@ namespace NuGet.PackageManagement.UI
             _joinableTaskFactory = joinableTaskFactory;
 
             InitializeComponent();
+            Unloaded += InfinitScrollListUnloaded;
 
             _list.ItemsLock = ReentrantSemaphore.Create(
                 initialCount: 1,
@@ -716,6 +717,13 @@ namespace NuGet.PackageManagement.UI
         private void _loadingStatusBar_DismissClick(object sender, RoutedEventArgs e)
         {
             _loadingStatusBar.Visibility = Visibility.Hidden;
+        }
+
+        private void InfinitScrollListUnloaded(object sender, RoutedEventArgs e)
+        {
+            Items.Clear();
+            _loader.Reset();
+            Unloaded -= InfinitScrollListUnloaded;
         }
     }
 }
