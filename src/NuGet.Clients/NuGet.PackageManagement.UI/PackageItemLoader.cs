@@ -14,7 +14,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal sealed class PackageItemLoader : IPackageItemLoader, IDisposable
+    internal class PackageItemLoader : IPackageItemLoader
     {
         private readonly PackageLoadContext _context;
         private readonly string _searchText;
@@ -328,13 +328,6 @@ namespace NuGet.PackageManagement.UI
                 });
 
             return listItems.ToArray();
-        }
-
-        public void Dispose()
-        {
-            _installedPackages = null;
-            _packageReferences = null;
-            _context.CachedPackages = null;
         }
     }
 }
