@@ -28,12 +28,13 @@
 
     <IsEscrowMode>true</IsEscrowMode>
 
+    <!-- ** No need to edit -->
     <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
-    <VsTargetBranch>rel/d16.7</VsTargetBranch>
+    <VsTargetBranch>master</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
 
-    <!-- This branches are used for creating insertion PRs -->
+    <!-- These branches are used for creating insertion PRs - no need to edit -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
 
