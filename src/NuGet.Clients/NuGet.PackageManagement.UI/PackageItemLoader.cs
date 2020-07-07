@@ -267,7 +267,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             _state?.Dispose();
-            _state = null;
 
             var state = new PackageFeedSearchState(searchResult);
             _state = state;
@@ -277,7 +276,6 @@ namespace NuGet.PackageManagement.UI
         public void Reset()
         {
              _state?.Dispose();
-            _state =  null;
             _state = new PackageFeedSearchState();
         }
 

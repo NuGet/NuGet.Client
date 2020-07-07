@@ -31,7 +31,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Protocol;
 using Microsoft.VisualStudio.Experimentation;
-using System.ComponentModel;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -821,7 +820,6 @@ namespace NuGet.PackageManagement.UI
             if (!useCacheForUpdates)
             {
                 // clear existing caches
-                
                 Model.CachedUpdates?.Dispose();
                 Model.CachedUpdates = null;
 
