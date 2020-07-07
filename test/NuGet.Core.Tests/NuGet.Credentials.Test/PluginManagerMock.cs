@@ -239,10 +239,14 @@ namespace NuGet.Credentials.Test
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new InitializeResponse(MessageResponseCode.Success));
 
-            _connection.Setup(x => x.MessageDispatcher.RequestHandlers.AddOrUpdate(
-                It.Is<MessageMethod>(m => m == MessageMethod.Log),
-                It.IsAny<Func<IRequestHandler>>(),
-                It.IsAny<Func<IRequestHandler, IRequestHandler>>()));
+            //An Authentication claim triggers AddOrUpdateLogger.
+            if (_expectations.OperationClaims.Contains(OperationClaim.Authentication))
+            {
+                _connection.Setup(x => x.MessageDispatcher.RequestHandlers.AddOrUpdate(
+                    It.Is<MessageMethod>(m => m == MessageMethod.Log),
+                    It.IsAny<Func<IRequestHandler>>(),
+                    It.IsAny<Func<IRequestHandler, IRequestHandler>>()));
+            }
         }
 
         private void EnsurePluginSetupCalls()

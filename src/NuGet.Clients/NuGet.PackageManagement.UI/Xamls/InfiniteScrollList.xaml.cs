@@ -13,13 +13,16 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,7 +42,7 @@ namespace NuGet.PackageManagement.UI
 
         /// <summary>
         /// This exists only to facilitate unit testing.
-        /// It is triggered at <see cref="LoadItems(PackageItemListViewModel, CancellationToken)" />, just before it is finished
+        /// It is triggered at <see cref="RepopulatePackageList(PackageItemListViewModel, IPackageItemLoader, CancellationToken) " />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
@@ -202,92 +205,99 @@ namespace NuGet.PackageManagement.UI
 
             var currentLoader = _loader;
 
-            _joinableTaskFactory.Value.RunAsync(async () =>
+            _joinableTaskFactory.Value.RunAsync(
+                    () => RepopulatePackageList(selectedPackageItem, currentLoader, loadCts)
+                )
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(
+                    nameof(InfiniteScrollList),
+                    nameof(RepopulatePackageList)
+                ));
+        }
+
+        private async Task RepopulatePackageList(PackageItemListViewModel selectedPackageItem, IPackageItemLoader currentLoader, CancellationTokenSource loadCts)
+        {
+            await TaskScheduler.Default;
+
+            var addedLoadingIndicator = false;
+
+            try
             {
-                await TaskScheduler.Default;
-
-                var addedLoadingIndicator = false;
-
-                try
+                // add Loading... indicator if not present
+                if (!Items.Contains(_loadingStatusIndicator))
                 {
-                    // add Loading... indicator if not present
-                    if (!Items.Contains(_loadingStatusIndicator))
+                    Items.Add(_loadingStatusIndicator);
+                    addedLoadingIndicator = true;
+                }
+
+                await LoadItemsCoreAsync(currentLoader, loadCts.Token);
+
+                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+
+                if (selectedPackageItem != null)
+                {
+                    UpdateSelectedItem(selectedPackageItem);
+                }
+            }
+            catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
+            {
+                loadCts.Cancel();
+                loadCts.Dispose();
+                currentLoader.Reset();
+
+                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+
+                // The user cancelled the login, but treat as a load error in UI
+                // So the retry button and message is displayed
+                // Do not log to the activity log, since it is not a NuGet error
+                _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
+
+                _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
+
+                _loadingStatusBar.SetCancelled();
+                _loadingStatusBar.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex) when (!loadCts.IsCancellationRequested)
+            {
+                loadCts.Cancel();
+                loadCts.Dispose();
+                currentLoader.Reset();
+
+                // Write stack to activity log
+                Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
+
+                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+
+                var errorMessage = ExceptionUtilities.DisplayMessage(ex);
+                _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
+
+                _loadingStatusIndicator.SetError(errorMessage);
+
+                _loadingStatusBar.SetError();
+                _loadingStatusBar.Visibility = Visibility.Visible;
+            }
+            finally
+            {
+                if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
+                    && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
+                {
+                    // Ideally, After a search, it should report its status, and
+                    // do not keep the LoadingStatus.Loading forever.
+                    // This is a workaround.
+                    var emptyListCount = addedLoadingIndicator ? 1 : 0;
+                    if (Items.Count == emptyListCount)
                     {
-                        Items.Add(_loadingStatusIndicator);
-                        addedLoadingIndicator = true;
+                        _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                     }
-
-                    await LoadItemsCoreAsync(currentLoader, loadCts.Token);
-
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    if (selectedPackageItem != null)
+                    else
                     {
-                        UpdateSelectedItem(selectedPackageItem);
-                    }
-                }
-                catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
-                {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
-                    currentLoader.Reset();
-
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    // The user cancelled the login, but treat as a load error in UI
-                    // So the retry button and message is displayed
-                    // Do not log to the activity log, since it is not a NuGet error
-                    _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
-
-                    _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
-
-
-                    _loadingStatusBar.SetCancelled();
-                    _loadingStatusBar.Visibility = Visibility.Visible;
-                }
-                catch (Exception ex) when (!loadCts.IsCancellationRequested)
-                {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
-                    currentLoader.Reset();
-
-                    // Write stack to activity log
-                    Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
-
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    var errorMessage = ExceptionUtilities.DisplayMessage(ex);
-                    _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
-
-                    _loadingStatusIndicator.SetError(errorMessage);
-
-                    _loadingStatusBar.SetError();
-                    _loadingStatusBar.Visibility = Visibility.Visible;
-                }
-                finally
-                {
-                    if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
-                        && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
-                    {
-                        // Ideally, After a serach, it should report its status and,
-                        // do not keep the LoadingStatus.Loading forever.
-                        // This is a workaround.
-                        var emptyListCount = addedLoadingIndicator ? 1 : 0;
-                        if (Items.Count == emptyListCount)
-                        {
-                            _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                        }
-                        else
-                        {
-                            Items.Remove(_loadingStatusIndicator);
-                        }
+                        Items.Remove(_loadingStatusIndicator);
                     }
                 }
+            }
 
-                UpdateCheckBoxStatus();
+            UpdateCheckBoxStatus();
 
-                LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
-            });
+            LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         private async Task LoadItemsCoreAsync(IPackageItemLoader currentLoader, CancellationToken token)

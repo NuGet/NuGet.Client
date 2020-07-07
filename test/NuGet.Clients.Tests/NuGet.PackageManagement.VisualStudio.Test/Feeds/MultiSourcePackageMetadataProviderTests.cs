@@ -2,19 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
-using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
@@ -22,7 +17,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class MultiSourcePackageMetadataProviderTests
     {
-        public class LocalProviderTests : Tests
+        public class LocalProviderTests : SourceRepositoryCreator
         {
             private readonly MultiSourcePackageMetadataProvider _target;
             private readonly SourceRepository _localSource;
@@ -115,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        public class NoLocalProviderTests : Tests
+        public class NoLocalProviderTests : SourceRepositoryCreator
         {
             private readonly MultiSourcePackageMetadataProvider _target;
 
@@ -250,66 +245,88 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     new[] { "1.0.0", "2.0.0", "2.0.1", "1.0.1" },
                     actualVersions);
             }
-        }
 
-        public abstract class Tests
-        {
-            protected PackageIdentity TestPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
-            protected readonly SourceRepository _source;
-            protected readonly PackageMetadataResource _metadataResource;
-            protected readonly TestLogger _logger = new TestLogger();
-
-            public Tests()
+            [Fact]
+            public async Task GetLatestPackageMetadataAsync_CancellationThrows()
             {
-                // dependencies and data
-                _metadataResource = Mock.Of<PackageMetadataResource>();
-                _source = SetupSourceRepository(_metadataResource);
+                // Arrange
+                var testProject = SetupProject(TestPackageIdentity, allowedVersions: null);
+
+                CancellationToken token = new CancellationToken(canceled: true);
+
+                // Act
+                Task task() => _target.GetLatestPackageMetadataAsync(
+                    TestPackageIdentity,
+                    testProject,
+                    includePrerelease: true,
+                    cancellationToken: token);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(task);
             }
 
-            protected static SourceRepository SetupSourceRepository(PackageMetadataResource resource)
+            [Fact]
+            public async Task GetPackageMetadataAsync_CancellationThrows()
             {
-                var provider = Mock.Of<INuGetResourceProvider>();
-                Mock.Get(provider)
-                    .Setup(x => x.TryCreate(It.IsAny<SourceRepository>(), It.IsAny<CancellationToken>()))
-                    .Returns(() => Task.FromResult(Tuple.Create(true, (INuGetResource)resource)));
-                Mock.Get(provider)
-                    .Setup(x => x.ResourceType)
-                    .Returns(typeof(PackageMetadataResource));
+                // Arrange
+                CancellationToken token = new CancellationToken(canceled: true);
 
-                var packageSource = new Configuration.PackageSource("http://fake-source");
-                return new SourceRepository(packageSource, new[] { provider });
+                // Act
+                Task task() => _target.GetPackageMetadataAsync(
+                    TestPackageIdentity,
+                    includePrerelease: true,
+                    cancellationToken: token);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(task);
             }
 
-            protected NuGetProject SetupProject(PackageIdentity packageIdentity, string allowedVersions)
+            [Fact]
+            public async Task GetPackageMetadataListAsync_CancellationThrows()
             {
-                var installedPackages = new[]
-                {
-                new PackageReference(
-                    packageIdentity,
-                    NuGetFramework.Parse("net45"),
-                    userInstalled: true,
-                    developmentDependency: false,
-                    requireReinstallation: false,
-                    allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null)
-            };
+                // Arrange
+                CancellationToken token = new CancellationToken(canceled: true);
 
-                var project = Mock.Of<NuGetProject>();
-                Mock.Get(project)
-                    .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult<IEnumerable<PackageReference>>(installedPackages));
-                return project;
+                // Act
+                Task task() => _target.GetPackageMetadataListAsync(
+                    TestPackageIdentity.Id,
+                    includePrerelease: true,
+                    includeUnlisted: true,
+                    cancellationToken: token);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(task);
             }
 
-            protected void SetupRemotePackageMetadata(string id, params string[] versions)
+            [Fact]
+            public async Task GetLocalPackageMetadataAsync_CancellationThrows()
             {
-                var metadata = versions
-                    .Select(v => PackageSearchMetadataBuilder
-                        .FromIdentity(new PackageIdentity(id, new NuGetVersion(v)))
-                        .Build());
+                // Arrange
+                CancellationToken token = new CancellationToken(canceled: true);
 
-                Mock.Get(_metadataResource)
-                    .Setup(x => x.GetMetadataAsync(id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(metadata));
+                // Act
+                //Note: Private method MultiSourcePackageMetadataProvider.FetchAndMergeVersionsAndDeprecationMetadataAsync
+                // is called within this method, but this test does not enter into that logic.
+                Task task() => _target.GetLocalPackageMetadataAsync(
+                    TestPackageIdentity,
+                    includePrerelease: true,
+                    cancellationToken: token);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(task);
+            }
+
+            [Fact]
+            public async Task GetMetadataTaskSafeAsync_CancellationThrows()
+            {
+                // Arrange
+                CancellationToken token = new CancellationToken(canceled: true);
+
+                // Act
+                Task< IPackageSearchMetadata> task() => _target.GetPackageMetadataAsync(
+                   TestPackageIdentity,
+                   includePrerelease: true,
+                   cancellationToken: token);
+
+                Task safeTask() => _target.GetMetadataTaskSafeAsync(() => task());
+
+                await Assert.ThrowsAsync<OperationCanceledException>(safeTask);
             }
         }
     }
