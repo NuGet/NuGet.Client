@@ -20,20 +20,21 @@
     <!-- ** Change for each new preview/rtm -->
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
-    
+
     <!-- ** Increment each insertion, set to zero after incrementing Major/Minor or Patch version -->
     <!-- We need to update this netcoreassembly build number with EVERY insertion into VS to workaround any breaking api
     changes we might have made. -->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">6</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">7</NetCoreAssemblyBuildNumber>
 
-    <IsEscrowMode>false</IsEscrowMode>
+    <IsEscrowMode>true</IsEscrowMode>
 
+    <!-- ** No need to edit -->
     <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
     <VsTargetBranch>master</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
 
-    <!-- This branches are used for creating insertion PRs -->
+    <!-- These branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
 
