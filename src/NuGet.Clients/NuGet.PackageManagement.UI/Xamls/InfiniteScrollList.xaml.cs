@@ -13,13 +13,16 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,7 +42,7 @@ namespace NuGet.PackageManagement.UI
 
         /// <summary>
         /// This exists only to facilitate unit testing.
-        /// It is triggered at <see cref="LoadItemsAsync(PackageItemListViewModel, CancellationToken)" />, just before it is finished
+        /// It is triggered at <see cref="RepopulatePackageList(PackageItemListViewModel, IPackageItemLoader, CancellationToken) " />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
@@ -360,7 +363,7 @@ namespace NuGet.PackageManagement.UI
         {
             CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
         }
-
+        
         private void ClearUIFilter()
         {
             CollectionView.Filter = null;
