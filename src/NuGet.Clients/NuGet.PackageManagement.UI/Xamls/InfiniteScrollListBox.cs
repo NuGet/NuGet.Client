@@ -9,10 +9,5 @@ namespace NuGet.PackageManagement.UI
     internal class InfiniteScrollListBox : ListBox
     {
         public ReentrantSemaphore ItemsLock { get; set; }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new InfiniteScrollListBoxAutomationPeer(this);
-        }
     }
 }

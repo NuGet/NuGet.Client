@@ -135,7 +135,6 @@
       <DependentUpon>DeprecationControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\InfiniteScrollListBox.cs" />
-    <Compile Include="Xamls\InfiniteScrollListBoxAutomationPeer.cs" />
     <Compile Include="Models\LicenseFileData.cs" />
     <Compile Include="Xamls\LicenseFileWindow.xaml.cs">
       <DependentUpon>LicenseFileWindow.xaml</DependentUpon>
