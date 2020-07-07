@@ -26,13 +26,21 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         protected override bool TryGetIdentity(Properties properties, out (string Name, string Version) identity)
         {
-            if (properties.Item("Name")?.Value is string name &&
-                properties.Item("Version")?.Value is string version &&
-                !string.IsNullOrEmpty(name) &&
-                !string.IsNullOrEmpty(version))
+            try
             {
-                identity = (name, version);
-                return true;
+                if (properties.Item("Name")?.Value is string name &&
+                    properties.Item("Version")?.Value is string version &&
+                    !string.IsNullOrEmpty(name) &&
+                    !string.IsNullOrEmpty(version))
+                {
+                    identity = (name, version);
+                    return true;
+                }
+            }
+            catch (Microsoft.VisualStudio.ProjectSystem.ProjectException)
+            {
+                // Work around https://github.com/dotnet/project-system/issues/6311
+                // "Could not find project item with item type 'PackageReference' and include value '...'.
             }
 
             identity = default;
