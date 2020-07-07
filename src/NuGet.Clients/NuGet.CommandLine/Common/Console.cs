@@ -265,85 +265,41 @@ namespace NuGet.CommandLine
 
             lock (_writerLock)
             {
-                while (text.Length > 0)
+                using (StringReader stringReader = new StringReader(text))
                 {
-                    // Trim whitespace at the beginning
-                    text = text.TrimStart(' ', '\t');
-                    // Calculate the number of chars to print based on the width of the System.Console
-                    int length = Math.Min(text.Length, maxWidth);
-
-                    string content;
-
-                    // Get the index of the newLine character upto 'length' characters
-                    (int newLineIndex, bool isCRLF) = NewLineIndex(text, length);
-
-                    if (newLineIndex == 0)
+                    string line;
+                    while ((line = stringReader.ReadLine()) != null)
                     {
-                        Out.WriteLine(string.Empty);
-                        text = text.Substring(isCRLF ? 2 : 1);
-                        continue;
-                    }
-                    else if (newLineIndex > -1)
-                    {
-                        content = text.Substring(0, newLineIndex);
-                    }
-                    else
-                    {
-                        content = text.Substring(0, length);
-                    }
+                        if (line == string.Empty)
+                        {
+                            Out.WriteLine();
+                            continue;
+                        }
 
-                    int leftPadding = startIndex + content.Length - CursorLeft;
+                        while (true)
+                        {
+                            // Trim whitespace at the beginning
+                            line = line.TrimStart();
+                            // Calculate the number of chars to print based on the width of the System.Console
+                            int length = Math.Min(line.Length, maxWidth);
 
-                    // Print it with the correct padding
-                    Out.WriteLine((leftPadding > 0) ? content.PadLeft(leftPadding) : content);
+                            string content = line.Substring(0, length);
+                            content = content.TrimEnd();
 
-                    if (content.Length == text.Length)
-                    {
-                        break;
+                            int leftPadding = startIndex + content.Length - CursorLeft;
+
+                            // Print it with the correct padding
+                            Out.WriteLine((leftPadding > 0) ? content.PadLeft(leftPadding) : content);
+
+                            if (content.Length == line.Length)
+                            {
+                                break;
+                            }
+
+                            line = line.Substring(content.Length);
+                        }
                     }
-
-                    // Get the next substring to be printed
-                    text = text.Substring(newLineIndex == -1 ? content.Length : isCRLF ? content.Length + 2 : content.Length + 1);
                 }
-            }
-        }
-
-        /// The input string to PrintJustified could use different newline variables than the
-        /// client's environment does. The previous implementation used Environment.Newline
-        /// to find the index of the newline character, but would fail to do so if there was
-        /// a mismatch. This method returns the correct result regardless of the client's environment.
-        private (int, bool) NewLineIndex(string text, int length)
-        {
-            int nIndex = text.IndexOf("\n", 0, length, StringComparison.OrdinalIgnoreCase);
-            int rIndex = text.IndexOf("\r", 0, length, StringComparison.OrdinalIgnoreCase);
-
-            bool isCRLF = false; // \r\n
-
-            if (nIndex == rIndex + 1 && nIndex > 0)
-            {
-                isCRLF = true;
-            }
-
-            if (nIndex == -1 && rIndex == -1)
-            {
-                return (-1, isCRLF);
-            }
-            else if (nIndex > -1 && rIndex > -1)
-            {
-                if (nIndex < rIndex)
-                {
-                    return (nIndex, isCRLF);
-                }
-
-                return (rIndex, isCRLF);
-            }
-            else if (nIndex > -1)
-            {
-                return (nIndex, isCRLF);
-            }
-            else
-            {
-                return (rIndex, isCRLF);
             }
         }
 
