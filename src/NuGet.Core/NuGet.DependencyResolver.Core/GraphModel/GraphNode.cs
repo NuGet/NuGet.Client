@@ -29,7 +29,7 @@ namespace NuGet.DependencyResolver
         /// </summary>
         internal IList<GraphNode<TItem>> ParentNodes { get; }
 
-        internal bool AreParentsRejected()
+        internal bool AreAllParentsRejected()
         {
             var pCount = ParentNodes.Count;
             if (pCount == 0)

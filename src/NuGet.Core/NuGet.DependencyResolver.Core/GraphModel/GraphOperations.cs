@@ -28,7 +28,6 @@ namespace NuGet.DependencyResolver
             var result = new AnalyzeResult<RemoteResolveResult>();
 
             root.CheckCycleAndNearestWins(result.Downgrades, result.Cycles);
-
             root.TryResolveConflicts(result.VersionConflicts);
 
             // Remove all downgrades that didn't result in selecting the node we actually downgraded to
@@ -851,16 +850,16 @@ namespace NuGet.DependencyResolver
 
             // If a node has its parents rejected, reject the node and its children
             // Need to do this in a loop because more nodes can be rejected as their parents become rejected
-            bool rejectsPerformed = true;
-            while (rejectsPerformed)
+            bool pendingRejections = true;
+            while (pendingRejections)
             {
-                rejectsPerformed = false;
+                pendingRejections = false;
                 for (int i = 0; i < ctdCount; i++)
                 {
-                    if (centralTransitiveNodes[i].Disposition == Disposition.Acceptable && centralTransitiveNodes[i].AreParentsRejected())
+                    if (centralTransitiveNodes[i].Disposition == Disposition.Acceptable && centralTransitiveNodes[i].AreAllParentsRejected())
                     {
                         centralTransitiveNodes[i].ForEach(n => n.Disposition = Disposition.Rejected);
-                        rejectsPerformed = true;
+                        pendingRejections = true;
                     }
                 }
             }
