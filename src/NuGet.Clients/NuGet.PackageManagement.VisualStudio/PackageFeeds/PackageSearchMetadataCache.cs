@@ -7,7 +7,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class PackageSearchMetadataCache : IDisposable
+    public sealed class PackageSearchMetadataCache : IDisposable
     {
         // Cached Package Metadata
         public IReadOnlyList<IPackageSearchMetadata> Packages { get; set; }
@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Dispose(bool disposing)
         {
             if (disposing)
             {
