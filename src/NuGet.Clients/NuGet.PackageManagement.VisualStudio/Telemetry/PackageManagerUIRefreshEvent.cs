@@ -16,6 +16,7 @@ namespace NuGet.PackageManagement.Telemetry
             RefreshOperationSource refreshSource,
             RefreshOperationStatus refreshStatus,
             string tab,
+            bool isUIFiltering,
             TimeSpan timeSinceLastRefresh) : base(EventName)
         {
             base["ParentId"] = parentId.ToString();
@@ -23,6 +24,7 @@ namespace NuGet.PackageManagement.Telemetry
             base["RefreshSource"] = refreshSource;
             base["RefreshStatus"] = refreshStatus;
             base["Tab"] = tab;
+            base["IsUIFiltering"] = isUIFiltering;
             base["TimeSinceLastRefresh"] = timeSinceLastRefresh.TotalMilliseconds;
         }
     }

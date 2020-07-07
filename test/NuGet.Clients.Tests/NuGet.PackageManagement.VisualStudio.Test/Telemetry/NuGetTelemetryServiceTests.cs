@@ -73,14 +73,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.NoOp)]
         [InlineData(RefreshOperationSource.ClearSearch, RefreshOperationStatus.NoOp)]
         [InlineData(RefreshOperationSource.ExecuteAction, RefreshOperationStatus.NotApplicable)]
-        [InlineData(RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable)]
+        [InlineData(RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable, false)]
+        [InlineData(RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable, true)]
         [InlineData(RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success)]
-        public void NuGetTelemetryService_EmitsPMUIRefreshEvent(RefreshOperationSource expectedRefreshSource, RefreshOperationStatus expectedRefreshStatus)
+        public void NuGetTelemetryService_EmitsPMUIRefreshEvent(RefreshOperationSource expectedRefreshSource, RefreshOperationStatus expectedRefreshStatus, bool expectedUiFiltering = false)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -93,7 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var expectedIsSolutionLevel = true;
             var expectedTab = "All";
             var expectedTimeSinceLastRefresh = TimeSpan.FromSeconds(1);
-            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, expectedTimeSinceLastRefresh);
+            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering:expectedUiFiltering, expectedTimeSinceLastRefresh);
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -103,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal("PMUIRefresh", lastTelemetryEvent.Name);
-            Assert.Equal(6, lastTelemetryEvent.Count);
+            Assert.Equal(7, lastTelemetryEvent.Count);
 
             var parentIdGuid = lastTelemetryEvent["ParentId"];
             Assert.NotNull(parentIdGuid);
@@ -129,6 +130,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(tab);
             Assert.IsType<string>(tab);
             Assert.Equal(expectedTab, tab);
+
+            var isUIFiltering = lastTelemetryEvent["IsUIFiltering"];
+            Assert.NotNull(isUIFiltering);
+            Assert.IsType<bool>(isUIFiltering);
+            Assert.Equal(expectedUiFiltering, isUIFiltering);
 
             var timeSinceLastRefresh = lastTelemetryEvent["TimeSinceLastRefresh"];
             Assert.NotNull(timeSinceLastRefresh);
