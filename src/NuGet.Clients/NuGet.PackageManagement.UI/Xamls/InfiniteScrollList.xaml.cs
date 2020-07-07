@@ -112,7 +112,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Count of Items (excluding Loading indicator) that are currently shown after applying any UI filtering.
         /// </summary>
-        private int FilterCount
+        private int FilteredItemsCount
         {
             get
             {
@@ -242,7 +242,7 @@ namespace NuGet.PackageManagement.UI
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                 //Any UI filter should be cleared when Loading.
-                ClearItemsFilter();
+                ClearUIFilter();
 
                 if (selectedPackageItem != null)
                 {
@@ -291,7 +291,7 @@ namespace NuGet.PackageManagement.UI
                 if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
                     && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
                 {
-                    // Ideally, After a search, it should report its status and,
+                    // Ideally, after a search, it should report its status, and
                     // do not keep the LoadingStatus.Loading forever.
                     // This is a workaround.
                     var emptyListCount = addedLoadingIndicator ? 1 : 0;
@@ -327,24 +327,23 @@ namespace NuGet.PackageManagement.UI
             {
                 if (itemFilter == ItemFilter.UpdatesAvailable)
                 {
-                    ApplyItemsFilterForUpdatesAvailable();
+                    ApplyUIFilterForUpdatesAvailable();
                 }
                 else
                 {
                     //Show all the items, without an Update filter.
-                    ClearItemsFilter();
+                    ClearUIFilter();
                 }
             }
             finally
             {
                 //If no items are shown in the filter, indicate in the list that no packages are found.
-                if (FilterCount == 0)
+                if (FilteredItemsCount == 0)
                 {
                     _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                 }
                 else
                 {
-                    //There are packages, but since no loading will occur, there's no need for an indicator.
                     if (Items.Contains(_loadingStatusIndicator))
                     {
                         Items.Remove(_loadingStatusIndicator);
@@ -357,11 +356,12 @@ namespace NuGet.PackageManagement.UI
             LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ApplyItemsFilterForUpdatesAvailable()
+        private void ApplyUIFilterForUpdatesAvailable()
         {
             CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
         }
-        private void ClearItemsFilter()
+
+        private void ClearUIFilter()
         {
             CollectionView.Filter = null;
         }
@@ -623,7 +623,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             //Are any packages shown with the current filter?
-            int packageCount = FilterCount;
+            int packageCount = FilteredItemsCount;
 
             _updateButtonContainer.Visibility =
                 packageCount > 0 ?
