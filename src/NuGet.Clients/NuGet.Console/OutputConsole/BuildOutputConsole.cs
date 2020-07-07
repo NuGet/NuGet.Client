@@ -46,6 +46,7 @@ namespace NuGetConsole
                 var outputWindowPane = await _outputWindowPane.GetValueAsync();
                 if (outputWindowPane != null)
                 {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return new OutputWindowTextWriter(outputWindowPane);
                 }
                 else
