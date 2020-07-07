@@ -14,7 +14,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageItemLoader : IPackageItemLoader, IDisposable
+    internal sealed class PackageItemLoader : IPackageItemLoader, IDisposable
     {
         private readonly PackageLoadContext _context;
         private readonly string _searchText;
@@ -38,8 +38,10 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsMultiSource => _packageFeed.IsMultiSource;
 
-        private class PackageFeedSearchState : IItemLoaderState, IDisposable
+        private class PackageFeedSearchState : IItemLoaderState
         {
+            private readonly SearchResult<IPackageSearchMetadata> _results;
+
             public PackageFeedSearchState()
             {
             }
@@ -50,18 +52,18 @@ namespace NuGet.PackageManagement.UI
                 {
                     throw new ArgumentNullException(nameof(results));
                 }
-                Results = results;
+                _results = results;
             }
 
-            public SearchResult<IPackageSearchMetadata> Results { get; private set;}
+            public SearchResult<IPackageSearchMetadata> Results => _results;
 
-            public Guid? OperationId => Results?.OperationId;
+            public Guid? OperationId => _results?.OperationId;
 
             public LoadingStatus LoadingStatus
             {
                 get
                 {
-                    if (Results == null)
+                    if (_results == null)
                     {
                         // initial status when no load called before
                         return LoadingStatus.Unknown;
@@ -73,14 +75,9 @@ namespace NuGet.PackageManagement.UI
 
             // returns the "raw" counter which is not the same as _results.Items.Count
             // simply because it correlates to un-merged items
-            public int ItemsCount => Results?.RawItemsCount ?? 0;
+            public int ItemsCount => _results?.RawItemsCount ?? 0;
 
-            public IDictionary<string, LoadingStatus> SourceLoadingStatus => Results?.SourceSearchStatus;
-
-            public void Dispose()
-            {
-                Results = null;
-            }
+            public IDictionary<string, LoadingStatus> SourceLoadingStatus => _results?.SourceSearchStatus;
         }
 
         public PackageItemLoader(
@@ -266,8 +263,6 @@ namespace NuGet.PackageManagement.UI
                 _packageReferences = (await Task.WhenAll(tasks)).SelectMany(p => p).Where(p => p != null);
             }
 
-            _state?.Dispose();
-
             var state = new PackageFeedSearchState(searchResult);
             _state = state;
             progress?.Report(state);
@@ -275,7 +270,6 @@ namespace NuGet.PackageManagement.UI
 
         public void Reset()
         {
-             _state?.Dispose();
             _state = new PackageFeedSearchState();
         }
 
@@ -340,7 +334,7 @@ namespace NuGet.PackageManagement.UI
         {
             _installedPackages = null;
             _packageReferences = null;
-            _state.Dispose();
+            _context.CachedPackages = null;
         }
     }
 }
