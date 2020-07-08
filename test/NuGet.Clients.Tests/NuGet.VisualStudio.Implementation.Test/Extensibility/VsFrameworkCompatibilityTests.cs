@@ -67,7 +67,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             // Act
             Assert.Throws<System.ArgumentException>(() => target.GetNearest(targetFramework, frameworks));
-
         }
 
         [Fact]

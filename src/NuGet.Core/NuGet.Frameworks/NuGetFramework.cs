@@ -288,16 +288,10 @@ namespace NuGet.Frameworks
                 }
                 else if (IsNet5Era)
                 {
-                    var platform = string.Empty;
-                    if (!string.IsNullOrEmpty(framework.Platform) && !mappings.TryGetShortPlatform(framework.Framework, framework.Version, framework.Platform, out platform))
-                    {
-                        platform = framework.Platform;
-                    }
-
-                    if (!string.IsNullOrEmpty(platform))
+                    if (!string.IsNullOrEmpty(framework.Platform))
                     {
                         sb.Append("-");
-                        sb.Append(platform);
+                        sb.Append(framework.Platform.ToLowerInvariant());
 
                         if (framework.PlatformVersion != FrameworkConstants.EmptyVersion)
                         {
@@ -437,7 +431,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// True if this framework is Net5 or later, until we invent something new.
         /// </summary>
-        internal bool IsNet5Era { get; set; }
+        public bool IsNet5Era { get; private set; }
 
         /// <summary>
         /// Full framework comparison of the identifier, version, profile, platform, and platform version

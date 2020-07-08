@@ -1,8 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Runtime.Versioning;
-
 using NuGet.Frameworks;
 
 namespace NuGet.Packaging
@@ -13,7 +13,7 @@ namespace NuGet.Packaging
         // which is relevant for building packages. This isn't needed for net5.0+ frameworks.
         public static string GetFrameworkString(this NuGetFramework self)
         {
-            if (self.Version.Major >= 5)
+            if (self.IsNet5Era)
             {
                 return self.DotNetFrameworkName;
             }
