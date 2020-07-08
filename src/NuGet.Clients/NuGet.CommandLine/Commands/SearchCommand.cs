@@ -89,8 +89,7 @@ namespace NuGet.CommandLine
                 }
 
                 IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
-                    string.Join("+", Arguments).Trim().Replace(' ', '+'), // The arguments (query strings) are joined with '+' so that the queries are passed to the
-                                                                          // search query url with the correct format (eg. "logging extensions" --> "logging+extensions")
+                    string.Join(" ", Arguments).Trim(), // The arguments are joined with spaces to form a single query string
                     searchFilter,
                     skip: 0,
                     take: Take,
