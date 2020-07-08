@@ -359,7 +359,7 @@ nuget push foo.nupkg -Timeout 360</value>
     <value>Include prerelease packages.</value>
   </data>
   <data name="SearchCommandSourceDescription" xml:space="preserve">
-    <value>A list of package sources to search.</value>
+    <value>The package source to search. You can pass multiple -Source options to search multiple package sources.</value>
   </data>
   <data name="SearchCommandTake" xml:space="preserve">
     <value>The number of results to return. The default value is 20.</value>
