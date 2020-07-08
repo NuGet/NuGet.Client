@@ -761,5 +761,118 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.Contains("Source: mockSource", $"{result.Item2} {result.Item3}");
             }
         }
+
+        [Fact]
+        public void SearchCommand_MultipleSearchTermsTest()
+        {
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (MockServer server = new MockServer())
+            using (SimpleTestPathContext config = new SimpleTestPathContext())
+            {
+                CommandRunner.Run(
+                    nugetexe,
+                    config.WorkingDirectory,
+                    $"source add -name mockSource -source {server.Uri}v3/index.json -configfile {config.NuGetConfig}",
+                    waitForExit: true);
+
+                string index = $@"
+                {{
+                    ""version"": ""3.0.0"",
+
+                    ""resources"": [
+                    {{
+                        ""@id"": ""{server.Uri + "search/query"}"",
+                        ""@type"": ""SearchQueryService/Versioned"",
+                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
+                    }}
+                    ],
+
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/services#"",
+                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+                    }}
+                }}";
+
+                server.Get.Add("/v3/index.json", r => index);
+
+                string queryResult = $@"
+                {{
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/schema#"",
+                        ""@base"": ""https://api.nuget.org/v3/registration5-semver1/""
+                    }},
+                    ""totalHits"": 396,
+                    ""data"": [
+                    {{
+                        ""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
+                        ""@type"": ""Package"",
+                        ""registration"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
+                        ""id"": ""Fake.Newtonsoft.Json"",
+                        ""version"": ""12.0.3"",
+                        ""description"": ""Json.NET is a popular high-performance JSON framework for .NET, plus more detailed description so that we can test -Verbosity normal and -Verbosity detailed properly."",
+                        ""summary"": """",
+                        ""title"": ""Json.NET"",
+                        ""iconUrl"": ""https://api.nuget.org/v3-flatcontainer/newtonsoft.json/12.0.3/icon"",
+                        ""licenseUrl"": ""https://www.nuget.org/packages/Newtonsoft.Json/12.0.3/license"",
+                        ""projectUrl"": ""https://www.newtonsoft.com/json"",
+
+                        ""tags"": [
+                            ""json""
+                        ],
+
+                        ""authors"": [
+                        ""James Newton-King""
+                        ],
+
+                        ""totalDownloads"": 531607259,
+                        ""verified"": true,
+
+                        ""packageTypes"": [
+                        {{
+                            ""name"": ""Dependency""
+                        }}
+                        ],
+
+                        ""versions"": [
+                        {{
+                            ""version"": ""3.5.8"",
+                            ""downloads"": 461992,
+                            ""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/3.5.8.json""
+                        }}
+                        ]
+                    }}
+                    ]
+                }}";
+
+                server.Get.Add("/search/query?q=newtonsoft%20json&skip=0&take=5&prerelease=false&semVerLevel=2.0.0", r => queryResult);
+
+                server.Start();
+
+                // Act
+                string[] args = new[]
+                {
+                    "search",
+                    "newtonsoft json",
+                    "-Take",
+                    "5",
+                };
+
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    config.WorkingDirectory,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                server.Stop();
+
+                // Assert
+                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Item2} {result.Item3}");
+            }
+        }
     }
 }
