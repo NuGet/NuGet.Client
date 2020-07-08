@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
@@ -9,19 +9,18 @@ using NuGet.Configuration;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class PackageSourceTransactionFormatter : IMessagePackFormatter<PackageSourceTransaction?>
+    internal class PackageSourceUpdateSettingsFormatter : IMessagePackFormatter<PackageSourceUpdateSettings?>
     {
-        private const string PackageSourcePropertyName = "packagesource";
         private const string UpdateCredentialsPropertyName = "updatecredentials";
         private const string UpdateEnabledPropertyName = "updateenabled";
 
-        internal static readonly IMessagePackFormatter<PackageSourceTransaction?> Instance = new PackageSourceTransactionFormatter();
+        internal static readonly IMessagePackFormatter<PackageSourceUpdateSettings?> Instance = new PackageSourceUpdateSettingsFormatter();
 
-        private PackageSourceTransactionFormatter()
+        private PackageSourceUpdateSettingsFormatter()
         {
         }
 
-        public PackageSourceTransaction? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public PackageSourceUpdateSettings? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())
             {
@@ -35,16 +34,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 bool updateCredentials = true;
                 bool updateEnabled = true;
-                PackageSource? source = null;
 
                 int propertyCount = reader.ReadMapHeader();
                 for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
                 {
                     switch (reader.ReadString())
                     {
-                        case PackageSourcePropertyName:
-                            source = PackageSourceFormatter.Instance.Deserialize(ref reader, options);
-                            break;
                         case UpdateCredentialsPropertyName:
                             updateCredentials = reader.ReadBoolean();
                             break;
@@ -57,7 +52,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
-                return new PackageSourceTransaction(source, updateCredentials, updateEnabled);
+                return new PackageSourceUpdateSettings(updateCredentials, updateEnabled);
             }
             finally
             {
@@ -66,7 +61,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageSourceTransaction? value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, PackageSourceUpdateSettings? value, MessagePackSerializerOptions options)
         {
             if (value == null)
             {
@@ -74,9 +69,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(3);
-            writer.Write(PackageSourcePropertyName);
-            PackageSourceFormatter.Instance.Serialize(ref writer, value.PackageSource, options);
+            writer.WriteMapHeader(2);
             writer.Write(UpdateCredentialsPropertyName);
             writer.Write(value.UpdateCredentials);
             writer.Write(UpdateEnabledPropertyName);
