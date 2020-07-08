@@ -14,6 +14,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
     public interface INuGetSourcesService : IDisposable
     {
         ValueTask<IReadOnlyList<PackageSource>> GetPackageSourcesAsync(CancellationToken cancellationToken);
-        ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSourceTransaction> sources, CancellationToken cancellationToken);
+        ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, PackageSourceUpdateSettings packageSourceUpdateSettings, CancellationToken cancellationToken);
     }
 }
