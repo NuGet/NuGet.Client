@@ -9,9 +9,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -22,7 +23,6 @@ using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System.Text;
 
 namespace NuGet.CommandLine
 {
@@ -31,13 +31,12 @@ namespace NuGet.CommandLine
             UsageSummaryResourceName = "SearchCommandUsageSummary", UsageExampleResourceName = "SearchCommandUsageExamples")]
     public class SearchCommand : Command
     {
+        private readonly int _lineSeparatorLength = 20;
+
         private readonly List<string> _sources = new List<string>();
 
         [Option(typeof(NuGetCommand), "SearchCommandSourceDescription")]
-        public ICollection<string> Source
-        {
-            get { return _sources; }
-        }
+        public ICollection<string> Source => _sources;
 
         [Option(typeof(NuGetCommand), "SearchCommandPreRelease")]
         public bool PreRelease { get; set; } = false;
@@ -67,9 +66,8 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
-            int lineSeparatorLength = 20;
-            string sourceSeparator = new string('=', lineSeparatorLength);
-            string packageSeparator = new string('-', lineSeparatorLength);
+            string sourceSeparator = new string('=', _lineSeparatorLength);
+            string packageSeparator = new string('-', _lineSeparatorLength);
 
             ILogger logger = Console;
             CancellationToken cancellationToken = CancellationToken.None;
@@ -99,28 +97,28 @@ namespace NuGet.CommandLine
                 Console.WriteLine(sourceSeparator);
                 Console.WriteLine($"Source: {source.Name}");
 
-                if (!results.Any())
-                {
-                    Console.WriteLine(packageSeparator);
-                    Console.WriteLine("No results found.");
-                    Console.WriteLine(packageSeparator + "\n");
-                }
-                else
+                if (results.Any())
                 {
                     if (Verbosity == Verbosity.Quiet)
                     {
-                        System.Console.WriteLine($"Source: {source.Name}");
+                        System.Console.WriteLine($"Source: {source.Name}"); // Would not have printed using Console.WriteLine if Verbosity == quiet
                         System.Console.WriteLine(packageSeparator);
                     }
+
                     PrintResults(results);
+                }
+                else
+                {
+                    Console.WriteLine(packageSeparator);
+                    Console.WriteLine("No results found.");
+                    Console.WriteLine(packageSeparator + Environment.NewLine);
                 }
             }
         }
 
         private void PrintResults(IEnumerable<IPackageSearchMetadata> results)
         {
-            int lineSeparatorLength = 20;
-            string packageSeparator = new string('-', lineSeparatorLength);
+            string packageSeparator = new string('-', _lineSeparatorLength);
 
             foreach (IPackageSearchMetadata result in results)
             {
@@ -150,13 +148,11 @@ namespace NuGet.CommandLine
                 {
                     string description = result.Description;
 
-                    if (Verbosity == Verbosity.Normal)
+                    if (Verbosity == Verbosity.Normal && description.Length > 100)
                     {
-                        if (description.Length > 100)
-                        {
-                            description = description.Substring(0, 100) + "...";
-                        }
+                        description = description.Substring(0, 100) + "...";
                     }
+
                     Console.PrintJustified(2, description);
                 }
             }

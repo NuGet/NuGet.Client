@@ -874,5 +874,78 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.Contains("Fake.Newtonsoft.Json", $"{result.Item2} {result.Item3}");
             }
         }
+
+        [Fact]
+        public void SearchCommand_NoResultsFoundTest()
+        {
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (MockServer server = new MockServer())
+            using (SimpleTestPathContext config = new SimpleTestPathContext())
+            {
+                CommandRunner.Run(
+                    nugetexe,
+                    config.WorkingDirectory,
+                    $"source add -name mockSource -source {server.Uri}v3/index.json -configfile {config.NuGetConfig}",
+                    waitForExit: true);
+
+                string index = $@"
+                {{
+                    ""version"": ""3.0.0"",
+
+                    ""resources"": [
+                    {{
+                        ""@id"": ""{server.Uri + "search/query"}"",
+                        ""@type"": ""SearchQueryService/Versioned"",
+                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
+                    }}
+                    ],
+
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/services#"",
+                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+                    }}
+                }}";
+
+                server.Get.Add("/v3/index.json", r => index);
+
+                string queryResult = $@"
+                {{
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/schema#"",
+                        ""@base"": ""https://api.nuget.org/v3/registration5-semver1/""
+                    }},
+                    ""totalHits"": 396,
+                    ""data"": []
+                }}";
+
+                server.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => queryResult);
+
+                server.Start();
+
+                // Act
+                string[] args = new[]
+                {
+                    "search",
+                    "json",
+                };
+
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    config.WorkingDirectory,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                server.Stop();
+
+                // Assert
+                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                Assert.Contains("No results found.", $"{result.Item2} {result.Item3}");
+                Assert.DoesNotContain(">", $"{result.Item2} {result.Item3}");
+            }
+        }
     }
 }
