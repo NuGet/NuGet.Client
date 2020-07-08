@@ -66,6 +66,7 @@ namespace NuGetConsole
             _outputWindowTextWriter = new AsyncLazy<OutputWindowTextWriter>(async () =>
             {
                 var outputWindowPane = await _outputWindowPane.GetValueAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 return new OutputWindowTextWriter(outputWindowPane);
             },
             NuGetUIThreadHelper.JoinableTaskFactory);
