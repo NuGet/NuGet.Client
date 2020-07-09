@@ -104,6 +104,9 @@ namespace NuGetConsole
         {
             Start();
 
+            var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
+            await outputWindowTextWriter.FlushAsync();
+
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             VsOutputWindowPane.Activate();

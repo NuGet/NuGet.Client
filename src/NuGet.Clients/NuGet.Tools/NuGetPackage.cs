@@ -578,7 +578,7 @@ namespace NuGetVSExtension
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
 
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-            var uiController = ServiceLocator.GetInstance<INuGetUIFactory>().Create(nuGetProject);
+            var uiController = UIFactory.Value.Create(nuGetProject);
             var settings = uiController.UIContext.UserSettingsManager.GetSettings(GetProjectSettingsKey(nuGetProject));
 
             await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
