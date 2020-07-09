@@ -128,8 +128,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(result.Success, $"{result.Output} {result.Errors}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
+                Assert.True(result.Success, $"{result.AllOutput}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.AllOutput}");
             }
         }
 
@@ -241,12 +241,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(result.Success, $"{result.Output} {result.Errors}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
-                Assert.Contains("Downloads", $"{result.Output} {result.Errors}");
-                Assert.Contains("detailed properly.", $"{result.Output} {result.Errors}");
-                Assert.DoesNotContain("...", $"{result.Output} {result.Errors}");
-                Assert.Contains("Querying", $"{result.Output} {result.Errors}");
+                Assert.True(result.Success, $"{result.AllOutput}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.AllOutput}");
+                Assert.Contains("Downloads", $"{result.AllOutput}");
+                Assert.Contains("detailed properly.", $"{result.AllOutput}");
+                Assert.DoesNotContain("...", $"{result.AllOutput}");
+                Assert.Contains("Querying", $"{result.AllOutput}");
             }
         }
 
@@ -358,12 +358,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(result.Success, $"{result.Output} {result.Errors}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
-                Assert.Contains("Downloads", $"{result.Output} {result.Errors}");
-                Assert.DoesNotContain("detailed properly.", $"{result.Output} {result.Errors}");
-                Assert.Contains("...", $"{result.Output} {result.Errors}");
-                Assert.DoesNotContain("Querying", $"{result.Output} {result.Errors}");
+                Assert.True(result.Success, $"{result.AllOutput}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.AllOutput}");
+                Assert.Contains("Downloads", $"{result.AllOutput}");
+                Assert.DoesNotContain("detailed properly.", $"{result.AllOutput}");
+                Assert.Contains("...", $"{result.AllOutput}");
+                Assert.DoesNotContain("Querying", $"{result.AllOutput}");
             }
         }
 
@@ -475,12 +475,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(result.Success, $"{result.Output} {result.Errors}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
-                Assert.DoesNotContain("Downloads", $"{result.Output} {result.Errors}");
-                Assert.DoesNotContain("detailed properly.", $"{result.Output} {result.Errors}");
-                Assert.DoesNotContain("...", $"{result.Output} {result.Errors}");
-                Assert.DoesNotContain("Querying", $"{result.Output} {result.Errors}");
+                Assert.True(result.Success, $"{result.AllOutput}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.AllOutput}");
+                Assert.DoesNotContain("Downloads", $"{result.AllOutput}");
+                Assert.DoesNotContain("detailed properly.", $"{result.AllOutput}");
+                Assert.DoesNotContain("...", $"{result.AllOutput}");
+                Assert.DoesNotContain("Querying", $"{result.AllOutput}");
             }
         }
 
@@ -644,8 +644,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(result.Success, $"{result.Output} {result.Errors}");
-                Assert.Contains("Fake.Newtonsoft.Json - Correct result", $"{result.Output} {result.Errors}");
+                Assert.True(result.Success, $"{result.AllOutput}");
+                Assert.Contains("Fake.Newtonsoft.Json - Correct result", $"{result.AllOutput}");
             }
         }
 
@@ -757,8 +757,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(result.Success, $"{result.Output} {result.Errors}");
-                Assert.Contains("Source: mockSource", $"{result.Output} {result.Errors}");
+                Assert.True(result.Success, $"{result.AllOutput}");
+                Assert.Contains("Source: mockSource", $"{result.AllOutput}");
             }
         }
 
@@ -870,8 +870,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(result.Success, $"{result.Output} {result.Errors}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
+                Assert.True(result.Success, $"{result.AllOutput}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.AllOutput}");
             }
         }
 
@@ -942,9 +942,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(result.Success, $"{result.Output} {result.Errors}");
-                Assert.Contains("No results found.", $"{result.Output} {result.Errors}");
-                Assert.DoesNotContain(">", $"{result.Output} {result.Errors}");
+                Assert.True(result.Success, $"{result.AllOutput}");
+                Assert.Contains("No results found.", $"{result.AllOutput}");
+                Assert.DoesNotContain(">", $"{result.AllOutput}");
             }
         }
     }
