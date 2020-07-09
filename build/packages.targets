@@ -8,7 +8,8 @@
         <VSServicesVersion>16.153.0</VSServicesVersion>
         <VSThreadingVersion>16.6.13</VSThreadingVersion>
         <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/nuget/home/issues/8952 -->
-        <PatchedSystemPackagesVersion>5.0.0-preview.3.20214.6</PatchedSystemPackagesVersion>
+        <PatchedSystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">5.0.0-preview.3.20214.6</PatchedSystemPackagesVersion>
+        <PatchedSystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">$(SystemPackagesVersion)</PatchedSystemPackagesVersion>
     </PropertyGroup>
 
     <!-- Test and package versions -->

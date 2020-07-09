@@ -170,9 +170,6 @@
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\NuGet*.resources.dll">
         <PackagePath>CoreCLR/</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\*.dll" Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
-        <PackagePath>CoreCLR/</PackagePath>
-      </TfmSpecificPackageFile>
     </ItemGroup>    
   </Target>
 
