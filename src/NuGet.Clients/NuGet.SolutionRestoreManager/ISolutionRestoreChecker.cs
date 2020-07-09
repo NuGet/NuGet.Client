@@ -36,7 +36,7 @@ namespace NuGet.SolutionRestoreManager
         /// <remarks>Note that this call is stateful. This method may end up caching the dependency graph spec, so do not invoke multiple times.
         ///  Ideally <see cref="PerformUpToDateCheck(DependencyGraphSpec)"/> call should be followed by a <see cref="ReportStatus(IReadOnlyList{RestoreSummary})"/> call.
         /// </remarks>
-        void ReportStatus(IReadOnlyList<RestoreSummary> restoreSummaries);
+        void SaveRestoreStatus(IReadOnlyList<RestoreSummary> restoreSummaries);
 
         /// <summary>
         /// Clears any cached values. This is meant to mimic restores that overwrite the incremental restore optimizations.

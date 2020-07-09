@@ -272,7 +272,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Now we run 
             var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC, projectD, projectE);
-            checker.ReportStatus(results);
+            checker.SaveRestoreStatus(results);
 
             // Prepare the new DG Spec:
             // Make projectE dirty by setting a random value that's usually not there :)
@@ -315,7 +315,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var expected = GetUniqueNames(projectA, projectB, projectC);
                 actual.Should().BeEquivalentTo(expected);
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Act & Asset.
                 actual = checker.PerformUpToDateCheck(dgSpec, NullLogger.Instance);
@@ -349,7 +349,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var expected = GetUniqueNames(projectA, projectB, projectC, projectD);
                 actual.Should().BeEquivalentTo(expected);
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC, projectD);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Set-up, B => D
                 projectB = projectB.WithTestProjectReference(projectD);
@@ -386,7 +386,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var expected = GetUniqueNames(projectA, projectB, projectC);
                 actual.Should().BeEquivalentTo(expected);
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Set-up, delete C's outputs
                 SolutionUpToDateChecker.GetOutputFilePaths(projectC, out string assetsFilePath, out string _, out string _, out string _, out string _);
@@ -423,7 +423,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var expected = GetUniqueNames(projectA, projectB, projectC);
                 actual.Should().BeEquivalentTo(expected);
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Set-up, delete C's outputs
                 SolutionUpToDateChecker.GetOutputFilePaths(projectC, out string _, out string cacheFilePath, out string _, out string _, out string _);
@@ -462,7 +462,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var expected = GetUniqueNames(projectA, projectB, projectC, projectD);
                 actual.Should().BeEquivalentTo(expected);
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC, projectD);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Set-up, make C dirty.
                 projectC = projectC.Clone();
@@ -499,7 +499,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
                 // Set-up, ensure the last status for projectC is a failure.
                 var results = RunRestore(failedProjects: new HashSet<string>() { projectC.RestoreMetadata.ProjectUniqueName }, projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Act & Assert
                 actual = checker.PerformUpToDateCheck(dgSpec, NullLogger.Instance);
@@ -532,7 +532,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var expected = GetUniqueNames(projectA, projectB, projectC);
                 actual.Should().BeEquivalentTo(expected);
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Set-up, delete C's outputs
                 Directory.Delete(projectC.RestoreMetadata.PackagesPath, recursive: true);
@@ -579,7 +579,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>() { projectC.RestoreMetadata.ProjectUniqueName }, projectA, projectB, projectC);
                 // The test logger will not contain any messages because we are not running actual restore.
                 testLogger.WarningMessages.Should().BeEmpty();
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Act & Asset.
                 testLogger = new TestLogger();
@@ -622,7 +622,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>() { projectC.RestoreMetadata.ProjectUniqueName }, projectA, projectB, projectC);
                 // The test logger will not contain any messages because we are not running actual restore.
                 testLogger.WarningMessages.Should().BeEmpty();
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Act & Assert.
                 testLogger = new TestLogger();
@@ -667,14 +667,14 @@ namespace NuGet.SolutionRestoreManager.Test
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>() { projectC.RestoreMetadata.ProjectUniqueName }, projectA, projectB, projectC);
                 // The test logger will not contain any messages because we are not running actual restore.
                 testLogger.WarningMessages.Should().BeEmpty();
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Run again to verify the warning is replayed once!
                 testLogger = new TestLogger();
                 actual = checker.PerformUpToDateCheck(dgSpec, testLogger);
                 testLogger.WarningMessages.Should().HaveCount(1);
                 actual.Should().BeEmpty();
-                checker.ReportStatus(new RestoreSummary[] { });
+                checker.SaveRestoreStatus(new RestoreSummary[] { });
 
                 // Pretend project C has been unloaded
                 dgSpec = new DependencyGraphSpec();
@@ -724,7 +724,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var expected = GetUniqueNames(projectA, projectB, projectC, projectD, projectE);
                 actual.Should().BeEquivalentTo(expected);
                 var results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectB, projectC, projectD, projectE);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // D => E
                 projectD = projectD.WithTestProjectReference(projectE);
@@ -736,7 +736,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 expected = GetUniqueNames(projectA, projectD);
                 actual.Should().BeEquivalentTo(expected);
                 results = RunRestore(failedProjects: new HashSet<string>(), projectsWithWarnings: new HashSet<string>(), projectA, projectD);
-                checker.ReportStatus(results);
+                checker.SaveRestoreStatus(results);
 
                 // Finally, last check. Run for a 3rd time. Everything should be up to date
                 actual = checker.PerformUpToDateCheck(dgSpec, NullLogger.Instance);

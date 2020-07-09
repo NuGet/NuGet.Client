@@ -412,7 +412,7 @@ namespace NuGet.SolutionRestoreManager
                                 _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
                                 var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
                                 _noOpProjectsCount += restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
-                                _solutionUpToDateChecker.ReportStatus(restoreSummaries);
+                                _solutionUpToDateChecker.SaveRestoreStatus(restoreSummaries);
                                 
                                 if (isRestoreFailed)
                                 {

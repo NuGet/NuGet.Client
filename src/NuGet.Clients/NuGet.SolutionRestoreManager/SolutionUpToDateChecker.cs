@@ -20,7 +20,7 @@ namespace NuGet.SolutionRestoreManager
         private DependencyGraphSpec _cachedDependencyGraphSpec;
         private Dictionary<string, RestoreData> _restoreData = new Dictionary<string, RestoreData>();
 
-        public void ReportStatus(IReadOnlyList<RestoreSummary> restoreSummaries)
+        public void SaveRestoreStatus(IReadOnlyList<RestoreSummary> restoreSummaries)
         {
             if (restoreSummaries == null)
             {
