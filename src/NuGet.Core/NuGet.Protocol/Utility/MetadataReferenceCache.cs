@@ -30,8 +30,6 @@ namespace NuGet.Protocol
         /// </summary>
         public string GetString(string s)
         {
-            StrTotal++;
-
             if (ReferenceEquals(s, null))
             {
                 return null;
