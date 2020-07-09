@@ -18,8 +18,7 @@ namespace NuGet.SolutionRestoreManager
     {
         private IList<string> _failedProjects = new List<string>();
         private DependencyGraphSpec _cachedDependencyGraphSpec;
-        private Dictionary<string, RestoreOutputData> _outputWriteTimes = new Dictionary<string, RestoreOutputData>();
-        private Dictionary<string, IReadOnlyList<IRestoreLogMessage>> _logMessages = new Dictionary<string, IReadOnlyList<IRestoreLogMessage>>();
+        private Dictionary<string, RestoreData> _restoreData = new Dictionary<string, RestoreData>();
 
         public void ReportStatus(IReadOnlyList<RestoreSummary> restoreSummaries)
         {
@@ -32,30 +31,24 @@ namespace NuGet.SolutionRestoreManager
 
             foreach (var summary in restoreSummaries)
             {
-                // Always remove the previous messages from the cache!
-                _logMessages.Remove(summary.InputPath);
                 if (summary.Success)
                 {
                     var packageSpec = _cachedDependencyGraphSpec.GetProjectSpec(summary.InputPath);
                     GetOutputFilePaths(packageSpec, out string assetsFilePath, out string cacheFilePath, out string targetsFilePath, out string propsFilePath, out string lockFilePath);
+                    var messages = !packageSpec.RestoreSettings.HideWarningsAndErrors && summary.Errors.Count > 0 ?
+                            summary.Errors :
+                            null;
 
-                    _outputWriteTimes[summary.InputPath] = new RestoreOutputData()
+                    _restoreData[summary.InputPath] = new RestoreData()
                     {
                         _lastAssetsFileWriteTime = GetLastWriteTime(assetsFilePath),
                         _lastCacheFileWriteTime = GetLastWriteTime(cacheFilePath),
                         _lastTargetsFileWriteTime = GetLastWriteTime(targetsFilePath),
                         _lastPropsFileWriteTime = GetLastWriteTime(propsFilePath),
                         _lastLockFileWriteTime = GetLastWriteTime(lockFilePath),
-                        _globalPackagesFolderCreationTime = GetCreationTime(packageSpec.RestoreMetadata.PackagesPath)
+                        _globalPackagesFolderCreationTime = GetCreationTime(packageSpec.RestoreMetadata.PackagesPath),
+                        _messages = messages
                     };
-
-                    if (!packageSpec.RestoreSettings.HideWarningsAndErrors)
-                    {
-                        if(summary.Errors.Count > 0)
-                        {
-                            _logMessages.Add(summary.InputPath, summary.Errors);
-                        }
-                    }
                 }
                 else
                 {
@@ -97,7 +90,7 @@ namespace NuGet.SolutionRestoreManager
                 // Pass #1. Validate all the data (i/o)
                 // 1a. Validate the package specs (references & settings)
                 // 1b. Validate the expected outputs (assets file, nuget.g.*, lock file)
-                var unloadedProjects = _logMessages.Keys.ToHashSet();
+                var unloadedProjects = _restoreData.Keys.ToHashSet();
                 foreach (var project in dependencyGraphSpec.Projects)
                 {
                     var projectUniqueName = project.RestoreMetadata.ProjectUniqueName;
@@ -112,10 +105,10 @@ namespace NuGet.SolutionRestoreManager
                     if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
                         project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
                     {
-                        if (!_failedProjects.Contains(projectUniqueName) && _outputWriteTimes.TryGetValue(projectUniqueName, out RestoreOutputData outputWriteTime))
+                        if (!_failedProjects.Contains(projectUniqueName) && _restoreData.TryGetValue(projectUniqueName, out RestoreData restoreData))
                         {
                             GetOutputFilePaths(project, out string assetsFilePath, out string cacheFilePath, out string targetsFilePath, out string propsFilePath, out string lockFilePath);
-                            if (!AreOutputsUpToDate(assetsFilePath, cacheFilePath, targetsFilePath, propsFilePath, lockFilePath, project.RestoreMetadata.PackagesPath, outputWriteTime))
+                            if (!AreOutputsUpToDate(assetsFilePath, cacheFilePath, targetsFilePath, propsFilePath, lockFilePath, project.RestoreMetadata.PackagesPath, restoreData))
                             {
                                 dirtyOutputs.Add(projectUniqueName);
                             }
@@ -130,15 +123,16 @@ namespace NuGet.SolutionRestoreManager
                         hasDirtyNonTransitiveSpecs = true;
                     }
                 }
-                // Remove the cached warnings of unloaded projects.
+
+                // Remove the cached data of the unloaded projects if any.
                 foreach (var project in unloadedProjects)
                 {
-                    _logMessages.Remove(project);
+                    _restoreData.Remove(project);
                 }
                 // Fast path. Skip Pass #2
                 if (dirtySpecs.Count == 0 && dirtyOutputs.Count == 0)
                 {
-                    ReplayAllWarnings(_logMessages, (string projectName) => true , logger);
+                    ReplayAllWarnings(_restoreData, (string projectName) => true , logger);
                     return Enumerable.Empty<string>();
                 }
                 // Update the cache before Pass #2
@@ -148,14 +142,14 @@ namespace NuGet.SolutionRestoreManager
                 var dirtyProjects = GetParents(dirtySpecs, dependencyGraphSpec);
 
                 // All dirty projects + projects with outputs that need to be restored
-                // - the projects that are non transitive that never needed restore anyways, hence the insertion with the provider restore projects!
+                // - the projects that are non transitive that never needed restore anyways, hence the intersection with the provider restore projects!
                 var resultSpecs = dirtyProjects.Union(dirtyOutputs);
                 if (hasDirtyNonTransitiveSpecs)
                 {
                     resultSpecs = dependencyGraphSpec.Restore.Intersect(resultSpecs);
                 }
 
-                ReplayAllWarnings(_logMessages, (string projectName) => !resultSpecs.Contains(projectName), logger);
+                ReplayAllWarnings(_restoreData, (string projectName) => !resultSpecs.Contains(projectName), logger);
                 return resultSpecs;
             }
             else
@@ -166,26 +160,17 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private void ReplayAllWarnings(Dictionary<string, IReadOnlyList<IRestoreLogMessage>> logMessages, Func<string, bool> shouldReplayWarnings, ILogger logger)
+        private void ReplayAllWarnings(Dictionary<string, RestoreData> restoreData, Func<string, bool> shouldReplayWarnings, ILogger logger)
         {
-            if (logMessages.Count > 0)
+            foreach (var restoreOutputs in restoreData)
             {
-                foreach (var messages in logMessages)
+                if (shouldReplayWarnings(restoreOutputs.Key) && restoreOutputs.Value._messages != null)
                 {
-                    if (shouldReplayWarnings(messages.Key))
+                    foreach (var logMessage in restoreOutputs.Value._messages)
                     {
-                        LogAllWarnings(messages.Value, logger);
+                        logger.Log(logMessage);
                     }
                 }
-            }
-            
-        }
-
-        private static void LogAllWarnings(IReadOnlyList<IRestoreLogMessage> messages, ILogger logger)
-        {
-            foreach (var logMessage in messages)
-            {
-                logger.Log(logMessage);
             }
         }
 
@@ -243,7 +228,7 @@ namespace NuGet.SolutionRestoreManager
                 null;
         }
 
-        private static bool AreOutputsUpToDate(string assetsFilePath, string cacheFilePath, string targetsFilePath, string propsFilePath, string lockFilePath, string globalPackagesFolderPath, RestoreOutputData outputWriteTime)
+        private static bool AreOutputsUpToDate(string assetsFilePath, string cacheFilePath, string targetsFilePath, string propsFilePath, string lockFilePath, string globalPackagesFolderPath, RestoreData outputWriteTime)
         {
             DateTime currentAssetsFileWriteTime = GetLastWriteTime(assetsFilePath);
             DateTime currentCacheFilePath = GetLastWriteTime(cacheFilePath);
@@ -305,11 +290,10 @@ namespace NuGet.SolutionRestoreManager
         {
             _failedProjects.Clear();
             _cachedDependencyGraphSpec = null;
-            _outputWriteTimes.Clear();
-            _logMessages.Clear();
+            _restoreData.Clear();
         }
 
-        internal struct RestoreOutputData
+        internal struct RestoreData
         {
             internal DateTime _lastAssetsFileWriteTime;
             internal DateTime _lastCacheFileWriteTime;
@@ -317,6 +301,7 @@ namespace NuGet.SolutionRestoreManager
             internal DateTime _lastPropsFileWriteTime;
             internal DateTime _lastLockFileWriteTime;
             internal DateTime _globalPackagesFolderCreationTime;
+            internal IReadOnlyList<IRestoreLogMessage> _messages;
         }
     }
 }

@@ -18,14 +18,14 @@ namespace NuGet.SolutionRestoreManager
         /// The checker itself caches the DependencyGraphSpec it is provided and the last restore status, reported through <see cref="ReportStatus(IReadOnlyList{RestoreSummary})"/>.
         /// Accounts for changes in the PackageSpec and marks all the parent projects as dirty as well.
         /// Additionally, ensures that the expected output files have the same timestamps as the last reported status
-        /// <see cref="ReportStatus(IReadOnlyList{RestoreSummary})"/>.\
+        /// <see cref="ReportStatus(IReadOnlyList{RestoreSummary})"/>
         /// Finally we will use the logger provided to replay any warnings necessary. Whether warnings are replayed in conditional on the <see cref="ProjectRestoreSettings"/> in the <see cref="PackageSpec"/>.
         /// </summary>
         /// <param name="dependencyGraphSpec">The current dependency graph spec.</param>
         /// <param name="logger">A logger that will be used to replay warnings for projects that no-op if necessary.</param>
         /// <returns>Unique ids of the dirty projects</returns>
         /// <remarks>Note that this call is stateful. This method may end up caching the dependency graph spec, so do not invoke multiple times. 
-        /// Ideally <see cref="PerformUpToDateCheck(DependencyGraphSpec)"/> call should be followed by a <see cref="ReportStatus(IReadOnlyList{RestoreSummary})"/> call.
+        /// Ideally each <see cref="PerformUpToDateCheck(DependencyGraphSpec, ILogger)"/> call should be followed by a <see cref="ReportStatus(IReadOnlyList{RestoreSummary})"/> call.
         /// </remarks>
         IEnumerable<string> PerformUpToDateCheck(DependencyGraphSpec dependencyGraphSpec, ILogger logger);
 
@@ -41,7 +41,6 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Clears any cached values. This is meant to mimic restores that overwrite the incremental restore optimizations.
         /// </summary>
-        /// <returns></returns>
         void CleanCache();
     }
 }
