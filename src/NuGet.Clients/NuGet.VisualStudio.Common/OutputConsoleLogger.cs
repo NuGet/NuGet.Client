@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio.Common
         private EnvDTE.SolutionEvents _solutionEvents;
 
         [SuppressMessage("Build", "CA2213:'OutputConsoleLogger' contains field '_semaphore' that is of IDisposable type 'ReentrantSemaphore', but it is never disposed. Change the Dispose method on 'OutputConsoleLogger' to call Close or Dispose on this field.", Justification = "Field is disposed from async task invoked from Dispose.")]
-        private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(0, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.NotAllowed);
+        private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.NotAllowed);
 
         public IOutputConsole OutputConsole { get; private set; }
 
