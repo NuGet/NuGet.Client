@@ -7,8 +7,20 @@
         <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     </PropertyGroup>
 
-    <!-- After changing versions here, run configure.ps1 -->
+    <!-- VS specific feeds -->
+    <ItemGroup>
+        <AdditionalFeed Include="VsIde">
+            <Url>https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json</Url>
+        </AdditionalFeed>
+        <AdditionalFeed Include="VsSdk">
+            <Url>https://pkgs.dev.azure.com/azure-public/vside/_packaging/vssdk/nuget/v3/index.json</Url>
+        </AdditionalFeed>
+    </ItemGroup>
+    <PropertyGroup>
+        <RestoreAdditionalProjectSources>@(AdditionalFeed->Metadata("Url"))</RestoreAdditionalProjectSources>
+    </PropertyGroup>
 
+    <!-- After changing versions here, run configure.ps1 -->
     <ItemGroup>
         <PackageDownload Include="ILMerge" version="[3.0.21]" />
         <PackageDownload Include="Lucene.Net" version="[3.0.3]" />
