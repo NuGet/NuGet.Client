@@ -748,7 +748,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(sources));
             }
 
-            SavePackageSources(sources, new PackageSourceUpdateSettings());
+            SavePackageSources(sources, PackageSourceUpdateSettings.Default);
         }
 
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()
