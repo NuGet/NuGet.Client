@@ -431,7 +431,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// True if this framework is Net5 or later, until we invent something new.
         /// </summary>
-        public bool IsNet5Era { get; private set; }
+        internal bool IsNet5Era { get; private set; }
 
         /// <summary>
         /// Full framework comparison of the identifier, version, profile, platform, and platform version

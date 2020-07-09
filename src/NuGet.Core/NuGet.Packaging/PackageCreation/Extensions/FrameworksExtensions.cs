@@ -13,7 +13,8 @@ namespace NuGet.Packaging
         // which is relevant for building packages. This isn't needed for net5.0+ frameworks.
         public static string GetFrameworkString(this NuGetFramework self)
         {
-            if (self.IsNet5Era)
+            bool isNet5Era = (self.Version.Major >= 5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, self.Framework));
+            if (isNet5Era)
             {
                 return self.DotNetFrameworkName;
             }
