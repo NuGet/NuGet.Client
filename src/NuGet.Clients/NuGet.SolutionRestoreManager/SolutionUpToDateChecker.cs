@@ -19,13 +19,22 @@ namespace NuGet.SolutionRestoreManager
         private IList<string> _failedProjects = new List<string>();
         private DependencyGraphSpec _cachedDependencyGraphSpec;
         private Dictionary<string, RestoreOutputData> _outputWriteTimes = new Dictionary<string, RestoreOutputData>();
+        private Dictionary<string, IReadOnlyList<IRestoreLogMessage>> _logMessages = new Dictionary<string, IReadOnlyList<IRestoreLogMessage>>();
 
         public void ReportStatus(IReadOnlyList<RestoreSummary> restoreSummaries)
         {
+            if (restoreSummaries == null)
+            {
+                throw new ArgumentNullException(nameof(restoreSummaries));
+            }
+
             _failedProjects.Clear();
 
             foreach (var summary in restoreSummaries)
             {
+                // Always remove the previous messages from the cache!
+                // TODO NK: We could have a bug here if a project is unloaded, we might end up showing warnings for said project. We don't want that.
+                _logMessages.Remove(summary.InputPath);
                 if (summary.Success)
                 {
                     var packageSpec = _cachedDependencyGraphSpec.GetProjectSpec(summary.InputPath);
@@ -40,12 +49,19 @@ namespace NuGet.SolutionRestoreManager
                         _lastLockFileWriteTime = GetLastWriteTime(lockFilePath),
                         _globalPackagesFolderCreationTime = GetCreationTime(packageSpec.RestoreMetadata.PackagesPath)
                     };
+
+                    if (!packageSpec.RestoreSettings.HideWarningsAndErrors)
+                    {
+                        if(summary.Errors.Count > 0)
+                        {
+                            _logMessages.Add(summary.InputPath, summary.Errors);
+                        }
+                    }
                 }
                 else
                 {
                     _failedProjects.Add(summary.InputPath);
                 }
-
             }
         }
 
@@ -61,8 +77,18 @@ namespace NuGet.SolutionRestoreManager
         // Finally we only update the cache specs if Pass #1 determined that there are projects that are not up to date.
         // Result
         // Lastly all the projects marked as having dirty specs & dirty outputs are returned.
-        public IEnumerable<string> PerformUpToDateCheck(DependencyGraphSpec dependencyGraphSpec)
+        // Before we return the list of projects that are not up to date, we always make sure to replay the warnings for the up to date projects.
+        public IEnumerable<string> PerformUpToDateCheck(DependencyGraphSpec dependencyGraphSpec, ILogger logger)
         {
+            if (dependencyGraphSpec == null)
+            {
+                throw new ArgumentNullException(nameof(dependencyGraphSpec));
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             if (_cachedDependencyGraphSpec != null)
             {
                 var dirtySpecs = new List<string>();
@@ -107,6 +133,7 @@ namespace NuGet.SolutionRestoreManager
                 // Fast path. Skip Pass #2
                 if (dirtySpecs.Count == 0 && dirtyOutputs.Count == 0)
                 {
+                    ReplayAllWarnings(_logMessages, (string projectName) => true , logger);
                     return Enumerable.Empty<string>();
                 }
                 // Update the cache before Pass #2
@@ -122,6 +149,8 @@ namespace NuGet.SolutionRestoreManager
                 {
                     resultSpecs = dependencyGraphSpec.Restore.Intersect(resultSpecs);
                 }
+
+                ReplayAllWarnings(_logMessages, (string projectName) => !resultSpecs.Contains(projectName), logger);
                 return resultSpecs;
             }
             else
@@ -129,6 +158,29 @@ namespace NuGet.SolutionRestoreManager
                 _cachedDependencyGraphSpec = dependencyGraphSpec;
 
                 return dependencyGraphSpec.Restore;
+            }
+        }
+
+        private void ReplayAllWarnings(Dictionary<string, IReadOnlyList<IRestoreLogMessage>> logMessages, Func<string, bool> shouldReplayWarnings, ILogger logger)
+        {
+            if (logMessages.Count > 0)
+            {
+                foreach (var messages in logMessages)
+                {
+                    if (shouldReplayWarnings(messages.Key))
+                    {
+                        LogAllWarnings(messages.Value, logger);
+                    }
+                }
+            }
+            
+        }
+
+        private static void LogAllWarnings(IReadOnlyList<IRestoreLogMessage> messages, ILogger logger)
+        {
+            foreach (var logMessage in messages)
+            {
+                logger.Log(logMessage);
             }
         }
 
