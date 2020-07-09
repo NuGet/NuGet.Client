@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -83,6 +84,12 @@ namespace NuGet.CommandLine
 
                 if (resource is null)
                 {
+                    Console.WriteLine(sourceSeparator);
+                    System.Console.WriteLine($"Source: {source.Name}");
+                    System.Console.WriteLine(packageSeparator);
+                    System.Console.WriteLine("Failed to obtain a search resource.");
+                    Console.WriteLine(packageSeparator);
+                    System.Console.WriteLine();
                     continue;
                 }
 
