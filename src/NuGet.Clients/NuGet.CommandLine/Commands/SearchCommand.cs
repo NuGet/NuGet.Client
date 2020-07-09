@@ -95,13 +95,12 @@ namespace NuGet.CommandLine
                     cancellationToken);
 
                 Console.WriteLine(sourceSeparator);
-                Console.WriteLine($"Source: {source.Name}");
+                System.Console.WriteLine($"Source: {source.Name}"); // System.Console is used so that output is not suppressed by Verbosity.Quiet
 
                 if (results.Any())
                 {
                     if (Verbosity == Verbosity.Quiet)
                     {
-                        System.Console.WriteLine($"Source: {source.Name}"); // Would not have printed using Console.WriteLine if Verbosity == quiet
                         System.Console.WriteLine(packageSeparator);
                     }
 
@@ -109,9 +108,10 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
+                    System.Console.WriteLine(packageSeparator);
+                    System.Console.WriteLine("No results found.");
                     Console.WriteLine(packageSeparator);
-                    Console.WriteLine("No results found.");
-                    Console.WriteLine(packageSeparator + Environment.NewLine);
+                    System.Console.WriteLine();
                 }
             }
         }

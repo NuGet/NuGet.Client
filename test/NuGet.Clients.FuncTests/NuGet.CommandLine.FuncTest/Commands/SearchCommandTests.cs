@@ -128,8 +128,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Item2} {result.Item3}");
+                Assert.True(result.Success, $"{result.Output} {result.Errors}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
             }
         }
 
@@ -241,12 +241,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Item2} {result.Item3}");
-                Assert.Contains("Downloads", $"{result.Item2} {result.Item3}");
-                Assert.Contains("detailed properly.", $"{result.Item2} {result.Item3}");
-                Assert.DoesNotContain("...", $"{result.Item2} {result.Item3}");
-                Assert.Contains("Querying", $"{result.Item2} {result.Item3}");
+                Assert.True(result.Success, $"{result.Output} {result.Errors}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
+                Assert.Contains("Downloads", $"{result.Output} {result.Errors}");
+                Assert.Contains("detailed properly.", $"{result.Output} {result.Errors}");
+                Assert.DoesNotContain("...", $"{result.Output} {result.Errors}");
+                Assert.Contains("Querying", $"{result.Output} {result.Errors}");
             }
         }
 
@@ -358,12 +358,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Item2} {result.Item3}");
-                Assert.Contains("Downloads", $"{result.Item2} {result.Item3}");
-                Assert.DoesNotContain("detailed properly.", $"{result.Item2} {result.Item3}");
-                Assert.Contains("...", $"{result.Item2} {result.Item3}");
-                Assert.DoesNotContain("Querying", $"{result.Item2} {result.Item3}");
+                Assert.True(result.Success, $"{result.Output} {result.Errors}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
+                Assert.Contains("Downloads", $"{result.Output} {result.Errors}");
+                Assert.DoesNotContain("detailed properly.", $"{result.Output} {result.Errors}");
+                Assert.Contains("...", $"{result.Output} {result.Errors}");
+                Assert.DoesNotContain("Querying", $"{result.Output} {result.Errors}");
             }
         }
 
@@ -475,12 +475,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Item2} {result.Item3}");
-                Assert.DoesNotContain("Downloads", $"{result.Item2} {result.Item3}");
-                Assert.DoesNotContain("detailed properly.", $"{result.Item2} {result.Item3}");
-                Assert.DoesNotContain("...", $"{result.Item2} {result.Item3}");
-                Assert.DoesNotContain("Querying", $"{result.Item2} {result.Item3}");
+                Assert.True(result.Success, $"{result.Output} {result.Errors}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
+                Assert.DoesNotContain("Downloads", $"{result.Output} {result.Errors}");
+                Assert.DoesNotContain("detailed properly.", $"{result.Output} {result.Errors}");
+                Assert.DoesNotContain("...", $"{result.Output} {result.Errors}");
+                Assert.DoesNotContain("Querying", $"{result.Output} {result.Errors}");
             }
         }
 
@@ -644,8 +644,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("Fake.Newtonsoft.Json - Correct result", $"{result.Item2} {result.Item3}");
+                Assert.True(result.Success, $"{result.Output} {result.Errors}");
+                Assert.Contains("Fake.Newtonsoft.Json - Correct result", $"{result.Output} {result.Errors}");
             }
         }
 
@@ -757,8 +757,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("Source: mockSource", $"{result.Item2} {result.Item3}");
+                Assert.True(result.Success, $"{result.Output} {result.Errors}");
+                Assert.Contains("Source: mockSource", $"{result.Output} {result.Errors}");
             }
         }
 
@@ -870,8 +870,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Item2} {result.Item3}");
+                Assert.True(result.Success, $"{result.Output} {result.Errors}");
+                Assert.Contains("Fake.Newtonsoft.Json", $"{result.Output} {result.Errors}");
             }
         }
 
@@ -942,9 +942,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("No results found.", $"{result.Item2} {result.Item3}");
-                Assert.DoesNotContain(">", $"{result.Item2} {result.Item3}");
+                Assert.True(result.Success, $"{result.Output} {result.Errors}");
+                Assert.Contains("No results found.", $"{result.Output} {result.Errors}");
+                Assert.DoesNotContain(">", $"{result.Output} {result.Errors}");
             }
         }
     }
