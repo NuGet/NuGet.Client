@@ -19,13 +19,6 @@ namespace NuGet.Protocol
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
         private readonly Dictionary<string, VersionRange> _versionRangeCache = new Dictionary<string, VersionRange>(StringComparer.Ordinal);
         private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
-        public int StrCount { get; set; }
-        public int StrTotal { get; set; }
-        public int NuGetVersionCount { get; set; }
-        public int NuGetVersionTotal { get; set; }
-        public int VersionRangeCount { get; set; }
-        public int VersionRangeTotal { get; set; }
-
         object _lockObject1 = new object();
         object _lockObject2 = new object();
         object _lockObject3 = new object();
@@ -58,10 +51,6 @@ namespace NuGet.Protocol
                     _stringCache.Add(s, s);
                     cachedValue = s;
                 }
-                else
-                {
-                    StrCount++;
-                }
             }
 
             return cachedValue;
@@ -72,7 +61,6 @@ namespace NuGet.Protocol
         /// </summary>
         public NuGetVersion GetVersion(string s)
         {
-            NuGetVersionTotal++;
             if (string.IsNullOrEmpty(s))
             {
                 return NuGetVersion.Parse(s);
@@ -87,10 +75,6 @@ namespace NuGet.Protocol
                     version = NuGetVersion.Parse(s);
                     _versionCache.Add(s, version);
                 }
-                else
-                {
-                    NuGetVersionCount++;
-                }
             }
 
             return version;
@@ -101,8 +85,6 @@ namespace NuGet.Protocol
         /// </summary>
         public VersionRange GetVersionRange(string s)
         {
-            VersionRangeTotal++;
-
             if (string.IsNullOrEmpty(s))
             {
                 return VersionRange.Parse(s);
@@ -116,10 +98,6 @@ namespace NuGet.Protocol
                 {
                     versionRange = VersionRange.Parse(s);
                     _versionRangeCache.Add(s, versionRange);
-                }
-                else
-                {
-                    VersionRangeCount++;
                 }
             }
 
@@ -136,12 +114,6 @@ namespace NuGet.Protocol
             _versionCache.Clear();
             _versionRangeCache.Clear();
             _propertyCache.Clear();
-            StrCount = 0;
-            StrTotal = 0;
-            NuGetVersionCount = 0;
-            NuGetVersionTotal = 0;
-            VersionRangeCount = 0;
-            VersionRangeTotal = 0;
         }
 
         /// <summary>

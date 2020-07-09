@@ -135,11 +135,6 @@ namespace NuGet.Protocol
                 }
             }
 
-            if(metadataCache.StrCount>10 || metadataCache.NuGetVersionCount>0 ||metadataCache.VersionRangeCount>0)
-            {
-                System.Diagnostics.Trace.Write( $"\nHello via Trace. strcount: {metadataCache.StrCount}/{metadataCache.StrTotal}  NugetVersionCount:{metadataCache.NuGetVersionCount}/{metadataCache.NuGetVersionTotal}    VersionRangeCount:{metadataCache.VersionRangeCount}/{metadataCache.VersionRangeTotal}" );
-            }
-
             return results;
         }
 

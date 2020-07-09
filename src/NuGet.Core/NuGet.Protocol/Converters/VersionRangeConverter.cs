@@ -38,7 +38,6 @@ namespace NuGet.Protocol
         /// <returns>A <see cref="VersionRange" /> object.</returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            //return reader.TokenType != JsonToken.Null ? VersionRange.Parse(serializer.Deserialize<string>(reader)) : null;
             if (reader.TokenType != JsonToken.Null)
             {
                 var versionRangeString = serializer.Deserialize<string>(reader);
