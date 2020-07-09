@@ -19,8 +19,10 @@
     <NETCoreTestTargetFrameworks>netcoreapp3.1;netcoreapp5.0</NETCoreTestTargetFrameworks>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFrameworks)</TargetFrameworksExe>
+    <TargetFrameworksExe Condition="'$(DotNetBuildFromSource)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
     <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">$(NETFXTargetFramework);$(NetStandardVersion);netcoreapp5.0</TargetFrameworksLibrary>
+    <TargetFrameworksLibrary Condition="'$(DotNetBuildFromSource)' == 'true'">$(NetStandardVersion)</TargetFrameworksLibrary>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
