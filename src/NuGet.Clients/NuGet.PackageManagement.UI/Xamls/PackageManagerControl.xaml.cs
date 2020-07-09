@@ -899,7 +899,11 @@ namespace NuGet.PackageManagement.UI
         private void RefreshInstalledAndUpdatesTabs()
         {
             // clear existing caches
-            Model.CachedUpdates = null;
+            if (Model.CachedUpdates != null)
+            {
+                Model.CachedUpdates.Packages = null;
+                Model.CachedUpdates = null;
+            }
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
