@@ -275,7 +275,8 @@
       DockPanel.Dock="Top"
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
       BorderThickness="0,0,0,1"
-      Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}">
+      Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}"
+      Visibility="Collapsed">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="auto" />
