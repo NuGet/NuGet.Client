@@ -12,6 +12,15 @@ namespace NuGet.Protocol
     /// </summary>
     public class VersionRangeConverter : JsonConverter
     {
+        private readonly MetadataReferenceCache _metadataReferenceCache;
+
+        public VersionRangeConverter() { }
+
+        public VersionRangeConverter(MetadataReferenceCache metadataReferenceCache)
+        {
+            _metadataReferenceCache = metadataReferenceCache;
+        }
+
         /// <summary>
         /// Gets a flag indicating whether or not a type is convertible.
         /// </summary>
@@ -29,7 +38,18 @@ namespace NuGet.Protocol
         /// <returns>A <see cref="VersionRange" /> object.</returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return reader.TokenType != JsonToken.Null ? VersionRange.Parse(serializer.Deserialize<string>(reader)) : null;
+            //return reader.TokenType != JsonToken.Null ? VersionRange.Parse(serializer.Deserialize<string>(reader)) : null;
+            if (reader.TokenType != JsonToken.Null)
+            {
+                var versionRangeString = serializer.Deserialize<string>(reader);
+                var version = _metadataReferenceCache == null ? VersionRange.Parse(versionRangeString)
+                    : _metadataReferenceCache.GetVersionRange(_metadataReferenceCache.GetString(versionRangeString));
+                return version;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>

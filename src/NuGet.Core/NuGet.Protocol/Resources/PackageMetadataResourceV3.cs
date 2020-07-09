@@ -84,7 +84,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            var metadataCache = new MetadataReferenceCache();
+            var metadataCache = JsonExtensions.MetaCache;
             var registrationUri = _regResource.GetUri(packageId);
 
             var (registrationIndex, httpSourceCacheContext) = await LoadRegistrationIndexAsync(
@@ -135,6 +135,11 @@ namespace NuGet.Protocol
                 }
             }
 
+            if(metadataCache.StrCount>10 || metadataCache.NuGetVersionCount>0 ||metadataCache.VersionRangeCount>0)
+            {
+                System.Diagnostics.Trace.Write( $"\nHello via Trace. strcount: {metadataCache.StrCount}/{metadataCache.StrTotal}  NugetVersionCount:{metadataCache.NuGetVersionCount}/{metadataCache.NuGetVersionTotal}    VersionRangeCount:{metadataCache.VersionRangeCount}/{metadataCache.VersionRangeTotal}" );
+            }
+
             return results;
         }
 
@@ -154,10 +159,12 @@ namespace NuGet.Protocol
                 return default(T);
             }
 
+            var serializer = JsonExtensions.JsonObjectSerializerWithCache;
+
             using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
             {
-                var registrationIndex = JsonExtensions.JsonObjectSerializer
+                var registrationIndex = serializer
                     .Deserialize<T>(jsonReader);
 
                 return await Task.FromResult(registrationIndex);

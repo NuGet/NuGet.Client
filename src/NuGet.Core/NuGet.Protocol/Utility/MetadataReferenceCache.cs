@@ -17,7 +17,18 @@ namespace NuGet.Protocol
         private readonly Dictionary<string, string> _stringCache = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new Dictionary<Type, PropertyInfo[]>();
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
+        private readonly Dictionary<string, VersionRange> _versionRangeCache = new Dictionary<string, VersionRange>(StringComparer.Ordinal);
         private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
+        public int StrCount { get; set; }
+        public int StrTotal { get; set; }
+        public int NuGetVersionCount { get; set; }
+        public int NuGetVersionTotal { get; set; }
+        public int VersionRangeCount { get; set; }
+        public int VersionRangeTotal { get; set; }
+
+        object _lockObject1 = new object();
+        object _lockObject2 = new object();
+        object _lockObject3 = new object();
 
         /// <summary>
         /// Checks if <paramref name="s"/> already exists in the cache.
@@ -26,6 +37,8 @@ namespace NuGet.Protocol
         /// </summary>
         public string GetString(string s)
         {
+            StrTotal++;
+
             if (ReferenceEquals(s, null))
             {
                 return null;
@@ -37,11 +50,18 @@ namespace NuGet.Protocol
             }
 
             string cachedValue;
-            
-            if (!_stringCache.TryGetValue(s, out cachedValue))
+
+            lock (_lockObject1)
             {
-                _stringCache.Add(s, s);
-                cachedValue = s;
+                if (!_stringCache.TryGetValue(s, out cachedValue))
+                {
+                    _stringCache.Add(s, s);
+                    cachedValue = s;
+                }
+                else
+                {
+                    StrCount++;
+                }
             }
 
             return cachedValue;
@@ -52,19 +72,76 @@ namespace NuGet.Protocol
         /// </summary>
         public NuGetVersion GetVersion(string s)
         {
+            NuGetVersionTotal++;
             if (string.IsNullOrEmpty(s))
             {
                 return NuGetVersion.Parse(s);
             }
 
             NuGetVersion version;
-            if (!_versionCache.TryGetValue(s, out version))
+
+            lock (_lockObject2)
             {
-                version = NuGetVersion.Parse(s);
-                _versionCache.Add(s, version);
+                if (!_versionCache.TryGetValue(s, out version))
+                {
+                    version = NuGetVersion.Parse(s);
+                    _versionCache.Add(s, version);
+                }
+                else
+                {
+                    NuGetVersionCount++;
+                }
             }
 
             return version;
+        }
+
+        /// <summary>
+        /// Parses <paramref name="s"/> into a <see cref="VersionRange"/>.
+        /// </summary>
+        public VersionRange GetVersionRange(string s)
+        {
+            VersionRangeTotal++;
+
+            if (string.IsNullOrEmpty(s))
+            {
+                return VersionRange.Parse(s);
+            }
+
+            VersionRange versionRange;
+
+            lock (_lockObject3)
+            {
+                if (!_versionRangeCache.TryGetValue(s, out versionRange))
+                {
+                    versionRange = VersionRange.Parse(s);
+                    _versionRangeCache.Add(s, versionRange);
+                }
+                else
+                {
+                    VersionRangeCount++;
+                }
+            }
+
+            return versionRange;
+        }
+
+
+        /// <summary>
+        /// Reset cache when we close the solution.
+        /// </summary>
+        public void ResetCache()
+        {
+            _stringCache.Clear();
+            _versionCache.Clear();
+            _versionRangeCache.Clear();
+            _propertyCache.Clear();
+            StrCount = 0;
+            StrTotal = 0;
+            NuGetVersionCount = 0;
+            NuGetVersionTotal = 0;
+            VersionRangeCount = 0;
+            VersionRangeTotal = 0;
         }
 
         /// <summary>
