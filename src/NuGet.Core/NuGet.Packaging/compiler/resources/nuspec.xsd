@@ -76,6 +76,7 @@
                             <xs:element name="tags" maxOccurs="1" minOccurs="0" type="xs:string" />
                             <xs:element name="serviceable" maxOccurs="1" minOccurs="0" type="xs:boolean" />
                             <xs:element name="icon" maxOccurs="1" minOccurs="0" type="xs:string" />
+                            <xs:element name="readme" maxOccurs="1" minOccurs="0" type="xs:string" />
                             <xs:element name="repository" maxOccurs="1" minOccurs="0">
                               <xs:complexType>
                                 <xs:attribute name="type" type="xs:string" use="optional" />

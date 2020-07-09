@@ -177,6 +177,8 @@ namespace NuGet.Packaging
 
         public string Tags { get; set; }
 
+        public string Readme { get; set; }
+
         public bool Serviceable { get; set; }
 
         public RepositoryMetadata Repository { get; set; }

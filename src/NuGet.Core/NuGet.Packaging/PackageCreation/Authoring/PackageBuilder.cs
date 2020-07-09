@@ -225,6 +225,8 @@ namespace NuGet.Packaging
             private set;
         }
 
+        public string Readme { get; set; }
+
         /// <summary>
         /// Exposes the additional properties extracted by the metadata 
         /// extractor or received from the command line.
@@ -694,6 +696,7 @@ namespace NuGet.Packaging
             ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles.ToList());
             LicenseMetadata = metadata.LicenseMetadata;
             Icon = metadata.Icon;
+            Readme = metadata.Readme;
 
             if (metadata.Tags != null)
             {
