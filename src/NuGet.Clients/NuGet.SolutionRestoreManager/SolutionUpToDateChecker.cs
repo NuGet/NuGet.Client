@@ -33,7 +33,6 @@ namespace NuGet.SolutionRestoreManager
             foreach (var summary in restoreSummaries)
             {
                 // Always remove the previous messages from the cache!
-                // TODO NK: We could have a bug here if a project is unloaded, we might end up showing warnings for said project. We don't want that.
                 _logMessages.Remove(summary.InputPath);
                 if (summary.Success)
                 {
@@ -98,6 +97,7 @@ namespace NuGet.SolutionRestoreManager
                 // Pass #1. Validate all the data (i/o)
                 // 1a. Validate the package specs (references & settings)
                 // 1b. Validate the expected outputs (assets file, nuget.g.*, lock file)
+                var unloadedProjects = _logMessages.Keys.ToHashSet();
                 foreach (var project in dependencyGraphSpec.Projects)
                 {
                     var projectUniqueName = project.RestoreMetadata.ProjectUniqueName;
@@ -107,6 +107,7 @@ namespace NuGet.SolutionRestoreManager
                     {
                         dirtySpecs.Add(projectUniqueName);
                     }
+                    unloadedProjects.Remove(projectUniqueName);
 
                     if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
                         project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
@@ -129,7 +130,11 @@ namespace NuGet.SolutionRestoreManager
                         hasDirtyNonTransitiveSpecs = true;
                     }
                 }
-
+                // Remove the cached warnings of unloaded projects.
+                foreach (var project in unloadedProjects)
+                {
+                    _logMessages.Remove(project);
+                }
                 // Fast path. Skip Pass #2
                 if (dirtySpecs.Count == 0 && dirtyOutputs.Count == 0)
                 {
@@ -301,6 +306,7 @@ namespace NuGet.SolutionRestoreManager
             _failedProjects.Clear();
             _cachedDependencyGraphSpec = null;
             _outputWriteTimes.Clear();
+            _logMessages.Clear();
         }
 
         internal struct RestoreOutputData
