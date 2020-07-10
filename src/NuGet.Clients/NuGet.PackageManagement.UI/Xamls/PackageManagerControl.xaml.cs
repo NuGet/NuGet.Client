@@ -901,7 +901,6 @@ namespace NuGet.PackageManagement.UI
             // clear existing caches
             if (Model.CachedUpdates != null)
             {
-                Model.CachedUpdates.Packages = null;
                 Model.CachedUpdates = null;
             }
 
