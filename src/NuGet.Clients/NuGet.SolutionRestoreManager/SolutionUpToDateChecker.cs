@@ -129,6 +129,7 @@ namespace NuGet.SolutionRestoreManager
                 {
                     _restoreData.Remove(project);
                 }
+
                 // Fast path. Skip Pass #2
                 if (dirtySpecs.Count == 0 && dirtyOutputs.Count == 0)
                 {
