@@ -583,7 +583,9 @@ namespace NuGet.Packaging.Signing
 
             byte[] actualHash;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 actualHash = hashAlgorithm.ComputeHash(certificate.RawData);
             }

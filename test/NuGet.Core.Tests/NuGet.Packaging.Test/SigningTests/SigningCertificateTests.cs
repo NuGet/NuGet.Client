@@ -77,7 +77,9 @@ namespace NuGet.Packaging.Test
 
         private static BcEssCertId CreateBcEssCertId(string text)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(text));
 

@@ -203,6 +203,7 @@ namespace NuGet.Common
                 nameof(hashAlgorithmName));
         }
 
+        [Obsolete("Call GetHashAlgorithm Instead. GetSha1HashProvider method exists to compute SHA1 hash of entire certificate for comparision with EssCertId.CertificateHash property")]
         public static HashAlgorithm GetSha1HashProvider()
         {
 #if !IS_CORECLR

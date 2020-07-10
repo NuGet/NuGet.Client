@@ -111,7 +111,9 @@ namespace NuGet.Common.Test
         [Fact]
         public void GetSha1HashProvider_ReturnsCorrectImplementation()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 Assert.True(hashAlgorithm is SHA1);
 

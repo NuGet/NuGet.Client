@@ -27,7 +27,9 @@ namespace Test.Utility.Signing
 
         internal static string GenerateFingerprint(X509Certificate certificate)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 var hash = hashAlgorithm.ComputeHash(certificate.GetEncoded());
 
