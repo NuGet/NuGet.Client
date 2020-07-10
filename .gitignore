@@ -197,3 +197,6 @@ launchSettings.json
 # include the test packages
 !test/EndToEnd/Packages/**/*
 !test/EndToEnd/ProjectTemplates/**/*.pfx
+
+.idea
+.ionide

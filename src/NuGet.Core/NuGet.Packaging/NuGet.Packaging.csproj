@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
   </PropertyGroup>
@@ -45,6 +45,11 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
+    <PackageReference Include="System.Security.Cryptography.Cng" />
   </ItemGroup>
 
   <ItemGroup>
