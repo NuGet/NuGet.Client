@@ -54,19 +54,6 @@
     <NoWarn>$(NoWarn);NU5105;NU5048</NoWarn>
   </PropertyGroup>
 
-  <!-- VS specific feeds -->
-  <ItemGroup>
-      <AdditionalFeed Include="VsIde">
-          <Url>https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json</Url>
-      </AdditionalFeed>
-      <AdditionalFeed Include="VsSdk">
-          <Url>https://pkgs.dev.azure.com/azure-public/vside/_packaging/vssdk/nuget/v3/index.json</Url>
-      </AdditionalFeed>
-  </ItemGroup>
-  <PropertyGroup>
-    <RestoreAdditionalProjectSources Condition="'$(DotNetBuildFromSource)' != 'true'">@(AdditionalFeed->Metadata("Url"))</RestoreAdditionalProjectSources>
-  </PropertyGroup>
-
   <!-- Defaults -->
   <PropertyGroup>
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
