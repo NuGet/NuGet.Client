@@ -17,25 +17,29 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData(2, "abcd\nwxyz", "  abcdXXX  wxyzXXX", 10)]
-        [InlineData(2, "abcd\rwxyz", "  abcdXXX  wxyzXXX", 10)]
-        [InlineData(3, "abcde\n\nwcjb", "   abcdeXXXXXX   wcjbXXX", 10)]
-        [InlineData(2, "abcde\r\nwcjb", "  abcdeXXX  wcjbXXX", 10)]
-        [InlineData(2, "abcde\rwcjb", "  abcdeXXX  wcjbXXX", 10)]
-        [InlineData(2, "abcdefghijk\nAB", "  abcdeXXX  fghijXXX  kXXX  ABXXX", 7)]
-        [InlineData(2, "ab  cd", "  abXXX  cdXXX", 6)]
-        [InlineData(2, "  abcd    ", "  abcdXXX", 10)]
-        [InlineData(2, "  abcd\t", "  abcdXXX", 10)]
-        [InlineData(2, "  abcd\n", "  abcdXXX", 10)]
-        [InlineData(2, "  abcd\n\n", "  abcdXXXXXX", 10)]
-        [InlineData(2, "\t\nabcd\n\n", "XXX  abcdXXXXXX", 10)]
-        public void TestPrintJustified(int indent, string input, string expected, int width)
+        [InlineData(2, "abcd\nwxyz", "  abcdXXX  wxyzXXX", 10, 0)]
+        [InlineData(2, "abcd\nwxyz", " abcdXXX wxyzXXX", 9, 1)]
+        [InlineData(2, "abcd\rwxyz", "  abcdXXX  wxyzXXX", 10, 0)]
+        [InlineData(3, "abcde\n\nwcjb", "   abcdeXXXXXX   wcjbXXX", 10, 0)]
+        [InlineData(2, "abcde\r\nwcjb", "  abcdeXXX  wcjbXXX", 10, 0)]
+        [InlineData(2, "abcde\rwcjb", "  abcdeXXX  wcjbXXX", 10, 0)]
+        [InlineData(2, "abcdefghijk\nAB", "  abcdeXXX  fghijXXX  kXXX  ABXXX", 7, 0)]
+        [InlineData(2, "abcdefghijk\nAB", " abcdeXXX fghijXXX kXXX ABXXX", 7, 1)]
+        [InlineData(2, "ab  cd", "  abXXX  cdXXX", 6, 0)]
+        [InlineData(2, "  abcd    ", "  abcdXXX", 10, 0)]
+        [InlineData(2, "  abcd\t", "  abcdXXX", 10, 0)]
+        [InlineData(2, "  abcd\n", "  abcdXXX", 10, 0)]
+        [InlineData(2, "  abcd\n", "abcdXXX", 8, 2)]
+        [InlineData(2, "  abcd\n\n", "  abcdXXXXXX", 10, 0)]
+        [InlineData(2, "\t\nabcd\n\n", "XXX  abcdXXXXXX", 10, 0)]
+        public void TestPrintJustified(int indent, string input, string expected, int width, int cursorLeft)
         {
             var sw = new StringWriter();
             System.Console.SetOut(sw);
 
             var console = new Console();
             console.MockWindowWidth = width;
+            console.MockCursorLeft = cursorLeft;
             console.PrintJustified(indent, input);
 
             Assert.Equal(expected.Replace("XXX", Environment.NewLine), sw.ToString());
