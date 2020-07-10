@@ -62,6 +62,7 @@ namespace NuGet.Packaging
             Repository = copy.Repository;
             LicenseMetadata = copy.LicenseMetadata;
             Icon = copy.Icon;
+            Readme = copy.Readme;
         }
 
         [ManifestVersion(5)]
