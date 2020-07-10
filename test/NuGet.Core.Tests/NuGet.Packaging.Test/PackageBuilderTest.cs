@@ -135,6 +135,60 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Theory]
+        [InlineData(".NETFramework,Version=v4.7.2", ".NETFramework4.7.2")]
+        [InlineData(".NETFramework,Version=v4.7.2,Profile=foo", ".NETFramework4.7.2-foo")]
+        [InlineData("net5.0", "net5.0")]
+        [InlineData("net5.0-windows", "net5.0-windows")]
+        [InlineData("net5.0-macos10.8", "net5.0-macos10.8")]
+        [InlineData("net6.0", "net6.0")]
+        public void CreatePackageTFMFormatting(string from, string to)
+        {
+            // Arrange
+            PackageBuilder builder = new PackageBuilder()
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Descriptions",
+            };
+            builder.Authors.Add("testAuthor");
+
+            var dependencies = new List<PackageDependency>();
+            dependencies.Add(new PackageDependency("packageB", VersionRange.Parse("1.0.0"), null, new[] { "z" }));
+
+            var tfmGroup = new PackageDependencyGroup(NuGetFramework.Parse(from), dependencies);
+            builder.DependencyGroups.Add(tfmGroup);
+
+            using (var ms = new MemoryStream())
+            {
+                builder.Save(ms);
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                var manifestStream = GetManifestStream(ms);
+
+                var result = manifestStream.ReadToEnd();
+
+                // Assert
+                Assert.Equal($@"<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <metadata>
+    <id>A</id>
+    <version>1.0.0</version>
+    <authors>testAuthor</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Descriptions</description>
+    <dependencies>
+      <group targetFramework=""{to}"">
+        <dependency id=""packageB"" version=""1.0.0"" exclude=""z"" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>".Replace("\r\n", "\n"), result.Replace("\r\n", "\n"));
+            }
+        }
+
+
         [Fact]
         public void CreatePackageWithNuspecIncludeExclude()
         {
@@ -150,8 +204,8 @@ namespace NuGet.Packaging.Test
             var dependencies45 = new List<PackageDependency>();
             dependencies45.Add(new PackageDependency("packageB", VersionRange.Parse("1.0.0"), null, new[] { "z" }));
 
-            var dependencies46 = new List<PackageDependency>();
-            dependencies46.Add(new PackageDependency(
+            var dependencies50 = new List<PackageDependency>();
+            dependencies50.Add(new PackageDependency(
                 "packageC",
                 VersionRange.Parse("1.0.0"),
                 new[] { "a", "b", "c" },
@@ -160,8 +214,8 @@ namespace NuGet.Packaging.Test
             var net45 = new PackageDependencyGroup(new NuGetFramework(".NETFramework", new Version(4, 5)), dependencies45);
             builder.DependencyGroups.Add(net45);
 
-            var net46 = new PackageDependencyGroup(new NuGetFramework(".NETFramework", new Version(4, 6)), dependencies46);
-            builder.DependencyGroups.Add(net46);
+            var net50win = new PackageDependencyGroup(new NuGetFramework(".NETCoreApp", new Version(5, 0), "windows", new Version(0, 0)), dependencies50);
+            builder.DependencyGroups.Add(net50win);
 
             using (var ms = new MemoryStream())
             {
@@ -186,7 +240,7 @@ namespace NuGet.Packaging.Test
       <group targetFramework="".NETFramework4.5"">
         <dependency id=""packageB"" version=""1.0.0"" exclude=""z"" />
       </group>
-      <group targetFramework="".NETFramework4.6"">
+      <group targetFramework=""net5.0-windows"">
         <dependency id=""packageC"" version=""1.0.0"" include=""a,b,c"" exclude=""b,c"" />
       </group>
     </dependencies>
@@ -1874,6 +1928,8 @@ Description is required.");
         </group>
         <group targetFramework=""net40-client"">
         </group>
+        <group targetFramework=""net5.0-windows"">
+        </group>
     </dependencies>
   </metadata>
 </package>";
@@ -1882,10 +1938,11 @@ Description is required.");
             PackageBuilder builder = new PackageBuilder(spec.AsStream(), null);
 
             // Assert
-            Assert.Equal(3, builder.DependencyGroups.Count);
+            Assert.Equal(4, builder.DependencyGroups.Count);
             var dependencyGroup1 = builder.DependencyGroups.ElementAt(0);
             var dependencyGroup2 = builder.DependencyGroups.ElementAt(1);
             var dependencyGroup3 = builder.DependencyGroups.ElementAt(2);
+            var dependencyGroup4 = builder.DependencyGroups.ElementAt(3);
 
             Assert.Equal(NuGetFramework.Parse("Silverlight, Version=4.0"), dependencyGroup1.TargetFramework);
             var dependencies1 = dependencyGroup1.Packages.ToList();
@@ -1903,6 +1960,9 @@ Description is required.");
 
             Assert.Equal(NuGetFramework.Parse(".NETFramework, Version=4.0, Profile=Client"), dependencyGroup3.TargetFramework);
             Assert.False(dependencyGroup3.Packages.Any());
+
+            Assert.Equal(NuGetFramework.Parse("net5.0-windows"), dependencyGroup4.TargetFramework);
+            Assert.False(dependencyGroup4.Packages.Any());
         }
 
         [Fact]
@@ -2633,9 +2693,14 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             file.Setup(f => f.LastWriteTime).Returns(DateTimeOffset.UtcNow);
 
             string effectivePath;
-            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            var nufx = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(name, out effectivePath);
             file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
+            file.SetupGet(f => f.NuGetFramework).Returns(nufx);
+
+            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+#pragma warning disable CS0618 // Type or member is obsolete
             file.SetupGet(f => f.TargetFramework).Returns(fx);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             return file.Object;
         }
