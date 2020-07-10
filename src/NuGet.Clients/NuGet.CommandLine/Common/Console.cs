@@ -37,6 +37,11 @@ namespace NuGet.CommandLine
         {
             get
             {
+                if (MockCursorLeft != null)
+                {
+                    return (int)MockCursorLeft;
+                }
+
                 try
                 {
                     return System.Console.CursorLeft;
@@ -89,6 +94,8 @@ namespace NuGet.CommandLine
 
 
         internal int? MockWindowWidth { get; set; }
+
+        internal int? MockCursorLeft { get; set; }
 
         private Verbosity _verbosity;
 
@@ -270,6 +277,9 @@ namespace NuGet.CommandLine
                     string line;
                     while ((line = stringReader.ReadLine()) != null)
                     {
+                        // Trim extra whitespace at the beginning and end of the line
+                        line = line.Trim();
+
                         if (line == string.Empty)
                         {
                             Out.WriteLine();
@@ -278,8 +288,6 @@ namespace NuGet.CommandLine
 
                         while (true)
                         {
-                            // Trim whitespace at the beginning
-                            line = line.TrimStart();
                             // Calculate the number of chars to print based on the width of the System.Console
                             int length = Math.Min(line.Length, maxWidth);
 
@@ -291,12 +299,12 @@ namespace NuGet.CommandLine
                             // Print it with the correct padding
                             Out.WriteLine((leftPadding > 0) ? content.PadLeft(leftPadding) : content);
 
-                            if (content.Length == line.Length)
+                            line = line.Substring(content.Length).Trim();
+
+                            if (line.Trim() == string.Empty)
                             {
                                 break;
                             }
-
-                            line = line.Substring(content.Length);
                         }
                     }
                 }

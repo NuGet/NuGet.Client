@@ -24,6 +24,11 @@ namespace NuGet.CommandLine.Test
         [InlineData(2, "abcde\rwcjb", "  abcdeXXX  wcjbXXX", 10)]
         [InlineData(2, "abcdefghijk\nAB", "  abcdeXXX  fghijXXX  kXXX  ABXXX", 7)]
         [InlineData(2, "ab  cd", "  abXXX  cdXXX", 6)]
+        [InlineData(2, "  abcd    ", "  abcdXXX", 10)]
+        [InlineData(2, "  abcd\t", "  abcdXXX", 10)]
+        [InlineData(2, "  abcd\n", "  abcdXXX", 10)]
+        [InlineData(2, "  abcd\n\n", "  abcdXXXXXX", 10)]
+        [InlineData(2, "\t\nabcd\n\n", "XXX  abcdXXXXXX", 10)]
         public void TestPrintJustified(int indent, string input, string expected, int width)
         {
             var sw = new StringWriter();
