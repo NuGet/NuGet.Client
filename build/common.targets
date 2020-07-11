@@ -37,7 +37,7 @@
   <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
     <Import Project="sign.targets" />
   </ImportGroup>
-  
+
   <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
     <SymbolTargetsToGetPdbs>GetDebugSymbolsProjectOutput</SymbolTargetsToGetPdbs>
@@ -53,6 +53,21 @@
   <ImportGroup Condition=" '$(PackProject)' == 'true' AND '$(NuGetBuildTasksPackTargets)' != '' ">
       <Import Project="$(NuGetBuildTasksPackTargets)" />
   </ImportGroup>
+
+  <!-- Projects we pack become public APIs that others can use -->
+  <ItemGroup Condition=" '$(PackProject)' == 'true' and '$(NoPublicAPIs)' != 'true' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+
+    <None Condition=" '$(PublicApiPerTfm)' != 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
+    <None Condition=" '$(PublicApiPerTfm)' != 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' != 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' != 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
+
+    <None Condition=" '$(PublicApiPerTfm)' == 'true' " Remove="$(MSBuildProjectDirectory)\PublicApi\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <None Condition=" '$(PublicApiPerTfm)' == 'true' " Remove="$(MSBuildProjectDirectory)\PublicApi\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' == 'true' " Include="$(MSBuildProjectDirectory)\PublicApi\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' == 'true' " Include="$(MSBuildProjectDirectory)\PublicApi\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
 
   <!-- Test Projects -->
   <ImportGroup Condition=" '$(TestProject)' == 'true' ">
@@ -72,7 +87,7 @@
     <OutputPath>bin\$(VisualStudioVersion)\$(Configuration)</OutputPath>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath> 
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
@@ -119,7 +134,7 @@
 
   <!--
     ============================================================
-    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that 
+    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that
     need to be indexed on the symbol server
     ============================================================
   -->
@@ -135,7 +150,7 @@
           ItemName="SymbolFilesToIndex" />
     </MSBuild>
   </Target>
-  
+
   <!--
     ============================================================
     GetSigningInputs - gets the list of DLLs that need to
@@ -255,7 +270,7 @@
 
   <!--
     ============================================================
-    GetLocalizedFilesForVsix - gathers the list of localized DLLs 
+    GetLocalizedFilesForVsix - gathers the list of localized DLLs
     from each project
     ============================================================
   -->

@@ -9,6 +9,7 @@
     <PackProject Condition="!Exists('$(LocalizationRootDirectory)') OR '$(BuildRTM)' == 'true'">false</PackProject>
     <Description>NuGet localization package for dotnet CLI.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoPublicAPIs>true</NoPublicAPIs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,13 +20,13 @@
   <!--
     ============================================================
     Get localized files from all projects and move them to a common location.
-    It is conditioned on the existence of the NuGet.Build.Localization repository which will 
+    It is conditioned on the existence of the NuGet.Build.Localization repository which will
     only be on the CI Machines as an empty repository is checked out locally.
     ============================================================
   -->
 
   <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' == 'false' AND Exists($(LocalizationRootDirectory)) " BeforeTargets="GenerateNuspec">
-    <MakeDir  
+    <MakeDir
             Directories="$(LocalizationFilesDirectory)"/>
     <ItemGroup>
       <LocalizationProjects Include="@(SolutionProjectsWithoutVSIX)" Exclude="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj"/>
@@ -36,8 +37,8 @@
                          Configuration=$(Configuration);
                          AppendTargetFrameworkToOutputPath=false"
              Targets="GetNetCoreLocalizedFilesInProjectOutputPath">
-      
-      <Output TaskParameter="TargetOutputs" 
+
+      <Output TaskParameter="TargetOutputs"
               ItemName="_LocalizedFilesForLocalizationPackage" />
     </MSBuild>
 
@@ -49,7 +50,7 @@
 
     <Copy SourceFiles="@(_LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(_LocalizedFilePaths->'%(TargetPath)')" />
   </Target>
-  
+
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

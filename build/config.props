@@ -11,7 +11,7 @@
   <!-- Version -->
   <PropertyGroup>
     <!-- **  Change for each new version -->
-    <!-- when changing any of the NuGetVersion props below, also update ProductVersion in src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs -->
+    <!-- when changing any of the NuGetVersion props below, update ProductVersion in src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs and run tools-local\ship-public-apis -->
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">5</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">8</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>

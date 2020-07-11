@@ -15,12 +15,13 @@
     <Shipping>true</Shipping>
     <XPLATProject>true</XPLATProject>
     <SkipShared>true</SkipShared>
+    <NoPublicAPIs>true</NoPublicAPIs> <!-- This assembly only has type forwarding -->
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\NuGet.Packaging.csproj" />
   </ItemGroup>
-  
+
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

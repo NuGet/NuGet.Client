@@ -16,6 +16,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
     <XPLATProject>true</XPLATProject>
+    <PublicApiPerTfm>true</PublicApiPerTfm>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -39,7 +40,7 @@
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Security" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Update="CommandArgs\VerbArgs.cs">
       <DesignTime>True</DesignTime>
@@ -52,7 +53,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
