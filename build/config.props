@@ -27,7 +27,7 @@
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
 
     <IsEscrowMode>false</IsEscrowMode>
-    <IsEscrowMode Condition="'$(DotNetBuildFromSource)' == 'true'">true</IsEscrowMode>
+    <IsEscrowMode Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">true</IsEscrowMode>
 
 
     <!-- Visual Studio Insertion Logic -->

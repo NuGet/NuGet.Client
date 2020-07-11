@@ -30,6 +30,7 @@
         <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
         <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Embeddable" Version="16.4.29305.180" />
+        <PackageReference Update="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
         <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.4.227" />
         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
@@ -75,7 +76,7 @@
         <PackageReference Update="VSLangProj157" Version="15.7.0" />
         <PackageReference Update="VSLangProj2" Version="7.0.5000" />
         <PackageReference Update="VSSDK.TemplateWizardInterface" Version="12.0.4" />
-	      <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
+        <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
     </ItemGroup>
 
     <!-- Test and utility packages -->

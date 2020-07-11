@@ -10,7 +10,7 @@
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <RuntimeIdentifier Condition="'$(DotNetBuildFromSource)' != 'true'">win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">win10-x64</RuntimeIdentifier>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <XPLATProject>true</XPLATProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
