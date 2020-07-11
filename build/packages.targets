@@ -66,8 +66,6 @@
         <PackageReference Update="Microsoft.Web.Xdt" Version="2.1.2" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
         <PackageReference Update="System.Collections.Immutable" Version="1.5.0" />
-        <PackageReference Update="System.Runtime.Serialization.Formatters" Version="$(SystemPackagesVersion)" />
-        <PackageReference Update="System.Runtime.Serialization.Primitives" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(PatchedSystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Cng" Version="$(PatchedSystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="$(SystemPackagesVersion)" />
