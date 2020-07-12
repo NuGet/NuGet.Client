@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>NuGet's understanding of target frameworks.</Description>
-    <TargetFrameworks>$(TargetFrameworksLibrary);net40</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>
     <LangVersion>5</LangVersion>
