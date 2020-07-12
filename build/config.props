@@ -27,8 +27,6 @@
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
 
     <IsEscrowMode>false</IsEscrowMode>
-    <IsEscrowMode Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">true</IsEscrowMode>
-
 
     <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
