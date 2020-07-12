@@ -63,10 +63,10 @@
     <AdditionalFiles Condition=" '$(PublicApiPerTfm)' != 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
     <AdditionalFiles Condition=" '$(PublicApiPerTfm)' != 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
 
-    <None Condition=" '$(PublicApiPerTfm)' == 'true' " Remove="$(MSBuildProjectDirectory)\PublicApi\$(TargetFramework)\PublicAPI.Shipped.txt" />
-    <None Condition=" '$(PublicApiPerTfm)' == 'true' " Remove="$(MSBuildProjectDirectory)\PublicApi\$(TargetFramework)\PublicAPI.Unshipped.txt" />
-    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' == 'true' " Include="$(MSBuildProjectDirectory)\PublicApi\$(TargetFramework)\PublicAPI.Shipped.txt" />
-    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' == 'true' " Include="$(MSBuildProjectDirectory)\PublicApi\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+    <None Condition=" '$(PublicApiPerTfm)' == 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <None Condition=" '$(PublicApiPerTfm)' == 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' == 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' == 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
   <!-- Test Projects -->
