@@ -22,7 +22,6 @@ namespace NuGet.PackageManagement.UI
         public Brush Fill { get; set; }
         
         // Added INotifyPropertyChange to avoid memory leak in Spinner control. 
-        // Yes, we don't actually call it/use it. But it fixes the leak.
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
