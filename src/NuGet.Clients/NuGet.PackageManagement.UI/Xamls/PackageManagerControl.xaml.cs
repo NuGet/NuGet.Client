@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI
 
         private (string modelVersion, string vsixVersion)? _recommenderVersion;
 
-        public PackageManagerModel Model { get; private set;}
+        public PackageManagerModel Model { get; }
 
         public ISettings Settings { get; }
 
@@ -394,7 +394,6 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
         {
-            Model =  null;
             Unloaded -= PackageManagerUnloaded;
         }
 
@@ -899,10 +898,7 @@ namespace NuGet.PackageManagement.UI
         private void RefreshInstalledAndUpdatesTabs()
         {
             // clear existing caches
-            if (Model.CachedUpdates != null)
-            {
-                Model.CachedUpdates = null;
-            }
+            Model.CachedUpdates = null;
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
