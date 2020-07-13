@@ -55,6 +55,7 @@
   <!-- Defaults -->
   <PropertyGroup>
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
+    <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>
   </PropertyGroup>
 
   <!-- Default project configuration -->
