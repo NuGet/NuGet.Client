@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
   </PropertyGroup>
@@ -22,10 +22,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsCore)' == 'true'">
-    <PackageReference Include="System.Collections" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
-    <PackageReference Include="System.Text.Encoding.Extensions" Version="4.3.0" />
-    <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Collections" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Runtime.Extensions" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Text.Encoding.Extensions" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
