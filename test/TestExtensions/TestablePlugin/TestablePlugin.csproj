@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
   </PropertyGroup>
@@ -19,6 +19,13 @@
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsCore)' == 'true'">
+    <PackageReference Include="System.Collections" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Runtime.Extensions" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Text.Encoding.Extensions" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

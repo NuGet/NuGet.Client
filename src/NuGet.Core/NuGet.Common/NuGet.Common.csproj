@@ -23,11 +23,6 @@
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
-    <PackageReference Include="System.Diagnostics.Process" />
-    <PackageReference Include="System.Threading.Thread" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Frameworks\NuGet.Frameworks.csproj" />
   </ItemGroup>

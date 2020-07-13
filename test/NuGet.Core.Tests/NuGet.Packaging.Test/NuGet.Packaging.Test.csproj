@@ -19,10 +19,6 @@
     <ProjectReference Include="..\NuGet.Configuration.Test\NuGet.Configuration.Test.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Security" />

@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" />
   </ItemGroup>
 
   <!-- Microsoft.Build.Locator is needed when debugging, but should not be used in the assemblies we insert.
