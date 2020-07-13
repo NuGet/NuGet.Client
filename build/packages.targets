@@ -30,7 +30,6 @@
         <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
         <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Embeddable" Version="16.4.29305.180" />
-        <PackageReference Update="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
         <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.4.227" />
         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
