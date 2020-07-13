@@ -61,7 +61,7 @@ namespace NuGet.Protocol
                     filter,
                     skip,
                     take,
-                    Common.NullLogger.Instance,
+                    log,
                     cancellationToken);
             }
             else
@@ -108,6 +108,8 @@ namespace NuGet.Protocol
                     Common.ILogger log,
                     CancellationToken cancellationToken)
         {
+            log.LogVerbose($"Found {_searchEndpoints.Length} search endpoints.");
+
             for (var i = 0; i < _searchEndpoints.Length; i++)
             {
                 var endpoint = _searchEndpoints[i];
@@ -151,6 +153,8 @@ namespace NuGet.Protocol
                 var searchResult = default(T);
                 try
                 {
+                    log.LogVerbose($"Querying {queryUrl.Uri}");
+
                     searchResult = await getResultAsync(queryUrl.Uri);
                 }
                 catch (OperationCanceledException)
@@ -222,7 +226,7 @@ namespace NuGet.Protocol
                 (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
                     new HttpSourceRequest(uri, Common.NullLogger.Instance),
                     s => ProcessHttpStreamTakeCountedItemAsync(s, take, cancellationToken),
-                    log,
+                    Common.NullLogger.Instance,
                     cancellationToken),
                 searchTerm,
                 filters,
