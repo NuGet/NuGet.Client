@@ -154,21 +154,15 @@
     <PropertyGroup>
       <!-- Build from source can't use ILMerge. -->
       <ILMergeSubpath Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">ilmerge\</ILMergeSubpath>
+      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">Desktop/</PackagePathDir>
+      <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
+    <ItemGroup>
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
-        <PackagePath>Desktop/</PackagePath>
+        <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\NuGet*.resources.dll">
-        <PackagePath>Desktop/</PackagePath>
-      </TfmSpecificPackageFile>
-    </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
-        <PackagePath>CoreCLR/</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\NuGet*.resources.dll">
-        <PackagePath>CoreCLR/</PackagePath>
+        <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>    
   </Target>
