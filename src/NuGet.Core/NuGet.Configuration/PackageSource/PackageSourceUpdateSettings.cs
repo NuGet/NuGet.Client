@@ -7,8 +7,8 @@ namespace NuGet.Configuration
     {
         public readonly static PackageSourceUpdateSettings Default = new PackageSourceUpdateSettings(true, true);
 
-        public bool UpdateCredentials { get; private set; }
-        public bool UpdateEnabled { get; private set; }
+        public bool UpdateCredentials { get; }
+        public bool UpdateEnabled { get; }
 
         public PackageSourceUpdateSettings(bool updateCredentials, bool updateEnabled)
         {
