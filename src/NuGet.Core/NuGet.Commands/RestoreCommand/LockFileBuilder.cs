@@ -330,8 +330,6 @@ namespace NuGet.Commands
                     .Flattened
                     .SingleOrDefault(library => library.Key.Name.Equals(project.Name, StringComparison.OrdinalIgnoreCase));
 
-                Debug.Assert(resolvedEntry != null, "Unable to find project entry in target graph, project references will not be added");
-
                 // In some failure cases where there is a conflict the root level project cannot be resolved, this should be handled gracefully
                 if (resolvedEntry != null)
                 {
