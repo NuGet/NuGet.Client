@@ -107,7 +107,7 @@
         /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) ^
         $(OutputPath)NuGet.Build.Tasks.Pack.dll ^
-        @(BuildArtifacts, ' ^&#x0A;')</IlmergeCommand>
+        @(BuildArtifacts, ' ')</IlmergeCommand>
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
@@ -135,7 +135,7 @@
         /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) ^
         $(OutputPath)$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll ^
-        @(ResourceArtifacts, ' ^&#x0A;')</IlmergeCommand>
+        @(ResourceArtifacts, ' ')</IlmergeCommand>
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
