@@ -11,7 +11,7 @@ namespace NuGet.Configuration
         /// Compares the given list of PackageSources with the current PackageSources in the configuration and adds, removes or updates each source as needed.
         /// </summary>
         /// <param name="sources">PackageSources to be saved</param>
-        /// <param name="packageSourceUpdateSettings">Settings to use when updating the sources</param>
-        void SavePackageSources(IEnumerable<PackageSource> sources, PackageSourceUpdateSettings packageSourceUpdateSettings);
+        /// <param name="packageSourceUpdateOptions">Settings to use when updating the sources</param>
+        void SavePackageSources(IEnumerable<PackageSource> sources, PackageSourceUpdateOptions packageSourceUpdateOptions);
     }
 }

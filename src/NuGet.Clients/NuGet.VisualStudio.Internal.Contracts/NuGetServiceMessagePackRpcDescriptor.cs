@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             var formatters = new IMessagePackFormatter[]
             {
                 PackageSourceFormatter.Instance,
-                PackageSourceUpdateSettingsFormatter.Instance
+                PackageSourceUpdateOptionsFormatter.Instance
             };
             var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
 
