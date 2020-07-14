@@ -669,6 +669,11 @@ namespace NuGet.Packaging
                 {
                     PopulateFiles(basePath, manifest.Files);
                 }
+
+                if (Readme == null)
+                {
+                    CheckForReadme(basePath);
+                }
             }
         }
 
@@ -824,6 +829,22 @@ namespace NuGet.Packaging
             }
 
             Files.AddRange(searchFiles);
+        }
+
+        private void CheckForReadme(string basePath)
+        {
+            string readmeName = "readme.md";
+            List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, readmeName, string.Empty, false).ToList();
+
+            if (searchFiles.Any())
+            {
+                Readme = readmeName;
+
+                if (!Files.Contains(searchFiles[0]))
+                {
+                    Files.Add(searchFiles[0]);
+                }
+            }
         }
 
         internal static IEnumerable<PhysicalPackageFile> ResolveSearchPattern(string basePath, string searchPath, string targetPath, bool includeEmptyDirectories)
