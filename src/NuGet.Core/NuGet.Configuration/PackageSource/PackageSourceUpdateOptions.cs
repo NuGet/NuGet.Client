@@ -3,14 +3,14 @@
 
 namespace NuGet.Configuration
 {
-    public sealed class PackageSourceUpdateSettings
+    public sealed class PackageSourceUpdateOptions
     {
-        public readonly static PackageSourceUpdateSettings Default = new PackageSourceUpdateSettings(true, true);
+        public readonly static PackageSourceUpdateOptions Default = new PackageSourceUpdateOptions(true, true);
 
         public bool UpdateCredentials { get; }
         public bool UpdateEnabled { get; }
 
-        public PackageSourceUpdateSettings(bool updateCredentials, bool updateEnabled)
+        public PackageSourceUpdateOptions(bool updateCredentials, bool updateEnabled)
         {
             UpdateCredentials = updateCredentials;
             UpdateEnabled = updateEnabled;

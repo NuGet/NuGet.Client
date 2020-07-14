@@ -652,7 +652,7 @@ namespace NuGet.Configuration
             }
         }
 
-        public void SavePackageSources(IEnumerable<PackageSource> sources, PackageSourceUpdateSettings sourceUpdateSettings)
+        public void SavePackageSources(IEnumerable<PackageSource> sources, PackageSourceUpdateOptions sourceUpdateSettings)
         {
             if (sources == null)
             {
@@ -748,7 +748,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(sources));
             }
 
-            SavePackageSources(sources, PackageSourceUpdateSettings.Default);
+            SavePackageSources(sources, PackageSourceUpdateOptions.Default);
         }
 
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()

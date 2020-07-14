@@ -9,18 +9,18 @@ using NuGet.Configuration;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class PackageSourceUpdateSettingsFormatter : IMessagePackFormatter<PackageSourceUpdateSettings?>
+    internal class PackageSourceUpdateOptionsFormatter : IMessagePackFormatter<PackageSourceUpdateOptions?>
     {
         private const string UpdateCredentialsPropertyName = "updatecredentials";
         private const string UpdateEnabledPropertyName = "updateenabled";
 
-        internal static readonly IMessagePackFormatter<PackageSourceUpdateSettings?> Instance = new PackageSourceUpdateSettingsFormatter();
+        internal static readonly IMessagePackFormatter<PackageSourceUpdateOptions?> Instance = new PackageSourceUpdateOptionsFormatter();
 
-        private PackageSourceUpdateSettingsFormatter()
+        private PackageSourceUpdateOptionsFormatter()
         {
         }
 
-        public PackageSourceUpdateSettings? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public PackageSourceUpdateOptions? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())
             {
@@ -52,7 +52,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
-                return new PackageSourceUpdateSettings(updateCredentials, updateEnabled);
+                return new PackageSourceUpdateOptions(updateCredentials, updateEnabled);
             }
             finally
             {
@@ -61,7 +61,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageSourceUpdateSettings? value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, PackageSourceUpdateOptions? value, MessagePackSerializerOptions options)
         {
             if (value == null)
             {
@@ -69,7 +69,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(2);
+            writer.WriteMapHeader(2); // Number of properties to write
             writer.Write(UpdateCredentialsPropertyName);
             writer.Write(value.UpdateCredentials);
             writer.Write(UpdateEnabledPropertyName);
