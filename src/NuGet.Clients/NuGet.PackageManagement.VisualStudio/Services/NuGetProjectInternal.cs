@@ -38,14 +38,28 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            throw new NotImplementedException();
+            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            using (var nugetPackageService = await remoteBroker.GetProxyAsync<INuGetPackageService>(NuGetServices.ProjectManagerService, cancellationToken: token))
+            {
+                Assumes.NotNull(nugetPackageService);
+
+                var installedPackages = await GetInstalledPackagesAsync(token);
+
+                return await nugetPackageService.InstallPackageAsync(packageIdentity, installedPackages, downloadResourceResult, nuGetProjectContext, token);
+            }
         }
 
-        public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            throw new NotImplementedException();
+            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            using (var nugetPackageService = await remoteBroker.GetProxyAsync<INuGetPackageService>(NuGetServices.ProjectManagerService, cancellationToken: token))
+            {
+                Assumes.NotNull(nugetPackageService);
+
+                return await nugetPackageService.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
+            }
         }
 
         public async override Task<(bool, object)> TryGetMetadataAsync(string key, CancellationToken token)

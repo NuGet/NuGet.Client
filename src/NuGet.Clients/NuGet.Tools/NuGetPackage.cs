@@ -75,6 +75,7 @@ namespace NuGetVSExtension
     [Guid(GuidList.guidNuGetPkgString)]
     [ProvideBrokeredService("NuGet.SourceProviderService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
     [ProvideBrokeredService("NuGet.ProjectManagerService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
+    [ProvideBrokeredService("NuGet.PackageService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)]        // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
@@ -181,6 +182,7 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(ContractsNuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
             brokeredServiceContainer.Proffer(NuGetServices.SourceProviderService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac, ct)));
             brokeredServiceContainer.Proffer(NuGetServices.ProjectManagerService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac, ct)));
+            brokeredServiceContainer.Proffer(NuGetServices.PackageService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetPackageService(options, sb, ac, ct)));
         }
 
         /// <summary>

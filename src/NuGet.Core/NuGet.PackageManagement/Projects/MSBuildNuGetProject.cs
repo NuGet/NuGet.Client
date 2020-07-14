@@ -30,7 +30,7 @@ namespace NuGet.ProjectManagement
         : NuGetProject
         , IDependencyGraphProject
     {
-        private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
+        private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> _fileTransformers =
             new Dictionary<FileTransformExtensions, IPackageFileTransformer>
                 {
                     { new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
@@ -348,7 +348,7 @@ namespace NuGet.ProjectManagement
                     ProjectSystem,
                     packageCoreReader,
                     compatibleContentFilesGroup,
-                    FileTransformers,
+                    _fileTransformers,
                     token);
             }
 
@@ -551,7 +551,7 @@ namespace NuGet.ProjectManagement
                         zipArchive,
                         packagesPaths,
                         compatibleContentFilesGroup,
-                        FileTransformers,
+                        _fileTransformers,
                         token);
                 }
 
