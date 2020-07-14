@@ -106,7 +106,7 @@
         /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) ^
         $(OutputPath)NuGet.Build.Tasks.Pack.dll ^
-        @(BuildArtifacts, ' ^\r\n')</IlmergeCommand>
+        @(BuildArtifacts, ' ^&#x0A;')</IlmergeCommand>
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
