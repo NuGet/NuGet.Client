@@ -50,21 +50,24 @@ namespace ship_public_apis
             }
         }
 
-        static async Task MainAsync(DirectoryInfo path, bool resort)
+        static async Task<int> MainAsync(DirectoryInfo path, bool resort)
         {
             if (path == null)
             {
                 Console.Error.WriteLine("No path provided");
-                return;
+                return -1;
             }
 
             if (!path.Exists)
             {
                 Console.Error.WriteLine($"Path '{path.FullName}' does not exist");
+                return -2;
             }
 
+            bool foundAtLeastOne = false;
             foreach (var unshippedTxtPath in path.EnumerateFiles("PublicAPI.Unshipped.txt", new EnumerationOptions() { MatchCasing = MatchCasing.CaseInsensitive, RecurseSubdirectories = true}))
             {
+                foundAtLeastOne = true;
                 if (unshippedTxtPath.Length == 0 && !resort)
                 {
                     Console.WriteLine(unshippedTxtPath.FullName + ": Up to date");
@@ -111,6 +114,14 @@ namespace ship_public_apis
 
                 Console.WriteLine($"{unshippedTxtPath.FullName}: Shipped {unshippedApiCount} APIs.");
             }
+
+            if (!foundAtLeastOne)
+            {
+                Console.Error.WriteLine("Did not find any PublicAPI.Unshipped.txt files under " + path.FullName);
+                return -3;
+            }
+
+            return 0;
         }
     }
 }
