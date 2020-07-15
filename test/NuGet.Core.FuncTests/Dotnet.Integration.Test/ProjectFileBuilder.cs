@@ -52,9 +52,14 @@ namespace NuGet.Test.Utility
         /// Adds and intem inside a &lt;ItemGroup/&gt; node in the following form:
         /// <c>&lt;{itemType} Include="{itemPath}" [PackagePath="{packagePath}"] /&gt;</c>
         /// </summary>
-        public ProjectFileBuilder WithItem(string itemType, string itemPath, string packagePath)
+        public ProjectFileBuilder WithItem(
+            string itemType,
+            string itemPath,
+            string packagePath = null,
+            string pack = null,
+            string version = null)
         {
-            ItemGroupEntries.Add(new ItemEntry(itemType, itemPath, packagePath));
+            ItemGroupEntries.Add(new ItemEntry(itemType, itemPath, packagePath, pack, version));
 
             return this;
         }
@@ -105,16 +110,24 @@ namespace NuGet.Test.Utility
 
                 ProjectFileUtils.AddProperties(xml, Properties);
 
-                var attributes = new Dictionary<string, string>();
-                var properties = new Dictionary<string, string>();
-                attributes["Pack"] = "true";
                 foreach (var tup in ItemGroupEntries)
                 {
-                    attributes.Remove("PackagePath");
+                    var attributes = new Dictionary<string, string>();
+                    var properties = new Dictionary<string, string>();
 
                     if (tup.PackagePath != null)
                     {
                         attributes["PackagePath"] = tup.PackagePath;
+                    }
+
+                    if (tup.Pack != null)
+                    {
+                        attributes["Pack"] = tup.Pack;
+                    }
+
+                    if (tup.Version != null)
+                    {
+                        attributes["Version"] = tup.Version;
                     }
 
                     ProjectFileUtils.AddItem(xml, tup.ItemType, tup.ItemPath, string.Empty, properties, attributes);
@@ -133,12 +146,21 @@ namespace NuGet.Test.Utility
             public string ItemType { get; }
             public string ItemPath { get; }
             public string PackagePath { get; }
+            public string Version { get; }
+            public string Pack { get; }
 
-            public ItemEntry(string itemType, string itemPath, string packagePath)
+            public ItemEntry(
+                string itemType,
+                string itemPath,
+                string packagePath,
+                string pack,
+                string version)
             {
                 ItemType = itemType;
                 ItemPath = itemPath;
                 PackagePath = packagePath;
+                Version = version;
+                Pack = pack;
             }
         }
     }

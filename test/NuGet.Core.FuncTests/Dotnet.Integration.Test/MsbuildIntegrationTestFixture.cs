@@ -201,13 +201,32 @@ namespace Dotnet.Integration.Test
         /// <summary>
         /// dotnet.exe args
         /// </summary>
-        internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode = false)
+        internal CommandRunnerResult RunDotnet(
+            string workingDirectory,
+            string args,
+            bool ignoreExitCode = false,
+            IReadOnlyDictionary<string, string> additionalEnvVars = null)
         {
+            IDictionary<string, string> envVars;
+            if (additionalEnvVars == null)
+            {
+                envVars = _processEnvVars;
+            }
+            else
+            {
+                // GroupBy respects sequence order, so taking the last pair per environment variable name will allow the
+                // input dictionary to override the defaults.
+                envVars = _processEnvVars
+                    .Concat(additionalEnvVars)
+                    .GroupBy(x => x.Key, _processEnvVars.Comparer) 
+                    .ToDictionary(x => x.Key, x => x.Last().Value);
+            }
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 args,
                 waitForExit: true,
-                environmentVariables: _processEnvVars);
+                environmentVariables: envVars);
 
             if (!ignoreExitCode)
             {

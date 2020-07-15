@@ -611,7 +611,13 @@ namespace NuGet.CommandLine.XPlat
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 
-            var packages = (await packageMetadataResource.GetMetadataAsync(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
+            var packages = await packageMetadataResource.GetMetadataAsync(
+                package,
+                includePrerelease: true,
+                includeUnlisted: false,
+                sourceCacheContext: new SourceCacheContext(),
+                log: listPackageArgs.Logger,
+                token: listPackageArgs.CancellationToken);
 
             var latestVersionsForPackage = packagesVersionsDict.Where(p => p.Key.Equals(package, StringComparison.OrdinalIgnoreCase)).Single().Value;
             latestVersionsForPackage.AddRange(packages);
@@ -646,7 +652,7 @@ namespace NuGet.CommandLine.XPlat
                 includePrerelease: true,
                 includeUnlisted: true, // Include unlisted because deprecated packages may be unlisted.
                 sourceCacheContext: new SourceCacheContext(),
-                log: NullLogger.Instance,
+                log: listPackageArgs.Logger,
                 token: listPackageArgs.CancellationToken);
 
             var resolvedVersionsForPackage = packagesVersionsDict
