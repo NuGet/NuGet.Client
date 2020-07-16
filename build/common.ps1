@@ -14,12 +14,6 @@ Set-Alias ilmerge $ILMerge
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$Version = New-Object -TypeName System.Version -ArgumentList "4.0"
-
-if ($PSVersionTable.PSVersion.CompareTo($Version) -lt 0) {
-    Set-Alias wget Invoke-WebRequest
-}
-
 Function Read-PackageSources {
     param($NuGetConfig)
     $xml = New-Object xml
