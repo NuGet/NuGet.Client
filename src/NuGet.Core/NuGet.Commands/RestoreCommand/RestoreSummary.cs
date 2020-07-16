@@ -26,6 +26,9 @@ namespace NuGet.Commands
 
         public int InstallCount { get; }
 
+        /// <summary>
+        /// All the warnings and errors that were produced as a result of the restore.
+        /// </summary>
         public IReadOnlyList<IRestoreLogMessage> Errors { get; }
 
         public RestoreSummary(bool success)

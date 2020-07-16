@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -105,6 +108,66 @@ namespace NuGet.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
             var guid = vsSolution5.GetGuidOfProjectFile(fullname);
             return guid.ToString();
+        }
+
+        /// <summary>
+        /// Factory method initializing instance of <see cref="ProjectNames"/> with values retrieved from <see cref="IVsSolution2"/> and <see cref="IVsHierarchy"/>.
+        /// </summary>
+        /// <param name="fullPath">Full path to the project file</param>
+        /// <param name="vsSolution2">Instance of <see cref="IVsSolution2"/></param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation</param>
+        /// <returns></returns>
+        public static async Task<ProjectNames> FromIVsSolution2(string fullPath, IVsSolution2 vsSolution2, CancellationToken cancellationToken)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            ErrorHandler.ThrowOnFailure(vsSolution2.GetProjectOfUniqueName(fullPath, out IVsHierarchy project));
+            ErrorHandler.ThrowOnFailure(vsSolution2.GetGuidOfProject(project, out Guid guid));
+            ErrorHandler.ThrowOnFailure(vsSolution2.GetUniqueNameOfProject(project, out string uniqueName));
+            ErrorHandler.ThrowOnFailure(project.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_Name, out object projectNameObject));
+            string shortName = (string)projectNameObject;
+            string customUniqueName = GetCustomUniqueName(project);
+
+            var projectNames = new ProjectNames(
+                fullName: fullPath,
+                uniqueName: uniqueName,
+                shortName: shortName,
+                customUniqueName: customUniqueName,
+                projectId: guid.ToString());
+
+            return projectNames;
+        }
+
+        private static string GetCustomUniqueName(IVsHierarchy project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var solutionPath = new Stack<string>();
+
+            IVsHierarchy currentNode = project;
+            while (true)
+            {
+                var result = currentNode.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_ParentHierarchy, out object newNode);
+                if (result == VSConstants.E_NOTIMPL)
+                {
+                    // E_NOTIMPL means the property doesn't exist, which means that the current node is the solution itself. We don't use that name.
+                    break;
+                }
+                else if (result != VSConstants.S_OK)
+                {
+                    ErrorHandler.ThrowOnFailure(result);
+                }
+
+                ErrorHandler.ThrowOnFailure(currentNode.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_Name, out object hierarchyName));
+                solutionPath.Push((string)hierarchyName);
+
+                currentNode = (IVsHierarchy)newNode;
+            }
+
+            var customUniqueName = string.Join("\\", solutionPath);
+            return customUniqueName;
         }
 
         /// <summary>

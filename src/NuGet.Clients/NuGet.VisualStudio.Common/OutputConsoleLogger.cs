@@ -3,12 +3,17 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -29,6 +34,9 @@ namespace NuGet.VisualStudio.Common
         // won't get disconnected because of GC.
         private EnvDTE.BuildEvents _buildEvents;
         private EnvDTE.SolutionEvents _solutionEvents;
+
+        [SuppressMessage("Build", "CA2213:'OutputConsoleLogger' contains field '_semaphore' that is of IDisposable type 'ReentrantSemaphore', but it is never disposed. Change the Dispose method on 'OutputConsoleLogger' to call Close or Dispose on this field.", Justification = "Field is disposed from async task invoked from Dispose.")]
+        private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.NotAllowed);
 
         public IOutputConsole OutputConsole { get; private set; }
 
@@ -58,7 +66,7 @@ namespace NuGet.VisualStudio.Common
 
             ErrorListTableDataSource = errorListDataSource;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -73,56 +81,84 @@ namespace NuGet.VisualStudio.Common
 
         public void Dispose()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorListTableDataSource.Value.Dispose();
-            });
+                await _semaphore.ExecuteAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    ErrorListTableDataSource.Value.Dispose();
+                });
+
+                _semaphore.Dispose();
+            }
+            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(Dispose)));
         }
 
         public void End()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            Run(async () =>
             {
                 await OutputConsole.WriteLineAsync(Resources.Finished);
                 await OutputConsole.WriteLineAsync(string.Empty);
 
                 // Give the error list focus
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
             });
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            if (level == MessageLevel.Info
-                || level == MessageLevel.Error
-                || level == MessageLevel.Warning
-                || _verbosityLevel > DefaultVerbosityLevel)
+            Run(async () =>
             {
-                if (args.Length > 0)
+                if (level == MessageLevel.Info
+                    || level == MessageLevel.Error
+                    || level == MessageLevel.Warning
+                    || _verbosityLevel > DefaultVerbosityLevel)
                 {
-                    message = string.Format(CultureInfo.CurrentCulture, message, args);
-                }
+                    if (args.Length > 0)
+                    {
+                        message = string.Format(CultureInfo.CurrentCulture, message, args);
+                    }
 
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => OutputConsole.WriteLineAsync(message));
-            }
+                    await OutputConsole.WriteLineAsync(message);
+                }
+            },
+            $"{nameof(Log)}/{nameof(String)}");
         }
 
         public void Log(ILogMessage message)
         {
-            if (message.Level == LogLevel.Information
-                || message.Level == LogLevel.Error
-                || message.Level == LogLevel.Warning
-                || _verbosityLevel > DefaultVerbosityLevel)
+            Run(async () =>
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => OutputConsole.WriteLineAsync(message.FormatWithCode()));
-
-                if (message.Level == LogLevel.Error ||
-                    message.Level == LogLevel.Warning)
+                if (message.Level == LogLevel.Information
+                    || message.Level == LogLevel.Error
+                    || message.Level == LogLevel.Warning
+                    || _verbosityLevel > DefaultVerbosityLevel)
                 {
-                    ReportError(message);
+                    await OutputConsole.WriteLineAsync(message.FormatWithCode());
+
+                    if (message.Level == LogLevel.Error ||
+                        message.Level == LogLevel.Warning)
+                    {
+                        ReportError(message);
+                    }
                 }
-            }
+            },
+            $"{nameof(Log)}/{nameof(ILogMessage)}");
+        }
+
+        public void Start()
+        {
+            Run(async () =>
+            {
+                await OutputConsole.ActivateAsync();
+                await OutputConsole.ClearAsync();
+                _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
+
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                ErrorListTableDataSource.Value.ClearNuGetEntries();
+            });
         }
 
         private async Task<int> GetMSBuildVerbosityLevelAsync()
@@ -139,27 +175,35 @@ namespace NuGet.VisualStudio.Common
             return DefaultVerbosityLevel;
         }
 
-        public void Start()
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await OutputConsole.ActivateAsync();
-                await OutputConsole.ClearAsync();
-                _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
-                ErrorListTableDataSource.Value.ClearNuGetEntries();
-            });
-        }
-
         public void ReportError(string message)
         {
-            var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
-            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
+                ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            },
+            $"{nameof(ReportError)}/{nameof(String)}");
         }
 
         public void ReportError(ILogMessage message)
         {
-            var errorListEntry = new ErrorListTableEntry(message);
-            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var errorListEntry = new ErrorListTableEntry(message);
+                ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            },
+            $"{nameof(ReportError)}/{nameof(ILogMessage)}");
+        }
+
+        private void Run(Func<Task> action, [CallerMemberName] string methodName = null)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory
+                               .RunAsync(() => _semaphore.ExecuteAsync(action))
+                               .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), methodName));
         }
     }
 }

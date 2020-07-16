@@ -203,6 +203,8 @@ namespace NuGet.Test
         [InlineData("net40", ".NETFramework,Version=v4.0")]
         [InlineData("net35", ".NETFramework,Version=v3.5")]
         [InlineData("net40-client", ".NETFramework,Version=v4.0,Profile=Client")]
+        [InlineData("net5.0", ".NetCoreApp,Version=v5.0")]
+        [InlineData("net5.0", "net5.0")]
         [InlineData("net", ".NETFramework,Version=v0.0")]
         [InlineData("net10.1.2.3", ".NETFramework,Version=v10.1.2.3")]
         [InlineData("net10.0", ".NETFramework,Version=v10.0")]
@@ -224,6 +226,14 @@ namespace NuGet.Test
         [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
         [InlineData("netcoreapp2.0", ".NetCoreApp,Version=v2.0")]
         [InlineData("netcoreapp3.0", ".NetCoreApp,Version=v3.0")]
+        [InlineData("net5.0-android", "net5.0-android")]
+        [InlineData("net5.0-android", "net5.0-android0.0")]
+        [InlineData("net5.0-ios14.0", "net5.0-ios14.0")]
+        [InlineData("net5.0-macos10.0", "net5.0-macos10.0")]
+        [InlineData("net5.0-watchos1.0", "net5.0-watchos1.0")]
+        [InlineData("net5.0-tvos1.0", "net5.0-tvos1.0")]
+        [InlineData("net5.0-windows10.0", "net5.0-windows10.0")]
+        [InlineData("net5.0-macos10.15.2.3", "net5.0-macos10.15.2.3")]
         public void NuGetFramework_ParseToShortName(string expected, string fullName)
         {
             // Arrange
@@ -238,9 +248,11 @@ namespace NuGet.Test
 
         [Theory]
         // Net5.0 ERA
-        [InlineData("net5.0", ".NETCoreApp,Version=v5.0")]
-        [InlineData("net10.1.2.3", ".NETCoreApp,Version=v10.1.2.3")]
-        [InlineData("netcoreapp5.0", ".NETCoreApp,Version=v5.0")]
+        [InlineData("net5.0", "net5.0")]
+        [InlineData("net10.1.2.3", "net10.1.2.3")]
+        [InlineData("netcoreapp5.0", "net5.0")]
+        [InlineData("net5.0-android", "net5.0-android")]
+        [InlineData("net5.0-ios14.0", "net5.0-ios14.0")]
 
         // Pre-Net5.0 ERA
         [InlineData("net45", ".NETFramework,Version=v4.5")]
@@ -397,6 +409,8 @@ namespace NuGet.Test
         [InlineData("netcoreapp3.1", "netcoreapp31")]
         [InlineData("netcoreapp31", "netcoreapp3.1")]
         [InlineData("netcoreapp31", "netcoreapp31")]
+        [InlineData("net5.0", "net5.0")]
+        [InlineData("net50", "net5.0")]
         public void NuGetFramework_TryParseCommonFramework_ParsesCommonFrameworks(string frameworkString1, string frameworkString2)
         {
             var framework1 = NuGetFramework.Parse(frameworkString1);

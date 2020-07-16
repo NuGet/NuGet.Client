@@ -131,7 +131,7 @@ namespace NuGet.CommandLine
             string targetFrameworkMoniker = _project.GetPropertyValue("TargetFrameworkMoniker");
             if (!String.IsNullOrEmpty(targetFrameworkMoniker))
             {
-                TargetFramework = new FrameworkName(targetFrameworkMoniker);
+                TargetFramework = NuGetFramework.Parse(targetFrameworkMoniker);
             }
 
             // This happens before we obtain warning properties, so this Logger is still IConsole.
@@ -170,7 +170,7 @@ namespace NuGet.CommandLine
             set;
         }
 
-        private FrameworkName TargetFramework
+        private NuGetFramework TargetFramework
         {
             get;
             set;
@@ -804,7 +804,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                nugetFramework = TargetFramework != null ? NuGetFramework.Parse(TargetFramework.FullName) : null;
+                nugetFramework = TargetFramework;
             }
 
             var projectOutputDirectory = Path.GetDirectoryName(TargetPath);
@@ -1001,7 +1001,7 @@ namespace NuGet.CommandLine
 
             if (!props.ContainsKey(NuGetProjectMetadataKeys.TargetFramework))
             {
-                props.Add(NuGetProjectMetadataKeys.TargetFramework, new NuGetFramework(TargetFramework.Identifier, TargetFramework.Version, TargetFramework.Profile));
+                props.Add(NuGetProjectMetadataKeys.TargetFramework, TargetFramework);
             }
             if (!props.ContainsKey(NuGetProjectMetadataKeys.Name))
             {
@@ -1421,7 +1421,11 @@ namespace NuGet.CommandLine
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
-                TargetFramework = FrameworkNameUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
+                NuGetFramework = NuGet.Packaging.FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(Path, out _effectivePath);
+                if (NuGetFramework != null && NuGetFramework.Version.Major < 5)
+                {
+                    TargetFramework = new FrameworkName(NuGetFramework.DotNetFrameworkName);
+                }
             }
 
             public string Path
@@ -1480,6 +1484,12 @@ namespace NuGet.CommandLine
             }
 
             public FrameworkName TargetFramework
+            {
+                get;
+                private set;
+            }
+
+            public NuGetFramework NuGetFramework
             {
                 get;
                 private set;

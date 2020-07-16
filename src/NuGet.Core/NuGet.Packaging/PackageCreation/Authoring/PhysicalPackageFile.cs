@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Runtime.Versioning;
+using NuGet.Frameworks;
 
 namespace NuGet.Packaging
 {
@@ -12,6 +13,7 @@ namespace NuGet.Packaging
         private readonly Func<Stream> _streamFactory;
         private string _targetPath;
         private FrameworkName _targetFramework;
+        private NuGetFramework _nugetFramework;
         private DateTimeOffset _lastWriteTime;
 
         public PhysicalPackageFile()
@@ -46,11 +48,15 @@ namespace NuGet.Packaging
             }
             set
             {
-                if (String.Compare(_targetPath, value, StringComparison.OrdinalIgnoreCase) != 0)
+                if (string.Compare(_targetPath, value, StringComparison.OrdinalIgnoreCase) != 0)
                 {
                     _targetPath = value;
                     string effectivePath;
-                    _targetFramework = FrameworkNameUtility.ParseFrameworkNameFromFilePath(_targetPath, out effectivePath);
+                    _nugetFramework = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(_targetPath, out effectivePath);
+                    if (_nugetFramework != null && _nugetFramework.Version.Major < 5)
+                    {
+                        _targetFramework = new FrameworkName(_nugetFramework.DotNetFrameworkName);
+                    }
                     EffectivePath = effectivePath;
                 }
             }
@@ -73,6 +79,11 @@ namespace NuGet.Packaging
         public FrameworkName TargetFramework
         {
             get { return _targetFramework; }
+        }
+
+        public NuGetFramework NuGetFramework
+        {
+            get { return _nugetFramework; }
         }
 
         public Stream GetStream()

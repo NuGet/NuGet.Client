@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
@@ -622,9 +623,16 @@ namespace NuGet.Test.Utility
             };
 
             string effectivePath;
-            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            var fx = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(name, out effectivePath);
             file.EffectivePath = effectivePath;
-            file.TargetFramework = fx;
+            if (fx != null)
+            {
+                file.NuGetFramework = fx;
+                if (fx.Version.Major < 5)
+                {
+                    file.TargetFramework = new FrameworkName(fx.DotNetFrameworkName);
+                }
+            }
 
             return file;
         }
@@ -638,6 +646,8 @@ namespace NuGet.Test.Utility
             public string Path { get; set; }
 
             public FrameworkName TargetFramework { get; set; }
+
+            public NuGetFramework NuGetFramework { get; set; }
 
             public MemoryStream Stream { get; set; }
 

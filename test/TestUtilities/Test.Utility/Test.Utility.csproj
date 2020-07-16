@@ -69,8 +69,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Diagnostics.Process" />
-    <PackageReference Include="System.IO.Compression.ZipFile" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 

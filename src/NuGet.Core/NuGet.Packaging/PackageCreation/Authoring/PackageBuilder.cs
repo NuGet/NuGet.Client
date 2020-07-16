@@ -498,8 +498,8 @@ namespace NuGet.Packaging
         {
             // check if any file under Content or Tools has TargetFramework defined
             bool hasContentOrTool = files.Any(
-                f => f.TargetFramework != null &&
-                     f.TargetFramework.Identifier != FrameworkConstants.SpecialIdentifiers.Unsupported &&
+                f => f.NuGetFramework != null &&
+                     !f.NuGetFramework.IsUnsupported &&
                      (f.Path.StartsWith(PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
                       f.Path.StartsWith(PackagingConstants.Folders.Tools + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)));
 
@@ -510,7 +510,7 @@ namespace NuGet.Packaging
 
             // now check if the Lib folder has any empty framework folder
             bool hasEmptyLibFolder = files.Any(
-                f => f.TargetFramework != null &&
+                f => f.NuGetFramework != null &&
                      f.Path.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
                      f.EffectivePath == PackagingConstants.PackageEmptyFileName);
 
