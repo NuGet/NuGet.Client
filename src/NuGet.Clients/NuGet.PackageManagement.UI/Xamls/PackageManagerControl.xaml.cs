@@ -30,7 +30,6 @@ using Task = System.Threading.Tasks.Task;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Protocol;
-using Microsoft.VisualStudio.Experimentation;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -748,10 +747,10 @@ namespace NuGet.PackageManagement.UI
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
 
-        // Check if user is in A/B experiment. Also return true if environment variable RecommendNuGetPackages is set to 1.
+        // Enable if environment variable RecommendNuGetPackages is set to 1.
         public bool IsRecommenderFlightEnabled()
         {
-            return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
+            return _forceRecommender;
         }
 
         private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
