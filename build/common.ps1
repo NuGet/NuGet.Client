@@ -12,8 +12,6 @@ $ILMerge = Join-Path $NuGetClientRoot 'packages\ilmerge\2.14.1208\tools\ILMerge.
 Set-Alias dotnet $DotNetExe
 Set-Alias ilmerge $ILMerge
 
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
 Function Read-PackageSources {
     param($NuGetConfig)
     $xml = New-Object xml
@@ -192,7 +190,7 @@ Function Install-DotnetCLI {
             Version = $Version
             Channel = $Channel
         }
-    
+
         $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
 
         if ([Environment]::Is64BitOperatingSystem) {
@@ -222,14 +220,14 @@ Function Install-DotnetCLI {
         else {
             $specificVersion = $Version
         }
-        
+
         Trace-Log "The version of SDK should be installed is : $specificVersion"
 
         $probeDotnetPath = Join-Path (Join-Path $cli.Root sdk)  $specificVersion
 
         Trace-Log "Probing folder : $probeDotnetPath"
 
-        #If "-force" is specified, or folder with specific version doesn't exist, the download command will run" 
+        #If "-force" is specified, or folder with specific version doesn't exist, the download command will run"
         if ($Force -or -not (Test-Path $probeDotnetPath)) {
             & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
