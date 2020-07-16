@@ -203,7 +203,11 @@ namespace NuGet.Build.Tasks.Pack
                 PackageLicenseExpression = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpression),
                 PackageLicenseFile = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseFile),
                 PackageLicenseExpressionVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpressionVersion),
+<<<<<<< HEAD
                 Readme = MSBuildStringUtility.TrimAndGetNullForEmpty(Readme),
+=======
+                PackageReadmeFile = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageReadmeFile),
+>>>>>>> 43278c4d9... Added support for dotnet pack for .csproj files
                 Deterministic = Deterministic,
                 PackageIcon = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageIcon),
             };
