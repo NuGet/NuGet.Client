@@ -19,9 +19,16 @@ namespace NuGet.Protocol
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
         private readonly Dictionary<string, VersionRange> _versionRangeCache = new Dictionary<string, VersionRange>(StringComparer.Ordinal);
         private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
-        object _lockObject1 = new object();
-        object _lockObject2 = new object();
-        object _lockObject3 = new object();
+        //object _lockObject1 = new object();
+        //object _lockObject2 = new object();
+        //object _lockObject3 = new object();
+
+        public int StrCount { get; set; }	
+        public int StrTotal { get; set; }	
+        public int NuGetVersionCount { get; set; }	
+        public int NuGetVersionTotal { get; set; }	
+        public int VersionRangeCount { get; set; }	
+        public int VersionRangeTotal { get; set; }
 
         /// <summary>
         /// Checks if <paramref name="s"/> already exists in the cache.
@@ -30,6 +37,8 @@ namespace NuGet.Protocol
         /// </summary>
         public string GetString(string s)
         {
+            StrTotal++;
+
             if (ReferenceEquals(s, null))
             {
                 return null;
@@ -42,12 +51,16 @@ namespace NuGet.Protocol
 
             string cachedValue;
 
-            lock (_lockObject1)
+            //lock (_lockObject1)
             {
                 if (!_stringCache.TryGetValue(s, out cachedValue))
                 {
                     _stringCache.Add(s, s);
                     cachedValue = s;
+                }
+                else	
+                {	
+                    StrCount++;	
                 }
             }
 
@@ -59,6 +72,8 @@ namespace NuGet.Protocol
         /// </summary>
         public NuGetVersion GetVersion(string s)
         {
+            NuGetVersionTotal++;
+
             if (string.IsNullOrEmpty(s))
             {
                 return NuGetVersion.Parse(s);
@@ -66,12 +81,16 @@ namespace NuGet.Protocol
 
             NuGetVersion version;
 
-            lock (_lockObject2)
+            //lock (_lockObject2)
             {
                 if (!_versionCache.TryGetValue(s, out version))
                 {
                     version = NuGetVersion.Parse(s);
                     _versionCache.Add(s, version);
+                }
+                else	
+                {	
+                    NuGetVersionCount++;	
                 }
             }
 
@@ -83,6 +102,8 @@ namespace NuGet.Protocol
         /// </summary>
         public VersionRange GetVersionRange(string s)
         {
+            VersionRangeTotal++;
+
             if (string.IsNullOrEmpty(s))
             {
                 return VersionRange.Parse(s);
@@ -90,28 +111,20 @@ namespace NuGet.Protocol
 
             VersionRange versionRange;
 
-            lock (_lockObject3)
+            //lock (_lockObject3)
             {
                 if (!_versionRangeCache.TryGetValue(s, out versionRange))
                 {
                     versionRange = VersionRange.Parse(s);
                     _versionRangeCache.Add(s, versionRange);
                 }
+                else	
+                {	
+                    VersionRangeCount++;	
+                }
             }
 
             return versionRange;
-        }
-
-
-        /// <summary>
-        /// Reset cache when we close the solution.
-        /// </summary>
-        public void ResetCache()
-        {
-            _stringCache.Clear();
-            _versionCache.Clear();
-            _versionRangeCache.Clear();
-            _propertyCache.Clear();
         }
 
         /// <summary>

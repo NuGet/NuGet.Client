@@ -56,11 +56,7 @@ namespace NuGet.VisualStudio
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution) => VSConstants.S_OK;
 
-        public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel)
-        {
-            JsonExtensions.MetaCache.ResetCache();
-            return VSConstants.S_OK;
-        }
+        public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel) => VSConstants.S_OK;
 
         public int OnBeforeCloseSolution(object pUnkReserved) => VSConstants.S_OK;
 

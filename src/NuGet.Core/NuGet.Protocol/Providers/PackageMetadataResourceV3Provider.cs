@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
 
 namespace NuGet.Protocol
 {
@@ -34,6 +33,11 @@ namespace NuGet.Protocol
                     regResource,
                     reportAbuseResource,
                     packageDetailsUriResource);
+
+                if (curResource != null)
+                {
+                    curResource.MetadataReferenceCache = source.MetadataReferenceCache.Value;
+                }
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

@@ -29,5 +29,7 @@ namespace NuGet.Protocol.Core.Types
             SourceCacheContext sourceCacheContext,
             Common.ILogger log,
             CancellationToken token);
+
+        public MetadataReferenceCache MetadataReferenceCache { get; set; }
     }
 }

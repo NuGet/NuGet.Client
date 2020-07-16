@@ -14,8 +14,6 @@ namespace NuGet.Protocol
     {
         public const int JsonSerializationMaxDepth = 512;
 
-        public static readonly MetadataReferenceCache MetaCache = new MetadataReferenceCache();
-
         public static readonly JsonSerializerSettings ObjectSerializationSettings = new JsonSerializerSettings
         {
             MaxDepth = JsonSerializationMaxDepth,
@@ -32,25 +30,28 @@ namespace NuGet.Protocol
             },
         };
 
-        public static readonly JsonSerializerSettings ObjectSerializationSettingsWithCache = new JsonSerializerSettings
-        {
-            MaxDepth = JsonSerializationMaxDepth,
-            NullValueHandling = NullValueHandling.Ignore,
-            TypeNameHandling = TypeNameHandling.None,
-            Converters = new List<JsonConverter>
-            {
-                new NuGetVersionConverter(MetaCache),
-                new VersionInfoConverter(),
-                new StringEnumConverter { CamelCaseText = false },
-                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
-                new FingerprintsConverter(),
-                new VersionRangeConverter(MetaCache)
-            },
-        };
-
         internal static readonly JsonSerializer JsonObjectSerializer = JsonSerializer.Create(ObjectSerializationSettings);
+        
+        internal static JsonSerializer JsonObjectSerializerWithCache(MetadataReferenceCache metadataReferenceCache)
+        {
+            var setting = new JsonSerializerSettings
+            {
+                MaxDepth = JsonSerializationMaxDepth,
+                NullValueHandling = NullValueHandling.Ignore,
+                TypeNameHandling = TypeNameHandling.None,
+                Converters = new List<JsonConverter>
+                {
+                    new NuGetVersionConverter(metadataReferenceCache),
+                    new VersionInfoConverter(),
+                    new StringEnumConverter { CamelCaseText = false },
+                    new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
+                    new FingerprintsConverter(),
+                    new VersionRangeConverter(metadataReferenceCache)
+                },
+            };
 
-        internal static readonly JsonSerializer JsonObjectSerializerWithCache = JsonSerializer.Create(ObjectSerializationSettingsWithCache);
+            return JsonSerializer.Create(setting);
+        }
 
         /// <summary>
         /// Serialize object to the JSON.

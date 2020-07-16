@@ -84,7 +84,6 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            var metadataCache = JsonExtensions.MetaCache;
             var registrationUri = _regResource.GetUri(packageId);
 
             var (registrationIndex, httpSourceCacheContext) = await LoadRegistrationIndexAsync(
@@ -119,21 +118,24 @@ namespace NuGet.Protocol
                     if (registrationPage.Items == null)
                     {
                         var rangeUri = registrationPage.Url;
-                        var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
+                        var leafRegistrationPage = await GetRegistrationIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
 
                         if (registrationPage == null)
                         {
                             throw new InvalidDataException(registrationUri.AbsoluteUri);
                         }
 
-                        ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease,includeUnlisted, metadataCache);
+                        ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease,includeUnlisted);
                     }
                     else
                     {
-                        ProcessRegistrationPage(registrationPage, results, range, includePrerelease, includeUnlisted, metadataCache);
+                        ProcessRegistrationPage(registrationPage, results, range, includePrerelease, includeUnlisted);
                     }
                 }
             }
+
+            System.Diagnostics.Trace.Write($@"\nHello via Trace. strcount: {MetadataReferenceCache.StrCount}/{MetadataReferenceCache.StrTotal}
+                                        NugetVersionCount:{MetadataReferenceCache.NuGetVersionCount}/{MetadataReferenceCache.NuGetVersionTotal}    VersionRangeCount:{MetadataReferenceCache.VersionRangeCount}/{MetadataReferenceCache.VersionRangeTotal}" );
 
             return results;
         }
@@ -154,7 +156,7 @@ namespace NuGet.Protocol
                 return default(T);
             }
 
-            var serializer = JsonExtensions.JsonObjectSerializerWithCache;
+            var serializer = JsonExtensions.JsonObjectSerializerWithCache(MetadataReferenceCache);
 
             using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
@@ -218,7 +220,7 @@ namespace NuGet.Protocol
         /// <param name="log">Logger Instance.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        private Task<RegistrationPage> GetRegistratioIndexPageAsync(
+        private Task<RegistrationPage> GetRegistrationIndexPageAsync(
             HttpSource httpSource,
             string rangeUri,
             string packageId,
@@ -256,8 +258,7 @@ namespace NuGet.Protocol
             RegistrationPage registrationPage,
             List<PackageSearchMetadataRegistration> results,
             VersionRange range, bool includePrerelease,
-            bool includeUnlisted,
-            MetadataReferenceCache metadataCache)
+            bool includeUnlisted)
         {
             foreach (RegistrationLeafItem registrationLeaf in registrationPage.Items)
             {
@@ -271,7 +272,7 @@ namespace NuGet.Protocol
                 {
                     catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
                     catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
-                    catalogEntry = metadataCache.GetObject(catalogEntry);
+                    catalogEntry = MetadataReferenceCache.GetObject(catalogEntry);
                     results.Add(catalogEntry);
                 }
             }

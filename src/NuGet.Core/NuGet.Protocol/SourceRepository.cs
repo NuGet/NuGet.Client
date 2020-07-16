@@ -20,6 +20,11 @@ namespace NuGet.Protocol.Core.Types
         private readonly PackageSource _source;
 
         /// <summary>
+        /// MetadataReferenceCache used for depopulating NugetVersion, VersionRange .. immutable data. 
+        /// </summary>
+        public Lazy<MetadataReferenceCache> MetadataReferenceCache { get; } = new Lazy<MetadataReferenceCache>(() => new MetadataReferenceCache());
+
+        /// <summary>
         /// Pre-determined feed type.
         /// </summary>
         public FeedType FeedTypeOverride { get; }
