@@ -355,8 +355,7 @@ namespace NuGet.SolutionRestoreManager
                 using (intervalTracker.Start(RestoreTelemetryEvent.SolutionUpToDateCheck))
                 {
                     // Run solution based up to date check.
-                    var projectsNeedingRestore = _solutionUpToDateChecker.PerformUpToDateCheck(originalDgSpec).AsList();
-
+                    var projectsNeedingRestore = _solutionUpToDateChecker.PerformUpToDateCheck(originalDgSpec, _logger).AsList();
                     dgSpec = originalDgSpec;
                     // Only use the optimization results if the restore is not `force`.
                     // Still run the optimization check anyways to prep the cache.
@@ -368,12 +367,6 @@ namespace NuGet.SolutionRestoreManager
                         {
                             dgSpec.AddRestore(uniqueProjectId);
                         }
-                        // loop through all legacy PackageReference projects. We don't know how to replay their warnings & errors yet. TODO: https://github.com/NuGet/Home/issues/9565
-                        foreach(var project in (await _solutionManager.GetNuGetProjectsAsync()).Where(e => e is LegacyPackageReferenceProject).Select(e => e as LegacyPackageReferenceProject))
-                        {
-                            dgSpec.AddRestore(project.MSBuildProjectPath);
-                        }
-
                         // recorded the number of up to date projects
                         _upToDateProjectCount = originalDgSpec.Restore.Count - projectsNeedingRestore.Count;
                         _noOpProjectsCount = _upToDateProjectCount;
@@ -419,7 +412,7 @@ namespace NuGet.SolutionRestoreManager
                                 _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
                                 var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
                                 _noOpProjectsCount += restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
-                                _solutionUpToDateChecker.ReportStatus(restoreSummaries);
+                                _solutionUpToDateChecker.SaveRestoreStatus(restoreSummaries);
                                 
                                 if (isRestoreFailed)
                                 {
