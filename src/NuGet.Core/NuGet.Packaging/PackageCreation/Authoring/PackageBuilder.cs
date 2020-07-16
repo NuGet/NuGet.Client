@@ -831,7 +831,7 @@ namespace NuGet.Packaging
             Files.AddRange(searchFiles);
         }
 
-        private void CheckForReadme(string basePath)
+        public void CheckForReadme(string basePath)
         {
             string readmeName = "readme.md";
             List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, readmeName, string.Empty, false).ToList();
