@@ -134,9 +134,6 @@ namespace NuGet.Protocol
                 }
             }
 
-            System.Diagnostics.Trace.Write($@"\nHello via Trace. strcount: {MetadataReferenceCache.StrCount}/{MetadataReferenceCache.StrTotal}
-                                        NugetVersionCount:{MetadataReferenceCache.NuGetVersionCount}/{MetadataReferenceCache.NuGetVersionTotal}    VersionRangeCount:{MetadataReferenceCache.VersionRangeCount}/{MetadataReferenceCache.VersionRangeTotal}" );
-
             return results;
         }
 

@@ -19,9 +19,9 @@ namespace NuGet.Protocol
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
         private readonly Dictionary<string, VersionRange> _versionRangeCache = new Dictionary<string, VersionRange>(StringComparer.Ordinal);
         private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
-        //object _lockObject1 = new object();
-        //object _lockObject2 = new object();
-        //object _lockObject3 = new object();
+        object _lockObject1 = new object();
+        object _lockObject2 = new object();
+        object _lockObject3 = new object();
 
         public int StrCount { get; set; }	
         public int StrTotal { get; set; }	
@@ -51,7 +51,7 @@ namespace NuGet.Protocol
 
             string cachedValue;
 
-            //lock (_lockObject1)
+            lock (_lockObject1)
             {
                 if (!_stringCache.TryGetValue(s, out cachedValue))
                 {
@@ -81,7 +81,7 @@ namespace NuGet.Protocol
 
             NuGetVersion version;
 
-            //lock (_lockObject2)
+            lock (_lockObject2)
             {
                 if (!_versionCache.TryGetValue(s, out version))
                 {
@@ -111,7 +111,7 @@ namespace NuGet.Protocol
 
             VersionRange versionRange;
 
-            //lock (_lockObject3)
+            lock (_lockObject3)
             {
                 if (!_versionRangeCache.TryGetValue(s, out versionRange))
                 {
