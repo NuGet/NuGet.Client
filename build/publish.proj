@@ -54,6 +54,7 @@
     </ItemGroup>
 
     <PushToAzureDevOpsArtifacts
+      PublishingVersion="2"
       ItemsToPush="@(ItemsToPush)"
       ManifestBuildData="@(ManifestBuildData)"
       ManifestRepoUri="$(BUILD_REPOSITORY_URI)"
