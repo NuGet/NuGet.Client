@@ -186,7 +186,7 @@ namespace NuGet.SolutionRestoreManager
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                TelemetryUtility.EmitException(nameof(VsSolutionRestoreService), nameof(NominateProjectAsync), e);
+                await TelemetryUtility.PostFaultAsync(e, nameof(VsSolutionRestoreService));
                 return false;
             }
         }

@@ -29,7 +29,6 @@ using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
 using NuGetConsole.Implementation;
-using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
@@ -548,11 +547,7 @@ namespace NuGetVSExtension
             {
                 await ExecuteUpgradeNuGetProjectCommandAsync(sender, e);
             })
-          .FileAndForget(
-                          TelemetryUtility.CreateFileAndForgetEventName(
-                              nameof(NuGetPackage),
-                              nameof(ExecuteUpgradeNuGetProjectCommand)));
-
+           .PostOnFailure(nameof(NuGetPackage), nameof(ExecuteUpgradeNuGetProjectCommand));
         }
 
         private async Task ExecuteUpgradeNuGetProjectCommandAsync(object sender, EventArgs e)
@@ -646,10 +641,7 @@ namespace NuGetVSExtension
 
                     MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
                 }
-            }).FileAndForget(
-                          TelemetryUtility.CreateFileAndForgetEventName(
-                              nameof(NuGetPackage),
-                              nameof(ShowManageLibraryPackageDialog)));
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
         }
 
         private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
@@ -823,10 +815,7 @@ namespace NuGetVSExtension
 
                     windowFrame.Show();
                 }
-            }).FileAndForget(
-                          TelemetryUtility.CreateFileAndForgetEventName(
-                              nameof(NuGetPackage),
-                              nameof(ShowManageLibraryPackageForSolutionDialog)));
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
         }
 
         /// <summary>
@@ -875,7 +864,7 @@ namespace NuGetVSExtension
             {
                 if (ShouldMEFBeInitialized())
                 {
-                  await InitializeMEFAsync();
+                    await InitializeMEFAsync();
                 }
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

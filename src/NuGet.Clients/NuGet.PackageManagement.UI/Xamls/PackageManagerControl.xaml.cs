@@ -8,9 +8,12 @@ using System.Globalization;
 using System.Linq;
 using System.Security;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.VisualStudio.Experimentation;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -19,17 +22,15 @@ using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
-using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 using Task = System.Threading.Tasks.Task;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
-using NuGet.Protocol;
+using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -744,7 +745,7 @@ namespace NuGet.PackageManagement.UI
                     pSearchCallback: null,
                     searchTask: null);
             })
-            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
+            .PostOnFailure(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount));
         }
 
         // Enable if environment variable RecommendNuGetPackages is set to 1.
@@ -932,7 +933,7 @@ namespace NuGet.PackageManagement.UI
 
                 _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
             })
-            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs)));
+            .PostOnFailure(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs));
         }
 
         private static async Task<int> GetInstalledDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IPackageMetadataProvider metadataProvider, CancellationToken token)
@@ -975,7 +976,7 @@ namespace NuGet.PackageManagement.UI
 
                     _topPanel.UpdateCountOnConsolidateTab(await loader.GetTotalCountAsync(maxCount: 100, CancellationToken.None));
                 })
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshConsolidatablePackagesCount)));
+                .PostOnFailure(nameof(PackageManagerControl), nameof(RefreshConsolidatablePackagesCount));
             }
         }
 
@@ -988,7 +989,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(UpdateDetailPaneAsync)
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged)));
+                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
         }
 
         /// <summary>
@@ -1210,7 +1211,7 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                     _packageList.UpdatePackageStatus(installedPackages.ToArray());
                 })
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(Refresh)));
+                .PostOnFailure(nameof(PackageManagerControl), nameof(Refresh));
 
                 RefreshInstalledAndUpdatesTabs();
             }
@@ -1326,7 +1327,7 @@ namespace NuGet.PackageManagement.UI
 
                 _windowSearchHost.Activate();
             })
-            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(FocusOnSearchBox_Executed)));
+            .PostOnFailure(nameof(PackageManagerControl), nameof(FocusOnSearchBox_Executed));
         }
 
         public void Search(string searchText)
@@ -1436,7 +1437,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
             })
-            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(ExecuteAction)));
+            .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteAction));
         }
 
         private void ExecuteUninstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
@@ -1554,10 +1555,7 @@ namespace NuGet.PackageManagement.UI
                 Debug.Assert(project != null);
                 await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project);
             })
-            .FileAndForget(
-                            TelemetryUtility.CreateFileAndForgetEventName(
-                                nameof(PackageManagerControl),
-                                nameof(UpgradeButton_Click)));
+            .PostOnFailure(nameof(PackageManagerControl), nameof(UpgradeButton_Click));
         }
     }
 }

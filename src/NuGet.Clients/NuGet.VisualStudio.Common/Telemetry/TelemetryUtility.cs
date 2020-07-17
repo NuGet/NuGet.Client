@@ -3,71 +3,47 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Windows.Documents;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Telemetry;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
+
+using AsyncLazyBool = Microsoft.VisualStudio.Threading.AsyncLazy<bool>;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.Telemetry
 {
     public static class TelemetryUtility
     {
-        public static string CreateFileAndForgetEventName(string typeName, string memberName)
+        public static async Task PostFaultAsync(Exception e, string callerClassName, [CallerMemberName] string callerMemberName = null)
         {
-            if (string.IsNullOrEmpty(typeName))
+            if (e == null)
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(typeName));
+                throw new ArgumentNullException(nameof(e));
             }
 
-            if (string.IsNullOrEmpty(memberName))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(memberName));
-            }
+            var caller = $"{callerClassName}.{callerMemberName}";
+            var description = $"{e.GetType().Name} - {e.Message}";
 
-            return $"{VSTelemetrySession.VSEventNamePrefix}fileandforget/{typeName}/{memberName}";
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            TelemetryService.DefaultSession.PostFault($"{VSTelemetrySession.VSEventNamePrefix}Fault", $"{caller} : {e.GetType().Name} - {e.Message}", e);
+
+            if (await IsShellAvailable.GetValueAsync())
+            {
+                ActivityLog.TryLogError(caller, description);
+            }
         }
 
-        public static void EmitException(string className, string methodName, Exception exception)
+        private static readonly AsyncLazyBool IsShellAvailable = new AsyncLazyBool(IsShellAvailableAsync, NuGetUIThreadHelper.JoinableTaskFactory);
+
+        private static async Task<bool> IsShellAvailableAsync()
         {
-            if (className == null)
-            {
-                throw new ArgumentNullException(nameof(className));
-            }
-            if (methodName == null)
-            {
-                throw new ArgumentNullException(nameof(methodName));
-            }
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-
-            TelemetryEvent ToTelemetryEvent(Exception e, string name)
-            {
-                TelemetryEvent te = new TelemetryEvent(name);
-                te["Message"] = e.Message;
-                te["ExceptionType"] = e.GetType().FullName;
-                te["StackTrace"] = e.StackTrace;
-
-                if (e is AggregateException aggregateException)
-                {
-                    var exceptions =
-                        aggregateException.InnerExceptions
-                        .Select(ie => ToTelemetryEvent(ie, name: null))
-                        .ToList();
-                    te.ComplexData["InnerExceptions"] = exceptions;
-                }
-                else if (e.InnerException != null)
-                {
-                    var inner = ToTelemetryEvent(e.InnerException, name: null);
-                    te.ComplexData["InnerException"] = inner;
-                }
-
-                return te;
-            }
-
-            TelemetryEvent telemetryEvent = ToTelemetryEvent(exception, $"errors/{className}.{methodName}");
-            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return ServiceProvider.GlobalProvider.GetService(typeof(SVsShell)) != null;
         }
 
         /// <summary>
