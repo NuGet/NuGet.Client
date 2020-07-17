@@ -27,6 +27,11 @@ namespace NuGet.Protocol
 
                 // construct a new resource
                 curResource = new PackageSearchResourceV3(httpSourceResource.HttpSource, endpoints);
+
+                if (curResource != null)
+                {
+                    curResource.MetadataReferenceCache = source.MetadataReferenceCache.Value;
+                }
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

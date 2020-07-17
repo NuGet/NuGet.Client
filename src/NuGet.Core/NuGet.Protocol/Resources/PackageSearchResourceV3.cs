@@ -52,7 +52,7 @@ namespace NuGet.Protocol
         public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             IEnumerable<PackageSearchMetadata> searchResultMetadata;
-            var metadataCache = new MetadataReferenceCache();
+            var metadataCache = MetadataReferenceCache;
 
             if (_client != null && _searchEndpoints != null)
             {
@@ -253,7 +253,7 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
+            var _newtonsoftConvertersSerializer = JsonExtensions.JsonObjectSerializerWithCache(MetadataReferenceCache);
             _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
 
             using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
