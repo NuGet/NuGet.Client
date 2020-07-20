@@ -34,6 +34,7 @@ namespace NuGet.Configuration
         public static readonly string SymbolsExtension = ".symbols" + PackageExtension;
         public static readonly string ManifestExtension = ".nuspec";
         public static readonly string ManifestSymbolsExtension = ".symbols" + ManifestExtension;
+        public static readonly string ReadmeExtension = ".md";
         public static readonly string PackageReferenceFile = "packages.config";
         public static readonly string PackageSpecFileName = "project.json";
 

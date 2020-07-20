@@ -212,4 +212,20 @@
     <value>The element 'icon' cannot be empty.</value>
     <comment>Please, don't localize icon</comment>
   </data>
+  <data name="ReadmeFileExtensionIsInvalid" xml:space="preserve">
+    <value>The readme file '{0}' has an invalid extension. It must end in .md.</value>
+  </data>
+  <data name="ReadmeNoFileElement" xml:space="preserve">
+    <value>The readme file '{0}' does not exist in the package.</value>
+  </data>
+  <data name="ReadmeMaxFileSizeExceeded" xml:space="preserve">
+    <value>The readme file size must not exceed 1 megabyte.</value>
+  </data>
+  <data name="ReadmeErrorEmpty" xml:space="preserve">
+    <value>The readme file is empty.</value>
+  </data>
+  <data name="ReadmeCannotOpenFile" xml:space="preserve">
+    <value>Cannot open the readme file '{0}': {1}.</value>
+    <comment>0 - Path to the readme file, 1 - Error message for not opening the readme</comment>
+  </data>
 </root>

@@ -669,6 +669,31 @@ namespace NuGet.Common
         NU5037 = 5037,
 
         /// <summary>
+        /// Error_ReadmeFileExtensionIsInvalid
+        /// </summary>
+        NU5038 = 5038,
+
+        /// <summary>
+        /// Error_ReadmeNoFileElement
+        /// </summary>
+        NU5039 = 5039,
+
+        /// <summary>
+        /// Error_ReadmeMaxFileSizeExceeded
+        /// </summary>
+        NU5040 = 5040,
+
+        /// <summary>
+        /// Error_ReadmeErrorEmpty
+        /// </summary>
+        NU5041 = 5041,
+
+        /// <summary>
+        /// Error_ReadmeCannotOpenFile
+        /// </summary>
+        NU5042 = 5042,
+
+        /// <summary>
         /// Error_Manifest_IconCannotOpenFile
         /// </summary>
         NU5046 = 5046,

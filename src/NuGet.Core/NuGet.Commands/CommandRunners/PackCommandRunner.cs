@@ -773,6 +773,11 @@ namespace NuGet.Commands
                 throw new PackagingException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackFailed, path));
             }
 
+            if (mainPackageBuilder.Readme == null)
+            {
+                mainPackageBuilder.CheckForReadme(_packArgs.CurrentDirectory);
+            }
+
             InitCommonPackageBuilderProperties(mainPackageBuilder);
 
             // Build the main package

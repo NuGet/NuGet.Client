@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Core;
@@ -34,6 +35,11 @@ namespace NuGet.Packaging
         /// Maximum Icon file size: 1 megabyte
         /// </summary>
         public const int MaxIconFileSize = 1024 * 1024;
+
+        /// <summary>
+        /// Maximum Readme file size: 1 megabyte
+        /// </summary>
+        public const int MaxReadmeFileSize = 1024 * 1024;
 
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, propertyProvider, includeEmptyDirectories, deterministic: false)
@@ -381,6 +387,7 @@ namespace NuGet.Packaging
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
             ValidateLicenseFile(Files, LicenseMetadata);
             ValidateIconFile(Files, Icon);
+            ValidateReadmeFile(Files, Readme);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -647,6 +654,70 @@ namespace NuGet.Packaging
                     throw new PackagingException(
                         NuGetLogCode.NU5046,
                         string.Format(CultureInfo.CurrentCulture, NuGetResources.IconCannotOpenFile, iconPath, e.Message));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validate that the readme file is of the correct size/type and can be opened properly.
+        /// </summary>
+        /// <param name="files">Files resolved from the file entries in the nuspec</param>
+        /// <param name="readmePath">readmepath found in the .nuspec</param>
+        /// <exception cref="PackagingException">When a validation rule is not met</exception>
+        private void ValidateReadmeFile(IEnumerable<IPackageFile> files, string readmePath) // TODO Change all exceptions to new errors for Readmes
+        {
+            if (!string.IsNullOrEmpty(readmePath))
+            {
+                // Validate readme extension
+                var extension = Path.GetExtension(readmePath);
+
+                if (!string.IsNullOrEmpty(extension) &&
+                    !extension.Equals(NuGetConstants.ReadmeExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new PackagingException(NuGetLogCode.NU5038, string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeFileExtensionIsInvalid, readmePath));
+                }
+
+                // Validate entry
+                var readmePathStripped = PathUtility.StripLeadingDirectorySeparators(readmePath);
+
+                var readmeFileList = files.Where(f =>
+                        readmePathStripped.Equals(
+                            PathUtility.StripLeadingDirectorySeparators(f.Path),
+                            PathUtility.GetStringComparisonBasedOnOS()));
+
+                if (!readmeFileList.Any())
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5039,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeNoFileElement, readmePath));
+                }
+
+                IPackageFile readmeFile = readmeFileList.First();
+
+                try
+                {
+                    // Validate Readme open file
+                    using (var readmeStream = readmeFile.GetStream())
+                    {
+                        // Validate file size
+                        long fileSize = readmeStream.Length;
+
+                        if (fileSize > MaxReadmeFileSize)
+                        {
+                            throw new PackagingException(Common.NuGetLogCode.NU5040, NuGetResources.ReadmeMaxFileSizeExceeded);
+                        }
+
+                        if (fileSize == 0)
+                        {
+                            throw new PackagingException(Common.NuGetLogCode.NU5041, NuGetResources.ReadmeErrorEmpty);
+                        }
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5042,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeCannotOpenFile, readmePath, e.Message));
                 }
             }
         }
