@@ -50,7 +50,7 @@
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
     <MicroBuildDirectory>$(SolutionPackagesFolder)microbuild.core\0.2.0\build\</MicroBuildDirectory>
     <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\5.0.0-beta.20364.3\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
-    <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.20352.2\tools\netcoreapp3.1\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
+    <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.20365.1\tools\netcoreapp3.1\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
     <NoWarn>$(NoWarn);NU5105;NU5048</NoWarn>
   </PropertyGroup>
 
