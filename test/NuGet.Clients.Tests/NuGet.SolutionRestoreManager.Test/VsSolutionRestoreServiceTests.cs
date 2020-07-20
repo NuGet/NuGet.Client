@@ -34,6 +34,12 @@ namespace NuGet.SolutionRestoreManager.Test
         public VsSolutionRestoreServiceTests()
         {
             _testDirectory = TestDirectory.Create();
+
+#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
+            var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
+#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
+
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(joinableTaskContext.Factory);
         }
 
         public void Dispose()
