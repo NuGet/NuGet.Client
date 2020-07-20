@@ -20,7 +20,7 @@ namespace NuGet.Tests.Apex
         {
         }
 
-        [StaFact(Skip = "https://github.com/NuGet/Home/issues/9701")]
+        [StaFact]
         public void SearchPackageFromUI()
         {
             // Arrange
@@ -43,7 +43,7 @@ namespace NuGet.Tests.Apex
             VisualStudio.AssertNoErrors();
         }
 
-        [StaFact(Skip = "https://github.com/NuGet/Home/issues/9701")]
+        [StaFact]
         public void InstallPackageFromUI()
         {
             // Arrange
@@ -65,7 +65,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1", XunitLogger);
         }
 
-        [StaFact(Skip = "https://github.com/NuGet/Home/issues/9701")]
+        [StaFact]
         public void InstallPackageToProjectsFromUI()
         {
             // Arrange
@@ -94,7 +94,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, nuProject, "newtonsoft.json", "9.0.1", XunitLogger);
         }
 
-        [StaFact(Skip = "https://github.com/NuGet/Home/issues/9701")]
+        [StaFact]
         public void UninstallPackageFromUI()
         {
             // Arrange
@@ -123,7 +123,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "newtonsoft.json", XunitLogger);
         }
 
-        [StaFact(Skip = "https://github.com/NuGet/Home/issues/9701")]
+        [StaFact]
         public void UpdatePackageFromUI()
         {
             // Arrange
