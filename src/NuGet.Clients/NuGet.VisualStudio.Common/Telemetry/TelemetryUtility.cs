@@ -30,7 +30,10 @@ namespace NuGet.VisualStudio.Telemetry
             var description = $"{e.GetType().Name} - {e.Message}";
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            TelemetryService.DefaultSession.PostFault($"{VSTelemetrySession.VSEventNamePrefix}Fault", $"{caller} : {e.GetType().Name} - {e.Message}", e);
+
+            var fault = new FaultEvent($"{VSTelemetrySession.VSEventNamePrefix}Fault", description, FaultSeverity.General, e, gatherEventDetails: null);
+            fault.Properties[$"{VSTelemetrySession.VSPropertyNamePrefix}Fault.Caller"] = caller;
+            TelemetryService.DefaultSession.PostEvent(fault);
 
             if (await IsShellAvailable.GetValueAsync())
             {
