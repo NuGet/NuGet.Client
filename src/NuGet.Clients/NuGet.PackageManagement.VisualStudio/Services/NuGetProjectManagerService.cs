@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
@@ -43,7 +43,6 @@ namespace NuGet.PackageManagement.VisualStudio
             var tasks = projects.Select(project => project.GetInstalledPackagesAsync(ct));
             var packageReferences = await Task.WhenAll(tasks);
 
-            // Group all package references for an id/version into a single item.
             return packageReferences.SelectMany(e => e).ToArray();
         }
 

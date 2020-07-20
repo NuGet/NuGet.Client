@@ -10,11 +10,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public static class NuGetServices
     {
-        private const string NuGetSolutionServiceName = "NuGetSolutionService";
+        private const string NuGetSolutionServiceName = "Microsoft.VisualStudio.NuGet.SolutionService";
         private const string NuGetSolutionServiceVersion = "1.0.0";
-        private const string SourceProviderServiceName = "NuGet.SourceProviderService";
+        private const string SourceProviderServiceName = "Microsoft.VisualStudio.NuGet.SourceProviderService";
         private const string SourceProviderServiceVersion = "1.0.0";
-        private const string ProjectManagerProviderServiceName = "NuGet.ProjectManagerService";
+        private const string ProjectManagerProviderServiceName = "Microsoft.VisualStudio.NuGet.ProjectManagerService";
         private const string ProjectManagerServiceVersion = "1.0.0";
 
         /// <summary>

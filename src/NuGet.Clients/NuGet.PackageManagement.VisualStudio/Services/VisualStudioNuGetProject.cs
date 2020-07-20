@@ -16,13 +16,13 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class NuGetProjectInternal : NuGetProject
+    public class VisualStudioNuGetProject : NuGetProject
     {
         private const string LiveShareUriScheme = "vsls";
         private const string ProjectGuidQueryString = "projectGuid";
         private readonly string _projectGuidString;
 
-        public NuGetProjectInternal(Guid projectGuid)
+        public VisualStudioNuGetProject(Guid projectGuid)
         {
             _projectGuidString = projectGuid.ToString();
         }

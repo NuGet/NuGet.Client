@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using MessagePack;
 using MessagePack.Formatters;
 using NuGet.Frameworks;
@@ -12,9 +11,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class NuGetFrameworkFormatter : IMessagePackFormatter<NuGetFramework?>
     {
-        private const string FrameworkPropertyName = "framework";
-        private const string FrameworkVersionPropertyName = "frameworkversion";
-        private const string ProfilePropertyName = "profile";
+        private const string DotNetFrameworkNamePropertyName = "dotnetframeworkname";
 
         internal static readonly IMessagePackFormatter<NuGetFramework?> Instance = new NuGetFrameworkFormatter();
 
@@ -34,23 +31,15 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             try
             {
-                string? framework = null;
-                string? profile = null;
-                Version? version = null;
+                string? dotNetFrameworkName = null;
 
                 int propertyCount = reader.ReadMapHeader();
                 for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
                 {
                     switch (reader.ReadString())
                     {
-                        case FrameworkPropertyName:
-                            framework = reader.ReadString();
-                            break;
-                        case FrameworkVersionPropertyName:
-                            version = new Version(reader.ReadString());
-                            break;
-                        case ProfilePropertyName:
-                            profile = reader.ReadString();
+                        case DotNetFrameworkNamePropertyName:
+                            dotNetFrameworkName = reader.ReadString();
                             break;
                         default:
                             reader.Skip();
@@ -58,7 +47,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
-                return new NuGetFramework(framework, version, profile);
+                return NuGetFramework.ParseFrameworkName(dotNetFrameworkName, DefaultFrameworkNameProvider.Instance);
             }
             finally
             {
@@ -75,13 +64,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(3);
-            writer.Write(FrameworkPropertyName);
-            writer.Write(value.Framework);
-            writer.Write(FrameworkVersionPropertyName);
-            writer.Write(value.Version.ToString());
-            writer.Write(ProfilePropertyName);
-            writer.Write(value.Profile);
+            writer.WriteMapHeader(1);
+            writer.Write(DotNetFrameworkNamePropertyName);
+            writer.Write(value.DotNetFrameworkName);
         }
     }
 }

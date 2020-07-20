@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             var formatters = new IMessagePackFormatter[]
             {
                 PackageSourceFormatter.Instance,
-                PackageSourceUpdateOptionsFormatter.Instance
+                PackageSourceUpdateOptionsFormatter.Instance,
                 NuGetVersionFormatter.Instance,
                 PackageIdentityFormatter.Instance,
                 PackageReferenceFormatter.Instance,

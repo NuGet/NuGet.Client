@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using MessagePack;
 using MessagePack.Formatters;
 using NuGet.Versioning;
@@ -13,9 +11,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class NuGetVersionFormatter : IMessagePackFormatter<NuGetVersion?>
     {
-        private const string VersionPropertyName = "version";
-        private const string MetadataPropertyName = "metadata";
-        private const string ReleaseLabelsPropertyName = "releaselabels";
         private const string OriginalVersionPropertyName = "originalversion";
 
         internal static readonly IMessagePackFormatter<NuGetVersion?> Instance = new NuGetVersionFormatter();
@@ -38,24 +33,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 int propertyCount = reader.ReadMapHeader();
 
-                string? versionString = null;
-                string? metadata = null;
                 string? originalVersion = null;
-                IEnumerable<string>? releaseLabels = null;
 
                 for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
                 {
                     switch (reader.ReadString())
                     {
-                        case VersionPropertyName:
-                            versionString = reader.ReadString();
-                            break;
-                        case MetadataPropertyName:
-                            metadata = reader.ReadString();
-                            break;
-                        case ReleaseLabelsPropertyName:
-                            releaseLabels = options.Resolver.GetFormatter<IEnumerable<string>>().Deserialize(ref reader, options);
-                            break;
                         case OriginalVersionPropertyName:
                             originalVersion = reader.ReadString();
                             break;
@@ -65,7 +48,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
-                return new NuGetVersion(new Version(versionString), releaseLabels, metadata, originalVersion);
+                return NuGetVersion.Parse(originalVersion);
             }
             finally
             {
@@ -82,15 +65,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(4);
-            writer.Write(VersionPropertyName);
-            writer.Write(value.Version.ToString());
-            writer.Write(MetadataPropertyName);
-            writer.Write(value.Metadata);
+            writer.WriteMapHeader(1);
             writer.Write(OriginalVersionPropertyName);
             writer.Write(value.OriginalVersion);
-            writer.Write(ReleaseLabelsPropertyName);
-            options.Resolver.GetFormatter<IEnumerable<string>>().Serialize(ref writer, value.ReleaseLabels, options);
         }
     }
 }

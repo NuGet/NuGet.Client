@@ -669,7 +669,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                if(string.IsNullOrWhiteSpace(projectName))
+                if (string.IsNullOrWhiteSpace(projectName))
                 {
                     projectName = "unknown";
                 }

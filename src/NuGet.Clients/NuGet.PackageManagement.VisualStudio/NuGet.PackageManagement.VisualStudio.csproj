@@ -72,7 +72,7 @@
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
-    <Compile Include="Services\NuGetProjectInternal.cs" />
+    <Compile Include="Services\VisualStudioNuGetProject.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
     <Compile Include="Services\NuGetSourcesService.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />

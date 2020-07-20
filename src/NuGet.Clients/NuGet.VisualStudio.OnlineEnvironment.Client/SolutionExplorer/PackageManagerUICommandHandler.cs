@@ -279,13 +279,13 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         private async Task<IVsWindowFrame> CreateToolWindowAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase, IVsHierarchy hier, uint itemId)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            
-            if(!Guid.TryParse(NuGetProjectInternal.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
+
+            if (!Guid.TryParse(VisualStudioNuGetProject.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
             {
                 throw new InvalidOperationException();
             }
 
-            NuGetProject nugetProject = new NuGetProjectInternal(projectGuid);
+            NuGetProject nugetProject = new VisualStudioNuGetProject(projectGuid);
             var uiController = UIFactory.Value.Create(nugetProject);
             var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
             var vsWindowSearchHostfactory = await _asyncServiceProvider.GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
@@ -299,17 +299,18 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             int[] pfDefaultPosition = null;
             IVsWindowFrame windowFrame;
             var windowPane = new PackageManagerToolWindowPane(control);
-            ErrorHandler.ThrowOnFailure(uiShell.CreateToolWindow(
-                                            (uint)__VSCREATETOOLWIN.CTW_fInitNew,
-                                            0,              // dwToolWindowId - singleInstance = 0
-                                            windowPane,     // ToolWindowPane
-                                            Guid.Empty,     // rclsidTool = GUID_NULL
-                                            projectGuid,
-                                            Guid.Empty,     // reserved - do not use - GUID_NULL
-                                            null,           // IServiceProvider
-                                            caption,
-                                            pfDefaultPosition,
-                                            out windowFrame));
+            ErrorHandler.ThrowOnFailure(
+                uiShell.CreateToolWindow(
+                    (uint)__VSCREATETOOLWIN.CTW_fInitNew,
+                    0,              // dwToolWindowId - singleInstance = 0
+                    windowPane,     // ToolWindowPane
+                    Guid.Empty,     // rclsidTool = GUID_NULL
+                    projectGuid,
+                    Guid.Empty,     // reserved - do not use - GUID_NULL
+                    null,           // IServiceProvider
+                    caption,
+                    pfDefaultPosition,
+                    out windowFrame));
 
             if (windowFrame != null)
             {

@@ -67,14 +67,11 @@ namespace NuGetVSExtension
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [FontAndColorsRegistration("Package Manager Console", NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString, "{" + GuidList.guidNuGetPkgString + "}")]
     [ProvideBrokeredService(ContractsNuGetServices.NuGetProjectServiceName, ContractsNuGetServices.Version1, Audience = ServiceAudience.AllClientsIncludingGuests)]
-    [FontAndColorsRegistration(
-        "Package Manager Console",
-        NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
-        "{" + GuidList.guidNuGetPkgString + "}")]
+    [ProvideBrokeredService("Microsoft.VisualStudio.NuGet.SourceProviderService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
+    [ProvideBrokeredService("Microsoft.VisualStudio.NuGet.ProjectManagerService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
     [Guid(GuidList.guidNuGetPkgString)]
-    [ProvideBrokeredService("NuGet.SourceProviderService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
-    [ProvideBrokeredService("NuGet.ProjectManagerService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
