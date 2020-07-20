@@ -30,7 +30,6 @@ namespace NuGet.SolutionRestoreManager
     internal sealed class SolutionRestoreWorker : SolutionEventsListener, ISolutionRestoreWorker, IDisposable
     {
         private const int IdleTimeoutMs = 400;
-        private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
         private const int DelayAutoRestoreRetries = 50;
         private const int DelaySolutionLoadRetry = 100;
@@ -46,7 +45,7 @@ namespace NuGet.SolutionRestoreManager
         private EnvDTE.SolutionEvents _solutionEvents;
         private CancellationTokenSource _workerCts;
         private AsyncLazy<bool> _backgroundJobRunner;
-        private Lazy<BlockingCollection<SolutionRestoreRequest>> _pendingRequests;
+        private AsyncQueue<SolutionRestoreRequest> _pendingRequests;
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
         private int _initialized;
@@ -245,20 +244,13 @@ namespace NuGet.SolutionRestoreManager
             _pendingRestore?.Dispose();
             _workerCts?.Dispose();
 
-            if (_pendingRequests?.IsValueCreated == true)
-            {
-                _pendingRequests.Value.Dispose();
-            }
-
             if (!isDisposing)
             {
                 _solutionLoadedEvent.Reset();
 
                 _workerCts = new CancellationTokenSource();
 
-                _pendingRequests = new Lazy<BlockingCollection<SolutionRestoreRequest>>(
-                    () => new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit));
-
+                _pendingRequests = new AsyncQueue<SolutionRestoreRequest>();
                 _pendingRestore = new BackgroundRestoreOperation();
                 _activeRestoreTask = Task.FromResult(true);
                 _restoreJobContext = new SolutionRestoreJobContext();
@@ -311,7 +303,7 @@ namespace NuGet.SolutionRestoreManager
 
                     // check if there are already pending restore request or active restore task
                     // then don't initiate a new background job runner.
-                    if (_pendingRequests.Value.Count > 0 || IsBusy)
+                    if (_pendingRequests.Count > 0 || IsBusy)
                     {
                         shouldStartNewBGJobRunner = false;
                     }
@@ -340,7 +332,7 @@ namespace NuGet.SolutionRestoreManager
                     }
 
                     // on-board request onto pending restore operation
-                    _pendingRequests.Value.TryAdd(request);
+                    _pendingRequests.Enqueue(request);
 
                     // When there is no current background restore job running, then start a new one.
                     // Otherwise, the current request will await the existing job to be completed.
@@ -454,7 +446,7 @@ namespace NuGet.SolutionRestoreManager
                 lock (_lockPendingRequestsObj)
                 {
                     // if no pending restore requests then shut down the restore job runner.
-                    if (_pendingRequests.Value.Count == 0)
+                    if (_pendingRequests.Count == 0)
                     {
                         break;
                     }
@@ -467,7 +459,7 @@ namespace NuGet.SolutionRestoreManager
                     {
                         // Blocks the execution until first request is scheduled
                         // Monitors the cancelllation token as well.
-                        var request = _pendingRequests.Value.Take(token);
+                        var request = await _pendingRequests.DequeueAsync(token);
 
                         token.ThrowIfCancellationRequested();
 
@@ -480,21 +472,19 @@ namespace NuGet.SolutionRestoreManager
                         var retries = 0;
 
                         // Drains the queue
-                        while (!_pendingRequests.Value.IsCompleted
+                        while (!_pendingRequests.IsCompleted
                             && !token.IsCancellationRequested)
                         {
-                            SolutionRestoreRequest next;
-
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
-                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
+                            SolutionRestoreRequest next = await _pendingRequests.DequeueAsync()
+                                            .WithTimeout(TimeSpan.FromMilliseconds(IdleTimeoutMs))
+                                            .WithCancellation(token);
+                            if (next != null && isAllProjectsNominated)
                             {
-                                if (isAllProjectsNominated)
-                                {
-                                    // if we've got all the nominations then continue with the auto restore
-                                    break;
-                                }
+                                // if we've got all the nominations then continue with the auto restore
+                                break;
                             }
 
                             // Upgrade request if necessary
