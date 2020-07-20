@@ -141,7 +141,7 @@ namespace NuGet.VisualStudio.Common
                     if (message.Level == LogLevel.Error ||
                         message.Level == LogLevel.Warning)
                     {
-                        ReportError(message);
+                        await ReportAsync(message);
                     }
                 }
             },
@@ -177,26 +177,20 @@ namespace NuGet.VisualStudio.Common
 
         public void ReportError(string message)
         {
-            Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
-                ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
-            },
-            $"{nameof(ReportError)}/{nameof(String)}");
+            Run(() => ReportAsync(new LogMessage(LogLevel.Error, message)), $"{nameof(ReportError)}/{nameof(String)}");
         }
 
         public void ReportError(ILogMessage message)
         {
-            Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            Run(() => ReportAsync(message), $"{nameof(ReportError)}/{nameof(ILogMessage)}");
+        }
 
-                var errorListEntry = new ErrorListTableEntry(message);
-                ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
-            },
-            $"{nameof(ReportError)}/{nameof(ILogMessage)}");
+        private async Task ReportAsync(ILogMessage message)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var errorListEntry = new ErrorListTableEntry(message);
+            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
         }
 
         private void Run(Func<Task> action, [CallerMemberName] string methodName = null)
