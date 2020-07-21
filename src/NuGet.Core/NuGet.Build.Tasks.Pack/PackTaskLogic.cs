@@ -177,12 +177,12 @@ namespace NuGet.Build.Tasks.Pack
 
             builder.Icon = request.PackageIcon;
 
-            builder.Readme = request.PackageReadmeFile;
+            builder.Readme = request.Readme;
 
             /*
-            if (request.PackageReadmeFile != null)
+            if (request.Readme != null)
             {
-                builder.Readme = request.PackageReadmeFile;
+                builder.Readme = request.Readme;
             }
             else
             {

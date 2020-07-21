@@ -46,6 +46,7 @@ namespace NuGet.Build.Tasks.Pack
         public string NuspecBasePath { get; set; }
         public string[] NuspecProperties { get; set; }
         public bool OutputFileNamesWithoutVersion { get; set; }
+        public string Readme { get; set; }
         public string ReleaseNotes { get; set; }
         public string RepositoryType { get; set; }
         public string RepositoryUrl { get; set; }
@@ -66,7 +67,6 @@ namespace NuGet.Build.Tasks.Pack
         public string SymbolPackageFormat { get; set; }
         public string PackageLicenseFile { get; set; }
         public string PackageLicenseExpression { get; set; }
-        public string PackageReadmeFile { get; set; }
         public string PackageLicenseExpressionVersion { get; set; }
         public bool Deterministic { get; set; }
         public string PackageIcon { get; set; }

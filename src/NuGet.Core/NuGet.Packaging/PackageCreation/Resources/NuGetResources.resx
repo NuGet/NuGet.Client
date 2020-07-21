@@ -222,7 +222,7 @@
     <value>The readme file size must not exceed 1 megabyte.</value>
   </data>
   <data name="ReadmeErrorEmpty" xml:space="preserve">
-    <value>The readme file is empty.</value>
+    <value>The readme file '{0}' is empty.</value>
   </data>
   <data name="ReadmeCannotOpenFile" xml:space="preserve">
     <value>Cannot open the readme file '{0}': {1}.</value>

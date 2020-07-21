@@ -704,12 +704,12 @@ namespace NuGet.Packaging
 
                         if (fileSize > MaxReadmeFileSize)
                         {
-                            throw new PackagingException(Common.NuGetLogCode.NU5040, NuGetResources.ReadmeMaxFileSizeExceeded);
+                            throw new PackagingException(NuGetLogCode.NU5040, string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeMaxFileSizeExceeded, readmePath));
                         }
 
                         if (fileSize == 0)
                         {
-                            throw new PackagingException(Common.NuGetLogCode.NU5041, NuGetResources.ReadmeErrorEmpty);
+                            throw new PackagingException(NuGetLogCode.NU5041, string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeErrorEmpty, readmePath));
                         }
                     }
                 }

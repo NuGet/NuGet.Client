@@ -72,7 +72,7 @@ namespace NuGet.Build.Tasks.Pack
         public string PackageLicenseExpression { get; set; }
         public string PackageLicenseFile { get; set; }
         public string PackageLicenseExpressionVersion { get; set; }
-        public string PackageReadmeFile { get; set; }
+        public string Readme { get; set; }
         public bool Deterministic { get; set; }
         public string PackageIcon { get; set; }
         public ILogger Logger => new MSBuildLogger(Log);
@@ -203,7 +203,7 @@ namespace NuGet.Build.Tasks.Pack
                 PackageLicenseExpression = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpression),
                 PackageLicenseFile = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseFile),
                 PackageLicenseExpressionVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpressionVersion),
-                PackageReadmeFile = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageReadmeFile),
+                Readme = MSBuildStringUtility.TrimAndGetNullForEmpty(Readme),
                 Deterministic = Deterministic,
                 PackageIcon = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageIcon),
             };
