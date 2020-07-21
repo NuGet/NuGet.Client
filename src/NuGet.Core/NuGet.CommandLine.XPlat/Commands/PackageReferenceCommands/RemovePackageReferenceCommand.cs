@@ -9,7 +9,7 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class RemovePackageReferenceCommand
+    internal class RemovePackageReferenceCommand
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
             Func<IPackageReferenceCommandRunner> getCommandRunner)

@@ -12,7 +12,7 @@ namespace NuGet.CommandLine.XPlat
     /// <summary>
     /// This class holds common commandline helper methods.
     /// </summary>
-    public static class CommandLineUtility
+    internal static class CommandLineUtility
     {
         /// <summary>
         /// Helper method to join across multiple values of a commandline option.
