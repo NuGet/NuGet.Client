@@ -38,7 +38,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void BasicListPackageParsing_InteractiveTakesNoArguments()
+        public void BasicListPackageParsing_InteractiveTakesNoArguments_ThrowsException()
         {
             VerifyCommand(
                 (projectPath, mockCommandRunner, testApp, getLogLevel) =>
