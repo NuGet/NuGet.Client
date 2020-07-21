@@ -511,7 +511,7 @@ namespace NuGet.SolutionRestoreManager
                                 break;
                             }
 
-                            await Task.Delay(IdleTimeoutMs);
+                            await Task.Delay(IdleTimeoutMs, token);
 
                             if (!isAllProjectsNominated)
                             {
