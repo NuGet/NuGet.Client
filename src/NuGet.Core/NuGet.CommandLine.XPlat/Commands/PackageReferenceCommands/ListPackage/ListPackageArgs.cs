@@ -9,7 +9,7 @@ using NuGet.Configuration;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class ListPackageArgs
+    internal class ListPackageArgs
     {
         public ILogger Logger { get; }
         public string Path { get; }

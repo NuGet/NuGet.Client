@@ -9,7 +9,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class PackageReferenceArgs
+    internal class PackageReferenceArgs
     {
         public string ProjectPath { get; }
         public ILogger Logger { get; }

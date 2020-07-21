@@ -16,7 +16,7 @@ using Microsoft.Build.Locator;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class Program
+    internal class Program
     {
 #if DEBUG
         private const string DebugOption = "--debug";

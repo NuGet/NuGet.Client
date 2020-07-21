@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public interface IListPackageCommandRunner
+    internal interface IListPackageCommandRunner
     {
         Task ExecuteCommandAsync(ListPackageArgs packageRefArgs);
     }

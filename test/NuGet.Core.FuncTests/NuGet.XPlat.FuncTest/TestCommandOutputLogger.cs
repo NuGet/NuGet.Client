@@ -9,7 +9,7 @@ using NuGet.Test.Utility;
 
 namespace NuGet.XPlat.FuncTest
 {
-    public class TestCommandOutputLogger : CommandOutputLogger
+    internal class TestCommandOutputLogger : CommandOutputLogger
     {
         private readonly bool _observeLogLevel;
 

@@ -1,6 +1,6 @@
-﻿namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat
 {
-    public static class CommandConstants
+    internal static class CommandConstants
     {
         public const string ForceEnglishOutputOption = "--force-english-output";
     }

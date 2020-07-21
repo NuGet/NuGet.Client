@@ -9,7 +9,7 @@ using NuGet.LibraryModel;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class RemovePackageReferenceCommandRunner : IPackageReferenceCommandRunner
+    internal class RemovePackageReferenceCommandRunner : IPackageReferenceCommandRunner
     {
         public Task<int> ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {

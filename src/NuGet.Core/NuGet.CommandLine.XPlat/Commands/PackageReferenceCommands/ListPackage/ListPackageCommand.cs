@@ -15,7 +15,7 @@ using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public static class ListPackageCommand
+    internal static class ListPackageCommand
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
             Func<IListPackageCommandRunner> getCommandRunner)

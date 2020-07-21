@@ -19,7 +19,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class MSBuildAPIUtility
+    internal class MSBuildAPIUtility
     {
         private const string PACKAGE_REFERENCE_TYPE_TAG = "PackageReference";
         private const string VERSION_TAG = "Version";

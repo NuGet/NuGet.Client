@@ -209,14 +209,14 @@ namespace NuGet.XPlat.FuncTest
             return package;
         }
 
-        public static PackageReferenceArgs GetPackageReferenceArgs(string packageId, SimpleTestProjectContext project)
+        internal static PackageReferenceArgs GetPackageReferenceArgs(string packageId, SimpleTestProjectContext project)
         {
             var logger = new TestCommandOutputLogger();
             var packageDependency = new PackageDependency(packageId);
             return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger);
         }
 
-        public static PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
+        internal static PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
             string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false)
         {
             var logger = new TestCommandOutputLogger();

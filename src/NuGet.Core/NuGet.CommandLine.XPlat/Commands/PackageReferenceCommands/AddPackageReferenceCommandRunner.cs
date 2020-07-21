@@ -21,7 +21,7 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class AddPackageReferenceCommandRunner : IPackageReferenceCommandRunner
+    internal class AddPackageReferenceCommandRunner : IPackageReferenceCommandRunner
     {
         public async Task<int> ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {

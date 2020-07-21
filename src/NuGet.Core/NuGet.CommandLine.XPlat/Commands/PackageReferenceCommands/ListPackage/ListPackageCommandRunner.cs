@@ -19,7 +19,7 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class ListPackageCommandRunner : IListPackageCommandRunner
+    internal class ListPackageCommandRunner : IListPackageCommandRunner
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";

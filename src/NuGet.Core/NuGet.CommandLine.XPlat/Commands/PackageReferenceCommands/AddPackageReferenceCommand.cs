@@ -11,7 +11,7 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public static class AddPackageReferenceCommand
+    internal static class AddPackageReferenceCommand
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
             Func<IPackageReferenceCommandRunner> getCommandRunner)
