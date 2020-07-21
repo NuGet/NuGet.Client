@@ -179,21 +179,6 @@ namespace NuGet.Build.Tasks.Pack
 
             builder.Readme = request.Readme;
 
-            /*
-            if (request.Readme != null)
-            {
-                builder.Readme = request.Readme;
-            }
-            else
-            {
-                string basePath = Path.Combine(
-                request.PackItem.GetProperty("RootDir"),
-                request.PackItem.GetProperty("Directory")).TrimEnd(Path.DirectorySeparatorChar);
-
-                builder.CheckForReadme(basePath);
-            }
-            */
-
             if (request.MinClientVersion != null)
             {
                 Version version;
