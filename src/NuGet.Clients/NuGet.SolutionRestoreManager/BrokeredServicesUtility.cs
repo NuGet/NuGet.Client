@@ -14,6 +14,14 @@ namespace NuGet.SolutionRestoreManager
         internal const string NuGetSolutionServiceName = "Microsoft.VisualStudio.NuGet.SolutionService";
         internal const string NuGetSolutionServiceVersion = "1.0.0";
 
+        internal const string DeprecatedNuGetSolutionServiceName = "NuGetSolutionService";
+        internal const string DeprecatedNuGetSolutionServiceVersion = "1.0.0";
+
+        internal static readonly ServiceRpcDescriptor DeprecatedSolutionService = new ServiceJsonRpcDescriptor(
+            new ServiceMoniker(DeprecatedNuGetSolutionServiceName, new Version(DeprecatedNuGetSolutionServiceVersion)),
+            ServiceJsonRpcDescriptor.Formatters.UTF8,
+            ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
+
         internal static readonly ServiceRpcDescriptor NuGetSolutionService = new ServiceJsonRpcDescriptor(
             new ServiceMoniker(NuGetSolutionServiceName, new Version(NuGetSolutionServiceVersion)),
             ServiceJsonRpcDescriptor.Formatters.UTF8,
