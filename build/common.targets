@@ -55,7 +55,7 @@
   </ImportGroup>
 
   <!-- Projects we pack become public APIs that others can use -->
-  <ItemGroup Condition=" '$(PackProject)' == 'true' and '$(NoPublicAPIs)' != 'true' ">
+  <ItemGroup Condition=" '$(PackProject)' == 'true' and '$(NoPublicAPIs)' != 'true' and '$(IsBuildOnlyXPLATProjects)' != 'true' ">
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
 
     <None Condition=" '$(PublicApiPerTfm)' != 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />

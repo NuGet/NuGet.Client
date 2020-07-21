@@ -5,7 +5,7 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace ship_public_apis
+namespace NuGet.Internal.Tools.ShipPublicApis
 {
     class Program
     {
@@ -22,7 +22,7 @@ namespace ship_public_apis
                 new Option<bool>("--resort")
             };
 
-            rootCommand.Description = "Copy and merge contents of PublicAPI.Unshipped.txt to PublicAPI.Shipped.txt. See https://github.com/NuGet/Home/issues/9632 for more details.";
+            rootCommand.Description = "Copy and merge contents of PublicAPI.Unshipped.txt to PublicAPI.Shipped.txt. See https://github.com/NuGet/NuGet.Client/tree/dev/docs/nuget-sdk.md#Shipping_NuGet for more details.";
 
             rootCommand.Handler = CommandHandler.Create<DirectoryInfo, bool>(MainAsync);
 
