@@ -50,7 +50,7 @@ namespace NuGet.Test.Utility
 
         /// <summary>
         /// Adds and intem inside a &lt;ItemGroup/&gt; node in the following form:
-        /// <c>&lt;{itemType} Include="{itemPath}" [PackagePath="{packagePath}"] /&gt;</c>
+        /// <c>&lt;{itemType} Include="{itemPath}" [PackagePath="{packagePath}" Pack="{pack}" Version="{version}"] /&gt;</c>
         /// </summary>
         public ProjectFileBuilder WithItem(
             string itemType,
