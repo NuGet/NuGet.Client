@@ -1608,15 +1608,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error..
-        /// </summary>
-        internal static string Switch_Verbosity {
-            get {
-                return ResourceManager.GetString("Switch_Verbosity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The API key for the symbol server..
         /// </summary>
         internal static string SymbolApiKey_Description {
@@ -1676,6 +1667,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string UpdateSourceCommandDescription {
             get {
                 return ResourceManager.GetString("UpdateSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]..
+        /// </summary>
+        internal static string Verbosity_Description {
+            get {
+                return ResourceManager.GetString("Verbosity_Description", resourceCulture);
             }
         }
         

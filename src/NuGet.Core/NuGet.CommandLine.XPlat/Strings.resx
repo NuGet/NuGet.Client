@@ -204,10 +204,6 @@
   <data name="Source_Description" xml:space="preserve">
     <value>Package source (URL, UNC/folder path or package source name) to use. Defaults to DefaultPushSource if specified in NuGet.Config.</value>
   </data>
-  <data name="Switch_Verbosity" xml:space="preserve">
-    <value>The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error.</value>
-    <comment>The allowed values should not be localized as they are Enum variants</comment>
-  </data>
   <data name="Error_MissingSourceParameter" xml:space="preserve">
     <value>Source parameter was not specified.</value>
   </data>
@@ -648,7 +644,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Option_ConfigFile" xml:space="preserve">
     <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior.</value>
   </data>
-   <data name="Option_ConfigFile_Docs" xml:space="preserve">
+  <data name="Option_ConfigFile_Docs" xml:space="preserve">
     <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).</value>
   </data>
   <data name="Option_PackageSource" xml:space="preserve">
@@ -711,5 +707,9 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="AddClientCertCommandDescription" xml:space="preserve">
     <value>Adds a client certificate configuration that matches the given package source name.</value>
+  </data>
+  <data name="Verbosity_Description" xml:space="preserve">
+    <value>Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</value>
+    <comment>Please don't localize "q[uiet]", "m[inimal]", "n[ormal]", "d[etailed]", or "diag[nostic]"</comment>
   </data>
 </root>
