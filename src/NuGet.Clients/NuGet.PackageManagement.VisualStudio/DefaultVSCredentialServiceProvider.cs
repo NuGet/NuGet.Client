@@ -11,7 +11,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.Credentials;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Plugins;
 using NuGet.VisualStudio;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
@@ -144,10 +143,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // Log the user-friendly message to the output console (no stack trace).
             _outputConsoleLogger.Value.Log(
-                MessageLevel.Error,
-                failureMessage +
-                Environment.NewLine +
-                ExceptionUtilities.DisplayMessage(exception));
+                new LogMessage(
+                    LogLevel.Error,
+                    failureMessage +
+                    Environment.NewLine +
+                    ExceptionUtilities.DisplayMessage(exception)));
 
             // Write the stack trace to the activity log.
             ActivityLog.LogWarning(

@@ -5,18 +5,21 @@ using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
+    /// <summary> UI logger abstraction. </summary>
     public interface INuGetUILogger
     {
-        void Log(ProjectManagement.MessageLevel level, string message, params object[] args);
-
+        /// <summary> Log a message. </summary>
+        /// <param name="message"> Log message. </param>
         void Log(ILogMessage message);
 
-        void ReportError(string message);
-
+        /// <summary> Report an error or warning. </summary>
+        /// <param name="message"> Error or warning log message. </param>
         void ReportError(ILogMessage message);
 
+        /// <summary> Start the logging. </summary>
         void Start();
 
+        /// <summary> End the logging. </summary>
         void End();
     }
 }

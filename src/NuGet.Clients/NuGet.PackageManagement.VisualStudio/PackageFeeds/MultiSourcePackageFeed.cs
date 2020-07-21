@@ -373,8 +373,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var errorMessage = ExceptionUtilities.DisplayMessage(task.Exception);
                 _logger.Log(
-                    ProjectManagement.MessageLevel.Error,
-                    $"[{state.ToString()}] {errorMessage}");
+                    new LogMessage(
+                        LogLevel.Error,
+                        $"[{state.ToString()}] {errorMessage}"));
             });
         }
     }
