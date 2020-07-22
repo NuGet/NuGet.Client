@@ -70,7 +70,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(2);
+            writer.WriteMapHeader(count: 2);
             writer.Write(IdPropertyName);
             writer.Write(value.Id);
             writer.Write(NuGetVersionPropertyName);

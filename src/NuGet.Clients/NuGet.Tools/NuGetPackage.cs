@@ -69,8 +69,8 @@ namespace NuGetVSExtension
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string, PackageAutoLoadFlags.BackgroundLoad)]
     [FontAndColorsRegistration("Package Manager Console", NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString, "{" + GuidList.guidNuGetPkgString + "}")]
     [ProvideBrokeredService(ContractsNuGetServices.NuGetProjectServiceName, ContractsNuGetServices.Version1, Audience = ServiceAudience.AllClientsIncludingGuests)]
-    [ProvideBrokeredService("Microsoft.VisualStudio.NuGet.SourceProviderService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
-    [ProvideBrokeredService("Microsoft.VisualStudio.NuGet.ProjectManagerService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
+    [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.ProjectManagerServiceName, BrokeredServicesUtilities.ProjectManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -176,8 +176,8 @@ namespace NuGetVSExtension
             var lazySettings = new AsyncLazy<ISettings>(() => ServiceLocator.GetInstanceAsync<ISettings>(), ThreadHelper.JoinableTaskFactory);
             var nuGetBrokeredServiceFactory = new NuGetBrokeredServiceFactory(lazySolutionManager, lazySettings);
             brokeredServiceContainer.Proffer(ContractsNuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
-            brokeredServiceContainer.Proffer(NuGetServices.SourceProviderService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac, ct)));
-            brokeredServiceContainer.Proffer(NuGetServices.ProjectManagerService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac, ct)));
+            brokeredServiceContainer.Proffer(NuGetServices.SourceProviderService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac)));
+            brokeredServiceContainer.Proffer(NuGetServices.ProjectManagerService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac)));
         }
 
         /// <summary>

@@ -276,7 +276,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller's responsibility to dispose.")]
-        private async Task<IVsWindowFrame> CreateToolWindowAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase, IVsHierarchy hier, uint itemId)
+        private async ValueTask<IVsWindowFrame> CreateToolWindowAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase, IVsHierarchy hier, uint itemId)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

@@ -18,14 +18,13 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class NuGetSourcesService : INuGetSourcesService
+    public sealed class NuGetSourcesService : INuGetSourcesService
     {
-        private bool _disposedValue;
         private readonly ServiceActivationOptions _options;
         private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
 
-        public NuGetSourcesService(ServiceActivationOptions options, IServiceBroker serviceBroker, AuthorizationServiceClient authorizationServiceClient, CancellationToken cancellationToken)
+        public NuGetSourcesService(ServiceActivationOptions options, IServiceBroker serviceBroker, AuthorizationServiceClient authorizationServiceClient)
         {
             _options = options;
             _serviceBroker = serviceBroker;
@@ -55,22 +54,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _authorizationServiceClient?.Dispose();
-                }
-
-                _disposedValue = true;
-            }
-        }
-
         public void Dispose()
         {
-            Dispose(disposing: true);
+            _authorizationServiceClient?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

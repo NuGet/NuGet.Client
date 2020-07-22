@@ -18,14 +18,13 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class NuGetProjectManagerService : INuGetProjectManagerService
+    public sealed class NuGetProjectManagerService : INuGetProjectManagerService
     {
-        private bool _disposedValue;
         private readonly ServiceActivationOptions _options;
         private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
 
-        public NuGetProjectManagerService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac, CancellationToken ct)
+        public NuGetProjectManagerService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac)
         {
             _options = options;
             _serviceBroker = sb;
@@ -37,11 +36,13 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
             Assumes.NotNull(solutionManager);
 
-            var projects = (await solutionManager.GetNuGetProjectsAsync()).Where(p => projectGuids.Contains(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId))).ToArray();
+            NuGetProject[]? projects = (await solutionManager.GetNuGetProjectsAsync())
+                .Where(p => projectGuids.Contains(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)))
+                .ToArray();
 
             // Read package references from all projects.
-            var tasks = projects.Select(project => project.GetInstalledPackagesAsync(ct));
-            var packageReferences = await Task.WhenAll(tasks);
+            IEnumerable<Task<IEnumerable<PackageReference>>>? tasks = projects.Select(project => project.GetInstalledPackagesAsync(ct));
+            IEnumerable<PackageReference>[]? packageReferences = await Task.WhenAll(tasks);
 
             return packageReferences.SelectMany(e => e).ToArray();
         }
@@ -51,7 +52,9 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
             Assumes.NotNull(solutionManager);
 
-            var project = (await solutionManager.GetNuGetProjectsAsync()).First(p => projectGuid.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
+            NuGetProject? project = (await solutionManager.GetNuGetProjectsAsync())
+                .First(p => projectGuid.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
+
             return await project.GetMetadataAsync(key, token);
         }
 
@@ -60,27 +63,16 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
             Assumes.NotNull(solutionManager);
 
-            var project = (await solutionManager.GetNuGetProjectsAsync()).First(p => projectGuid.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
+            NuGetProject? project = (await solutionManager.GetNuGetProjectsAsync())
+                .First(p => projectGuid.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
+
             (bool success, object value) = await project.TryGetMetadataAsync(key, token);
             return (success, value);
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _authorizationServiceClient.Dispose();
-                }
-
-                _disposedValue = true;
-            }
-        }
-
         public void Dispose()
         {
-            Dispose(disposing: true);
+            _authorizationServiceClient.Dispose();
             GC.SuppressFinalize(this);
         }
     }

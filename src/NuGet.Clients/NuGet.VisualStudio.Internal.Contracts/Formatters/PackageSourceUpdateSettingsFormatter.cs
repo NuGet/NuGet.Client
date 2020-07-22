@@ -69,7 +69,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(2); // Number of properties to write
+            writer.WriteMapHeader(count: 2);
             writer.Write(UpdateCredentialsPropertyName);
             writer.Write(value.UpdateCredentials);
             writer.Write(UpdateEnabledPropertyName);

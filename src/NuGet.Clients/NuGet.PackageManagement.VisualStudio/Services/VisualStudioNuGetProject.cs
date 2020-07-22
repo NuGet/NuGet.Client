@@ -66,34 +66,25 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 Assumes.NotNull(nugetProjectManagerService);
 
-                var metadataResult = await nugetProjectManagerService.GetMetadataAsync(_projectGuidString, key, token);
-                return metadataResult;
+                return await nugetProjectManagerService.GetMetadataAsync(_projectGuidString, key, token);
             }
         }
 
         public static string GetProjectGuidStringFromVslsQueryString(string queryString)
         {
-            var result = Guid.Empty;
-
-            try
+            if (Uri.TryCreate(queryString, UriKind.Absolute, out Uri pathUri))
             {
-                Uri pathUri = new Uri(queryString);
-
                 if (string.Equals(pathUri.Scheme, LiveShareUriScheme, StringComparison.OrdinalIgnoreCase))
                 {
-                    var queryStrings = ParseQueryString(pathUri);
-                    if (!queryStrings.TryGetValue(ProjectGuidQueryString, out var projectGuid) || !Guid.TryParse(projectGuid, out result))
+                    Dictionary<string, string>? queryStrings = ParseQueryString(pathUri);
+                    if (queryStrings.TryGetValue(ProjectGuidQueryString, out var projectGuid) && Guid.TryParse(projectGuid, out Guid result))
                     {
-                        result = Guid.Empty;
+                        return result.ToString();
                     }
                 }
             }
-            catch
-            {
-                result = Guid.Empty;
-            }
 
-            return result.ToString();
+            return Guid.Empty.ToString();
         }
 
         private static Dictionary<string, string> ParseQueryString(Uri uri)
@@ -107,7 +98,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             if (queryString.Length == 0)
+            {
                 return result;
+            }
 
             var queries = queryString.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var query in queries)

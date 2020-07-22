@@ -64,7 +64,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(1);
+            writer.WriteMapHeader(count: 1);
             writer.Write(DotNetFrameworkNamePropertyName);
             writer.Write(value.DotNetFrameworkName);
         }

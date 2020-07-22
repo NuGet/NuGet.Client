@@ -149,7 +149,8 @@ namespace NuGet.PackageManagement.UI
             _packageDetail.Control = this;
             _packageDetail.Visibility = Visibility.Hidden;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(SetTitleAsync).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SetTitleAsync)));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(SetTitleAsync)
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SetTitleAsync)));
 
             _topPanel.IsSolution = Model.IsSolution;
             if (_topPanel.IsSolution)
@@ -222,7 +223,8 @@ namespace NuGet.PackageManagement.UI
                 if (currentFullPath == newFullPath)
                 {
                     Model.Context.Projects = new[] { e.NuGetProject };
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(SetTitleAsync).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SetTitleAsync)));
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(SetTitleAsync)
+                        .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SetTitleAsync)));
                 }
             }
         }

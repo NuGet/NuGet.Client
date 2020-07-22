@@ -71,7 +71,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(2);
+            writer.WriteMapHeader(count: 2);
             writer.Write(PackageIdentityPropertyName);
             PackageIdentityFormatter.Instance.Serialize(ref writer, value.PackageIdentity, options);
             writer.Write(NuGetFrameworkPropertyName);

@@ -82,7 +82,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(4);
+            writer.WriteMapHeader(count: 4);
             writer.Write(NamePropertyName);
             writer.Write(value.Name);
             writer.Write(SourcePropertyName);
