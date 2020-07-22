@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0">
   <!-- Compiler flags -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
+  <PropertyGroup Condition=" ('$(TargetFramework)' == '$(NETFXTargetFramework)' OR  '$(TargetFramework)' == 'net46') ">
     <DefineConstants>$(DefineConstants);IS_DESKTOP</DefineConstants>
     <IsDesktop>true</IsDesktop>
   </PropertyGroup>
@@ -37,7 +37,7 @@
   <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
     <Import Project="sign.targets" />
   </ImportGroup>
-  
+
   <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
     <SymbolTargetsToGetPdbs>GetDebugSymbolsProjectOutput</SymbolTargetsToGetPdbs>
@@ -72,7 +72,7 @@
     <OutputPath>bin\$(VisualStudioVersion)\$(Configuration)</OutputPath>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath> 
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
@@ -119,7 +119,7 @@
 
   <!--
     ============================================================
-    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that 
+    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that
     need to be indexed on the symbol server
     ============================================================
   -->
@@ -135,7 +135,7 @@
           ItemName="SymbolFilesToIndex" />
     </MSBuild>
   </Target>
-  
+
   <!--
     ============================================================
     GetSigningInputs - gets the list of DLLs that need to
@@ -255,7 +255,7 @@
 
   <!--
     ============================================================
-    GetLocalizedFilesForVsix - gathers the list of localized DLLs 
+    GetLocalizedFilesForVsix - gathers the list of localized DLLs
     from each project
     ============================================================
   -->
