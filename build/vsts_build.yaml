@@ -581,7 +581,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
+  condition: "failed() "
   pool:
     name: VSEng-MicroBuildVS2019
     demands:
@@ -678,7 +678,7 @@ jobs:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     MSBUILDDISABLENODEREUSE: 1
-  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
+  condition: "failed() "
   pool:
     vmImage: ubuntu-latest
     demands: sh
@@ -746,7 +746,7 @@ jobs:
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
+  condition: "failed() "
   pool:
     vmImage: macos-latest
 
@@ -819,7 +819,7 @@ jobs:
   variables:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
+  condition: "failed() "
   pool:
     name: DDNuGet-Windows
     demands:
@@ -932,7 +932,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
+  condition: "failed() "
   pool:
     name: DDNuGet-Windows
     demands:
