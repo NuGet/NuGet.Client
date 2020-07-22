@@ -902,6 +902,11 @@ namespace NuGet.Packaging
             Files.AddRange(searchFiles);
         }
 
+        /// <summary>
+        /// If no readme property is specified, this checks for a "readme.md" file in the
+        /// base directory and adds it to the package as the readme file.
+        /// </summary>
+        /// <param name="basePath"></param>
         public void CheckForReadme(string basePath)
         {
             string readmeName = "readme.md";
