@@ -6,9 +6,11 @@ The projects that are part of the SDK are largely under `src\NuGet.Core`, but al
 
 ## API compatibility policy
 
-NuGet is primarily a tool, and as such our efforts are focused on: Visual Studio integration, `dotnet` cli integration, and `msbuild` integration.
+NuGet is primarily a tool, and as such our efforts are focused on: Visual Studio integration, `dotnet` cli integration, `msbuild` integration, and `nuget.exe`.
 
 When we need to break APIs part of the SDK to meet our tooling needs, we will do so. However, we understand this negatively impacts customers using the SDK, so we will try to avoid doing so by trying to be attentive in code reviews, and using tooling such as the [PublicApiAnalyzers](https://github.com/dotnet/roslyn-analyzers/tree/master/src/PublicApiAnalyzers).
+
+Note that `NuGet.PackageManagement` is a special case. `NuGet.PackageManagement` contains classes closely tied to our Visual Studio tooling, but the APIs are not designed in a way that makes it easy to avoid breaking changes. This means their APIs are far less stable than our other packages, as we need to make changes for Visual Studio specific features.
 
 ### Types of compatibility
 
@@ -65,7 +67,8 @@ Each project in the NuGet SDK will have a `PublicAPI.Shipped.txt` and `PublicAPI
 When an API is added, the analyzer will display errors unless the API is added to `PublicAPI.Unshipped.txt`. Note:
 * The analyzer will also stop complaining if the API is added to `PublicAPI.Shipped.txt`. However, new APIs should not be added to this file. Always add new APIs to the `Unshipped` file.
 * Adding APIs to the text file can be accomplished by using the analyzer's code-fix from Visual Studio. Developers not using Visual Studio (for example VSCode) may need to find alternative methods.
-  * The analyzer code-fix only adds the API to the currently selected TFM's `PublicAPI.Unshipped.txt` file. For projects that have different public APIs per TFM, developers will need to repeat the code-fix for each target framework. See the left-most drop-down at the code of Visual Studio's code editor.
+  * The analyzer code-fix only adds the API to the currently selected TFM's `PublicAPI.Unshipped.txt` file. For projects that have different public APIs per TFM, developers will need to repeat the code-fix for each target framework, or manually copy-paste the same changes in all `PublicAPI.Unshipped.txt` in all TFM directories. To run the code fix for each TFM, see the left-most drop-down at the code of Visual Studio's code editor.
+  * ![screenshot of Visual Studio editor with the project TFM dropdown expanded](images/project-tfm-selection.png)
 
 ### Code Review
 
