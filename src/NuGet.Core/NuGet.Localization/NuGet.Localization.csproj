@@ -9,7 +9,7 @@
     <PackProject Condition="!Exists('$(LocalizationRootDirectory)') OR '$(BuildRTM)' == 'true'">false</PackProject>
     <Description>NuGet localization package for dotnet CLI.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <NoPublicAPIs>true</NoPublicAPIs>
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup>

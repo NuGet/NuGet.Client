@@ -55,19 +55,36 @@
   </ImportGroup>
 
   <!-- Projects we pack become public APIs that others can use -->
-  <ItemGroup Condition=" '$(PackProject)' == 'true' and '$(NoPublicAPIs)' != 'true' and '$(IsBuildOnlyXPLATProjects)' != 'true' ">
+  <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' != 'true' and '$(PackProject)' == 'true' ">
+    <UsePublicApiAnalyzer Condition=" '$(UsePublicApiAnalyzer)' == '' " >true</UsePublicApiAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
 
-    <None Condition=" '$(PublicApiPerTfm)' != 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
-    <None Condition=" '$(PublicApiPerTfm)' != 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
-    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' != 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
-    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' != 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
-
-    <None Condition=" '$(PublicApiPerTfm)' == 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
-    <None Condition=" '$(PublicApiPerTfm)' == 'true' " Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
-    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' == 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
-    <AdditionalFiles Condition=" '$(PublicApiPerTfm)' == 'true' " Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+    <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
+    <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'perTfm' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+
+    <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <Target Name="UnknownUsePublicApiAnalyzerValue"
+          AfterTargets="Restore"
+          Condition=" '$(UsePublicApiAnalyzer)' != ''
+                  and '$(UsePublicApiAnalyzer)' != 'true'
+                  and '$(UsePublicApiAnalyzer)' != 'false'
+                  and '$(UsePublicApiAnalyzer)' != 'perTfm' ">
+    <Error Text="Unknown/Unsupported value for UsePublicApiAnalyzer: $(UsePublicApiAnalyzer)" />
+  </Target>
 
   <!-- Test Projects -->
   <ImportGroup Condition=" '$(TestProject)' == 'true' ">

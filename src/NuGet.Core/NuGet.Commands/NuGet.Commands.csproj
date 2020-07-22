@@ -16,7 +16,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
     <XPLATProject>true</XPLATProject>
-    <PublicApiPerTfm>true</PublicApiPerTfm>
+    <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
