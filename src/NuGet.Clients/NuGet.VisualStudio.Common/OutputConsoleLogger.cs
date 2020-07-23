@@ -4,14 +4,12 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
@@ -107,26 +105,6 @@ namespace NuGet.VisualStudio.Common
             });
         }
 
-        public void Log(MessageLevel level, string message, params object[] args)
-        {
-            Run(async () =>
-            {
-                if (level == MessageLevel.Info
-                    || level == MessageLevel.Error
-                    || level == MessageLevel.Warning
-                    || _verbosityLevel > DefaultVerbosityLevel)
-                {
-                    if (args.Length > 0)
-                    {
-                        message = string.Format(CultureInfo.CurrentCulture, message, args);
-                    }
-
-                    await OutputConsole.WriteLineAsync(message);
-                }
-            },
-            $"{nameof(Log)}/{nameof(String)}");
-        }
-
         public void Log(ILogMessage message)
         {
             Run(async () =>
@@ -144,8 +122,7 @@ namespace NuGet.VisualStudio.Common
                         await ReportAsync(message);
                     }
                 }
-            },
-            $"{nameof(Log)}/{nameof(ILogMessage)}");
+            });
         }
 
         public void Start()
@@ -175,14 +152,9 @@ namespace NuGet.VisualStudio.Common
             return DefaultVerbosityLevel;
         }
 
-        public void ReportError(string message)
-        {
-            Run(() => ReportAsync(new LogMessage(LogLevel.Error, message)), $"{nameof(ReportError)}/{nameof(String)}");
-        }
-
         public void ReportError(ILogMessage message)
         {
-            Run(() => ReportAsync(message), $"{nameof(ReportError)}/{nameof(ILogMessage)}");
+            Run(() => ReportAsync(message));
         }
 
         private async Task ReportAsync(ILogMessage message)

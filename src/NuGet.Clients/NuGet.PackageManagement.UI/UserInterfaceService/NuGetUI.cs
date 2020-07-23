@@ -353,7 +353,7 @@ namespace NuGet.PackageManagement.UI
                     ProjectContext.Log(MessageLevel.Error, ex.ToString());
                 }
 
-                UILogger.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
+                UILogger.ReportError(new LogMessage(LogLevel.Error, ExceptionUtilities.DisplayMessage(ex, indent: false)));
             }
         }
 

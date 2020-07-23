@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
 namespace NuGet.Options
@@ -190,12 +190,12 @@ namespace NuGet.Options
 
         private void LogError(string message)
         {
-            _outputConsoleLogger.Log(MessageLevel.Error, message);
+            _outputConsoleLogger.Log(new LogMessage(LogLevel.Error, message));
         }
 
         private void LogInformation(string message)
         {
-            _outputConsoleLogger.Log(MessageLevel.Info, message);
+            _outputConsoleLogger.Log(new LogMessage(LogLevel.Information, message));
         }
 
         private void OnLocalsCommandStatusTextLinkClicked(object sender, LinkClickedEventArgs e)
