@@ -52,20 +52,9 @@ namespace NuGet.VisualStudio.Common
             IOutputConsoleProvider consoleProvider,
             Lazy<ErrorListTableDataSource> errorListDataSource)
         {
-            if (asyncServiceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(asyncServiceProvider));
-            }
-
-            if (consoleProvider == null)
-            {
-                throw new ArgumentNullException(nameof(consoleProvider));
-            }
-
-            if (errorListDataSource == null)
-            {
-                throw new ArgumentNullException(nameof(errorListDataSource));
-            }
+            Verify.ArgumentIsNotNull(asyncServiceProvider, nameof(asyncServiceProvider));
+            Verify.ArgumentIsNotNull(consoleProvider, nameof(consoleProvider));
+            Verify.ArgumentIsNotNull(errorListDataSource, nameof(errorListDataSource));
 
             ErrorListTableDataSource = errorListDataSource;
 
