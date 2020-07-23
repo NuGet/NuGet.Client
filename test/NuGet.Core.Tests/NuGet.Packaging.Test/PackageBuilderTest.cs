@@ -470,7 +470,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CreatePackageUsesV2SchemaNamespaceIfDependecyHasNoTargetFramework()
+        public void CreatePackageUsesV2SchemaNamespaceIfDependencyHasNoTargetFramework()
         {
             // Arrange
             PackageBuilder builder = new PackageBuilder()
@@ -509,7 +509,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CreatePackageUsesV4SchemaNamespaceIfDependecyHasTargetFramework()
+        public void CreatePackageUsesV4SchemaNamespaceIfDependencyHasTargetFramework()
         {
             // Arrange
             PackageBuilder builder = new PackageBuilder()
@@ -1486,7 +1486,7 @@ Description is required.");
 <package><metadata>
     <id>Artem.XmlProviders</id>
     <authors>Velio Ivanov</authors>
-    <language>en-us</language>    
+    <language>en-us</language>
     <description>This is the Description (With, Comma-Separated, Words, in Parentheses).</description>
   </metadata></package>";
 
@@ -2185,7 +2185,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             };
             builder.Authors.Add("Me");
 
-            // Act & Assert            
+            // Act & Assert
             ExceptionAssert.ThrowsArgumentException(() => builder.Save(new MemoryStream()), "The package ID '  a.  b' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.");
         }
 
@@ -2201,7 +2201,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             };
             builder.Authors.Add("Me");
 
-            // Act & Assert            
+            // Act & Assert
             ExceptionAssert.ThrowsArgumentException(() => builder.Save(new MemoryStream()), "Id must not exceed 100 characters.");
         }
 
@@ -2219,7 +2219,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
             builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] { new PackageDependency("brainf%2ack") }));
 
-            // Act & Assert            
+            // Act & Assert
             ExceptionAssert.ThrowsArgumentException(() => builder.Save(new MemoryStream()), "The package ID 'brainf%2ack' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.");
         }
 
@@ -2404,7 +2404,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         {
             // Arrange
             string spec = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<package>  
+<package>
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
@@ -2594,7 +2594,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 .WithFile($"folder2{dirSep}icon.jpg", 2)
                 .WithFile($"folder2{dirSep}file.txt", 2)
                 .WithNuspec(nuspecBuilder);
-            
+
             TestIconPackaging(
                 testDirBuilder: testDirBuilder,
                 exceptionMessage: "Multiple files resolved as the embedded icon.");
