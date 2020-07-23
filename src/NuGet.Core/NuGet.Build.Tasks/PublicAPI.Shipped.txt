@@ -1,0 +1,364 @@
+NuGet.Build.MSBuildLogger
+NuGet.Build.MSBuildLogger.MSBuildLogger(Microsoft.Build.Utilities.TaskLoggingHelper taskLogging) -> void
+NuGet.Build.MSBuildTaskItem
+NuGet.Build.MSBuildTaskItem.CloneCustomMetadata() -> System.Collections.IDictionary
+NuGet.Build.MSBuildTaskItem.GetProperty(string property) -> string
+NuGet.Build.MSBuildTaskItem.GetProperty(string property, bool trim) -> string
+NuGet.Build.MSBuildTaskItem.Identity.get -> string
+NuGet.Build.MSBuildTaskItem.Item.get -> Microsoft.Build.Framework.ITaskItem
+NuGet.Build.MSBuildTaskItem.MSBuildTaskItem(Microsoft.Build.Framework.ITaskItem item) -> void
+NuGet.Build.MSBuildTaskItem.Properties.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.Build.Tasks.BuildTasksUtility
+NuGet.Build.Tasks.ConsoleOutLogMessage
+NuGet.Build.Tasks.ConsoleOutLogMessage.Code.get -> string
+NuGet.Build.Tasks.ConsoleOutLogMessage.Code.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.ColumnNumber.get -> int
+NuGet.Build.Tasks.ConsoleOutLogMessage.ColumnNumber.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.ConsoleOutLogMessage() -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.EndColumnNumber.get -> int
+NuGet.Build.Tasks.ConsoleOutLogMessage.EndColumnNumber.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.EndLineNumber.get -> int
+NuGet.Build.Tasks.ConsoleOutLogMessage.EndLineNumber.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.File.get -> string
+NuGet.Build.Tasks.ConsoleOutLogMessage.File.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.HelpKeyword.get -> string
+NuGet.Build.Tasks.ConsoleOutLogMessage.HelpKeyword.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.Importance.get -> Microsoft.Build.Framework.MessageImportance
+NuGet.Build.Tasks.ConsoleOutLogMessage.Importance.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.LineNumber.get -> int
+NuGet.Build.Tasks.ConsoleOutLogMessage.LineNumber.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.Message.get -> string
+NuGet.Build.Tasks.ConsoleOutLogMessage.Message.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.MessageType.get -> NuGet.Build.Tasks.ConsoleOutLogMessageType
+NuGet.Build.Tasks.ConsoleOutLogMessage.MessageType.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.ProjectFile.get -> string
+NuGet.Build.Tasks.ConsoleOutLogMessage.ProjectFile.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.SenderName.get -> string
+NuGet.Build.Tasks.ConsoleOutLogMessage.SenderName.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.Subcategory.get -> string
+NuGet.Build.Tasks.ConsoleOutLogMessage.Subcategory.set -> void
+NuGet.Build.Tasks.ConsoleOutLogMessage.ToJson() -> string
+NuGet.Build.Tasks.ConsoleOutLogMessageType
+NuGet.Build.Tasks.ConsoleOutLogMessageType.Error = 1 -> NuGet.Build.Tasks.ConsoleOutLogMessageType
+NuGet.Build.Tasks.ConsoleOutLogMessageType.Message = 3 -> NuGet.Build.Tasks.ConsoleOutLogMessageType
+NuGet.Build.Tasks.ConsoleOutLogMessageType.None = 0 -> NuGet.Build.Tasks.ConsoleOutLogMessageType
+NuGet.Build.Tasks.ConsoleOutLogMessageType.Warning = 2 -> NuGet.Build.Tasks.ConsoleOutLogMessageType
+NuGet.Build.Tasks.GetCentralPackageVersionsTask
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.CentralPackageVersions.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.CentralPackageVersions.set -> void
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.GetCentralPackageVersionsTask() -> void
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.ProjectUniqueName.get -> string
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.ProjectUniqueName.set -> void
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.RestoreGraphItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.RestoreGraphItems.set -> void
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.TargetFrameworks.get -> string
+NuGet.Build.Tasks.GetCentralPackageVersionsTask.TargetFrameworks.set -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.GetProjectTargetFrameworksTask() -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.ProjectPath.get -> string
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.ProjectPath.set -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.ProjectTargetFrameworks.get -> string
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.ProjectTargetFrameworks.set -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetFramework.get -> string
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetFramework.set -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetFrameworkMoniker.get -> string
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetFrameworkMoniker.set -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetFrameworks.get -> string
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetFrameworks.set -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetPlatformIdentifier.get -> string
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetPlatformIdentifier.set -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetPlatformMinVersion.get -> string
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetPlatformMinVersion.set -> void
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetPlatformVersion.get -> string
+NuGet.Build.Tasks.GetProjectTargetFrameworksTask.TargetPlatformVersion.set -> void
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.AnnotatedProjectReferences.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.AnnotatedProjectReferences.set -> void
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.AssignedProjects.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.AssignedProjects.set -> void
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectName.get -> string
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectName.set -> void
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetFramework.get -> string
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetFramework.set -> void
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.FallbackTargetFrameworks.get -> string[]
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.FallbackTargetFrameworks.set -> void
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.GetReferenceNearestTargetFrameworkTask() -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.DotnetCliToolReferences.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.DotnetCliToolReferences.set -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.GetRestoreDotnetCliToolsTask() -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.ProjectPath.get -> string
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.ProjectPath.set -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestoreConfigFilePaths.get -> string[]
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestoreConfigFilePaths.set -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestoreFallbackFolders.get -> string[]
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestoreFallbackFolders.set -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestoreGraphItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestoreGraphItems.set -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestorePackagesPath.get -> string
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestorePackagesPath.set -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestoreSources.get -> string[]
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.RestoreSources.set -> void
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.ToolFramework.get -> string
+NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.ToolFramework.set -> void
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.FrameworkReferences.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.FrameworkReferences.set -> void
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.GetRestoreFrameworkReferencesTask() -> void
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.ProjectUniqueName.get -> string
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.ProjectUniqueName.set -> void
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.RestoreGraphItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.RestoreGraphItems.set -> void
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.TargetFrameworks.get -> string
+NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.TargetFrameworks.set -> void
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.GetRestorePackageDownloadsTask() -> void
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.PackageDownloads.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.PackageDownloads.set -> void
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.ProjectUniqueName.get -> string
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.ProjectUniqueName.set -> void
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.RestoreGraphItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.RestoreGraphItems.set -> void
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.TargetFrameworks.get -> string
+NuGet.Build.Tasks.GetRestorePackageDownloadsTask.TargetFrameworks.set -> void
+NuGet.Build.Tasks.GetRestorePackageReferencesTask
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.GetRestorePackageReferencesTask() -> void
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.PackageReferences.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.PackageReferences.set -> void
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.ProjectUniqueName.get -> string
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.ProjectUniqueName.set -> void
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.RestoreGraphItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.RestoreGraphItems.set -> void
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.TargetFrameworks.get -> string
+NuGet.Build.Tasks.GetRestorePackageReferencesTask.TargetFrameworks.set -> void
+NuGet.Build.Tasks.GetRestoreProjectJsonPathTask
+NuGet.Build.Tasks.GetRestoreProjectJsonPathTask.GetRestoreProjectJsonPathTask() -> void
+NuGet.Build.Tasks.GetRestoreProjectJsonPathTask.ProjectJsonPath.get -> string
+NuGet.Build.Tasks.GetRestoreProjectJsonPathTask.ProjectJsonPath.set -> void
+NuGet.Build.Tasks.GetRestoreProjectJsonPathTask.ProjectPath.get -> string
+NuGet.Build.Tasks.GetRestoreProjectJsonPathTask.ProjectPath.set -> void
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.GetRestoreProjectReferencesTask() -> void
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.ParentProjectPath.get -> string
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.ParentProjectPath.set -> void
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.ProjectReferences.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.ProjectReferences.set -> void
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.ProjectUniqueName.get -> string
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.ProjectUniqueName.set -> void
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.RestoreGraphItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.RestoreGraphItems.set -> void
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.TargetFrameworks.get -> string
+NuGet.Build.Tasks.GetRestoreProjectReferencesTask.TargetFrameworks.set -> void
+NuGet.Build.Tasks.GetRestoreProjectStyleTask
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.GetRestoreProjectStyleTask() -> void
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.HasPackageReferenceItems.get -> bool
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.HasPackageReferenceItems.set -> void
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.IsPackageReferenceCompatibleProjectStyle.get -> bool
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.IsPackageReferenceCompatibleProjectStyle.set -> void
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.MSBuildProjectDirectory.get -> string
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.MSBuildProjectDirectory.set -> void
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.MSBuildProjectName.get -> string
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.MSBuildProjectName.set -> void
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.ProjectJsonPath.get -> string
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.ProjectJsonPath.set -> void
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.ProjectStyle.get -> NuGet.ProjectModel.ProjectStyle
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.ProjectStyle.set -> void
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.RestoreProjectStyle.get -> string
+NuGet.Build.Tasks.GetRestoreProjectStyleTask.RestoreProjectStyle.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask
+NuGet.Build.Tasks.GetRestoreSettingsTask.GetRestoreSettingsTask() -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.MSBuildStartupDirectory.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.MSBuildStartupDirectory.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputConfigFilePaths.get -> string[]
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputConfigFilePaths.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputFallbackFolders.get -> string[]
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputFallbackFolders.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputPackagesPath.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputPackagesPath.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputRepositoryPath.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputRepositoryPath.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputSources.get -> string[]
+NuGet.Build.Tasks.GetRestoreSettingsTask.OutputSources.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.ProjectUniqueName.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.ProjectUniqueName.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreConfigFile.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreConfigFile.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreFallbackFolders.get -> string[]
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreFallbackFolders.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreFallbackFoldersOverride.get -> string[]
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreFallbackFoldersOverride.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestorePackagesPath.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestorePackagesPath.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestorePackagesPathOverride.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestorePackagesPathOverride.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreProjectStyle.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreProjectStyle.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreRepositoryPath.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreRepositoryPath.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreRepositoryPathOverride.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreRepositoryPathOverride.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreRootConfigDirectory.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreRootConfigDirectory.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreSettingsPerFramework.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreSettingsPerFramework.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreSolutionDirectory.get -> string
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreSolutionDirectory.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreSources.get -> string[]
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreSources.set -> void
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreSourcesOverride.get -> string[]
+NuGet.Build.Tasks.GetRestoreSettingsTask.RestoreSourcesOverride.set -> void
+NuGet.Build.Tasks.GetRestoreSolutionProjectsTask
+NuGet.Build.Tasks.GetRestoreSolutionProjectsTask.GetRestoreSolutionProjectsTask() -> void
+NuGet.Build.Tasks.GetRestoreSolutionProjectsTask.OutputProjectReferences.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreSolutionProjectsTask.OutputProjectReferences.set -> void
+NuGet.Build.Tasks.GetRestoreSolutionProjectsTask.ProjectReferences.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.GetRestoreSolutionProjectsTask.ProjectReferences.set -> void
+NuGet.Build.Tasks.GetRestoreSolutionProjectsTask.SolutionFilePath.get -> string
+NuGet.Build.Tasks.GetRestoreSolutionProjectsTask.SolutionFilePath.set -> void
+NuGet.Build.Tasks.LoggingQueue<T>
+NuGet.Build.Tasks.LoggingQueue<T>.Dispose() -> void
+NuGet.Build.Tasks.LoggingQueue<T>.Enqueue(T obj) -> bool
+NuGet.Build.Tasks.LoggingQueue<T>.LoggingQueue(int maxDegreeOfParallelism = 1) -> void
+NuGet.Build.Tasks.NuGetMessageTask
+NuGet.Build.Tasks.NuGetMessageTask.Args.get -> string[]
+NuGet.Build.Tasks.NuGetMessageTask.Args.set -> void
+NuGet.Build.Tasks.NuGetMessageTask.Importance.get -> string
+NuGet.Build.Tasks.NuGetMessageTask.Importance.set -> void
+NuGet.Build.Tasks.NuGetMessageTask.Name.get -> string
+NuGet.Build.Tasks.NuGetMessageTask.Name.set -> void
+NuGet.Build.Tasks.NuGetMessageTask.NuGetMessageTask() -> void
+NuGet.Build.Tasks.RestoreSettingsUtils
+NuGet.Build.Tasks.RestoreSettingsUtils.RestoreSettingsUtils() -> void
+NuGet.Build.Tasks.RestoreTask
+NuGet.Build.Tasks.RestoreTask.Cancel() -> void
+NuGet.Build.Tasks.RestoreTask.Dispose() -> void
+NuGet.Build.Tasks.RestoreTask.HideWarningsAndErrors.get -> bool
+NuGet.Build.Tasks.RestoreTask.HideWarningsAndErrors.set -> void
+NuGet.Build.Tasks.RestoreTask.Interactive.get -> bool
+NuGet.Build.Tasks.RestoreTask.Interactive.set -> void
+NuGet.Build.Tasks.RestoreTask.RestoreDisableParallel.get -> bool
+NuGet.Build.Tasks.RestoreTask.RestoreDisableParallel.set -> void
+NuGet.Build.Tasks.RestoreTask.RestoreForce.get -> bool
+NuGet.Build.Tasks.RestoreTask.RestoreForce.set -> void
+NuGet.Build.Tasks.RestoreTask.RestoreForceEvaluate.get -> bool
+NuGet.Build.Tasks.RestoreTask.RestoreForceEvaluate.set -> void
+NuGet.Build.Tasks.RestoreTask.RestoreGraphItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.RestoreTask.RestoreGraphItems.set -> void
+NuGet.Build.Tasks.RestoreTask.RestoreIgnoreFailedSources.get -> bool
+NuGet.Build.Tasks.RestoreTask.RestoreIgnoreFailedSources.set -> void
+NuGet.Build.Tasks.RestoreTask.RestoreNoCache.get -> bool
+NuGet.Build.Tasks.RestoreTask.RestoreNoCache.set -> void
+NuGet.Build.Tasks.RestoreTask.RestorePackagesConfig.get -> bool
+NuGet.Build.Tasks.RestoreTask.RestorePackagesConfig.set -> void
+NuGet.Build.Tasks.RestoreTask.RestoreRecursive.get -> bool
+NuGet.Build.Tasks.RestoreTask.RestoreRecursive.set -> void
+NuGet.Build.Tasks.RestoreTask.RestoreTask() -> void
+NuGet.Build.Tasks.RestoreTaskEx
+NuGet.Build.Tasks.RestoreTaskEx.Cancel() -> void
+NuGet.Build.Tasks.RestoreTaskEx.CleanupAssetsForUnsupportedProjects.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.CleanupAssetsForUnsupportedProjects.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.DisableParallel.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.DisableParallel.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.Dispose() -> void
+NuGet.Build.Tasks.RestoreTaskEx.Force.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.Force.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.ForceEvaluate.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.ForceEvaluate.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.HideWarningsAndErrors.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.HideWarningsAndErrors.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.IgnoreFailedSources.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.IgnoreFailedSources.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.Interactive.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.Interactive.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.IsSolutionPathDefined.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.MSBuildBinPath.get -> string
+NuGet.Build.Tasks.RestoreTaskEx.MSBuildBinPath.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.NoCache.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.NoCache.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.ProjectFullPath.get -> string
+NuGet.Build.Tasks.RestoreTaskEx.ProjectFullPath.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.Recursive.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.Recursive.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.RestorePackagesConfig.get -> bool
+NuGet.Build.Tasks.RestoreTaskEx.RestorePackagesConfig.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.RestoreTaskEx() -> void
+NuGet.Build.Tasks.RestoreTaskEx.SolutionPath.get -> string
+NuGet.Build.Tasks.RestoreTaskEx.SolutionPath.set -> void
+NuGet.Build.Tasks.Strings
+NuGet.Build.Tasks.WarnForInvalidProjectsTask
+NuGet.Build.Tasks.WarnForInvalidProjectsTask.AllProjects.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.WarnForInvalidProjectsTask.AllProjects.set -> void
+NuGet.Build.Tasks.WarnForInvalidProjectsTask.ValidProjects.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.WarnForInvalidProjectsTask.ValidProjects.set -> void
+NuGet.Build.Tasks.WarnForInvalidProjectsTask.WarnForInvalidProjectsTask() -> void
+NuGet.Build.Tasks.WriteRestoreGraphTask
+NuGet.Build.Tasks.WriteRestoreGraphTask.RestoreGraphItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.WriteRestoreGraphTask.RestoreGraphItems.set -> void
+NuGet.Build.Tasks.WriteRestoreGraphTask.RestoreGraphOutputPath.get -> string
+NuGet.Build.Tasks.WriteRestoreGraphTask.RestoreGraphOutputPath.set -> void
+NuGet.Build.Tasks.WriteRestoreGraphTask.RestoreRecursive.get -> bool
+NuGet.Build.Tasks.WriteRestoreGraphTask.RestoreRecursive.set -> void
+NuGet.Build.Tasks.WriteRestoreGraphTask.WriteRestoreGraphTask() -> void
+abstract NuGet.Build.Tasks.LoggingQueue<T>.Process(T item) -> void
+override NuGet.Build.MSBuildLogger.Log(NuGet.Common.ILogMessage message) -> void
+override NuGet.Build.MSBuildLogger.LogAsync(NuGet.Common.ILogMessage message) -> System.Threading.Tasks.Task
+override NuGet.Build.MSBuildTaskItem.ToString() -> string
+override NuGet.Build.Tasks.GetCentralPackageVersionsTask.Execute() -> bool
+override NuGet.Build.Tasks.GetProjectTargetFrameworksTask.Execute() -> bool
+override NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestorePackageDownloadsTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestorePackageReferencesTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestoreProjectJsonPathTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestoreProjectReferencesTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestoreProjectStyleTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestoreSettingsTask.Execute() -> bool
+override NuGet.Build.Tasks.GetRestoreSolutionProjectsTask.Execute() -> bool
+override NuGet.Build.Tasks.NuGetMessageTask.Execute() -> bool
+override NuGet.Build.Tasks.RestoreTask.Execute() -> bool
+override NuGet.Build.Tasks.RestoreTaskEx.Execute() -> bool
+override NuGet.Build.Tasks.WarnForInvalidProjectsTask.Execute() -> bool
+override NuGet.Build.Tasks.WriteRestoreGraphTask.Execute() -> bool
+static NuGet.Build.Tasks.BuildTasksUtility.AddAllProjectsForRestore(NuGet.ProjectModel.DependencyGraphSpec spec) -> void
+static NuGet.Build.Tasks.BuildTasksUtility.AddPropertyIfExists(System.Collections.Generic.IDictionary<string, string> properties, string key, string value) -> void
+static NuGet.Build.Tasks.BuildTasksUtility.AddPropertyIfExists(System.Collections.Generic.IDictionary<string, string> properties, string key, string[] value) -> void
+static NuGet.Build.Tasks.BuildTasksUtility.CopyPropertyIfExists(Microsoft.Build.Framework.ITaskItem item, System.Collections.Generic.IDictionary<string, string> properties, string key) -> void
+static NuGet.Build.Tasks.BuildTasksUtility.CopyPropertyIfExists(Microsoft.Build.Framework.ITaskItem item, System.Collections.Generic.IDictionary<string, string> properties, string key, string toKey) -> void
+static NuGet.Build.Tasks.BuildTasksUtility.DoesProjectSupportRestore(NuGet.ProjectModel.PackageSpec packageSpec) -> bool
+static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
+static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyle(NuGet.ProjectModel.ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, NuGet.Common.ILogger log) -> (NuGet.ProjectModel.ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath)
+static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, NuGet.Common.ILogger log) -> (NuGet.ProjectModel.ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath)
+static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(string restoreProjectStyleProperty) -> NuGet.ProjectModel.ProjectStyle?
+static NuGet.Build.Tasks.BuildTasksUtility.GetPropertyIfExists(Microsoft.Build.Framework.ITaskItem item, string key) -> string
+static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
+static NuGet.Build.Tasks.BuildTasksUtility.LogInputParam(NuGet.Common.ILogger log, string name, params string[] values) -> void
+static NuGet.Build.Tasks.BuildTasksUtility.LogOutputParam(NuGet.Common.ILogger log, string name, params string[] values) -> void
+static NuGet.Build.Tasks.BuildTasksUtility.RestoreAsync(NuGet.ProjectModel.DependencyGraphSpec dependencyGraphSpec, bool interactive, bool recursive, bool noCache, bool ignoreFailedSources, bool disableParallel, bool force, bool forceEvaluate, bool hideWarningsAndErrors, bool restorePC, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
+static NuGet.Build.Tasks.BuildTasksUtility.RestoreAsync(NuGet.ProjectModel.DependencyGraphSpec dependencyGraphSpec, bool interactive, bool recursive, bool noCache, bool ignoreFailedSources, bool disableParallel, bool force, bool forceEvaluate, bool hideWarningsAndErrors, bool restorePC, bool cleanupAssetsForUnsupportedProjects, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
+static NuGet.Build.Tasks.ConsoleOutLogMessage.implicit operator NuGet.Build.Tasks.ConsoleOutLogMessage(Microsoft.Build.Framework.BuildErrorEventArgs buildErrorEventArgs) -> NuGet.Build.Tasks.ConsoleOutLogMessage
+static NuGet.Build.Tasks.ConsoleOutLogMessage.implicit operator NuGet.Build.Tasks.ConsoleOutLogMessage(Microsoft.Build.Framework.BuildMessageEventArgs buildMessageEventArgs) -> NuGet.Build.Tasks.ConsoleOutLogMessage
+static NuGet.Build.Tasks.ConsoleOutLogMessage.implicit operator NuGet.Build.Tasks.ConsoleOutLogMessage(Microsoft.Build.Framework.BuildWarningEventArgs buildWarningEventArgs) -> NuGet.Build.Tasks.ConsoleOutLogMessage
+static NuGet.Build.Tasks.RestoreSettingsUtils.GetValue<T>(params System.Func<T>[] funcs) -> T
+static NuGet.Build.Tasks.RestoreSettingsUtils.ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, System.Lazy<NuGet.Configuration.IMachineWideSettings> machineWideSettings) -> NuGet.Configuration.ISettings
+static NuGet.Build.Tasks.RestoreSettingsUtils.ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, System.Lazy<NuGet.Configuration.IMachineWideSettings> machineWideSettings, NuGet.Configuration.SettingsLoadingContext settingsLoadContext) -> NuGet.Configuration.ISettings
+static NuGet.Build.Tasks.Strings.Argument_Cannot_Be_Null_Or_Empty.get -> string
+static NuGet.Build.Tasks.Strings.CreatedDependencyGraphSpec.get -> string
+static NuGet.Build.Tasks.Strings.Culture.get -> System.Globalization.CultureInfo
+static NuGet.Build.Tasks.Strings.Culture.set -> void
+static NuGet.Build.Tasks.Strings.DeterminingProjectsToRestore.get -> string
+static NuGet.Build.Tasks.Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed.get -> string
+static NuGet.Build.Tasks.Strings.Error_PackagesConfigParseError.get -> string
+static NuGet.Build.Tasks.Strings.ImportsFallbackWarning.get -> string
+static NuGet.Build.Tasks.Strings.InstallCommandNothingToInstall.get -> string
+static NuGet.Build.Tasks.Strings.NoCompatibleTargetFramework.get -> string
+static NuGet.Build.Tasks.Strings.NoProjectsProvidedToTask.get -> string
+static NuGet.Build.Tasks.Strings.NoProjectsToRestore.get -> string
+static NuGet.Build.Tasks.Strings.ProjectEvaluationSummary.get -> string
+static NuGet.Build.Tasks.Strings.ResourceManager.get -> System.Resources.ResourceManager
+static NuGet.Build.Tasks.Strings.RestoreCanceled.get -> string
+static NuGet.Build.Tasks.Strings.RestoreNoSolutionFound.get -> string
+static NuGet.Build.Tasks.Strings.UnsupportedFallbackFramework.get -> string
+static NuGet.Build.Tasks.Strings.UnsupportedTargetFramework.get -> string
+static NuGet.Build.Tasks.Strings.Warning_InvalidPackageSaveMode.get -> string
+static readonly NuGet.Build.Tasks.RestoreSettingsUtils.Clear -> string

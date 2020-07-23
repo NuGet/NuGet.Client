@@ -87,6 +87,7 @@
         <PackageReference Update="Microsoft.CodeAnalysis" Version="3.0.0" />
         <PackageReference Update="Microsoft.CodeAnalysis.Build.Tasks" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.0.0-dev-61717-03" />
+        <PackageReference Update="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.0.0" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" />
         <PackageReference Update="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />

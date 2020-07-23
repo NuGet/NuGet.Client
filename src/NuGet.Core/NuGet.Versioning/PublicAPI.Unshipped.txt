@@ -1,0 +1,6 @@
+NuGet.Versioning.SemanticVersionConverter
+NuGet.Versioning.SemanticVersionConverter.SemanticVersionConverter() -> void
+override NuGet.Versioning.SemanticVersionConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool
+override NuGet.Versioning.SemanticVersionConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
+override NuGet.Versioning.SemanticVersionConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
+override NuGet.Versioning.SemanticVersionConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object

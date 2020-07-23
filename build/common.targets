@@ -37,7 +37,7 @@
   <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
     <Import Project="sign.targets" />
   </ImportGroup>
-  
+
   <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
     <SymbolTargetsToGetPdbs>GetDebugSymbolsProjectOutput</SymbolTargetsToGetPdbs>
@@ -53,6 +53,38 @@
   <ImportGroup Condition=" '$(PackProject)' == 'true' AND '$(NuGetBuildTasksPackTargets)' != '' ">
       <Import Project="$(NuGetBuildTasksPackTargets)" />
   </ImportGroup>
+
+  <!-- Projects we pack become public APIs that others can use -->
+  <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' != 'true' and '$(PackProject)' == 'true' ">
+    <UsePublicApiAnalyzer Condition=" '$(UsePublicApiAnalyzer)' == '' " >true</UsePublicApiAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+
+    <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
+    <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'perTfm' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+
+    <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <Target Name="UnknownUsePublicApiAnalyzerValue"
+          AfterTargets="Restore"
+          Condition=" '$(UsePublicApiAnalyzer)' != ''
+                  and '$(UsePublicApiAnalyzer)' != 'true'
+                  and '$(UsePublicApiAnalyzer)' != 'false'
+                  and '$(UsePublicApiAnalyzer)' != 'perTfm' ">
+    <Error Text="Unknown/Unsupported value for UsePublicApiAnalyzer: $(UsePublicApiAnalyzer)" />
+  </Target>
 
   <!-- Test Projects -->
   <ImportGroup Condition=" '$(TestProject)' == 'true' ">
@@ -72,7 +104,7 @@
     <OutputPath>bin\$(VisualStudioVersion)\$(Configuration)</OutputPath>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath> 
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
@@ -119,7 +151,7 @@
 
   <!--
     ============================================================
-    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that 
+    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that
     need to be indexed on the symbol server
     ============================================================
   -->
@@ -135,7 +167,7 @@
           ItemName="SymbolFilesToIndex" />
     </MSBuild>
   </Target>
-  
+
   <!--
     ============================================================
     GetSigningInputs - gets the list of DLLs that need to
@@ -255,7 +287,7 @@
 
   <!--
     ============================================================
-    GetLocalizedFilesForVsix - gathers the list of localized DLLs 
+    GetLocalizedFilesForVsix - gathers the list of localized DLLs
     from each project
     ============================================================
   -->
