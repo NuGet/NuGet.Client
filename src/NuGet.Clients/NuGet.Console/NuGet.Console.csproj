@@ -13,6 +13,7 @@
     <Description>Package Manager PowerShell Console implementation.</Description>
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
+    <AlwaysCompileMarkupFilesInSeparateDomain>false</AlwaysCompileMarkupFilesInSeparateDomain>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
