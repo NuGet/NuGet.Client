@@ -335,7 +335,7 @@ namespace NuGet.ProjectModel
                         {
                             LibraryRange = new LibraryRange(item.Value.Name, item.Value.VersionRange, LibraryDependencyTarget.Package),
                             VersionCentrallyManaged = true,
-                            ReferenceType = LibraryDependencyReferenceType.None,
+                            ReferenceType = LibraryDependencyReferenceType.None, // Could this be broken if one project overwrites another project's transtitive dependency? 
                         }));
                 }
 
