@@ -92,7 +92,7 @@ jobs:
     LocalizedLanguageCount: "13"
     ${{ if eq(variables['TimeoutInMinutesUnitTest'], '') }}:  # if TimeoutInMinutesUnitTest is not defined in pipeline, use default timeoutlimit
       timeoutlimit: 10
-    ${{ if ne(variables['Build.SourceBranchName'], '') }}:   # if TimeoutInMinutesUnitTest is defined in pipeline, use TimeoutInMinutesUnitTest
+    ${{ if ne(variables['TimeoutInMinutesUnitTest'], '') }}:   # if TimeoutInMinutesUnitTest is defined in pipeline, use TimeoutInMinutesUnitTest
       timeoutlimit: $['TimeoutInMinutesUnitTest']
 
   pool:
