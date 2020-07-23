@@ -1,0 +1,7 @@
+NuGet.Packaging.IPackageMetadata.Readme.get -> string
+NuGet.Packaging.ManifestMetadata.Readme.get -> string
+NuGet.Packaging.ManifestMetadata.Readme.set -> void
+NuGet.Packaging.PackageBuilder.CheckForReadme(string basePath) -> void
+NuGet.Packaging.PackageBuilder.Readme.get -> string
+NuGet.Packaging.PackageBuilder.Readme.set -> void
+const NuGet.Packaging.PackageBuilder.MaxReadmeFileSize = 1048576 -> int
