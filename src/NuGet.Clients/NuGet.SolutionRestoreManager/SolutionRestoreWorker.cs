@@ -488,7 +488,8 @@ namespace NuGet.SolutionRestoreManager
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
-                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
+                            // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
+                            if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
                             {
                                 if (isAllProjectsNominated)
                                 {
@@ -509,6 +510,8 @@ namespace NuGet.SolutionRestoreManager
                                 // we don't want to delay explicit solution restore request so just break at this time.
                                 break;
                             }
+
+                            await Task.Delay(IdleTimeoutMs, token);
 
                             if (!isAllProjectsNominated)
                             {
