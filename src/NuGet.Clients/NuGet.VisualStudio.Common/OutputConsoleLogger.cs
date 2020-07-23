@@ -62,6 +62,11 @@ namespace NuGet.VisualStudio.Common
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
 
+            if (errorListDataSource == null)
+            {
+                throw new ArgumentNullException(nameof(errorListDataSource));
+            }
+
             ErrorListTableDataSource = errorListDataSource;
 
             Run(async () =>

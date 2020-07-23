@@ -1,0 +1,35 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using FluentAssertions;
+using Microsoft.VisualStudio.Shell;
+using Moq;
+using Xunit;
+
+namespace NuGet.VisualStudio.Common.Test
+{
+    public class OutputConsoleLoggerTests : TestsRequiringJoinableTaskFactoryBase
+    {
+        [Fact]
+        public void When_null_asyncServiceProvider_is_passed_ArgumentNullException_is_thrown()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(asyncServiceProvider: null, new Mock<IOutputConsoleProvider>().Object, new Lazy<ErrorListTableDataSource>()));
+            exception.ParamName.Should().Be("asyncServiceProvider");
+        }
+
+        [Fact]
+        public void When_null_consoleProvider_is_passed_ArgumentNullException_is_thrown()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(new Mock<IAsyncServiceProvider>().Object, consoleProvider: null, new Lazy<ErrorListTableDataSource>()));
+            exception.ParamName.Should().Be("consoleProvider");
+        }
+
+        [Fact]
+        public void When_null_errorListDataSource_is_passed_ArgumentNullException_is_thrown()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(new Mock<IAsyncServiceProvider>().Object, new Mock<IOutputConsoleProvider>().Object, errorListDataSource: null));
+            exception.ParamName.Should().Be("errorListDataSource");
+        }
+    }
+}
