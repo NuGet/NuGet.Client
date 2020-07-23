@@ -82,7 +82,7 @@ jobs:
 
 - job: Build_and_UnitTest
   dependsOn: Initialize_Build
-  timeoutInMinutes: $[ variables['timeoutlimit'] ]
+  timeoutInMinutes: $[variables['timeoutlimit']]
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
@@ -90,10 +90,10 @@ jobs:
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     LocalizedLanguageCount: "13"
-    ${{ if eq(variables['TimeoutInMinutesUnitTest'], '') }}:  # if TimeoutInMinutesUnitTest is not defined in pipeline, use default timeoutlimit
+    ${{ if eq($(TimeoutInMinutesUnitTest), '') }}:  # if TimeoutInMinutesUnitTest is not defined in pipeline, use default timeoutlimit
       timeoutlimit: 10
-    ${{ if ne(variables['TimeoutInMinutesUnitTest'], '') }}:   # if TimeoutInMinutesUnitTest is defined in pipeline, use TimeoutInMinutesUnitTest
-      timeoutlimit: $['TimeoutInMinutesUnitTest']
+    ${{ if ne($(TimeoutInMinutesUnitTest), '') }}:   # if TimeoutInMinutesUnitTest is defined in pipeline, use TimeoutInMinutesUnitTest
+      timeoutlimit: $(TimeoutInMinutesUnitTest)
 
   pool:
     name: VSEng-MicroBuildVS2019
