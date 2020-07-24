@@ -26,12 +26,7 @@ namespace NuGet.VisualStudio.Common
 
         private const int DefaultVerbosityLevel = 2;
         private int _verbosityLevel;
-        private EnvDTE.DTE _dte;
-
-        // keeps a reference to BuildEvents so that our event handler
-        // won't get disconnected because of GC.
-        private EnvDTE.BuildEvents _buildEvents;
-        private EnvDTE.SolutionEvents _solutionEvents;
+        private IVisualStudioShell _visualStudioShell;
 
         [SuppressMessage("Build", "CA2213:'OutputConsoleLogger' contains field '_semaphore' that is of IDisposable type 'ReentrantSemaphore', but it is never disposed. Change the Dispose method on 'OutputConsoleLogger' to call Close or Dispose on this field.", Justification = "Field is disposed from async task invoked from Dispose.")]
         private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.NotAllowed);
@@ -44,29 +39,26 @@ namespace NuGet.VisualStudio.Common
         public OutputConsoleLogger(
             IOutputConsoleProvider consoleProvider,
             Lazy<ErrorListTableDataSource> errorListDataSource)
-            : this(AsyncServiceProvider.GlobalProvider, consoleProvider, errorListDataSource)
+            : this(new VisualStudioShell(AsyncServiceProvider.GlobalProvider), consoleProvider, errorListDataSource)
         { }
 
-        public OutputConsoleLogger(
-            IAsyncServiceProvider asyncServiceProvider,
+        internal OutputConsoleLogger(
+            IVisualStudioShell visualStudioShell,
             IOutputConsoleProvider consoleProvider,
             Lazy<ErrorListTableDataSource> errorListDataSource)
         {
-            Verify.ArgumentIsNotNull(asyncServiceProvider, nameof(asyncServiceProvider));
+            Verify.ArgumentIsNotNull(visualStudioShell, nameof(visualStudioShell));
             Verify.ArgumentIsNotNull(consoleProvider, nameof(consoleProvider));
             Verify.ArgumentIsNotNull(errorListDataSource, nameof(errorListDataSource));
 
+            _visualStudioShell = visualStudioShell;
             ErrorListTableDataSource = errorListDataSource;
 
             Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _dte = await asyncServiceProvider.GetDTEAsync();
-                _buildEvents = _dte.Events.BuildEvents;
-                _buildEvents.OnBuildBegin += (_, __) => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
-                _solutionEvents = _dte.Events.SolutionEvents;
-                _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
+                await _visualStudioShell.SubscribeToBuildBeginAsync(() => ErrorListTableDataSource.Value.ClearNuGetEntries());
+                await _visualStudioShell.SubscribeToAfterClosingAsync(() => ErrorListTableDataSource.Value.ClearNuGetEntries());
                 OutputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
             });
         }
@@ -136,8 +128,7 @@ namespace NuGet.VisualStudio.Common
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
-            var value = properties.Item(MSBuildVerbosityKey).Value;
+            var value = await _visualStudioShell.GetPropertyValueAsync(DTEEnvironmentCategory, DTEProjectPage, MSBuildVerbosityKey);
             if (value is int)
             {
                 return (int)value;

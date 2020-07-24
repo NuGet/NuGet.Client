@@ -3,7 +3,6 @@
 
 using System;
 using FluentAssertions;
-using Microsoft.VisualStudio.Shell;
 using Moq;
 using Xunit;
 
@@ -12,23 +11,23 @@ namespace NuGet.VisualStudio.Common.Test
     public class OutputConsoleLoggerTests : TestsRequiringJoinableTaskFactoryBase
     {
         [Fact]
-        public void When_null_asyncServiceProvider_is_passed_ArgumentNullException_is_thrown()
+        public void When_null_visualStudioShell_is_passed_ArgumentNullException_is_thrown()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(asyncServiceProvider: null, new Mock<IOutputConsoleProvider>().Object, new Lazy<ErrorListTableDataSource>()));
-            exception.ParamName.Should().Be("asyncServiceProvider");
+            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(visualStudioShell: null, new Mock<IOutputConsoleProvider>().Object, new Lazy<ErrorListTableDataSource>()));
+            exception.ParamName.Should().Be("visualStudioShell");
         }
 
         [Fact]
         public void When_null_consoleProvider_is_passed_ArgumentNullException_is_thrown()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(new Mock<IAsyncServiceProvider>().Object, consoleProvider: null, new Lazy<ErrorListTableDataSource>()));
+            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(new Mock<IVisualStudioShell>().Object, consoleProvider: null, new Lazy<ErrorListTableDataSource>()));
             exception.ParamName.Should().Be("consoleProvider");
         }
 
         [Fact]
         public void When_null_errorListDataSource_is_passed_ArgumentNullException_is_thrown()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(new Mock<IAsyncServiceProvider>().Object, new Mock<IOutputConsoleProvider>().Object, errorListDataSource: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(new Mock<IVisualStudioShell>().Object, new Mock<IOutputConsoleProvider>().Object, errorListDataSource: null));
             exception.ParamName.Should().Be("errorListDataSource");
         }
     }
