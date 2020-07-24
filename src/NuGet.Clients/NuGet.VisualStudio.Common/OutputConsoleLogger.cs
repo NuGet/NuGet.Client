@@ -19,7 +19,6 @@ namespace NuGet.VisualStudio.Common
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class OutputConsoleLogger : INuGetUILogger, IDisposable
     {
-        private const string LogEntrySource = "NuGet Package Manager";
         private const string DTEProjectPage = "ProjectsAndSolution";
         private const string DTEEnvironmentCategory = "Environment";
         private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
