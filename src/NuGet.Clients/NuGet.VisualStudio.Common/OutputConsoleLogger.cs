@@ -32,36 +32,36 @@ namespace NuGet.VisualStudio.Common
 
         public IOutputConsole OutputConsole { get; private set; }
 
-        public Lazy<ErrorListTableDataSource> ErrorListTableDataSource { get; private set; }
+        public Lazy<INuGetErrorList> ErrorList { get; private set; }
 
         [ImportingConstructor]
         public OutputConsoleLogger(
             IOutputConsoleProvider consoleProvider,
-            Lazy<ErrorListTableDataSource> errorListDataSource)
+            Lazy<INuGetErrorList> errorList)
             : this(
                   new VisualStudioShell(AsyncServiceProvider.GlobalProvider),
                   consoleProvider,
-                  errorListDataSource)
+                  errorList)
         {
         }
 
         internal OutputConsoleLogger(
             IVisualStudioShell visualStudioShell,
             IOutputConsoleProvider consoleProvider,
-            Lazy<ErrorListTableDataSource> errorListDataSource)
+            Lazy<INuGetErrorList> errorList)
         {
             Verify.ArgumentIsNotNull(visualStudioShell, nameof(visualStudioShell));
             Verify.ArgumentIsNotNull(consoleProvider, nameof(consoleProvider));
-            Verify.ArgumentIsNotNull(errorListDataSource, nameof(errorListDataSource));
+            Verify.ArgumentIsNotNull(errorList, nameof(errorList));
 
             _visualStudioShell = visualStudioShell;
-            ErrorListTableDataSource = errorListDataSource;
+            ErrorList = errorList;
 
             Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                await _visualStudioShell.SubscribeToBuildBeginAsync(() => ErrorListTableDataSource.Value.ClearNuGetEntries());
-                await _visualStudioShell.SubscribeToAfterClosingAsync(() => ErrorListTableDataSource.Value.ClearNuGetEntries());
+                await _visualStudioShell.SubscribeToBuildBeginAsync(() => ErrorList.Value.ClearNuGetEntries());
+                await _visualStudioShell.SubscribeToAfterClosingAsync(() => ErrorList.Value.ClearNuGetEntries());
                 OutputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
             });
         }
@@ -73,7 +73,7 @@ namespace NuGet.VisualStudio.Common
                 await _semaphore.ExecuteAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    ErrorListTableDataSource.Value.Dispose();
+                    ErrorList.Value.Dispose();
                 });
 
                 _semaphore.Dispose();
@@ -90,7 +90,7 @@ namespace NuGet.VisualStudio.Common
 
                 // Give the error list focus
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
+                ErrorList.Value.BringToFrontIfSettingsPermit();
             });
         }
 
@@ -123,7 +123,7 @@ namespace NuGet.VisualStudio.Common
                 _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorListTableDataSource.Value.ClearNuGetEntries();
+                ErrorList.Value.ClearNuGetEntries();
             });
         }
 
@@ -150,7 +150,7 @@ namespace NuGet.VisualStudio.Common
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var errorListEntry = new ErrorListTableEntry(message);
-            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            ErrorList.Value.AddNuGetEntries(errorListEntry);
         }
 
         private void Run(Func<Task> action, [CallerMemberName] string methodName = null)
