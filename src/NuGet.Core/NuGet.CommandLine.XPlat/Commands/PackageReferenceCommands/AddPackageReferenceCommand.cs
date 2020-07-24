@@ -6,8 +6,6 @@ using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -71,6 +69,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.AddPkg_InteractiveDescription,
                     CommandOptionType.NoValue);
 
+                var prerelease = addpkg.Option(
+                    "--prerelease",
+                    Strings.AddPkg_PackagePrerelease,
+                    CommandOptionType.NoValue);
+
                 addpkg.OnExecute(() =>
                 {
                     ValidateArgument(id, addpkg.Name);
@@ -82,9 +85,9 @@ namespace NuGet.CommandLine.XPlat
                     }
                     var logger = getLogger();
                     var noVersion = !version.HasValue();
-                    var packageVersion = version.HasValue() ? version.Value() : "*";
-                    var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(packageVersion));
-                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), packageDependency, logger)
+                    var packageVersion = version.HasValue() ? version.Value() : null;
+                    ValidatePrerelease(prerelease.HasValue(), noVersion, addpkg.Name);
+                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), logger)
                     {
                         Frameworks = CommandLineUtility.SplitAndJoinAcrossMultipleValues(frameworks.Values),
                         Sources = CommandLineUtility.SplitAndJoinAcrossMultipleValues(sources.Values),
@@ -92,13 +95,25 @@ namespace NuGet.CommandLine.XPlat
                         NoRestore = noRestore.HasValue(),
                         NoVersion = noVersion,
                         DgFilePath = dgFilePath.Value(),
-                        Interactive = interactive.HasValue()
+                        Interactive = interactive.HasValue(),
+                        Prerelease = prerelease.HasValue(),
+                        PackageVersion = packageVersion,
+                        PackageId = id.Values[0]
                     };
                     var msBuild = new MSBuildAPIUtility(logger);
                     var addPackageRefCommandRunner = getCommandRunner();
                     return addPackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
                 });
             });
+        }
+
+        private static void ValidatePrerelease(bool prerelease, bool noVersion, string commandName)
+        {
+            if (prerelease && !noVersion)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PrereleaseWhenVersionSpecified,
+                    commandName));
+            }
         }
 
         private static void ValidateArgument(CommandOption arg, string commandName)
