@@ -38,8 +38,12 @@ namespace NuGet.VisualStudio.Common
         public OutputConsoleLogger(
             IOutputConsoleProvider consoleProvider,
             Lazy<ErrorListTableDataSource> errorListDataSource)
-            : this(new VisualStudioShell(AsyncServiceProvider.GlobalProvider), consoleProvider, errorListDataSource)
-        { }
+            : this(
+                  new VisualStudioShell(AsyncServiceProvider.GlobalProvider),
+                  consoleProvider,
+                  errorListDataSource)
+        {
+        }
 
         internal OutputConsoleLogger(
             IVisualStudioShell visualStudioShell,
