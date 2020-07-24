@@ -2164,6 +2164,191 @@ public class B
             }
         }
 
+        // This test ensures that the pack command, when encountering a non-semver version in AssemblyInformationalVersionAttribute
+        // falls back to using AssemblyVersionAttribute instead of failing with this misleading message:
+        // Authors is required.
+        // Description is required.
+        [Fact]
+        public void PackCommand_NuspecFileWithTokens_falls_back_to_assembly_version_when_invalid_informational_version() // @odalet, https://github.com/NuGet/Home/issues/5548
+        {
+            // Arrange
+            const string version = "1.2.3.4";
+            const string informationalVersion = "3.4.5.6 invalid";
+
+            var nugetexe = Util.GetNuGetExePath();
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                CreateTestProjectWithAssemblyInfoAndNuspec(workingDirectory, "Foo", version, "2.3.4.5", informationalVersion);
+                var projectDirectory = Path.Combine(workingDirectory, "Foo");
+
+                // Act
+                var r = CommandRunner.Run(nugetexe, projectDirectory, "pack Foo.csproj -build", waitForExit: true);
+
+                // The assembly version was used, not the informational version
+                var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{version}.nupkg"); 
+                var outputPackage = new OptimizedZipPackage(outputPackageFileName);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3); // Exited successfully
+                Assert.Equal(new SemanticVersion(version), outputPackage.Version);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_NuspecFileWithTokens_uses_informational_version() // @odalet, https://github.com/NuGet/Home/issues/5548
+        {
+            // Arrange
+            const string version = "1.2.3.4";
+            const string fileVersion = "2.3.4.5";
+            const string semverVersion = "3.4.5.6-beta.1";
+            const string informationalVersion = semverVersion + "+additional-info";
+
+            var nugetexe = Util.GetNuGetExePath();
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                CreateTestProjectWithAssemblyInfoAndNuspec(workingDirectory, "Foo", version, fileVersion, informationalVersion);
+                var projectDirectory = Path.Combine(workingDirectory, "Foo");
+
+                // Act
+                var r = CommandRunner.Run(nugetexe, projectDirectory, "pack Foo.csproj -build", waitForExit: true);
+
+                // The informational version without the build metadata part was used
+                var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{semverVersion}.nupkg"); 
+                var outputPackage = new OptimizedZipPackage(outputPackageFileName);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3); // Exited successfully
+                Assert.Equal(new SemanticVersion(semverVersion), outputPackage.Version);
+            }
+        }
+
+        // This test is a bit redundant with the ones before, but still useful for debugging
+        [Fact]
+        public void PackCommandRunner_does_not_throw_when_informational_version_is_invalid() // @odalet, https://github.com/NuGet/Home/issues/5548
+        {
+            // Arrange
+            const string version = "1.2.3.4";
+            const string fileVersion = "2.3.4.5";
+            const string informationalVersion = "3.4.5.6 invalid";
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                CreateTestProjectWithAssemblyInfoAndNuspec(workingDirectory, "Foo", version, fileVersion, informationalVersion);
+                var projectDirectory = Path.Combine(workingDirectory, "Foo");
+
+                var args = new PackArgs()
+                {
+                    CurrentDirectory = projectDirectory,
+                    Exclude = Enumerable.Empty<string>(),
+                    Logger = Common.NullLogger.Instance,
+                    Path = Path.Combine(projectDirectory, "Foo.csproj"),
+                    MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsBuildToolset(null, null).Path),
+                    Build = true
+                };
+
+                // Act
+                var exception = Record.Exception(() =>
+                {
+                    var runner = new PackCommandRunner(args, ProjectFactory.ProjectCreator);
+                    _ = runner.RunPackageBuild();
+                });
+
+                // The assembly version was used, not the informational version
+                var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{version}.nupkg");
+                var outputPackage = new OptimizedZipPackage(outputPackageFileName);
+
+                // Assert
+                Assert.Null(exception);
+                Assert.Equal(new SemanticVersion(version), outputPackage.Version);
+            }
+        }
+
+        /// <summary>
+        /// Creates a simple project that defines attributes commonly found in AssemblyInfo.cs
+        /// </summary>
+        /// <remarks>
+        /// The project is created under directory baseDirectory\projectName.
+        /// The project contains just one file called file1.cs.
+        /// </remarks>
+        /// <param name="baseDirectory">The base directory.</param>
+        /// <param name="projectName">The name of the project.</param>
+        /// <param name="referencedProject">The list of projects referenced by this project. Can be null.</param>
+        /// <param name="targetFrameworkVersion">The target framework version of the project.</param>
+        /// <param name="version">The text for the AssemblyVersion attribute.</param>
+        /// <param name="fileVersion">The text for the AssemblyFileVersion attribute.</param>
+        /// <param name="informationalVersion">The text for the AssemblyInformationalVersion attribute.</param>
+        private void CreateTestProjectWithAssemblyInfoAndNuspec(
+            string baseDirectory,
+            string projectName,
+            string version,
+            string fileVersion,
+            string informationalVersion)
+        {
+            var projectContent = @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>";
+
+            var projectDirectory = Path.Combine(baseDirectory, projectName);
+            _ = Directory.CreateDirectory(projectDirectory);
+            Util.CreateFile(projectDirectory, projectName + ".csproj", projectContent);
+
+            var csharpContent = $@"using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+[assembly: AssemblyTitle(""The Title"")]
+[assembly: AssemblyDescription(""The Description"")]
+[assembly: AssemblyConfiguration("""")]
+[assembly: AssemblyCompany(""The Company"")]
+[assembly: AssemblyProduct(""The Product"")]
+[assembly: AssemblyCopyright(""The Copyright"")]
+[assembly: AssemblyTrademark("""")]
+[assembly: AssemblyCulture("""")]
+
+[assembly: AssemblyVersion(""{version}"")]
+[assembly: AssemblyFileVersion(""{fileVersion}"")]
+[assembly: AssemblyInformationalVersion(""{informationalVersion}"")]
+
+namespace " + projectName + @"
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}";
+
+            Util.CreateFile(projectDirectory, "file1.cs", csharpContent);
+
+            var nuspecContent = @"<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type=""expression"">MIT</license>
+    <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
+    <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
+    <description>$description$</description>
+    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright 2020</copyright>
+    <tags>Tag1 Tag2</tags>
+  </metadata>
+</package>";
+
+            Util.CreateFile(projectDirectory, projectName + ".nuspec", nuspecContent);
+        }
+
         // Test that recognized tokens such as $id$ in the nuspec file of the
         // referenced project are replaced.
         [Fact]
