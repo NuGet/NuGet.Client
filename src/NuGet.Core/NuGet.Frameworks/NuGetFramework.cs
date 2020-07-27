@@ -27,7 +27,7 @@ namespace NuGet.Frameworks
         private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
-            : this(framework.Framework, framework.Version, framework.Profile)
+            : this(framework.Framework, framework.Version, framework.Profile, framework.Platform, framework.PlatformVersion)
         {
         }
 
@@ -93,6 +93,18 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException("platformVersion");
             }
 
+            _frameworkIdentifier = frameworkIdentifier;
+            _frameworkVersion = NormalizeVersion(frameworkVersion);
+            _frameworkProfile = string.Empty;
+
+            IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
+
+            Platform = IsNet5Era ? platform : string.Empty;
+            PlatformVersion = IsNet5Era ? NormalizeVersion(platformVersion) : FrameworkConstants.EmptyVersion;
+        }
+
+        internal NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile, string platform, Version platformVersion) : this(frameworkIdentifier, frameworkVersion, profile)
+        {
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
             _frameworkProfile = string.Empty;
