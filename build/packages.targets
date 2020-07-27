@@ -7,7 +7,6 @@
         <VSFrameworkVersion>16.6.30107.105</VSFrameworkVersion>
         <VSServicesVersion>16.153.0</VSServicesVersion>
         <VSThreadingVersion>16.7.56</VSThreadingVersion>
-        <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/nuget/home/issues/8952 -->
         <PatchedSystemPackagesVersion>5.0.0-preview.3.20214.6</PatchedSystemPackagesVersion>
     </PropertyGroup>
 
@@ -64,8 +63,8 @@
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
         <PackageReference Update="System.Collections.Immutable" Version="1.7.1" />
         <PackageReference Update="System.Diagnostics.Debug" Version="$(SystemPackagesVersion)" />
-        <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(PatchedSystemPackagesVersion)" />
-        <PackageReference Update="System.Security.Cryptography.Cng" Version="$(PatchedSystemPackagesVersion)" />
+        <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
+        <PackageReference Update="System.Security.Cryptography.Cng" Version="$(CryptographyPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
         <PackageReference Update="System.Threading.Tasks.Dataflow" Version="4.9.0" />
         <PackageReference Update="VSLangProj" Version="7.0.3300" />
