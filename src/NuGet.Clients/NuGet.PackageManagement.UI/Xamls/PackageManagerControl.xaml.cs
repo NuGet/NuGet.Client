@@ -751,7 +751,7 @@ namespace NuGet.PackageManagement.UI
         // Check if user has environment variable of RecommendNuGetPackages set to 1 or is in A/B experiment.
         public bool IsRecommenderFlightEnabled()
         {
-            return _forceRecommender | ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
+            return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
         }
 
         private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
