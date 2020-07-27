@@ -240,6 +240,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
         }
+        public bool HasPendingBackgroundWork { get; private set; } = true;
 
         // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsNotInstalled
         // in all those properties.
@@ -386,6 +387,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!_backgroundLatestVersionLoader.IsValueCreated)
             {
+                HasPendingBackgroundWork = true;
                 NuGetUIThreadHelper.JoinableTaskFactory
                     .RunAsync(ReloadPackageVersionsAsync)
                     .PostOnFailure(nameof(PackageItemListViewModel), nameof(ReloadPackageVersionsAsync));
@@ -408,6 +410,7 @@ namespace NuGet.PackageManagement.UI
 
             LatestVersion = result;
             Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
+            HasPendingBackgroundWork = false;
         }
 
         private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
