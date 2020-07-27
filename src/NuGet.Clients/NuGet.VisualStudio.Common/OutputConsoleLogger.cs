@@ -24,15 +24,15 @@ namespace NuGet.VisualStudio.Common
         private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
 
         private const int DefaultVerbosityLevel = 2;
-        private int _verbosityLevel;
-        private IVisualStudioShell _visualStudioShell;
+
+        private readonly IVisualStudioShell _visualStudioShell;
+        private readonly Lazy<INuGetErrorList> _errorList;
 
         [SuppressMessage("Build", "CA2213:'OutputConsoleLogger' contains field '_semaphore' that is of IDisposable type 'ReentrantSemaphore', but it is never disposed. Change the Dispose method on 'OutputConsoleLogger' to call Close or Dispose on this field.", Justification = "Field is disposed from async task invoked from Dispose.")]
         private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.NotAllowed);
 
-        public IOutputConsole OutputConsole { get; private set; }
-
-        public Lazy<INuGetErrorList> ErrorList { get; private set; }
+        private IOutputConsole _outputConsole;
+        private int _verbosityLevel;
 
         [ImportingConstructor]
         public OutputConsoleLogger(
@@ -55,14 +55,14 @@ namespace NuGet.VisualStudio.Common
             Verify.ArgumentIsNotNull(errorList, nameof(errorList));
 
             _visualStudioShell = visualStudioShell;
-            ErrorList = errorList;
+            _errorList = errorList;
 
             Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                await _visualStudioShell.SubscribeToBuildBeginAsync(() => ErrorList.Value.ClearNuGetEntries());
-                await _visualStudioShell.SubscribeToAfterClosingAsync(() => ErrorList.Value.ClearNuGetEntries());
-                OutputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
+                await _visualStudioShell.SubscribeToBuildBeginAsync(() => _errorList.Value.ClearNuGetEntries());
+                await _visualStudioShell.SubscribeToAfterClosingAsync(() => _errorList.Value.ClearNuGetEntries());
+                _outputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
             });
         }
 
@@ -73,7 +73,7 @@ namespace NuGet.VisualStudio.Common
                 await _semaphore.ExecuteAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    ErrorList.Value.Dispose();
+                    _errorList.Value.Dispose();
                 });
 
                 _semaphore.Dispose();
@@ -85,12 +85,12 @@ namespace NuGet.VisualStudio.Common
         {
             Run(async () =>
             {
-                await OutputConsole.WriteLineAsync(Resources.Finished);
-                await OutputConsole.WriteLineAsync(string.Empty);
+                await _outputConsole.WriteLineAsync(Resources.Finished);
+                await _outputConsole.WriteLineAsync(string.Empty);
 
                 // Give the error list focus
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorList.Value.BringToFrontIfSettingsPermit();
+                _errorList.Value.BringToFrontIfSettingsPermit();
             });
         }
 
@@ -103,7 +103,7 @@ namespace NuGet.VisualStudio.Common
                     || message.Level == LogLevel.Warning
                     || _verbosityLevel > DefaultVerbosityLevel)
                 {
-                    await OutputConsole.WriteLineAsync(message.FormatWithCode());
+                    await _outputConsole.WriteLineAsync(message.FormatWithCode());
 
                     if (message.Level == LogLevel.Error ||
                         message.Level == LogLevel.Warning)
@@ -118,12 +118,12 @@ namespace NuGet.VisualStudio.Common
         {
             Run(async () =>
             {
-                await OutputConsole.ActivateAsync();
-                await OutputConsole.ClearAsync();
+                await _outputConsole.ActivateAsync();
+                await _outputConsole.ClearAsync();
                 _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorList.Value.ClearNuGetEntries();
+                _errorList.Value.ClearNuGetEntries();
             });
         }
 
@@ -150,7 +150,7 @@ namespace NuGet.VisualStudio.Common
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var errorListEntry = new ErrorListTableEntry(message);
-            ErrorList.Value.AddNuGetEntries(errorListEntry);
+            _errorList.Value.AddNuGetEntries(errorListEntry);
         }
 
         private void Run(Func<Task> action, [CallerMemberName] string methodName = null)
