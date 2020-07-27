@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -166,6 +166,14 @@ namespace NuGet.Frameworks
                     {
                         reduced = reduced.Where(f => !f.HasProfile);
                     }
+                }
+
+                // Platforms reduce
+                if (reduced.Count() > 1
+                    && framework.HasPlatform)
+                {
+                    // Prefer the highest framework version, likely to be the non-platform specific option.
+                    reduced = reduced.GroupBy(f => f.Version).OrderByDescending(f => f.Key).First();
                 }
 
                 // if we have reduced down to a single framework, use that
