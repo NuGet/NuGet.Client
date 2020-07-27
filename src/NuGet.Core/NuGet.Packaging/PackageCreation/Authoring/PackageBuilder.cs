@@ -674,7 +674,9 @@ namespace NuGet.Packaging
                 if (!string.IsNullOrEmpty(extension) &&
                     !extension.Equals(NuGetConstants.ReadmeExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5038, string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeFileExtensionIsInvalid, readmePath));
+                    throw new PackagingException(
+                        NuGetLogCode.NU5038, 
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeFileExtensionIsInvalid, readmePath));
                 }
 
                 // Validate entry
@@ -704,12 +706,16 @@ namespace NuGet.Packaging
 
                         if (fileSize > MaxReadmeFileSize)
                         {
-                            throw new PackagingException(NuGetLogCode.NU5040, string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeMaxFileSizeExceeded, readmePath));
+                            throw new PackagingException(
+                                NuGetLogCode.NU5040, 
+                                string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeMaxFileSizeExceeded, readmePath));
                         }
 
                         if (fileSize == 0)
                         {
-                            throw new PackagingException(NuGetLogCode.NU5041, string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeErrorEmpty, readmePath));
+                            throw new PackagingException(
+                                NuGetLogCode.NU5041, 
+                                string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeErrorEmpty, readmePath));
                         }
                     }
                 }
