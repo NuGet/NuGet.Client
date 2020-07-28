@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
+using AsyncLazyInt = Microsoft.VisualStudio.Threading.AsyncLazy<int>;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -32,7 +33,7 @@ namespace NuGet.VisualStudio.Common
         private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.NotAllowed);
 
         private IOutputConsole _outputConsole;
-        private int _verbosityLevel;
+        private AsyncLazyInt _verbosityLevel;
 
         [ImportingConstructor]
         public OutputConsoleLogger(
@@ -56,6 +57,7 @@ namespace NuGet.VisualStudio.Common
 
             _visualStudioShell = visualStudioShell;
             _errorList = errorList;
+            _verbosityLevel = new AsyncLazyInt(() => GetMSBuildVerbosityLevelAsync(), NuGetUIThreadHelper.JoinableTaskFactory);
 
             Run(async () =>
             {
@@ -98,10 +100,12 @@ namespace NuGet.VisualStudio.Common
         {
             Run(async () =>
             {
+                var verbosityLevel = await _verbosityLevel.GetValueAsync();
+
                 if (message.Level == LogLevel.Information
                     || message.Level == LogLevel.Error
                     || message.Level == LogLevel.Warning
-                    || _verbosityLevel > DefaultVerbosityLevel)
+                    || verbosityLevel > DefaultVerbosityLevel)
                 {
                     await _outputConsole.WriteLineAsync(message.FormatWithCode());
 
@@ -120,8 +124,6 @@ namespace NuGet.VisualStudio.Common
             {
                 await _outputConsole.ActivateAsync();
                 await _outputConsole.ClearAsync();
-                _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
-
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _errorList.Value.ClearNuGetEntries();
             });

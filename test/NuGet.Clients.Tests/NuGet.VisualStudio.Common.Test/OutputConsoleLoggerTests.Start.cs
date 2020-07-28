@@ -29,12 +29,6 @@ namespace NuGet.VisualStudio.Common.Test
             }
 
             [Fact]
-            public void Gets_MSBuild_verbosity_from_shell()
-            {
-                _visualStudioShell.Verify(vss => vss.GetPropertyValueAsync("Environment", "ProjectsAndSolution", "MSBuildOutputVerbosity"));
-            }
-
-            [Fact]
             public void Clears_error_list()
             {
                 _errorList.Verify(el => el.ClearNuGetEntries());

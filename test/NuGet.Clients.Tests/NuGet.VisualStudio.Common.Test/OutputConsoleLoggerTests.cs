@@ -13,7 +13,7 @@ namespace NuGet.VisualStudio.Common.Test
     {
         private protected Action _onBuildBegin;
         private protected Action _afterClosing;
-        private protected int _msBuildOutputVerbosity;
+        private protected object _msBuildOutputVerbosity;
 
         private protected readonly Mock<IVisualStudioShell> _visualStudioShell = new Mock<IVisualStudioShell>();
         private protected readonly Mock<IOutputConsoleProvider> _outputConsoleProvider = new Mock<IOutputConsoleProvider>();
@@ -32,12 +32,17 @@ namespace NuGet.VisualStudio.Common.Test
                               .Callback((Action action) => { _afterClosing = action; });
 
             _visualStudioShell.Setup(vss => vss.GetPropertyValueAsync("Environment", "ProjectsAndSolution", "MSBuildOutputVerbosity"))
-                              .Returns(Task.FromResult((object)_msBuildOutputVerbosity));
+                              .Returns(GetMSBuildOutputVerbosityAsync);
 
             _outputConsoleProvider.Setup(ocp => ocp.CreatePackageManagerConsoleAsync())
                                   .Returns(Task.FromResult(_outputConsole.Object));
 
             _outputConsoleLogger = new OutputConsoleLogger(_visualStudioShell.Object, _outputConsoleProvider.Object, new Lazy<INuGetErrorList>(() => _errorList.Object));
+        }
+
+        private Task<object> GetMSBuildOutputVerbosityAsync()
+        {
+            return Task.FromResult(_msBuildOutputVerbosity);
         }
 
         void IDisposable.Dispose()
