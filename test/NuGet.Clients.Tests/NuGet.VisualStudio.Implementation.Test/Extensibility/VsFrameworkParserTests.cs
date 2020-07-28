@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Runtime.Versioning;
+using NuGet.Frameworks;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
@@ -106,6 +107,66 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => target.GetShortFrameworkName(frameworkName));
+        }
+
+        [Fact]
+        public void TryParse_NullInput_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var target = new VsFrameworkParser();
+
+            // Act
+            var exception = Assert.Throws<ArgumentNullException>(() => target.TryParse(input: null, out _));
+
+            // Assert
+            Assert.Equal("input", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData("net472")]
+        [InlineData(".NETFramework,Version=4.7.2")]
+        [InlineData("netstandard2.0")]
+        [InlineData(".NETStandard,Version=2.0")]
+        [InlineData("netcoreapp3.1")]
+        [InlineData(".NETCoreApp,Version=3.1")]
+        [InlineData("net5.0")]
+        [InlineData(".NETCoreApp,Version=5.0")]
+        [InlineData("net5.0-android10.0")]
+        [InlineData("portable-net45+win8")]
+        [InlineData(".NETPortable,Version=v0.0,Profile=Profile7")]
+        public void TryParse_ValidInput_Succeeds(string input)
+        {
+            // Arrange
+            var target = new VsFrameworkParser();
+            IVsNuGetFramework actual;
+            var expected = NuGetFramework.Parse(input);
+
+            // Act
+            var result = target.TryParse(input, out actual);
+
+            // Assert
+            Assert.True(result, "Return value was not true");
+            Assert.Equal(expected.Framework, actual.TargetFrameworkIdentifier);
+            Assert.Equal("v" + expected.Version.ToString(), actual.TargetFrameworkVersion);
+            Assert.Equal(expected.Profile, actual.TargetFrameworkProfile);
+            Assert.Equal(expected.Platform, actual.TargetPlatformIdentifier);
+            Assert.Equal(expected.PlatformVersion.ToString(), actual.TargetPlatformVersion);
+        }
+
+        [Theory]
+        [InlineData("invalid")]
+        [InlineData("any")]
+        [InlineData("unsupported")]
+        public void TryParse_InvalidInput_ReturnsFalse(string input)
+        {
+            // Arrange
+            var target = new VsFrameworkParser();
+
+            // Act
+            var actual = target.TryParse(input, out IVsNuGetFramework parsed);
+
+            // Assert
+            Assert.False(actual, $"Expected false, but got true for {input}. TFI {parsed.TargetFrameworkIdentifier}, TFV {parsed.TargetFrameworkVersion}, Profile {parsed.TargetFrameworkProfile}, TPI {parsed.TargetPlatformIdentifier}, TPV {parsed.TargetPlatformVersion}");
         }
     }
 }

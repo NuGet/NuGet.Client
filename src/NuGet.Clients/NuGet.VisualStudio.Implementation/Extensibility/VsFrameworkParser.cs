@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,8 @@ using NuGet.VisualStudio.Implementation.Resources;
 namespace NuGet.VisualStudio
 {
     [Export(typeof(IVsFrameworkParser))]
-    public class VsFrameworkParser : IVsFrameworkParser
+    [Export(typeof(IVsFrameworkParser2))]
+    public class VsFrameworkParser : IVsFrameworkParser, IVsFrameworkParser2
     {
         public FrameworkName ParseFrameworkName(string shortOrFullName)
         {
@@ -54,6 +55,18 @@ namespace NuGet.VisualStudio
                     frameworkName);
                 throw new ArgumentException(message, e);
             }
+        }
+
+        public bool TryParse(string input, out IVsNuGetFramework nuGetFramework)
+        {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            NuGetFramework framework = NuGetFramework.Parse(input);
+            nuGetFramework = new VsNuGetFramework(framework.Framework, "v" + framework.Version.ToString(), framework.Profile, framework.Platform, framework.PlatformVersion.ToString());
+            return framework.IsSpecificFramework;
         }
     }
 }

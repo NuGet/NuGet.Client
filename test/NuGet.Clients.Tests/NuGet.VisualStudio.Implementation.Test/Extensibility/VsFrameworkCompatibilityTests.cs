@@ -182,7 +182,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         {
             // Arrange
             var target = new VsFrameworkCompatibility();
-            
+
             // Act
             var actual = target.GetNetStandardFrameworks().ToArray();
 
@@ -199,5 +199,79 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             Assert.Equal(".NETStandard,Version=v2.1", actual[9].ToString());
             Assert.Equal(10, actual.Length);
         }
+
+        [Fact]
+        public void IVsFrameworkCompatibility3_GetNearest_WithCompatibleFramework_Succeeds()
+        {
+            // Arrange
+            var target = new VsFrameworkCompatibility();
+            var net5 = new VsNuGetFramework(".NETCoreApp", "v5.0", string.Empty, string.Empty, string.Empty);
+            var net472 = new VsNuGetFramework(".NETFramework", "v4.7.2", string.Empty, string.Empty, string.Empty);
+            var netcoreapp31 = new VsNuGetFramework(".NETCoreApp", "v3.1", string.Empty, string.Empty, string.Empty);
+            var frameworks = new IVsNuGetFramework[] { net472, netcoreapp31 };
+
+            // Act
+            var actual = target.GetNearest(net5, frameworks);
+
+            // Assert
+            Assert.Equal(netcoreapp31, actual);
+        }
+
+        [Fact]
+        public void IVsFrameworkCompatibility3_GetNearest_WithFallbackTfm_Succeeds()
+        {
+            // Arrange
+            var target = new VsFrameworkCompatibility();
+
+            var net5 = new VsNuGetFramework(".NETCoreApp", "v5.0", string.Empty, string.Empty, string.Empty);
+            var net472 = new VsNuGetFramework(".NETFramework", "v4.7.2", string.Empty, string.Empty, string.Empty);
+            var fallbackFrameworks = new IVsNuGetFramework[] { net472 };
+            var frameworks = new IVsNuGetFramework[] { net472 };
+
+            // Act
+            var actual = target.GetNearest(net5, fallbackFrameworks, frameworks);
+
+            // Assert
+            Assert.Equal(net472, actual);
+        }
+
+        [Fact]
+        public void IVsFrameworkCompatibility3_GetNearest_NoCompatibleFramework_ReturnsNull()
+        {
+            // Arrange
+            var target = new VsFrameworkCompatibility();
+
+            var net5 = new NuGet.VisualStudio.VsNuGetFramework(".NETCoreApp", "v5.0", string.Empty, string.Empty, string.Empty);
+            var net472 = new VsNuGetFramework(".NETFramework", "v4.7.2", string.Empty, string.Empty, string.Empty);
+            var frameworks = new IVsNuGetFramework[] { net472 };
+
+            // Act
+            var actual = target.GetNearest(net5, frameworks);
+
+            // Assert
+            Assert.Null(actual);
+        }
+
+        //private class VsNuGetFramework : IVsNuGetFramework
+        //{
+        //    public VsNuGetFramework(string tfi, string tfv, string tfp, string tpi, string tpv)
+        //    {
+        //        TargetFrameworkIdentifier = tfi;
+        //        TargetFrameworkVersion = tfv;
+        //        TargetFrameworkProfile = tfp;
+        //        TargetPlatformIdentifier = tpi;
+        //        TargetPlatformVersion = tpv;
+        //    }
+
+        //    public string TargetFrameworkIdentifier { get; }
+
+        //    public string TargetFrameworkVersion { get; }
+
+        //    public string TargetFrameworkProfile { get; }
+
+        //    public string TargetPlatformIdentifier { get; }
+
+        //    public string TargetPlatformVersion { get; }
+        //}
     }
 }
