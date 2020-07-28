@@ -9,7 +9,7 @@ using Xunit;
 namespace NuGet.VisualStudio.Common.Test
 {
     [Collection(nameof(TestJoinableTaskFactoryCollection))]
-    public abstract partial class OutputConsoleLoggerTests
+    public abstract partial class OutputConsoleLoggerTests : IDisposable
     {
         private protected Action _onBuildBegin;
         private protected Action _afterClosing;
@@ -38,6 +38,11 @@ namespace NuGet.VisualStudio.Common.Test
                                   .Returns(Task.FromResult(_outputConsole.Object));
 
             _outputConsoleLogger = new OutputConsoleLogger(_visualStudioShell.Object, _outputConsoleProvider.Object, new Lazy<INuGetErrorList>(() => _errorList.Object));
+        }
+
+        void IDisposable.Dispose()
+        {
+            _outputConsoleLogger.Dispose();
         }
     }
 }
