@@ -51,6 +51,7 @@
       <ManifestBuildData Include="AzureDevOpsBuildNumber=$(BUILD_BUILDNUMBER)" />
       <ManifestBuildData Include="AzureDevOpsRepository=$(BUILD_REPOSITORY_URI)" />
       <ManifestBuildData Include="AzureDevOpsBranch=$(BUILD_SOURCEBRANCH)" />
+      <ManifestBuildData Include="PublishingVersion=2"/>
     </ItemGroup>
 
     <PushToAzureDevOpsArtifacts
