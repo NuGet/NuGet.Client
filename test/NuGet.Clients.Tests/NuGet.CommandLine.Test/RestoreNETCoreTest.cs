@@ -9967,7 +9967,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void RestoreNetCore_WithMultipleFrameworksWithPlatform_Suceeds()
+        public void RestoreNetCore_WithMultipleFrameworksWithPlatformAndAssetTargetFallback_Succeeds()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -9986,6 +9986,8 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     frameworks
                     );
+
+                projectA.Properties.Add("AssetTargetFallback", "net472");
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
