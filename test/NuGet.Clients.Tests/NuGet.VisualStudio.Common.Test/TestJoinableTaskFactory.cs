@@ -8,9 +8,9 @@ using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.VisualStudio.Common.Test
 {
-    public abstract class TestsRequiringJoinableTaskFactoryBase
+    public class TestJoinableTaskFactory
     {
-        public TestsRequiringJoinableTaskFactoryBase()
+        public TestJoinableTaskFactory()
         {
             var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
             NuGetUIThreadHelper.SetCustomJoinableTaskFactory(joinableTaskContext.Factory);
