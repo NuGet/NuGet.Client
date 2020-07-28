@@ -27,7 +27,7 @@ namespace NuGet.VisualStudio.Common.Test
             }
 
             [Fact]
-            public void When_null_errorListDataSource_is_passed_ArgumentNullException_is_thrown()
+            public void When_null_errorList_is_passed_ArgumentNullException_is_thrown()
             {
                 var exception = Assert.Throws<ArgumentNullException>(() => new OutputConsoleLogger(_visualStudioShell.Object, _outputConsoleProvider.Object, errorList: null));
                 exception.ParamName.Should().Be("errorList");
