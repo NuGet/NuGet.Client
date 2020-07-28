@@ -27,7 +27,7 @@ namespace NuGet.Frameworks
         private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
-            : this(framework.Framework, framework.Version, framework.Profile, framework.Platform, framework.PlatformVersion)
+            : this(framework.Framework, framework.Version, framework.Profile)
         {
         }
 
