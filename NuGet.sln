@@ -20,10 +20,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Core.FuncTests", "NuG
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DE23D071-162F-47A3-BC68-42E4A354835C}"
 	ProjectSection(SolutionItems) = preProject
-		Shared\EqualityUtility.cs = Shared\EqualityUtility.cs
-		Shared\HashCodeCombiner.cs = Shared\HashCodeCombiner.cs
-		Shared\TypeExtensions.cs = Shared\TypeExtensions.cs
-		Shared\TypeInfo.cs = Shared\TypeInfo.cs
+		build\Shared\EqualityUtility.cs = build\Shared\EqualityUtility.cs
+		build\Shared\HashCodeCombiner.cs = build\Shared\HashCodeCombiner.cs
+		build\Shared\TypeExtensions.cs = build\Shared\TypeExtensions.cs
+		build\Shared\TypeInfo.cs = build\Shared\TypeInfo.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D1549653-9631-4E16-9967-55427174A0DC}"
