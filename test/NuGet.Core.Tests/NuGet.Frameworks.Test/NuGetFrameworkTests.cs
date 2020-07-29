@@ -358,5 +358,18 @@ namespace NuGet.Test
                 "A hyphen may not be in any of the portable framework names.",
                 ex.Message);
         }
+
+        [Theory]
+        [InlineData("netcoreapp5.0")]
+        [InlineData("net45")]
+        [InlineData("net5.0-windows10.0.16000.1")]
+        public void NuGetFramework_WithCopyConstructor_CreatesEquivalentFrameworks(string frameworkName)
+        {
+            var originalFramework = NuGetFramework.Parse(frameworkName);
+
+            var copiedFramework = new NuGetFramework(originalFramework);
+
+            Assert.Equal(originalFramework, copiedFramework);
+        }
     }
 }

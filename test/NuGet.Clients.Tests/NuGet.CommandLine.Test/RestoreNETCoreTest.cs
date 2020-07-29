@@ -9966,6 +9966,46 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void RestoreNetCore_WithMultipleFrameworksWithPlatformAndAssetTargetFallback_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var frameworks = new NuGetFramework[]
+                {
+                    NuGetFramework.Parse("net5.0-windows10.0.10000.1"),
+                    NuGetFramework.Parse("net5.0-android21")
+                };
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    frameworks
+                    );
+
+                projectA.Properties.Add("AssetTargetFallback", "net472");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                var targets = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Select(e => e);
+                targets.Should().HaveCount(2);
+                foreach (var framework in frameworks)
+                {
+                    targets.Select(e => e.TargetFramework).Should().Contain(framework);
+                }
+            }
+        }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

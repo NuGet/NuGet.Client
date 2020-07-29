@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
@@ -27,7 +26,7 @@ namespace NuGet.Frameworks
         private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
-            : this(framework.Framework, framework.Version, framework.Profile)
+            : this(framework.Framework, framework.Version, framework.Profile, framework.Platform, framework.PlatformVersion)
         {
         }
 
@@ -47,31 +46,25 @@ namespace NuGet.Frameworks
         /// Creates a new NuGetFramework instance, with an optional profile (only available for netframework)
         /// </summary>
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile)
+            : this(frameworkIdentifier, frameworkVersion, profile: ProcessProfile(profile), platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
+
         {
-            if (frameworkIdentifier == null)
-            {
-                throw new ArgumentNullException("frameworkIdentifier");
-            }
+        }
 
-            if (frameworkVersion == null)
-            {
-                throw new ArgumentNullException("frameworkVersion");
-            }
-
-            _frameworkIdentifier = frameworkIdentifier;
-            _frameworkVersion = NormalizeVersion(frameworkVersion);
-
-            IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
-
-            _frameworkProfile = profile ?? string.Empty;
-            Platform = string.Empty;
-            PlatformVersion = FrameworkConstants.EmptyVersion;
+        private static string ProcessProfile(string profile)
+        {
+            return profile ?? string.Empty;
         }
 
         /// <summary>
         /// Creates a new NuGetFramework instance, with an optional platform and platformVersion (only available for net5.0+)
         /// </summary>
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string platform, Version platformVersion)
+            : this(frameworkIdentifier, frameworkVersion, profile: string.Empty, platform: platform, platformVersion: platformVersion)
+        {
+        }
+
+        internal NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile, string platform, Version platformVersion)
         {
             if (frameworkIdentifier == null)
             {
@@ -95,10 +88,9 @@ namespace NuGet.Frameworks
 
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
-            _frameworkProfile = string.Empty;
+            _frameworkProfile = profile;
 
             IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
-
             Platform = IsNet5Era ? platform : string.Empty;
             PlatformVersion = IsNet5Era ? NormalizeVersion(platformVersion) : FrameworkConstants.EmptyVersion;
         }
