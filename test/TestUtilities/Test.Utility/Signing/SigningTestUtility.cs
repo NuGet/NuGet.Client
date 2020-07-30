@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -753,50 +752,6 @@ namespace Test.Utility.Signing
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
         {
             return $"{string.Format(_signatureLogPrefix, package.Id, package.Version, source)} {log}";
-        }
-
-        public static HashAlgorithm GetSha1HashProvider()
-        {
-#if !IS_CORECLR
-            if (AllowFipsAlgorithmsOnly())
-            {
-                return new SHA1CryptoServiceProvider();
-            }
-            else
-            {
-                return new SHA1Managed();
-            }
-#else
-            return SHA1.Create();
-#endif
-        }
-
-        /// <summary>
-        /// Determines if we are to only allow Fips compliant algorithms.
-        /// </summary>
-        /// <remarks>
-        /// CryptoConfig.AllowOnlyFipsAlgorithm does not exist in Mono.
-        /// </remarks>
-        private static bool AllowFipsAlgorithmsOnly()
-        {
-#if !IS_CORECLR
-            // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
-            var cryptoConfig = typeof(CryptoConfig);
-
-            if (cryptoConfig != null)
-            {
-                var allowOnlyFipsAlgorithmsProperty = cryptoConfig.GetProperty("AllowOnlyFipsAlgorithms", BindingFlags.Public | BindingFlags.Static);
-
-                if (allowOnlyFipsAlgorithmsProperty != null)
-                {
-                    return (bool)allowOnlyFipsAlgorithmsProperty.GetValue(null, null);
-                }
-            }
-
-            return false;
-#else
-            return false;
-#endif
         }
     }
 }

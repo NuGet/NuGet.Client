@@ -77,7 +77,7 @@ namespace NuGet.Packaging.Test
 
         private static BcEssCertId CreateBcEssCertId(string text)
         {
-            using (var hashAlgorithm = SigningTestUtility.GetSha1HashProvider())
+            using (var hashAlgorithm = SHA1.Create())
             {
                 var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(text));
 

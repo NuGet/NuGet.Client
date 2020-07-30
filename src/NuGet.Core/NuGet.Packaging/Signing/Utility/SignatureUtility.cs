@@ -581,7 +581,6 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            //X509Certificate2.Thumbprint is dynamically generated using the SHA1 algorithm
             byte[] actualHash = FromHexStringToByteArray(certificate.Thumbprint);
 
             return essCertId.CertificateHash.SequenceEqual(actualHash);
@@ -652,22 +651,14 @@ namespace NuGet.Packaging.Signing
             return new DerSequenceReader(attribute.Values[0].RawData);
         }
 
-
         private static byte[] FromHexStringToByteArray(string thumbprint)
         {
             byte[] hash = new byte[thumbprint.Length / 2];
             for (int i = 0; i < hash.Length; i++)
             {
-                string byteString = thumbprint.Substring(i * 2, 2);
-                if (byte.TryParse(byteString, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte hashByte))
-                {
-                    hash[i] = hashByte;
-                }
-                else
-                {
-                    //If parsing fails, return the hash byte array. The mismatch will be processed by throwing SignatureException with SigningCertificateCertificateNotFound
-                    return hash;
-                }
+                string byteString = thumbprint.Substring(startIndex: i * 2, length: 2);
+
+                hash[i] = byte.Parse(byteString, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             }
             return hash;
         }
