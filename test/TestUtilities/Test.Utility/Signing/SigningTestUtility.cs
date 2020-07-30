@@ -758,7 +758,7 @@ namespace Test.Utility.Signing
         public static HashAlgorithm GetSha1HashProvider()
         {
 #if !IS_CORECLR
-            if (AllowFipsAlgorithmsOnly.Value)
+            if (AllowFipsAlgorithmsOnly())
             {
                 return new SHA1CryptoServiceProvider();
             }
@@ -771,15 +771,13 @@ namespace Test.Utility.Signing
 #endif
         }
 
-        private static Lazy<bool> AllowFipsAlgorithmsOnly = new Lazy<bool>(() => ReadFipsConfigValue());
-
         /// <summary>
         /// Determines if we are to only allow Fips compliant algorithms.
         /// </summary>
         /// <remarks>
         /// CryptoConfig.AllowOnlyFipsAlgorithm does not exist in Mono.
         /// </remarks>
-        private static bool ReadFipsConfigValue()
+        private static bool AllowFipsAlgorithmsOnly()
         {
 #if !IS_CORECLR
             // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
