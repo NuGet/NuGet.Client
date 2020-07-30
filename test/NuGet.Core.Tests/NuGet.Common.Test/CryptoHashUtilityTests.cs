@@ -107,47 +107,5 @@ namespace NuGet.Common.Test
             Assert.Equal("oid", exception.ParamName);
             Assert.StartsWith($"Hash algorithm '{Oids.Sha1}' is unsupported.", exception.Message);
         }
-
-        [Fact]
-        public void GetSha1HashProvider_ReturnsCorrectImplementation()
-        {
-            using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
-            {
-                Assert.True(hashAlgorithm is SHA1);
-
-#if !IS_CORECLR
-                if (AllowOnlyFipsAlgorithms())
-                {
-                    Assert.IsType<SHA1CryptoServiceProvider>(hashAlgorithm);
-                }
-                else
-                {
-                    Assert.IsType<SHA1Managed>(hashAlgorithm);
-                }
-#endif
-            }
-        }
-
-        private static bool AllowOnlyFipsAlgorithms()
-        {
-#if !IS_CORECLR
-            // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
-            var cryptoConfig = typeof(CryptoConfig);
-
-            if (cryptoConfig != null)
-            {
-                var allowOnlyFipsAlgorithmsProperty = cryptoConfig.GetProperty("AllowOnlyFipsAlgorithms", BindingFlags.Public | BindingFlags.Static);
-
-                if (allowOnlyFipsAlgorithmsProperty != null)
-                {
-                    return (bool)allowOnlyFipsAlgorithmsProperty.GetValue(null, null);
-                }
-            }
-
-            return false;
-#else
-            return false;
-#endif
-        }
     }
 }

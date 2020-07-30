@@ -27,7 +27,7 @@ namespace Test.Utility.Signing
 
         internal static string GenerateFingerprint(X509Certificate certificate)
         {
-            using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
+            using (var hashAlgorithm = SigningTestUtility.GetSha1HashProvider())
             {
                 var hash = hashAlgorithm.ComputeHash(certificate.GetEncoded());
 
