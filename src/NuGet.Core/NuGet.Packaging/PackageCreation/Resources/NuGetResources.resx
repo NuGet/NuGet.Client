@@ -228,4 +228,7 @@
     <value>Cannot open the readme file '{0}': {1}.</value>
     <comment>0 - Path to the readme file, 1 - Error message for not opening the readme</comment>
   </data>
+  <data name="ReadmeMissingRequiredValue" xml:space="preserve">
+    <value>The element 'readme' cannot be empty.</value>
+  </data>
 </root>

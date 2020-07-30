@@ -350,6 +350,11 @@ namespace NuGet.Packaging
                 yield return NuGetResources.IconMissingRequiredValue;
             }
 
+            if (Readme == string.Empty)
+            {
+                yield return NuGetResources.ReadmeMissingRequiredValue;
+            }
+
             if (RequireLicenseAcceptance && (string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))
             {
                 yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;

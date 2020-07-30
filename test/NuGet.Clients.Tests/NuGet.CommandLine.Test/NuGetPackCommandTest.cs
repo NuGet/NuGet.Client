@@ -5947,7 +5947,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithFile("icon.jpg", 6)
                 .WithNuspec(nuspecBuilder);
 
-            TestPackIconFailure(testDirBuilder, "The element 'icon' cannot be empty.");
+            TestPackPropertyFailure(testDirBuilder, "The element 'icon' cannot be empty.");
         }
 
         [Fact]
@@ -5965,7 +5965,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithFile("icon.jpg", 6)
                 .WithNuspec(nuspecBuilder);
 
-            TestPackIconFailure(testDirBuilder, "The element 'icon' cannot be empty.");
+            TestPackPropertyFailure(testDirBuilder, "The element 'icon' cannot be empty.");
         }
 
         [Fact]
@@ -5981,7 +5981,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             testDirBuilder
                 .WithNuspec(nuspecBuilder);
 
-            TestPackIconFailure(testDirBuilder, NuGetLogCode.NU5019.ToString());
+            TestPackPropertyFailure(testDirBuilder, NuGetLogCode.NU5019.ToString());
         }
 
         [Theory]
@@ -6161,11 +6161,11 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         /// <summary>
-        /// Test failed nuget.exe icon pack functionality with nuspec
+        /// Test failed nuget.exe pack functionality with nuspec
         /// </summary>
         /// <param name="testDirBuilder">A TestDirectory builder with the info for creating the package</param>
         /// <param name="message">Message to check in the command output</param>
-        private void TestPackIconFailure(TestDirectoryBuilder testDirBuilder, string message)
+        private void TestPackPropertyFailure(TestDirectoryBuilder testDirBuilder, string message)
         {
             using (testDirBuilder.Build())
             {
@@ -6178,6 +6178,254 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
                 // Assert
                 Util.VerifyResultFailure(r, message);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_BasicFunc_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+
+            nuspec
+                .WithReadme("readme.md")
+                .WithFile("readme.md");
+
+            testDir
+                .WithFile("readme.md", 6)
+                .WithNuspec(nuspec);
+
+            TestPackReadmeSuccess(testDir);
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_SourceInSubFolder_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
+
+            nuspec
+                .WithReadme("readme.md")
+                .WithFile(@"docs\readme.md");
+
+            testDir
+                .WithFile(@"docs\readme.md", 6)
+                .WithNuspec(nuspec);
+
+            TestPackReadmeSuccess(testDir);
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_ImplicitFile_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
+
+            nuspec
+                .WithReadme("readme.md")
+                .WithFile(@"docs\*");
+
+            testDir
+                .WithFile($"docs{s}readme.md", 6)
+                .WithNuspec(nuspec);
+
+            TestPackReadmeSuccess(testDir);
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_TargetFolder_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
+
+            nuspec
+                .WithReadme("docs/readme.md")
+                .WithFile($"content{s}*", "docs");
+
+            testDir
+                .WithFile($"content{s}readme.md", 6)
+                .WithNuspec(nuspec);
+
+            TestPackReadmeSuccess(testDir, "docs/readme.md");
+        }
+
+        [Theory]
+        [InlineData('/')]
+        [InlineData('\\')]
+        public void PackCommand_PackReadme_FolderNested_Succeeds(char iconSeparator)
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
+            var u = iconSeparator;
+
+            nuspec
+                .WithReadme($"docs{u}nested{u}readme.md")
+                .WithFile($"content{s}**", "docs");
+
+            testDirBuilder
+                .WithFile($"content{s}nested{s}readme.md", 6)
+                .WithFile($"content{s}dummy.txt", 6)
+                .WithFile($"content{s}data.txt", 6)
+                .WithNuspec(nuspec);
+
+            TestPackReadmeSuccess(testDirBuilder, $"docs/nested/readme.md");
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_EmptyReadmeEntry_Fails()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithReadme(string.Empty)
+                .WithFile($"readme.md");
+
+            testDirBuilder
+                .WithFile("readme.md", 6)
+                .WithNuspec(nuspecBuilder);
+
+            TestPackPropertyFailure(testDirBuilder, "The element 'readme' cannot be empty.");
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_MissingReadmeFileInPackage_Fails()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithReadme("readme.md")
+                .WithFile("dummy.txt");
+
+            testDirBuilder
+                .WithFile("readme.md", 6)
+                .WithFile("dummy.txt", 6)
+                .WithNuspec(nuspecBuilder);
+
+            TestPackPropertyFailure(testDirBuilder, NuGetLogCode.NU5039.ToString());
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_MissingReadmeFileInBaseFolder_Fails()
+        {
+            NuspecBuilder nuspecBuilder = NuspecBuilder.Create();
+            TestDirectoryBuilder testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithReadme("readme.md")
+                .WithFile("readme.md");
+
+            testDirBuilder
+                .WithNuspec(nuspecBuilder);
+
+            TestPackPropertyFailure(testDirBuilder, NuGetLogCode.NU5019.ToString());
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_IncorrectReadmeExtension_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+
+            nuspec
+                .WithReadme("readme.txt")
+                .WithFile("readme.txt");
+
+            testDir
+                .WithFile("readme.txt", 6)
+                .WithNuspec(nuspec);
+
+            TestPackPropertyFailure(testDir, NuGetLogCode.NU5038.ToString());
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_ReadmeFileIsEmpty_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+
+            nuspec
+                .WithReadme("readme.md")
+                .WithFile("readme.md");
+
+            testDir
+                .WithFile("readme.md", 0)
+                .WithNuspec(nuspec);
+
+            TestPackPropertyFailure(testDir, NuGetLogCode.NU5041.ToString());
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_ReadmeFileExceedsMaxSize_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+
+            nuspec
+                .WithReadme("readme.md")
+                .WithFile("readme.md");
+
+            testDir
+                .WithFile("readme.md", 1024 * 1024 * 2) // 2MB
+                .WithNuspec(nuspec);
+
+            TestPackPropertyFailure(testDir, NuGetLogCode.NU5040.ToString());
+        }
+
+        /// <summary>
+        /// Tests successful nuget.exe readme pack functionality with nuspec
+        /// </summary>
+        /// <remarks>
+        /// Test that:
+        /// <list type="bullet">
+        /// <item>
+        ///     <description>The package is successfully created.</description>
+        /// </item>
+        /// <item>
+        ///     <description>The readme file exists in the nupkg in the specified readme entry.</description>
+        /// </item>
+        /// <item>
+        ///     <description>The readme entry equals the &lt;readme /&gt; entry in the output nuspec</description>
+        /// </item>
+        /// <item>
+        ///     <description>(Optional) Check that the message is in the command output</description>
+        /// </item>
+        /// </list>
+        /// </remarks>
+        /// <param name="testDirBuilder">A TestDirectory builder with the info for creating the package</param>
+        /// <param name="readmeEntry">Normalized Zip entry to validate</param>
+        /// <param name="message">If not null, check that the message is in the command output</param>
+        private void TestPackReadmeSuccess(TestDirectoryBuilder testDirBuilder, string readmeEntry = "readme.md", string message = null)
+        {
+            using (testDirBuilder.Build())
+            {
+                var nupkgPath = Path.Combine(testDirBuilder.BaseDir, $"{testDirBuilder.NuspecBuilder.PackageIdEntry}.{testDirBuilder.NuspecBuilder.PackageVersionEntry}.nupkg");
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack {testDirBuilder.NuspecPath}",
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(r, message);
+                Assert.True(File.Exists(nupkgPath));
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.NotNull(nuspecReader.GetReadme());
+                    Assert.NotNull(nupkgReader.GetEntry(readmeEntry));
+                    var normalizedPackedReadmeEntry = Common.PathUtility.StripLeadingDirectorySeparators(nuspecReader.GetReadme());
+                    Assert.Equal(readmeEntry, normalizedPackedReadmeEntry);
+                }
             }
         }
 
