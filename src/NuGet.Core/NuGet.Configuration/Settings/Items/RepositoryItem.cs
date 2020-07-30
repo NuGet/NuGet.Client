@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -26,7 +27,18 @@ namespace NuGet.Configuration
 
         public IList<string> Owners { get; private set; }
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.NameAttribute, ConfigurationConstants.ServiceIndex };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; } =
+#if !NET45
+                new HashSet<string>()
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+#endif
+                { ConfigurationConstants.NameAttribute, ConfigurationConstants.ServiceIndex }
+#if !NET45
+                ;
+#else
+                );
+#endif
 
         public RepositoryItem(string name, string serviceIndex, params CertificateItem[] certificates)
             : this(name, serviceIndex, owners: null, certificates: certificates)
@@ -46,7 +58,7 @@ namespace NuGet.Configuration
             if (!string.IsNullOrEmpty(owners))
             {
                 _owners = new OwnersItem(owners);
-                Owners =_owners.Content;
+                Owners = _owners.Content;
             }
             else
             {

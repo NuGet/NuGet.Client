@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Xml.Linq;
 using NuGet.Common;
@@ -55,7 +56,18 @@ namespace NuGet.Configuration
             set => UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, value.ToString().ToLower());
         }
 
-    protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.Fingerprint, ConfigurationConstants.HashAlgorithm, ConfigurationConstants.AllowUntrustedRoot };
+    protected override IReadOnlyCollection<string> RequiredAttributes { get; } =
+#if !NET45
+                new HashSet<string>()
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+#endif
+                    { ConfigurationConstants.Fingerprint, ConfigurationConstants.HashAlgorithm, ConfigurationConstants.AllowUntrustedRoot }
+#if !NET45
+                ;
+#else
+                );
+#endif
 
         public CertificateItem(string fingerprint, HashAlgorithmName hashAlgorithm, bool allowUntrustedRoot = false)
             : base()

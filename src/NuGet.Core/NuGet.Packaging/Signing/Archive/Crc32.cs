@@ -28,7 +28,9 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="data">Byte[] of the data.</param>
         /// <returns>32 bit cyclic redundancy code for the input data in uint.</returns>
+#if !NET45
         [CLSCompliant(false)]
+#endif
         public static uint CalculateCrc(byte[] data)
         {
             var crc = UpdateCrc(0xffffffff, data, data.Length);
@@ -82,4 +84,3 @@ namespace NuGet.Packaging.Signing
         }
     }
 }
- 

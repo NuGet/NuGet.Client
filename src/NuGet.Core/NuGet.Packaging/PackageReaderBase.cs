@@ -526,7 +526,9 @@ namespace NuGet.Packaging
 
             if (nuspecPaths.Count == 0)
             {
-                throw new PackagingException(NuGetLogCode.NU5037, Strings.Error_MissingNuspecFile);
+                throw new PackagingException(
+                NuGetLogCode.NU5037,
+                Strings.Error_MissingNuspecFile);
             }
             else if (nuspecPaths.Count > 1)
             {
@@ -545,7 +547,7 @@ namespace NuGet.Packaging
             // Destination and filePath must be normalized.
             var fullPath = Path.GetFullPath(Path.Combine(normalizedDestination, normalizedFilePath));
 
-            if(!fullPath.StartsWith(normalizedDestination,PathUtility.GetStringComparisonBasedOnOS()) || fullPath.Length == normalizedDestination.Length)
+            if (!fullPath.StartsWith(normalizedDestination, PathUtility.GetStringComparisonBasedOnOS()) || fullPath.Length == normalizedDestination.Length)
             {
                 throw new UnsafePackageEntryException(string.Format(
                     CultureInfo.CurrentCulture,

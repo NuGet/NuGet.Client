@@ -34,7 +34,7 @@ namespace NuGet.Common
                     .ToArray();
             }
 
-            return Array.Empty<string>();
+            return new string[] { };
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace NuGet.Common
         {
             if (strings == null)
             {
-                return Array.Empty<string>();
+                return new string[] { };
             }
 
             return strings

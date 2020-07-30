@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,8 +9,11 @@ namespace NuGet.Versioning
     public partial class SemanticVersion
     {
         // Reusable set of empty release labels
+#if !NET45
         internal static readonly string[] EmptyReleaseLabels = Array.Empty<string>();
-
+#else
+        internal static readonly string[] EmptyReleaseLabels = new string[] {};
+#endif
         /// <summary>
         /// Parses a SemVer string using strict SemVer rules.
         /// </summary>
@@ -133,7 +136,7 @@ namespace NuGet.Versioning
                 return false;
             }
 
-            // 0 is fine, but 00 is not. 
+            // 0 is fine, but 00 is not.
             // 0A counts as an alpha numeric string where zeros are not counted
             if (!allowLeadingZeros
                 && s.Length > 1

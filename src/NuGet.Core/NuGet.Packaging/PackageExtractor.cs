@@ -588,8 +588,8 @@ namespace NuGet.Packaging
 
                 // delete the parent directory if it is empty
                 if (Directory.Exists(parent.FullName) &&
-                parent.GetFiles().Count() == 0 &&
-                parent.GetDirectories().Count() == 0)
+                !parent.GetFiles().Any() &&
+                !parent.GetDirectories().Any())
                 {
                     Directory.Delete(parent.FullName);
                 }

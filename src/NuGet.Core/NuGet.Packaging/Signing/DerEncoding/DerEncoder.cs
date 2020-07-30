@@ -26,7 +26,11 @@ namespace NuGet.Packaging.Signing.DerEncoding
         {
             new byte[] { (byte)DerSequenceReader.DerTag.Null },
             new byte[] { 0 },
+#if !NET45
             Array.Empty<byte>(),
+#else
+            new byte[] { },
+#endif
         };
 
         private static byte[] EncodeLength(int length)
@@ -248,7 +252,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
             // We need to make a mask of the bits to keep around for the last
             // byte, ensuring we clear out any bits that were set, but reported
             // as padding by unusedBits
-            // 
+            //
             // For example:
             // unusedBits 0 => mask 0b11111111
             // unusedBits 1 => mask 0b11111110
@@ -281,7 +285,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
         /// one higher than the largest defined bit. (namedBitsCount=10 covers bits 0-9)
         /// </param>
         /// <returns>
-        /// A triplet of { tag }, { length }, { data }.  All trailing unset named bits are removed. 
+        /// A triplet of { tag }, { length }, { data }.  All trailing unset named bits are removed.
         /// </returns>
         internal static byte[][] SegmentedEncodeNamedBitList(byte[] bigEndianBytes, int namedBitsCount)
         {
@@ -324,7 +328,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
                 // As we loop through the numbered bits we need to figure out
                 // 1) which indexed byte it would be in (currentByte)
                 // 2) How many bits from the right it is (shiftIndex)
-                // 
+                //
                 // For example:
                 // currentBit 0 => currentByte 0, shiftIndex 7 (1 << 7)
                 // currentBit 1 => currentByte 0, shiftIndex 6 (1 << 6)
@@ -358,7 +362,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
                 // We need to make a mask of the bits to keep around for the last
                 // byte, ensuring we clear out any bits that were set, but beyond
                 // the namedBitsCount limit.
-                // 
+                //
                 // For example:
                 // lastSetBit 0 => mask 0b10000000
                 // lastSetBit 1 => mask 0b11000000
@@ -634,7 +638,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
         /// <summary>
         /// Make a constructed SET of the byte-triplets of the contents, but leave
         /// the value in a segmented form (to be included in a larger SEQUENCE).
-        /// 
+        ///
         /// This method assumes that the data is presorted, and writes it as-is.
         /// </summary>
         /// <param name="items">Series of Tag-Length-Value triplets to build into one set.</param>

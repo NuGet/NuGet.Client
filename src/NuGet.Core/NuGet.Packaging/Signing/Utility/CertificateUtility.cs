@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Signing
 
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(),certificateFingerprint)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(), certificateFingerprint)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
         }
@@ -124,15 +124,19 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        /// <summary> 
-        /// Validates the public key requirements for a certificate 
-        /// </summary> 
-        /// <param name="certificate">Certificate to validate</param> 
-        /// <returns>True if the certificate's public key is valid within NuGet signature requirements</returns> 
+        /// <summary>
+        /// Validates the public key requirements for a certificate
+        /// </summary>
+        /// <param name="certificate">Certificate to validate</param>
+        /// <returns>True if the certificate's public key is valid within NuGet signature requirements</returns>
         public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
         {
-            // Check if the public key is RSA with a valid keysize 
-            var RSAPublicKey = RSACertificateExtensions.GetRSAPublicKey(certificate);
+            // Check if the public key is RSA with a valid keysize
+#if !NET45
+            System.Security.Cryptography.RSA RSAPublicKey = RSACertificateExtensions.GetRSAPublicKey(certificate);
+#else
+            System.Security.Cryptography.RSA RSAPublicKey = certificate.PublicKey.Key as System.Security.Cryptography.RSACryptoServiceProvider;
+#endif
 
             if (RSAPublicKey != null)
             {

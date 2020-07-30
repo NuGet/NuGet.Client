@@ -457,7 +457,7 @@ namespace NuGet.Packaging
             {
                 return true;
             }
-            
+
 #else
             return false;
 #endif

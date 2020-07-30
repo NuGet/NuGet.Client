@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -113,19 +114,40 @@ namespace NuGet.Configuration
             }
         }
 
-        protected override IReadOnlyCollection<string> AllowedAttributes { get; } = new HashSet<string>
+        protected override IReadOnlyCollection<string> AllowedAttributes { get; } =
+#if !NET45
+                new HashSet<string>()
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+#endif
         {
             ConfigurationConstants.PackageSourceAttribute,
             ConfigurationConstants.PathAttribute,
             ConfigurationConstants.PasswordAttribute,
             ConfigurationConstants.ClearTextPasswordAttribute
-        };
+        }
+#if !NET45
+                ;
+#else
+                );
+#endif
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; } =
+#if !NET45
+                new HashSet<string>()
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+#endif
         {
             ConfigurationConstants.PackageSourceAttribute,
             ConfigurationConstants.PathAttribute
-        };
+        }
+#if !NET45
+                ;
+#else
+                );
+#endif
+
 
         internal override XNode AsXNode()
         {

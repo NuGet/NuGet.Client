@@ -107,14 +107,36 @@ namespace NuGet.Packaging.Signing
                 primarySignerInfoIndex,
                 pointer,
                 ref unsignedAttributeCount));
-
+#if !NET45
             var unsignedAttributes = Marshal.PtrToStructure<CRYPT_ATTRIBUTES>(pointer);
+#else
+            var unsignedAttributes = (CRYPT_ATTRIBUTES)Marshal.PtrToStructure(pointer, typeof(CRYPT_ATTRIBUTES));
+#endif
+
+            int sizeOfCryptAttributeString =
+#if !NET45
+                    Marshal.SizeOf<CRYPT_ATTRIBUTE_STRING>();
+#else
+                    Marshal.SizeOf(typeof(CRYPT_ATTRIBUTE_STRING));
+#endif
+            int sizeOfCryptIntegerBlob =
+#if !NET45
+                    Marshal.SizeOf<CRYPT_INTEGER_BLOB>();
+#else
+                    Marshal.SizeOf(typeof(CRYPT_INTEGER_BLOB));
+#endif
 
             for (uint i = 0; i < unsignedAttributes.cAttr; ++i)
             {
+
                 var attributePointer = new IntPtr(
-                    (long)unsignedAttributes.rgAttr + (i * Marshal.SizeOf<CRYPT_ATTRIBUTE_STRING>()));
+                    (long)unsignedAttributes.rgAttr + (i * sizeOfCryptAttributeString));
+
+#if !NET45
                 var attribute = Marshal.PtrToStructure<CRYPT_ATTRIBUTE_STRING>(attributePointer);
+#else
+                var attribute = (CRYPT_ATTRIBUTE_STRING)Marshal.PtrToStructure(attributePointer, typeof(CRYPT_ATTRIBUTE_STRING));
+#endif
 
                 if (!string.Equals(attribute.pszObjId, Oids.Countersignature, StringComparison.Ordinal))
                 {
@@ -124,8 +146,13 @@ namespace NuGet.Packaging.Signing
                 for (var j = 0; j < attribute.cValue; ++j)
                 {
                     var attributeValuePointer = new IntPtr(
-                        (long)attribute.rgValue + (j * Marshal.SizeOf<CRYPT_INTEGER_BLOB>()));
+                        (long)attribute.rgValue + (j * sizeOfCryptIntegerBlob));
+
+#if !NET45
                     var attributeValue = Marshal.PtrToStructure<CRYPT_INTEGER_BLOB>(attributeValuePointer);
+#else
+                    var attributeValue = (CRYPT_INTEGER_BLOB)Marshal.PtrToStructure(attributeValuePointer, typeof(CRYPT_INTEGER_BLOB));
+#endif
                     uint cbSignerInfo = 0;
 
                     NativeUtility.ThrowIfFailed(NativeMethods.CryptDecodeObject(
@@ -148,7 +175,11 @@ namespace NuGet.Packaging.Signing
                         pvStructInfo: counterSignerInfoPointer,
                         pcbStructInfo: new IntPtr(&cbSignerInfo)));
 
+#if !NET45
                     var counterSignerInfo = Marshal.PtrToStructure<CMSG_SIGNER_INFO>(counterSignerInfoPointer);
+#else
+                    var counterSignerInfo = (CMSG_SIGNER_INFO)Marshal.PtrToStructure(counterSignerInfoPointer, typeof(CMSG_SIGNER_INFO));
+#endif
 
                     if (IsRepositoryCounterSignerInfo(counterSignerInfo))
                     {
@@ -160,7 +191,7 @@ namespace NuGet.Packaging.Signing
                         };
                     }
                 }
-            } 
+            }
 
             return null;
         }
@@ -168,13 +199,21 @@ namespace NuGet.Packaging.Signing
         private static bool IsRepositoryCounterSignerInfo(CMSG_SIGNER_INFO counterSignerInfo)
         {
             var signedAttributes = counterSignerInfo.AuthAttrs;
-
+            int sizeOfCryptAttributeString =
+#if !NET45
+                    Marshal.SizeOf<CRYPT_ATTRIBUTE_STRING>();
+#else
+                    Marshal.SizeOf(typeof(CRYPT_ATTRIBUTE_STRING));
+#endif
             for (var i = 0; i < signedAttributes.cAttr; ++i)
             {
                 var signedAttributePointer = new IntPtr(
-                    (long)signedAttributes.rgAttr + (i * Marshal.SizeOf<CRYPT_ATTRIBUTE_STRING>()));
+                    (long)signedAttributes.rgAttr + (i * sizeOfCryptAttributeString));
+#if !NET45
                 var signedAttribute = Marshal.PtrToStructure<CRYPT_ATTRIBUTE_STRING>(signedAttributePointer);
-
+#else
+                var signedAttribute = (CRYPT_ATTRIBUTE_STRING)Marshal.PtrToStructure(signedAttributePointer, typeof(CRYPT_ATTRIBUTE_STRING));
+#endif
                 if (string.Equals(signedAttribute.pszObjId, Oids.CommitmentTypeIndication, StringComparison.Ordinal) &&
                     IsRepositoryCounterSignerInfo(signedAttribute))
                 {
@@ -187,11 +226,24 @@ namespace NuGet.Packaging.Signing
 
         private static bool IsRepositoryCounterSignerInfo(CRYPT_ATTRIBUTE_STRING commitmentTypeIndicationAttribute)
         {
+            int sizeOfCryptIntegerBlob =
+#if !NET45
+                    Marshal.SizeOf<CRYPT_INTEGER_BLOB>();
+#else
+                    Marshal.SizeOf(typeof(CRYPT_INTEGER_BLOB));
+#endif
+
             for (var i = 0; i < commitmentTypeIndicationAttribute.cValue; ++i)
             {
                 var attributeValuePointer = new IntPtr(
-                    (long)commitmentTypeIndicationAttribute.rgValue + (i * Marshal.SizeOf<CRYPT_INTEGER_BLOB>()));
+                    (long)commitmentTypeIndicationAttribute.rgValue + (i * sizeOfCryptIntegerBlob));
+
+#if !NET45
                 var attributeValue = Marshal.PtrToStructure<CRYPT_INTEGER_BLOB>(attributeValuePointer);
+#else
+                var attributeValue = (CRYPT_INTEGER_BLOB)Marshal.PtrToStructure(attributeValuePointer, typeof(CRYPT_INTEGER_BLOB));
+#endif
+
                 var bytes = new byte[attributeValue.cbData];
 
                 Marshal.Copy(attributeValue.pbData, bytes, startIndex: 0, length: bytes.Length);
@@ -314,16 +366,26 @@ namespace NuGet.Packaging.Signing
                 var signerInfo = repositoryCountersignature.Value.SignerInfo;
                 var unauthAttrCount = signerInfo.UnauthAttrs.cAttr + 1;
 
-                var attributeSize = Marshal.SizeOf<CRYPT_ATTRIBUTE>();
-                var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc((int)(attributeSize * unauthAttrCount));
+#if !NET45
+                var sizeOfCryptAttribute = Marshal.SizeOf<CRYPT_ATTRIBUTE>();
+#else
+                var sizeOfCryptAttribute = Marshal.SizeOf(typeof(CRYPT_ATTRIBUTE));
+#endif
+
+                var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc((int)(sizeOfCryptAttribute * unauthAttrCount));
                 var currentAttribute = attributesArray;
 
                 // Copy existing unsigned attributes
                 for (var i = 0; i < unauthAttrCount - 1; ++i)
                 {
                     var existingAttributePointer = new IntPtr(
-                         (long)signerInfo.UnauthAttrs.rgAttr + (i * Marshal.SizeOf<CRYPT_ATTRIBUTE>()));
+                         (long)signerInfo.UnauthAttrs.rgAttr + (i * sizeOfCryptAttribute));
+
+#if !NET45
                     var existingAttribute = Marshal.PtrToStructure<CRYPT_ATTRIBUTE>(existingAttributePointer);
+#else
+                    var existingAttribute = (CRYPT_ATTRIBUTE)Marshal.PtrToStructure(existingAttributePointer, typeof(CRYPT_ATTRIBUTE));
+#endif
 
                     currentAttribute->pszObjId = existingAttribute.pszObjId;
                     currentAttribute->cValue = existingAttribute.cValue;

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -148,26 +149,50 @@ namespace NuGet.Configuration
             }
         }
 
-        protected override IReadOnlyCollection<string> AllowedAttributes { get; } = new HashSet<string>
+        protected override IReadOnlyCollection<string> AllowedAttributes { get; } =
+
+#if !NET45
+                new HashSet<string>()
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+                #endif
         {
             ConfigurationConstants.PackageSourceAttribute,
             ConfigurationConstants.StoreLocationAttribute,
             ConfigurationConstants.StoreNameAttribute,
             ConfigurationConstants.FindByAttribute,
             ConfigurationConstants.FindValueAttribute
-        };
+        }
+#if !NET45
+         ;
+#else
+                );
+#endif
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>
         {
             {
-                ConfigurationConstants.StoreLocationAttribute, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                ConfigurationConstants.StoreLocationAttribute,
+#if !NET45
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+#endif
                 {
                     GetString(StoreLocation.CurrentUser),
                     GetString(StoreLocation.LocalMachine)
                 }
+#if NET45
+                )
+#endif
             },
             {
-                ConfigurationConstants.StoreNameAttribute, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                ConfigurationConstants.StoreNameAttribute,
+#if !NET45
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+#endif
                 {
                     GetString(StoreName.AddressBook),
                     GetString(StoreName.AuthRoot),
@@ -178,34 +203,53 @@ namespace NuGet.Configuration
                     GetString(StoreName.TrustedPeople),
                     GetString(StoreName.TrustedPublisher)
                 }
+#if NET45
+                )
+#endif
             },
             {
-                ConfigurationConstants.FindByAttribute, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    GetString(X509FindType.FindByThumbprint),
-                    GetString(X509FindType.FindBySubjectName),
-                    GetString(X509FindType.FindBySubjectDistinguishedName),
-                    GetString(X509FindType.FindByIssuerName),
-                    GetString(X509FindType.FindByIssuerDistinguishedName),
-                    GetString(X509FindType.FindBySerialNumber),
-                    GetString(X509FindType.FindByTimeValid),
-                    GetString(X509FindType.FindByTimeNotYetValid),
-                    GetString(X509FindType.FindByTimeExpired),
-                    GetString(X509FindType.FindByTemplateName),
-                    GetString(X509FindType.FindByApplicationPolicy),
-                    GetString(X509FindType.FindByCertificatePolicy),
-                    GetString(X509FindType.FindByExtension),
-                    GetString(X509FindType.FindByKeyUsage),
-                    GetString(X509FindType.FindBySubjectKeyIdentifier)
-                }
+                ConfigurationConstants.FindByAttribute,
+
+#if !NET45
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+#endif
+                    {
+                        GetString(X509FindType.FindByThumbprint),
+                        GetString(X509FindType.FindBySubjectName),
+                        GetString(X509FindType.FindBySubjectDistinguishedName),
+                        GetString(X509FindType.FindByIssuerName),
+                        GetString(X509FindType.FindByIssuerDistinguishedName),
+                        GetString(X509FindType.FindBySerialNumber),
+                        GetString(X509FindType.FindByTimeValid),
+                        GetString(X509FindType.FindByTimeNotYetValid),
+                        GetString(X509FindType.FindByTimeExpired),
+                        GetString(X509FindType.FindByTemplateName),
+                        GetString(X509FindType.FindByApplicationPolicy),
+                        GetString(X509FindType.FindByCertificatePolicy),
+                        GetString(X509FindType.FindByExtension),
+                        GetString(X509FindType.FindByKeyUsage),
+                        GetString(X509FindType.FindBySubjectKeyIdentifier)
+                    }
+#if NET45
+                )
+#endif
             }
         };
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>
-        {
-            ConfigurationConstants.PackageSourceAttribute,
-            ConfigurationConstants.FindValueAttribute
-        };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; } =
+#if !NET45
+                new HashSet<string>()
+#else
+                new ReadOnlyCollection<string>(new List<string>()
+#endif
+                    { ConfigurationConstants.PackageSourceAttribute, ConfigurationConstants.FindValueAttribute }
+#if !NET45
+                ;
+#else
+                );
+#endif
 
         internal override XNode AsXNode()
         {
