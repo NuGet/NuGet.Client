@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
   </PropertyGroup>
@@ -14,7 +14,7 @@
     <NoWarn Condition=" $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('netcoreapp'))">$(NoWarn);CS0414</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
-    <IncludeInVSIX>true</IncludeInVSIX>
+    <IncludeInVSIX>false</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <DefineConstants>$(DefineConstants);IS_DESKTOP;IS_SIGNING_SUPPORTED</DefineConstants>
@@ -69,9 +69,23 @@
 <!-- START -->
 
   <ItemGroup>
+    <Compile Include="..\NuGet.Packaging\Core\comparers\PackageDependencyInfoComparer.cs" Link="NuGet.Packaging\Core\comparers\PackageDependencyInfoComparer.cs" />
+    <Compile Include="..\NuGet.Packaging\Core\PackageDependencyInfo.cs" Link="NuGet.Packaging\Core\PackageDependencyInfo.cs" />
+    <Compile Include="..\NuGet.Packaging\Exceptions\MinClientVersionException.cs" Link="NuGet.Packaging\Exceptions\MinClientVersionException.cs" />
+    <Compile Include="..\NuGet.Packaging\MinClientVersionUtility.cs" Link="NuGet.Packaging\MinClientVersionUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageExtractionBehavior.cs" Link="NuGet.Packaging\PackageExtraction\PackageExtractionBehavior.cs" />
     <Compile Include="..\NuGet.Packaging\PackageExtractor.cs" Link="NuGet.Packaging\PackageExtractor.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageFolderReader.cs" Link="NuGet.Packaging\PackageFolderReader.cs" />
     <Compile Include="..\NuGet.Packaging\PackagePathResolver.cs" Link="NuGet.Packaging\PackagePathResolver.cs" />
     <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageExtractionContext.cs" Link="NuGet.Packaging\PackageExtraction\PackageExtractionContext.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\IObjectWriter.cs" Link="NuGet.Packaging\RuntimeModel\IObjectWriter.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\JsonObjectWriter.cs" Link="NuGet.Packaging\RuntimeModel\JsonObjectWriter.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\JsonRuntimeFormat.cs" Link="NuGet.Packaging\RuntimeModel\JsonRuntimeFormat.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeGraph.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeGraph.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeDescription.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeDescription.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimePackageDependency.cs" Link="NuGet.Packaging\RuntimeModel\RuntimePackageDependency.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeDependencySet.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeDependencySet.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\CompatibilityProfile.cs" Link="NuGet.Packaging\RuntimeModel\CompatibilityProfile.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" />
     <Compile Include="..\NuGet.Packaging\Telemetry\PackageExtractionTelemetryEvent.cs" Link="NuGet.Packaging\Telemetry\PackageExtractionTelemetryEvent.cs" />
@@ -257,6 +271,7 @@
     <Compile Include="..\NuGet.Packaging\Core\FrameworkReference.cs" Link="NuGet.Packaging\Core\FrameworkReference.cs" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="NuGet.Packaging\RuntimeModel" />
     <Folder Include="NuGet.Packaging\PackageExtraction" />
     <Folder Include="NuGet.Packaging\Telemetry" />
     <Folder Include="NuGet.Packaging\Signing\Specifications" />

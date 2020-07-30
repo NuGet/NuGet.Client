@@ -49,8 +49,8 @@ namespace NuGet.Protocol
         {
             _summary = summary;
             _description = description;
-            _authors = authors == null ? Array.Empty<string>() : authors.ToArray();
-            _owners = owners == null ? Array.Empty<string>() : owners.ToArray();
+            _authors = authors == null ? new string[] { } : authors.ToArray();
+            _owners = owners == null ? new string[] { } : owners.ToArray();
             _iconUrl = iconUrl;
             _licenseUrl = licenseUrl;
             _projectUrl = projectUrl;

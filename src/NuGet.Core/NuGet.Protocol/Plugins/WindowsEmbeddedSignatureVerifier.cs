@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -140,7 +140,7 @@ namespace NuGet.Protocol.Plugins
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private sealed class WINTRUST_FILE_INFO
         {
-#if IS_DESKTOP
+#if IS_DESKTOP || NET45
             internal uint cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_FILE_INFO));
 #else
             internal uint cbStruct = (uint)Marshal.SizeOf<WINTRUST_FILE_INFO>();
@@ -153,7 +153,7 @@ namespace NuGet.Protocol.Plugins
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private sealed class WINTRUST_DATA
         {
-#if IS_DESKTOP
+#if IS_DESKTOP || NET45
             internal uint cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_DATA));
 #else
             internal uint cbStruct = (uint)Marshal.SizeOf<WINTRUST_DATA>();

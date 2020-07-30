@@ -51,7 +51,11 @@ namespace NuGet.Protocol
             // Setup http client handler client certificates
             if (packageSource.ClientCertificates != null)
             {
+#if !NET45
                 clientHandler.ClientCertificates.AddRange(packageSource.ClientCertificates.ToArray());
+#else
+                throw new NotImplementedException("net 4.5 version doesn't support clientcerts in this api");
+#endif
             }
 
             // HTTP handler pipeline can be injected here, around the client handler

@@ -15,10 +15,9 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using Newtonsoft.Json;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using System.Net;
+using NuGet.Packaging.PackageExtraction;
 
 namespace NuGet.Protocol.Core.Types
 {

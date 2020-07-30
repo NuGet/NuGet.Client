@@ -352,7 +352,7 @@ namespace NuGet.Protocol.Plugins
                 cancellationToken);
             if (response == null)
             {
-                return Array.Empty<OperationClaim>();
+                return new OperationClaim[] { };
             }
 
             return response.Claims;
