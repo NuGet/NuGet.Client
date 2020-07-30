@@ -71,6 +71,129 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
+        /// Creates a NuGetFramework from individual components
+        /// </summary>
+        public static NuGetFramework ParseComponents(string targetFrameworkIdentifier, string targetFrameworkVersion, string targetFrameworkProfile, string targetPlatformIdentifier, string targetPlatformVersion)
+        {
+            return ParseComponents(targetFrameworkIdentifier, targetFrameworkVersion, targetFrameworkProfile, targetPlatformIdentifier, targetPlatformVersion, DefaultFrameworkNameProvider.Instance);
+        }
+
+        /// <summary>
+        /// Creates a NuGetFramework from individual components, using the given mappings
+        /// </summary>
+        public static NuGetFramework ParseComponents(string targetFrameworkIdentifier, string targetFrameworkVersion, string targetFrameworkProfile, string targetPlatformIdentifier, string targetPlatformVersion, IFrameworkNameProvider mappings)
+        {
+            if (targetFrameworkIdentifier == null)
+            {
+                throw new ArgumentNullException("targetFrameworkIdentifier");
+            }
+
+            if (mappings == null)
+            {
+                throw new ArgumentNullException("mappings");
+            }
+
+            NuGetFramework result = null;
+
+            if (!TryParseSpecialFramework(targetFrameworkIdentifier, out result))
+            {
+                string framework = null;
+                if (!mappings.TryGetIdentifier(targetFrameworkIdentifier, out framework))
+                {
+                    framework = targetFrameworkIdentifier;
+                }
+
+                var version = new Version(0, 0);
+                var platformVersion = new Version(0, 0);
+                string profile = null;
+
+                if (!string.IsNullOrEmpty(targetFrameworkVersion))
+                {
+                    if (targetFrameworkVersion.IndexOf('.') < 0)
+                    {
+                        targetFrameworkVersion += ".0";
+                    }
+
+                    if (!Version.TryParse(targetFrameworkVersion, out version))
+                    {
+                        throw new ArgumentException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidFrameworkVersion,
+                            targetFrameworkVersion));
+                    }
+                }
+
+                if (version.Major >= 5
+                    && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework))
+                {
+                    framework = FrameworkConstants.FrameworkIdentifiers.NetCoreApp;
+                }
+
+                if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework)
+                    && !string.IsNullOrEmpty(profile)
+                    && profile.Contains("-"))
+                {
+                    // Frameworks within the portable profile are not allowed
+                    // to have profiles themselves #1869
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPortableFrameworksDueToHyphen,
+                        profile));
+                }
+
+                if (!mappings.TryGetProfile(framework, targetFrameworkProfile ?? string.Empty, out profile))
+                {
+                    profile = targetFrameworkProfile ?? string.Empty;
+                }
+
+                if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework))
+                {
+                    IEnumerable<NuGetFramework> clientFrameworks = null;
+                    if (!mappings.TryGetPortableFrameworks(targetFrameworkProfile, out clientFrameworks))
+                    {
+                        result = UnsupportedFramework;
+                    }
+                    else
+                    {
+                        var profileNumber = -1;
+                        if (mappings.TryGetPortableProfile(clientFrameworks, out profileNumber))
+                        {
+                            profile = FrameworkNameHelpers.GetPortableProfileNumberString(profileNumber);
+
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(targetPlatformVersion))
+                {
+                    if (targetPlatformVersion.IndexOf('.') < 0)
+                    {
+                        targetPlatformVersion += ".0";
+                    }
+
+                    if (!Version.TryParse(targetPlatformVersion, out platformVersion))
+                    {
+                        throw new ArgumentException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidFrameworkVersion,
+                            targetPlatformVersion));
+                    }
+                }
+
+                if (version.Major >= 5
+                    && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, framework))
+                {
+                    result = new NuGetFramework(framework, version, targetPlatformIdentifier ?? string.Empty, platformVersion);
+                }
+                else
+                {
+                    result = new NuGetFramework(framework, version, profile);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Creates a NuGetFramework from a .NET FrameworkName
         /// </summary>
         public static NuGetFramework ParseFrameworkName(string frameworkName, IFrameworkNameProvider mappings)
@@ -205,7 +328,7 @@ namespace NuGet.Frameworks
                             || mappings.TryGetVersion(parts.Item2, out version))
                         {
                             var profileShort = parts.Item3;
-                            
+
                             if (version.Major >= 5
                                 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework))
                             {
