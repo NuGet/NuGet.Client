@@ -133,7 +133,7 @@ namespace NuGet.Frameworks
                 framework = FrameworkConstants.FrameworkIdentifiers.NetCoreApp;
             }
 
-            if (!mappings.TryGetProfile(framework, targetFrameworkProfile, out profile))
+            if (!mappings.TryGetProfile(framework, targetFrameworkProfile ?? string.Empty, out profile))
             {
                 profile = targetFrameworkProfile;
             }
