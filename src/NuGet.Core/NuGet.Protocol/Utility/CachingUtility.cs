@@ -23,7 +23,7 @@ namespace NuGet.Protocol
         {
             var trailing = value.Length > 32 ? value.Substring(value.Length - 32) : value;
             byte[] hash;
-            using (var sha = SHA1.Create())
+            using (var sha = SHA256.Create())
             {
                 hash = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
             }

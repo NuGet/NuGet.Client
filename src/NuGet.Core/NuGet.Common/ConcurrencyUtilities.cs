@@ -251,7 +251,7 @@ namespace NuGet.Common
             // the ctor of semaphore looks for the file and throws an IOException
             // when the file doesn't exist. So we need a conversion from a file path
             // to a unique lock name.
-            using (var sha = SHA1.Create())
+            using (var sha = SHA256.Create())
             {
                 // To avoid conflicts on package id casing a case-insensitive lock is used.
                 var fullPath = Path.IsPathRooted(filePath) ? Path.GetFullPath(filePath) : filePath;
