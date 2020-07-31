@@ -91,6 +91,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string DefaultNuGetProjectName { get; set; }
 
+        public RelationshipTree TargettedRelationshipTree { get; set; }
+
         #region Events
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;

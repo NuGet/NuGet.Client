@@ -19,6 +19,9 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 using TelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
+using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
+using System.Windows;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -259,7 +262,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesToUpdate">The list of packages to update.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The list of actions.</returns>
-        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdateAsync(
+        private async Task<(IReadOnlyList<ResolvedAction>, RelationshipTree)> ResolveActionsForUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken token)
@@ -297,7 +300,7 @@ namespace NuGet.PackageManagement.UI
                     .ToList());
             }
 
-            return resolvedActions;
+            return (resolvedActions, null);
         }
 
         /// <summary>
@@ -309,7 +312,7 @@ namespace NuGet.PackageManagement.UI
         /// the project actions.</param>
         private async Task PerformActionImplAsync(
             INuGetUI uiService,
-            Func<SourceCacheContext, Task<IReadOnlyList<ResolvedAction>>> resolveActionsAsync,
+            Func<SourceCacheContext, Task<(IReadOnlyList<ResolvedAction>, RelationshipTree)>> resolveActionsAsync,
             Func<IReadOnlyList<ResolvedAction>, SourceCacheContext, Task> executeActionsAsync,
             NuGetOperationType operationType,
             UserAction userAction,
@@ -371,7 +374,7 @@ namespace NuGet.PackageManagement.UI
 
                     using (var sourceCacheContext = new SourceCacheContext())
                     {
-                        var actions = await resolveActionsAsync(sourceCacheContext);
+                        (IReadOnlyList<ResolvedAction> actions, RelationshipTree relationshipTree) = await resolveActionsAsync(sourceCacheContext);
                         var results = GetPreviewResults(actions);
 
                         if (operationType == NuGetOperationType.Uninstall)
@@ -822,7 +825,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Return the resolve package actions
         /// </summary>
-        private async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
+        private async Task<(IReadOnlyList<ResolvedAction>, RelationshipTree)> GetActionsAsync(
             INuGetUI uiService,
             IEnumerable<NuGetProject> targets,
             UserAction userAction,
@@ -833,10 +836,14 @@ namespace NuGet.PackageManagement.UI
             CancellationToken token)
         {
             var results = new List<ResolvedAction>();
+            RelationshipTree relationshipTree =null;
 
             Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
             if (userAction.Action == NuGetProjectActionType.Install)
             {
+                // Currently doing RelationshipTree populate only for install action, but if needed move to outside to cover uninstall action too.
+                relationshipTree = await GetPopulateRelationshipTree(targets.OfType<BuildIntegratedNuGetProject>(), projectContext);
+
                 foreach (var target in targets)
                 {
                     var actions = await _packageManager.PreviewInstallPackageAsync(
@@ -867,7 +874,119 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            return results;
+            return (results, relationshipTree);
+        }
+
+        private async Task<RelationshipTree> GetPopulateRelationshipTree(IEnumerable<BuildIntegratedNuGetProject> targets, INuGetProjectContext projectContext)
+        {
+            if(!targets.Any())
+            {
+                return null;
+            }
+
+            var relationshipTree = new RelationshipTree();
+            DependencyGraphSpec _buildIntegratedProjectsCache;
+            
+            // find list of buildintegrated projects
+            //var projects = (await _packageManager.SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().ToList();
+            //var uniqueProjects = projects.Select(p => p.MSBuildProjectPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            //// build reference cache if there are projects.
+            //if (uniqueProjects.Any())
+            //{
+                var logger = new ProjectContextLogger(projectContext);
+                var referenceContext = new DependencyGraphCacheContext(logger, _packageManager.Settings);
+                _buildIntegratedProjectsCache = await
+                    DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_packageManager.SolutionManager, referenceContext);
+            //}
+            //else
+            //{
+            //    return null;
+            //}
+
+            var targetsHash = new HashSet<string>(targets.Select(t => t.MSBuildProjectPath), StringComparer.OrdinalIgnoreCase);
+
+            // Build whole relationship tree, it's only made at targeted projects relationship based so cost is not high, we have hundreds times complex calculation inside Remotewalk for all dependencies.
+            // Can be furthure optimized, I'll do it later if current approach get green  light.
+            // filtering to currently targetted projects, if only just few projects from very large solution with hundreds of solution targetted then not waste too much time figuring out whole tree.
+            foreach (var target in targets)
+            {
+                var closure = _buildIntegratedProjectsCache.GetClosure(target.MSBuildProjectPath).ToList();
+                var children = closure.Where(c => c.RestoreMetadata.ProjectUniqueName != target.MSBuildProjectPath).ToList();
+                var ancestor = closure.First(c => c.RestoreMetadata.ProjectUniqueName == target.MSBuildProjectPath);
+
+                foreach(var child in children)
+                {
+                    // Upward traversal not necessary, as go downward we should encounter one another if targets depend each other.
+                    TraverseDownward(child, targetsHash, relationshipTree, _buildIntegratedProjectsCache, ancestor, new Stack<PackageSpec>());
+                }
+            }
+
+            return relationshipTree;
+        }
+
+        // Currently dfs style approach can be changed to bfs if current approach get green light.
+        private void TraverseDownward(PackageSpec target, HashSet<string> targets, RelationshipTree relationshipTree, DependencyGraphSpec _buildIntegratedProjectsCache, PackageSpec ancestor, Stack<PackageSpec> path)
+        {
+            //if (!relationshipTree.Childs.ContainsKey(target.MSBuildProjectPath))
+            //{
+            //    relationshipTree.Childs[target.MSBuildProjectPath] = _buildIntegratedProjectsCache.GetClosure(target.MSBuildProjectPath).Where(c => c.RestoreMetadata.ProjectUniqueName != target.MSBuildProjectPath).ToList();
+            //}
+
+            //if(!relationshipTree.Childs.ContainsKey(target.MSBuildProjectPath))
+            //{
+            //    relationshipTree.Parents[target.MSBuildProjectPath] = _buildIntegratedProjectsCache.GetParentSpecs(target.MSBuildProjectPath).Where(c => c.RestoreMetadata.ProjectUniqueName != target.MSBuildProjectPath).ToList();
+            //}
+
+            var projectUniqueName = string.Empty;
+
+            if (target?.RestoreMetadata?.ProjectUniqueName != null)
+            {
+                projectUniqueName = target?.RestoreMetadata?.ProjectUniqueName;
+            }
+
+            if(string.IsNullOrWhiteSpace(projectUniqueName))
+            {
+                return;
+            }
+
+            if ((!ancestor.RestoreMetadata.ProjectUniqueName.Equals(projectUniqueName, StringComparison.OrdinalIgnoreCase)) && targets.Contains(target.RestoreMetadata.ProjectUniqueName))
+            {
+                // Happy path, we found each other
+                if (!relationshipTree.Descendants.ContainsKey(ancestor.RestoreMetadata.ProjectUniqueName))
+                {
+                    relationshipTree.Descendants[ancestor.RestoreMetadata.ProjectUniqueName] = new HashSet<PackageSpec>();
+                }
+
+                if (!relationshipTree.Ancestors.ContainsKey(projectUniqueName))
+                {
+                    relationshipTree.Ancestors[projectUniqueName] = new HashSet<PackageSpec>();
+                }
+
+                while(path.Any())
+                {
+                    var stop = path.Pop();
+                    relationshipTree.Descendants[ancestor.RestoreMetadata.ProjectUniqueName].Add(stop);
+                    relationshipTree.Ancestors[projectUniqueName].Add(stop);
+                }
+
+                relationshipTree.Descendants[ancestor.RestoreMetadata.ProjectUniqueName].Add(target);
+                relationshipTree.Ancestors[projectUniqueName].Add(ancestor);
+            }
+
+            //var children = target
+            //    .TargetFrameworks
+            //    .SelectMany(f => f.FrameworkReferences)
+            //    .ToArray();
+
+            var children = _buildIntegratedProjectsCache.GetClosure(target.RestoreMetadata.ProjectUniqueName).Where(c => c.RestoreMetadata.ProjectUniqueName != projectUniqueName).ToList();
+            var newPath = new Stack<PackageSpec>(path);
+            newPath.Push(target);
+
+            foreach(var child in children)
+            {
+                TraverseDownward(child, targets, relationshipTree, _buildIntegratedProjectsCache, ancestor, newPath);
+            }
         }
 
         /// <summary>

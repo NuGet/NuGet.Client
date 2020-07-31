@@ -38,15 +38,15 @@ namespace NuGet.PackageManagement
 
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
-        private ISolutionManager SolutionManager { get; }
-
-        private Configuration.ISettings Settings { get; }
+        public Configuration.ISettings Settings { get; }
 
         private IDictionary<string, bool> _buildIntegratedProjectsUpdateDict;
 
         private DependencyGraphSpec _buildIntegratedProjectsCache;
 
         private RestoreCommandProvidersCache _restoreProviderCache;
+
+        public ISolutionManager SolutionManager { get; }
 
         public IDeleteOnRestartManager DeleteOnRestartManager { get; }
 

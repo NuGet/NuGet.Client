@@ -102,6 +102,13 @@ namespace NuGet.ProjectModel
 
         public IReadOnlyList<string> GetParents(string rootUniqueName)
         {
+            return GetParentSpecs(rootUniqueName)
+                .Select(e => e.RestoreMetadata.ProjectUniqueName)
+                .ToList();
+        }
+
+        public IReadOnlyList<PackageSpec> GetParentSpecs(string rootUniqueName)
+        {
             var parents = new List<PackageSpec>();
 
             foreach (var project in Projects)
@@ -121,9 +128,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            return parents
-                .Select(e => e.RestoreMetadata.ProjectUniqueName)
-                .ToList();
+            return parents;
         }
 
         /// <summary>
