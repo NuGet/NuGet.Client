@@ -56,6 +56,10 @@ namespace NuGet.PackageManagement
 
         public IInstallationCompatibility InstallationCompatibility { get; set; }
 
+#pragma warning disable CA2227 // Collection properties should be read only
+        public Dictionary<string, PackageSpec> UpdatedPackageSpecsCache { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
+
         /// <summary>
         /// Event to be raised when batch processing of install/ uninstall packages starts at a project level
         /// </summary>
@@ -2514,6 +2518,12 @@ namespace NuGet.PackageManagement
 
             var logger = new ProjectContextLogger(nuGetProjectContext);
             var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
+
+            // get values previous evaluated PackageSpec which could be newer due to being child of current project.
+            foreach(var cacheKey in UpdatedPackageSpecsCache.Keys)
+            {
+                dependencyGraphContext.PackageSpecCache.Add(cacheKey, UpdatedPackageSpecsCache[cacheKey]);
+            }
 
             // Get Package Spec as json object
             var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);

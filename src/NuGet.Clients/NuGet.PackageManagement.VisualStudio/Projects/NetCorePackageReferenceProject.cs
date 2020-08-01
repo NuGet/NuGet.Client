@@ -159,7 +159,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (var originalProject in originalProjects)
             {
-                var project = originalProject.Clone();
+                PackageSpec project;
+
+                if(context.PackageSpecCache.TryGetValue(
+                        originalProject.RestoreMetadata.ProjectUniqueName, out project))
+                {
+                    project = project.Clone();
+                }
+                else
+                {
+                    project = originalProject.Clone();
+                }
 
                 // Read restore settings from ISettings if it doesn't exist in the project
                 // NOTE: Very important that the original project is used in the arguments, because cloning sorts the sources and compromises how the sources will be evaluated

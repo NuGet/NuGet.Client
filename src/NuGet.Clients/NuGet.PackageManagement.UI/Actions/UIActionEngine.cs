@@ -841,10 +841,41 @@ namespace NuGet.PackageManagement.UI
             Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
             if (userAction.Action == NuGetProjectActionType.Install)
             {
+                // find out build integrated projects so that we can arrange them in reverse dependency order
+                var buildIntegratedProjectsToUpdate = targets.OfType<BuildIntegratedNuGetProject>().ToList();
+
                 // Currently doing RelationshipTree populate only for install action, but if needed move to outside to cover uninstall action too.
                 relationshipTree = await GetPopulateRelationshipTree(targets.OfType<BuildIntegratedNuGetProject>(), projectContext);
 
-                foreach (var target in targets)
+                // order won't matter for other type of projects so just add rest of the projects in result
+                var sortedTargetProjectsToUpdate = targets.Except(buildIntegratedProjectsToUpdate).ToList();
+                DependencyGraphSpec _buildIntegratedProjectsCache;
+
+                if (buildIntegratedProjectsToUpdate.Count > 0)
+                {
+                    var logger = new ProjectContextLogger(projectContext);
+                    var referenceContext = new DependencyGraphCacheContext(logger, _packageManager.Settings);
+
+                    var projectUniqueNamesForBuildIntToUpdate
+                        = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath);
+
+                    var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_packageManager.SolutionManager, referenceContext);
+                    _buildIntegratedProjectsCache = dgFile;
+                    var allSortedProjects = DependencyGraphSpec.SortPackagesByDependencyOrder(dgFile.Projects);
+
+                    foreach (var projectUniqueName in allSortedProjects.Select(e => e.RestoreMetadata.ProjectUniqueName))
+                    {
+                        BuildIntegratedNuGetProject project;
+                        if (projectUniqueNamesForBuildIntToUpdate.TryGetValue(projectUniqueName, out project))
+                        {
+                            sortedTargetProjectsToUpdate.Add(project);
+                        }
+                    }
+                }
+
+                _packageManager.UpdatedPackageSpecsCache = new Dictionary<string, PackageSpec>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var target in sortedTargetProjectsToUpdate)
                 {
                     var actions = await _packageManager.PreviewInstallPackageAsync(
                         target,
@@ -854,6 +885,22 @@ namespace NuGet.PackageManagement.UI
                         uiService.ActiveSources,
                         null,
                         token);
+
+                    var buildIntegratedProject = target as BuildIntegratedNuGetProject;
+
+                    if (buildIntegratedProject != null)
+                    {
+                        foreach(var action in actions)
+                        {
+                            var packageSpec = (action as BuildIntegratedProjectAction).RestoreResult?.LockFile?.PackageSpec;
+
+                            if (packageSpec != null)
+                            {
+                                _packageManager.UpdatedPackageSpecsCache[buildIntegratedProject.MSBuildProjectPath] = packageSpec;
+                            }
+                        }
+                    }
+
                     results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
                 }
             }
