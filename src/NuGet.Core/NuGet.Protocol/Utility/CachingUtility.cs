@@ -12,6 +12,7 @@ namespace NuGet.Protocol
     public class CachingUtility
     {
         public const int BufferSize = 8192;
+        private const int HashLength = 20;
 
         /// <summary>
         /// Given a string, it hashes said string and if <paramref name="addIdentifiableCharacters"/> is true appends identifiable characters to make the root of the cache more human readable
@@ -28,8 +29,13 @@ namespace NuGet.Protocol
                 hash = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
             }
 
+            //Changing from SHA-1 to SHA-256 would increase hex hash string by 24 characters (160 bits to 256 bits).
+            //In order not to hit the MAX_PATH limitation, truncate the hash byte array length from 32 to 20.
+            byte[] truncatedHash = new byte[HashLength];
+            Array.Copy(sourceArray: hash, destinationArray: truncatedHash, length: HashLength);
+
             const string hex = "0123456789abcdef";
-            return hash.Aggregate(addIdentifiableCharacters ? "$" + trailing : string.Empty, (result, ch) => "" + hex[ch / 0x10] + hex[ch % 0x10] + result);
+            return truncatedHash.Aggregate(addIdentifiableCharacters ? "$" + trailing : string.Empty, (result, ch) => "" + hex[ch / 0x10] + hex[ch % 0x10] + result);
         }
 
         public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)

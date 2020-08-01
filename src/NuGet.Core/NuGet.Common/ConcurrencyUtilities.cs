@@ -15,6 +15,7 @@ namespace NuGet.Common
     public static class ConcurrencyUtilities
     {
         private const int NumberOfRetries = 3000;
+        private const int HashLength = 20;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
         private static readonly KeyedLock PerFileLock = new KeyedLock();
 
@@ -259,7 +260,11 @@ namespace NuGet.Common
 
                 var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(normalizedPath));
 
-                return ToHex(hash);
+                //Changing from SHA-1 to SHA-256 would increase hex hash string by 24 characters (160 bits to 256 bits).
+                //In order not to hit the MAX_PATH limitation, truncate the hash byte array length from 32 to 20.
+                byte[] truncatedHash = new byte[HashLength];
+                Array.Copy(sourceArray: hash, destinationArray: truncatedHash, length: HashLength);
+                return ToHex(truncatedHash);
             }
         }
 
