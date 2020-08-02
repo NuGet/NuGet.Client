@@ -56,9 +56,7 @@ namespace NuGet.PackageManagement
 
         public IInstallationCompatibility InstallationCompatibility { get; set; }
 
-#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<string, PackageSpec> UpdatedPackageSpecsCache { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Event to be raised when batch processing of install/ uninstall packages starts at a project level
