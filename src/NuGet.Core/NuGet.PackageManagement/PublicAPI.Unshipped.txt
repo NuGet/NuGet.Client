@@ -1,2 +1,6 @@
+NuGet.PackageManagement.NuGetPackageManager.Settings.get -> NuGet.Configuration.ISettings
+NuGet.PackageManagement.NuGetPackageManager.SolutionManager.get -> NuGet.PackageManagement.ISolutionManager
+NuGet.PackageManagement.NuGetPackageManager.UpdatedPackageSpecsCache.get -> System.Collections.Generic.Dictionary<string, NuGet.ProjectModel.PackageSpec>
+NuGet.PackageManagement.NuGetPackageManager.UpdatedPackageSpecsCache.set -> void
 NuGet.ProjectManagement.MessageLevelExtensions
 static NuGet.ProjectManagement.MessageLevelExtensions.ToLogLevel(this NuGet.ProjectManagement.MessageLevel messageLevel) -> NuGet.Common.LogLevel
