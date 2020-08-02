@@ -373,7 +373,7 @@ namespace NuGet.PackageManagement.UI
 
                     using (var sourceCacheContext = new SourceCacheContext())
                     {
-                        IReadOnlyList<ResolvedAction> actions = await resolveActionsAsync(sourceCacheContext);
+                        var actions = await resolveActionsAsync(sourceCacheContext);
                         var results = GetPreviewResults(actions);
 
                         if (operationType == NuGetOperationType.Uninstall)
@@ -844,7 +844,6 @@ namespace NuGet.PackageManagement.UI
 
                 // order won't matter for other type of projects so just add rest of the projects in result
                 var sortedTargetProjectsToUpdate = targets.Except(buildIntegratedProjectsToUpdate).ToList();
-                DependencyGraphSpec _buildIntegratedProjectsCache;
 
                 if (buildIntegratedProjectsToUpdate.Count > 0)
                 {
@@ -855,7 +854,6 @@ namespace NuGet.PackageManagement.UI
                         = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath);
 
                     var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_packageManager.SolutionManager, referenceContext);
-                    _buildIntegratedProjectsCache = dgFile;
                     var allSortedProjects = DependencyGraphSpec.SortPackagesByDependencyOrder(dgFile.Projects);
 
                     foreach (var projectUniqueName in allSortedProjects.Select(e => e.RestoreMetadata.ProjectUniqueName))

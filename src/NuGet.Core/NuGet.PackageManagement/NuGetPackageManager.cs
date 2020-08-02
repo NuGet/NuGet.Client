@@ -2518,9 +2518,12 @@ namespace NuGet.PackageManagement
             var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
 
             // get values previous evaluated PackageSpec which could be newer due to being child of current project.
-            foreach(var cacheKey in UpdatedPackageSpecsCache.Keys)
+            if (UpdatedPackageSpecsCache!=null)
             {
-                dependencyGraphContext.PackageSpecCache.Add(cacheKey, UpdatedPackageSpecsCache[cacheKey]);
+                foreach(var cacheKey in UpdatedPackageSpecsCache.Keys)
+                {
+                    dependencyGraphContext.PackageSpecCache.Add(cacheKey, UpdatedPackageSpecsCache[cacheKey]);
+                }
             }
 
             // Get Package Spec as json object
