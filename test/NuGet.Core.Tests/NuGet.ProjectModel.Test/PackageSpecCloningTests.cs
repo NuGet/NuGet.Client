@@ -349,6 +349,7 @@ namespace NuGet.ProjectModel.Test
             projectReference.PrivateAssets = LibraryIncludeFlags.Build;
             var nugetFramework = NuGetFramework.Parse("net461");
             var originalPRMFI = new ProjectRestoreMetadataFrameworkInfo(nugetFramework);
+            originalPRMFI.TargetAlias = Guid.NewGuid().ToString();
             originalPRMFI.ProjectReferences = new List<ProjectRestoreReference>() { projectReference };
             var targetframeworks = new List<ProjectRestoreMetadataFrameworkInfo>() { originalPRMFI };
 
@@ -610,6 +611,7 @@ namespace NuGet.ProjectModel.Test
             var imports = NuGetFramework.Parse("net45"); // This makes no sense in the context of fallback, just for testing :)
 
             var originalTargetFrameworkInformation = new TargetFrameworkInformation();
+            originalTargetFrameworkInformation.TargetAlias = Guid.NewGuid().ToString();
             originalTargetFrameworkInformation.FrameworkName = framework;
             originalTargetFrameworkInformation.Dependencies = new List<LibraryDependency>() { dependency };
             originalTargetFrameworkInformation.AssetTargetFallback = false;

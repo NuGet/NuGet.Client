@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using NuGet.Frameworks;
 
@@ -13,13 +14,20 @@ namespace NuGet.ProjectModel
         /// </summary>
         public static TargetFrameworkInformation GetTargetFramework(this PackageSpec project, NuGetFramework targetFramework)
         {
-            var frameworkInfo = project.TargetFrameworks.FirstOrDefault(f => NuGetFrameworkFullComparer.Equals(targetFramework, f));
+            var frameworkInfo = project.TargetFrameworks.FirstOrDefault(f => NuGetFramework.Comparer.Equals(targetFramework, f.FrameworkName));
             if (frameworkInfo == null)
             {
                 frameworkInfo = NuGetFrameworkUtility.GetNearest(project.TargetFrameworks,
                     targetFramework,
                     item => item.FrameworkName);
             }
+
+            return frameworkInfo ?? new TargetFrameworkInformation();
+        }
+
+        public static TargetFrameworkInformation GetTargetFramework(this PackageSpec project, string targetAlias)
+        {
+            var frameworkInfo = project.TargetFrameworks.FirstOrDefault(f => targetAlias.Equals(f.TargetAlias, StringComparison.OrdinalIgnoreCase));
 
             return frameworkInfo ?? new TargetFrameworkInformation();
         }

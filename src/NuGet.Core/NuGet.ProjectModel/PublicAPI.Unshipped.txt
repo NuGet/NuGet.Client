@@ -1,0 +1,5 @@
+NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.get -> string
+NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.set -> void
+NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.get -> string
+NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.set -> void
+static NuGet.ProjectModel.PackageSpecExtensions.GetTargetFramework(this NuGet.ProjectModel.PackageSpec project, string targetAlias) -> NuGet.ProjectModel.TargetFrameworkInformation

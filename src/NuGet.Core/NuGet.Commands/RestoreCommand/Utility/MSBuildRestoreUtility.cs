@@ -168,8 +168,8 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    // Read msbuild data for both non-nuget and .NET Core
-                    result = GetBaseSpec(specItem, restoreType);
+                    // Read msbuild data for PR and related projects
+                    result = GetBaseSpec(specItem, restoreType, items);
                 }
 
                 // Applies to all types
@@ -227,9 +227,9 @@ namespace NuGet.Commands
                     AddFrameworkReferences(result, items);
 
                     // Store the original framework strings for msbuild conditionals
-                    foreach (var originalFramework in GetFrameworksStrings(specItem))
-                    {
-                        result.RestoreMetadata.OriginalTargetFrameworks.Add(originalFramework);
+                    foreach(var tfi in result.TargetFrameworks)
+                    { 
+                        result.RestoreMetadata.OriginalTargetFrameworks.Add(tfi.TargetAlias);
                     }
                 }
 
@@ -245,9 +245,6 @@ namespace NuGet.Commands
 
                     // Add Target Framework Specific Properties
                     AddTargetFrameworkSpecificProperties(result, items);
-
-                    // Add PackageTargetFallback
-                    AddPackageTargetFallbacks(result, items);
 
                     // Add CrossTargeting flag
                     result.RestoreMetadata.CrossTargeting = IsPropertyTrue(specItem, "CrossTargeting");
@@ -420,23 +417,41 @@ namespace NuGet.Commands
             return message;
         }
 
-        private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        private static IEnumerable<TargetFrameworkInformation> GetTargetFrameworkInformation(string filePath, ProjectStyle restoreType, IEnumerable<IMSBuildItem> items)
         {
+            var uniqueIds = new HashSet<string>();
             foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
             {
                 var frameworkString = item.GetProperty("TargetFramework");
-                var frameworks = new List<TargetFrameworkInformation>();
+                var targetFrameworkIdentifier = item.GetProperty("TargetFrameworkIdentifier");
+                var targetFrameworkVersion = item.GetProperty("TargetFrameworkVersion");
+                var targetFrameworkMoniker = item.GetProperty("TargetFrameworkMoniker");
+                var targetPlatformIdentifier = item.GetProperty("TargetPlatformIdentifier");
+                var targetPlatformVersion = item.GetProperty("TargetPlatformVersion");
+                var targetPlatformMinVersion = item.GetProperty("TargetPlatformMinVersion");
 
-                if (!string.IsNullOrEmpty(frameworkString))
+                var targetAlias = string.IsNullOrEmpty(frameworkString) ? string.Empty : frameworkString;
+                if (uniqueIds.Contains(targetAlias))
                 {
-                    frameworks.Add(spec.GetTargetFramework(NuGetFramework.Parse(frameworkString)));
+                    continue; 
                 }
-                else
-                {
-                    frameworks.AddRange(spec.TargetFrameworks);
-                }
+                uniqueIds.Add(targetAlias);
 
-                foreach (var targetFrameworkInfo in frameworks)
+                IEnumerable<string> targetFramework = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
+                  projectFilePath: filePath,
+                  targetFrameworks: null,
+                  targetFramework: null,
+                  targetFrameworkMoniker: targetFrameworkMoniker,
+                  targetPlatformIdentifier: targetPlatformIdentifier,
+                  targetPlatformVersion: targetPlatformVersion,
+                  targetPlatformMinVersion: targetPlatformMinVersion);
+
+                var targetFrameworkInfo = new TargetFrameworkInformation()
+                {
+                    FrameworkName = NuGetFramework.Parse(targetFramework.Single()),
+                    TargetAlias = targetAlias
+                };
+                if (restoreType == ProjectStyle.PackageReference)
                 {
                     var packageTargetFallback = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
                         .Select(NuGetFramework.Parse)
@@ -447,11 +462,12 @@ namespace NuGet.Commands
                         .ToList();
 
                     // Throw if an invalid combination was used.
-                    AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, spec.FilePath);
+                    AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, filePath);
 
                     // Update the framework appropriately
                     AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInfo, packageTargetFallback, assetTargetFallback);
                 }
+                yield return targetFrameworkInfo;
             }
         }
 
@@ -507,10 +523,11 @@ namespace NuGet.Commands
         private static void AddProjectReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
             // Add groups for each spec framework
-            var frameworkGroups = new Dictionary<NuGetFramework, List<ProjectRestoreReference>>();
-            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName).Distinct())
+            var aliasGroups = new Dictionary<string, List<ProjectRestoreReference>>();
+
+            foreach (string alias in spec.TargetFrameworks.Select(e => e.TargetAlias).Distinct())
             {
-                frameworkGroups.Add(framework, new List<ProjectRestoreReference>());
+                aliasGroups.Add(alias, new List<ProjectRestoreReference>());
             }
 
             var flatReferences = GetItemByType(items, "ProjectReference")
@@ -523,13 +540,13 @@ namespace NuGet.Commands
             {
                 // If no frameworks were given, apply to all
                 var addToFrameworks = frameworkPair.Item1.Count == 0
-                    ? frameworkGroups.Keys.ToList()
+                    ? aliasGroups.Keys.ToList()
                     : frameworkPair.Item1;
 
                 foreach (var framework in addToFrameworks)
                 {
                     List<ProjectRestoreReference> references;
-                    if (frameworkGroups.TryGetValue(framework, out references))
+                    if (aliasGroups.TryGetValue(framework, out references))
                     {
                         // Ensure unique
                         if (!references.Any(e => comparer.Equals(e.ProjectUniqueName, frameworkPair.Item2.ProjectUniqueName)))
@@ -541,16 +558,18 @@ namespace NuGet.Commands
             }
 
             // Add groups to spec
-            foreach (var frameworkPair in frameworkGroups)
+            foreach (KeyValuePair<string, List<ProjectRestoreReference>> frameworkPair in aliasGroups)
             {
-                spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(frameworkPair.Key)
+                TargetFrameworkInformation targetFrameworkInformation = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(frameworkPair.Key, StringComparison.Ordinal));
+                spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInformation.FrameworkName)
                 {
-                    ProjectReferences = frameworkPair.Value
+                    ProjectReferences = frameworkPair.Value,
+                    TargetAlias = targetFrameworkInformation.TargetAlias
                 });
             }
         }
 
-        private static Tuple<List<NuGetFramework>, ProjectRestoreReference> GetProjectRestoreReference(IMSBuildItem item)
+        private static Tuple<List<string>, ProjectRestoreReference> GetProjectRestoreReference(IMSBuildItem item)
         {
             var frameworks = GetFrameworks(item).ToList();
 
@@ -562,12 +581,12 @@ namespace NuGet.Commands
 
             ApplyIncludeFlags(reference, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
 
-            return new Tuple<List<NuGetFramework>, ProjectRestoreReference>(frameworks, reference);
+            return new Tuple<List<string>, ProjectRestoreReference>(frameworks, reference);
         }
 
-        private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, DownloadDependency dependency)
+        private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, string targetAlias, DownloadDependency dependency)
         {
-            var frameworkInfo = spec.GetTargetFramework(framework);
+            TargetFrameworkInformation frameworkInfo = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(targetAlias, StringComparison.Ordinal));
 
             if (!frameworkInfo.DownloadDependencies.Contains(dependency))
             {
@@ -580,17 +599,18 @@ namespace NuGet.Commands
 
         private static bool AddDependencyIfNotExist(PackageSpec spec, LibraryDependency dependency)
         {
-            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName))
+            foreach (var targetAlias in spec.TargetFrameworks.Select(e => e.TargetAlias))
             {
-                AddDependencyIfNotExist(spec, framework, dependency);
+                AddDependencyIfNotExist(spec, targetAlias, dependency);
             }
 
             return false;
         }
 
-        private static bool AddDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, LibraryDependency dependency)
+        
+        private static bool AddDependencyIfNotExist(PackageSpec spec, string targetAlias, LibraryDependency dependency)
         {
-            var frameworkInfo = spec.GetTargetFramework(framework);
+            var frameworkInfo = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(targetAlias, StringComparison.Ordinal));
 
             if (!spec.Dependencies
                             .Concat(frameworkInfo.Dependencies)
@@ -715,9 +735,9 @@ namespace NuGet.Commands
             }
         }
 
-        private static bool AddFrameworkReferenceIfNotExists(PackageSpec spec, NuGetFramework framework, string frameworkReference, string privateAssetsValue)
+        private static bool AddFrameworkReferenceIfNotExists(PackageSpec spec, string targetAlias, string frameworkReference, string privateAssetsValue)
         {
-            var frameworkInfo = spec.GetTargetFramework(framework);
+            var frameworkInfo = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(targetAlias, StringComparison.Ordinal));
 
             if (!frameworkInfo
                 .FrameworkReferences
@@ -763,32 +783,41 @@ namespace NuGet.Commands
             return result;
         }
 
-        private static PackageSpec GetBaseSpec(IMSBuildItem specItem, ProjectStyle projectStyle)
+        private static PackageSpec GetBaseSpec(IMSBuildItem specItem, ProjectStyle projectStyle, IEnumerable<IMSBuildItem> items)
         {
-            var frameworkInfo = GetFrameworks(specItem)
-                .Select(framework => new TargetFrameworkInformation()
-                {
-                    FrameworkName = framework
-                })
-                .ToList();
-
-            var spec = new PackageSpec(frameworkInfo);
+            var spec = new PackageSpec();
             spec.RestoreMetadata = projectStyle == ProjectStyle.PackagesConfig
                 ? new PackagesConfigProjectRestoreMetadata()
                 : new ProjectRestoreMetadata();
             spec.FilePath = specItem.GetProperty("ProjectPath");
             spec.RestoreMetadata.ProjectName = specItem.GetProperty("ProjectName");
 
+            if (projectStyle == ProjectStyle.DotnetCliTool || projectStyle == ProjectStyle.Unknown)
+            {
+                var tfmProperty = specItem.GetProperty("TargetFrameworks");
+                if (!string.IsNullOrEmpty(tfmProperty))
+                {
+                    spec.TargetFrameworks.Add(
+                        new TargetFrameworkInformation()
+                        {
+                            FrameworkName = NuGetFramework.Parse(tfmProperty),
+                            TargetAlias = tfmProperty
+                        });
+                }
+            }
+            else
+            {
+                spec.TargetFrameworks.AddRange(GetTargetFrameworkInformation(spec.FilePath, projectStyle, items).Distinct());
+            }
             return spec;
         }
 
-        private static HashSet<NuGetFramework> GetFrameworks(IMSBuildItem item)
+        private static HashSet<string> GetFrameworks(IMSBuildItem item)
         {
-            return new HashSet<NuGetFramework>(
-                GetFrameworksStrings(item).Select(NuGetFramework.Parse));
+            return GetTargetFrameworkStrings(item);
         }
 
-        private static HashSet<string> GetFrameworksStrings(IMSBuildItem item)
+        private static HashSet<string> GetTargetFrameworkStrings(IMSBuildItem item)
         {
             var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -940,15 +969,15 @@ namespace NuGet.Commands
             return logger.LogMessagesAsync(logMessages);
         }
 
-        private static Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
+        private static Dictionary<string, Dictionary<string, CentralPackageVersion>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
             IList<TargetFrameworkInformation> specFrameworks)
         {
             IEnumerable<IMSBuildItem> centralVersions = GetItemByType(items, "CentralPackageVersion")?.Distinct(MSBuildItemIdentityComparer.Default).ToList();
-            var result = new Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>>();
+            var result = new Dictionary<string, Dictionary<string, CentralPackageVersion>>();
 
             foreach (IMSBuildItem cv in centralVersions)
             {
-                HashSet<NuGetFramework> tfms = GetFrameworks(cv);
+                HashSet<string> tfms = GetFrameworks(cv);
                 string version = cv.GetProperty("VersionRange");
                 CentralPackageVersion centralPackageVersion = new CentralPackageVersion(cv.GetProperty("Id"), string.IsNullOrWhiteSpace(version) ? VersionRange.All : VersionRange.Parse(version));
 
@@ -958,16 +987,16 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    AddCentralPackageVersion(result, centralPackageVersion, specFrameworks.Select(f => f.FrameworkName));
+                    AddCentralPackageVersion(result, centralPackageVersion, specFrameworks.Select(f => f.TargetAlias));
                 }
             }
 
             return result;
         }
 
-        private static void AddCentralPackageVersion(Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>> centralPackageVersions,
+        private static void AddCentralPackageVersion(Dictionary<string, Dictionary<string, CentralPackageVersion>> centralPackageVersions,
             CentralPackageVersion centralPackageVersion,
-            IEnumerable<NuGetFramework> frameworks)
+            IEnumerable<string> frameworks)
         {
             foreach (var framework in frameworks)
             {

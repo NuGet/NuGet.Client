@@ -625,6 +625,43 @@ namespace NuGet.ProjectModel.Test
             VerifyJsonPackageSpecRoundTrip(json);
         }
 
+        [Fact]
+        public void RoundTripTargetFrameworkAliases()
+        {
+            var json = @"{  
+                        ""restore"": {
+                        ""projectUniqueName"": ""projectUniqueName"",
+                        ""projectName"": ""projectName"",
+                        ""projectPath"": ""projectPath"",
+                        ""projectJsonPath"": ""projectJsonPath"",
+                        ""packagesPath"": ""packagesPath"",
+                        ""outputPath"": ""outputPath"",
+                        ""projectStyle"": ""PackageReference"",
+                        ""frameworks"": {
+                          ""net45"": {
+                            ""targetAlias"" : ""minNetVersion"",
+                            ""projectReferences"": {}
+                          }
+                        }
+                      },
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""targetAlias"" : ""minNetVersion"",
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""aliases"": ""yay""
+                            }
+                        }
+                    }
+                }
+            }";
+            // Arrange
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             JObject jObject = packageSpec.ToJObject();

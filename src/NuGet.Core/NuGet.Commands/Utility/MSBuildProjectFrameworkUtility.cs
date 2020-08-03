@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -138,6 +138,16 @@ namespace NuGet.Commands
                     && ".NETFramework,Version=v4.0".Equals(currentFrameworkString, StringComparison.OrdinalIgnoreCase))
                 {
                     currentFrameworkString = "Silverlight,Version=v4.0,Profile=WindowsPhone71";
+                }
+
+                if (!string.IsNullOrEmpty(platformVersion))
+                {
+                    // TODO NK - this is hacky :)
+                    var framework = NuGetFramework.Parse(currentFrameworkString);
+                    if (framework.Version.Major >= 5 && framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, StringComparison.OrdinalIgnoreCase))
+                    {
+                        currentFrameworkString = framework.GetShortFolderName() + $"-{platformIdentifier}{platformVersion}";
+                    }
                 }
 
                 frameworks.Add(currentFrameworkString);

@@ -136,8 +136,8 @@ namespace Dotnet.Integration.Test
             var projectFile = $@"<Project Sdk=""Microsoft.NET.Sdk"">
                 <PropertyGroup><RestoreProjectStyle>DotnetToolReference</RestoreProjectStyle>
                 <OutputType>Exe</OutputType>
-                <TargetFramework> {targetFramework} </TargetFramework>
-                <RuntimeIdentifier>{rid} </RuntimeIdentifier>
+                <TargetFramework>{targetFramework}</TargetFramework>
+                <RuntimeIdentifier>{rid}</RuntimeIdentifier>
                 <!-- Things that do change-->
                 <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
                 <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
