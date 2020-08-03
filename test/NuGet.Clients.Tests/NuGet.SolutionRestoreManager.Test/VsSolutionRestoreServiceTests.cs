@@ -1857,7 +1857,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 projectReferences: emptyReferenceItems,
                 packageDownloads: emptyReferenceItems,
                 frameworkReferences: emptyReferenceItems,
-                projectProperties: new VsProjectProperty[] { new VsProjectProperty("ManagePackageVersionsCentrally", "true") },
+                projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20).Concat(new VsProjectProperty[] { new VsProjectProperty("ManagePackageVersionsCentrally", "true") }),
                 centralPackageVersions: new[]
                         {
                             new VsReferenceItem("foo", new VsReferenceProperties(new []
@@ -1899,7 +1899,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 projectReferences: emptyReferenceItems,
                 packageDownloads: emptyReferenceItems,
                 frameworkReferences: emptyReferenceItems,
-                projectProperties: new VsProjectProperty[] { new VsProjectProperty("ManagePackageVersionsCentrally", "true") },
+                projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20).Concat(new VsProjectProperty[] { new VsProjectProperty("ManagePackageVersionsCentrally", "true") }),
                 centralPackageVersions: Enumerable.Empty<IVsReferenceItem>())
             };
 
@@ -1938,7 +1938,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 projectReferences: emptyReferenceItems,
                 packageDownloads: emptyReferenceItems,
                 frameworkReferences: emptyReferenceItems,
-                projectProperties: projectProperties,
+                projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20).Concat(projectProperties),
                 centralPackageVersions: new[]
                         {
                             new VsReferenceItem("foo", new VsReferenceProperties(new []
@@ -2001,6 +2001,49 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
             Assert.NotNull(actualProjectSpec);
             Assert.Equal("Core", actualProjectSpec.TargetFrameworks.First().Dependencies.First().Aliases);
+        }
+
+        /// <summary>
+        /// The default for DisableCentralPackageVersions should be disabled.
+        /// </summary>
+        [Fact]
+        public void ToPackageSpec_TargetFrameworkWithAlias_DefinesAliasCorrectly()
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC", Guid.NewGuid().ToString());
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var packageReferenceProperties = new VsReferenceProperties();
+
+            var targetFrameworks = new VsTargetFrameworkInfo2[]
+            {
+                new VsTargetFrameworkInfo2(
+                    targetFrameworkMoniker: "tfm1",
+                    packageReferences: emptyReferenceItems,
+                    projectReferences: emptyReferenceItems,
+                    packageDownloads: emptyReferenceItems,
+                    frameworkReferences: emptyReferenceItems,
+                    projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20, "tfm1"),
+                    addTargetFrameworkProperties: false),
+                new VsTargetFrameworkInfo2(
+                    targetFrameworkMoniker: "tfm1",
+                    packageReferences: emptyReferenceItems,
+                    projectReferences: emptyReferenceItems,
+                    packageDownloads: emptyReferenceItems,
+                    frameworkReferences: emptyReferenceItems,
+                    projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard21, "tfm2"),
+                    addTargetFrameworkProperties: false)
+            };
+            var originalTargetFrameworksString = string.Join(";", targetFrameworks.Select(tf => tf.TargetFrameworkMoniker));
+
+            // Act
+            var result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, originalTargetFrameworksString, string.Empty);
+
+            // Assert
+            Assert.Equal(2, result.TargetFrameworks.Count);
+            TargetFrameworkInformation targetFrameworkInfo = Assert.Single(result.TargetFrameworks, tf => tf.FrameworkName == CommonFrameworks.NetStandard20);
+            Assert.Equal("tfm1", targetFrameworkInfo.TargetAlias);
+            targetFrameworkInfo = Assert.Single(result.TargetFrameworks, tf => tf.FrameworkName == CommonFrameworks.NetStandard21);
+            Assert.Equal("tfm2", targetFrameworkInfo.TargetAlias);
         }
 
         private delegate void TryGetProjectNamesCallback(string projectPath, out ProjectNames projectNames);

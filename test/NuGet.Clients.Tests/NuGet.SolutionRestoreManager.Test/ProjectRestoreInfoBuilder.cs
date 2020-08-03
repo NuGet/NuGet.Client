@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 
 namespace NuGet.SolutionRestoreManager.Test
@@ -187,6 +189,25 @@ namespace NuGet.SolutionRestoreManager.Test
                 packageDownloads,
                 frameworkReferences,
                 projectProperties.Concat(globalProperties));
+        }
+
+        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(NuGetFramework framework, string originalString = null)
+        {
+            return new IVsProjectProperty[]
+            {
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkIdentifier, framework.Framework),
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkVersion, "v" + framework.Version),
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkProfile, framework.Profile),
+                new VsProjectProperty(ProjectBuildProperties.TargetPlatformIdentifier, framework.Platform),
+                new VsProjectProperty(ProjectBuildProperties.TargetPlatformVersion, framework.PlatformVersion.ToString()),
+                new VsProjectProperty(ProjectBuildProperties.TargetFramework, originalString ?? framework.GetShortFolderName())
+            };
+        }
+
+        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(string shortFrameworkName)
+        {
+            var framework = NuGetFramework.Parse(shortFrameworkName);
+            return GetTargetFrameworkProperties(framework, shortFrameworkName);
         }
 
         private static IVsReferenceItem ToFrameworkReference(FrameworkDependency frameworkDependency)

@@ -94,8 +94,9 @@ namespace NuGet.SolutionRestoreManager
         {
             var tfi = new TargetFrameworkInformation
             {
-                FrameworkName = NuGetFramework.Parse(targetFrameworkInfo.TargetFrameworkMoniker)
+                FrameworkName = GetTargetFramework(targetFrameworkInfo.Properties)
             };
+            tfi.TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework) ?? tfi.FrameworkName.GetShortFolderName();
 
             var ptf = MSBuildStringUtility.Split(GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.PackageTargetFallback))
                                           .Select(NuGetFramework.Parse)
@@ -149,6 +150,17 @@ namespace NuGet.SolutionRestoreManager
             }
 
             return tfi;
+        }
+
+        internal static NuGetFramework GetTargetFramework(IVsProjectProperties properties)
+        {
+            var targetFrameworkIdentifier = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkIdentifier) ?? string.Empty;
+            var targetFrameworkVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkVersion) ?? string.Empty;
+            var targetFrameworkProfile = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkProfile) ?? string.Empty;
+            var targetPlatformIdentifier = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformIdentifier) ?? string.Empty;
+            var targetPlatformVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformVersion) ?? string.Empty;
+
+            return NuGetFramework.ParseComponents(targetFrameworkIdentifier, targetFrameworkVersion, targetFrameworkProfile, targetPlatformIdentifier, targetPlatformVersion);
         }
 
         internal static ProjectRestoreMetadataFrameworkInfo ToProjectRestoreMetadataFrameworkInfo(

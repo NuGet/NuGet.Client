@@ -18,7 +18,10 @@ namespace NuGet.ProjectManagement
         public const string RuntimeIdentifiers = nameof(RuntimeIdentifiers);
         public const string RuntimeSupports = nameof(RuntimeSupports);
         public const string TargetFramework = nameof(TargetFramework);
+        public const string TargetFrameworkIdentifier = nameof(TargetFrameworkIdentifier);
         public const string TargetFrameworkMoniker = nameof(TargetFrameworkMoniker);
+        public const string TargetFrameworkProfile = nameof(TargetFrameworkProfile);
+        public const string TargetFrameworkVersion = nameof(TargetFrameworkVersion);
         public const string TargetFrameworks = nameof(TargetFrameworks);
         public const string TargetPlatformIdentifier = nameof(TargetPlatformIdentifier);
         public const string TargetPlatformMinVersion = nameof(TargetPlatformMinVersion);
