@@ -1,2 +1,1 @@
-NuGet.Frameworks.NuGetFramework.NuGetFramework(string frameworkIdentifier, System.Version frameworkVersion, string frameworkProfile) -> void
 static NuGet.Frameworks.NuGetFramework.ParseComponents(string targetFrameworkIdentifier, string targetFrameworkVersion, string targetFrameworkProfile, string targetPlatformIdentifier, string targetPlatformVersion) -> NuGet.Frameworks.NuGetFramework
