@@ -1,0 +1,1 @@
+static NuGet.Frameworks.NuGetFramework.ParseComponents(string targetFrameworkIdentifier, string targetFrameworkVersion, string targetFrameworkProfile, string targetPlatformIdentifier, string targetPlatformVersion) -> NuGet.Frameworks.NuGetFramework

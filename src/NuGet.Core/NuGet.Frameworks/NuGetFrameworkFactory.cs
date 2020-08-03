@@ -71,6 +71,150 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
+        /// Creates a NuGetFramework from individual components
+        /// </summary>
+        public static NuGetFramework ParseComponents(string targetFrameworkIdentifier, string targetFrameworkVersion, string targetFrameworkProfile, string targetPlatformIdentifier, string targetPlatformVersion)
+        {
+            return ParseComponents(targetFrameworkIdentifier, targetFrameworkVersion, targetFrameworkProfile, targetPlatformIdentifier, targetPlatformVersion, DefaultFrameworkNameProvider.Instance);
+        }
+
+        /// <summary>
+        /// Creates a NuGetFramework from individual components, using the given mappings
+        /// </summary>
+        internal static NuGetFramework ParseComponents(string targetFrameworkIdentifier, string targetFrameworkVersion, string targetFrameworkProfile, string targetPlatformIdentifier, string targetPlatformVersion, IFrameworkNameProvider mappings)
+        {
+            if (string.IsNullOrEmpty(targetFrameworkIdentifier))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, "targetFrameworkIdentifier");
+            }
+
+            if (mappings == null)
+            {
+                throw new ArgumentNullException("mappings");
+            }
+
+            NuGetFramework result = null;
+
+            if (TryParseSpecialFramework(targetFrameworkIdentifier, out result))
+            {
+                return result;
+            }
+
+            string framework = null;
+            if (!mappings.TryGetIdentifier(targetFrameworkIdentifier, out framework))
+            {
+                framework = targetFrameworkIdentifier;
+            }
+
+            var version = new Version(0, 0);
+            var platformVersion = new Version(0, 0);
+            string profile = null;
+
+            if (!string.IsNullOrEmpty(targetFrameworkVersion))
+            {
+                targetFrameworkVersion = targetFrameworkVersion.TrimStart('v');
+                if (targetFrameworkVersion.IndexOf('.') < 0)
+                {
+                    targetFrameworkVersion += ".0";
+                }
+
+                if (!Version.TryParse(targetFrameworkVersion, out version))
+                {
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidFrameworkVersion,
+                        targetFrameworkVersion));
+                }
+            }
+
+            if (version.Major >= 5
+                && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework))
+            {
+                framework = FrameworkConstants.FrameworkIdentifiers.NetCoreApp;
+            }
+
+            if (!mappings.TryGetProfile(framework, targetFrameworkProfile ?? string.Empty, out profile))
+            {
+                profile = targetFrameworkProfile;
+            }
+
+            if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework))
+            {
+                if (!string.IsNullOrEmpty(profile) && profile.Contains("-"))
+                {
+                    // Frameworks within the portable profile are not allowed
+                    // to have profiles themselves #1869
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPortableFrameworksDueToHyphen,
+                        profile));
+                }
+
+                IEnumerable<NuGetFramework> clientFrameworks = null;
+
+                if (mappings.TryGetPortableFrameworks(targetFrameworkProfile, out clientFrameworks))
+                {
+                    var profileNumber = -1;
+                    if (mappings.TryGetPortableProfile(clientFrameworks, out profileNumber))
+                    {
+                        profile = FrameworkNameHelpers.GetPortableProfileNumberString(profileNumber);
+                    }
+                }
+                else
+                {
+                    result = UnsupportedFramework;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(targetPlatformVersion))
+            {
+                targetPlatformVersion = targetPlatformVersion.TrimStart('v');
+                if (targetPlatformVersion.IndexOf('.') < 0)
+                {
+                    targetPlatformVersion += ".0";
+                }
+
+                if (!Version.TryParse(targetPlatformVersion, out platformVersion))
+                {
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPlatformVersion,
+                        targetPlatformVersion));
+                }
+            }
+
+            if (version.Major >= 5
+                && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, framework))
+            {
+                if (!string.IsNullOrEmpty(profile))
+                {
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.FrameworkDoesNotSupportProfiles,
+                        profile
+                    ));
+                }
+
+                result = new NuGetFramework(framework, version, targetPlatformIdentifier ?? string.Empty, platformVersion);
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(targetPlatformIdentifier))
+                {
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.FrameworkDoesNotSupportPlatforms,
+                        targetPlatformIdentifier
+                    ));
+                }
+
+                result = new NuGetFramework(framework, version, profile);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Creates a NuGetFramework from a .NET FrameworkName
         /// </summary>
         public static NuGetFramework ParseFrameworkName(string frameworkName, IFrameworkNameProvider mappings)
@@ -205,7 +349,7 @@ namespace NuGet.Frameworks
                             || mappings.TryGetVersion(parts.Item2, out version))
                         {
                             var profileShort = parts.Item3;
-                            
+
                             if (version.Major >= 5
                                 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework))
                             {
