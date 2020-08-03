@@ -140,9 +140,9 @@ namespace NuGet.Commands
                     currentFrameworkString = "Silverlight,Version=v4.0,Profile=WindowsPhone71";
                 }
 
+                // Workaround until https://github.com/NuGet/Home/issues/9871 is ready.
                 if (!string.IsNullOrEmpty(platformVersion))
                 {
-                    // TODO NK - this is hacky :)
                     var framework = NuGetFramework.Parse(currentFrameworkString);
                     if (framework.Version.Major >= 5 && framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, StringComparison.OrdinalIgnoreCase))
                     {
