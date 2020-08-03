@@ -797,11 +797,12 @@ namespace NuGet.Commands
                 var tfmProperty = specItem.GetProperty("TargetFrameworks");
                 if (!string.IsNullOrEmpty(tfmProperty))
                 {
+                    var needsAlias = projectStyle == ProjectStyle.DotnetCliTool;
                     spec.TargetFrameworks.Add(
                         new TargetFrameworkInformation()
                         {
                             FrameworkName = NuGetFramework.Parse(tfmProperty),
-                            TargetAlias = tfmProperty
+                            TargetAlias = needsAlias ? tfmProperty : string.Empty
                         });
                 }
             }
