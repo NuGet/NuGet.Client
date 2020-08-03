@@ -108,6 +108,7 @@ namespace NuGet.Common
                 }
 
                 NuGetTelemetryService.EmitTelemetryEvent(TelemetryEvent);
+                NuGetETWProvider.Instance.WriteEventData(TelemetryEvent.Name, TelemetryEvent.PropertiesToJsonString());
             }
 
             _telemetryActivity?.Dispose();
