@@ -117,7 +117,6 @@ namespace NuGet.PackageManagement.UI
                 return false;
             }
 
-            // We only support a single project
             var projects = _model.Context.Projects.ToList();
             return (projects.Count == 1) && await _model.Context.IsNuGetProjectUpgradeable(projects[0]);
         }
@@ -139,7 +138,7 @@ namespace NuGet.PackageManagement.UI
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, project);
+                await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, null); //  project); TODO: Action engine needs to take ProjectContextInfo
             });
         }
 

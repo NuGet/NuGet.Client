@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -37,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool ContainsId(string packageId) => _uniqueIds.Contains(packageId);
 
-        public static async Task<PackageCollection> FromProjectsAsync(IEnumerable<NuGetProject> projects, CancellationToken cancellationToken)
+        public static async Task<PackageCollection> FromProjectsAsync(IEnumerable<ProjectContextInfo> projects, CancellationToken cancellationToken)
         {
             // Read package references from all projects.
             var tasks = projects

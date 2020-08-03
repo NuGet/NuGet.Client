@@ -5,16 +5,40 @@
 
 using MessagePack;
 using MessagePack.Formatters;
+using Microsoft;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
+    public class PackageReferenceInfo2 : PackageReference
+    {
+        public PackageReferenceInfo2(PackageIdentity identity, NuGetFramework targetFramework) : base(identity, targetFramework)
+        {
+        }
+
+        public bool IsLibraryDependencyAutoReferenced { get; set; }
+    }
+
+    public sealed class PackageReferenceInfo
+    {
+        public PackageReferenceInfo(PackageIdentity identity, NuGetFramework targetFramework)
+        {
+            Identity = identity;
+            TargetFramework = targetFramework;
+        }
+
+        public bool IsLibraryDependencyAutoReferenced { get; set; }
+        public PackageIdentity Identity { get; }
+        public NuGetFramework TargetFramework { get; }
+    }
+
     internal class PackageReferenceFormatter : IMessagePackFormatter<PackageReference?>
     {
         private const string PackageIdentityPropertyName = "packageidentity";
-        private const string NuGetFrameworkPropertyName = "nugetframework";
+        private const string TargetFrameworkPropertyName = "targetframework";
 
         internal static readonly IMessagePackFormatter<PackageReference?> Instance = new PackageReferenceFormatter();
 
@@ -45,7 +69,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                         case PackageIdentityPropertyName:
                             identity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
                             break;
-                        case NuGetFrameworkPropertyName:
+                        case TargetFrameworkPropertyName:
                             framework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
                             break;
                         default:
@@ -53,6 +77,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             break;
                     }
                 }
+
+                Assumes.NotNull(identity);
+                Assumes.NotNull(framework);
 
                 return new PackageReference(identity, framework);
             }
@@ -71,10 +98,26 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(count: 2);
+            int mapHeaderObjectsToWrite = 2;
+
+            //if (value is BuildIntegratedPackageReference buildIntegratedPackageReference && buildIntegratedPackageReference.Dependency != null)
+            //{
+            //    mapHeaderObjectsToWrite++;
+
+            //    writer.WriteMapHeader(mapHeaderObjectsToWrite);
+            //    writer.Write("autoreferenced");
+            //    writer.Write(buildIntegratedPackageReference.Dependency.AutoReferenced);
+            //}
+            //else
+            {
+                writer.WriteMapHeader(mapHeaderObjectsToWrite);
+            }
+
+            //writer.Write("typefullname");
+            //writer.Write(value.GetType().FullName);
             writer.Write(PackageIdentityPropertyName);
             PackageIdentityFormatter.Instance.Serialize(ref writer, value.PackageIdentity, options);
-            writer.Write(NuGetFrameworkPropertyName);
+            writer.Write(TargetFrameworkPropertyName);
             NuGetFrameworkFormatter.Instance.Serialize(ref writer, value.TargetFramework, options);
         }
     }

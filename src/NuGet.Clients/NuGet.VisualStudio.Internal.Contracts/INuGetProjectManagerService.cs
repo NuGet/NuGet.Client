@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
@@ -11,10 +11,20 @@ using NuGet.Packaging;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
+    public enum NuGetProjectKind
+    {
+        Classic,
+        ProjectK,
+        MSBuild,
+        BuildIntegrated,
+        Unknown
+    }
+
     public interface INuGetProjectManagerService : IDisposable
     {
         ValueTask<IReadOnlyCollection<PackageReference>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken ct);
         ValueTask<object> GetMetadataAsync(string projectGuid, string key, CancellationToken token);
         ValueTask<(bool, object)> TryGetMetadataAsync(string projectGuid, string key, CancellationToken token);
+        ValueTask<NuGetProjectKind> GetProjectKindAsync(string projectGuid, CancellationToken token);
     }
 }

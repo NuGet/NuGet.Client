@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -101,10 +102,14 @@ namespace NuGet.PackageManagement.UI
                     nuGetProject = await solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
 
                     // Ensure we use the updated project for installing, and don't display preview or license acceptance windows.
-                    context.Projects = new[] { nuGetProject };
+                    var projectContextInfo = await ProjectContextInfo.CreateAsync(nuGetProject, CancellationToken.None);
+                    context.Projects = new[] { projectContextInfo };
                     var nuGetUI = (NuGetUI)uiService;
                     nuGetUI.Projects = new[] { nuGetProject };
                     nuGetUI.DisplayPreviewWindow = false;
+
+                    // Ensure we don't display preview or license acceptance windows.
+                    ((NuGetUI)uiService).DisplayPreviewWindow = false;
 
                     // 4. Install the requested packages
                     var ideExecutionContext = uiService.ProjectContext.ExecutionContext as IDEExecutionContext;

@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void Dispose()
         {
-            _authorizationServiceClient?.Dispose();
+            _authorizationServiceClient.Dispose();
             GC.SuppressFinalize(this);
         }
     }

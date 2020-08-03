@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
-        public INuGetUI Create(params NuGetProject[] projects)
+        public INuGetUI Create(params ProjectContextInfo[] projects)
         {
             var uiContext = CreateUIContext(projects);
 
@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.UI
             return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
         }
 
-        private INuGetUIContext CreateUIContext(params NuGetProject[] projects)
+        private INuGetUIContext CreateUIContext(params ProjectContextInfo[] projects)
         {
             var packageManager = new NuGetPackageManager(
                 SourceRepositoryProvider.Value,

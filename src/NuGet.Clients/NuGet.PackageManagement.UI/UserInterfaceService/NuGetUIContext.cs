@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public sealed class NuGetUIContext : INuGetUIContext
     {
-        private NuGetProject[] _projects;
+        private ProjectContextInfo[] _projects;
 
         public NuGetUIContext(
             ISourceRepositoryProvider sourceProvider,
@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI
 
         public IOptionsPageActivator OptionsPageActivator { get; }
 
-        public IEnumerable<NuGetProject> Projects
+        public IEnumerable<ProjectContextInfo> Projects
         {
             get { return _projects; }
             set
@@ -73,9 +73,10 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        public async  Task<bool> IsNuGetProjectUpgradeable(NuGetProject project)
+        public async Task<bool> IsNuGetProjectUpgradeable(ProjectContextInfo project)
         {
-            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(project);
+            // TODO: ScoBan, remote this?
+            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null); // project);
         }
 
         public async Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService)

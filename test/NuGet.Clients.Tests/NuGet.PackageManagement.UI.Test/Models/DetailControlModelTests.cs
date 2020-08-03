@@ -1,17 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using Xunit;
-using Moq;
-using NuGet.ProjectManagement;
-using NuGet.Test.Utility;
-using Microsoft.VisualStudio.Threading;
-using NuGet.VisualStudio;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using Microsoft.VisualStudio.Threading;
+using Moq;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
+using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models
 {
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var solMgr = new Mock<ISolutionManager>();
             _testInstance = new PackageDetailControlModel(
                 solutionManager: solMgr.Object,
-                nugetProjects: new List<NuGetProject>());
+                projects: new List<ProjectContextInfo>());
 
             _testInstance.SetCurrentPackage(
                 _testViewModel,
@@ -100,7 +100,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var solMgr = new Mock<ISolutionManager>();
             _testInstance = new PackageSolutionDetailControlModel(
                 solutionManager: solMgr.Object,
-                projects: new List<NuGetProject>(),
+                projects: new List<ProjectContextInfo>(),
                 packageManagerProviders: new List<IVsPackageManagerProvider>());
 
             _testInstance.SetCurrentPackage(

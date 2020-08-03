@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 
@@ -24,13 +23,13 @@ namespace NuGet.PackageManagement.UI
 
         IOptionsPageActivator OptionsPageActivator { get; }
 
-        IEnumerable<NuGetProject> Projects { get; set; }
+        IEnumerable<ProjectContextInfo> Projects { get; set; }
 
         IUserSettingsManager UserSettingsManager { get; }
 
         IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        Task<bool> IsNuGetProjectUpgradeable(NuGetProject project);
+        Task<bool> IsNuGetProjectUpgradeable(ProjectContextInfo project);
 
         Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
     }

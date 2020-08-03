@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft;
@@ -193,55 +194,14 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             }
         }
 
-
-        private vsShellInterop.IVsWindowFrame FindExistingWindowFrame(
-            string projectPath)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var uiShell = (vsShellInterop.IVsUIShell)_asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SVsUIShell));
-            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
-            {
-                object docView;
-                var hr = windowFrame.GetProperty(
-                    (int)vsShellInterop.__VSFPROPID.VSFPROPID_DocView,
-                    out docView);
-                if (hr == VSConstants.S_OK
-                    && docView is PackageManagerWindowPane)
-                {
-                    var packageManagerWindowPane = (PackageManagerWindowPane)docView;
-                    if (packageManagerWindowPane.Model.IsSolution)
-                    {
-                        // the window is the solution package manager
-                        continue;
-                    }
-
-                    var projects = packageManagerWindowPane.Model.Context.Projects;
-                    if (projects.Count() != 1)
-                    {
-                        continue;
-                    }
-
-                    var existingProject = projects.First();
-                    var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-                    if (string.Equals(projectName, projectPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return windowFrame;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private async Task<vsShellInterop.IVsWindowFrame> CreateNewWindowFrameAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)
+        private async Task<IVsWindowFrame> CreateNewWindowFrameAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Find existing hierarchy and item id of the document window if it's already registered.
-            var rdt = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.IVsRunningDocumentTable)) as vsShellInterop.IVsRunningDocumentTable;
+            var rdt = await _asyncServiceProvider.GetServiceAsync(typeof(IVsRunningDocumentTable)) as IVsRunningDocumentTable;
             Assumes.Present(rdt);
-            vsShellInterop.IVsHierarchy hier;
+            IVsHierarchy hier;
             uint itemId;
             var docData = IntPtr.Zero;
             int hr;
@@ -250,7 +210,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             {
                 uint cookie;
                 hr = rdt.FindAndLockDocument(
-                    (uint)vsShellInterop._VSRDTFLAGS.RDT_NoLock,
+                    (uint)_VSRDTFLAGS.RDT_NoLock,
                     workspaceVisualNodeBase.NodeMoniker,
                     out hier,
                     out itemId,
@@ -280,17 +240,15 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (!Guid.TryParse(VisualStudioNuGetProject.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
+            if (!Guid.TryParse(ProjectContextInfo.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
             {
                 throw new InvalidOperationException();
             }
 
-            NuGetProject nugetProject = new VisualStudioNuGetProject(projectGuid);
-            var uiController = UIFactory.Value.Create(nugetProject);
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid, CancellationToken.None);
+            var uiController = UIFactory.Value.Create(projectContextInfo);
             var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
-            var vsWindowSearchHostfactory = await _asyncServiceProvider.GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
-            var vsShell = await _asyncServiceProvider.GetServiceAsync(typeof(SVsShell)) as IVsShell4;
-            var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger.Value);
+            var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
             var caption = string.Format(CultureInfo.CurrentCulture, Resx.Label_NuGetWindowCaption, Path.GetFileNameWithoutExtension(workspaceVisualNodeBase.NodeMoniker));
 
             var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;

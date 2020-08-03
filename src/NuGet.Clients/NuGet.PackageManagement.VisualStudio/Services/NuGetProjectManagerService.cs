@@ -52,28 +52,39 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
             Assumes.NotNull(solutionManager);
 
-            NuGetProject? project = (await solutionManager.GetNuGetProjectsAsync())
-                .First(p => projectGuid.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
+            NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
 
-            return await project.GetMetadataAsync(key, token);
+            return project.GetMetadata<object>(key);
         }
 
         public async ValueTask<(bool, object)> TryGetMetadataAsync(string projectGuid, string key, CancellationToken token)
         {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
+            NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
 
-            NuGetProject? project = (await solutionManager.GetNuGetProjectsAsync())
-                .First(p => projectGuid.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
-
-            (bool success, object value) = await project.TryGetMetadataAsync(key, token);
+            bool success = project.TryGetMetadata(key, out object value);
             return (success, value);
+        }
+
+        public async ValueTask<NuGetProjectKind> GetProjectKindAsync(string projectGuid, CancellationToken token)
+        {
+            NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
+            return ProjectContextInfo.GetProjectKind(project);
         }
 
         public void Dispose()
         {
             _authorizationServiceClient.Dispose();
             GC.SuppressFinalize(this);
+        }
+
+        private async ValueTask<NuGetProject> GetNuGetProjectMatchingProjectGuidAsync(string projectGuid)
+        {
+            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
+            Assumes.NotNull(solutionManager);
+
+            NuGetProject project = (await solutionManager.GetNuGetProjectsAsync())
+                .First(p => projectGuid.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
+            return project;
         }
     }
 }

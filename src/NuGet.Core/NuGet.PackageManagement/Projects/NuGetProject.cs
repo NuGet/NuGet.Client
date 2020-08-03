@@ -115,17 +115,6 @@ namespace NuGet.ProjectManagement
             return null;
         }
 
-        public virtual Task<object> GetMetadataAsync(string key, CancellationToken token)
-        {
-            return Task.FromResult(GetMetadataOrNull(key));
-        }
-
-        public virtual Task<(bool, object)> TryGetMetadataAsync(string key, CancellationToken token)
-        {
-            var success = TryGetMetadata(key, out object value);
-            return Task.FromResult((success, value));
-        }
-
         public Task SaveAsync(CancellationToken token)
         {
             return ProjectServices.ProjectSystem.SaveProjectAsync(token);
@@ -152,23 +141,6 @@ namespace NuGet.ProjectManagement
             }
 
             return nuGetProjectName;
-        }
-
-        public static async Task<string> GetUniqueNameOrNameAsync(NuGetProject nuGetProject, CancellationToken token)
-        {
-            if (nuGetProject == null)
-            {
-                throw new ArgumentNullException(nameof(nuGetProject));
-            }
-
-            (bool success, object nuGetProjectName) = await nuGetProject.TryGetMetadataAsync(NuGetProjectMetadataKeys.UniqueName, token);
-            if (!success)
-            {
-                // Unique name is not set, simply return the name
-                nuGetProjectName = await nuGetProject.GetMetadataAsync(NuGetProjectMetadataKeys.Name, token);
-            }
-
-            return (string)nuGetProjectName;
         }
     }
 }

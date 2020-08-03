@@ -18,6 +18,8 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
 
+using Task = System.Threading.Tasks.Task;
+
 namespace NuGet.PackageManagement.UI
 {
     public sealed class NuGetUI : INuGetUI
@@ -124,7 +126,7 @@ namespace NuGet.PackageManagement.UI
             return dialogResult ?? false;
         }
 
-        public async System.Threading.Tasks.Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects)
+        public async Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects)
         {
             var projects = Projects.ToList();
 
@@ -200,6 +202,7 @@ namespace NuGet.PackageManagement.UI
 
         public INuGetProjectContext ProjectContext => _projectContext;
 
+        // TODO: ScoBan, This is primarily used by the ActionEngine, once those are updated this should be replaced with ProjectContextInfo
         public IEnumerable<NuGetProject> Projects
         {
             set;
@@ -375,7 +378,7 @@ namespace NuGet.PackageManagement.UI
 
                 errorList.ForEach(p => ProjectContext.Log(p));
                 warningList.ForEach(p => ProjectContext.Log(p));
-            }            
+            }
         }
     }
 }

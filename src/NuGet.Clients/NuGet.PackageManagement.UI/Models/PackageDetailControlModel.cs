@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
@@ -18,10 +20,8 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly ISolutionManager _solutionManager;
 
-        public PackageDetailControlModel(
-            ISolutionManager solutionManager,
-            IEnumerable<NuGetProject> nugetProjects)
-            : base(nugetProjects)
+        public PackageDetailControlModel(ISolutionManager solutionManager, IEnumerable<ProjectContextInfo> projects)
+            : base(projects)
         {
             _solutionManager = solutionManager;
             _solutionManager.NuGetProjectUpdated += NuGetProjectChanged;
@@ -55,7 +55,8 @@ namespace NuGet.PackageManagement.UI
 
         private void NuGetProjectChanged(object sender, NuGetProjectEventArgs e)
         {
-            _nugetProjects = new List<NuGetProject> { e.NuGetProject };
+            // TODO: ScoBan, SolutionManager has event that returns NuGetProject
+            // _nugetProjects = new List<ProjectContextInfo> { e.NuGetProject };
             UpdateInstalledVersion();
         }
 
@@ -76,10 +77,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override void Refresh()
+        public override async Task RefreshAsync(CancellationToken cancellationToken)
         {
             UpdateInstalledVersion();
-            CreateVersions();
+            await CreateVersionsAsync(cancellationToken);
         }
 
         private static bool HasId(string id, IEnumerable<PackageIdentity> packages)
@@ -96,7 +97,7 @@ namespace NuGet.PackageManagement.UI
             Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
         }
 
-        protected override void CreateVersions()
+        protected override Task CreateVersionsAsync(CancellationToken cancellationToken)
         {
             _versions = new List<DisplayVersion>();
             var installedDependency = InstalledPackageDependencies.Where(p =>
@@ -112,7 +113,7 @@ namespace NuGet.PackageManagement.UI
             // allVersions is null if server doesn't return any versions.
             if (allVersions == null)
             {
-                return;
+                return Task.FromResult(true);
             }
 
             // null, if no version constraint defined in package.config
@@ -173,6 +174,8 @@ namespace NuGet.PackageManagement.UI
             SelectVersion();
 
             OnPropertyChanged(nameof(Versions));
+
+            return Task.FromResult(true);
         }
 
         private NuGetVersion _installedVersion;
@@ -187,7 +190,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override IEnumerable<NuGetProject> GetSelectedProjects(UserAction action)
+        public override IEnumerable<ProjectContextInfo> GetSelectedProjects(UserAction action)
         {
             return _nugetProjects;
         }

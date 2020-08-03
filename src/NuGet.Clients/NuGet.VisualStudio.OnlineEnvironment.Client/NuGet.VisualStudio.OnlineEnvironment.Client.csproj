@@ -27,6 +27,7 @@
     <CreateVsixContainer>false</CreateVsixContainer>
     <PackProject>false</PackProject>
     <DeployExtension>false</DeployExtension>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
@@ -127,6 +128,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Projects\" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />

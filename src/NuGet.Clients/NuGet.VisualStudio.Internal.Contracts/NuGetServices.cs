@@ -10,8 +10,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public static class NuGetServices
     {
-        private const string DeprecatedSolutionServiceName = "NuGetSolutionService";
-        private const string DeprecatedSolutionServiceVersion = "1.0.0";
         private const string SolutionServiceName = "Microsoft.VisualStudio.NuGet.SolutionService";
         private const string SolutionServiceVersion = "1.0.0";
         private const string SourceProviderServiceName = "Microsoft.VisualStudio.NuGet.SourceProviderService";
@@ -24,11 +22,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
         /// </summary>
         public static readonly ServiceRpcDescriptor SolutionService = new ServiceJsonRpcDescriptor(
             new ServiceMoniker(SolutionServiceName, new Version(SolutionServiceVersion)),
-            ServiceJsonRpcDescriptor.Formatters.UTF8,
-            ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
-
-        public static readonly ServiceRpcDescriptor DeprecatedSolutionService = new ServiceJsonRpcDescriptor(
-            new ServiceMoniker(DeprecatedSolutionServiceName, new Version(DeprecatedSolutionServiceVersion)),
             ServiceJsonRpcDescriptor.Formatters.UTF8,
             ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
 

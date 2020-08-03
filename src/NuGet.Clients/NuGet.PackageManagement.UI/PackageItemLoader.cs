@@ -27,11 +27,6 @@ namespace NuGet.PackageManagement.UI
         private int _recommendedCount;
         private IEnumerable<Packaging.PackageReference> _packageReferences;
 
-        private SearchFilter SearchFilter => new SearchFilter(includePrerelease: _includePrerelease)
-        {
-            SupportedFrameworks = _context.GetSupportedFrameworks()
-        };
-
         // Never null
         private PackageFeedSearchState _state = new PackageFeedSearchState();
 
@@ -197,19 +192,23 @@ namespace NuGet.PackageManagement.UI
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
-        private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(
-            CancellationToken cancellationToken)
+        private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var searchFilter = new SearchFilter(includePrerelease: _includePrerelease)
+            {
+                SupportedFrameworks = await _context.GetSupportedFrameworksAsync()
+            };
+
             // get the browse/search results
-            SearchResult<IPackageSearchMetadata> browseResult = await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+            SearchResult<IPackageSearchMetadata> browseResult = await _packageFeed.SearchAsync(_searchText, searchFilter, cancellationToken);
 
             // get the recommender results
             SearchResult<IPackageSearchMetadata> recommenderResult = null;
             if (_recommenderPackageFeed != null)
             {
-                recommenderResult = await _recommenderPackageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+                recommenderResult = await _recommenderPackageFeed.SearchAsync(_searchText, searchFilter, cancellationToken);
                 _recommendedCount = recommenderResult.Count();
             }
 
@@ -251,6 +250,8 @@ namespace NuGet.PackageManagement.UI
 
         public async Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
+            // TODO: ScoBan, This should be doing the call in one go not calling each project individually to get installed packages
+
             // cache installed packages here for future use
             _installedPackages = await _context.GetInstalledPackagesAsync();
 
@@ -321,7 +322,7 @@ namespace NuGet.PackageManagement.UI
                         listItem.ProvidersLoader = AsyncLazy.New(
                             async () =>
                             {
-                                string uniqueProjectName = await NuGetProject.GetUniqueNameOrNameAsync(_context.Projects[0], CancellationToken.None);
+                                string uniqueProjectName = await _context.Projects[0].GetUniqueNameOrNameAsync();
                                 return await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(_context.PackageManagerProviders, listItem.Id, uniqueProjectName);
                             });
                     }

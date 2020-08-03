@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -21,12 +20,12 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly PackageSearchMetadataCache _cachedUpdates;
         private readonly Common.ILogger _logger;
-        private readonly NuGetProject[] _projects;
+        private readonly ProjectContextInfo[] _projects;
 
         public UpdatePackageFeed(
             IEnumerable<PackageCollectionItem> installedPackages,
             IPackageMetadataProvider metadataProvider,
-            NuGetProject[] projects,
+            ProjectContextInfo[] projects,
             PackageSearchMetadataCache optionalCachedUpdates,
             Common.ILogger logger)
         {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Globalization;
@@ -230,7 +231,7 @@ namespace NuGetVSExtension
 
                 var project = await SolutionManager.Value.GetVsProjectAdapterAsync(
                     await SolutionManager.Value.GetNuGetProjectSafeNameAsync(e.NuGetProject));
-                var windowFrame = FindExistingWindowFrame(project.Project);
+                var windowFrame = await FindExistingWindowFrameAsync(project.Project);
                 if (windowFrame != null)
                 {
                     windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, string.Format(
@@ -356,10 +357,9 @@ namespace NuGetVSExtension
             _powerConsoleCommandExecuting = false;
         }
 
-        private IVsWindowFrame FindExistingWindowFrame(
-            Project project)
+        private async Task<IVsWindowFrame> FindExistingWindowFrameAsync(Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
@@ -385,7 +385,7 @@ namespace NuGetVSExtension
                     }
 
                     var existingProject = projects.First();
-                    var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                    var projectName = await existingProject.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None);
                     if (string.Equals(projectName, project.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         return windowFrame;
@@ -475,17 +475,15 @@ namespace NuGetVSExtension
             // is thrown, an error dialog will pop up and this doc window will not be created.
             _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-            var uiController = UIFactory.Value.Create(nugetProject);
+            var contextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);  // TODO: ScoBan, SolutionManager return ProjectContextInfo
+            var uiController = UIFactory.Value.Create(contextInfo);
 
             var model = new PackageManagerModel(
                 uiController,
                 isSolution: false,
                 editorFactoryGuid: GuidList.guidNuGetEditorType);
 
-            var vsWindowSearchHostfactory = await GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
-            var vsShell = await GetServiceAsync(typeof(SVsShell)) as IVsShell4;
-            var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger.Value);
-
+            var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
@@ -575,25 +573,14 @@ namespace NuGetVSExtension
 
             var uniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
             // Close NuGet Package Manager if it is open for this project
-            var windowFrame = FindExistingWindowFrame(project);
+            var windowFrame = await FindExistingWindowFrameAsync(project);
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
 
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-            var uiController = UIFactory.Value.Create(nuGetProject);
-            var settings = uiController.UIContext.UserSettingsManager.GetSettings(GetProjectSettingsKey(nuGetProject));
-
-            await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
-            uiController.UIContext.UserSettingsManager.PersistSettings();
-        }
-
-        private static string GetProjectSettingsKey(NuGetProject nuGetProject)
-        {
-            string projectName;
-            if (!nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out projectName))
-            {
-                projectName = "unknown";
-            }
-            return "project:" + projectName;
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(nuGetProject, CancellationToken.None);  // TODO: ScoBan, SolutionManager should return ProjectContextInfo
+            var uiController = UIFactory.Value.Create(projectContextInfo);
+            await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject); // TODO: ScoBan, Actions need to be updated
+            uiController.UIContext.UserSettingsManager.PersistSettings(); // TODO: ScoBan, Why is this here?
         }
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
@@ -624,7 +611,7 @@ namespace NuGetVSExtension
                     &&
                     EnvDTEProjectUtility.IsSupported(project))
                 {
-                    var windowFrame = FindExistingWindowFrame(project);
+                    var windowFrame = await FindExistingWindowFrameAsync(project);
                     if (windowFrame == null)
                     {
                         windowFrame = await CreateNewWindowFrameAsync(project);
@@ -723,8 +710,15 @@ namespace NuGetVSExtension
                 return null;
             }
 
-            // pass empty array of NuGetProject
-            var uiController = UIFactory.Value.Create(projects);
+            // TODO: ScoBan, Temporary, SolutionManager should return ProjectContextInfo
+            var projectContexts = new List<ProjectContextInfo>(projects.Count());
+            foreach (var project in projects) // TODO: ScoBan, Optimize # of calls to server
+            {
+                var projectContext = await ProjectContextInfo.CreateAsync(project, CancellationToken.None);
+                projectContexts.Add(projectContext);
+            }
+
+            var uiController = UIFactory.Value.Create(projectContexts.ToArray());
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 
@@ -736,9 +730,7 @@ namespace NuGetVSExtension
                 SolutionName = solutionName
             };
 
-            var vsWindowSearchHostfactory = await GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
-            var vsShell = await GetServiceAsync(typeof(SVsShell)) as IVsShell4;
-            var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger.Value);
+            var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
