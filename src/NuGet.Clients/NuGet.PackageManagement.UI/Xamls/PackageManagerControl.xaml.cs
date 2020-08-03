@@ -748,7 +748,7 @@ namespace NuGet.PackageManagement.UI
             .PostOnFailure(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount));
         }
 
-        // Check if user has environment variable of RecommendNuGetPackages set to 1 or is in A/B experiment.
+        // Check if user has environment variable of NUGET_RECOMMEND_PACKAGES set to 1 or is in A/B experiment.
         public bool IsRecommenderFlightEnabled()
         {
             return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
