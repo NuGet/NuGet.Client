@@ -370,7 +370,7 @@ namespace NuGet.Frameworks
 
                                     // Parse the version if it's there.
                                     Version platformVersion = FrameworkConstants.EmptyVersion;
-                                    if ((string.IsNullOrEmpty(platformVersionString) || mappings.TryGetVersion(platformVersionString, out platformVersion)))
+                                    if ((string.IsNullOrEmpty(platformVersionString) || mappings.TryGetPlatformVersion(platformVersionString, out platformVersion)))
                                     {
                                         result = new NuGetFramework(framework, version, platform ?? string.Empty, platformVersion ?? FrameworkConstants.EmptyVersion);
                                     }

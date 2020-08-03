@@ -228,6 +228,7 @@ namespace NuGet.Test
         [InlineData("netcoreapp3.0", ".NetCoreApp,Version=v3.0")]
         [InlineData("net5.0-android", "net5.0-android")]
         [InlineData("net5.0-android", "net5.0-android0.0")]
+        [InlineData("net5.0-android10.0", "net5.0-android10")]
         [InlineData("net5.0-ios14.0", "net5.0-ios14.0")]
         [InlineData("net5.0-macos10.0", "net5.0-macos10.0")]
         [InlineData("net5.0-watchos1.0", "net5.0-watchos1.0")]

@@ -39,6 +39,12 @@ namespace NuGet.Frameworks
         bool TryGetVersion(string versionString, out Version version);
 
         /// <summary>
+        /// Parses a version string. If no dots exist, all digits are treated
+        /// as semver-major, instead of inserting dots.
+        /// </summary>
+        bool TryGetPlatformVersion(string versionString, out Version version);
+
+        /// <summary>
         /// Returns a shortened version. If all digits are single digits no dots will be used.
         /// </summary>
         string GetVersionString(string framework, Version version);
