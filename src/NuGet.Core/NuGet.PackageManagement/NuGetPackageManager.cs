@@ -40,9 +40,9 @@ namespace NuGet.PackageManagement
 
         public Configuration.ISettings Settings { get; }
 
-        private IDictionary<string, bool> _buildIntegratedProjectsUpdateDict;
+        private HashSet<string> _buildIntegratedProjectsUpdateSet;
 
-        private DependencyGraphSpec _buildIntegratedProjectsCache;
+		private DependencyGraphSpec _buildIntegratedProjectsCache;
 
         private RestoreCommandProvidersCache _restoreProviderCache;
 
@@ -2054,50 +2054,88 @@ namespace NuGet.PackageManagement
         {
             var projects = nuGetProjects.ToList();
 
-            // find out build integrated projects so that we can arrange them in reverse dependency order
+            // find out build integrated projects
             var buildIntegratedProjectsToUpdate = projects.OfType<BuildIntegratedNuGetProject>().ToList();
 
-            // order won't matter for other type of projects so just add rest of the projects in result
-            var sortedProjectsToUpdate = projects.Except(buildIntegratedProjectsToUpdate).ToList();
-
-            if (buildIntegratedProjectsToUpdate.Count > 0)
+            if (buildIntegratedProjectsToUpdate.Any())
             {
-                var logger = new ProjectContextLogger(nuGetProjectContext);
-                var referenceContext = new DependencyGraphCacheContext(logger, Settings);
-                _buildIntegratedProjectsUpdateDict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                _buildIntegratedProjectsUpdateSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _buildIntegratedProjectsUpdateSet.AddRange(
+                    buildIntegratedProjectsToUpdate.Select(child => child.MSBuildProjectPath));
 
-                var projectUniqueNamesForBuildIntToUpdate
-                    = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath);
-
-                var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
-                _buildIntegratedProjectsCache = dgFile;
-                var allSortedProjects = DependencyGraphSpec.SortPackagesByDependencyOrder(dgFile.Projects);
-
-                foreach (var projectUniqueName in allSortedProjects.Select(e => e.RestoreMetadata.ProjectUniqueName))
+                // execute buildintegrated nuget project actions, if any.
+                foreach (var project in buildIntegratedProjectsToUpdate)
                 {
-                    BuildIntegratedNuGetProject project;
-                    if (projectUniqueNamesForBuildIntToUpdate.TryGetValue(projectUniqueName, out project))
-                    {
-                        sortedProjectsToUpdate.Add(project);
-                    }
-                }
+                    var nugetActions = nuGetProjectActions.Where(action => action.Project.Equals(project));
 
-                // cache these projects which will be used to avoid duplicate restore as part of parent projects
-                _buildIntegratedProjectsUpdateDict.AddRange(
-                    buildIntegratedProjectsToUpdate.Select(child => new KeyValuePair<string, bool>(child.MSBuildProjectPath, false)));
+                    await ExecuteBuildIntegratedNuGetProjectActionsAsync(project, nugetActions, nuGetProjectContext, token);
+                }
             }
 
-            // execute all nuget project actions
-            foreach (var project in sortedProjectsToUpdate)
+            var otherProjects = projects.Except(buildIntegratedProjectsToUpdate).ToList();
+
+            // execute non-buildintegrated nuget project actions
+            foreach (var project in otherProjects)
             {
                 var nugetActions = nuGetProjectActions.Where(action => action.Project.Equals(project));
+
                 await ExecuteNuGetProjectActionsAsync(project, nugetActions, nuGetProjectContext, sourceCacheContext, token);
             }
 
             // clear cache which could temper with other updates
-            _buildIntegratedProjectsUpdateDict?.Clear();
-            _buildIntegratedProjectsCache = null;
             _restoreProviderCache = null;
+        }
+
+        /// <summary>
+        /// Executes the list of <paramref name="nuGetProjectActions" /> on <paramref name="buildIntegratedProject" />
+        /// </summary>
+        /// <param name="buildIntegratedProject"></param>
+        /// <param name="nuGetProjectActions"></param>
+        /// <param name="nuGetProjectContext"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        internal async Task ExecuteBuildIntegratedNuGetProjectActionsAsync(BuildIntegratedNuGetProject buildIntegratedProject,
+            IEnumerable<NuGetProjectAction> nuGetProjectActions,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            if (buildIntegratedProject == null)
+            {
+                throw new ArgumentNullException(nameof(buildIntegratedProject));
+            }
+
+            if (nuGetProjectActions == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjectActions));
+            }
+
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            var stopWatch = Stopwatch.StartNew();
+
+            // DNU: Find the closure before executing the actions
+            await ExecuteBuildIntegratedProjectActionsAsync(buildIntegratedProject,
+                nuGetProjectActions,
+                nuGetProjectContext,
+                token);
+
+            // calculate total time taken to execute all nuget actions
+            stopWatch.Stop();
+            nuGetProjectContext.Log(
+                MessageLevel.Info, Strings.NugetActionsTotalTime,
+                DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed));
+
+            // emit resolve actions telemetry event
+            var actionTelemetryEvent = new ActionTelemetryStepEvent(
+                nuGetProjectContext.OperationId.ToString(),
+                TelemetryConstants.ExecuteActionStepName, stopWatch.Elapsed.TotalSeconds);
+
+            TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
         }
 
         /// <summary>
@@ -2804,30 +2842,8 @@ namespace NuGet.PackageManagement
                 var now = DateTime.UtcNow;
                 void cacheContextModifier(SourceCacheContext c) => c.MaxAge = now;
 
-                // Check if current project is there in update cache and needs revaluation
-                var isProjectUpdated = false;
-                if (_buildIntegratedProjectsUpdateDict != null &&
-                    _buildIntegratedProjectsUpdateDict.TryGetValue(
-                        buildIntegratedProject.MSBuildProjectPath,
-                        out isProjectUpdated) &&
-                    isProjectUpdated)
-                {
-                    await DependencyGraphRestoreUtility.RestoreProjectAsync(
-                            SolutionManager,
-                            buildIntegratedProject,
-                            referenceContext,
-                            GetRestoreProviderCache(),
-                            cacheContextModifier,
-                            projectAction.Sources,
-                            nuGetProjectContext.OperationId,
-                            logger,
-                            token);
-                }
-                else
-                {
-                    // Write out the lock file
-                    await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
-                }
+                // Write out the lock file
+                await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
 
                 // add packages lock file into project
                 if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(projectAction.RestoreResult.LockFile.PackageSpec))
@@ -2895,13 +2911,9 @@ namespace NuGet.PackageManagement
 
                 foreach (var parent in parents)
                 {
-                    // if this parent exists in update cache, then update it's entry to be re-evaluated
-                    if (_buildIntegratedProjectsUpdateDict != null &&
-                        _buildIntegratedProjectsUpdateDict.ContainsKey(parent.MSBuildProjectPath))
-                    {
-                        _buildIntegratedProjectsUpdateDict[parent.MSBuildProjectPath] = true;
-                    }
-                    else
+                    // if this parent not in current target projects list, it's not evaluated project.
+                    if (_buildIntegratedProjectsUpdateSet == null ||
+                        _buildIntegratedProjectsUpdateSet.Contains(parent.MSBuildProjectPath))
                     {
                         // Mark project for restore
                         dgSpecForParents.AddRestore(parent.MSBuildProjectPath);
