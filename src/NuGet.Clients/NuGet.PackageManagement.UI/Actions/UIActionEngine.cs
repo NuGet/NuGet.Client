@@ -374,6 +374,8 @@ namespace NuGet.PackageManagement.UI
                     using (var sourceCacheContext = new SourceCacheContext())
                     {
                         var actions = await resolveActionsAsync(sourceCacheContext);
+                        // Clear cache.
+                        _packageManager.UpdatedPackageSpecsCache = null;
                         var results = GetPreviewResults(actions);
 
                         if (operationType == NuGetOperationType.Uninstall)
@@ -488,6 +490,9 @@ namespace NuGet.PackageManagement.UI
                 finally
                 {
                     TelemetryServiceUtility.StopTimer();
+
+                    // Clear cache in case there was exception which prevented previous clearing of cache.
+                    _packageManager.UpdatedPackageSpecsCache = null;
 
                     var duration = TelemetryServiceUtility.GetTimerElapsedTime();
 
@@ -845,7 +850,7 @@ namespace NuGet.PackageManagement.UI
                 // order won't matter for other type of projects so just add rest of the projects in result
                 var sortedTargetProjectsToUpdate = targets.Except(buildIntegratedProjectsToUpdate).ToList();
 
-                if (buildIntegratedProjectsToUpdate.Count > 0)
+                if (buildIntegratedProjectsToUpdate.Any())
                 {
                     var logger = new ProjectContextLogger(projectContext);
                     var referenceContext = new DependencyGraphCacheContext(logger, _packageManager.Settings);
