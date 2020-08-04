@@ -56,7 +56,7 @@ namespace NuGet.Packaging
                         outputStream,
                         mapName: null,
                         capacity: (long)size,
-                        MemoryMappedFileAccess.ReadWrite,
+                        MemoryMappedFileAccess.ReadWriteExecute,
                         HandleInheritability.None,
                         leaveOpen: false))
                     using (MemoryMappedViewStream mmstream = mmf.CreateViewStream())
