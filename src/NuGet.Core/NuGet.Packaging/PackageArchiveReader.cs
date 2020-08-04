@@ -166,6 +166,8 @@ namespace NuGet.Packaging
 
             private readonly long _size;
 
+            private bool _isDisposed;
+
             public SizedArchiveEntryStream(Stream inner, long size)
             {
                 _inner = inner;
@@ -206,8 +208,6 @@ namespace NuGet.Packaging
             {
                 _inner.Write(buffer, offset, count);
             }
-
-            private bool _isDisposed;
 
             protected override void Dispose(bool disposing)
             {
@@ -259,7 +259,7 @@ namespace NuGet.Packaging
                 using (var stream = entry.Open())
                 using (var sizedStream = new SizedArchiveEntryStream(stream, entry.Length))
                 {
-                    var copiedFile = extractFile(packageFileName, targetFilePath, sizedStream);
+                    string copiedFile = extractFile(packageFileName, targetFilePath, sizedStream);
                     if (copiedFile != null)
                     {
                         entry.UpdateFileTimeFromEntry(copiedFile, logger);
