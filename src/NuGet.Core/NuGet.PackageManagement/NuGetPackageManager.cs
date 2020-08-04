@@ -2058,7 +2058,7 @@ namespace NuGet.PackageManagement
             var buildIntegratedProjectsToUpdate = projects.OfType<BuildIntegratedNuGetProject>().ToList();
 
             // order won't matter for other type of projects so just add rest of the projects in result
-            var sortedProjectsToUpdate = projects.Except(buildIntegratedProjectsToUpdate).ToList();
+            var otherProjects = projects.Except(buildIntegratedProjectsToUpdate).ToList();
 
             if (buildIntegratedProjectsToUpdate.Count > 0)
             {
@@ -2073,22 +2073,23 @@ namespace NuGet.PackageManagement
                 _buildIntegratedProjectsCache = dgFile;
                 var allSortedProjects = DependencyGraphSpec.SortPackagesByDependencyOrder(dgFile.Projects);
 
+                // cache these projects which will be used to avoid duplicate restore as part of parent projects
+                _buildIntegratedProjectsUpdateSet.AddRange(
+                    buildIntegratedProjectsToUpdate.Select(child => child.MSBuildProjectPath));
+
                 foreach (var projectUniqueName in allSortedProjects.Select(e => e.RestoreMetadata.ProjectUniqueName))
                 {
                     BuildIntegratedNuGetProject project;
                     if (projectUniqueNamesForBuildIntToUpdate.TryGetValue(projectUniqueName, out project))
                     {
-                        sortedProjectsToUpdate.Add(project);
+                        var nugetActions = nuGetProjectActions.Where(action => action.Project.Equals(project));
+                        await ExecuteNuGetProjectActionsAsync(project, nugetActions, nuGetProjectContext, sourceCacheContext, token);
                     }
                 }
-
-                // cache these projects which will be used to avoid duplicate restore as part of parent projects
-                _buildIntegratedProjectsUpdateSet.AddRange(
-                    buildIntegratedProjectsToUpdate.Select(child => child.MSBuildProjectPath));
             }
 
-            // execute all nuget project actions
-            foreach (var project in sortedProjectsToUpdate)
+            // execute other nuget project actions
+            foreach (var project in otherProjects)
             {
                 var nugetActions = nuGetProjectActions.Where(action => action.Project.Equals(project));
                 await ExecuteNuGetProjectActionsAsync(project, nugetActions, nuGetProjectContext, sourceCacheContext, token);
@@ -2873,7 +2874,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var parent in parents)
                 {
-                    // if this parent exists in update cache, then update it's entry to be re-evaluated
+                    // We don't evaluate already seen parent.
                     if (_buildIntegratedProjectsUpdateSet == null ||
                         !_buildIntegratedProjectsUpdateSet.Contains(parent.MSBuildProjectPath))
                     {
