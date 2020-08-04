@@ -368,7 +368,7 @@
     <!-- Find all frameworks to run on -->
     <PropertyGroup>
        <TargetFrameworksList>$(TargetFramework);$(TargetFrameworks)</TargetFrameworksList>
-       <TargetFrameworksWithoutNet45>$(TargetFrameworksList.Replace('net45', ''))</TargetFrameworksWithoutNet45>
+       <TargetFrameworksWithoutNet45>$(TargetFrameworksList.Replace(';net45', ''))</TargetFrameworksWithoutNet45>
     </PropertyGroup>
     <ItemGroup>
       <ProjectTargetFrameworkEntries Include="$(TargetFrameworksWithoutNet45)" />
