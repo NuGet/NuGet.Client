@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Signing.DerEncoding {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageExtraction.Signing.DerEncoding.SR", typeof(SR).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Signing.DerEncoding.SR", typeof(SR).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
