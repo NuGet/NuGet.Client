@@ -59,7 +59,7 @@ namespace NuGet.Packaging
                         MemoryMappedFileAccess.ReadWrite,
                         HandleInheritability.None,
                         leaveOpen: false))
-                    using (MemoryMappedViewStream mmstream = mmf.CreateViewStream(0, 0, MemoryMappedFileAccess.ReadWrite))
+                    using (MemoryMappedViewStream mmstream = mmf.CreateViewStream(0, (long)size, MemoryMappedFileAccess.ReadWrite))
                     {
                         inputStream.CopyTo(mmstream);
                     }
