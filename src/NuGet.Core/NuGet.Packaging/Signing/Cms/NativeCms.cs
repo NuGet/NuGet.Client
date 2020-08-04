@@ -117,7 +117,6 @@ namespace NuGet.Packaging.Signing
 
                 var attributePointer = new IntPtr(
                     (long)unsignedAttributes.rgAttr + (i * sizeOfCryptAttributeString));
-
                 var attribute = MarshalUtility.PtrToStructure<CRYPT_ATTRIBUTE_STRING>(attributePointer);
 
                 if (!string.Equals(attribute.pszObjId, Oids.Countersignature, StringComparison.Ordinal))
@@ -129,7 +128,6 @@ namespace NuGet.Packaging.Signing
                 {
                     var attributeValuePointer = new IntPtr(
                         (long)attribute.rgValue + (j * sizeOfCryptIntegerBlob));
-
                     var attributeValue = MarshalUtility.PtrToStructure<CRYPT_INTEGER_BLOB>(attributeValuePointer);
                     uint cbSignerInfo = 0;
 
@@ -197,9 +195,7 @@ namespace NuGet.Packaging.Signing
             {
                 var attributeValuePointer = new IntPtr(
                     (long)commitmentTypeIndicationAttribute.rgValue + (i * sizeOfCryptIntegerBlob));
-
                 var attributeValue = MarshalUtility.PtrToStructure<CRYPT_INTEGER_BLOB>(attributeValuePointer);
-
                 var bytes = new byte[attributeValue.cbData];
 
                 Marshal.Copy(attributeValue.pbData, bytes, startIndex: 0, length: bytes.Length);
@@ -323,7 +319,6 @@ namespace NuGet.Packaging.Signing
                 var unauthAttrCount = signerInfo.UnauthAttrs.cAttr + 1;
 
                 var sizeOfCryptAttribute = MarshalUtility.SizeOf<CRYPT_ATTRIBUTE>();
-
                 var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc((int)(sizeOfCryptAttribute * unauthAttrCount));
                 var currentAttribute = attributesArray;
 
@@ -332,7 +327,6 @@ namespace NuGet.Packaging.Signing
                 {
                     var existingAttributePointer = new IntPtr(
                          (long)signerInfo.UnauthAttrs.rgAttr + (i * sizeOfCryptAttribute));
-
                     var existingAttribute = MarshalUtility.PtrToStructure<CRYPT_ATTRIBUTE>(existingAttributePointer);
 
                     currentAttribute->pszObjId = existingAttribute.pszObjId;

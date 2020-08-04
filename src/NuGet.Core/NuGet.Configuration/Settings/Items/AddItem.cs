@@ -30,11 +30,11 @@ namespace NuGet.Configuration
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
             = IReadOnlyCollectionUtility.Create<string>(ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute);
 
-        protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; }
-            = new Dictionary<string, IReadOnlyCollection<string>>()
+        protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; } = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
+            new Dictionary<string, IReadOnlyCollection<string>>()
             {
                 { ConfigurationConstants.KeyAttribute, IReadOnlyCollectionUtility.Create<string>(string.Empty) }
-            };
+            });
 
         public AddItem(string key, string value)
             : this(key, value, additionalAttributes: null)
