@@ -14,6 +14,7 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace Dotnet.Integration.Test
 {
@@ -828,6 +829,66 @@ EndGlobal";
 
                 // Assert
                 Assert.True(!result.Output.Contains($"The project {projectFile} is using CentralPackageVersionManagement, a NuGet preview feature."));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_MultiTargettingWithAliases_Succeeds()
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                var testDirectory = pathContext.SolutionRoot;
+                var pkgX = new SimpleTestPackageContext("x", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgX);
+
+                var latestNetFrameworkAlias = "latestnetframework";
+                var notLatestNetFrameworkAlias = "notlatestnetframework";
+                var projectName1 = "ClassLibrary1";
+                var workingDirectory1 = Path.Combine(testDirectory, projectName1);
+                var projectFile1 = Path.Combine(workingDirectory1, $"{projectName1}.csproj");
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib");
+
+                using (var stream = File.Open(projectFile1, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", $"{latestNetFrameworkAlias};{notLatestNetFrameworkAlias}");
+
+                    var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "x",
+                        notLatestNetFrameworkAlias,
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    var latestNetFrameworkProps = new Dictionary<string, string>();
+                    latestNetFrameworkProps.Add("TargetFrameworkIdentifier", ".NETFramework");
+                    latestNetFrameworkProps.Add("TargetFrameworkVersion", "v4.7.2");
+
+                    ProjectFileUtils.AddProperties(xml, latestNetFrameworkProps, $" '$(TargetFramework)' == '{latestNetFrameworkAlias}' ");
+
+                    var notLatestNetFrameworkProps = new Dictionary<string, string>();
+                    notLatestNetFrameworkProps.Add("TargetFrameworkIdentifier", ".NETFramework");
+                    notLatestNetFrameworkProps.Add("TargetFrameworkVersion", "v4.6.3");
+                    ProjectFileUtils.AddProperties(xml, notLatestNetFrameworkProps, $" '$(TargetFramework)' == '{notLatestNetFrameworkAlias}' ");
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Act
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore {projectFile1} {$"--source \"{pathContext.PackageSource}\" /p:AutomaticallyUseReferenceAssemblyPackages=false"}", ignoreExitCode: true);
+
+                // Assert
+                result.ExitCode.Should().Be(0, because: result.AllOutput);
+                var assetsFilePath = Path.Combine(workingDirectory1, "obj", "project.assets.json");
+                File.Exists(assetsFilePath).Should().BeTrue(because: "The assets file needs to exist");
+                var assetsFile = new LockFileFormat().Read(assetsFilePath);
+                LockFileTarget nonLatestTarget = assetsFile.Targets.Single(e => e.TargetFramework.Equals(CommonFrameworks.Net463) && string.IsNullOrEmpty(e.RuntimeIdentifier));
+                nonLatestTarget.Libraries.Should().ContainSingle(e => e.Name.Equals("x"));
+                LockFileTarget latestTarget = assetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net472")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
+                latestTarget.Libraries.Should().NotContain(e => e.Name.Equals("x"));
             }
         }
 

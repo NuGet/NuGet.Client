@@ -384,19 +384,6 @@ namespace NuGet.Test.Utility
         public static SimpleTestProjectContext CreateNETCoreWithSDK(
             string projectName,
             string solutionRoot,
-            bool isToolingVersion15,
-            params NuGetFramework[] frameworks)
-        {
-            var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
-            context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
-            context.ToolingVersion15 = isToolingVersion15;
-            context.Properties.Add("RestoreProjectStyle", "PackageReference");
-            return context;
-        }
-
-        public static SimpleTestProjectContext CreateNETCoreWithSDK(
-            string projectName,
-            string solutionRoot,
             params string[] frameworks)
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
@@ -489,8 +476,24 @@ namespace NuGet.Test.Utility
 
                 foreach (var frameworkInfo in Frameworks)
                 {
+                    // Add TFM properties
+                    var tfmProps = new Dictionary<string, string>(frameworkInfo.Properties);
+
+                    if (!(Type == ProjectStyle.PackageReference && ToolingVersion15))
+                    {
+                        tfmProps.Add("TargetFrameworkIdentifier", frameworkInfo.Framework.Framework);
+                        tfmProps.Add("TargetFrameworkVersion", $"v{NormalizeVersionString(frameworkInfo.Framework.Version)}");
+                        tfmProps.Add("_TargetFrameworkVersionWithoutV", NormalizeVersionString(frameworkInfo.Framework.Version));
+
+                        if (frameworkInfo.Framework.HasPlatform)
+                        {
+                            tfmProps.Add("TargetPlatformIdentifier", frameworkInfo.Framework.Platform);
+                            tfmProps.Add("TargetPlatformVersion", NormalizeVersionString(frameworkInfo.Framework.PlatformVersion));
+                        }
+                    }
+
                     // Add properties with a TFM condition
-                    ProjectFileUtils.AddProperties(xml, frameworkInfo.Properties, $" '$(TargetFramework)' == '{frameworkInfo.Framework.GetShortFolderName()}' ");
+                    ProjectFileUtils.AddProperties(xml, tfmProps, $" '$(TargetFramework)' == '{frameworkInfo.Framework.GetShortFolderName()}' ");
 
                     foreach (var package in frameworkInfo.PackageReferences)
                     {
@@ -698,6 +701,19 @@ namespace NuGet.Test.Utility
             }
 
             return xml;
+        }
+
+        private static string NormalizeVersionString(Version version)
+        {
+            if (version.Build != 0)
+            {
+                return version.ToString(4);
+            }
+            if (version.Revision != 0)
+            {
+                return version.ToString(3);
+            }
+            return version.ToString(2);
         }
 
         public override bool Equals(object obj)
