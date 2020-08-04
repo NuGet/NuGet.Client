@@ -374,8 +374,6 @@ namespace NuGet.PackageManagement.UI
                     using (var sourceCacheContext = new SourceCacheContext())
                     {
                         var actions = await resolveActionsAsync(sourceCacheContext);
-                        // Clear cache.
-                        _packageManager.UpdatedPackageSpecsCache = null;
                         var results = GetPreviewResults(actions);
 
                         if (operationType == NuGetOperationType.Uninstall)
@@ -490,9 +488,6 @@ namespace NuGet.PackageManagement.UI
                 finally
                 {
                     TelemetryServiceUtility.StopTimer();
-
-                    // Clear cache in case there was exception which prevented previous clearing of cache.
-                    _packageManager.UpdatedPackageSpecsCache = null;
 
                     var duration = TelemetryServiceUtility.GetTimerElapsedTime();
 
@@ -842,38 +837,29 @@ namespace NuGet.PackageManagement.UI
             var results = new List<ResolvedAction>();
 
             Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
+
             if (userAction.Action == NuGetProjectActionType.Install)
             {
                 // find out build integrated projects so that we can arrange them in reverse dependency order
                 var buildIntegratedProjectsToUpdate = targets.OfType<BuildIntegratedNuGetProject>().ToList();
 
-                // order won't matter for other type of projects so just add rest of the projects in result
-                var sortedTargetProjectsToUpdate = targets.Except(buildIntegratedProjectsToUpdate).ToList();
+                // Other non-builtIntegrated type of projects so just add rest of the projects in result
+                var otherTargetProjectsToUpdate = targets.Except(buildIntegratedProjectsToUpdate).ToList();
 
                 if (buildIntegratedProjectsToUpdate.Any())
                 {
-                    var logger = new ProjectContextLogger(projectContext);
-                    var referenceContext = new DependencyGraphCacheContext(logger, _packageManager.Settings);
+                    // Run project preview in parallel for greater performance.
+                    var actions = await _packageManager.PreviewBuildIntegratedProjectActionsParallelAsync(
+                        buildIntegratedProjectsToUpdate,
+                        new PackageIdentity(userAction.PackageId, userAction.Version),
+                        projectContext,
+                        uiService.ActiveSources,
+                        token);
 
-                    var projectUniqueNamesForBuildIntToUpdate
-                        = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath);
-
-                    var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_packageManager.SolutionManager, referenceContext);
-                    var allSortedProjects = DependencyGraphSpec.SortPackagesByDependencyOrder(dgFile.Projects);
-
-                    foreach (var projectUniqueName in allSortedProjects.Select(e => e.RestoreMetadata.ProjectUniqueName))
-                    {
-                        BuildIntegratedNuGetProject project;
-                        if (projectUniqueNamesForBuildIntToUpdate.TryGetValue(projectUniqueName, out project))
-                        {
-                            sortedTargetProjectsToUpdate.Add(project);
-                        }
-                    }
+                    results.AddRange(actions);
                 }
 
-                _packageManager.UpdatedPackageSpecsCache = new Dictionary<string, PackageSpec>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var target in sortedTargetProjectsToUpdate)
+                foreach (var target in otherTargetProjectsToUpdate)
                 {
                     var actions = await _packageManager.PreviewInstallPackageAsync(
                         target,
@@ -883,21 +869,6 @@ namespace NuGet.PackageManagement.UI
                         uiService.ActiveSources,
                         null,
                         token);
-
-                    var buildIntegratedProject = target as BuildIntegratedNuGetProject;
-
-                    if (buildIntegratedProject != null)
-                    {
-                        foreach(var action in actions)
-                        {
-                            var packageSpec = (action as BuildIntegratedProjectAction).RestoreResult?.LockFile?.PackageSpec;
-
-                            if (packageSpec != null)
-                            {
-                                _packageManager.UpdatedPackageSpecsCache[buildIntegratedProject.MSBuildProjectPath] = packageSpec;
-                            }
-                        }
-                    }
 
                     results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
                 }

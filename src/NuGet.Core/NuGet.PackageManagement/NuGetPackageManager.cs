@@ -56,8 +56,6 @@ namespace NuGet.PackageManagement
 
         public IInstallationCompatibility InstallationCompatibility { get; set; }
 
-        public Dictionary<string, PackageSpec> UpdatedPackageSpecsCache { get; set; }
-
         /// <summary>
         /// Event to be raised when batch processing of install/ uninstall packages starts at a project level
         /// </summary>
@@ -843,7 +841,7 @@ namespace NuGet.PackageManagement
                     {
                         // Create a build integrated action
                         var buildIntegratedAction =
-                            await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
+                            await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, null, token);
 
                         actions.Add(buildIntegratedAction);
                     }
@@ -929,6 +927,7 @@ namespace NuGet.PackageManagement
                             buildIntegratedProject,
                             lowLevelActions,
                             nuGetProjectContext,
+                            null,
                             token);
 
                         actions.Add(buildIntegratedAction);
@@ -1519,7 +1518,7 @@ namespace NuGet.PackageManagement
                 if (buildIntegratedProject != null)
                 {
                     actions = new[] {
-                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, token)
+                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, null, token)
                     };
                 }
 
@@ -1586,7 +1585,7 @@ namespace NuGet.PackageManagement
                 if (buildIntegratedProject != null)
                 {
                     actions = new[] {
-                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, token)
+                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, null, token)
                     };
                 }
 
@@ -1827,6 +1826,46 @@ namespace NuGet.PackageManagement
             return nuGetProjectActions;
         }
 
+        public async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectActionsParallelAsync(IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
+            PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources,
+            CancellationToken token)
+        {
+            var allActions = new List<ResolvedAction>();
+            Dictionary<string, PackageSpec> updatedPackageSpecsCache = new Dictionary<string, PackageSpec>();
+
+            foreach (var buildIntegratedProject in buildIntegratedProjects)
+            {
+                var logger = new ProjectContextLogger(nuGetProjectContext);
+                var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
+                var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
+                // Create a copy to avoid modifying the original spec which may be shared.
+                var updatedPackageSpec = originalPackageSpec.Clone();
+                PackageSpecOperations.RemoveDependency(updatedPackageSpec, packageIdentity.Id);
+                updatedPackageSpecsCache[buildIntegratedProject.MSBuildProjectPath] = updatedPackageSpec;
+            }
+
+            foreach (var buildIntegratedProject in buildIntegratedProjects)
+            {
+                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);
+                var actions = new[] { action };
+
+                actions = new[] {
+                    await PreviewBuildIntegratedProjectActionsAsync(
+                        buildIntegratedProject,
+                        actions,
+                        nuGetProjectContext,
+                        updatedPackageSpecsCache,
+                        token)
+                };
+
+                allActions.AddRange(actions.Select(a => new ResolvedAction(buildIntegratedProject, a)));
+            }
+
+            return allActions;
+        }
+
         /// <summary>
         /// Check all sources in parallel to see if the package exists while respecting the order of the list.
         /// This is only used by PreviewInstall with DependencyBehavior.Ignore.
@@ -1999,7 +2038,7 @@ namespace NuGet.PackageManagement
                 if (buildIntegratedProject != null)
                 {
                     actions = new[] {
-                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, token)
+                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, null, token)
                     };
                 }
 
@@ -2468,6 +2507,7 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject buildIntegratedProject,
             IEnumerable<NuGetProjectAction> nuGetProjectActions,
             INuGetProjectContext nuGetProjectContext,
+            Dictionary<string, PackageSpec> updatedPackageSpecsCache,
             CancellationToken token)
         {
             if (nuGetProjectActions == null)
@@ -2519,11 +2559,11 @@ namespace NuGet.PackageManagement
             var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
 
             // get values previous evaluated PackageSpec which could be newer due to being child of current project.
-            if (UpdatedPackageSpecsCache!=null)
+            if (updatedPackageSpecsCache != null)
             {
-                foreach(var cacheKey in UpdatedPackageSpecsCache.Keys)
+                foreach(var cacheKey in updatedPackageSpecsCache.Keys)
                 {
-                    dependencyGraphContext.PackageSpecCache.Add(cacheKey, UpdatedPackageSpecsCache[cacheKey]);
+                    dependencyGraphContext.PackageSpecCache.Add(cacheKey, updatedPackageSpecsCache[cacheKey]);
                 }
             }
 
@@ -2723,6 +2763,7 @@ namespace NuGet.PackageManagement
                     buildIntegratedProject,
                     nuGetProjectActions,
                     nuGetProjectContext,
+                    null,
                     token);
             }
             else
