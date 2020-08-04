@@ -236,7 +236,7 @@
     be localized from each project
     ============================================================
   -->
-  <Target Name="GetLocalizationInputs" DependsOnTargets="GetTargetFrameworkSetMinusNet45" Returns="@(DllsToLocalize)" Condition="'$(Shipping)' == 'true'">
+  <Target Name="GetLocalizationInputs" DependsOnTargets="GetTargetFrameworkSet" Returns="@(DllsToLocalize)" Condition="'$(Shipping)' == 'true'">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="$(LocTargets)"
@@ -306,7 +306,7 @@
     ============================================================
   -->
   <Target Name="GetTestAssemblies"
-          DependsOnTargets="Build;GetTargetFrameworkSetMinusNet45"
+          DependsOnTargets="Build;GetTargetFrameworkSet"
           Condition=" '$(TestProject)' == 'true' AND '$(SkipTests)' != 'true' "
           Returns="@(TestAssemblyPath)">
     <Message Text="Discovering test assemblies for $(AssemblyName)" Importance="high" />
@@ -356,22 +356,6 @@
     <!-- Find all frameworks to run on -->
     <ItemGroup>
       <ProjectTargetFrameworkEntries Include="$(TargetFramework);$(TargetFrameworks)" />
-    </ItemGroup>
-  </Target>
-
-  <!--
-    ============================================================
-    GetTargetFrameworkSet get all target frameworks
-    ============================================================
-  -->
-  <Target Name="GetTargetFrameworkSetMinusNet45" Returns="@(ProjectTargetFrameworkEntries)">
-    <!-- Find all frameworks to run on -->
-    <PropertyGroup>
-       <TargetFrameworksList>$(TargetFramework);$(TargetFrameworks)</TargetFrameworksList>
-       <TargetFrameworksWithoutNet45>$(TargetFrameworksList.Replace(';net45', ''))</TargetFrameworksWithoutNet45>
-    </PropertyGroup>
-    <ItemGroup>
-      <ProjectTargetFrameworkEntries Include="$(TargetFrameworksWithoutNet45)" />
     </ItemGroup>
   </Target>
 
