@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,8 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -161,7 +164,7 @@ namespace NuGet.Protocol.Core.Types
                             var message = string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.AddPackage_PackageAlreadyExists,
-                                packageIdentity, 
+                                packageIdentity,
                                 source);
 
                             if (offlineFeedAddContext.ThrowIfPackageExists)
@@ -176,8 +179,8 @@ namespace NuGet.Protocol.Core.Types
                         else
                         {
                             var message = string.Format(CultureInfo.CurrentCulture,
-                                Strings.AddPackage_ExistingPackageInvalid, 
-                                packageIdentity, 
+                                Strings.AddPackage_ExistingPackageInvalid,
+                                packageIdentity,
                                 source);
 
                             if (offlineFeedAddContext.ThrowIfPackageExistsAndInvalid)
@@ -220,10 +223,10 @@ namespace NuGet.Protocol.Core.Types
                     }
                 }
                 // Mono will throw ArchiveException when package is invalid.
-                // Reading Nuspec in invalid package on Mono will get PackagingException 
+                // Reading Nuspec in invalid package on Mono will get PackagingException
                 catch (Exception ex) when( ex is InvalidDataException
                                         || (RuntimeEnvironmentHelper.IsMono
-                                        && (ex.GetType().FullName.Equals("SharpCompress.Common.ArchiveException") 
+                                        && (ex.GetType().FullName.Equals("SharpCompress.Common.ArchiveException")
                                         || ex is PackagingException)))
                 {
                     var message = string.Format(

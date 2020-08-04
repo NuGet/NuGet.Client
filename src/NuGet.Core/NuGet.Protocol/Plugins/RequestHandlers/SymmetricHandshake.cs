@@ -21,9 +21,7 @@ namespace NuGet.Protocol.Plugins
         private HandshakeRequest _outboundHandshakeRequest;
         private readonly SemanticVersion _protocolVersion;
         private TaskCompletionSource<int> _responseSentTaskCompletionSource;
-#if !NET45
         private readonly CancellationTokenSource _timeoutCancellationTokenSource;
-#endif
 
         /// <summary>
         /// Gets the <see cref="CancellationToken" /> for a request.
@@ -71,10 +69,7 @@ namespace NuGet.Protocol.Plugins
             _protocolVersion = protocolVersion;
             _minimumProtocolVersion = minimumProtocolVersion;
             _handshakeFailedResponse = new HandshakeResponse(MessageResponseCode.Error, protocolVersion: null);
-#if !NET45
-            _responseSentTaskCompletionSource = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            _timeoutCancellationTokenSource = new CancellationTokenSource(handshakeTimeout);
+            _responseSentTaskCompletionSource = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);            _timeoutCancellationTokenSource = new CancellationTokenSource(handshakeTimeout);
 
             _timeoutCancellationTokenSource.Token.Register(() =>
             {
@@ -87,10 +82,6 @@ namespace NuGet.Protocol.Plugins
             {
                 throw new ArgumentException(Strings.Plugin_HandshakeRequestHandlerAlreadyExists, nameof(connection));
             }
-#else
-            _responseSentTaskCompletionSource = null;
-            throw new NotImplementedException("not implemented in NET45 version of NuGet.Protocol");
-#endif
         }
 
         /// <summary>

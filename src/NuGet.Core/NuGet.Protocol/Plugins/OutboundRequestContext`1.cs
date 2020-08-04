@@ -15,17 +15,17 @@ namespace NuGet.Protocol.Plugins
     /// <typeparam name="TResult">The response payload type.</typeparam>
     public sealed class OutboundRequestContext<TResult> : OutboundRequestContext
     {
+        private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IConnection _connection;
         private int _isCancellationRequested; // int for Interlocked.CompareExchange(...).  0 == false, 1 == true.
         private bool _isClosed;
         private bool _isDisposed;
         private bool _isKeepAlive;
-        private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IPluginLogger _logger;
-        private readonly TimeSpan? _timeout;
-        private readonly Timer _timer;
         private readonly Message _request;
         private readonly TaskCompletionSource<TResult> _taskCompletionSource;
+        private readonly TimeSpan? _timeout;
+        private readonly Timer _timer;
 
         /// <summary>
         /// Gets the completion task.
@@ -100,11 +100,7 @@ namespace NuGet.Protocol.Plugins
 
             _connection = connection;
             _request = request;
-#if !NET45
             _taskCompletionSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-#else
-            _taskCompletionSource = new TaskCompletionSource<TResult>(TaskCreationOptions.None); // Which enum is best? right way to downlevel?
-#endif
             _timeout = timeout;
             _isKeepAlive = isKeepAlive;
             RequestId = request.RequestId;
@@ -127,8 +123,6 @@ namespace NuGet.Protocol.Plugins
             // Capture the cancellation token now because if the cancellation token source
             // is disposed race conditions may cause an exception acccessing its Token property.
             CancellationToken = _cancellationTokenSource.Token;
-            _taskCompletionSource = null;
-            throw new NotImplementedException("not implemented in NET45 version of NuGet.Protocol");
         }
 
         /// <summary>
