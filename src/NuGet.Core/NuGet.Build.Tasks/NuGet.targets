@@ -774,7 +774,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
-        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>	
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
       </_RestoreGraphEntry>
     </ItemGroup>
   </Target>

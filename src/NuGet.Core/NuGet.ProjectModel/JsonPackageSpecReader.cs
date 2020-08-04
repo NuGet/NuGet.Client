@@ -1501,7 +1501,7 @@ namespace NuGet.ProjectModel
                             });
                         });
                     }
-                    else if(propertyName == "targetAlias")
+                    else if (propertyName == "targetAlias")
                     {
                         frameworkGroup.TargetAlias = jsonReader.ReadNextTokenAsString();
                     }

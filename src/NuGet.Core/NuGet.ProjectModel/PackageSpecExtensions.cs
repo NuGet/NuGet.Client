@@ -25,13 +25,6 @@ namespace NuGet.ProjectModel
             return frameworkInfo ?? new TargetFrameworkInformation();
         }
 
-        public static TargetFrameworkInformation GetTargetFramework(this PackageSpec project, string targetAlias)
-        {
-            var frameworkInfo = project.TargetFrameworks.FirstOrDefault(f => targetAlias.Equals(f.TargetAlias, StringComparison.OrdinalIgnoreCase));
-
-            return frameworkInfo ?? new TargetFrameworkInformation();
-        }
-
         /// <summary>
         /// Get restore metadata framework. This is based on the project's target frameworks, then an 
         /// exact match is found under restore metadata.
