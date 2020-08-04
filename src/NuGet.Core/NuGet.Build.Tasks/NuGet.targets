@@ -918,16 +918,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         ItemName="_RestoreGraphEntry" />
     </GetRestoreFrameworkReferencesTask>
 
-    <!-- Write out the TargetFramework specific properties -->
-    <ItemGroup Condition="  '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(RuntimeIdentifierGraphPath)' != '' ">
-      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
-        <Type>TargetFrameworkProperties</Type>
-        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
-      </_RestoreGraphEntry>
-    </ItemGroup>
-
     <!-- Write out target framework information -->
     <ItemGroup Condition="  '$(PackageReferenceCompatibleProjectStyle)' == 'true'">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
@@ -942,6 +932,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TargetPlatformIdentifier>$(TargetPlatformIdentifier)</TargetPlatformIdentifier>
         <TargetPlatformVersion>$(TargetPlatformVersion)</TargetPlatformVersion>
         <TargetPlatformMinVersion>$(TargetPlatformMinVersion)</TargetPlatformMinVersion>
+        <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
       </_RestoreGraphEntry>
     </ItemGroup>
   </Target>

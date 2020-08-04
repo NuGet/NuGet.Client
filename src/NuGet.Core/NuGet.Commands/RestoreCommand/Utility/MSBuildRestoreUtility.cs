@@ -243,9 +243,6 @@ namespace NuGet.Commands
                     // Add RIDs and Supports
                     result.RuntimeGraph = GetRuntimeGraph(specItem);
 
-                    // Add Target Framework Specific Properties
-                    AddTargetFrameworkSpecificProperties(result, items);
-
                     // Add CrossTargeting flag
                     result.RestoreMetadata.CrossTargeting = IsPropertyTrue(specItem, "CrossTargeting");
 
@@ -451,7 +448,9 @@ namespace NuGet.Commands
                     FrameworkName = NuGetFramework.Parse(targetFramework.Single()),
                     TargetAlias = targetAlias
                 };
-                if (restoreType == ProjectStyle.PackageReference)
+                if (restoreType == ProjectStyle.PackageReference ||
+                    restoreType == ProjectStyle.Standalone ||
+                    restoreType == ProjectStyle.DotnetToolReference)
                 {
                     var packageTargetFallback = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
                         .Select(NuGetFramework.Parse)
@@ -466,18 +465,10 @@ namespace NuGet.Commands
 
                     // Update the framework appropriately
                     AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInfo, packageTargetFallback, assetTargetFallback);
+
+                    targetFrameworkInfo.RuntimeIdentifierGraphPath = item.GetProperty("RuntimeIdentifierGraphPath");
                 }
                 yield return targetFrameworkInfo;
-            }
-        }
-
-        private static void AddTargetFrameworkSpecificProperties(PackageSpec spec, IEnumerable<IMSBuildItem> items)
-        {
-            foreach (var item in GetItemByType(items, "TargetFrameworkProperties"))
-            {
-                var frameworkString = item.GetProperty("TargetFramework");
-                var targetFrameworkInformation = spec.GetTargetFramework(NuGetFramework.Parse(frameworkString));
-                targetFrameworkInformation.RuntimeIdentifierGraphPath = item.GetProperty("RuntimeIdentifierGraphPath");
             }
         }
 

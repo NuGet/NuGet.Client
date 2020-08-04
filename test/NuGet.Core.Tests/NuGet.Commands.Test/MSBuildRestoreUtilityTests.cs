@@ -3766,6 +3766,142 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public void GetPackageSpec_DootnetToolReference_WithTargetFrameworkInformation_Succeeds()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var uniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var outputPath = Path.Combine(workingDir, "a", "obj");
+                var atf = FrameworkConstants.CommonFrameworks.Net462;
+                var items = new List<IDictionary<string, string>>();
+                var runtimeIdentifierGraphPath = Path.Combine(workingDir, "sdk", "runtime.json");
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a1" },
+                    { "ProjectStyle", "DotnetToolReference" },
+                    { "OutputPath", outputPath },
+                    { "ProjectUniqueName", uniqueName },
+                    { "ProjectPath", project1Root },
+                    { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", atf.GetShortFolderName() },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", FrameworkConstants.FrameworkIdentifiers.NetCoreApp },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.NetCoreApp},Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformVersion", "" },
+                    { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var targetFrameworkInformation = dgSpec.Projects.Single().TargetFrameworks.Single();
+
+                // Assert
+                targetFrameworkInformation.FrameworkName.Framework.Should().Be(FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
+                targetFrameworkInformation.AssetTargetFallback.Should().BeTrue();
+                var assetTargetFallbackFramework = targetFrameworkInformation.FrameworkName as AssetTargetFallbackFramework;
+                assetTargetFallbackFramework.Fallback.Should().HaveCount(1);
+                assetTargetFallbackFramework.Fallback.Single().Should().Be(atf);
+                targetFrameworkInformation.RuntimeIdentifierGraphPath.Should().Be(runtimeIdentifierGraphPath);
+            }
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithRuntimeIdentifierGraphPath_Succeeds()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var uniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var runtimeIdentifierGraphPath = Path.Combine(workingDir, "sdk", "runtime.json");
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(CreateProject(project1Root, uniqueName));
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformVersion", "" },
+                    { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var targetFrameworkInformation = dgSpec.Projects.Single().TargetFrameworks.Single();
+
+                // Assert
+                targetFrameworkInformation.RuntimeIdentifierGraphPath.Should().Be(runtimeIdentifierGraphPath);
+            }
+        }
+
+        [Fact]
+        public void GetPackageSpec_TargetFrameworkInformationWithAlias_Succeeds()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var uniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var runtimeIdentifierGraphPath = Path.Combine(workingDir, "sdk", "runtime.json");
+                var items = new List<IDictionary<string, string>>();
+                var alias = "blabla";
+                var framework = FrameworkConstants.CommonFrameworks.Net461;
+                items.Add(CreateProject(project1Root, uniqueName));
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", framework.Framework },
+                    { "TargetFrameworkVersion", $"v{framework.Version.ToString(2)}" },
+                    { "TargetFrameworkMoniker", framework.DotNetFrameworkName },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformVersion", "" },
+                    { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var targetFrameworkInformation = dgSpec.Projects.Single().TargetFrameworks.Single();
+
+                // Assert
+                targetFrameworkInformation.RuntimeIdentifierGraphPath.Should().Be(runtimeIdentifierGraphPath);
+                targetFrameworkInformation.TargetAlias.Should().Be(alias);
+                targetFrameworkInformation.FrameworkName.Equals(framework);
+            }
+        }
+
         private static IDictionary<string, string> CreateProject(string root, string uniqueName)
         {
             var project1Path = Path.Combine(root, "a.csproj");
