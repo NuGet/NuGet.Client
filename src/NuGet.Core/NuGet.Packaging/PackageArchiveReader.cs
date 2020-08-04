@@ -160,11 +160,11 @@ namespace NuGet.Packaging
         /// <summary>
         /// This class literally just exists so CopyToFile gets a file size
         /// </summary>
-        private class SizedArchiveEntryStream : Stream
+        private sealed class SizedArchiveEntryStream : Stream
         {
-            Stream _inner;
+            private readonly Stream _inner;
 
-            long _size;
+            private readonly long _size;
 
             public SizedArchiveEntryStream(Stream inner, long size)
             {
@@ -172,7 +172,7 @@ namespace NuGet.Packaging
                 _size = size;
             }
 
-            public override long Length { get { return _size; } }
+            public override long Length { get => _size; }
 
             public override bool CanRead => _inner.CanRead;
 
@@ -207,6 +207,20 @@ namespace NuGet.Packaging
                 _inner.Write(buffer, offset, count);
             }
 
+            private bool _isDisposed;
+
+            protected override void Dispose(bool disposing)
+            {
+                if (!_isDisposed)
+                {
+                    if (disposing)
+                    {
+                        _inner.Dispose();
+                    }
+
+                    _isDisposed = true;
+                }
+            }
         }
 
         public override IEnumerable<string> CopyFiles(

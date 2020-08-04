@@ -9,7 +9,6 @@ namespace NuGet.Packaging
 {
     public static class StreamExtensions
     {
-
         /**
         Only files smaller than this value will be mmap'ed
         */
@@ -52,14 +51,12 @@ namespace NuGet.Packaging
             {
                 if (size > 0 && size <= MAX_MMAP_SIZE)
                 {
-                    using (MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(
-                        outputStream,
-                        mapName: null,
-                        capacity: (long)size,
-                        MemoryMappedFileAccess.ReadWrite,
-                        HandleInheritability.None,
-                        leaveOpen: false))
-                    using (MemoryMappedViewStream mmstream = mmf.CreateViewStream(0, (long)size, MemoryMappedFileAccess.ReadWrite))
+                    // NOTE: Linux can't create a mmf from outputStream, so we
+                    // need to close the file (which now has the desired
+                    // perms), and then re-open it as a memory-mapped file.
+                    outputStream.Dispose();
+                    using (MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(fileFullPath, FileMode.Open, mapName: null, (long)size))
+                    using (MemoryMappedViewStream mmstream = mmf.CreateViewStream())
                     {
                         inputStream.CopyTo(mmstream);
                     }
