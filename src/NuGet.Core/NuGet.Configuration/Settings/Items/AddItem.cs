@@ -28,29 +28,13 @@ namespace NuGet.Configuration
             ).ToDictionary(a => a.Key, a => a.Value));
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
-#if !NET45
-        // HashSet<T> doesn't implement IReadOnlyCollection in NET45
-        = new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute };
-#else
-        = new ReadOnlyCollection<string>(
-                new List<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute
-    });
-#endif
+            = IReadOnlyCollectionUtility.Create<string>(ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute);
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; }
-#if !NET45
-        // HashSet<T> doesn't implement IReadOnlyCollection in NET45
-        = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
-            new Dictionary<string, IReadOnlyCollection<string>>()
-            {
-                { ConfigurationConstants.KeyAttribute, new HashSet<string>() { string.Empty } }
-            });
-#else
             = new Dictionary<string, IReadOnlyCollection<string>>()
             {
-                { ConfigurationConstants.KeyAttribute, new ReadOnlyCollection<string>(new List<string>() { string.Empty }) }
+                { ConfigurationConstants.KeyAttribute, IReadOnlyCollectionUtility.Create<string>(string.Empty) }
             };
-#endif
 
         public AddItem(string key, string value)
             : this(key, value, additionalAttributes: null)

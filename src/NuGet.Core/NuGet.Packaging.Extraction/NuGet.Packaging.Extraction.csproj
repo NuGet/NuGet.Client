@@ -66,65 +66,16 @@
     <None Remove="NuGet.Common\**" />
     <None Remove="NuGet.Configuration\**" />
   </ItemGroup>
-<!-- START -->
 
   <ItemGroup>
+    <Compile Include="..\NuGet.Packaging\Core\comparers\PackageDependencyComparer.cs" Link="NuGet.Packaging\Core\comparers\PackageDependencyComparer.cs" />
     <Compile Include="..\NuGet.Packaging\Core\comparers\PackageDependencyInfoComparer.cs" Link="NuGet.Packaging\Core\comparers\PackageDependencyInfoComparer.cs" />
     <Compile Include="..\NuGet.Packaging\Core\PackageDependencyInfo.cs" Link="NuGet.Packaging\Core\PackageDependencyInfo.cs" />
-    <Compile Include="..\NuGet.Packaging\Exceptions\MinClientVersionException.cs" Link="NuGet.Packaging\Exceptions\MinClientVersionException.cs" />
-    <Compile Include="..\NuGet.Packaging\MinClientVersionUtility.cs" Link="NuGet.Packaging\MinClientVersionUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageExtractionBehavior.cs" Link="NuGet.Packaging\PackageExtraction\PackageExtractionBehavior.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtractor.cs" Link="NuGet.Packaging\PackageExtractor.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageFolderReader.cs" Link="NuGet.Packaging\PackageFolderReader.cs" />
-    <Compile Include="..\NuGet.Packaging\PackagePathResolver.cs" Link="NuGet.Packaging\PackagePathResolver.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageExtractionContext.cs" Link="NuGet.Packaging\PackageExtraction\PackageExtractionContext.cs" />
-    <Compile Include="..\NuGet.Packaging\RuntimeModel\IObjectWriter.cs" Link="NuGet.Packaging\RuntimeModel\IObjectWriter.cs" />
-    <Compile Include="..\NuGet.Packaging\RuntimeModel\JsonObjectWriter.cs" Link="NuGet.Packaging\RuntimeModel\JsonObjectWriter.cs" />
-    <Compile Include="..\NuGet.Packaging\RuntimeModel\JsonRuntimeFormat.cs" Link="NuGet.Packaging\RuntimeModel\JsonRuntimeFormat.cs" />
-    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeGraph.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeGraph.cs" />
-    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeDescription.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeDescription.cs" />
-    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimePackageDependency.cs" Link="NuGet.Packaging\RuntimeModel\RuntimePackageDependency.cs" />
-    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeDependencySet.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeDependencySet.cs" />
-    <Compile Include="..\NuGet.Packaging\RuntimeModel\CompatibilityProfile.cs" Link="NuGet.Packaging\RuntimeModel\CompatibilityProfile.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" />
-    <Compile Include="..\NuGet.Packaging\Telemetry\PackageExtractionTelemetryEvent.cs" Link="NuGet.Packaging\Telemetry\PackageExtractionTelemetryEvent.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageArchiveReader.cs" Link="NuGet.Packaging\PackageArchiveReader.cs" />
-    <Compile Include="..\NuGet.Packaging\PackagingConstants.cs" Link="NuGet.Packaging\PackagingConstants.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageReaderBase.cs" Link="NuGet.Packaging\PackageReaderBase.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Specifications\SigningSpecifications.cs" Link="NuGet.Packaging\Signing\Specifications\SigningSpecifications.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\SignatureException.cs" Link="NuGet.Packaging\Signing\SignatureException.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageSaveMode.cs" Link="NuGet.Packaging\PackageExtraction\PackageSaveMode.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageHelper.cs" Link="NuGet.Packaging\PackageExtraction\PackageHelper.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageFileExtractor.cs" Link="NuGet.Packaging\PackageFileExtractor.cs" />
-    <Compile Include="..\NuGet.Packaging\Core\PackagingException.cs" Link="NuGet.Packaging\Core\PackagingException.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\PackageVerificationResult.cs" Link="NuGet.Packaging\Signing\Verification\PackageVerificationResult.cs" />
-    <Compile Include="..\NuGet.Packaging\Core\PackageIdentity.cs" Link="NuGet.Packaging\Core\PackageIdentity.cs" />
-    <Compile Include="..\NuGet.Packaging\VersionFolderPathResolver.cs" Link="NuGet.Packaging\VersionFolderPathResolver.cs" />
-    <Compile Include="..\NuGet.Packaging\NupkgMetadata\NupkgMetadataFile.cs" Link="NuGet.Packaging\NupkgMetadata\NupkgMetadataFile.cs" />
-    <Compile Include="..\NuGet.Packaging\NupkgMetadata\NupkgMetadataFileFormat.cs" Link="NuGet.Packaging\NupkgMetadata\NupkgMetadataFileFormat.cs" />
-    <Compile Include="..\NuGet.Packaging\Definitions\IPackageDownloader.cs" Link="NuGet.Packaging\Definitions\IPackageDownloader.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\XmlDocFileSaveMode.cs" Link="NuGet.Packaging\PackageExtraction\XmlDocFileSaveMode.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Package\ISignedPackageReader.cs" Link="NuGet.Packaging\Signing\Package\ISignedPackageReader.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\RepositorySignatureInfoUtility.cs" Link="NuGet.Packaging\Signing\Utility\RepositorySignatureInfoUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\IPackageSignatureVerifier.cs" Link="NuGet.Packaging\Signing\Verification\IPackageSignatureVerifier.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\ISignatureVerificationProvider.cs" Link="NuGet.Packaging\Signing\Verification\ISignatureVerificationProvider.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\AllowListVerificationProvider.cs" Link="NuGet.Packaging\Signing\Verification\AllowListVerificationProvider.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureTrustAndValidityVerificationProvider.cs" Link="NuGet.Packaging\Signing\Verification\SignatureTrustAndValidityVerificationProvider.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\PackageSignatureVerifier.cs" Link="NuGet.Packaging\Signing\Verification\PackageSignatureVerifier.cs" />
     <Compile Include="..\NuGet.Packaging\Core\PackagingCoreConstants.cs" Link="NuGet.Packaging\Core\PackagingCoreConstants.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\IntegrityVerificationProvider.cs" Link="NuGet.Packaging\Signing\Verification\IntegrityVerificationProvider.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\ClientPolicyContext.cs" Link="NuGet.Packaging\Signing\Verification\ClientPolicyContext.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\SignatureLog.cs" Link="NuGet.Packaging\Signing\SignatureLog.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\VerifySignaturesResult.cs" Link="NuGet.Packaging\Signing\Verification\VerifySignaturesResult.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\RepositorySignatureInfo.cs" Link="NuGet.Packaging\Signing\RepositorySignatureInfo.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\RepositorySignatureInfoProvider.cs" Link="NuGet.Packaging\Signing\RepositorySignatureInfoProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Core\PackagingException.cs" Link="NuGet.Packaging\Core\PackagingException.cs" />
+    <Compile Include="..\NuGet.Packaging\Core\PackageIdentity.cs" Link="NuGet.Packaging\Core\PackageIdentity.cs" />
     <Compile Include="..\NuGet.Packaging\Core\IPackageCoreReader.cs" Link="NuGet.Packaging\Core\IPackageCoreReader.cs" />
-    <Compile Include="..\NuGet.Packaging\Definitions\IPackageContentReader.cs" Link="NuGet.Packaging\Definitions\IPackageContentReader.cs" />
     <Compile Include="..\NuGet.Packaging\Core\IAsyncPackageCoreReader.cs" Link="NuGet.Packaging\Core\IAsyncPackageCoreReader.cs" />
-    <Compile Include="..\NuGet.Packaging\Definitions\IAsyncPackageContentReader.cs" Link="NuGet.Packaging\Definitions\IAsyncPackageContentReader.cs" />
-    <Compile Include="..\NuGet.Packaging\NuspecReader.cs" Link="NuGet.Packaging\NuspecReader.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageType.cs" Link="NuGet.Packaging\PackageExtraction\PackageType.cs" />
     <Compile Include="..\NuGet.Packaging\Core\PackageType.cs" Link="NuGet.Packaging\Core\PackageType.cs" />
     <Compile Include="..\NuGet.Packaging\Core\ExtractPackageFileDelegate.cs" Link="NuGet.Packaging\Core\ExtractPackageFileDelegate.cs" />
     <Compile Include="..\NuGet.Packaging\Core\comparers\IPackageIdentityComparer.cs" Link="NuGet.Packaging\Core\comparers\IPackageIdentityComparer.cs" />
@@ -133,51 +84,27 @@
     <Compile Include="..\NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Link="NuGet.Packaging\Core\FrameworkReferenceGroup.cs" />
     <Compile Include="..\NuGet.Packaging\Core\FrameworkSpecificGroup.cs" Link="NuGet.Packaging\Core\FrameworkSpecificGroup.cs" />
     <Compile Include="..\NuGet.Packaging\Core\PackageDependencyGroup.cs" Link="NuGet.Packaging\Core\PackageDependencyGroup.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\StreamExtensions.cs" Link="NuGet.Packaging\PackageExtraction\StreamExtensions.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageReaderExtensions.cs" Link="NuGet.Packaging\PackageReaderExtensions.cs" />
-    <Compile Include="..\NuGet.Packaging\Telemetry\ExtractionSource.cs" Link="NuGet.Packaging\Telemetry\ExtractionSource.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\VerificationAllowListEntry.cs" Link="NuGet.Packaging\Signing\Verification\VerificationAllowListEntry.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\TrustedSignerAllowListEntry.cs" Link="NuGet.Packaging\Signing\Verification\TrustedSignerAllowListEntry.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\CertificateHashAllowListEntry.cs" Link="NuGet.Packaging\Signing\Verification\CertificateHashAllowListEntry.cs" />
     <Compile Include="..\NuGet.Packaging\Core\PackageDependency.cs" Link="NuGet.Packaging\Core\PackageDependency.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignedPackageVerifierSettings.cs" Link="NuGet.Packaging\Signing\Verification\SignedPackageVerifierSettings.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\ZipFilePair.cs" Link="NuGet.Packaging\PackageExtraction\ZipFilePair.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\PrimarySignature.cs" Link="NuGet.Packaging\Signing\Signatures\PrimarySignature.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Content\SignatureContent.cs" Link="NuGet.Packaging\Signing\Content\SignatureContent.cs" />
-    <Compile Include="..\NuGet.Packaging\Exceptions\UnsafePackageEntryException.cs" Link="NuGet.Packaging\Exceptions\UnsafePackageEntryException.cs" />
     <Compile Include="..\NuGet.Packaging\Core\NuspecCoreReaderBase.cs" Link="NuGet.Packaging\Core\NuspecCoreReaderBase.cs" />
     <Compile Include="..\NuGet.Packaging\Core\ContentFilesEntry.cs" Link="NuGet.Packaging\Core\ContentFilesEntry.cs" />
     <Compile Include="..\NuGet.Packaging\Core\RepositoryMetadata.cs" Link="NuGet.Packaging\Core\RepositoryMetadata.cs" />
     <Compile Include="..\NuGet.Packaging\Core\NuspecUtility.cs" Link="NuGet.Packaging\Core\NuspecUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageCreation\Authoring\LicenseMetadata.cs" Link="NuGet.Packaging\PackageCreation\Authoring\LicenseMetadata.cs" />
+    <Compile Include="..\NuGet.Packaging\Core\IRepositoryCertificateInfo.cs" Link="NuGet.Packaging\Core\IRepositoryCertificateInfo.cs" />
+    <Compile Include="..\NuGet.Packaging\Core\Fingerprints.cs" Link="NuGet.Packaging\Core\Fingerprints.cs" />
+    <Compile Include="..\NuGet.Packaging\Core\INuspecCoreReader.cs" Link="NuGet.Packaging\Core\INuspecCoreReader.cs" />
+    <Compile Include="..\NuGet.Packaging\Definitions\IPackageContentReader.cs" Link="NuGet.Packaging\Definitions\IPackageContentReader.cs" />
+    <Compile Include="..\NuGet.Packaging\Definitions\IAsyncPackageContentReader.cs" Link="NuGet.Packaging\Definitions\IAsyncPackageContentReader.cs" />
+    <Compile Include="..\NuGet.Packaging\Definitions\IPackageDownloader.cs" Link="NuGet.Packaging\Definitions\IPackageDownloader.cs" />
+    <Compile Include="..\NuGet.Packaging\Exceptions\MinClientVersionException.cs" Link="NuGet.Packaging\Exceptions\MinClientVersionException.cs" />
+    <Compile Include="..\NuGet.Packaging\Exceptions\UnsafePackageEntryException.cs" Link="NuGet.Packaging\Exceptions\UnsafePackageEntryException.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicenseExpressionParsingException.cs" Link="NuGet.Packaging\Licenses\NuGetLicenseExpressionParsingException.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicense.cs" Link="NuGet.Packaging\Licenses\NuGetLicense.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicenseExpression.cs" Link="NuGet.Packaging\Licenses\NuGetLicenseExpression.cs" />
-    <Compile Include="..\NuGet.Packaging\Core\IRepositoryCertificateInfo.cs" Link="NuGet.Packaging\Core\IRepositoryCertificateInfo.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SignatureType.cs" Link="NuGet.Packaging\Signing\Signatures\SignatureType.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\SignatureUtility.cs" Link="NuGet.Packaging\Signing\Utility\SignatureUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\Signature.cs" Link="NuGet.Packaging\Signing\Signatures\Signature.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\PrimarySignatureFactory.cs" Link="NuGet.Packaging\Signing\Signatures\PrimarySignatureFactory.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Cms\CmsFactory.cs" Link="NuGet.Packaging\Signing\Cms\CmsFactory.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Cms\ICms.cs" Link="NuGet.Packaging\Signing\Cms\ICms.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Specifications\SigningSpecificationsV1.cs" Link="NuGet.Packaging\Signing\Specifications\SigningSpecificationsV1.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\IRepositorySignature.cs" Link="NuGet.Packaging\Signing\Signatures\IRepositorySignature.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\VerificationTarget.cs" Link="NuGet.Packaging\Signing\Verification\VerificationTarget.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SignaturePlacement.cs" Link="NuGet.Packaging\Signing\Signatures\SignaturePlacement.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureVerificationStatus.cs" Link="NuGet.Packaging\Signing\Verification\SignatureVerificationStatus.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Timestamp.cs" Link="NuGet.Packaging\Signing\Timestamp\Timestamp.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\VerificationUtility.cs" Link="NuGet.Packaging\Signing\Utility\VerificationUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureVerificationStatusFlags.cs" Link="NuGet.Packaging\Signing\Verification\SignatureVerificationStatusFlags.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureVerificationSummary.cs" Link="NuGet.Packaging\Signing\Verification\SignatureVerificationSummary.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignedPackageVerificationResult.cs" Link="NuGet.Packaging\Signing\Verification\SignedPackageVerificationResult.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureVerificationBehavior.cs" Link="NuGet.Packaging\Signing\Verification\SignatureVerificationBehavior.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\RepositoryCountersignature.cs" Link="NuGet.Packaging\Signing\Signatures\RepositoryCountersignature.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SignatureVerifySettings.cs" Link="NuGet.Packaging\Signing\Signatures\SignatureVerifySettings.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampVerificationUtility.cs" Link="NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampVerificationUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\AuthorPrimarySignature.cs" Link="NuGet.Packaging\Signing\Signatures\AuthorPrimarySignature.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\RepositoryPrimarySignature.cs" Link="NuGet.Packaging\Signing\Signatures\RepositoryPrimarySignature.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\CertificateUtility.cs" Link="NuGet.Packaging\Signing\Utility\CertificateUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageCreation\Extensions\StringExtensions.cs" Link="NuGet.Packaging\PackageCreation\Extensions\StringExtensions.cs" />
+    <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicenseData.cs" Link="NuGet.Packaging\Licenses\NuGetLicenseData.cs" />
+    <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicenseExpressionParser.cs" Link="NuGet.Packaging\Licenses\NuGetLicenseExpressionParser.cs" />
+    <Compile Include="..\NuGet.Packaging\Licenses\LicenseExpressionToken.cs" Link="NuGet.Packaging\Licenses\LicenseExpressionToken.cs" />
+    <Compile Include="..\NuGet.Packaging\Licenses\LicenseTokenType.cs" Link="NuGet.Packaging\Licenses\LicenseTokenType.cs" />
+    <Compile Include="..\NuGet.Packaging\Licenses\LicenseTokenTypeExtensions.cs" Link="NuGet.Packaging\Licenses\LicenseTokenTypeExtensions.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicenseExpressionExtensions.cs" Link="NuGet.Packaging\Licenses\NuGetLicenseExpressionExtensions.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicenseException.cs" Link="NuGet.Packaging\Licenses\NuGetLicenseException.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\LicenseExpressionType.cs" Link="NuGet.Packaging\Licenses\LicenseExpressionType.cs" />
@@ -185,13 +112,30 @@
     <Compile Include="..\NuGet.Packaging\Licenses\LicenseOperatorType.cs" Link="NuGet.Packaging\Licenses\LicenseOperatorType.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\LicenseOperator.cs" Link="NuGet.Packaging\Licenses\LicenseOperator.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\WithOperator.cs" Link="NuGet.Packaging\Licenses\WithOperator.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Archive\SignedPackageArchiveUtility.cs" Link="NuGet.Packaging\Signing\Archive\SignedPackageArchiveUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Archive\ReadOnlyBufferedStream.cs" Link="NuGet.Packaging\Signing\Archive\ReadOnlyBufferedStream.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\ZipArchiveExtensions.cs" Link="NuGet.Packaging\PackageExtraction\ZipArchiveExtensions.cs" />
-    <EmbeddedResource Include="..\NuGet.Packaging\PackageCreation\Resources\NuGetResources.resx" Link="NuGet.Packaging\PackageCreation\Resources\NuGetResources.resx" />
-    <Compile Include="..\NuGet.Packaging\Core\Fingerprints.cs" Link="NuGet.Packaging\Core\Fingerprints.cs" />
-    <Compile Include="..\NuGet.Packaging\Core\INuspecCoreReader.cs" Link="NuGet.Packaging\Core\INuspecCoreReader.cs" />
     <Compile Include="..\NuGet.Packaging\Licenses\LogicalOperatorType.cs" Link="NuGet.Packaging\Licenses\LogicalOperatorType.cs" />
+    <Compile Include="..\NuGet.Packaging\Licenses\LicenseExpressionTokenizer.cs" Link="NuGet.Packaging\Licenses\LicenseExpressionTokenizer.cs" />
+    <Compile Include="..\NuGet.Packaging\NupkgMetadata\NupkgMetadataFile.cs" Link="NuGet.Packaging\NupkgMetadata\NupkgMetadataFile.cs" />
+    <Compile Include="..\NuGet.Packaging\NupkgMetadata\NupkgMetadataFileFormat.cs" Link="NuGet.Packaging\NupkgMetadata\NupkgMetadataFileFormat.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageCreation\Authoring\LicenseMetadata.cs" Link="NuGet.Packaging\PackageCreation\Authoring\LicenseMetadata.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageCreation\Extensions\StringExtensions.cs" Link="NuGet.Packaging\PackageCreation\Extensions\StringExtensions.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageExtractionBehavior.cs" Link="NuGet.Packaging\PackageExtraction\PackageExtractionBehavior.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageExtractionContext.cs" Link="NuGet.Packaging\PackageExtraction\PackageExtractionContext.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageSaveMode.cs" Link="NuGet.Packaging\PackageExtraction\PackageSaveMode.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageHelper.cs" Link="NuGet.Packaging\PackageExtraction\PackageHelper.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\XmlDocFileSaveMode.cs" Link="NuGet.Packaging\PackageExtraction\XmlDocFileSaveMode.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackageType.cs" Link="NuGet.Packaging\PackageExtraction\PackageType.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\StreamExtensions.cs" Link="NuGet.Packaging\PackageExtraction\StreamExtensions.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\ZipFilePair.cs" Link="NuGet.Packaging\PackageExtraction\ZipFilePair.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\ZipArchiveExtensions.cs" Link="NuGet.Packaging\PackageExtraction\ZipArchiveExtensions.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs" Link="NuGet.Packaging\PackageExtraction\PackagePathHelper.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\IObjectWriter.cs" Link="NuGet.Packaging\RuntimeModel\IObjectWriter.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\JsonObjectWriter.cs" Link="NuGet.Packaging\RuntimeModel\JsonObjectWriter.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\JsonRuntimeFormat.cs" Link="NuGet.Packaging\RuntimeModel\JsonRuntimeFormat.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeGraph.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeGraph.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeDescription.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeDescription.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimePackageDependency.cs" Link="NuGet.Packaging\RuntimeModel\RuntimePackageDependency.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\RuntimeDependencySet.cs" Link="NuGet.Packaging\RuntimeModel\RuntimeDependencySet.cs" />
+    <Compile Include="..\NuGet.Packaging\RuntimeModel\CompatibilityProfile.cs" Link="NuGet.Packaging\RuntimeModel\CompatibilityProfile.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Archive\CentralDirectoryHeaderMetadata.cs" Link="NuGet.Packaging\Signing\Archive\CentralDirectoryHeaderMetadata.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Archive\LocalFileHeader.cs" Link="NuGet.Packaging\Signing\Archive\LocalFileHeader.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Archive\SignedPackageArchiveIOUtility.cs" Link="NuGet.Packaging\Signing\Archive\SignedPackageArchiveIOUtility.cs" />
@@ -200,72 +144,127 @@
     <Compile Include="..\NuGet.Packaging\Signing\Archive\CentralDirectoryHeader.cs" Link="NuGet.Packaging\Signing\Archive\CentralDirectoryHeader.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Archive\EndOfCentralDirectoryRecord.cs" Link="NuGet.Packaging\Signing\Archive\EndOfCentralDirectoryRecord.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Archive\Zip64EndOfCentralDirectoryLocator.cs" Link="NuGet.Packaging\Signing\Archive\Zip64EndOfCentralDirectoryLocator.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Package\SignedPackageArchive.cs" Link="NuGet.Packaging\Signing\Package\SignedPackageArchive.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\AttributeUtility.cs" Link="NuGet.Packaging\Signing\Utility\AttributeUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Archive\SignedPackageArchiveMetadata.cs" Link="NuGet.Packaging\Signing\Archive\SignedPackageArchiveMetadata.cs" />
-    <Compile Include="..\NuGet.Packaging\Sha512HashFunction.cs" Link="NuGet.Packaging\Sha512HashFunction.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\ISignature.cs" Link="NuGet.Packaging\Signing\Signatures\ISignature.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\IRfc3161TimestampTokenInfo.cs" Link="NuGet.Packaging\Signing\Timestamp\IRfc3161TimestampTokenInfo.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampTokenInfoFactory.cs" Link="NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampTokenInfoFactory.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Oids.cs" Link="NuGet.Packaging\Signing\Oids.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\IX509CertificateChain.cs" Link="NuGet.Packaging\Signing\Utility\IX509CertificateChain.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SigningCertificateV2.cs" Link="NuGet.Packaging\Signing\Signatures\SigningCertificateV2.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\EssCertId.cs" Link="NuGet.Packaging\Signing\Signatures\EssCertId.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\DerEncoding\DerSequenceReader.cs" Link="NuGet.Packaging\Signing\DerEncoding\DerSequenceReader.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\CertificateChainUtility.cs" Link="NuGet.Packaging\Signing\Utility\CertificateChainUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\EssCertIdV2.cs" Link="NuGet.Packaging\Signing\Signatures\EssCertIdV2.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SigningCertificate.cs" Link="NuGet.Packaging\Signing\Signatures\SigningCertificate.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\X509CertificateChain.cs" Link="NuGet.Packaging\Signing\Utility\X509CertificateChain.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Utility\X509ChainHolder.cs" Link="NuGet.Packaging\Signing\Utility\X509ChainHolder.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\IssuerSerial.cs" Link="NuGet.Packaging\Signing\Signatures\IssuerSerial.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\CertificateType.cs" Link="NuGet.Packaging\Signing\Verification\CertificateType.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\TimestampException.cs" Link="NuGet.Packaging\Signing\Timestamp\TimestampException.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\AlgorithmIdentifier.cs" Link="NuGet.Packaging\Signing\Signatures\AlgorithmIdentifier.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\GeneralName.cs" Link="NuGet.Packaging\Signing\Signatures\GeneralName.cs" />
-    <Compile Include="..\NuGet.Packaging\IHashFunction.cs" Link="NuGet.Packaging\IHashFunction.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Package\ISignedPackage.cs" Link="NuGet.Packaging\Signing\Package\ISignedPackage.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\PolicyInformation.cs" Link="NuGet.Packaging\Signing\Signatures\PolicyInformation.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Package\ISignedPackageWriter.cs" Link="NuGet.Packaging\Signing\Package\ISignedPackageWriter.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Archive\UnsignedPackageArchiveMetadata.cs" Link="NuGet.Packaging\Signing\Archive\UnsignedPackageArchiveMetadata.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\PolicyQualifierInfo.cs" Link="NuGet.Packaging\Signing\Signatures\PolicyQualifierInfo.cs" />
-    <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicenseData.cs" Link="NuGet.Packaging\Licenses\NuGetLicenseData.cs" />
-    <Compile Include="..\NuGet.Packaging\NuGetExtractionFileIO.cs" Link="NuGet.Packaging\NuGetExtractionFileIO.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Archive\SignedPackageArchiveUtility.cs" Link="NuGet.Packaging\Signing\Archive\SignedPackageArchiveUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Archive\ReadOnlyBufferedStream.cs" Link="NuGet.Packaging\Signing\Archive\ReadOnlyBufferedStream.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Archive\ZipConstants.cs" Link="NuGet.Packaging\Signing\Archive\ZipConstants.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\NuGetV3ServiceIndexUrl.cs" Link="NuGet.Packaging\Signing\Signatures\NuGetV3ServiceIndexUrl.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\NuGetPackageOwners.cs" Link="NuGet.Packaging\Signing\Signatures\NuGetPackageOwners.cs" />
-    <Compile Include="..\NuGet.Packaging\Licenses\NuGetLicenseExpressionParser.cs" Link="NuGet.Packaging\Licenses\NuGetLicenseExpressionParser.cs" />
-    <Compile Include="..\NuGet.Packaging\Core\comparers\PackageDependencyComparer.cs" Link="NuGet.Packaging\Core\comparers\PackageDependencyComparer.cs" />
-    <Compile Include="..\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs" Link="NuGet.Packaging\PackageExtraction\PackagePathHelper.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" Condition="'$(TargetFramework)' != 'net45'" />
-    <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" Condition="'$(TargetFramework)' != 'net45'" />
-    <Compile Include="..\NuGet.Packaging\Licenses\LicenseExpressionToken.cs" Link="NuGet.Packaging\Licenses\LicenseExpressionToken.cs" />
-    <Compile Include="..\NuGet.Packaging\Licenses\LicenseTokenType.cs" Link="NuGet.Packaging\Licenses\LicenseTokenType.cs" />
-    <Compile Include="..\NuGet.Packaging\Licenses\LicenseTokenTypeExtensions.cs" Link="NuGet.Packaging\Licenses\LicenseTokenTypeExtensions.cs" />
-    <Compile Include="..\NuGet.Packaging\Telemetry\PackageSigningTelemetryEvent.cs" Link="NuGet.Packaging\Telemetry\PackageSigningTelemetryEvent.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\InvalidSignaturePackageVerificationResult.cs" Link="NuGet.Packaging\Signing\Verification\InvalidSignaturePackageVerificationResult.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Verification\UnsignedPackageVerificationResult.cs" Link="NuGet.Packaging\Signing\Verification\UnsignedPackageVerificationResult.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\UnknownPrimarySignature.cs" Link="NuGet.Packaging\Signing\Signatures\UnknownPrimarySignature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Archive\Crc32.cs" Link="NuGet.Packaging\Signing\Archive\Crc32.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Archive\UnsignedPackageArchiveMetadata.cs" Link="NuGet.Packaging\Signing\Archive\UnsignedPackageArchiveMetadata.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Archive\SignedPackageArchiveMetadata.cs" Link="NuGet.Packaging\Signing\Archive\SignedPackageArchiveMetadata.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Cms\CmsFactory.cs" Link="NuGet.Packaging\Signing\Cms\CmsFactory.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Cms\ICms.cs" Link="NuGet.Packaging\Signing\Cms\ICms.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Cms\NativeCms.cs" Link="NuGet.Packaging\Signing\Cms\NativeCms.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Cms\NativeCmsWrapper.cs" Link="NuGet.Packaging\Signing\Cms\NativeCmsWrapper.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Content\KeyPairFileReader.cs" Link="NuGet.Packaging\Signing\Content\KeyPairFileReader.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\DerEncoding\DerGeneralizedTime.cs" Link="NuGet.Packaging\Signing\DerEncoding\DerGeneralizedTime.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\DerEncoding\DerEncoder.cs" Link="NuGet.Packaging\Signing\DerEncoding\DerEncoder.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Cms\NativeMethods.cs" Link="NuGet.Packaging\Signing\Cms\NativeMethods.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Cms\HeapBlockRetainer.cs" Link="NuGet.Packaging\Signing\Cms\HeapBlockRetainer.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampWin32.cs" Link="NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampWin32.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Cms\NativeUtility.cs" Link="NuGet.Packaging\Signing\Cms\NativeUtility.cs" />
-    <Compile Include="..\NuGet.Packaging\Licenses\LicenseExpressionTokenizer.cs" Link="NuGet.Packaging\Licenses\LicenseExpressionTokenizer.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Content\SignatureContent.cs" Link="NuGet.Packaging\Signing\Content\SignatureContent.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Content\KeyPairFileWriter.cs" Link="NuGet.Packaging\Signing\Content\KeyPairFileWriter.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Content\KeyPairFileReader.cs" Link="NuGet.Packaging\Signing\Content\KeyPairFileReader.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\DerEncoding\DerSequenceReader.cs" Link="NuGet.Packaging\Signing\DerEncoding\DerSequenceReader.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\DerEncoding\DerGeneralizedTime.cs" Link="NuGet.Packaging\Signing\DerEncoding\DerGeneralizedTime.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\DerEncoding\DerEncoder.cs" Link="NuGet.Packaging\Signing\DerEncoding\DerEncoder.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Package\ISignedPackage.cs" Link="NuGet.Packaging\Signing\Package\ISignedPackage.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Package\ISignedPackageWriter.cs" Link="NuGet.Packaging\Signing\Package\ISignedPackageWriter.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Package\ISignedPackageReader.cs" Link="NuGet.Packaging\Signing\Package\ISignedPackageReader.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Package\SignedPackageArchive.cs" Link="NuGet.Packaging\Signing\Package\SignedPackageArchive.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SignatureType.cs" Link="NuGet.Packaging\Signing\Signatures\SignatureType.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\PrimarySignature.cs" Link="NuGet.Packaging\Signing\Signatures\PrimarySignature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\Signature.cs" Link="NuGet.Packaging\Signing\Signatures\Signature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\PrimarySignatureFactory.cs" Link="NuGet.Packaging\Signing\Signatures\PrimarySignatureFactory.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\IRepositorySignature.cs" Link="NuGet.Packaging\Signing\Signatures\IRepositorySignature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SignaturePlacement.cs" Link="NuGet.Packaging\Signing\Signatures\SignaturePlacement.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\RepositoryCountersignature.cs" Link="NuGet.Packaging\Signing\Signatures\RepositoryCountersignature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SignatureVerifySettings.cs" Link="NuGet.Packaging\Signing\Signatures\SignatureVerifySettings.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\ISignature.cs" Link="NuGet.Packaging\Signing\Signatures\ISignature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SigningCertificateV2.cs" Link="NuGet.Packaging\Signing\Signatures\SigningCertificateV2.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\EssCertId.cs" Link="NuGet.Packaging\Signing\Signatures\EssCertId.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\EssCertIdV2.cs" Link="NuGet.Packaging\Signing\Signatures\EssCertIdV2.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\SigningCertificate.cs" Link="NuGet.Packaging\Signing\Signatures\SigningCertificate.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\IssuerSerial.cs" Link="NuGet.Packaging\Signing\Signatures\IssuerSerial.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\AlgorithmIdentifier.cs" Link="NuGet.Packaging\Signing\Signatures\AlgorithmIdentifier.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\GeneralName.cs" Link="NuGet.Packaging\Signing\Signatures\GeneralName.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\PolicyQualifierInfo.cs" Link="NuGet.Packaging\Signing\Signatures\PolicyQualifierInfo.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\NuGetV3ServiceIndexUrl.cs" Link="NuGet.Packaging\Signing\Signatures\NuGetV3ServiceIndexUrl.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\NuGetPackageOwners.cs" Link="NuGet.Packaging\Signing\Signatures\NuGetPackageOwners.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\UnknownPrimarySignature.cs" Link="NuGet.Packaging\Signing\Signatures\UnknownPrimarySignature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\PolicyInformation.cs" Link="NuGet.Packaging\Signing\Signatures\PolicyInformation.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\CommitmentTypeIndication.cs" Link="NuGet.Packaging\Signing\Signatures\CommitmentTypeIndication.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\CommitmentTypeQualifier.cs" Link="NuGet.Packaging\Signing\Signatures\CommitmentTypeQualifier.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\AuthorPrimarySignature.cs" Link="NuGet.Packaging\Signing\Signatures\AuthorPrimarySignature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Signatures\RepositoryPrimarySignature.cs" Link="NuGet.Packaging\Signing\Signatures\RepositoryPrimarySignature.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Specifications\SigningSpecifications.cs" Link="NuGet.Packaging\Signing\Specifications\SigningSpecifications.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Specifications\SigningSpecificationsV1.cs" Link="NuGet.Packaging\Signing\Specifications\SigningSpecificationsV1.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampVerificationUtility.cs" Link="NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampVerificationUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\IRfc3161TimestampTokenInfo.cs" Link="NuGet.Packaging\Signing\Timestamp\IRfc3161TimestampTokenInfo.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampTokenInfoFactory.cs" Link="NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampTokenInfoFactory.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\TimestampException.cs" Link="NuGet.Packaging\Signing\Timestamp\TimestampException.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampWin32.cs" Link="NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampWin32.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampTokenInfoNet472Wrapper.cs" Link="NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampTokenInfoNet472Wrapper.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampTokenInfo.cs" Link="NuGet.Packaging\Signing\Timestamp\Rfc3161TimestampTokenInfo.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Timestamp\TstInfo.cs" Link="NuGet.Packaging\Signing\Timestamp\TstInfo.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Accuracy.cs" Link="NuGet.Packaging\Signing\Timestamp\Accuracy.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Timestamp\MessageImprint.cs" Link="NuGet.Packaging\Signing\Timestamp\MessageImprint.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Archive\Crc32.cs" Link="NuGet.Packaging\Signing\Archive\Crc32.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\CommitmentTypeIndication.cs" Link="NuGet.Packaging\Signing\Signatures\CommitmentTypeIndication.cs" />
-    <Compile Include="..\NuGet.Packaging\Signing\Signatures\CommitmentTypeQualifier.cs" Link="NuGet.Packaging\Signing\Signatures\CommitmentTypeQualifier.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Timestamp.cs" Link="NuGet.Packaging\Signing\Timestamp\Timestamp.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Extensions.cs" Link="NuGet.Packaging\Signing\Timestamp\Extensions.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Extension.cs" Link="NuGet.Packaging\Signing\Timestamp\Extension.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\RepositorySignatureInfoUtility.cs" Link="NuGet.Packaging\Signing\Utility\RepositorySignatureInfoUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\MarshalUtility.cs" Link="NuGet.Packaging\Signing\Utility\MarshalUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\CertificateUtility.cs" Link="NuGet.Packaging\Signing\Utility\CertificateUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\IX509CertificateChain.cs" Link="NuGet.Packaging\Signing\Utility\IX509CertificateChain.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\CertificateChainUtility.cs" Link="NuGet.Packaging\Signing\Utility\CertificateChainUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\X509CertificateChain.cs" Link="NuGet.Packaging\Signing\Utility\X509CertificateChain.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\X509ChainHolder.cs" Link="NuGet.Packaging\Signing\Utility\X509ChainHolder.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\SignatureUtility.cs" Link="NuGet.Packaging\Signing\Utility\SignatureUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\VerificationUtility.cs" Link="NuGet.Packaging\Signing\Utility\VerificationUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Utility\AttributeUtility.cs" Link="NuGet.Packaging\Signing\Utility\AttributeUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\CertificateType.cs" Link="NuGet.Packaging\Signing\Verification\CertificateType.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\InvalidSignaturePackageVerificationResult.cs" Link="NuGet.Packaging\Signing\Verification\InvalidSignaturePackageVerificationResult.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\UnsignedPackageVerificationResult.cs" Link="NuGet.Packaging\Signing\Verification\UnsignedPackageVerificationResult.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\PackageVerificationResult.cs" Link="NuGet.Packaging\Signing\Verification\PackageVerificationResult.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\IPackageSignatureVerifier.cs" Link="NuGet.Packaging\Signing\Verification\IPackageSignatureVerifier.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\ISignatureVerificationProvider.cs" Link="NuGet.Packaging\Signing\Verification\ISignatureVerificationProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\AllowListVerificationProvider.cs" Link="NuGet.Packaging\Signing\Verification\AllowListVerificationProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureTrustAndValidityVerificationProvider.cs" Link="NuGet.Packaging\Signing\Verification\SignatureTrustAndValidityVerificationProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\PackageSignatureVerifier.cs" Link="NuGet.Packaging\Signing\Verification\PackageSignatureVerifier.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\IntegrityVerificationProvider.cs" Link="NuGet.Packaging\Signing\Verification\IntegrityVerificationProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\ClientPolicyContext.cs" Link="NuGet.Packaging\Signing\Verification\ClientPolicyContext.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\VerificationAllowListEntry.cs" Link="NuGet.Packaging\Signing\Verification\VerificationAllowListEntry.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\TrustedSignerAllowListEntry.cs" Link="NuGet.Packaging\Signing\Verification\TrustedSignerAllowListEntry.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\CertificateHashAllowListEntry.cs" Link="NuGet.Packaging\Signing\Verification\CertificateHashAllowListEntry.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignedPackageVerifierSettings.cs" Link="NuGet.Packaging\Signing\Verification\SignedPackageVerifierSettings.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\VerifySignaturesResult.cs" Link="NuGet.Packaging\Signing\Verification\VerifySignaturesResult.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureVerificationStatus.cs" Link="NuGet.Packaging\Signing\Verification\SignatureVerificationStatus.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\VerificationTarget.cs" Link="NuGet.Packaging\Signing\Verification\VerificationTarget.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureVerificationStatusFlags.cs" Link="NuGet.Packaging\Signing\Verification\SignatureVerificationStatusFlags.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureVerificationSummary.cs" Link="NuGet.Packaging\Signing\Verification\SignatureVerificationSummary.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignedPackageVerificationResult.cs" Link="NuGet.Packaging\Signing\Verification\SignedPackageVerificationResult.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Verification\SignatureVerificationBehavior.cs" Link="NuGet.Packaging\Signing\Verification\SignatureVerificationBehavior.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\Oids.cs" Link="NuGet.Packaging\Signing\Oids.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\SignatureException.cs" Link="NuGet.Packaging\Signing\SignatureException.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\SignatureLog.cs" Link="NuGet.Packaging\Signing\SignatureLog.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\RepositorySignatureInfo.cs" Link="NuGet.Packaging\Signing\RepositorySignatureInfo.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\RepositorySignatureInfoProvider.cs" Link="NuGet.Packaging\Signing\RepositorySignatureInfoProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Telemetry\ExtractionSource.cs" Link="NuGet.Packaging\Telemetry\ExtractionSource.cs" />
+    <Compile Include="..\NuGet.Packaging\Telemetry\PackageExtractionTelemetryEvent.cs" Link="NuGet.Packaging\Telemetry\PackageExtractionTelemetryEvent.cs" />
+    <Compile Include="..\NuGet.Packaging\Telemetry\PackageSigningTelemetryEvent.cs" Link="NuGet.Packaging\Telemetry\PackageSigningTelemetryEvent.cs" />
+
+    <Compile Include="..\NuGet.Packaging\IHashFunction.cs" Link="NuGet.Packaging\IHashFunction.cs" />
+    <Compile Include="..\NuGet.Packaging\LocalPackageArchiveDownloader.cs" Link="NuGet.Packaging\LocalPackageArchiveDownloader.cs" />
+    <Compile Include="..\NuGet.Packaging\MinClientVersionUtility.cs" Link="NuGet.Packaging\MinClientVersionUtility.cs" />
+    <Compile Include="..\NuGet.Packaging\NuGetExtractionFileIO.cs" Link="NuGet.Packaging\NuGetExtractionFileIO.cs" />
+    <Compile Include="..\NuGet.Packaging\NuspecReader.cs" Link="NuGet.Packaging\NuspecReader.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageArchiveReader.cs" Link="NuGet.Packaging\PackageArchiveReader.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageExtractor.cs" Link="NuGet.Packaging\PackageExtractor.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageFileExtractor.cs" Link="NuGet.Packaging\PackageFileExtractor.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageFolderReader.cs" Link="NuGet.Packaging\PackageFolderReader.cs" />
+    <Compile Include="..\NuGet.Packaging\PackagePathResolver.cs" Link="NuGet.Packaging\PackagePathResolver.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageReaderBase.cs" Link="NuGet.Packaging\PackageReaderBase.cs" />
+    <Compile Include="..\NuGet.Packaging\PackageReaderExtensions.cs" Link="NuGet.Packaging\PackageReaderExtensions.cs" />
+    <Compile Include="..\NuGet.Packaging\PackagingConstants.cs" Link="NuGet.Packaging\PackagingConstants.cs" />
+    <Compile Include="..\NuGet.Packaging\VersionFolderPathResolver.cs" Link="NuGet.Packaging\VersionFolderPathResolver.cs" />
+    <Compile Include="..\NuGet.Packaging\Sha512HashFunction.cs" Link="NuGet.Packaging\Sha512HashFunction.cs" />
     <Compile Include="..\NuGet.Packaging\PackageCreation\Extensions\CollectionExtensions.cs" Link="NuGet.Packaging\PackageCreation\Extensions\CollectionExtensions.cs" />
     <Compile Include="..\NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Link="NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Condition="'$(TargetFramework)' == 'net472'" />
     <Compile Include="..\NuGet.Packaging\Core\FrameworkReference.cs" Link="NuGet.Packaging\Core\FrameworkReference.cs" Condition="'$(TargetFramework)' == 'net472'" />
@@ -295,7 +294,7 @@
     <Folder Include="NuGet.Packaging\Signing\DerEncoding" />
     <Folder Include="NuGet.Packaging\Signing\TrustedSigners" />
   </ItemGroup>
-<!-- END -->
+
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
@@ -328,19 +327,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Rules\AnalysisResources.resx">
+    <EmbeddedResource Update="..\NuGet.Packaging\Rules\AnalysisResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>AnalysisResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="Signing\DerEncoding\SR.resx">
+    <EmbeddedResource Update="..\NuGet.Packaging\Signing\DerEncoding\SR.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SR.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="Strings.resx">
+    <EmbeddedResource Update="..\NuGet.Packaging\Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="PackageCreation\Resources\NuGetResources.resx">
+    <EmbeddedResource Update="..\NuGet.Packaging\PackageCreation\Resources\NuGetResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

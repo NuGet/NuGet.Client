@@ -33,8 +33,11 @@ namespace NuGet.Common
                     .Where(entry => entry.Length != 0)
                     .ToArray();
             }
-
+#if !NET45
+            return Array.Empty<string>();
+#else
             return new string[] { };
+#endif
         }
 
         /// <summary>
@@ -59,7 +62,11 @@ namespace NuGet.Common
         {
             if (strings == null)
             {
+#if !NET45
+                return Array.Empty<string>();
+#else
                 return new string[] { };
+#endif
             }
 
             return strings

@@ -80,8 +80,7 @@ namespace NuGet.Packaging.Signing
 #if !NET45
             return repositoryAllowedCertificates;
 #else
-            var list = new ReadOnlyCollection<CertificateHashAllowListEntry>(repositoryAllowedCertificates.AsList<CertificateHashAllowListEntry>());
-            return list;
+            return new ReadOnlyCollection<CertificateHashAllowListEntry>(repositoryAllowedCertificates.AsList<CertificateHashAllowListEntry>());
 #endif
         }
     }

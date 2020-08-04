@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -13,18 +12,8 @@ namespace NuGet.Configuration
     {
         public override string ElementName => ConfigurationConstants.Author;
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } =
-#if !NET45
-                new HashSet<string>()
-#else
-                new ReadOnlyCollection<string>(new List<string>()
-#endif
-                { ConfigurationConstants.NameAttribute }
-#if !NET45
-                ;
-#else
-                );
-#endif
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = IReadOnlyCollectionUtility.Create<string>(ConfigurationConstants.NameAttribute);
 
         public AuthorItem(string name, params CertificateItem[] certificates)
             : base(name, certificates)

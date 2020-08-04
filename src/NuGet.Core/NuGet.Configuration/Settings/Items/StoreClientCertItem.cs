@@ -149,107 +149,58 @@ namespace NuGet.Configuration
             }
         }
 
-        protected override IReadOnlyCollection<string> AllowedAttributes { get; } =
-
-#if !NET45
-                new HashSet<string>()
-#else
-                new ReadOnlyCollection<string>(new List<string>()
-                #endif
-        {
-            ConfigurationConstants.PackageSourceAttribute,
-            ConfigurationConstants.StoreLocationAttribute,
-            ConfigurationConstants.StoreNameAttribute,
-            ConfigurationConstants.FindByAttribute,
-            ConfigurationConstants.FindValueAttribute
-        }
-#if !NET45
-         ;
-#else
-                );
-#endif
+        protected override IReadOnlyCollection<string> AllowedAttributes { get; }
+            = IReadOnlyCollectionUtility.Create<string>(
+                                            ConfigurationConstants.PackageSourceAttribute,
+                                            ConfigurationConstants.StoreLocationAttribute,
+                                            ConfigurationConstants.StoreNameAttribute,
+                                            ConfigurationConstants.FindByAttribute,
+                                            ConfigurationConstants.FindValueAttribute
+                                         );
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>
         {
             {
                 ConfigurationConstants.StoreLocationAttribute,
-#if !NET45
-                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-#else
-                new ReadOnlyCollection<string>(new List<string>()
-#endif
-                {
-                    GetString(StoreLocation.CurrentUser),
-                    GetString(StoreLocation.LocalMachine)
-                }
-#if NET45
-                )
-#endif
+                IReadOnlyCollectionUtility.Create<string>(StringComparer.OrdinalIgnoreCase,
+                                                          GetString(StoreLocation.CurrentUser),
+                                                          GetString(StoreLocation.LocalMachine))
             },
             {
                 ConfigurationConstants.StoreNameAttribute,
-#if !NET45
-                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-#else
-                new ReadOnlyCollection<string>(new List<string>()
-#endif
-                {
-                    GetString(StoreName.AddressBook),
-                    GetString(StoreName.AuthRoot),
-                    GetString(StoreName.CertificateAuthority),
-                    GetString(StoreName.Disallowed),
-                    GetString(StoreName.My),
-                    GetString(StoreName.Root),
-                    GetString(StoreName.TrustedPeople),
-                    GetString(StoreName.TrustedPublisher)
-                }
-#if NET45
-                )
-#endif
+                IReadOnlyCollectionUtility.Create<string>(StringComparer.OrdinalIgnoreCase,
+                                                          GetString(StoreName.AddressBook),
+                                                          GetString(StoreName.AuthRoot),
+                                                          GetString(StoreName.CertificateAuthority),
+                                                          GetString(StoreName.Disallowed),
+                                                          GetString(StoreName.My),
+                                                          GetString(StoreName.Root),
+                                                          GetString(StoreName.TrustedPeople),
+                                                          GetString(StoreName.TrustedPublisher))
             },
             {
                 ConfigurationConstants.FindByAttribute,
-
-#if !NET45
-                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-#else
-                new ReadOnlyCollection<string>(new List<string>()
-#endif
-                    {
-                        GetString(X509FindType.FindByThumbprint),
-                        GetString(X509FindType.FindBySubjectName),
-                        GetString(X509FindType.FindBySubjectDistinguishedName),
-                        GetString(X509FindType.FindByIssuerName),
-                        GetString(X509FindType.FindByIssuerDistinguishedName),
-                        GetString(X509FindType.FindBySerialNumber),
-                        GetString(X509FindType.FindByTimeValid),
-                        GetString(X509FindType.FindByTimeNotYetValid),
-                        GetString(X509FindType.FindByTimeExpired),
-                        GetString(X509FindType.FindByTemplateName),
-                        GetString(X509FindType.FindByApplicationPolicy),
-                        GetString(X509FindType.FindByCertificatePolicy),
-                        GetString(X509FindType.FindByExtension),
-                        GetString(X509FindType.FindByKeyUsage),
-                        GetString(X509FindType.FindBySubjectKeyIdentifier)
-                    }
-#if NET45
-                )
-#endif
+                IReadOnlyCollectionUtility.Create<string>(StringComparer.OrdinalIgnoreCase,
+                                                          GetString(X509FindType.FindByThumbprint),
+                                                          GetString(X509FindType.FindBySubjectName),
+                                                          GetString(X509FindType.FindBySubjectDistinguishedName),
+                                                          GetString(X509FindType.FindByIssuerName),
+                                                          GetString(X509FindType.FindByIssuerDistinguishedName),
+                                                          GetString(X509FindType.FindBySerialNumber),
+                                                          GetString(X509FindType.FindByTimeValid),
+                                                          GetString(X509FindType.FindByTimeNotYetValid),
+                                                          GetString(X509FindType.FindByTimeExpired),
+                                                          GetString(X509FindType.FindByTemplateName),
+                                                          GetString(X509FindType.FindByApplicationPolicy),
+                                                          GetString(X509FindType.FindByCertificatePolicy),
+                                                          GetString(X509FindType.FindByExtension),
+                                                          GetString(X509FindType.FindByKeyUsage),
+                                                          GetString(X509FindType.FindBySubjectKeyIdentifier))
             }
         };
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } =
-#if !NET45
-                new HashSet<string>()
-#else
-                new ReadOnlyCollection<string>(new List<string>()
-#endif
-                    { ConfigurationConstants.PackageSourceAttribute, ConfigurationConstants.FindValueAttribute }
-#if !NET45
-                ;
-#else
-                );
-#endif
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = IReadOnlyCollectionUtility.Create(ConfigurationConstants.PackageSourceAttribute, ConfigurationConstants.FindValueAttribute);
 
         internal override XNode AsXNode()
         {
