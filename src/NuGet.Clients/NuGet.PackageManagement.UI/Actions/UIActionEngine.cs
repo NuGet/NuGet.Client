@@ -20,7 +20,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 using TelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -848,7 +847,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (buildIntegratedProjectsToUpdate.Any())
                 {
-                    // Run project preview in parallel for greater performance.
+                    // Run project build integrated project preview in parallel for greater performance, now they're not dependent on each others result anymore.
                     var actions = await _packageManager.PreviewBuildIntegratedProjectActionsParallelAsync(
                         buildIntegratedProjectsToUpdate,
                         new PackageIdentity(userAction.PackageId, userAction.Version),

@@ -161,6 +161,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 PackageSpec project;
 
+                // Check there is cached value of Package spec which is already applied latest change.
                 if(context.PackageSpecCache.TryGetValue(
                         originalProject.RestoreMetadata.ProjectUniqueName, out project))
                 {
