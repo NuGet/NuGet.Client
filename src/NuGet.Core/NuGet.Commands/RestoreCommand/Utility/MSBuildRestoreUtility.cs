@@ -423,6 +423,7 @@ namespace NuGet.Commands
                 var targetFrameworkIdentifier = item.GetProperty("TargetFrameworkIdentifier");
                 var targetFrameworkVersion = item.GetProperty("TargetFrameworkVersion");
                 var targetFrameworkMoniker = item.GetProperty("TargetFrameworkMoniker");
+                var targetFrameworkProfile = item.GetProperty("TargetFrameworkProfile");
                 var targetPlatformIdentifier = item.GetProperty("TargetPlatformIdentifier");
                 var targetPlatformVersion = item.GetProperty("TargetPlatformVersion");
                 var targetPlatformMinVersion = item.GetProperty("TargetPlatformMinVersion");
@@ -434,18 +435,19 @@ namespace NuGet.Commands
                 }
                 uniqueIds.Add(targetAlias);
 
-                IEnumerable<string> targetFramework = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
-                  projectFilePath: filePath,
-                  targetFrameworks: null,
-                  targetFramework: null,
-                  targetFrameworkMoniker: targetFrameworkMoniker,
-                  targetPlatformIdentifier: targetPlatformIdentifier,
-                  targetPlatformVersion: targetPlatformVersion,
-                  targetPlatformMinVersion: targetPlatformMinVersion);
+                NuGetFramework targetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                    projectFilePath: filePath,
+                    targetFrameworkMoniker: targetFrameworkMoniker,
+                    targetFrameworkIdentifier: targetFrameworkIdentifier,
+                    targetFrameworkVersion: targetFrameworkVersion,
+                    targetFrameworkProfile: targetFrameworkProfile,
+                    targetPlatformIdentifier: targetPlatformIdentifier,
+                    targetPlatformVersion: targetPlatformVersion,
+                    targetPlatformMinVersion: targetPlatformMinVersion);
 
                 var targetFrameworkInfo = new TargetFrameworkInformation()
                 {
-                    FrameworkName = NuGetFramework.Parse(targetFramework.Single()),
+                    FrameworkName = targetFramework,
                     TargetAlias = targetAlias
                 };
                 if (restoreType == ProjectStyle.PackageReference ||
