@@ -1,0 +1,1 @@
+NuGet.ProjectModel.DependencyGraphSpec.WithReplacedSpecs(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.PackageSpec> projects) -> NuGet.ProjectModel.DependencyGraphSpec
