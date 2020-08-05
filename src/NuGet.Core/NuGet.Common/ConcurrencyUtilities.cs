@@ -15,6 +15,7 @@ namespace NuGet.Common
     public static class ConcurrencyUtilities
     {
         private const int NumberOfRetries = 3000;
+        // To maintain SHA-1 backwards compatibility with respect to the length of the hex-encoded hash, the hash will be truncated to a length of 20 bytes.
         private const int HashLength = 20;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
         private static readonly KeyedLock PerFileLock = new KeyedLock();
@@ -260,19 +261,15 @@ namespace NuGet.Common
 
                 var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(normalizedPath));
 
-                //Changing from SHA-1 to SHA-256 would increase hex hash string by 24 characters (160 bits to 256 bits).
-                //In order not to hit the MAX_PATH limitation, truncate the hash byte array length from 32 to 20.
-                byte[] truncatedHash = new byte[HashLength];
-                Array.Copy(sourceArray: hash, destinationArray: truncatedHash, length: HashLength);
-                return ToHex(truncatedHash);
+                return ToHex(hash, HashLength);
             }
         }
 
-        private static string ToHex(byte[] bytes)
+        private static string ToHex(byte[] bytes, int length)
         {
-            char[] c = new char[bytes.Length * 2];
+            char[] c = new char[length];
 
-            for (int index = 0, outIndex = 0; index < bytes.Length; index++)
+            for (int index = 0, outIndex = 0; index < length; index++)
             {
                 c[outIndex++] = ToHexChar(bytes[index] >> 4);
                 c[outIndex++] = ToHexChar(bytes[index] & 0x0f);
