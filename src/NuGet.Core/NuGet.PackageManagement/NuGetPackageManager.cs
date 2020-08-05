@@ -38,15 +38,15 @@ namespace NuGet.PackageManagement
 
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
-        public Configuration.ISettings Settings { get; }
+        private ISolutionManager SolutionManager { get; }
+
+        private Configuration.ISettings Settings { get; }
 
         private HashSet<string> _buildIntegratedProjectsUpdateSet;
 
         private DependencyGraphSpec _buildIntegratedProjectsCache;
 
         private RestoreCommandProvidersCache _restoreProviderCache;
-
-        public ISolutionManager SolutionManager { get; }
 
         public IDeleteOnRestartManager DeleteOnRestartManager { get; }
 
@@ -2976,7 +2976,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var parent in parents)
                 {
-                    // We don't evaluate already seen parent.
+                    // We only evaluate unseen parents.
                     if (_buildIntegratedProjectsUpdateSet == null ||
                         !_buildIntegratedProjectsUpdateSet.Contains(parent.MSBuildProjectPath))
                     {

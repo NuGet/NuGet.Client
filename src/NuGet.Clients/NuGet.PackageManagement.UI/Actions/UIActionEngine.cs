@@ -847,15 +847,16 @@ namespace NuGet.PackageManagement.UI
 
                 if (buildIntegratedProjectsToUpdate.Any())
                 {
-                    // Run project build integrated project preview in parallel for greater performance, now they're not dependent on each others result anymore.
-                    var actions = await _packageManager.PreviewBuildIntegratedProjectActionsParallelAsync(
+                    // Run project build integrated project preview in parallel for greater performance,
+                    // now they're not dependent on each others result anymore.
+                    var resolvedActions = await _packageManager.PreviewBuildIntegratedProjectActionsParallelAsync(
                         buildIntegratedProjectsToUpdate,
                         new PackageIdentity(userAction.PackageId, userAction.Version),
                         projectContext,
                         uiService.ActiveSources,
                         token);
 
-                    results.AddRange(actions);
+                    results.AddRange(resolvedActions);
                 }
 
                 foreach (var target in otherTargetProjectsToUpdate)
