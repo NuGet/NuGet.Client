@@ -14,11 +14,11 @@ namespace NuGet.VisualStudio
             string targetPlatformIdentifier,
             string targetPlatformVersion)
         {
-            TargetFrameworkIdentifier = targetFrameworkIdentifier ?? throw new ArgumentNullException(nameof(targetFrameworkIdentifier));
-            TargetFrameworkVersion = targetFrameworkVersion ?? throw new ArgumentNullException(nameof(targetFrameworkVersion));
-            TargetFrameworkProfile = profile ?? throw new ArgumentNullException(nameof(profile));
-            TargetPlatformIdentifier = targetPlatformIdentifier ?? throw new ArgumentNullException(nameof(targetPlatformIdentifier));
-            TargetPlatformVersion = targetPlatformVersion ?? throw new ArgumentNullException(nameof(targetPlatformVersion));
+            TargetFrameworkIdentifier = targetFrameworkIdentifier;
+            TargetFrameworkVersion = targetFrameworkVersion;
+            TargetFrameworkProfile = profile;
+            TargetPlatformIdentifier = targetPlatformIdentifier;
+            TargetPlatformVersion = targetPlatformVersion;
         }
 
         public string TargetFrameworkIdentifier { get; }
