@@ -267,7 +267,7 @@ namespace NuGet.Common
 
         private static string ToHex(byte[] bytes, int length)
         {
-            char[] c = new char[length];
+            char[] c = new char[length * 2];
 
             for (int index = 0, outIndex = 0; index < length; index++)
             {
