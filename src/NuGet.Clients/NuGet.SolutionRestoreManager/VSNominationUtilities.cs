@@ -94,9 +94,9 @@ namespace NuGet.SolutionRestoreManager
         {
             var tfi = new TargetFrameworkInformation
             {
-                FrameworkName = GetTargetFramework(targetFrameworkInfo.Properties)
+                FrameworkName = GetTargetFramework(targetFrameworkInfo.Properties),
+                TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework)
             };
-            tfi.TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework) ?? tfi.FrameworkName.GetShortFolderName();
 
             var ptf = MSBuildStringUtility.Split(GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.PackageTargetFallback))
                                           .Select(NuGetFramework.Parse)
@@ -154,11 +154,11 @@ namespace NuGet.SolutionRestoreManager
 
         internal static NuGetFramework GetTargetFramework(IVsProjectProperties properties)
         {
-            var targetFrameworkIdentifier = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkIdentifier) ?? string.Empty;
-            var targetFrameworkVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkVersion) ?? string.Empty;
-            var targetFrameworkProfile = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkProfile) ?? string.Empty;
-            var targetPlatformIdentifier = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformIdentifier) ?? string.Empty;
-            var targetPlatformVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformVersion) ?? string.Empty;
+            var targetFrameworkIdentifier = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkIdentifier);
+            var targetFrameworkVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkVersion);
+            var targetFrameworkProfile = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkProfile);
+            var targetPlatformIdentifier = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformIdentifier);
+            var targetPlatformVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformVersion);
 
             return NuGetFramework.ParseComponents(targetFrameworkIdentifier, targetFrameworkVersion, targetFrameworkProfile, targetPlatformIdentifier, targetPlatformVersion);
         }
