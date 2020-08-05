@@ -3,15 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Resolver;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -55,8 +55,14 @@ namespace NuGet.PackageManagement.UI
 
         private void NuGetProjectChanged(object sender, NuGetProjectEventArgs e)
         {
-            // TODO: ScoBan, SolutionManager has event that returns NuGetProject
-            // _nugetProjects = new List<ProjectContextInfo> { e.NuGetProject };
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => NuGetProjectChangedAsync(e, CancellationToken.None))
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(DependencyBehavior_SelectedChanged)));
+        }
+
+        private async Task NuGetProjectChangedAsync(NuGetProjectEventArgs e, CancellationToken cancellationToken)
+        {
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(e.NuGetProject, cancellationToken);
+            _nugetProjects = new List<ProjectContextInfo> { projectContextInfo };
             UpdateInstalledVersion();
         }
 

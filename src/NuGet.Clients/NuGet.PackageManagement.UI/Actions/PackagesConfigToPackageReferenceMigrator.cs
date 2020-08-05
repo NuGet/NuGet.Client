@@ -108,9 +108,6 @@ namespace NuGet.PackageManagement.UI
                     nuGetUI.Projects = new[] { nuGetProject };
                     nuGetUI.DisplayPreviewWindow = false;
 
-                    // Ensure we don't display preview or license acceptance windows.
-                    ((NuGetUI)uiService).DisplayPreviewWindow = false;
-
                     // 4. Install the requested packages
                     var ideExecutionContext = uiService.ProjectContext.ExecutionContext as IDEExecutionContext;
                     if (ideExecutionContext != null)

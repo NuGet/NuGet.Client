@@ -16,6 +16,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
@@ -51,7 +52,7 @@ namespace NuGet.PackageManagement.UI
             _options = new Options();
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
-            _options.ShowClassicOptions = projects.Any(project => project.IsClassic);
+            _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.Classic);
         }
 
         /// <summary>
@@ -110,11 +111,11 @@ namespace NuGet.PackageManagement.UI
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
 
             // Filter out projects that are not managed by NuGet.
-            var projects = _nugetProjects.Where(project => !project.IsProjectKProjectBase).ToArray();
+            var projects = _nugetProjects.Where(project => project.ProjectKind != NuGetProjectKind.ProjectK).ToArray();
 
             foreach (var project in projects)
             {
-                if (project.IsMSBuildNuGetProject)
+                if (project.ProjectKind == NuGetProjectKind.MSBuild)
                 {
                     // cache allowed version range for each nuget project for current selected package
                     var packageReference = (await project.GetInstalledPackagesAsync(CancellationToken.None))
@@ -134,7 +135,7 @@ namespace NuGet.PackageManagement.UI
                         _projectVersionConstraints.Add(constraint);
                     }
                 }
-                else if (project.IsBuildIntegratedProject)
+                else if (project.ProjectKind == NuGetProjectKind.BuildIntegrated)
                 {
                     var packageReferences = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
@@ -274,7 +275,7 @@ namespace NuGet.PackageManagement.UI
             {
                 VersionRange range;
 
-                if (project.IsBuildIntegratedProject && package.HasAllowedVersions)
+                if (project.ProjectKind == NuGetProjectKind.BuildIntegrated && package.HasAllowedVersions)
                 {
                     // The actual range is passed as the allowed version range for build integrated projects.
                     range = package.AllowedVersions;

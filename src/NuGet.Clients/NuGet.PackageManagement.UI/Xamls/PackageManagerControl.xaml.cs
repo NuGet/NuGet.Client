@@ -93,7 +93,7 @@ namespace NuGet.PackageManagement.UI
 
             if (Model.IsSolution)
             {
-                _detailModel = new PackageSolutionDetailControlModel(Model.Context.SolutionManager, Model.Context.Projects, Model.Context.PackageManagerProviders);
+                _detailModel = await PackageSolutionDetailControlModel.CreateAsync(Model.Context.SolutionManager, Model.Context.Projects, Model.Context.PackageManagerProviders, CancellationToken.None);
             }
             else
             {
@@ -199,8 +199,6 @@ namespace NuGet.PackageManagement.UI
             SolutionManager_ProjectsChanged(sender, e);
             if (!Model.IsSolution)
             {
-                // TODO: ScoBan, Why is this class responsible for keeping this up to date?
-                // Model.Context.Projects = new[] { e.NuGetProject };
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SolutionManager_ProjectRenamedAsync(e.NuGetProject))
                     .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SolutionManager_ProjectRenamed)));
             }
@@ -208,6 +206,9 @@ namespace NuGet.PackageManagement.UI
 
         private async Task SolutionManager_ProjectRenamedAsync(NuGetProject nugetProject)
         {
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
+            Model.Context.Projects = new[] { projectContextInfo };
+
             var currentNugetProject = Model.Context.Projects.First();
             string newFullPath;
 
@@ -232,6 +233,10 @@ namespace NuGet.PackageManagement.UI
                 {
                     return;
                 }
+
+                // get the list of projects
+                var projects = solutionModel.Projects.Select(p => p.NuGetProject);
+                Model.Context.Projects = projects;
 
                 RefreshWhenNotExecutingAction(RefreshOperationSource.ProjectsChanged, timeSpan);
             }
@@ -635,11 +640,11 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        // TODO: PackageRestoreManager fires this event even when solution is closed.
-        // Don't do anything if solution is closed.
-        // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
-        // only when package is missing last time and is not missing this time, we need to refresh
-        if (!e.PackagesMissing && _missingPackageStatus)
+                // TODO: PackageRestoreManager fires this event even when solution is closed.
+                // Don't do anything if solution is closed.
+                // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
+                // only when package is missing last time and is not missing this time, we need to refresh
+                if (!e.PackagesMissing && _missingPackageStatus)
                 {
                     UpdateAfterPackagesMissingStatusChanged();
                 }
@@ -752,9 +757,9 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        // Set a new cancellation token source which will be used to cancel this task in case
-        // new loading task starts or manager ui is closed while loading packages.
-        var loadCts = new CancellationTokenSource();
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                var loadCts = new CancellationTokenSource();
                 var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
                 oldCts?.Cancel();
                 oldCts?.Dispose();
@@ -934,20 +939,20 @@ namespace NuGet.PackageManagement.UI
                     loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
                 var metadataProvider = CreatePackageMetadataProvider(loadContext);
 
-        // cancel previous refresh tabs task, if any
-        // and start a new one.
-        var refreshCts = new CancellationTokenSource();
+                // cancel previous refresh tabs task, if any
+                // and start a new one.
+                var refreshCts = new CancellationTokenSource();
                 Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
-        // Update installed tab warning icon
-        var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(
-        loadContext, metadataProvider, refreshCts.Token);
+                // Update installed tab warning icon
+                var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(
+                loadContext, metadataProvider, refreshCts.Token);
 
                 var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
                 _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount);
 
-        // Update updates tab count
-        Model.CachedUpdates = new PackageSearchMetadataCache
+                // Update updates tab count
+                Model.CachedUpdates = new PackageSearchMetadataCache
                 {
                     Packages = await loader.GetAllPackagesAsync(refreshCts.Token),
                     IncludePrerelease = IncludePrerelease
@@ -1431,16 +1436,16 @@ namespace NuGet.PackageManagement.UI
                     var restoreSucceded = await RestoreBar.UIRestorePackagesAsync(CancellationToken.None);
                     if (restoreSucceded)
                     {
-                // Note that the task returned by performAction() will call something like
-                // UIActionEngine.PerformActionAsync(), which has to be called from a background thread.
-                // Thus, we need to use Task.Run() here.
-                await Task.Run(() => performAction());
+                        // Note that the task returned by performAction() will call something like
+                        // UIActionEngine.PerformActionAsync(), which has to be called from a background thread.
+                        // Thus, we need to use Task.Run() here.
+                        await Task.Run(() => performAction());
                     }
                 }
                 finally
                 {
-            //Invalidate cache.
-            Model.CachedUpdates = null;
+                    //Invalidate cache.
+                    Model.CachedUpdates = null;
                     ResetTabDataLoadFlags();
 
                     _actionCompleted?.Invoke(this, EventArgs.Empty);
@@ -1483,7 +1488,7 @@ namespace NuGet.PackageManagement.UI
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
 
-            // TODO: ScoBan, why does this need to be set?
+            // TODO: ScoBan, This will be able to brought back once the ActionEngine is accepting ProjectContextInfo as we can move the property to the new type
             // nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
         }

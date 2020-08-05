@@ -31,6 +31,23 @@ namespace NuGet.PackageManagement.VisualStudio
             _authorizationServiceClient = ac;
         }
 
+        public async ValueTask<IReadOnlyCollection<string>> GetProjectsAsync(CancellationToken ct)
+        {
+            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
+            Assumes.NotNull(solutionManager);
+
+            NuGetProject[] projects = (await solutionManager.GetNuGetProjectsAsync()).ToArray();
+            var projectContexts = new List<string>(projects.Length);
+
+            foreach (NuGetProject nugetProject in projects)
+            {
+                var projectContext = nugetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                projectContexts.Add(projectContext);
+            }
+
+            return projectContexts;
+        }
+
         public async ValueTask<IReadOnlyCollection<PackageReference>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken ct)
         {
             var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
@@ -69,6 +86,16 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
             return ProjectContextInfo.GetProjectKind(project);
+        }
+
+        public async ValueTask<bool> IsNuGetProjectUpgradeableAsync(string projectGuid, CancellationToken cancellationToken)
+        {
+            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
+            Assumes.NotNull(solutionManager);
+
+            NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
+
+            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(project);
         }
 
         public void Dispose()

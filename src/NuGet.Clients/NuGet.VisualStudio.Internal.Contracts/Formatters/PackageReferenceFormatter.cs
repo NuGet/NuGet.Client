@@ -13,28 +13,6 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    public class PackageReferenceInfo2 : PackageReference
-    {
-        public PackageReferenceInfo2(PackageIdentity identity, NuGetFramework targetFramework) : base(identity, targetFramework)
-        {
-        }
-
-        public bool IsLibraryDependencyAutoReferenced { get; set; }
-    }
-
-    public sealed class PackageReferenceInfo
-    {
-        public PackageReferenceInfo(PackageIdentity identity, NuGetFramework targetFramework)
-        {
-            Identity = identity;
-            TargetFramework = targetFramework;
-        }
-
-        public bool IsLibraryDependencyAutoReferenced { get; set; }
-        public PackageIdentity Identity { get; }
-        public NuGetFramework TargetFramework { get; }
-    }
-
     internal class PackageReferenceFormatter : IMessagePackFormatter<PackageReference?>
     {
         private const string PackageIdentityPropertyName = "packageidentity";
@@ -98,23 +76,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            int mapHeaderObjectsToWrite = 2;
-
-            //if (value is BuildIntegratedPackageReference buildIntegratedPackageReference && buildIntegratedPackageReference.Dependency != null)
-            //{
-            //    mapHeaderObjectsToWrite++;
-
-            //    writer.WriteMapHeader(mapHeaderObjectsToWrite);
-            //    writer.Write("autoreferenced");
-            //    writer.Write(buildIntegratedPackageReference.Dependency.AutoReferenced);
-            //}
-            //else
-            {
-                writer.WriteMapHeader(mapHeaderObjectsToWrite);
-            }
-
-            //writer.Write("typefullname");
-            //writer.Write(value.GetType().FullName);
+            writer.WriteMapHeader(count: 2);
             writer.Write(PackageIdentityPropertyName);
             PackageIdentityFormatter.Instance.Serialize(ref writer, value.PackageIdentity, options);
             writer.Write(TargetFrameworkPropertyName);

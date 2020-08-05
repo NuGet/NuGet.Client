@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var testVersion = new NuGetVersion(0, 0, 1);
             _testViewModel = new PackageItemListViewModel()
             {
-                PackageReader= _testData.TestData.PackageReader,
+                PackageReader = _testData.TestData.PackageReader,
                 Version = testVersion,
                 InstalledVersion = testVersion,
             };
@@ -92,16 +92,21 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
     public class PackageSolutionDetailControlModelTests : DetailControlModelTestBase
     {
-        private readonly PackageSolutionDetailControlModel _testInstance;
+        private PackageSolutionDetailControlModel _testInstance;
 
         public PackageSolutionDetailControlModelTests(LocalPackageSearchMetadataFixture testData)
             : base(testData)
         {
             var solMgr = new Mock<ISolutionManager>();
-            _testInstance = new PackageSolutionDetailControlModel(
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                _testInstance = await PackageSolutionDetailControlModel.CreateAsync(
                 solutionManager: solMgr.Object,
                 projects: new List<ProjectContextInfo>(),
-                packageManagerProviders: new List<IVsPackageManagerProvider>());
+                packageManagerProviders: new List<IVsPackageManagerProvider>(),
+                CancellationToken.None);
+            });
 
             _testInstance.SetCurrentPackage(
                 _testViewModel,

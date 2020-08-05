@@ -3,13 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 
@@ -75,8 +74,7 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<bool> IsNuGetProjectUpgradeable(ProjectContextInfo project)
         {
-            // TODO: ScoBan, remote this?
-            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null); // project);
+            return await project.IsProjectUpgradeableAsync(CancellationToken.None);
         }
 
         public async Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService)

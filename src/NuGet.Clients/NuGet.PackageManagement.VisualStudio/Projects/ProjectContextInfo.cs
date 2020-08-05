@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,12 +27,18 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectUniqueId = projectUniqueId;
         }
 
-        public bool IsClassic { get; set; } = false; // if project type is INuGetIntegratedProject then isClassic = true
-        public bool IsProjectKProjectBase { get; set; } = false; // if project type is ProjectKNuGetProjectBase then this = true
-        public bool IsMSBuildNuGetProject { get; set; } = true; // if project is MSBuildNuGetProject then this = true
-        public bool IsBuildIntegratedProject { get; set; } = false; // If project is BuildIntegratedNuGetProject then this = true
-        public ProjectStyle ProjectStyle { get; set; } = ProjectStyle.Unknown;
-        public NuGetProjectKind ProjectKind { get; set; } = NuGetProjectKind.Unknown;
+        public ProjectStyle ProjectStyle { get; private set; } = ProjectStyle.Unknown;
+        public NuGetProjectKind ProjectKind { get; private set; } = NuGetProjectKind.Unknown;
+
+        public async ValueTask<bool> IsProjectUpgradeableAsync(CancellationToken cancellationToken)
+        {
+            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
+            {
+                Assumes.NotNull(nugetProjectManagerService);
+                return await nugetProjectManagerService.IsNuGetProjectUpgradeableAsync(_projectUniqueId.ToString(), cancellationToken);
+            }
+        }
 
         public async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken cancellationToken)
         {
@@ -84,7 +92,6 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!Guid.TryParse(nugetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), out Guid projectGuid))
             {
                 throw new InvalidOperationException();
-                // string.Format(Resources.ProjectHasAnInvalidNuGetConfiguration, nugetProject.Name));
             }
 
             var projectContextInfo = new ProjectContextInfo(projectGuid)
@@ -98,13 +105,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static async ValueTask<ProjectContextInfo> CreateAsync(Guid projectGuid, CancellationToken cancellationToken)
         {
-            NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
-
+            var projectKind = NuGetProjectKind.Unknown;
             var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(nugetProjectManagerService);
-                // TODO: ScoBan, Should get more from the server? (e.g. transfer all known metadata path/name/uniquename/etc...)
                 projectKind = await nugetProjectManagerService.GetProjectKindAsync(projectGuid.ToString(), cancellationToken);
             }
 

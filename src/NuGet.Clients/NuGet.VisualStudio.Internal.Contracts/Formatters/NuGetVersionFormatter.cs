@@ -11,7 +11,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class NuGetVersionFormatter : IMessagePackFormatter<NuGetVersion?>
     {
-        private const string OriginalVersionPropertyName = "originalversion";
+        private const string NuGetVersionToStringPropertyName = "tostring";
 
         internal static readonly IMessagePackFormatter<NuGetVersion?> Instance = new NuGetVersionFormatter();
 
@@ -39,7 +39,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 {
                     switch (reader.ReadString())
                     {
-                        case OriginalVersionPropertyName:
+                        case NuGetVersionToStringPropertyName:
                             originalVersion = reader.ReadString();
                             break;
                         default:
@@ -66,8 +66,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             writer.WriteMapHeader(count: 1);
-            writer.Write(OriginalVersionPropertyName);
-            writer.Write(value.OriginalVersion);
+            writer.Write(NuGetVersionToStringPropertyName);
+            writer.Write(value.ToString());
         }
     }
 }

@@ -250,8 +250,6 @@ namespace NuGet.PackageManagement.UI
 
         public async Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
-            // TODO: ScoBan, This should be doing the call in one go not calling each project individually to get installed packages
-
             // cache installed packages here for future use
             _installedPackages = await _context.GetInstalledPackagesAsync();
 

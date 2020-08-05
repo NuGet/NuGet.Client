@@ -475,7 +475,7 @@ namespace NuGetVSExtension
             // is thrown, an error dialog will pop up and this doc window will not be created.
             _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-            var contextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);  // TODO: ScoBan, SolutionManager return ProjectContextInfo
+            var contextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
             var uiController = UIFactory.Value.Create(contextInfo);
 
             var model = new PackageManagerModel(
@@ -577,10 +577,10 @@ namespace NuGetVSExtension
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
 
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(nuGetProject, CancellationToken.None);  // TODO: ScoBan, SolutionManager should return ProjectContextInfo
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(nuGetProject, CancellationToken.None);
             var uiController = UIFactory.Value.Create(projectContextInfo);
-            await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject); // TODO: ScoBan, Actions need to be updated
-            uiController.UIContext.UserSettingsManager.PersistSettings(); // TODO: ScoBan, Why is this here?
+            await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
+            uiController.UIContext.UserSettingsManager.PersistSettings();
         }
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
@@ -710,9 +710,8 @@ namespace NuGetVSExtension
                 return null;
             }
 
-            // TODO: ScoBan, Temporary, SolutionManager should return ProjectContextInfo
             var projectContexts = new List<ProjectContextInfo>(projects.Count());
-            foreach (var project in projects) // TODO: ScoBan, Optimize # of calls to server
+            foreach (var project in projects) // TODO: Optimize # of calls to server
             {
                 var projectContext = await ProjectContextInfo.CreateAsync(project, CancellationToken.None);
                 projectContexts.Add(projectContext);
