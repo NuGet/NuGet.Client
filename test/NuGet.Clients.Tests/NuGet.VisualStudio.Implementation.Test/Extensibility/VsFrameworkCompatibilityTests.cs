@@ -205,9 +205,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         {
             // Arrange
             var target = new VsFrameworkCompatibility();
-            var net5 = new VsNuGetFramework(".NETCoreApp", "v5.0", string.Empty, string.Empty, string.Empty);
-            var net472 = new VsNuGetFramework(".NETFramework", "v4.7.2", string.Empty, string.Empty, string.Empty);
-            var netcoreapp31 = new VsNuGetFramework(".NETCoreApp", "v3.1", string.Empty, string.Empty, string.Empty);
+            var net5 = new VsNuGetFramework(".NETCoreApp", "v5.0", null, null, null);
+            var net472 = new VsNuGetFramework(".NETFramework", "v4.7.2", null, null, null);
+            var netcoreapp31 = new VsNuGetFramework(".NETCoreApp", "v3.1", null, null, null);
             var frameworks = new IVsNuGetFramework[] { net472, netcoreapp31 };
 
             // Act
@@ -251,27 +251,5 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             // Assert
             Assert.Null(actual);
         }
-
-        //private class VsNuGetFramework : IVsNuGetFramework
-        //{
-        //    public VsNuGetFramework(string tfi, string tfv, string tfp, string tpi, string tpv)
-        //    {
-        //        TargetFrameworkIdentifier = tfi;
-        //        TargetFrameworkVersion = tfv;
-        //        TargetFrameworkProfile = tfp;
-        //        TargetPlatformIdentifier = tpi;
-        //        TargetPlatformVersion = tpv;
-        //    }
-
-        //    public string TargetFrameworkIdentifier { get; }
-
-        //    public string TargetFrameworkVersion { get; }
-
-        //    public string TargetFrameworkProfile { get; }
-
-        //    public string TargetPlatformIdentifier { get; }
-
-        //    public string TargetPlatformVersion { get; }
-        //}
     }
 }
