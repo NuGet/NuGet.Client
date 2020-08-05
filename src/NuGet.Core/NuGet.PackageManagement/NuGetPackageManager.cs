@@ -767,8 +767,8 @@ namespace NuGet.PackageManagement
             return packagesToUpdateInProject;
         }
 
-        private async Task<IEnumerable<NuGetProjectAction>> CompleteTaskAsync(
-            List<Task<IEnumerable<NuGetProjectAction>>> updateTasks)
+        private async Task<IEnumerable<T>> CompleteTaskAsync<T>(
+            List<Task<IEnumerable<T>>> updateTasks)
         {
             var doneTask = await Task.WhenAny(updateTasks);
             updateTasks.Remove(doneTask);
@@ -1832,8 +1832,15 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> primarySources,
             CancellationToken token)
         {
-            var allActions = new List<ResolvedAction>();
+            token.ThrowIfCancellationRequested();
+
             Dictionary<string, PackageSpec> updatedPackageSpecsCache = new Dictionary<string, PackageSpec>();
+            var maxTasks = GetMaxTaskCount(buildIntegratedProjects.Count());
+
+            // Get requests
+            var requests = new Queue<BuildIntegratedNuGetProject>(buildIntegratedProjects);
+            var previewTasks = new List<Task<IEnumerable<ResolvedAction>>>(maxTasks);
+            var previewResults = new List<ResolvedAction>(maxTasks);
 
             foreach (var buildIntegratedProject in buildIntegratedProjects)
             {
@@ -1846,24 +1853,75 @@ namespace NuGet.PackageManagement
                 updatedPackageSpecsCache[buildIntegratedProject.MSBuildProjectPath] = updatedPackageSpec;
             }
 
-            foreach (var buildIntegratedProject in buildIntegratedProjects)
+            while (requests.Count > 0)
             {
-                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);
-                var actions = new[] { action };
+                // Throttle and wait for a task to finish if we have hit the limit
+                if (previewTasks.Count == maxTasks)
+                {
+                    var previewSummary = await CompleteTaskAsync(previewTasks);
+                    previewResults.AddRange(previewSummary);
+                }
 
-                actions = new[] {
-                    await PreviewBuildIntegratedProjectActionsAsync(
-                        buildIntegratedProject,
-                        actions,
-                        nuGetProjectContext,
-                        updatedPackageSpecsCache,
-                        token)
-                };
+                var request = requests.Dequeue();
 
-                allActions.AddRange(actions.Select(a => new ResolvedAction(buildIntegratedProject, a)));
+                var task = Task.Run(() => ExecutePreviewBuildIntegratedProjectAsync(request,
+                    packageIdentity,
+                    nuGetProjectContext,
+                    primarySources,
+                    updatedPackageSpecsCache,
+                    CancellationToken.None));
+                previewTasks.Add(task);
             }
 
-            return allActions;
+            // Wait for all restores to finish
+            while (previewTasks.Count > 0)
+            {
+                var previewSummary = await CompleteTaskAsync(previewTasks);
+                previewResults.AddRange(previewSummary);
+            }
+
+            // Summary
+            return previewResults;
+        }
+
+        private static int GetMaxTaskCount(int numberOfTasks)
+        {
+            var maxTasks = 1;
+
+            if (!RuntimeEnvironmentHelper.IsMono)
+            {
+                maxTasks = Environment.ProcessorCount;
+            }
+
+            if (maxTasks < 1)
+            {
+                maxTasks = 1;
+            }
+
+            return maxTasks;
+        }
+
+        private async Task<IEnumerable<ResolvedAction>> ExecutePreviewBuildIntegratedProjectAsync(
+            BuildIntegratedNuGetProject buildIntegratedProject,
+            PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources,
+            Dictionary<string, PackageSpec> updatedPackageSpecsCache,
+            CancellationToken token)
+        {
+            var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);
+            var actions = new[] { action };
+
+            actions = new[] {
+                await PreviewBuildIntegratedProjectActionsAsync(
+                    buildIntegratedProject,
+                    actions,
+                    nuGetProjectContext,
+                    updatedPackageSpecsCache,
+                    token)
+            };
+
+            return actions.Select(a => new ResolvedAction(buildIntegratedProject, a));
         }
 
         /// <summary>
