@@ -10,7 +10,12 @@
   d:DesignHeight="200"
   d:DesignWidth="500">
   <UserControl.Resources>
-    <nuget:InfiniteScrollListItemStyleSelector
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <nuget:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+
+      <nuget:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
 
     <DataTemplate
@@ -268,7 +273,9 @@
           <ScrollBar x:Name="PART_HorizontalScrollBar" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportWidth}"/>
       </Grid>
     </ControlTemplate>
-  </UserControl.Resources>
+    </ResourceDictionary>
+  </UserControl.Resources>    
+    
   <DockPanel LastChildFill="True">
     <Border
       x:Name="_updateButtonContainer"
@@ -276,6 +283,7 @@
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
       BorderThickness="0,0,0,1"
       Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}"
+      IsEnabled="{Binding HasPendingBackgroundWork, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}, Converter={StaticResource InverseBooleanConverter}}"
       Visibility="Collapsed">
       <Grid>
         <Grid.ColumnDefinitions>

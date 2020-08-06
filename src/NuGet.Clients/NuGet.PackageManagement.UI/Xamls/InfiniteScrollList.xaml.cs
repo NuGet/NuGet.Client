@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.TeamFoundation.Server;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -29,8 +30,9 @@ namespace NuGet.PackageManagement.UI
     /// Interaction logic for InfiniteScrollList.xaml
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001")]
-    public partial class InfiniteScrollList : UserControl
+    public partial class InfiniteScrollList : UserControl, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
         private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
 
@@ -150,6 +152,14 @@ namespace NuGet.PackageManagement.UI
         public int SelectedIndex => _list.SelectedIndex;
 
         public Guid? OperationId => _loader?.State.OperationId;
+
+        public bool HasPendingBackgroundWork
+        {
+            get
+            {
+                return PackageItems.Any(p => p.HasPendingBackgroundWork);
+            }
+        }
 
         // Load items using the specified loader
         internal async Task LoadItemsAsync(
@@ -611,6 +621,19 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 UpdateCheckBoxStatus();
+            }
+
+            if (e.PropertyName == nameof(package.HasPendingBackgroundWork))
+            {
+                OnPropertyChanged(nameof(HasPendingBackgroundWork));
+            }
+        }
+        protected void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                var e = new PropertyChangedEventArgs(propertyName);
+                PropertyChanged(this, e);
             }
         }
 
