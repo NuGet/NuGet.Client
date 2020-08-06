@@ -495,7 +495,6 @@ namespace NuGet.ProjectModel
                 newSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
             }
 
-
             foreach (var child in Projects)
             {
                 newSpec.AddProject(child);

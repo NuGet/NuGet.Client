@@ -159,18 +159,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (var originalProject in originalProjects)
             {
-                PackageSpec project;
-
-                // Check there is cached value of Package spec which is already applied latest change.
-                if(context.PackageSpecCache.TryGetValue(
-                        originalProject.RestoreMetadata.ProjectUniqueName, out project))
-                {
-                    project = project.Clone();
-                }
-                else
-                {
-                    project = originalProject.Clone();
-                }
+                var project = originalProject.Clone();
 
                 // Read restore settings from ISettings if it doesn't exist in the project
                 // NOTE: Very important that the original project is used in the arguments, because cloning sorts the sources and compromises how the sources will be evaluated

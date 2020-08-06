@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore without writing the lock file
+        /// Restore a project without writing the lock file
         /// </summary>
         internal static async Task<RestoreResultPair> PreviewRestoreAsync(
             ISolutionManager solutionManager,
@@ -182,6 +182,62 @@ namespace NuGet.PackageManagement
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
                 return results.Single();
+            }
+        }
+
+        /// <summary>
+        /// Restore many projects without writing the lock file
+        /// </summary>
+        internal static async Task<IEnumerable<RestoreResultPair>> PreviewRestoreProjectsAsync(
+            ISolutionManager solutionManager,
+            IEnumerable<BuildIntegratedNuGetProject> projects,
+            Dictionary<string, PackageSpec> updatedNugetPackageSpecLookup,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            Guid parentId,
+            ILogger log,
+            CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            // Restoring packages
+            var logger = context.Logger;
+
+            // Add the new spec to the dg file and fill in the rest.
+            var dgFile = await GetSolutionRestoreSpec(solutionManager, context);
+
+            dgFile = dgFile.WithoutRestores()
+                .WithReplacedSpecs(updatedNugetPackageSpecLookup.Values);
+
+            foreach (var project in projects)
+            {
+                dgFile.AddRestore(project.MSBuildProjectPath);
+            }
+
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                // Update cache context
+                cacheContextModifier(sourceCacheContext);
+
+
+               // Settings passed here will be used to populate the restore requests.
+                var restoreContext = GetRestoreContext(
+                    context,
+                    providerCache,
+                    sourceCacheContext,
+                    sources,
+                    dgFile,
+                    parentId,
+                    forceRestore: true,
+                    isRestoreOriginalAction: false,
+                    restoreForceEvaluate: true,
+                    additionalMessasges: null);
+
+                var requests = await RestoreRunner.GetRequests(restoreContext);
+                var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
+                return results;
             }
         }
 
