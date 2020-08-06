@@ -64,6 +64,16 @@ namespace NuGet.Test
         [InlineData("net5.0-tvos1.0", ".NETCoreApp", "v5.0", null, "tvos", "1.0")]
         [InlineData("net5.0-windows10.0", ".NETCoreApp", "v5.0", null, "windows", "10.0")]
         [InlineData("net5.0-macos10.15.2.3", ".NETCoreApp", "v5.0", null, "macos", "10.15.2.3")]
+        [InlineData("unsupported", "unsupported", null, null, null, null)]
+        // Scenarios where certain properties are ignored.
+        [InlineData("netcoreapp3.0", ".NETCoreApp", "v3.0", null, "macos", "10.15.2.3")]
+        [InlineData("netcoreapp3.0", ".NETCoreApp", "v3.0", null, "macos", null)]
+        [InlineData("netcoreapp3.1", ".NETCoreApp", "v3.1", null, null, "10.15.2.3")]
+        [InlineData("netcoreapp3.1-client", ".NETCoreApp", "v3.1", "client", null, "10.15.2.3")]
+        [InlineData("netcoreapp3.1-client", ".NETCoreApp", "v3.1", "client", null, null)]
+        [InlineData("netcoreapp3.0-client", ".NETCoreApp", "v3.0", "client", "Windows", "7.0")]
+        [InlineData("netcoreapp3.0", ".NETCoreApp", "v3.0", null, "Windows", "7.0")]
+
         public void NuGetFramework_ParseToShortName(string expected, string tfi, string tfv, string tfp, string tpi, string tpv)
         {
             // Arrange
@@ -88,6 +98,7 @@ namespace NuGet.Test
         [InlineData("net", "472", null, "ios", "14.0", "net472.0-ios14.0")]
 
         // Pre-Net5.0 ERA
+        [InlineData(".NETCoreApp", "v3.0", null, "Windows", "7.0", ".NETCoreApp,Version=v3.0")]
         [InlineData(".NETFramework", "v4.5", null, null, null, ".NETFramework,Version=v4.5")]
         [InlineData(".NETFramework", "v2.0", null, null, null, ".NETFramework,Version=v2.0")]
         [InlineData(".NETFramework", "4.0", null, null, null, ".NETFramework,Version=v4.0")]
@@ -125,11 +136,28 @@ namespace NuGet.Test
         [InlineData(".NETCoreApp", "1.5", null, null, null, ".NETCoreApp,Version=v1.5")]
         [InlineData(".NETCoreApp", "2", null, null, null, ".NETCoreApp,Version=v2.0")]
         [InlineData(".NETCoreApp", "3", null, null, null, ".NETCoreApp,Version=v3.0")]
+        [InlineData("unsupported", null, null, null, null, "Unsupported,Version=v0.0")]
+        // Scenarios where certain properties are ignored.
+        [InlineData(".NETCoreApp", "v3.0", null, "macos", "10.15.2.3", ".NETCoreApp,Version=v3.0")]
+        [InlineData(".NETCoreApp", "v3.0", null, "macos", null, ".NETCoreApp,Version=v3.0")]
+        [InlineData(".NETCoreApp", "v3.1", null, null, "10.15.2.3", ".NETCoreApp,Version=v3.1")]
+        [InlineData(".NETCoreApp", "v3.1", "client", null, "10.15.2.3", ".NETCoreApp,Version=v3.1,Profile=Client")]
+        [InlineData(".NETCoreApp", "v3.1", "client", null, null, ".NETCoreApp,Version=v3.1,Profile=Client")]
+        [InlineData(".NETCoreApp", "v3.0", "client", "Windows", "7.0", ".NETCoreApp,Version=v3.0,Profile=Client")]
         public void NuGetFramework_Basic(string tfi, string tfv, string tfp, string tpi, string tpv, string fullName)
         {
             string output = NuGetFramework.ParseComponents(tfi, tfv, tfp, tpi, tpv).DotNetFrameworkName;
 
             Assert.Equal(fullName, output);
+        }
+
+        [Theory]
+        [InlineData(null, "v1.0", null, "android", "v21.0")]
+        [InlineData(".NETCoreApp", "vklmnfkjdfn5.0", null, null, null)]
+        [InlineData(".NETCoreApp", "v5.0", null, "plat", "badversion")]
+        public void NuGetFramework_WithInvalidProperties_Throws(string tfi, string tfv, string tfp, string tpi, string tpv)
+        {
+            Assert.ThrowsAny<Exception>(() => NuGetFramework.ParseComponents(tfi, tfv, tfp, tpi, tpv));
         }
     }
 }

@@ -3902,6 +3902,146 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_MultiTargettingWithNet5_UsesIndividualProperties()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var items = new List<IDictionary<string, string>>();
+
+                var net60Alias = "net5.0";
+                var net50WithPlatformAlias = "net50-android21.0";
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", net50WithPlatformAlias },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v5.0" },
+                    { "TargetFrameworkMoniker", ".NETCoreApp,Version=v5.0" },
+                    { "TargetPlatformIdentifier", "android" },
+                    { "TargetPlatformVersion", "29.0" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", net60Alias },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v6.0" },
+                    { "TargetFrameworkMoniker", ".NETCoreApp,Version=v6.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                var net60Framework = project1Spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(net60Alias));
+                var net50Android = project1Spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(net50WithPlatformAlias));
+
+                // Assert
+                net60Framework.FrameworkName.Framework.Should().Be(FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
+                net60Framework.FrameworkName.Version.Should().Be(new Version("6.0.0.0"));
+                net60Framework.FrameworkName.HasPlatform.Should().BeFalse();
+
+                net50Android.FrameworkName.Framework.Should().Be(FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
+                net50Android.FrameworkName.Version.Should().Be(new Version("5.0.0.0"));
+                net50Android.FrameworkName.HasPlatform.Should().BeTrue();
+                net50Android.FrameworkName.Platform.Should().Be("android");
+                net50Android.FrameworkName.PlatformVersion.Should().Be(new Version("29.0.0.0"));
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_SingleTargetingFrameworkWithProfile_UsesIndividualProperties()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var items = new List<IDictionary<string, string>>();
+
+                var alias = "net5.0";
+                var profile = "Client";
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.0" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.0" },
+                    { "TargetFrameworkProfile", profile },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                var net60Framework = project1Spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(alias));
+
+                // Assert
+                net60Framework.FrameworkName.Framework.Should().Be(FrameworkConstants.FrameworkIdentifiers.Net);
+                net60Framework.FrameworkName.Version.Should().Be(new Version("4.0.0.0"));
+                net60Framework.FrameworkName.Profile.Should().Be(profile);
+                net60Framework.FrameworkName.HasPlatform.Should().BeFalse();
+            }
+        }
+
         private static IDictionary<string, string> CreateProject(string root, string uniqueName)
         {
             var project1Path = Path.Combine(root, "a.csproj");
