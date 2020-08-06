@@ -212,7 +212,7 @@ namespace NuGet.Commands
             var currentFrameworkString = MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkMoniker);
             var trimmedTargetFrameworkIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkIdentifier);
             var trimmedTargetFrameworkVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkVersion);
-            var hasTFIandTFV = !string.IsNullOrEmpty(trimmedTargetFrameworkIdentifier) && !string.IsNullOrEmpty(trimmedTargetFrameworkVersion);
+            var hasTFIandTFV = trimmedTargetFrameworkIdentifier != null && trimmedTargetFrameworkVersion != null;
 
             if (!string.IsNullOrEmpty(currentFrameworkString) || hasTFIandTFV)
             {
@@ -230,8 +230,8 @@ namespace NuGet.Commands
                            trimmedTargetFrameworkIdentifier,
                            trimmedTargetFrameworkVersion,
                            MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkProfile),
-                           MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformIdentifier),
-                           MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion)) :
+                           platformIdentifier,
+                           platformVersion) :
                     NuGetFramework.Parse(currentFrameworkString);
 
                 return valueFactory(framework);
