@@ -102,10 +102,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 _testInstance = await PackageSolutionDetailControlModel.CreateAsync(
-                solutionManager: solMgr.Object,
-                projects: new List<ProjectContextInfo>(),
-                packageManagerProviders: new List<IVsPackageManagerProvider>(),
-                CancellationToken.None);
+                    solutionManager: solMgr.Object,
+                    projects: new List<ProjectContextInfo>(),
+                    packageManagerProviders: new List<IVsPackageManagerProvider>(),
+                    CancellationToken.None);
             });
 
             _testInstance.SetCurrentPackage(

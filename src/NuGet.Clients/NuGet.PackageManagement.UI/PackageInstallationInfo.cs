@@ -3,6 +3,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
 
@@ -22,11 +24,21 @@ namespace NuGet.PackageManagement.UI
         private string _projectName;
         private AlternativePackageManagerProviders _providers;
 
-        public PackageInstallationInfo(ProjectContextInfo project)
+        private PackageInstallationInfo(ProjectContextInfo project)
         {
             NuGetProject = project;
-            //_projectName = project.GetUniqueNameOrName();
-            _isSelected = false;
+        }
+
+        public static async ValueTask<PackageInstallationInfo> CreateAsync(ProjectContextInfo project, CancellationToken cancellationToken)
+        {
+            var packageInstallationInfo = new PackageInstallationInfo(project);
+            await packageInstallationInfo.InitializeAsync();
+            return packageInstallationInfo;
+        }
+
+        private async ValueTask InitializeAsync()
+        {
+            _projectName = await NuGetProject.GetUniqueNameOrNameAsync();
         }
 
         public NuGetVersion InstalledVersion

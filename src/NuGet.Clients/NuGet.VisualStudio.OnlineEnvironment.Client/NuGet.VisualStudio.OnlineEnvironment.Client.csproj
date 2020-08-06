@@ -129,9 +129,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Projects\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -72,15 +72,16 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
-        public static Task<PackageManagerControl> CreateAsync(PackageManagerModel model, INuGetUILogger uiLogger)
+        public static async ValueTask<PackageManagerControl> CreateAsync(PackageManagerModel model, INuGetUILogger uiLogger)
         {
             Assumes.NotNull(model);
 
-            var ret = new PackageManagerControl();
-            return ret.InitializeAsync(model, uiLogger);
+            var packageManagerControl = new PackageManagerControl();
+            await packageManagerControl.InitializeAsync(model, uiLogger);
+            return packageManagerControl;
         }
 
-        private async Task<PackageManagerControl> InitializeAsync(PackageManagerModel model, INuGetUILogger uiLogger)
+        private async ValueTask InitializeAsync(PackageManagerModel model, INuGetUILogger uiLogger)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _sinceLastRefresh = Stopwatch.StartNew();
@@ -144,7 +145,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded += SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved += SolutionManager_ProjectsChanged;
-            //solutionManager.NuGetProjectUpdated += SolutionManager_ProjectsUpdated;
+            solutionManager.NuGetProjectUpdated += SolutionManager_ProjectsUpdated;
             solutionManager.NuGetProjectRenamed += SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
             solutionManager.AfterNuGetCacheUpdated += SolutionManager_CacheUpdated;
@@ -169,8 +170,6 @@ namespace NuGet.PackageManagement.UI
             {
                 // don't make recommendations if we are not able to read the environment variable
             }
-
-            return this;
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
@@ -193,6 +192,11 @@ namespace NuGet.PackageManagement.UI
         internal IEnumerable<SourceRepository> ActiveSources => SelectedSource?.SourceRepositories ?? Enumerable.Empty<SourceRepository>();
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
+
+        private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
+        {
+            Model.Context.Projects = _detailModel.NuGetProjects;
+        }
 
         private void SolutionManager_ProjectRenamed(object sender, NuGetProjectEventArgs e)
         {
@@ -235,7 +239,7 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 // get the list of projects
-                var projects = solutionModel.Projects.Select(p => p.NuGetProject);
+                IEnumerable<ProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
                 Model.Context.Projects = projects;
 
                 RefreshWhenNotExecutingAction(RefreshOperationSource.ProjectsChanged, timeSpan);
@@ -1385,7 +1389,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved -= SolutionManager_ProjectsChanged;
-            //solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsUpdated;
+            solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsUpdated;
             solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
             solutionManager.AfterNuGetCacheUpdated -= SolutionManager_CacheUpdated;
@@ -1488,7 +1492,6 @@ namespace NuGet.PackageManagement.UI
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
 
-            // TODO: ScoBan, This will be able to brought back once the ActionEngine is accepting ProjectContextInfo as we can move the property to the new type
             // nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
         }

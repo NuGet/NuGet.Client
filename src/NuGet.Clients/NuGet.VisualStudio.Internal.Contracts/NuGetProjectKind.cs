@@ -7,10 +7,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public enum NuGetProjectKind
     {
+        Unknown,
         Classic,
         ProjectK,
         MSBuild,
-        BuildIntegrated,
-        Unknown
+        BuildIntegrated
     }
 }

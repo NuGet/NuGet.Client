@@ -72,9 +72,9 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        public async Task<bool> IsNuGetProjectUpgradeable(ProjectContextInfo project)
+        public async Task<bool> IsNuGetProjectUpgradeableAsync(ProjectContextInfo project, CancellationToken cancellationToken)
         {
-            return await project.IsProjectUpgradeableAsync(CancellationToken.None);
+            return await project.IsProjectUpgradeableAsync(cancellationToken);
         }
 
         public async Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService)

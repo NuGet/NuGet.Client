@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -118,7 +119,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             var projects = _model.Context.Projects.ToList();
-            return (projects.Count == 1) && await _model.Context.IsNuGetProjectUpgradeable(projects[0]);
+            return (projects.Count == 1) && await _model.Context.IsNuGetProjectUpgradeableAsync(projects[0], CancellationToken.None);
         }
 
         private void HideMigratorBar()

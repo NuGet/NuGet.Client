@@ -77,10 +77,10 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     // we also need to process SupportedFrameworks
-                    (bool supportedFrameworksSuccess, object supportedFrameworksValue) = await project.TryGetMetadataAsync<IEnumerable<NuGetFramework>>(NuGetProjectMetadataKeys.SupportedFrameworks, CancellationToken.None);
+                    (bool supportedFrameworksSuccess, IEnumerable<NuGetFramework> supportedFrameworksValue) = await project.TryGetMetadataAsync<IEnumerable<NuGetFramework>>(NuGetProjectMetadataKeys.SupportedFrameworks, CancellationToken.None);
                     if (supportedFrameworksSuccess)
                     {
-                        var supportedFrameworks = (IEnumerable<NuGetFramework>)supportedFrameworksValue;
+                        var supportedFrameworks = supportedFrameworksValue;
                         foreach (var f in supportedFrameworks)
                         {
                             if (f.IsAny)

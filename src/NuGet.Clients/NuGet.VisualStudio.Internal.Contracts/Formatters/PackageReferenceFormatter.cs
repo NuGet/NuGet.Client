@@ -9,7 +9,6 @@ using Microsoft;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {

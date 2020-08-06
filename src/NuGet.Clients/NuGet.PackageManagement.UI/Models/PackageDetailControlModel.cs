@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.UI
         private void NuGetProjectChanged(object sender, NuGetProjectEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => NuGetProjectChangedAsync(e, CancellationToken.None))
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(DependencyBehavior_SelectedChanged)));
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageDetailControlModel), nameof(NuGetProjectChanged)));
         }
 
         private async Task NuGetProjectChangedAsync(NuGetProjectEventArgs e, CancellationToken cancellationToken)
@@ -119,7 +119,7 @@ namespace NuGet.PackageManagement.UI
             // allVersions is null if server doesn't return any versions.
             if (allVersions == null)
             {
-                return Task.FromResult(true);
+                return Task.CompletedTask;
             }
 
             // null, if no version constraint defined in package.config
@@ -181,7 +181,7 @@ namespace NuGet.PackageManagement.UI
 
             OnPropertyChanged(nameof(Versions));
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         private NuGetVersion _installedVersion;

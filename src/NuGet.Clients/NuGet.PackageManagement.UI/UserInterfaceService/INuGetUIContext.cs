@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
@@ -29,7 +30,7 @@ namespace NuGet.PackageManagement.UI
 
         IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        Task<bool> IsNuGetProjectUpgradeable(ProjectContextInfo project);
+        Task<bool> IsNuGetProjectUpgradeableAsync(ProjectContextInfo project, CancellationToken cancellationToken);
 
         Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
     }

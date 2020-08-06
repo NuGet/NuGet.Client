@@ -160,13 +160,13 @@ namespace NuGet.PackageManagement.UI
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CheckBoxSelectProjectsAsync(select: true))
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(CheckBox_Checked)));
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(SolutionView), nameof(CheckBox_Checked)));
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CheckBoxSelectProjectsAsync(select: false))
-                  .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(CheckBox_Unchecked)));
+                  .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(SolutionView), nameof(CheckBox_Unchecked)));
         }
 
         private async Task CheckBoxSelectProjectsAsync(bool select)

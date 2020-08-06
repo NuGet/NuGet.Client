@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -703,22 +704,27 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var projects = (await SolutionManager.Value.GetNuGetProjectsAsync()).ToArray();
-            if (projects.Length == 0)
+            var projectContexts = new List<ProjectContextInfo>();
+            IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
             {
-                MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
-                return null;
-            }
+                Assumes.NotNull(nugetProjectManagerService);
+                IReadOnlyCollection<string> projectIds = await nugetProjectManagerService.GetProjectsAsync(CancellationToken.None);
 
-            var projectContexts = new List<ProjectContextInfo>(projects.Count());
-            foreach (var project in projects) // TODO: Optimize # of calls to server
-            {
-                var projectContext = await ProjectContextInfo.CreateAsync(project, CancellationToken.None);
-                projectContexts.Add(projectContext);
+                if (projectIds.Count == 0)
+                {
+                    MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
+                    return null;
+                }
+
+                foreach (string projectId in projectIds)
+                {
+                    var projectContext = await ProjectContextInfo.CreateAsync(projectId, CancellationToken.None);
+                    projectContexts.Add(projectContext);
+                }
             }
 
             var uiController = UIFactory.Value.Create(projectContexts.ToArray());
-
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 
             var model = new PackageManagerModel(

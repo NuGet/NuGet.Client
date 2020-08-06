@@ -202,7 +202,6 @@ namespace NuGet.PackageManagement.UI
 
         public INuGetProjectContext ProjectContext => _projectContext;
 
-        // TODO: ScoBan, This is primarily used by the ActionEngine, once those are updated this should be replaced with ProjectContextInfo
         public IEnumerable<NuGetProject> Projects
         {
             set;

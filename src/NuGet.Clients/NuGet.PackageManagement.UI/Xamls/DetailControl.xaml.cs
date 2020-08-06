@@ -127,7 +127,6 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.DependencyBehavior = model.Options.SelectedDependencyBehavior.Behavior;
                     nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
                     nugetUi.ForceRemove = model.Options.ForceRemove;
-                    // TODO: ScoBan, Needs to be updated once NugetUI is updated
                     // nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                     nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;

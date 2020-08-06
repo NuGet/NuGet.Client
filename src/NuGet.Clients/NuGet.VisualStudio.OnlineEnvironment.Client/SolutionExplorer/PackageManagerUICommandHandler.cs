@@ -134,7 +134,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         private async Task OpenPackageManagerUIAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            await ShowPackageManagerUI(workspaceVisualNodeBase);
+            await ShowPackageManagerUIAsync(workspaceVisualNodeBase);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             SolutionUserOptions.Value.LoadSettings();
         }
 
-        private async Task ShowPackageManagerUI(WorkspaceVisualNodeBase workspaceVisualNodeBase)
+        private async Task ShowPackageManagerUIAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -186,7 +186,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 await InitializeMEFAsync();
             }
 
-            var window = await CreateNewWindowFrameAsync(workspaceVisualNodeBase);
+            IVsWindowFrame window = await CreateNewWindowFrameAsync(workspaceVisualNodeBase);
             if (window != null)
             {
                 Search(window, string.Empty);
@@ -245,7 +245,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 throw new InvalidOperationException();
             }
 
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid, CancellationToken.None);
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid.ToString(), CancellationToken.None);
             var uiController = UIFactory.Value.Create(projectContextInfo);
             var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
             var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
