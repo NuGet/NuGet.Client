@@ -845,7 +845,7 @@ namespace NuGet.Build.Tasks.Console.Test
                         { "PackageTargetFallback", "" },
                         { "TargetFramework", latestCore },
                         { "TargetFrameworkIdentifier", FrameworkConstants.FrameworkIdentifiers.NetCoreApp },
-                        { "TargetFrameworkVersion", "v3.0" },
+                        { "TargetFrameworkVersion", "v5.0" },
                         { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.NetCoreApp},Version=5.0" },
                         { "TargetPlatformIdentifier", "android" },
                         { "TargetPlatformVersion", "21.0" },

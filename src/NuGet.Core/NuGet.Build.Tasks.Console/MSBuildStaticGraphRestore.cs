@@ -527,27 +527,21 @@ namespace NuGet.Build.Tasks.Console
             foreach (var projectInnerNode in projectInnerNodes)
             {
                 var msBuildProjectInstance = projectInnerNode.Value;
-
-                var targetFrameworkIdentifier = msBuildProjectInstance.GetProperty("TargetFrameworkIdentifier");
-                var targetFrameworkVersion = msBuildProjectInstance.GetProperty("TargetFrameworkVersion");
-                var targetFrameworkMoniker = msBuildProjectInstance.GetProperty("TargetFrameworkMoniker");
-                var targetPlatformIdentifier = msBuildProjectInstance.GetProperty("TargetPlatformIdentifier");
-                var targetPlatformVersion = msBuildProjectInstance.GetProperty("TargetPlatformVersion");
-                var targetPlatformMinVersion = msBuildProjectInstance.GetProperty("TargetPlatformMinVersion");
                 var targetAlias = string.IsNullOrEmpty(projectInnerNode.Key) ? string.Empty : projectInnerNode.Key;
 
-                IEnumerable<string> targetFramework = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
-                  projectFilePath: projectInnerNode.Value.FullPath,
-                  targetFrameworks: null,
-                  targetFramework: null,
-                  targetFrameworkMoniker: targetFrameworkMoniker,
-                  targetPlatformIdentifier: targetPlatformIdentifier,
-                  targetPlatformVersion: targetPlatformVersion,
-                  targetPlatformMinVersion: targetPlatformMinVersion);
+                NuGetFramework targetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                    projectFilePath: projectInnerNode.Value.FullPath,
+                    targetFrameworkMoniker: msBuildProjectInstance.GetProperty("TargetFrameworkMoniker"),
+                    targetFrameworkIdentifier: msBuildProjectInstance.GetProperty("TargetFrameworkIdentifier"),
+                    targetFrameworkVersion: msBuildProjectInstance.GetProperty("TargetFrameworkVersion"),
+                    targetFrameworkProfile: msBuildProjectInstance.GetProperty("TargetFrameworkProfile"),
+                    targetPlatformIdentifier: msBuildProjectInstance.GetProperty("TargetPlatformIdentifier"),
+                    targetPlatformVersion: msBuildProjectInstance.GetProperty("TargetPlatformVersion"),
+                    targetPlatformMinVersion: msBuildProjectInstance.GetProperty("TargetPlatformMinVersion"));
 
                 var targetFrameworkInformation = new TargetFrameworkInformation()
                 {
-                    FrameworkName = NuGetFramework.Parse(targetFramework.Single()),
+                    FrameworkName = targetFramework,
                     TargetAlias = targetAlias,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath))
                 };
