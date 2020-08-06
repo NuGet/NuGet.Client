@@ -240,8 +240,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
         }
-        public bool HasPendingBackgroundWork { get; private set; } = true;
-
+       
         // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsNotInstalled
         // in all those properties.
         public bool IsNotInstalled
@@ -383,11 +382,47 @@ namespace NuGet.PackageManagement.UI
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
         private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
 
+        #region Track completion of Background Loading
+        public bool HasPendingBackgroundWork
+        {
+            get
+            {
+                return _taskCount > 0;
+            }
+        }
+        private int _taskCount;
+
+        public int TaskCount
+        {
+            get { return _taskCount; }
+            set
+            {
+                _taskCount = value;
+                OnPropertyChanged(nameof(HasPendingBackgroundWork));
+            }
+        }
+        private object _taskCountLock = new object();
+        private void IncrementTask()
+        {
+            lock (_taskCountLock)
+            {
+                TaskCount++;
+            }
+        }
+        private void DecrementTask()
+        {
+            lock (_taskCountLock)
+            {
+                TaskCount--;
+            }
+        }
+        #endregion
+
         private void TriggerStatusLoader()
         {
             if (!_backgroundLatestVersionLoader.IsValueCreated)
             {
-                HasPendingBackgroundWork = true;
+
                 NuGetUIThreadHelper.JoinableTaskFactory
                     .RunAsync(ReloadPackageVersionsAsync)
                     .PostOnFailure(nameof(PackageItemListViewModel), nameof(ReloadPackageVersionsAsync));
@@ -404,13 +439,14 @@ namespace NuGet.PackageManagement.UI
 
         private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
         {
+            IncrementTask();
             var result = await _backgroundLatestVersionLoader.Value;
+            DecrementTask();
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             LatestVersion = result;
             Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
-            HasPendingBackgroundWork = false;
         }
 
         private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
@@ -444,6 +480,7 @@ namespace NuGet.PackageManagement.UI
             _backgroundLatestVersionLoader = AsyncLazy.New(
                 async () =>
                 {
+                    await Task.Delay(3000);
                     var packageVersions = await GetVersionsAsync();
 
                     // filter package versions based on allowed versions in packages.config
