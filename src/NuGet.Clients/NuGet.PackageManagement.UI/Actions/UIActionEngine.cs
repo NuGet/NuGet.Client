@@ -839,23 +839,22 @@ namespace NuGet.PackageManagement.UI
 
             if (userAction.Action == NuGetProjectActionType.Install)
             {
-                // find out build integrated projects so that we can arrange them in reverse dependency order
+                // find out build integrated projects
                 var buildIntegratedProjectsToUpdate = targets.OfType<BuildIntegratedNuGetProject>().ToList();
 
-                // Other non-builtIntegrated type of projects so just add rest of the projects in result
+                // Other non-builtIntegrated type of projects
                 var otherTargetProjectsToUpdate = targets.Except(buildIntegratedProjectsToUpdate).ToList();
 
                 if (buildIntegratedProjectsToUpdate.Any())
                 {
                     // Run project build integrated project preview in parallel for greater performance,
-                    // now they're not dependent on each others result anymore.
+                    // now they're not dependent on each other's result anymore for correctness.
                     var resolvedActions = await _packageManager.PreviewBuildIntegratedProjectActionsParallelAsync(
                         buildIntegratedProjectsToUpdate,
                         new PackageIdentity(userAction.PackageId, userAction.Version),
                         projectContext,
                         uiService.ActiveSources,
                         token);
-
                     results.AddRange(resolvedActions);
                 }
 
@@ -869,7 +868,6 @@ namespace NuGet.PackageManagement.UI
                         uiService.ActiveSources,
                         null,
                         token);
-
                     results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
                 }
             }

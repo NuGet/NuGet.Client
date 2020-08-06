@@ -150,6 +150,8 @@ namespace NuGet.PackageManagement
             ILogger log,
             CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             // Restoring packages
             var logger = context.Logger;
 
@@ -220,7 +222,6 @@ namespace NuGet.PackageManagement
             {
                 // Update cache context
                 cacheContextModifier(sourceCacheContext);
-
 
                // Settings passed here will be used to populate the restore requests.
                 var restoreContext = GetRestoreContext(
