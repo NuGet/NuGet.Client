@@ -1,34 +1,24 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace NuGet.VisualStudio
 {
     public class VsNuGetFramework : IVsNuGetFramework
     {
         public VsNuGetFramework(
-            string targetFrameworkIdentifier,
-            string targetFrameworkVersion,
-            string profile,
-            string targetPlatformIdentifier,
-            string targetPlatformVersion)
+            string targetFrameworkMoniker,
+            string targetPlatformMoniker,
+            string targetPlatformMinVersion)
         {
-            TargetFrameworkIdentifier = targetFrameworkIdentifier;
-            TargetFrameworkVersion = targetFrameworkVersion;
-            TargetFrameworkProfile = profile;
-            TargetPlatformIdentifier = targetPlatformIdentifier;
-            TargetPlatformVersion = targetPlatformVersion;
+            TargetFrameworkMoniker = targetFrameworkMoniker;
+            TargetPlatformMoniker = targetPlatformMoniker;
+            TargetPlatformMinVersion = targetPlatformMinVersion;
         }
 
-        public string TargetFrameworkIdentifier { get; }
+        public string TargetFrameworkMoniker { get; }
 
-        public string TargetFrameworkVersion { get; }
+        public string TargetPlatformMoniker { get; }
 
-        public string TargetFrameworkProfile { get; }
-
-        public string TargetPlatformIdentifier { get; }
-
-        public string TargetPlatformVersion { get; }
+        public string TargetPlatformMinVersion { get; }
     }
 }

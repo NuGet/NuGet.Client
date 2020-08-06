@@ -11,19 +11,13 @@ namespace NuGet.VisualStudio
     [Guid("E57318D0-9A4D-443C-87F6-631D7F6B14CF")]
     public interface IVsNuGetFramework
     {
-        /// <summary>The framework identifier.</summary>
-        string TargetFrameworkIdentifier { get; }
+        /// <summary>The framework moniker.</summary>
+        string TargetFrameworkMoniker { get; }
 
-        /// <summary>The framework version.</summary>
-        string TargetFrameworkVersion { get; }
-
-        /// <summary>The framework profile.</summary>
-        string TargetFrameworkProfile { get; }
-
-        /// <summary>The framework platform.</summary>
-        string TargetPlatformIdentifier { get; }
+        /// <summary>The platform moniker.</summary>
+        string TargetPlatformMoniker { get; }
 
         /// <summary>The framework platform version.</summary>
-        string TargetPlatformVersion { get; }
+        string TargetPlatformMinVersion { get; }
     }
 }

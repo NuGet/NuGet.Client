@@ -22,6 +22,8 @@ namespace NuGet.Frameworks
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
         private readonly string _frameworkProfile;
+        private string _targetFrameworkMoniker;
+        private string _targetPlatformMoniker;
         private const string Portable = "portable";
         private int? _hashCode;
 
@@ -47,7 +49,6 @@ namespace NuGet.Frameworks
         /// </summary>
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile)
             : this(frameworkIdentifier, frameworkVersion, profile: ProcessProfile(frameworkProfile), platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
-
         {
         }
 
@@ -154,6 +155,50 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
+        /// The portion of this framework that is represented by the MSBuild property TargetFrameworkMoniker.
+        /// </summary>
+        public string TargetFrameworkMoniker
+        {
+            get
+            {
+                if (_targetFrameworkMoniker == null)
+                {
+                    if (IsSpecificFramework)
+                    {
+                        var framework = DefaultFrameworkNameProvider.Instance.GetFullNameReplacement(this);
+                        _targetFrameworkMoniker = string.IsNullOrEmpty(framework._frameworkProfile)
+                            ? framework._frameworkIdentifier + ",Version=v" + GetDisplayVersion(framework._frameworkVersion)
+                            : framework._frameworkIdentifier + ",Version=v" + GetDisplayVersion(framework._frameworkVersion) + ",Profile=" + framework._frameworkProfile;
+                    }
+                    else
+                    {
+                        _targetFrameworkMoniker = _frameworkIdentifier + ",Version=v0.0";
+                    }
+                }
+
+                return _targetFrameworkMoniker;
+            }
+        }
+
+        /// <summary>
+        /// The portion of this framework that is represented by the MSBuild property TargetPlatformMoniker.
+        /// </summary>
+        public string TargetPlatformMoniker
+        {
+            get
+            {
+                if (_targetPlatformMoniker == null)
+                {
+                    _targetPlatformMoniker = string.IsNullOrEmpty(Platform)
+                        ? string.Empty
+                        : Platform + ",Version=" + GetDisplayVersion(PlatformVersion);
+                }
+
+                return _targetPlatformMoniker;
+            }
+        }
+
+        /// <summary>
         /// Formatted to a System.Versioning.FrameworkName
         /// </summary>
         public string DotNetFrameworkName
@@ -170,28 +215,13 @@ namespace NuGet.Frameworks
         public string GetDotNetFrameworkName(IFrameworkNameProvider mappings)
         {
             // Check for rewrites
-            var framework = mappings.GetFullNameReplacement(this);
-
-            if (framework.IsNet5Era)
+            if (IsNet5Era)
             {
                 return GetShortFolderName();
             }
-            else if (framework.IsSpecificFramework)
+            else 
             {
-                var parts = new List<string>(3) { Framework };
-
-                parts.Add(string.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
-
-                if (!string.IsNullOrEmpty(framework.Profile))
-                {
-                    parts.Add(string.Format(CultureInfo.InvariantCulture, "Profile={0}", framework.Profile));
-                }
-
-                return string.Join(",", parts);
-            }
-            else
-            {
-                return string.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
+                return TargetFrameworkMoniker;
             }
         }
 

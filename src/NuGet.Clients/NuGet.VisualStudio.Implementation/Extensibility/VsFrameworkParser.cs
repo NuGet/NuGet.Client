@@ -65,7 +65,12 @@ namespace NuGet.VisualStudio
             }
 
             NuGetFramework framework = NuGetFramework.Parse(input);
-            nuGetFramework = new VsNuGetFramework(framework.Framework, "v" + framework.Version.ToString(), framework.Profile, framework.Platform, framework.PlatformVersion.ToString());
+
+            string targetFrameworkMoniker = framework.TargetFrameworkMoniker;
+            string targetPlatformMoniker = framework.TargetPlatformMoniker;
+            string targetPlatforMinVersion = null;
+
+            nuGetFramework = new VsNuGetFramework(targetFrameworkMoniker, targetPlatformMoniker, targetPlatforMinVersion);
             return framework.IsSpecificFramework;
         }
     }

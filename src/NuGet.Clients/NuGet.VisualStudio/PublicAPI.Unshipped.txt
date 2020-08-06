@@ -4,8 +4,6 @@ NuGet.VisualStudio.IVsFrameworkCompatibility3.GetNearest(NuGet.VisualStudio.IVsN
 NuGet.VisualStudio.IVsFrameworkParser2
 NuGet.VisualStudio.IVsFrameworkParser2.TryParse(string input, out NuGet.VisualStudio.IVsNuGetFramework nuGetFramework) -> bool
 NuGet.VisualStudio.IVsNuGetFramework
-NuGet.VisualStudio.IVsNuGetFramework.TargetFrameworkIdentifier.get -> string
-NuGet.VisualStudio.IVsNuGetFramework.TargetFrameworkProfile.get -> string
-NuGet.VisualStudio.IVsNuGetFramework.TargetFrameworkVersion.get -> string
-NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformIdentifier.get -> string
-NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformVersion.get -> string
+NuGet.VisualStudio.IVsNuGetFramework.TargetFrameworkMoniker.get -> string
+NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformMinVersion.get -> string
+NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformMoniker.get -> string

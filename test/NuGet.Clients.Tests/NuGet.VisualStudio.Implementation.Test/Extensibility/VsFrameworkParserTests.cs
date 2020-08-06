@@ -146,11 +146,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             // Assert
             Assert.True(result, "Return value was not true");
-            Assert.Equal(expected.Framework, actual.TargetFrameworkIdentifier);
-            Assert.Equal("v" + expected.Version.ToString(), actual.TargetFrameworkVersion);
-            Assert.Equal(expected.Profile, actual.TargetFrameworkProfile);
-            Assert.Equal(expected.Platform, actual.TargetPlatformIdentifier);
-            Assert.Equal(expected.PlatformVersion.ToString(), actual.TargetPlatformVersion);
+            Assert.Equal(expected.TargetFrameworkMoniker, actual.TargetFrameworkMoniker);
+            Assert.Equal(expected.TargetPlatformMoniker, actual.TargetPlatformMoniker);
+            Assert.Null(actual.TargetPlatformMinVersion);
         }
 
         [Theory]
@@ -166,7 +164,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var actual = target.TryParse(input, out IVsNuGetFramework parsed);
 
             // Assert
-            Assert.False(actual, $"Expected false, but got true for {input}. TFI {parsed.TargetFrameworkIdentifier}, TFV {parsed.TargetFrameworkVersion}, Profile {parsed.TargetFrameworkProfile}, TPI {parsed.TargetPlatformIdentifier}, TPV {parsed.TargetPlatformVersion}");
+            Assert.False(actual, $"Expected false, but got true for {input}. TFM {parsed.TargetFrameworkMoniker}, TPV {parsed.TargetPlatformMoniker}, TPMV {parsed.TargetPlatformMinVersion}");
         }
     }
 }

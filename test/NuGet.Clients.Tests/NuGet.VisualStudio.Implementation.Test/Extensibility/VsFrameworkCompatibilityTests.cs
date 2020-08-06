@@ -205,9 +205,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         {
             // Arrange
             var target = new VsFrameworkCompatibility();
-            var net5 = new VsNuGetFramework(".NETCoreApp", "v5.0", null, null, null);
-            var net472 = new VsNuGetFramework(".NETFramework", "v4.7.2", null, null, null);
-            var netcoreapp31 = new VsNuGetFramework(".NETCoreApp", "v3.1", null, null, null);
+            var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
+            var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
+            var netcoreapp31 = new VsNuGetFramework(".NETCoreApp,Version=v3.1", targetPlatformMoniker: null, targetPlatformMinVersion: null);
             var frameworks = new IVsNuGetFramework[] { net472, netcoreapp31 };
 
             // Act
@@ -223,8 +223,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             // Arrange
             var target = new VsFrameworkCompatibility();
 
-            var net5 = new VsNuGetFramework(".NETCoreApp", "v5.0", string.Empty, string.Empty, string.Empty);
-            var net472 = new VsNuGetFramework(".NETFramework", "v4.7.2", string.Empty, string.Empty, string.Empty);
+            var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
+            var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
             var fallbackFrameworks = new IVsNuGetFramework[] { net472 };
             var frameworks = new IVsNuGetFramework[] { net472 };
 
@@ -241,8 +241,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             // Arrange
             var target = new VsFrameworkCompatibility();
 
-            var net5 = new NuGet.VisualStudio.VsNuGetFramework(".NETCoreApp", "v5.0", string.Empty, string.Empty, string.Empty);
-            var net472 = new VsNuGetFramework(".NETFramework", "v4.7.2", string.Empty, string.Empty, string.Empty);
+            var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
+            var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
             var frameworks = new IVsNuGetFramework[] { net472 };
 
             // Act

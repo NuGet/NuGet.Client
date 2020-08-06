@@ -55,6 +55,20 @@ namespace NuGet.Test
             Assert.Equal(expected, result);
         }
 
+        [Theory]
+        [InlineData("net48", ".NETFramework,Version=v4.8", "")]
+        [InlineData("netstandard2.1", ".NETStandard,Version=v2.1", "")]
+        [InlineData("net5.0", ".NETCoreApp,Version=v5.0", "")]
+        [InlineData("net5.0-windows7.0", ".NETCoreApp,Version=v5.0", "windows,Version=7.0")]
+        [InlineData("portable-net45+win8", ".NETPortable,Version=v0.0,Profile=Profile7", "")]
+        public void NuGetFramework_TargetFrameworkMoniker_TargetPlatformMoniker(string input, string expectedTfm, string expectedTpm)
+        {
+            var framework = NuGetFramework.Parse(input);
+
+            Assert.Equal(expectedTfm, framework.TargetFrameworkMoniker);
+            Assert.Equal(expectedTpm, framework.TargetPlatformMoniker);
+        }
+
         public static TheoryData EqualsFrameworkData
         {
             get
