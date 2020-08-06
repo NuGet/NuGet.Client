@@ -75,9 +75,9 @@ namespace NuGet.Protocol.Core.Types
                 var apiKey = getApiKey(_source);
 
                 bool explicitSnupkgPush = true;
-
+                
                 if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
-                {
+                {   
                     await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate,
                                       requestTimeout, log, tokenSource.Token);
 
@@ -358,7 +358,7 @@ namespace NuGet.Protocol.Core.Types
                                 response =>
                                 {
                                     var responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
-
+                                    
                                     var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, response.ReasonPhrase, logger);
                                     showPushCommandPackagePushed = !logOccurred;
 
@@ -453,11 +453,11 @@ namespace NuGet.Protocol.Core.Types
             {
                 string messageToLog = null;
                 string messageToLogVerbose = null;
-
+                
                 switch (skippedErrorStatusCode.Value)
                 {
                     case HttpStatusCode.Conflict:
-
+                        
                         messageToLog = string.Format(
                                    CultureInfo.CurrentCulture,
                                    Strings.AddPackage_PackageAlreadyExists,
@@ -603,7 +603,7 @@ namespace NuGet.Protocol.Core.Types
                     throwIfPackageExistsAndInvalid: !skipDuplicate,
                     throwIfPackageExists: !skipDuplicate,
                     extractionContext: packageExtractionContext);
-
+                
                 await OfflineFeedUtility.AddPackageToSource(context, token);
             }
         }

@@ -164,7 +164,7 @@ namespace NuGet.Protocol.Core.Types
                             var message = string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.AddPackage_PackageAlreadyExists,
-                                packageIdentity,
+                                packageIdentity, 
                                 source);
 
                             if (offlineFeedAddContext.ThrowIfPackageExists)
@@ -179,8 +179,8 @@ namespace NuGet.Protocol.Core.Types
                         else
                         {
                             var message = string.Format(CultureInfo.CurrentCulture,
-                                Strings.AddPackage_ExistingPackageInvalid,
-                                packageIdentity,
+                                Strings.AddPackage_ExistingPackageInvalid, 
+                                packageIdentity, 
                                 source);
 
                             if (offlineFeedAddContext.ThrowIfPackageExistsAndInvalid)
@@ -223,10 +223,10 @@ namespace NuGet.Protocol.Core.Types
                     }
                 }
                 // Mono will throw ArchiveException when package is invalid.
-                // Reading Nuspec in invalid package on Mono will get PackagingException
+                // Reading Nuspec in invalid package on Mono will get PackagingException 
                 catch (Exception ex) when( ex is InvalidDataException
                                         || (RuntimeEnvironmentHelper.IsMono
-                                        && (ex.GetType().FullName.Equals("SharpCompress.Common.ArchiveException")
+                                        && (ex.GetType().FullName.Equals("SharpCompress.Common.ArchiveException") 
                                         || ex is PackagingException)))
                 {
                     var message = string.Format(

@@ -13,7 +13,7 @@ using NuGet.Versioning;
 namespace NuGet.Protocol
 {
     /// <summary>
-    /// Represents a V2 package entry from the OData feed. This object primarily just holds the strings parsed from XML, all parsing
+    /// Represents a V2 package entry from the OData feed. This object primarily just holds the strings parsed from XML, all parsing 
     /// and converting should be done after based on the scenario.
     /// </summary>
     public class V2FeedPackageInfo : PackageIdentity
@@ -266,7 +266,7 @@ namespace NuGet.Protocol
 
                                 // Nexus will write "null" when there is no depenency version range.
                                 // Parse the optional version range
-                                if (!string.IsNullOrWhiteSpace(versionRangeString)
+                                if (!string.IsNullOrWhiteSpace(versionRangeString) 
                                     && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Attempt to parse the version
