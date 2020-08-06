@@ -748,7 +748,7 @@ namespace NuGet.PackageManagement.UI
             .PostOnFailure(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount));
         }
 
-        // Check if user has environment variable of RecommendNuGetPackages set to 1 or is in A/B experiment.
+        // Check if user has environment variable of NUGET_RECOMMEND_PACKAGES set to 1 or is in A/B experiment.
         public bool IsRecommenderFlightEnabled()
         {
             return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
@@ -757,7 +757,7 @@ namespace NuGet.PackageManagement.UI
         private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
         {
             // only make recommendations when
-            //   the single source repository is nuget.org,
+            //   one of the source repositories is nuget.org,
             //   the package manager was opened for a project, not a solution,
             //   this is the Browse tab,
             //   and the search text is an empty string
@@ -765,11 +765,10 @@ namespace NuGet.PackageManagement.UI
             if (loadContext.IsSolution == false
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
-                && loadContext.SourceRepositories.Count() == 1
                 // also check if this is a PC-style project. We will not provide recommendations for PR-style
                 // projects until we have a way to get dependent packages without negatively impacting perf.
                 && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
-                && TelemetryUtility.IsNuGetOrg(loadContext.SourceRepositories.First().PackageSource))
+                && loadContext.SourceRepositories.Any(item => TelemetryUtility.IsNuGetOrg(item.PackageSource)))
             {
                 _recommendPackages = true;
             }
