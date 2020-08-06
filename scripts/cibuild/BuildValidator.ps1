@@ -24,21 +24,21 @@ param
 (
     [Parameter(Mandatory=$True)]
     [string]$RepoRoot,
-    
+
     [Parameter(Mandatory=$True)]
     [string]$OutputLogsBasePath,
-    
+
     [Parameter(Mandatory=$True)]
     [string]$BuildRTM,
-    
+
     [switch]$ValidateVsix,
-    
+
     [string]$TmpPath = $Env:TEMP
 )
 
 if ($BuildRTM -eq 'false')
 {
-    $NuGetValidator = [System.IO.Path]::Combine($RepoRoot, 'packages', 'nugetvalidator', '2.0.2', 'tools', 'NuGetValidator.exe')
+    $NuGetValidator = [System.IO.Path]::Combine($RepoRoot, 'packages', 'nugetvalidator', '2.0.3', 'tools', 'NuGetValidator.exe')
     $LocalizationRepository = [System.IO.Path]::Combine($RepoRoot, 'submodules', 'NuGet.Build.Localization', 'localize', 'comments', '15')
 
     if ($ValidateVsix)
@@ -57,8 +57,8 @@ if ($BuildRTM -eq 'false')
         $ArtifactsLogOutputDir = [System.IO.Path]::Combine($OutputLogsBasePath, 'LocalizationValidation', 'artifacts')
 
         Write-Host "Validating NuGet.Client repository localization..."
-        Write-Host "Running: $NuGetValidator localization --artifacts-path $ArtifactsLocation --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository"
-        & $NuGetValidator localization --artifacts-path $ArtifactsLocation --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository
+        Write-Host "Running: $NuGetValidator localization --artifacts-path $ArtifactsLocation --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository --filter-paths-containing net45"
+        & $NuGetValidator localization --artifacts-path $ArtifactsLocation --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository  --filter-paths-containing net45
     }
 
     # return the exit code from the validator
