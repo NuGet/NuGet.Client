@@ -2,15 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#if IS_DESKTOP
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
-
 using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Packaging.Signing
@@ -21,9 +18,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal sealed class Rfc3161TimestampToken
     {
-
-#if IS_DESKTOP
-
         private readonly byte[] _encoded;
 
         public IRfc3161TimestampTokenInfo TokenInfo { get; }
@@ -155,6 +149,6 @@ namespace NuGet.Packaging.Signing
                     Rfc3161TimestampWin32.CertCloseStore(hStore, 0);
             }
         }
-#endif
     }
 }
+#endif
