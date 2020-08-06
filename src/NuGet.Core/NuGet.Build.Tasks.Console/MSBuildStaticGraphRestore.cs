@@ -341,12 +341,7 @@ namespace NuGet.Build.Tasks.Console
         /// <returns></returns>
         internal static IReadOnlyDictionary<string, IMSBuildProject> GetProjectTargetFrameworks(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> innerNodes)
         {
-            var targetFrameworks = project.GetProperty("TargetFrameworks");
-            if (string.IsNullOrEmpty(targetFrameworks))
-            {
-                targetFrameworks = project.GetProperty("TargetFramework");
-            }
-            var projectFrameworkStrings = MSBuildStringUtility.Split(targetFrameworks);
+            var projectFrameworkStrings = GetTargetFrameworkStrings(project);
             var projectTargetFrameworks = new Dictionary<string, IMSBuildProject>();
 
             if (projectFrameworkStrings.Length > 0)
@@ -371,6 +366,17 @@ namespace NuGet.Build.Tasks.Console
             }
 
             return projectTargetFrameworks;
+        }
+
+        internal static string[] GetTargetFrameworkStrings(IMSBuildProject project)
+        {
+            var targetFrameworks = project.GetProperty("TargetFrameworks");
+            if (string.IsNullOrEmpty(targetFrameworks))
+            {
+                targetFrameworks = project.GetProperty("TargetFramework");
+            }
+            var projectFrameworkStrings = MSBuildStringUtility.Split(targetFrameworks);
+            return projectFrameworkStrings;
         }
 
         /// <summary>
@@ -531,7 +537,7 @@ namespace NuGet.Build.Tasks.Console
                 var targetAlias = string.IsNullOrEmpty(projectInnerNode.Key) ? string.Empty : projectInnerNode.Key;
 
                 IEnumerable<string> targetFramework = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
-                  projectFilePath: null, // TODO NK - This needs fixed.
+                  projectFilePath: projectInnerNode.Value.FullPath,
                   targetFrameworks: null,
                   targetFramework: null,
                   targetFrameworkMoniker: targetFrameworkMoniker,
