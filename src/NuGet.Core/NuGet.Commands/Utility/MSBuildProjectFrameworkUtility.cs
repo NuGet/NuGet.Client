@@ -303,9 +303,9 @@ namespace NuGet.Commands
         /// </summary>
         private static NuGetFramework GetAsNuGetFramework(object arg)
         {
-            if (arg is NuGetFramework)
+            if (arg is NuGetFramework nugetFramework)
             {
-                return (NuGetFramework)arg;
+                return nugetFramework;
             }
             if (arg is string frameworkString)
             {
@@ -319,9 +319,9 @@ namespace NuGet.Commands
         /// </summary>
         private static string GetAsFrameworkString(object arg)
         {
-            if (arg is string)
+            if (arg is string str)
             {
-                return (string)arg;
+                return str;
             }
             if (arg is NuGetFramework framework)
             {
