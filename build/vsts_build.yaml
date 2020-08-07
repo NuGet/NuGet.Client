@@ -547,7 +547,7 @@ jobs:
       SourceFolder: "$(Build.Repository.LocalPath)\\LocalizationValidation"
       Contents: "**"
       TargetFolder: "$(BuildOutputTargetPath)\\artifactsLocalizationValidation"
-    condition: "and(eq(variables['BuildRTM'], 'false')"
+    condition: "eq(variables['BuildRTM'], 'false')"
 
     # Use dotnet msbuild instead of MSBuild CLI.
     # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
