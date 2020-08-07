@@ -18,6 +18,7 @@
     <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">netcoreapp2.1</NETCoreTargetFrameworks>
     <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">netcoreapp2.1;netcoreapp5.0</NETCoreTargetFrameworks>
     <NETCoreTestTargetFrameworks>netcoreapp3.1;netcoreapp5.0</NETCoreTestTargetFrameworks>
+    <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFrameworks)</TargetFrameworksExe>
     <TargetFrameworksExe Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>

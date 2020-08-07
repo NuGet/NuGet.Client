@@ -41,10 +41,8 @@ namespace Dotnet.Integration.Test
 
             var sdkPath = Directory.EnumerateDirectories(Path.Combine(_cliDirectory, "sdk")).Single();
 
-#if NETCOREAPP5_0
             // TODO - remove when shipping. See https://github.com/NuGet/Home/issues/8952
             PatchSDKWithCryptographyDlls(sdkPath);
-#endif
 
             MsBuildSdksPath = Path.Combine(sdkPath, "Sdks");
 

@@ -42,16 +42,12 @@
     <!--TODO: remove temporary workaround of using LockSDKVersion. Tracking issue: https://github.com/NuGet/Home/issues/9712 -->
     <LockSDKVersion>true</LockSDKVersion>
     <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'false'"></OverrideCliBranchForTesting>
-    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">master 5.0.100-preview.7.20319.6;3.1</OverrideCliBranchForTesting>
-    <CliVersionForBuilding>"master 5.0.100-preview.4.20258.7"</CliVersionForBuilding>
+    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">master 5.0.100-preview.7.20319.6</OverrideCliBranchForTesting>
+    <CliVersionForBuilding>master 5.0.100-preview.4.20258.7</CliVersionForBuilding>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">master;3.1</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">master</CliBranchForTesting>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</CliTargetBranches>
-    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>
-    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</SdkTargetBranches>
-    <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' != ''">$(OverrideToolsetTargetBranches)</ToolsetTargetBranches>
-    <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">master</ToolsetTargetBranches>
   </PropertyGroup>
 
   <!-- Config -->
@@ -93,12 +89,6 @@
   </Target>
   <Target Name="GetCliTargetBranches">
     <Message Text="$(CliTargetBranches)" Importance="High"/>
-  </Target>
-  <Target Name="GetSdkTargetBranches">
-    <Message Text="$(SdkTargetBranches)" Importance="High"/>
-  </Target>
-  <Target Name="GetToolsetTargetBranches">
-    <Message Text="$(ToolsetTargetBranches)" Importance="High"/>
   </Target>
   <Target Name="GetCliBranchForTesting">
       <Message Text="$(CliBranchForTesting)" Importance="High"/>
