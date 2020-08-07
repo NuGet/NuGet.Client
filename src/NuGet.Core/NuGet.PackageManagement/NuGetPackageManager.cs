@@ -2056,7 +2056,7 @@ namespace NuGet.PackageManagement
             var buildIntegratedProjectsToUpdate = projects.OfType<BuildIntegratedNuGetProject>().ToList();
 
             // order won't matter for other type of projects so just add rest of the projects in result
-            var otherProjects = projects.Except(buildIntegratedProjectsToUpdate).ToList();
+            var sortedProjectsToUpdate = projects.Except(buildIntegratedProjectsToUpdate).ToList();
 
             if (buildIntegratedProjectsToUpdate.Count > 0)
             {
@@ -2071,7 +2071,7 @@ namespace NuGet.PackageManagement
                 _buildIntegratedProjectsCache = dgFile;
                 var allSortedProjects = DependencyGraphSpec.SortPackagesByDependencyOrder(dgFile.Projects);
 
-                // cache these projects which will be used to avoid duplicate restore as part of parent projects
+                // cache these already evaluated(without commit) buildIntegratedProjects project ids which will be used to avoid duplicate restore as part of parent projects
                 _buildIntegratedProjectsUpdateSet.AddRange(
                     buildIntegratedProjectsToUpdate.Select(child => child.MSBuildProjectPath));
 
@@ -2080,14 +2080,13 @@ namespace NuGet.PackageManagement
                     BuildIntegratedNuGetProject project;
                     if (projectUniqueNamesForBuildIntToUpdate.TryGetValue(projectUniqueName, out project))
                     {
-                        var nugetActions = nuGetProjectActions.Where(action => action.Project.Equals(project));
-                        await ExecuteNuGetProjectActionsAsync(project, nugetActions, nuGetProjectContext, sourceCacheContext, token);
+                        sortedProjectsToUpdate.Add(project);
                     }
                 }
             }
 
-            // execute other nuget project actions
-            foreach (var project in otherProjects)
+            // execute all nuget project actions
+            foreach (var project in sortedProjectsToUpdate)
             {
                 var nugetActions = nuGetProjectActions.Where(action => action.Project.Equals(project));
                 await ExecuteNuGetProjectActionsAsync(project, nugetActions, nuGetProjectContext, sourceCacheContext, token);
@@ -3078,7 +3077,8 @@ namespace NuGet.PackageManagement
                 var now = DateTime.UtcNow;
                 void cacheContextModifier(SourceCacheContext c) => c.MaxAge = now;
 
-                // Write out the lock file
+                // Write out the lock file, now no need bubbling re-evaluating of parent projects.
+                // We already taken account of that concern in PreviewBuildIntegratedProjectActionsParallelAsync method.
                 await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
 
                 // add packages lock file into project
