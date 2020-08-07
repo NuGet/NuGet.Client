@@ -195,6 +195,9 @@
   <data name="Label_Publishers" xml:space="preserve">
     <value>Publisher(s):</value>
   </data>
+  <data name="Label_Readme" xml:space="preserve">
+    <value>README:</value>
+  </data>
   <data name="Label_Repository" xml:space="preserve">
     <value>Package source:</value>
   </data>
@@ -896,6 +899,9 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Hyperlink_ProjectUrl" xml:space="preserve">
     <value>Project URL</value>
+  </data>
+  <data name="Hyperlink_Readme" xml:space="preserve">
+    <value>README</value>
   </data>
   <data name="Hyperlink_ReportAbuse" xml:space="preserve">
     <value>Report Abuse</value>

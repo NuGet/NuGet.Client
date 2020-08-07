@@ -105,6 +105,7 @@
         <RowDefinition />
         <RowDefinition />
         <RowDefinition />
+        <RowDefinition />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition
@@ -191,10 +192,44 @@
         </ItemsControl.ItemsPanel>
       </ItemsControl>
 
+      <!-- Readme -->
+      <TextBlock
+        Visibility="{Binding Path=Readme,Converter={StaticResource NullToVisibilityConverter}}"
+        Grid.Row="4"
+        Grid.Column="0"
+        FontWeight="Bold"
+        Margin="0,8,0,0"
+        x:Name="_readmeLabel"
+        AutomationProperties.Name="{Binding Text}"
+        Text="{x:Static nuget:Resources.Label_Readme}"/>
+
+      <!--<ItemsControl Grid.Row="4" Grid.Column="1" ItemsSource="{Binding ReadmeLinks}" IsTabStop="False">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Margin="8,8,0,0" Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+      </ItemsControl>-->
+
+      <TextBlock
+        Visibility="{Binding Path=ReadmeUrl,Converter={StaticResource NullToVisibilityConverter}}"
+        TextWrapping="Wrap"
+        Margin="8,8,0,0"
+        Grid.Row="4"
+        Grid.Column="1">
+        <Hyperlink
+          NavigateUri="{Binding Path=ReadmeUrl}"
+          Style="{StaticResource HyperlinkStyle}"
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_Readme}">
+          <Run Text="{Binding Path=ReadmeUrl}" />
+        </Hyperlink>
+      </TextBlock>
+
       <!-- downloads -->
       <TextBlock
         Visibility="{Binding Path=DownloadCount,Converter={StaticResource  DownloadCountToVisibilityConverter}}"
-        Grid.Row="4"
+        Grid.Row="5"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
@@ -207,13 +242,13 @@
         Text="{Binding Path=DownloadCount,StringFormat={}{0:N0}}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="4"
+        Grid.Row="5"
         Grid.Column="1" />
 
       <!--Date Published -->
       <TextBlock
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="5"
+        Grid.Row="6"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
@@ -227,13 +262,13 @@
         AutomationProperties.LabeledBy="{Binding ElementName=_datePublishedLabel}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="5"
+        Grid.Row="6"
         Grid.Column="1" />
 
       <!-- Project Url -->
       <TextBlock
         Visibility="{Binding Path=ProjectUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="6"
+        Grid.Row="7"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
@@ -245,7 +280,7 @@
         Visibility="{Binding Path=ProjectUrl,Converter={StaticResource NullToVisibilityConverter}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
-        Grid.Row="6"
+        Grid.Row="7"
         Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ProjectUrl}"
@@ -259,7 +294,7 @@
       <!-- Report abuse Url -->
       <TextBlock
         Visibility="{Binding Path=ReportAbuseUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="7"
+        Grid.Row="8"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
@@ -270,7 +305,7 @@
         Visibility="{Binding Path=ReportAbuseUrl,Converter={StaticResource NullToVisibilityConverter}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
-        Grid.Row="7"
+        Grid.Row="8"
         Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ReportAbuseUrl}"
@@ -284,7 +319,7 @@
       <!-- Tags -->
       <TextBlock
         Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="8"
+        Grid.Row="9"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
@@ -297,7 +332,7 @@
         Text="{Binding Path=Tags}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="8"
+        Grid.Row="9"
         Grid.Column="1" />
     </Grid>
 
