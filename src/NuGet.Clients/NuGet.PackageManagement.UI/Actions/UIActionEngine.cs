@@ -849,7 +849,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     // Run project build integrated project preview in parallel for greater performance,
                     // now they're not dependent on each other's result anymore for correctness.
-                    var resolvedActions = await _packageManager.PreviewBuildIntegratedProjectActionsParallelAsync(
+                    var resolvedActions = await _packageManager.PreviewBuildIntegratedProjectsActionsAsync(
                         buildIntegratedProjectsToUpdate,
                         new PackageIdentity(userAction.PackageId, userAction.Version),
                         projectContext,

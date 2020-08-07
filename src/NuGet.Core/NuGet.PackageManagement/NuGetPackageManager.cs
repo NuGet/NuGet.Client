@@ -2692,7 +2692,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Return list of Resolved actions after running preview (without commit) in parallel for buildIntegrated projects.
         /// </summary>
-        public async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectActionsParallelAsync(
+        public async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
             IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
             PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
@@ -3058,7 +3058,7 @@ namespace NuGet.PackageManagement
                 void cacheContextModifier(SourceCacheContext c) => c.MaxAge = now;
 
                 // Write out the lock file, now no need bubbling re-evaluating of parent projects when you restore from PM UI.
-                // We already taken account of that concern in PreviewBuildIntegratedProjectActionsParallelAsync method.
+                // We already taken account of that concern in PreviewBuildIntegratedProjectsActionsAsync method.
                 await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
 
                 // add packages lock file into project
