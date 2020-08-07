@@ -30,22 +30,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-<ItemGroup>
-  <ProjectReference Include="..\NuGet.Configuration\NUGet.configuration.csproj" />
-  <ProjectReference Include="..\NuGet.versioning\NUGet.versioning.csproj" />
-</ItemGroup>
-  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="NuGet.Configuration" Version="4.9.*" />
-    <PackageReference Include="NuGet.Versioning" Version="4.9.*" />
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Configuration\NUGet.configuration.csproj" />
+    <ProjectReference Include="..\NuGet.versioning\NUGet.versioning.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <PackageReference Include="NuGet.Configuration" Version="4.5.*" />
-    <PackageReference Include="NuGet.Versioning" Version="4.5.*" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="NuGet.Configuration" Version="5.*-*" />
-    <PackageReference Include="NuGet.Versioning" Version="5.*-*" />
-  </ItemGroup> -->
 
   <ItemGroup Condition=" '$(IsDesktop)' == 'true' ">
     <Reference Include="System.Xml" />
