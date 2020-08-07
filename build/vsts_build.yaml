@@ -531,15 +531,23 @@ jobs:
     displayName: "Validate VSIX Localization"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-      arguments: "-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath) -ValidateVsix"
-    condition: "succeeded()"
+      arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\LocalizationValidation -TmpPath $(Agent.TempDirectory) -ValidateVsix"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: PowerShell@1
-    displayName: "Validate Repository Artifacts Localization"
+    displayName: "Validate Artifacts Localization"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-      arguments: "-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath)"
-    condition: "succeeded()"
+      arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\LocalizationValidation -TmpPath $(Agent.TempDirectory)"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+  - task: CopyFiles@2
+    displayName: "Copy LocValidalidation logs to artifacts"
+    inputs:
+      SourceFolder: "$(Build.Repository.LocalPath)\\LocalizationValidation"
+      Contents: "**"
+      TargetFolder: "$(BuildOutputTargetPath)\\artifactsLocalizationValidation"
+    condition: "and(eq(variables['BuildRTM'], 'false'))"
 
     # Use dotnet msbuild instead of MSBuild CLI.
     # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
