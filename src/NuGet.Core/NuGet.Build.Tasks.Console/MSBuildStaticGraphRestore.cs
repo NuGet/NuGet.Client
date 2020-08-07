@@ -759,7 +759,9 @@ namespace NuGet.Build.Tasks.Console
             {
                 restoreMetadata = new ProjectRestoreMetadata
                 {
-                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && projectsByTargetFramework.Count > 1,
+                    // CrossTargeting is on, even if the TargetFrameworks property has only 1 tfm.
+                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && (
+                        projectsByTargetFramework.Count > 1 || !string.IsNullOrWhiteSpace(project.GetProperty("TargetFrameworks"))),
                     FallbackFolders = BuildTasksUtility.GetFallbackFolders(
                         project.Directory,
                         project.SplitPropertyValueOrNull("RestoreFallbackFolders"),
