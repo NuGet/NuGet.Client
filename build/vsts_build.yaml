@@ -528,25 +528,25 @@ jobs:
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
   - task: PowerShell@1
-    displayName: "Validate VSIX Localization"
+    displayName: "LocValidation: Verify VSIX"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-      arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\LocalizationValidation -TmpPath $(Agent.TempDirectory) -ValidateVsix"
+      arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs -TmpPath $(Agent.TempDirectory) -ValidateVsix"
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: PowerShell@1
-    displayName: "Validate Artifacts Localization"
+    displayName: "LocValidation: Verify Artifacts"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-      arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\LocalizationValidation -TmpPath $(Agent.TempDirectory)"
+      arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: CopyFiles@2
-    displayName: "Copy LocValidalidation logs to artifacts"
+    displayName: "LocValidation: Copy Logs"
     inputs:
-      SourceFolder: "$(Build.Repository.LocalPath)\\LocalizationValidation"
+      SourceFolder: "$(Build.Repository.LocalPath)\\logs"
       Contents: "**"
-      TargetFolder: "$(BuildOutputTargetPath)\\artifactsLocalizationValidation"
+      TargetFolder: "$(Build.Repository.LocalPath)\\artifacts"
     condition: "eq(variables['BuildRTM'], 'false')"
 
     # Use dotnet msbuild instead of MSBuild CLI.
