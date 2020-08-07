@@ -43,7 +43,7 @@
     <LockSDKVersion>true</LockSDKVersion>
     <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'false'"></OverrideCliBranchForTesting>
     <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">master 5.0.100-preview.7.20319.6</OverrideCliBranchForTesting>
-    <CliVersionForBuilding>master 5.0.100-preview.4.20258.7</CliVersionForBuilding>
+    <CliVersionForBuilding>"master 5.0.100-preview.4.20258.7"</CliVersionForBuilding>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">master</CliBranchForTesting>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
