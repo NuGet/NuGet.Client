@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework)</TargetFrameworks>
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.LibraryModel.</Description>
