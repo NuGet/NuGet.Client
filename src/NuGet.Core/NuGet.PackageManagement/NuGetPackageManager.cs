@@ -2459,7 +2459,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Run project actions for build integrated a project.
+        /// Run project actions for build integrated projects.
         /// </summary>
         public async Task<BuildIntegratedProjectAction> PreviewBuildIntegratedProjectActionsAsync(
             BuildIntegratedNuGetProject buildIntegratedProject,
@@ -2690,7 +2690,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Return list of Resolved actions after running preview (without commit) in parallel for build integrated projects.
+        /// Return list of Resolved actions after running preview (without commit) in parallel for buildIntegrated projects.
         /// </summary>
         public async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectActionsParallelAsync(
             IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
@@ -2711,21 +2711,20 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
-            var stopWatch = Stopwatch.StartNew();
+            if (primarySources == null)
+            {
+                throw new ArgumentNullException(nameof(primarySources));
+            }
 
+            var stopWatch = Stopwatch.StartNew();
+            var logger = new ProjectContextLogger(nuGetProjectContext);
             var result = new List<ResolvedAction>();
 
-            var lockFiles = new Dictionary<string, LockFile>(StringComparer.OrdinalIgnoreCase);
-            var logger = new ProjectContextLogger(nuGetProjectContext);
+            var lockFileLookup = new Dictionary<string, LockFile>(StringComparer.OrdinalIgnoreCase);
             var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);           
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
-
-            // Updated package specs used for batch restore.
-            var updatedPackageSpecs = new List<PackageSpec>();
-
-            // Used to lookup for nugetProjectActions for per project
-            var nugetProjectActionLookup = new Dictionary<string, NuGetProjectAction[]>(StringComparer.OrdinalIgnoreCase);
+            var nugetProjectActionsLookup = new Dictionary<string, NuGetProjectAction[]>(StringComparer.OrdinalIgnoreCase);
             var updatedNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(StringComparer.OrdinalIgnoreCase);
             var originalNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(StringComparer.OrdinalIgnoreCase);
             var nuGetProjectSourceLookup = new Dictionary<string, HashSet<SourceRepository>>(StringComparer.OrdinalIgnoreCase);
@@ -2740,31 +2739,13 @@ namespace NuGet.PackageManagement
 
             // Add all enabled sources for the existing packages
             var enabledSources = SourceRepositoryProvider.GetRepositories();
-
             var allSources = new HashSet<SourceRepository>(enabledSources, new SourceRepositoryComparer());
-
-            //Dictionary<string, PackageSpec> updatedPackageSpecsCache = new Dictionary<string, PackageSpec>();
-            //foreach (var buildIntegratedProject in buildIntegratedProjects)
-            //{
-            //    var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
-            //    // Create a copy to avoid modifying the original spec which may be shared.
-            //    var updatedPackageSpec = originalPackageSpec.Clone();
-            //    PackageSpecOperations.RemoveDependency(updatedPackageSpec, packageIdentity.Id);
-            //    updatedPackageSpecsCache[buildIntegratedProject.MSBuildProjectPath] = updatedPackageSpec;
-            //}
 
             foreach (var buildIntegratedProject in buildIntegratedProjects)
             {
                 var nugetAction = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);
                 var nuGetProjectActions = new[] { nugetAction };
-
-                if (!nuGetProjectActions.Any())
-                {
-                    // Return null if there are no actions.
-                    continue;
-                }
-
-                nugetProjectActionLookup[buildIntegratedProject.MSBuildProjectPath] = nuGetProjectActions;
+                nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath] = nuGetProjectActions;
 
                 // Find all sources used in the project actions
                 var sources = new HashSet<SourceRepository>(
@@ -2773,7 +2754,6 @@ namespace NuGet.PackageManagement
                         new SourceRepositoryComparer());
 
                 allSources.UnionWith(sources);
-
                 sources.UnionWith(enabledSources);
                 nuGetProjectSourceLookup[buildIntegratedProject.MSBuildProjectPath] = sources;
 
@@ -2813,7 +2793,7 @@ namespace NuGet.PackageManagement
                     originalLockFile = originalRestoreResult.Result.LockFile;
                 }
 
-                lockFiles[buildIntegratedProject.MSBuildProjectPath] = originalLockFile;
+                lockFileLookup[buildIntegratedProject.MSBuildProjectPath] = originalLockFile;
 
                 foreach (var action in nuGetProjectActions)
                 {
@@ -2844,7 +2824,7 @@ namespace NuGet.PackageManagement
             var restoreResults = await DependencyGraphRestoreUtility.PreviewRestoreProjectsAsync(
                 SolutionManager,
                 buildIntegratedProjects,
-                updatedNugetPackageSpecLookup,
+                updatedNugetPackageSpecLookup.Values,
                 dependencyGraphContext,
                 providerCache,
                 cacheModifier,
@@ -2855,11 +2835,11 @@ namespace NuGet.PackageManagement
 
             foreach (var buildIntegratedProject in buildIntegratedProjects)
             {
-                var nuGetProjectActions = nugetProjectActionLookup[buildIntegratedProject.MSBuildProjectPath];
+                var nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath];
                 var nuGetProjectActionsList = nuGetProjectActions.ToList();
                 var updatedPackageSpec = updatedNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath];
                 var originalPackageSpec = originalNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath];
-                var originalLockFile = lockFiles[buildIntegratedProject.MSBuildProjectPath];
+                var originalLockFile = lockFileLookup[buildIntegratedProject.MSBuildProjectPath];
                 var sources = nuGetProjectSourceLookup[buildIntegratedProject.MSBuildProjectPath];
 
                 var allFrameworks = updatedPackageSpec
@@ -3077,7 +3057,7 @@ namespace NuGet.PackageManagement
                 var now = DateTime.UtcNow;
                 void cacheContextModifier(SourceCacheContext c) => c.MaxAge = now;
 
-                // Write out the lock file, now no need bubbling re-evaluating of parent projects.
+                // Write out the lock file, now no need bubbling re-evaluating of parent projects when you restore from PM UI.
                 // We already taken account of that concern in PreviewBuildIntegratedProjectActionsParallelAsync method.
                 await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
 

@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement
         internal static async Task<IEnumerable<RestoreResultPair>> PreviewRestoreProjectsAsync(
             ISolutionManager solutionManager,
             IEnumerable<BuildIntegratedNuGetProject> projects,
-            Dictionary<string, PackageSpec> updatedNugetPackageSpecLookup,
+            IEnumerable<PackageSpec> updatedNugetPackageSpecs,
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
@@ -211,7 +211,7 @@ namespace NuGet.PackageManagement
             var dgFile = await GetSolutionRestoreSpec(solutionManager, context);
 
             dgFile = dgFile.WithoutRestores()
-                .WithReplacedSpecs(updatedNugetPackageSpecLookup.Values);
+                .WithReplacedSpecs(updatedNugetPackageSpecs);
 
             foreach (var project in projects)
             {
