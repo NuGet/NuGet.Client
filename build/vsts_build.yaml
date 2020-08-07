@@ -541,12 +541,11 @@ jobs:
       arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-  - task: CopyFiles@2
-    displayName: "LocValidation: Copy Logs"
+  - task: PublishPipelineArtifact@1
+    displayName: "LocValidation: Publish Logs as an artifact"
     inputs:
-      SourceFolder: "$(Build.Repository.LocalPath)\\logs"
-      Contents: "**"
-      TargetFolder: "$(Build.Repository.LocalPath)\\artifacts"
+      artifactName: LocValidationLogs
+      targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
     condition: "eq(variables['BuildRTM'], 'false')"
 
     # Use dotnet msbuild instead of MSBuild CLI.
