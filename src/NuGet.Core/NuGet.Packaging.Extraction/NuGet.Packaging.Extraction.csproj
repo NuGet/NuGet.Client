@@ -8,7 +8,8 @@
 
   <PropertyGroup>
     <Description>NuGet's understanding of packages. Reading nuspec, nupkgs and package signing.</Description>
-    <TargetFrameworks>net45</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1572</NoWarn>
     <NoWarn Condition=" $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('netcoreapp'))">$(NoWarn);CS0414</NoWarn>
@@ -345,16 +346,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
-
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
-
-
-
-
-
-
-
-
-

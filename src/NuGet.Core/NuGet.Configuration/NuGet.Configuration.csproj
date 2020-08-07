@@ -5,7 +5,8 @@
   <PropertyGroup>
     <Description>NuGet's configuration settings implementation.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <TargetFrameworks>$(TargetFrameworksLibrary);net45</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
     <TargetFramework />
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
