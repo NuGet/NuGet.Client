@@ -892,6 +892,7 @@ EndGlobal";
             }
         }
 
+#if NET5_0
         [Fact]
         public async Task DotnetRestore_WithTargetFrameworksProperty_StaticGraphAndRegularRestore_AreEquivalent()
         {
@@ -941,7 +942,7 @@ EndGlobal";
                 result.AllOutput.Should().Contain("All projects are up-to-date for restore.");
             }
         }
-
+#endif
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
