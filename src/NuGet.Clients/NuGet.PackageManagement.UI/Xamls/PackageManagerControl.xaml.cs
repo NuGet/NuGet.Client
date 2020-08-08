@@ -293,6 +293,8 @@ namespace NuGet.PackageManagement.UI
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
             if (IsVisible)
             {
+                ResetTabDataLoadFlags();
+
                 if (Model.IsSolution)
                 {
                     RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated, timeSpan);
@@ -903,8 +905,11 @@ namespace NuGet.PackageManagement.UI
 
         private void ResetTabDataLoadFlags()
         {
-            _installedTabDataIsLoaded = false;
-            _updatesTabDataIsLoaded = false;
+            lock (_tabDataLock)
+            {
+                _installedTabDataIsLoaded = false;
+                _updatesTabDataIsLoaded = false;
+            }
         }
 
         private void RefreshInstalledAndUpdatesTabs()
@@ -1496,8 +1501,9 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
         {
+            ResetTabDataLoadFlags();
             var packagesToUpdate = selectedPackages
-                .Select(package => new PackageIdentity(package.Id, package.Version)) //LatestVersion
+                .Select(package => new PackageIdentity(package.Id, package.LatestVersion))
                 .ToList();
 
             UpdatePackage(packagesToUpdate);
