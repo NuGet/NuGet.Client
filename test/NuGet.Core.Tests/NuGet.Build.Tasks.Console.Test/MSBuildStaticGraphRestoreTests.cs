@@ -15,7 +15,6 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
-using Moq;
 using Xunit;
 
 namespace NuGet.Build.Tasks.Console.Test
@@ -59,22 +58,6 @@ namespace NuGet.Build.Tasks.Console.Test
         [Theory]
         [InlineData("net45", new[] { "net45" })]
         [InlineData("net40;net45", new[] { "net40", "net45" })]
-        [InlineData("net40;net45;netstandard2.0", new[] { "net40", "net45", "netstandard2.0" })]
-        public void GetOriginalTargetFrameworks_WhenTargetFrameworksNotSpecified_HasCorrectTargetFramework(string targetFrameworks, string[] expected)
-        {
-            var project = new MockMSBuildProject(new Dictionary<string, string>
-            {
-                ["TargetFrameworks"] = null
-            });
-
-            var actual = MSBuildStaticGraphRestore.GetOriginalTargetFrameworks(project, targetFrameworks.Split(';').Select(NuGetFramework.Parse).ToList());
-
-            actual.ShouldBeEquivalentTo(expected);
-        }
-
-        [Theory]
-        [InlineData("net45", new[] { "net45" })]
-        [InlineData("net40;net45", new[] { "net40", "net45" })]
         [InlineData("net40;net45 ; netstandard2.0 ", new[] { "net40", "net45", "netstandard2.0" })]
         public void GetOriginalTargetFrameworks_WhenTargetFramworksSpecified_HasCorrectTargetFramework(string targetFrameworks, string[] expected)
         {
@@ -83,7 +66,7 @@ namespace NuGet.Build.Tasks.Console.Test
                 ["TargetFrameworks"] = targetFrameworks
             });
 
-            var actual = MSBuildStaticGraphRestore.GetOriginalTargetFrameworks(project, new List<NuGetFramework>());
+            var actual = MSBuildStaticGraphRestore.GetTargetFrameworkStrings(project);
 
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -337,16 +320,18 @@ namespace NuGet.Build.Tasks.Console.Test
         }
 
         [Fact]
-        public void GetProjectRestoreMetadataFrameworkInfos_WhenProjectReferenceSpecified_CorrectTargetFrameworkDetected()
+        public void GetProjectRestoreMetadataFrameworkInfos_WhenProjectReferenceSpecified_UsesFrameworkFromTargetFrameworkInformation()
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 var projectA = new MockMSBuildProject(Path.Combine(testDirectory, "ProjectA", "ProjectA.csproj"));
                 var projectB = new MockMSBuildProject(Path.Combine(testDirectory, "ProjectB", "ProjectB.csproj"));
+                var net45Alias = "net45";
+                var netstandard20Alias = "netstandard2.0";
 
-                var projects = new Dictionary<NuGetFramework, IMSBuildProject>
+                var projects = new Dictionary<string, IMSBuildProject>
                 {
-                    [FrameworkConstants.CommonFrameworks.Net45] = new MockMSBuildProject(testDirectory)
+                    [net45Alias] = new MockMSBuildProject(testDirectory)
                     {
                         Items = new Dictionary<string, IList<IMSBuildItem>>
                         {
@@ -357,7 +342,7 @@ namespace NuGet.Build.Tasks.Console.Test
                             }
                         }
                     },
-                    [FrameworkConstants.CommonFrameworks.NetStandard20] = new MockMSBuildProject(testDirectory)
+                    [netstandard20Alias] = new MockMSBuildProject(testDirectory)
                     {
                         Items = new Dictionary<string, IList<IMSBuildItem>>
                         {
@@ -369,12 +354,17 @@ namespace NuGet.Build.Tasks.Console.Test
                     }
                 };
 
-                var actual = MSBuildStaticGraphRestore.GetProjectRestoreMetadataFrameworkInfos(projects);
+                var targetFrameworkInfos = new List<TargetFrameworkInformation>();
+                targetFrameworkInfos.Add(new TargetFrameworkInformation { TargetAlias = net45Alias, FrameworkName = FrameworkConstants.CommonFrameworks.Net45 });
+                targetFrameworkInfos.Add(new TargetFrameworkInformation { TargetAlias = netstandard20Alias, FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard20 });
+
+                var actual = MSBuildStaticGraphRestore.GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projects);
 
                 actual.ShouldBeEquivalentTo(new[]
                 {
                     new ProjectRestoreMetadataFrameworkInfo(FrameworkConstants.CommonFrameworks.Net45)
                     {
+                        TargetAlias = net45Alias,
                         ProjectReferences = new List<ProjectRestoreReference>
                         {
                             new ProjectRestoreReference
@@ -391,6 +381,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     },
                     new ProjectRestoreMetadataFrameworkInfo(FrameworkConstants.CommonFrameworks.NetStandard20)
                     {
+                        TargetAlias = netstandard20Alias,
                         ProjectReferences = new List<ProjectRestoreReference>
                         {
                             new ProjectRestoreReference
@@ -419,8 +410,7 @@ namespace NuGet.Build.Tasks.Console.Test
                 var actual = MSBuildStaticGraphRestore.GetProjectTargetFrameworks(project, innerNodes)
                     .Should().ContainSingle();
 
-                actual.Subject.Key.Should().Be(FrameworkConstants.CommonFrameworks.Net461);
-
+                actual.Subject.Key.Should().Be(string.Empty);
                 actual.Subject.Value.FullPath.Should().Be(project.FullPath);
             }
         }
@@ -447,8 +437,8 @@ namespace NuGet.Build.Tasks.Console.Test
                 actual.Keys.ShouldBeEquivalentTo(
                     new[]
                     {
-                        FrameworkConstants.CommonFrameworks.Net45,
-                        FrameworkConstants.CommonFrameworks.NetStandard20
+                        "net45",
+                        "netstandard2.0"
                     });
 
                 actual.Values.Select(i => i.FullPath).ShouldBeEquivalentTo(
@@ -733,10 +723,10 @@ namespace NuGet.Build.Tasks.Console.Test
         public void GetTargetFrameworkInfos_TheCentralVersionInformationIsAdded()
         {
             // Arrange
-            NuGetFramework netstandard22 = new NuGetFramework("netstandard2.2");
-            NuGetFramework netstandard20 = new NuGetFramework("netstandard2.0");
+            string netstandard22 = "netstandard2.2";
+            string netstandard20 = "netstandard2.0";
 
-            var innerNodes = new Dictionary<NuGetFramework, IMSBuildProject>
+            var innerNodes = new Dictionary<string, IMSBuildProject>
             {
                 [netstandard20] = new MockMSBuildProject("Project-netstandard2.0",
                     new Dictionary<string, string>(),
@@ -772,26 +762,148 @@ namespace NuGet.Build.Tasks.Console.Test
 
             // Assert
             Assert.Equal(2, targetFrameworkInfos.Count);
-            var framework20 = targetFrameworkInfos.Where(f => f.FrameworkName.DotNetFrameworkName == "netstandard2.0,Version=v0.0").ToList();
-            var framework22 = targetFrameworkInfos.Where(f => f.FrameworkName.DotNetFrameworkName == "netstandard2.2,Version=v0.0").ToList();
+            var framework20 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard20);
+            var framework22 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard22);
 
-            Assert.Equal(1, framework20.Count);
-            Assert.Equal(1, framework20.First().Dependencies.Count);
-            Assert.Equal("PackageA", framework20.First().Dependencies.First().Name);
-            Assert.Null(framework20.First().Dependencies.First().LibraryRange.VersionRange);
+            Assert.Equal(1, framework20.Dependencies.Count);
+            Assert.Equal("PackageA", framework20.Dependencies.First().Name);
+            Assert.Null(framework20.Dependencies.First().LibraryRange.VersionRange);
 
-            Assert.Equal(2, framework20.First().CentralPackageVersions.Count);
-            Assert.Equal("2.0.0", framework20.First().CentralPackageVersions["PackageA"].VersionRange.OriginalString);
-            Assert.Equal("3.0.0", framework20.First().CentralPackageVersions["PackageB"].VersionRange.OriginalString);
+            Assert.Equal(2, framework20.CentralPackageVersions.Count);
+            Assert.Equal("2.0.0", framework20.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.0.0", framework20.CentralPackageVersions["PackageB"].VersionRange.OriginalString);
 
-            Assert.Equal(1, framework22.Count);
-            Assert.Equal(1, framework22.First().Dependencies.Count);
-            Assert.Equal("PackageA", framework22.First().Dependencies.First().Name);
-            Assert.Equal("11.0.0", framework22.First().Dependencies.First().LibraryRange.VersionRange.OriginalString);
+            Assert.Equal(1, framework22.Dependencies.Count);
+            Assert.Equal("PackageA", framework22.Dependencies.First().Name);
+            Assert.Equal("11.0.0", framework22.Dependencies.First().LibraryRange.VersionRange.OriginalString);
 
-            Assert.Equal(2, framework22.First().CentralPackageVersions.Count);
-            Assert.Equal("2.2.2", framework22.First().CentralPackageVersions["PackageA"].VersionRange.OriginalString);
-            Assert.Equal("3.2.0", framework22.First().CentralPackageVersions["PackageB"].VersionRange.OriginalString);
+            Assert.Equal(2, framework22.CentralPackageVersions.Count);
+            Assert.Equal("2.2.2", framework22.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.2.0", framework22.CentralPackageVersions["PackageB"].VersionRange.OriginalString);
+        }
+
+        [Fact]
+        public void GetTargetFrameworkInfos_WithUAPProject_InfersUAPTargetFramework()
+        {
+            // Arrange
+            string key = string.Empty;
+            var runtimeIdentifierGraphPath = Path.Combine(Path.GetTempPath(), "runtime.json");
+
+            var project = new MockMSBuildProject("Project-core",
+                    new Dictionary<string, string>
+                    {
+                        { "AssetTargetFallback", "" },
+                        { "PackageTargetFallback", "" },
+                        { "TargetFramework", key },
+                        { "TargetFrameworkIdentifier", FrameworkConstants.FrameworkIdentifiers.NetCore },
+                        { "TargetFrameworkVersion", "v5.0" },
+                        { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.NetCore},Version=5.0" },
+                        { "TargetPlatformIdentifier", "UAP" },
+                        { "TargetPlatformVersion", "10.1608.1" }
+                    },
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
+                        }
+                    });
+
+            // Act
+            List<TargetFrameworkInformation> targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(
+                    new Dictionary<string, IMSBuildProject>() {
+                        { string.Empty, project }
+                    },
+                    isCpvmEnabled: false);
+
+            // Assert
+            targetFrameworkInfos.Should().HaveCount(1);
+            TargetFrameworkInformation targetFrameworkInformation = targetFrameworkInfos.Single(f => f.TargetAlias == key);
+
+            targetFrameworkInformation.Dependencies.Should().HaveCount(1);
+            targetFrameworkInformation.Dependencies.Single().Name.Should().Be("PackageA");
+            targetFrameworkInformation.Dependencies.Single().LibraryRange.VersionRange.OriginalString.Should().Be("2.0.0");
+            targetFrameworkInformation.FrameworkName.GetShortFolderName().Should().Be("uap10.1608.1");
+            targetFrameworkInformation.AssetTargetFallback.Should().BeFalse();
+        }
+
+        [Fact]
+        public void GetTargetFrameworkInfos_WithCustomAliases_InfersCorrectTargetFramework()
+        {
+            // Arrange
+            string latestNet = "latestNet";
+            string latestCore = "latestCore";
+            var atf = "net472";
+            var runtimeIdentifierGraphPath = Path.Combine(Path.GetTempPath(), "runtime.json");
+
+            var innerNodes = new Dictionary<string, IMSBuildProject>
+            {
+                [latestCore] = new MockMSBuildProject("Project-core",
+                    new Dictionary<string, string>
+                    {
+                        { "AssetTargetFallback", atf },
+                        { "PackageTargetFallback", "" },
+                        { "TargetFramework", latestCore },
+                        { "TargetFrameworkIdentifier", FrameworkConstants.FrameworkIdentifiers.NetCoreApp },
+                        { "TargetFrameworkVersion", "v5.0" },
+                        { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.NetCoreApp},Version=5.0" },
+                        { "TargetPlatformIdentifier", "android" },
+                        { "TargetPlatformVersion", "21.0" },
+                        { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
+                    },
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
+                        }
+                    }),
+                [latestNet] = new MockMSBuildProject("Project-net",
+                    new Dictionary<string, string>
+                    {
+                        { "AssetTargetFallback", "" },
+                        { "PackageTargetFallback", "" },
+                        { "TargetFramework", latestNet },
+                        { "TargetFrameworkIdentifier", FrameworkConstants.FrameworkIdentifiers.Net },
+                        { "TargetFrameworkVersion", "v4.6.1" },
+                        { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.Net},Version=4.6.1" },
+                        { "TargetPlatformIdentifier", "" },
+                        { "TargetPlatformVersion", "" },
+                        { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
+                    },
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "2.1.0" }),
+                        },
+                    }),
+            };
+
+            // Act
+            List<TargetFrameworkInformation> targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false);
+
+            // Assert
+            targetFrameworkInfos.Should().HaveCount(2);
+            TargetFrameworkInformation coreTFI = targetFrameworkInfos.Single(f => f.TargetAlias == latestCore);
+            TargetFrameworkInformation netTFI = targetFrameworkInfos.Single(f => f.TargetAlias == latestNet);
+
+            coreTFI.Dependencies.Should().HaveCount(1);
+            coreTFI.Dependencies.Single().Name.Should().Be("PackageA");
+            coreTFI.Dependencies.Single().LibraryRange.VersionRange.OriginalString.Should().Be("2.0.0");
+            coreTFI.RuntimeIdentifierGraphPath.Should().Be(runtimeIdentifierGraphPath);
+            coreTFI.FrameworkName.GetShortFolderName().Should().Be("net5.0-android21.0");
+            coreTFI.AssetTargetFallback.Should().BeTrue();
+            AssetTargetFallbackFramework assetTargetFallbackFramework = (AssetTargetFallbackFramework)coreTFI.FrameworkName;
+            assetTargetFallbackFramework.Fallback.Should().HaveCount(1);
+            assetTargetFallbackFramework.Fallback.Single().GetShortFolderName().Should().Be("net472");
+
+            netTFI.Dependencies.Should().HaveCount(1);
+            netTFI.Dependencies.Single().Name.Should().Be("PackageB");
+            netTFI.Dependencies.Single().LibraryRange.VersionRange.OriginalString.Should().Be("2.1.0");
+            netTFI.RuntimeIdentifierGraphPath.Should().Be(runtimeIdentifierGraphPath);
+            netTFI.FrameworkName.Should().Be(FrameworkConstants.CommonFrameworks.Net461);
+            netTFI.AssetTargetFallback.Should().BeFalse();
         }
     }
 }

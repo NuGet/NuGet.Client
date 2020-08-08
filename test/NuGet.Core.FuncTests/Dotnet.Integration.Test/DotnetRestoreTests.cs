@@ -892,6 +892,57 @@ EndGlobal";
             }
         }
 
+#if NET5_0
+        [Fact]
+        public async Task DotnetRestore_WithTargetFrameworksProperty_StaticGraphAndRegularRestore_AreEquivalent()
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                var testDirectory = pathContext.SolutionRoot;
+                var pkgX = new SimpleTestPackageContext("x", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgX);
+
+                var projectName1 = "ClassLibrary1";
+                var workingDirectory1 = Path.Combine(testDirectory, projectName1);
+                var projectFile1 = Path.Combine(workingDirectory1, $"{projectName1}.csproj");
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib");
+
+                using (var stream = File.Open(projectFile1, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472");
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "x",
+                        framework: "net472",
+                        new Dictionary<string, string>(),
+                        new Dictionary<string, string>() { { "Version", "1.0.0" } });
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Preconditions
+                var command = $"restore {projectFile1} {$"--source \"{pathContext.PackageSource}\" /p:AutomaticallyUseReferenceAssemblyPackages=false"}";
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, command, ignoreExitCode: true);
+
+                result.ExitCode.Should().Be(0, because: result.AllOutput);
+                var assetsFilePath = Path.Combine(workingDirectory1, "obj", "project.assets.json");
+                File.Exists(assetsFilePath).Should().BeTrue(because: "The assets file needs to exist");
+                var assetsFile = new LockFileFormat().Read(assetsFilePath);
+                LockFileTarget target = assetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net472")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
+                target.Libraries.Should().ContainSingle(e => e.Name.Equals("x"));
+
+                // Act static graph restore
+                result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, command + " /p:RestoreUseStaticGraphEvaluation=true", ignoreExitCode: true);
+
+                // Ensure static graph restore no-ops
+                result.ExitCode.Should().Be(0, because: result.AllOutput);
+                result.AllOutput.Should().Contain("All projects are up-to-date for restore.");
+            }
+        }
+#endif
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
