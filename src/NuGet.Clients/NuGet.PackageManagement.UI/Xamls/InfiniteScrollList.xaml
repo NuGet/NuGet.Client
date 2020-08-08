@@ -274,8 +274,8 @@
       </Grid>
     </ControlTemplate>
     </ResourceDictionary>
-  </UserControl.Resources>    
-    
+  </UserControl.Resources>
+
   <DockPanel LastChildFill="True">
     <Border
       x:Name="_updateButtonContainer"

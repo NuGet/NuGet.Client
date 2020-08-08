@@ -149,9 +149,6 @@
         <StackPanel
                       Grid.Row="0"
                       Orientation="Horizontal">
-          <TextBlock Width="75" Visibility="{Binding HasPendingBackgroundWork,Converter={StaticResource BooleanToVisibilityConverter}}" Background="LightPink">
-            LOADING!!!!!!!!
-          </TextBlock>
           <TextBlock
                         FontWeight="Bold"
                         FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"

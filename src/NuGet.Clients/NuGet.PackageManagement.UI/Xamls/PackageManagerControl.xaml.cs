@@ -840,14 +840,22 @@ namespace NuGet.PackageManagement.UI
                     RefreshInstalledAndUpdatesTabs();
                 }
 
-                FlagTabDataAsLoaded(filterToRender);
-
-                // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
-                // UI filtering for Updates is ready.
-                if (filterToRender == ItemFilter.Installed)
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
-                }
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    foreach (var package in _packageList.PackageItemsFiltered)
+                    {
+                        await package.ReloadPackageVersionsAsync();
+                    }
+                    FlagTabDataAsLoaded(filterToRender);
+
+                    // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
+                    // UI filtering for Updates is ready.
+                    if (filterToRender == ItemFilter.Installed)
+                    {
+                        FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
+                    }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCountAsync));
             }
             catch (OperationCanceledException)
             {
@@ -856,6 +864,8 @@ namespace NuGet.PackageManagement.UI
                 FlagTabDataAsLoaded(filterToRender, isLoaded: false);
             }
         }
+
+        private object _tabDataLock = new object();
 
         /// <summary>
         /// Set a flag indicating this tab has been loaded for the first time since the control was loaded.
@@ -867,24 +877,27 @@ namespace NuGet.PackageManagement.UI
         /// <param name="isLoaded">Set to false to reset the tab to its original state of not loaded.</param>
         private void FlagTabDataAsLoaded(ItemFilter filterToCheck, bool isLoaded = true)
         {
-            switch (filterToCheck)
+            lock (_tabDataLock)
             {
-                case ItemFilter.Installed:
-                    _installedTabDataIsLoaded = isLoaded;
-                    if (!isLoaded)
-                    {
-                        _updatesTabDataIsLoaded = false;
-                    }
-                    break;
-                case ItemFilter.UpdatesAvailable:
-                    _updatesTabDataIsLoaded = isLoaded;
-                    if (!isLoaded)
-                    {
-                        _installedTabDataIsLoaded = false;
-                    }
-                    break;
-                default:
-                    break;
+                switch (filterToCheck)
+                {
+                    case ItemFilter.Installed:
+                        _installedTabDataIsLoaded = isLoaded;
+                        if (!isLoaded)
+                        {
+                            _updatesTabDataIsLoaded = false;
+                        }
+                        break;
+                    case ItemFilter.UpdatesAvailable:
+                        _updatesTabDataIsLoaded = isLoaded;
+                        if (!isLoaded)
+                        {
+                            _installedTabDataIsLoaded = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -1164,8 +1177,10 @@ namespace NuGet.PackageManagement.UI
                     (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
                 var switchedToInstalledOrUpdatesTab = _topPanel.Filter == ItemFilter.UpdatesAvailable || _topPanel.Filter == ItemFilter.Installed;
                 var installedAndUpdatesTabDataLoaded = _installedTabDataIsLoaded && _updatesTabDataIsLoaded;
+                var hasPendingBackgroundWork = _packageList.PackageItems.Any(item => item.HasPendingBackgroundWork);
 
-                var isUiFiltering = switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabDataLoaded;
+                var isUiFiltering = switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabDataLoaded
+                    && !hasPendingBackgroundWork;
 
                 //Installed and Updates tabs don't need to be refreshed when switching between the two, if they're both loaded.
                 if (isUiFiltering)
