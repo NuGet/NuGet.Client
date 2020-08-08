@@ -485,7 +485,7 @@ namespace NuGet.ProjectModel
             return newSpec;
         }
 
-        public DependencyGraphSpec WithReplacedSpecs(IEnumerable<PackageSpec> projects)
+        public DependencyGraphSpec WithReplacedPackageSpecs(IEnumerable<PackageSpec> projects)
         {
             var newSpec = new DependencyGraphSpec();
 
