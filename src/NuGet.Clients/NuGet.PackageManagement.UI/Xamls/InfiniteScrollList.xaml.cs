@@ -13,7 +13,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.TeamFoundation.Server;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -83,6 +82,13 @@ namespace NuGet.PackageManagement.UI
 
             DataContext = Items;
             CheckBoxesEnabled = false;
+
+            var lcv = CollectionView as ListCollectionView;
+            lcv.IsLiveFiltering = true;
+            lcv.LiveFilteringProperties.Add(nameof(PackageItemListViewModel.IsUpdateAvailable));
+            lcv.LiveFilteringProperties.Add(nameof(PackageItemListViewModel.Status));
+            lcv.LiveFilteringProperties.Add(nameof(PackageItemListViewModel.HasPendingBackgroundWork));
+            lcv.LiveFilteringProperties.Add(nameof(HasPendingBackgroundWork));
 
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
         }
