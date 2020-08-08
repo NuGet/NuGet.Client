@@ -839,11 +839,20 @@ namespace NuGet.PackageManagement.UI
 
             if (userAction.Action == NuGetProjectActionType.Install)
             {
-                // find out build integrated projects
-                var buildIntegratedProjectsToUpdate = targets.OfType<BuildIntegratedNuGetProject>().ToList();
-
-                // Other non-builtIntegrated type of projects
-                var otherTargetProjectsToUpdate = targets.Except(buildIntegratedProjectsToUpdate).ToList();
+                var buildIntegratedProjectsToUpdate = new List<BuildIntegratedNuGetProject>();
+                var otherTargetProjectsToUpdate = new List<NuGetProject>();
+                
+                foreach (var proj in targets)
+                {
+                    if (proj is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
+                    {
+                        buildIntegratedProjectsToUpdate.Add(buildIntegratedNuGetProject);
+                    }
+                    else
+                    {
+                        otherTargetProjectsToUpdate.Add(proj);
+                    }
+                }
 
                 if (buildIntegratedProjectsToUpdate.Any())
                 {
