@@ -892,7 +892,7 @@ EndGlobal";
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task DotnetRestore_WithTargetFrameworksProperty_StaticGraphAndRegularRestore_AreEquivalent()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
