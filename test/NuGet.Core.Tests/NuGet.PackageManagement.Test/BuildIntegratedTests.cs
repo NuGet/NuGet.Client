@@ -1990,7 +1990,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageForAllProjects()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
+            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -2105,7 +2105,7 @@ namespace NuGet.Test
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
                         buildIntegratedProjects,
-                        packageIdentity2_UpgradeVersion,  // Upgrading to version 4.3.0 from 4.3.3 for packageIdentity2
+                        packageIdentity2_UpgradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2137,7 +2137,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_OnlyTopParentProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
+            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -2255,7 +2255,7 @@ namespace NuGet.Test
                         {
                             buildIntegratedProjects[0] // Top parent is only upgraded.
                         },
-                        packageIdentity2_UpgradeVersion,  // Upgrading to version 4.3.0 from 4.3.3 for packageIdentity2
+                        packageIdentity2_UpgradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2290,7 +2290,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_OnlyOneMiddleProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
+            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -2408,7 +2408,7 @@ namespace NuGet.Test
                         {
                             buildIntegratedProjects[1] // Middle project with parent and child is upgraded.
                         },
-                        packageIdentity2_UpgradeVersion,  // Upgrading to version 4.3.0 from 4.3.3 for packageIdentity2
+                        packageIdentity2_UpgradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2443,7 +2443,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_OnlyBottomChildProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
+            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -2561,7 +2561,7 @@ namespace NuGet.Test
                         {
                             buildIntegratedProjects[3] // Bottom child is only upgraded.
                         },
-                        packageIdentity2_UpgradeVersion,  // Upgrading to version 4.3.0 from 4.3.3 for packageIdentity2
+                        packageIdentity2_UpgradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2596,7 +2596,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageForAllProjects()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
+            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -2711,7 +2711,7 @@ namespace NuGet.Test
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
                         buildIntegratedProjects,
-                        packageIdentity2_DowngradeVersion,  // Downgrading to version 4.3.3 from 4.3.0 for packageIdentity2
+                        packageIdentity2_DowngradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2743,7 +2743,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_OnlyTopParentProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
+            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -2861,7 +2861,7 @@ namespace NuGet.Test
                         {
                             buildIntegratedProjects[0] // Only top parent project
                         },
-                        packageIdentity2_DowngradeVersion,  // Downgrading to version 4.3.3 from 4.3.0 for packageIdentity2
+                        packageIdentity2_DowngradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2895,7 +2895,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_OnlyOneMiddleProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
+            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -3013,7 +3013,7 @@ namespace NuGet.Test
                         {
                             buildIntegratedProjects[1] // A middle project with parent  and child projects
                         },
-                        packageIdentity2_DowngradeVersion,  // Downgrading to version 4.3.3 from 4.3.0 for packageIdentity2
+                        packageIdentity2_DowngradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -3047,7 +3047,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_OnlyBottomChildProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
+            var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -3165,7 +3165,7 @@ namespace NuGet.Test
                         {
                             buildIntegratedProjects[3] // Only bottom child project
                         },
-                        packageIdentity2_DowngradeVersion,  // Downgrading to version 4.3.3 from 4.3.0 for packageIdentity2
+                        packageIdentity2_DowngradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
