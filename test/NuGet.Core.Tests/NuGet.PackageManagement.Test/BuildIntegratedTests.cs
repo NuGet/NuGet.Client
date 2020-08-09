@@ -1855,7 +1855,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_InstallPackageForAllProjects()
         {
             // Arrange
-            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0"));
+            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -1872,7 +1872,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -1991,8 +1991,8 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
-            var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.0"));
-            var packageIdentity2_UpgradeVersion = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.3"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -2009,7 +2009,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2138,8 +2138,8 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
-            var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.0"));
-            var packageIdentity2_UpgradeVersion = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.3"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -2156,7 +2156,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2291,8 +2291,8 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
-            var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.0"));
-            var packageIdentity2_UpgradeVersion = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.3"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -2309,7 +2309,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2444,8 +2444,8 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
-            var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.0"));
-            var packageIdentity2_UpgradeVersion = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.3"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -2462,7 +2462,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2597,8 +2597,8 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
-            var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.3"));
-            var packageIdentity2_DowngradeVersion = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.0"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
+            var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -2615,7 +2615,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2744,8 +2744,8 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
-            var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.3"));
-            var packageIdentity2_DowngradeVersion = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.0"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
+            var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -2762,7 +2762,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2896,8 +2896,8 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
-            var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.3"));
-            var packageIdentity2_DowngradeVersion = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.0"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
+            var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -2914,7 +2914,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -3048,8 +3048,8 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity1 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
-            var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.3"));
-            var packageIdentity2_DowngradeVersion = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.3.0"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
+            var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -3066,7 +3066,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -3199,7 +3199,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_CancellationTokenPassed()
         {
             // Arrange
-            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0"));
+            var packageIdentity = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -3219,7 +3219,7 @@ namespace NuGet.Test
                     var token = source.Token;
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -3339,7 +3339,7 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_RaiseTelemetryEvents()
         {
             // Arrange
-            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0"));
+            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var projectDirectories = new List<TestDirectory>();
 
@@ -3370,7 +3370,7 @@ namespace NuGet.Test
                     var token = source.Token;
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
