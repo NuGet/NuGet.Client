@@ -242,12 +242,12 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (!Guid.TryParse(ProjectContextInfoExtensions.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
+            if (!Guid.TryParse(ProjectContextInfo.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
             {
                 throw new InvalidOperationException();
             }
 
-            var projectContextInfo = await ProjectContextInfoExtensions.CreateAsync(projectGuid.ToString(), CancellationToken.None);
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid.ToString(), CancellationToken.None);
             var uiController = UIFactory.Value.Create(projectContextInfo);
             var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
             var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);

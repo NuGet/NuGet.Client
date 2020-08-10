@@ -211,7 +211,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task SolutionManager_ProjectRenamedAsync(NuGetProject nugetProject)
         {
-            var projectContextInfo = await ProjectContextInfoExtensions.CreateAsync(nugetProject, CancellationToken.None);
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
             Model.Context.Projects = new[] { projectContextInfo };
 
             var currentNugetProject = Model.Context.Projects.First();

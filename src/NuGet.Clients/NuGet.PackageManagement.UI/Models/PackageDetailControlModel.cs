@@ -62,7 +62,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task NuGetProjectChangedAsync(NuGetProjectEventArgs e, CancellationToken cancellationToken)
         {
-            var projectContextInfo = await ProjectContextInfoExtensions.CreateAsync(e.NuGetProject, cancellationToken);
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(e.NuGetProject, cancellationToken);
             _nugetProjects = new List<IProjectContextInfo> { projectContextInfo };
             UpdateInstalledVersion();
         }

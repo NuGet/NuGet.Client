@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (NuGetProject nugetProject in projects)
             {
-                var projectContext = await ProjectContextInfoExtensions.CreateAsync(nugetProject, cancellationToken);
+                var projectContext = await ProjectContextInfo.CreateAsync(nugetProject, cancellationToken);
                 projectContexts.Add(projectContext);
             }
 
@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(solutionManager);
 
             NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
-            return await ProjectContextInfoExtensions.CreateAsync(project, cancellationToken);
+            return await ProjectContextInfo.CreateAsync(project, cancellationToken);
         }
 
         public async ValueTask<IReadOnlyCollection<PackageReference>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken cancellationToken)
@@ -90,12 +90,6 @@ namespace NuGet.PackageManagement.VisualStudio
             bool success = project.TryGetMetadata(key, out object value);
             return (success, value);
         }
-
-        //public async ValueTask<NuGetProjectKind> GetProjectKindAsync(string projectGuid, CancellationToken cancellationToken)
-        //{
-        //    NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
-        //    return ProjectContextInfo.GetProjectKind(project);
-        //}
 
         public async ValueTask<bool> IsNuGetProjectUpgradeableAsync(string projectGuid, CancellationToken cancellationToken)
         {

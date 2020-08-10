@@ -3,6 +3,10 @@
 
 #nullable enable
 
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 
 namespace NuGet.VisualStudio.Internal.Contracts
@@ -15,5 +19,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string UniqueId { get; }
         public ProjectStyle ProjectStyle { get; }
         public NuGetProjectKind ProjectKind { get; }
+        ValueTask<bool> IsProjectUpgradeableAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken cancellationToken);
+        ValueTask<(bool, T)> TryGetMetadataAsync<T>(string key, CancellationToken cancellationToken);
+        ValueTask<T> GetMetadataAsync<T>(string key, CancellationToken cancellationToken);
+        ValueTask<string> GetUniqueNameOrNameAsync();
     }
 }
