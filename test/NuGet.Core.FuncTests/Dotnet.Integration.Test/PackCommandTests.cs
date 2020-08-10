@@ -565,10 +565,9 @@ namespace Dotnet.Integration.Test
                 var referencedProject = "ClassLibrary2";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp31;
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "console -f netcoreapp3.1");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "console");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -611,9 +610,6 @@ namespace Dotnet.Integration.Test
 
                     Assert.Equal(1,
                         dependencyGroups.Count);
-
-                    Assert.Equal(framework,
-                        dependencyGroups[0].TargetFramework);
                         
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1,
@@ -626,12 +622,11 @@ namespace Dotnet.Integration.Test
 
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
-                    Assert.Equal(1, libItems.Count);
-                    Assert.Equal(framework, libItems[0].TargetFramework);
-                    Assert.Equal(
-                        new[]
-                        {$"lib/{framework.GetShortFolderName()}/ClassLibrary1.dll", $"lib/{framework.GetShortFolderName()}/ClassLibrary1.runtimeconfig.json"},
-                        libItems[0].Items);
+                    libItems.Should().HaveCount(1);
+                    var files = libItems[0].Items;
+                    files.Should().HaveCount(2);
+                    files.Should().ContainSingle(filePath => filePath.Contains("ClassLibrary1.runtimeconfig.json"));
+                    files.Should().ContainSingle(filePath => filePath.Contains("ClassLibrary1.dll"));
                 }
             }
         }
