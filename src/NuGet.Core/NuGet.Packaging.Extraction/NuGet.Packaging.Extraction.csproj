@@ -1,8 +1,4 @@
 ﻿<Project>
-  <PropertyGroup>
-    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
-  </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -11,7 +7,6 @@
     <TargetFrameworks>net45</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1572</NoWarn>
-    <NoWarn Condition=" $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('netcoreapp'))">$(NoWarn);CS0414</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>false</IncludeInVSIX>
@@ -21,18 +16,13 @@
     <IsDesktop>true</IsDesktop>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
-    <TargetFrameworks />
-    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-  </PropertyGroup>
-
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Configuration\NUGet.configuration.csproj" />
-    <ProjectReference Include="..\NuGet.versioning\NUGet.versioning.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)\NuGet.Configuration\NuGet.Configuration.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsDesktop)' == 'true' ">
@@ -44,15 +34,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="NuGet.Common\**" />
-    <Compile Remove="NuGet.Configuration\**" />
-    <EmbeddedResource Remove="NuGet.Common\**" />
-    <EmbeddedResource Remove="NuGet.Configuration\**" />
-    <None Remove="NuGet.Common\**" />
-    <None Remove="NuGet.Configuration\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -285,15 +266,6 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Security.Cryptography.Pkcs" />
-    <PackageReference Include="System.Security.Cryptography.Cng" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>

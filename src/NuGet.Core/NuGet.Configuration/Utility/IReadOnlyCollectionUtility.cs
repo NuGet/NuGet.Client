@@ -14,7 +14,7 @@ namespace NuGet.Configuration
 #if !NET45
             return new HashSet<T>(t, comparer);
 #else
-            //Since we aren not using a hashset, we do not use the comparer
+            //Since we are not using a HashSet, we do not use the comparer
             return new ReadOnlyCollection<T>(t);
 #endif
         }
