@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace NuGet.Configuration
 {
@@ -11,22 +12,21 @@ namespace NuGet.Configuration
     {
         internal static IReadOnlyCollection<T> Create<T>(IEqualityComparer<T> comparer, params T[] t)
         {
-#if !NET45
-            return new HashSet<T>(t, comparer);
+            var hashSet = new HashSet<T>(t, comparer);
+#if NET45
+            return new ReadOnlyCollection<T>(hashSet.ToList());
 #else
-            //Since we are not using a HashSet, we do not use the comparer
-            return new ReadOnlyCollection<T>(t);
+            return hashSet;
 #endif
         }
 
         internal static IReadOnlyCollection<T> Create<T>(params T[] t)
         {
-#if !NET45
-            return new HashSet<T>(t);
-#else
+#if NET45
             return new ReadOnlyCollection<T>(t);
+#else
+            return new HashSet<T>(t);
 #endif
         }
     }
-
 }

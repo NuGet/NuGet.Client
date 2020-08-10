@@ -9,10 +9,10 @@ namespace NuGet.Versioning
     public partial class SemanticVersion
     {
         // Reusable set of empty release labels
-#if !NET45
-        internal static readonly string[] EmptyReleaseLabels = Array.Empty<string>();
+#if NET45
+        internal static readonly string[] EmptyReleaseLabels = new string[0];
 #else
-        internal static readonly string[] EmptyReleaseLabels = new string[] {};
+        internal static readonly string[] EmptyReleaseLabels = Array.Empty<string>();
 #endif
         /// <summary>
         /// Parses a SemVer string using strict SemVer rules.

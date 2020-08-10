@@ -33,10 +33,10 @@ namespace NuGet.Common
                     .Where(entry => entry.Length != 0)
                     .ToArray();
             }
-#if !NET45
-            return Array.Empty<string>();
+#if NET45
+            return new string[0];
 #else
-            return new string[] { };
+            return Array.Empty<string>();
 #endif
         }
 
@@ -62,10 +62,10 @@ namespace NuGet.Common
         {
             if (strings == null)
             {
-#if !NET45
-                return Array.Empty<string>();
+#if NET45
+                return new string[0];
 #else
-                return new string[] { };
+                return Array.Empty<string>();
 #endif
             }
 
@@ -134,7 +134,7 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Return empty list of NuGetLogCode if all lists of NuGetLogCode are not the same. 
+        /// Return empty list of NuGetLogCode if all lists of NuGetLogCode are not the same.
         /// </summary>
         public static IEnumerable<NuGetLogCode> GetDistinctNuGetLogCodesOrDefault(IEnumerable<IEnumerable<NuGetLogCode>> nugetLogCodeLists)
         {

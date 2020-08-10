@@ -12,7 +12,7 @@
     <IncludeInVSIX>false</IncludeInVSIX>
     <XPLATProject>false</XPLATProject>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
-    <DefineConstants>$(DefineConstants);IS_DESKTOP;IS_SIGNING_SUPPORTED</DefineConstants>
+    <DefineConstants>$(DefineConstants);IS_DESKTOP</DefineConstants>
     <IsDesktop>true</IsDesktop>
   </PropertyGroup>
 
@@ -97,6 +97,7 @@
     <Compile Include="..\NuGet.Packaging\PackageExtraction\ZipFilePair.cs" Link="NuGet.Packaging\PackageExtraction\ZipFilePair.cs" />
     <Compile Include="..\NuGet.Packaging\PackageExtraction\ZipArchiveExtensions.cs" Link="NuGet.Packaging\PackageExtraction\ZipArchiveExtensions.cs" />
     <Compile Include="..\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs" Link="NuGet.Packaging\PackageExtraction\PackagePathHelper.cs" />
+    <Compile Include="..\NuGet.Packaging\Properties\AssemblyInfo.cs" Link="NuGet.Packaging\Properties\AssemblyInfo.cs" />
     <Compile Include="..\NuGet.Packaging\RuntimeModel\IObjectWriter.cs" Link="NuGet.Packaging\RuntimeModel\IObjectWriter.cs" />
     <Compile Include="..\NuGet.Packaging\RuntimeModel\JsonObjectWriter.cs" Link="NuGet.Packaging\RuntimeModel\JsonObjectWriter.cs" />
     <Compile Include="..\NuGet.Packaging\RuntimeModel\JsonRuntimeFormat.cs" Link="NuGet.Packaging\RuntimeModel\JsonRuntimeFormat.cs" />
@@ -241,6 +242,7 @@
   <ItemGroup>
     <Folder Include="NuGet.Packaging\RuntimeModel" />
     <Folder Include="NuGet.Packaging\PackageExtraction" />
+    <Folder Include="NuGet.Packaging\Properties" />
     <Folder Include="NuGet.Packaging\Telemetry" />
     <Folder Include="NuGet.Packaging\Signing\Specifications" />
     <Folder Include="NuGet.Packaging\Signing" />
