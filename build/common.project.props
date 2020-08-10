@@ -18,7 +18,7 @@
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
-    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksExe Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksExeForSigning>$(TargetFrameworksExe);netcoreapp5.0</TargetFrameworksExeForSigning>
     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
