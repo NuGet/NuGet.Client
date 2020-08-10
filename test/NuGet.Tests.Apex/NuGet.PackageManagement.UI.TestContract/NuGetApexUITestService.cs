@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.Models;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 

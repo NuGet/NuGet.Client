@@ -7,8 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -38,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool ContainsId(string packageId) => _uniqueIds.Contains(packageId);
 
-        public static async Task<PackageCollection> FromProjectsAsync(IEnumerable<ProjectContextInfo> projects, CancellationToken cancellationToken)
+        public static async Task<PackageCollection> FromProjectsAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
             // Read package references from all projects.
             var tasks = projects

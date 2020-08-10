@@ -2,15 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
@@ -22,6 +23,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Internal.Contracts;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Task = System.Threading.Tasks.Task;
@@ -240,12 +242,12 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (!Guid.TryParse(ProjectContextInfo.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
+            if (!Guid.TryParse(ProjectContextInfoExtensions.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
             {
                 throw new InvalidOperationException();
             }
 
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid.ToString(), CancellationToken.None);
+            var projectContextInfo = await ProjectContextInfoExtensions.CreateAsync(projectGuid.ToString(), CancellationToken.None);
             var uiController = UIFactory.Value.Create(projectContextInfo);
             var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
             var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);

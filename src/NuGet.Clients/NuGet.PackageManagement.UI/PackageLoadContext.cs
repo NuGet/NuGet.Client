@@ -11,6 +11,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -22,7 +23,7 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetPackageManager PackageManager { get; private set; }
 
-        public ProjectContextInfo[] Projects { get; private set; }
+        public IProjectContextInfo[] Projects { get; private set; }
 
         // Indicates whether the loader is created by solution package manager.
         public bool IsSolution { get; private set; }
@@ -41,7 +42,7 @@ namespace NuGet.PackageManagement.UI
             SourceRepositories = sourceRepositories;
             IsSolution = isSolution;
             PackageManager = uiContext.PackageManager;
-            Projects = (uiContext.Projects ?? Enumerable.Empty<ProjectContextInfo>()).ToArray();
+            Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
             PackageManagerProviders = uiContext.PackageManagerProviders;
             SolutionManager = uiContext.SolutionManager;
 

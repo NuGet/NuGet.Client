@@ -13,6 +13,7 @@ using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -70,7 +71,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
-        public INuGetUI Create(params ProjectContextInfo[] projects)
+        public INuGetUI Create(params IProjectContextInfo[] projects)
         {
             var uiContext = CreateUIContext(projects);
 
@@ -84,7 +85,7 @@ namespace NuGet.PackageManagement.UI
             return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
         }
 
-        private INuGetUIContext CreateUIContext(params ProjectContextInfo[] projects)
+        private INuGetUIContext CreateUIContext(params IProjectContextInfo[] projects)
         {
             var packageManager = new NuGetPackageManager(
                 SourceRepositoryProvider.Value,

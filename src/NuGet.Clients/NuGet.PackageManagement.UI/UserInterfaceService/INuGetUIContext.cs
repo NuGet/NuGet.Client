@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -24,13 +25,13 @@ namespace NuGet.PackageManagement.UI
 
         IOptionsPageActivator OptionsPageActivator { get; }
 
-        IEnumerable<ProjectContextInfo> Projects { get; set; }
+        IEnumerable<IProjectContextInfo> Projects { get; set; }
 
         IUserSettingsManager UserSettingsManager { get; }
 
         IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        Task<bool> IsNuGetProjectUpgradeableAsync(ProjectContextInfo project, CancellationToken cancellationToken);
+        Task<bool> IsNuGetProjectUpgradeableAsync(IProjectContextInfo project, CancellationToken cancellationToken);
 
         Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
     }

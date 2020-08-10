@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement.UI
                 SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
             }
         }
-        
+
         private void SortByColumn(GridViewColumnHeader sortColumn)
         {
             _projectList.Items.SortDescriptions.Clear();
@@ -220,7 +220,7 @@ namespace NuGet.PackageManagement.UI
         private void SortableColumnHeader_PreviewKeyUp(object sender, KeyEventArgs e)
         {
             var sortableColumnHeader = sender as GridViewColumnHeader;
-            if(sortableColumnHeader != null && (e.Key == Key.Space || e.Key == Key.Enter))
+            if (sortableColumnHeader != null && (e.Key == Key.Space || e.Key == Key.Enter))
             {
                 SortByColumn(sortableColumnHeader);
                 e.Handled = true;

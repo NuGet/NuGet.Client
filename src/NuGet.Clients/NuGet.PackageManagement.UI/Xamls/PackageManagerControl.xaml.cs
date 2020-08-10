@@ -28,6 +28,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
@@ -210,7 +211,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task SolutionManager_ProjectRenamedAsync(NuGetProject nugetProject)
         {
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
+            var projectContextInfo = await ProjectContextInfoExtensions.CreateAsync(nugetProject, CancellationToken.None);
             Model.Context.Projects = new[] { projectContextInfo };
 
             var currentNugetProject = Model.Context.Projects.First();
@@ -239,7 +240,7 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 // get the list of projects
-                IEnumerable<ProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
+                IEnumerable<IProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
                 Model.Context.Projects = projects;
 
                 RefreshWhenNotExecutingAction(RefreshOperationSource.ProjectsChanged, timeSpan);
@@ -1579,9 +1580,9 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                var project = Model.Context.Projects.FirstOrDefault();
+                IProjectContextInfo project = Model.Context.Projects.FirstOrDefault();
                 Debug.Assert(project != null);
-                await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, null); // project); TODO: ActionEngine needs to take ProjectContextInfo
+                await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, null);
             })
             .FileAndForget(
                             TelemetryUtility.CreateFileAndForgetEventName(

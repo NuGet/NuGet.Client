@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -102,7 +101,7 @@ namespace NuGet.PackageManagement.UI
                     nuGetProject = await solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
 
                     // Ensure we use the updated project for installing, and don't display preview or license acceptance windows.
-                    var projectContextInfo = await ProjectContextInfo.CreateAsync(nuGetProject, CancellationToken.None);
+                    var projectContextInfo = await ProjectContextInfoExtensions.CreateAsync(nuGetProject, CancellationToken.None);
                     context.Projects = new[] { projectContextInfo };
                     var nuGetUI = (NuGetUI)uiService;
                     nuGetUI.Projects = new[] { nuGetProject };

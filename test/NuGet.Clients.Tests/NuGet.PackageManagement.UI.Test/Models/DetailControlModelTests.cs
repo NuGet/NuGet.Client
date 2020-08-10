@@ -11,6 +11,7 @@ using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models
@@ -70,7 +71,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var solMgr = new Mock<ISolutionManager>();
             _testInstance = new PackageDetailControlModel(
                 solutionManager: solMgr.Object,
-                projects: new List<ProjectContextInfo>());
+                projects: new List<IProjectContextInfo>());
 
             _testInstance.SetCurrentPackage(
                 _testViewModel,
@@ -103,7 +104,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             {
                 _testInstance = await PackageSolutionDetailControlModel.CreateAsync(
                     solutionManager: solMgr.Object,
-                    projects: new List<ProjectContextInfo>(),
+                    projects: new List<IProjectContextInfo>(),
                     packageManagerProviders: new List<IVsPackageManagerProvider>(),
                     CancellationToken.None);
             });

@@ -17,6 +17,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -134,12 +135,12 @@ namespace NuGet.PackageManagement.UI
 
         private void OnMigrationLinkClick(object sender, RoutedEventArgs e)
         {
-            var project = _model.Context.Projects.FirstOrDefault();
+            IProjectContextInfo project = _model.Context.Projects.FirstOrDefault();
             Debug.Assert(project != null);
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, null); //  project); TODO: Action engine needs to take ProjectContextInfo
+                await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, null);
             });
         }
 

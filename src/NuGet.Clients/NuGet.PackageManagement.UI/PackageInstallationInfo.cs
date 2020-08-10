@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -24,12 +25,12 @@ namespace NuGet.PackageManagement.UI
         private string _projectName;
         private AlternativePackageManagerProviders _providers;
 
-        private PackageInstallationInfo(ProjectContextInfo project)
+        private PackageInstallationInfo(IProjectContextInfo project)
         {
             NuGetProject = project;
         }
 
-        public static async ValueTask<PackageInstallationInfo> CreateAsync(ProjectContextInfo project, CancellationToken cancellationToken)
+        public static async ValueTask<PackageInstallationInfo> CreateAsync(IProjectContextInfo project, CancellationToken cancellationToken)
         {
             var packageInstallationInfo = new PackageInstallationInfo(project);
             await packageInstallationInfo.InitializeAsync();
@@ -75,7 +76,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public ProjectContextInfo NuGetProject { get; }
+        public IProjectContextInfo NuGetProject { get; }
 
         public string ProjectName
         {

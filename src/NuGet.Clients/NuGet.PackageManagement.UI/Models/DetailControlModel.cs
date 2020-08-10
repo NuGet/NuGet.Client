@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
     public abstract class DetailControlModel : INotifyPropertyChanged
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected IEnumerable<ProjectContextInfo> _nugetProjects;
+        protected IEnumerable<IProjectContextInfo> _nugetProjects;
 
         // all versions of the _searchResultPackage
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
-        protected DetailControlModel(IEnumerable<ProjectContextInfo> projects)
+        protected DetailControlModel(IEnumerable<IProjectContextInfo> projects)
         {
             _nugetProjects = projects;
             _options = new Options();
@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the list of projects that are selected for the given action
         /// </summary>
-        public abstract IEnumerable<ProjectContextInfo> GetSelectedProjects(UserAction action);
+        public abstract IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action);
 
         public int SelectedIndex { get; private set; }
         public int RecommendedCount { get; private set; }
@@ -265,7 +265,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static async Task<IReadOnlyList<PackageDependency>> GetDependencies(ProjectContextInfo project)
+        private static async Task<IReadOnlyList<PackageDependency>> GetDependencies(IProjectContextInfo project)
         {
             var results = new List<PackageDependency>();
 
@@ -636,7 +636,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public IEnumerable<ProjectContextInfo> NuGetProjects => _nugetProjects;
+        public IEnumerable<IProjectContextInfo> NuGetProjects => _nugetProjects;
 
         public Func<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
 

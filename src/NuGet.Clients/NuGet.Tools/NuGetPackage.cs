@@ -476,7 +476,7 @@ namespace NuGetVSExtension
             // is thrown, an error dialog will pop up and this doc window will not be created.
             _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-            var contextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
+            var contextInfo = await ProjectContextInfoExtensions.CreateAsync(nugetProject, CancellationToken.None);
             var uiController = UIFactory.Value.Create(contextInfo);
 
             var model = new PackageManagerModel(
@@ -578,7 +578,7 @@ namespace NuGetVSExtension
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
 
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(nuGetProject, CancellationToken.None);
+            var projectContextInfo = await ProjectContextInfoExtensions.CreateAsync(nuGetProject, CancellationToken.None);
             var uiController = UIFactory.Value.Create(projectContextInfo);
             await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
             uiController.UIContext.UserSettingsManager.PersistSettings();
@@ -704,23 +704,17 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var projectContexts = new List<ProjectContextInfo>();
+            IReadOnlyCollection<IProjectContextInfo> projectContexts;
             IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
             {
                 Assumes.NotNull(nugetProjectManagerService);
-                IReadOnlyCollection<string> projectIds = await nugetProjectManagerService.GetProjectsAsync(CancellationToken.None);
+                projectContexts = await nugetProjectManagerService.GetProjectsAsync(CancellationToken.None);
 
-                if (projectIds.Count == 0)
+                if (projectContexts.Count == 0)
                 {
                     MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
                     return null;
-                }
-
-                foreach (string projectId in projectIds)
-                {
-                    var projectContext = await ProjectContextInfo.CreateAsync(projectId, CancellationToken.None);
-                    projectContexts.Add(projectContext);
                 }
             }
 

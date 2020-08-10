@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 

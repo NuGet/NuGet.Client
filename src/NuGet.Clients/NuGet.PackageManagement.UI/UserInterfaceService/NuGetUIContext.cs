@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -19,7 +20,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public sealed class NuGetUIContext : INuGetUIContext
     {
-        private ProjectContextInfo[] _projects;
+        private IProjectContextInfo[] _projects;
 
         public NuGetUIContext(
             ISourceRepositoryProvider sourceProvider,
@@ -54,7 +55,7 @@ namespace NuGet.PackageManagement.UI
 
         public IOptionsPageActivator OptionsPageActivator { get; }
 
-        public IEnumerable<ProjectContextInfo> Projects
+        public IEnumerable<IProjectContextInfo> Projects
         {
             get { return _projects; }
             set
@@ -72,7 +73,7 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        public async Task<bool> IsNuGetProjectUpgradeableAsync(ProjectContextInfo project, CancellationToken cancellationToken)
+        public async Task<bool> IsNuGetProjectUpgradeableAsync(IProjectContextInfo project, CancellationToken cancellationToken)
         {
             return await project.IsProjectUpgradeableAsync(cancellationToken);
         }

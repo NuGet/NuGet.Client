@@ -34,14 +34,14 @@ namespace NuGet.PackageManagement.UI
         private bool? _selectCheckBoxState;
         private List<PackageInstallationInfo> _projects; // List of projects in the solution
 
-        private PackageSolutionDetailControlModel(IEnumerable<ProjectContextInfo> projects)
+        private PackageSolutionDetailControlModel(IEnumerable<IProjectContextInfo> projects)
             : base(projects)
         {
         }
 
         private async ValueTask<PackageSolutionDetailControlModel> InitializeAsync(
             ISolutionManager solutionManager,
-            IEnumerable<ProjectContextInfo> projects,
+            IEnumerable<IProjectContextInfo> projects,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             CancellationToken cancellationToken)
         {
@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.UI
 
         public static ValueTask<PackageSolutionDetailControlModel> CreateAsync(
             ISolutionManager solutionManager,
-            IEnumerable<ProjectContextInfo> projects,
+            IEnumerable<IProjectContextInfo> projects,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             CancellationToken cancellationToken)
         {
@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.UI
         /// This method is called from several methods that are called from properties and LINQ queries
         /// It is likely not called more than once in an action.
         /// </summary>
-        private static async Task<Packaging.PackageReference> GetInstalledPackageAsync(ProjectContextInfo project, string id, CancellationToken cancellationToken)
+        private static async Task<Packaging.PackageReference> GetInstalledPackageAsync(IProjectContextInfo project, string id, CancellationToken cancellationToken)
         {
             IEnumerable<PackageReference> installedPackages = await project.GetInstalledPackagesAsync(cancellationToken);
             PackageReference installedPackage = installedPackages
@@ -288,23 +288,16 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            var listOfProjectContexts = new List<ProjectContextInfo>();
+            IReadOnlyCollection<IProjectContextInfo> projectContexts;
             IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
             {
                 Assumes.NotNull(nugetProjectManagerService);
-                // This is pretty inefficient, going to the server to get the list of Guids then creating each contextinfo which also goes back to the server
-                IReadOnlyCollection<string> projectIds = await nugetProjectManagerService.GetProjectsAsync(cancellationToken);
-
-                foreach (string projectId in projectIds)
-                {
-                    var projectContext = await ProjectContextInfo.CreateAsync(projectId, cancellationToken);
-                    listOfProjectContexts.Add(projectContext);
-                }
+                projectContexts = await nugetProjectManagerService.GetProjectsAsync(cancellationToken);
             }
 
             var packageInstallationInfos = new List<PackageInstallationInfo>();
-            foreach(ProjectContextInfo project in listOfProjectContexts)
+            foreach (IProjectContextInfo project in projectContexts)
             {
                 var packageInstallationInfo = await PackageInstallationInfo.CreateAsync(project, cancellationToken);
                 packageInstallationInfos.Add(packageInstallationInfo);
@@ -501,9 +494,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override IEnumerable<ProjectContextInfo> GetSelectedProjects(UserAction action)
+        public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
         {
-            var selectedProjects = new List<ProjectContextInfo>();
+            var selectedProjects = new List<IProjectContextInfo>();
 
             foreach (var project in _projects)
             {

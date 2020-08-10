@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -20,12 +21,12 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly PackageSearchMetadataCache _cachedUpdates;
         private readonly Common.ILogger _logger;
-        private readonly ProjectContextInfo[] _projects;
+        private readonly IProjectContextInfo[] _projects;
 
         public UpdatePackageFeed(
             IEnumerable<PackageCollectionItem> installedPackages,
             IPackageMetadataProvider metadataProvider,
-            ProjectContextInfo[] projects,
+            IProjectContextInfo[] projects,
             PackageSearchMetadataCache optionalCachedUpdates,
             Common.ILogger logger)
         {

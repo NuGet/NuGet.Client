@@ -17,77 +17,68 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public sealed class ProjectContextInfo
+    public static class ProjectContextInfoExtensions
     {
         private const string LiveShareUriScheme = "vsls";
         private const string ProjectGuidQueryString = "projectGuid";
-        private readonly string _projectUniqueId;
 
-        private ProjectContextInfo(string projectUniqueId)
-        {
-            _projectUniqueId = projectUniqueId;
-        }
-
-        public ProjectStyle ProjectStyle { get; private set; }
-        public NuGetProjectKind ProjectKind { get; private set; }
-
-        public async ValueTask<bool> IsProjectUpgradeableAsync(CancellationToken cancellationToken)
+        public static async ValueTask<bool> IsProjectUpgradeableAsync(this IProjectContextInfo projectContextInfo, CancellationToken cancellationToken)
         {
             IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(nugetProjectManagerService);
-                return await nugetProjectManagerService.IsNuGetProjectUpgradeableAsync(_projectUniqueId, cancellationToken);
+                return await nugetProjectManagerService.IsNuGetProjectUpgradeableAsync(projectContextInfo.UniqueId, cancellationToken);
             }
         }
 
-        public async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken cancellationToken)
+        public static async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(this IProjectContextInfo projectContextInfo, CancellationToken cancellationToken)
         {
             IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(nugetProjectManagerService);
 
-                return await nugetProjectManagerService.GetInstalledPackagesAsync(new string[] { _projectUniqueId }, cancellationToken);
+                return await nugetProjectManagerService.GetInstalledPackagesAsync(new string[] { projectContextInfo.UniqueId }, cancellationToken);
             }
         }
 
-        public async ValueTask<(bool, T)> TryGetMetadataAsync<T>(string key, CancellationToken token)
+        public static async ValueTask<(bool, T)> TryGetMetadataAsync<T>(this IProjectContextInfo projectContextInfo, string key, CancellationToken token)
         {
             IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: token))
             {
                 Assumes.NotNull(nugetProjectManagerService);
 
-                (bool success, object value) = await nugetProjectManagerService.TryGetMetadataAsync(_projectUniqueId, key, token);
+                (bool success, object value) = await nugetProjectManagerService.TryGetMetadataAsync(projectContextInfo.UniqueId, key, token);
                 return (success, (T)value);
             }
         }
 
-        public async ValueTask<T> GetMetadataAsync<T>(string key, CancellationToken token)
+        public static async ValueTask<T> GetMetadataAsync<T>(this IProjectContextInfo projectContextInfo, string key, CancellationToken token)
         {
             IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: token))
             {
                 Assumes.NotNull(nugetProjectManagerService);
 
-                return (T)await nugetProjectManagerService.GetMetadataAsync(_projectUniqueId, key, token);
+                return (T)await nugetProjectManagerService.GetMetadataAsync(projectContextInfo.UniqueId, key, token);
             }
         }
 
-        public async ValueTask<string> GetUniqueNameOrNameAsync()
+        public static async ValueTask<string> GetUniqueNameOrNameAsync(this IProjectContextInfo projectContextInfo)
         {
-            (bool success, string value) = await TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.UniqueName, CancellationToken.None);
+            (bool success, string value) = await projectContextInfo.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.UniqueName, CancellationToken.None);
             if (success)
             {
                 return value;
             }
 
             // Unique name is not set, simply return the name
-            return await GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None);
+            return await projectContextInfo.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None);
         }
 
-        public static ValueTask<ProjectContextInfo> CreateAsync(NuGetProject nugetProject, CancellationToken cancellationToken)
+        public static ValueTask<IProjectContextInfo> CreateAsync(NuGetProject nugetProject, CancellationToken cancellationToken)
         {
             Assumes.NotNull(nugetProject);
             if (!nugetProject.TryGetMetadata(NuGetProjectMetadataKeys.ProjectId, out string projectId))
@@ -95,36 +86,26 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException();
             }
 
-            var projectContextInfo = new ProjectContextInfo(projectId)
-            {
-                ProjectKind = GetProjectKind(nugetProject),
-                ProjectStyle = nugetProject.ProjectStyle
-            };
-
-            return new ValueTask<ProjectContextInfo>(projectContextInfo);
+            NuGetProjectKind projectKind = GetProjectKind(nugetProject);
+            ProjectStyle projectStyle = nugetProject.ProjectStyle;
+            return new ValueTask<IProjectContextInfo>(new ProjectContextInfo(projectId, projectStyle, projectKind));
         }
 
-        public static async ValueTask<ProjectContextInfo> CreateAsync(string projectId, CancellationToken cancellationToken)
+        public static async ValueTask<IProjectContextInfo> CreateAsync(string projectId, CancellationToken cancellationToken)
         {
-            var projectKind = NuGetProjectKind.Unknown;
+            IProjectContextInfo projectContextInfo;
             IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(nugetProjectManagerService);
-                projectKind = await nugetProjectManagerService.GetProjectKindAsync(projectId, cancellationToken);
+                projectContextInfo = await nugetProjectManagerService.GetProjectAsync(projectId, cancellationToken);
             }
-
-            var projectContextInfo = new ProjectContextInfo(projectId)
-            {
-                ProjectKind = projectKind
-            };
 
             return projectContextInfo;
         }
 
         internal static NuGetProjectKind GetProjectKind(NuGetProject nugetProject)
         {
-            // TODO: Should we be force checking server for this call? Should this live somewhere else to enforce it?
             NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
             if (nugetProject is INuGetIntegratedProject)
             {

@@ -10,6 +10,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
@@ -20,7 +21,7 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly ISolutionManager _solutionManager;
 
-        public PackageDetailControlModel(ISolutionManager solutionManager, IEnumerable<ProjectContextInfo> projects)
+        public PackageDetailControlModel(ISolutionManager solutionManager, IEnumerable<IProjectContextInfo> projects)
             : base(projects)
         {
             _solutionManager = solutionManager;
@@ -61,8 +62,8 @@ namespace NuGet.PackageManagement.UI
 
         private async Task NuGetProjectChangedAsync(NuGetProjectEventArgs e, CancellationToken cancellationToken)
         {
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(e.NuGetProject, cancellationToken);
-            _nugetProjects = new List<ProjectContextInfo> { projectContextInfo };
+            var projectContextInfo = await ProjectContextInfoExtensions.CreateAsync(e.NuGetProject, cancellationToken);
+            _nugetProjects = new List<IProjectContextInfo> { projectContextInfo };
             UpdateInstalledVersion();
         }
 
@@ -196,7 +197,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override IEnumerable<ProjectContextInfo> GetSelectedProjects(UserAction action)
+        public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
         {
             return _nugetProjects;
         }
