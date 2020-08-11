@@ -220,7 +220,7 @@ namespace NuGet.SolutionRestoreManager
 
             var tfis = TargetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
-                .Select(tfi => VSNominationUtilities.ToTargetFrameworkInformation(tfi, cpvmEnabled))
+                .Select(tfi => VSNominationUtilities.ToTargetFrameworkInformation(tfi, cpvmEnabled, projectNames.FullName))
                 .ToArray();
 
             var projectFullPath = Path.GetFullPath(projectNames.FullName);
@@ -259,7 +259,7 @@ namespace NuGet.SolutionRestoreManager
                     ProjectStyle = ProjectStyle.PackageReference,
                     TargetFrameworks = TargetFrameworks
                         .Cast<IVsTargetFrameworkInfo>()
-                        .Select(item => VSNominationUtilities.ToProjectRestoreMetadataFrameworkInfo(item, projectDirectory))
+                        .Select(item => VSNominationUtilities.ToProjectRestoreMetadataFrameworkInfo(item, projectDirectory, projectFullPath))
                         .ToList(),
                     OriginalTargetFrameworks = originalTargetFrameworks,
                     CrossTargeting = crossTargeting,
