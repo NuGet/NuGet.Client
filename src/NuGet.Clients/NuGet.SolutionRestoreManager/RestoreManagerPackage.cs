@@ -27,7 +27,8 @@ namespace NuGet.SolutionRestoreManager
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]	    
     // Ensure that this package is loaded in time to listen to solution build events, in order to always be able to restore before build.
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionBuilding_string)]
-    [ProvideBrokeredService(BrokeredServicesUtility.NuGetSolutionServiceName, BrokeredServicesUtility.NuGetSolutionServiceVersion, Audience = ServiceAudience.RemoteExclusiveClient)]
+    [ProvideBrokeredService(BrokeredServicesUtility.DeprecatedSolutionServiceName, BrokeredServicesUtility.DeprecatedSolutionServiceVersion, Audience = ServiceAudience.RemoteExclusiveClient)]
+    [ProvideBrokeredService(BrokeredServicesUtility.SolutionServiceName, BrokeredServicesUtility.SolutionServiceVersion, Audience = ServiceAudience.RemoteExclusiveClient)]
     [Guid(PackageGuidString)]
     public sealed class RestoreManagerPackage : AsyncPackage
     {
@@ -48,7 +49,8 @@ namespace NuGet.SolutionRestoreManager
 
             // Set up brokered services - Do not reference NuGet.VisualStudio.Internals.Contract explicitly to avoid an unnecessary assembly load
             IBrokeredServiceContainer brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
-            brokeredServiceContainer.Proffer(BrokeredServicesUtility.NuGetSolutionService, factory: BrokeredServicesUtility.GetNuGetSolutionServicesFactory());
+            brokeredServiceContainer.Proffer(BrokeredServicesUtility.DeprecatedSolutionService, factory: BrokeredServicesUtility.GetNuGetSolutionServicesFactory());
+            brokeredServiceContainer.Proffer(BrokeredServicesUtility.SolutionService, factory: BrokeredServicesUtility.GetNuGetSolutionServicesFactory());
 
             await base.InitializeAsync(cancellationToken, progress);
         }

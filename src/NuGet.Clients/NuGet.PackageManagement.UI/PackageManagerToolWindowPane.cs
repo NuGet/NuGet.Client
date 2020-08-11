@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -65,7 +67,11 @@ namespace NuGet.PackageManagement.UI
 
         public int OnClose(ref uint pgrfSaveOptions)
         {
-            _content?.SaveSettings();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await _content?.SaveSettingsAsync(CancellationToken.None);
+            });
+
             _content?.Model.Context.UserSettingsManager.PersistSettings();
 
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;

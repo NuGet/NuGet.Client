@@ -11,6 +11,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -22,7 +23,7 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetPackageManager PackageManager { get; private set; }
 
-        public NuGetProject[] Projects { get; private set; }
+        public IProjectContextInfo[] Projects { get; private set; }
 
         // Indicates whether the loader is created by solution package manager.
         public bool IsSolution { get; private set; }
@@ -41,7 +42,7 @@ namespace NuGet.PackageManagement.UI
             SourceRepositories = sourceRepositories;
             IsSolution = isSolution;
             PackageManager = uiContext.PackageManager;
-            Projects = (uiContext.Projects ?? Enumerable.Empty<NuGetProject>()).ToArray();
+            Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
             PackageManagerProviders = uiContext.PackageManagerProviders;
             SolutionManager = uiContext.SolutionManager;
 
@@ -51,15 +52,14 @@ namespace NuGet.PackageManagement.UI
         public Task<PackageCollection> GetInstalledPackagesAsync() =>_installedPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
-        public IEnumerable<string> GetSupportedFrameworks()
+        public async Task<IEnumerable<string>> GetSupportedFrameworksAsync()
         {
             var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var project in Projects)
             {
-                NuGetFramework framework;
-                if (project.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework,
-                    out framework))
+                (bool targetFrameworkSuccess, NuGetFramework framework) = await project.TryGetMetadataAsync<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, CancellationToken.None);
+                if (targetFrameworkSuccess)
                 {
                     if (framework != null
                         && framework.IsAny)
@@ -78,11 +78,10 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     // we also need to process SupportedFrameworks
-                    IEnumerable<NuGetFramework> supportedFrameworks;
-                    if (project.TryGetMetadata(
-                        NuGetProjectMetadataKeys.SupportedFrameworks,
-                        out supportedFrameworks))
+                    (bool supportedFrameworksSuccess, IEnumerable<NuGetFramework> supportedFrameworksValue) = await project.TryGetMetadataAsync<IEnumerable<NuGetFramework>>(NuGetProjectMetadataKeys.SupportedFrameworks, CancellationToken.None);
+                    if (supportedFrameworksSuccess)
                     {
+                        var supportedFrameworks = supportedFrameworksValue;
                         foreach (var f in supportedFrameworks)
                         {
                             if (f.IsAny)

@@ -1,17 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using Xunit;
-using Moq;
-using NuGet.ProjectManagement;
-using NuGet.Test.Utility;
-using Microsoft.VisualStudio.Threading;
-using NuGet.VisualStudio;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Threading;
+using Moq;
 using NuGet.Packaging;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models
 {
@@ -28,7 +29,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var testVersion = new NuGetVersion(0, 0, 1);
             _testViewModel = new PackageItemListViewModel()
             {
-                PackageReader= _testData.TestData.PackageReader,
+                PackageReader = _testData.TestData.PackageReader,
                 Version = testVersion,
                 InstalledVersion = testVersion,
             };
@@ -70,7 +71,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var solMgr = new Mock<ISolutionManager>();
             _testInstance = new PackageDetailControlModel(
                 solutionManager: solMgr.Object,
-                nugetProjects: new List<NuGetProject>());
+                projects: new List<IProjectContextInfo>());
 
             _testInstance.SetCurrentPackage(
                 _testViewModel,
@@ -92,16 +93,30 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
     public class PackageSolutionDetailControlModelTests : DetailControlModelTestBase
     {
-        private readonly PackageSolutionDetailControlModel _testInstance;
+        private PackageSolutionDetailControlModel _testInstance;
 
         public PackageSolutionDetailControlModelTests(LocalPackageSearchMetadataFixture testData)
             : base(testData)
         {
             var solMgr = new Mock<ISolutionManager>();
-            _testInstance = new PackageSolutionDetailControlModel(
-                solutionManager: solMgr.Object,
-                projects: new List<NuGetProject>(),
-                packageManagerProviders: new List<IVsPackageManagerProvider>());
+            var serviceBroker = new Mock<IServiceBroker>();
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            projectManagerService.Setup(x => x.GetProjectsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<IProjectContextInfo>());
+
+#pragma warning disable ISB001 // Dispose of proxies
+            serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(projectManagerService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                _testInstance = await PackageSolutionDetailControlModel.CreateAsync(
+                    solutionManager: solMgr.Object,
+                    projects: new List<IProjectContextInfo>(),
+                    packageManagerProviders: new List<IVsPackageManagerProvider>(),
+                    serviceBroker: serviceBroker.Object,
+                    CancellationToken.None);
+            });
 
             _testInstance.SetCurrentPackage(
                 _testViewModel,

@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI
                 // because the code is async, it's possible that the DataContext has been changed
                 // once execution reaches here and thus 'model' could be null.
                 var model = DataContext as DetailControlModel;
-                model?.Refresh();
+                await model?.RefreshAsync(CancellationToken.None);
             });
         }
 
@@ -127,7 +127,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.DependencyBehavior = model.Options.SelectedDependencyBehavior.Behavior;
                     nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
                     nugetUi.ForceRemove = model.Options.ForceRemove;
-                    nugetUi.Projects = model.GetSelectedProjects(action);
+                    // nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                     nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;
                     nugetUi.ProjectContext.ActionType = actionType;

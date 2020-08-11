@@ -3,15 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public sealed class NuGetUIContext : INuGetUIContext
     {
-        private NuGetProject[] _projects;
+        private IProjectContextInfo[] _projects;
 
         public NuGetUIContext(
             ISourceRepositoryProvider sourceProvider,
@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI
 
         public IOptionsPageActivator OptionsPageActivator { get; }
 
-        public IEnumerable<NuGetProject> Projects
+        public IEnumerable<IProjectContextInfo> Projects
         {
             get { return _projects; }
             set
@@ -73,9 +73,9 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        public async  Task<bool> IsNuGetProjectUpgradeable(NuGetProject project)
+        public async Task<bool> IsNuGetProjectUpgradeableAsync(IProjectContextInfo project, CancellationToken cancellationToken)
         {
-            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(project);
+            return await project.IsUpgradeableAsync(cancellationToken);
         }
 
         public async Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService)
