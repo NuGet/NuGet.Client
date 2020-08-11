@@ -2690,7 +2690,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Return list of Resolved actions after running preview (without commit) in parallel for buildIntegrated projects.
+        /// Return list of Resolved actions after running preview (without commit) for buildIntegrated projects.
         /// </summary>
         public async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
             IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
