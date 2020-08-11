@@ -101,6 +101,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var solMgr = new Mock<ISolutionManager>();
             var serviceBroker = new Mock<IServiceBroker>();
             var projectManagerService = new Mock<INuGetProjectManagerService>();
+            projectManagerService.Setup(x => x.GetProjectsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<IProjectContextInfo>());
 
 #pragma warning disable ISB001 // Dispose of proxies
             serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
