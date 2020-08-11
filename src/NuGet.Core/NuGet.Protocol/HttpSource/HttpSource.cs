@@ -151,7 +151,7 @@ namespace NuGet.Protocol
                             return await processAsync(httpSourceResult);
                         }
 
-                        throttledResponse.Response.EnsureSuccessStatusCode();
+                        EnsureSuccessStatusCode(throttledResponse.Response);
 
                         if (!request.CacheContext.DirectDownload)
                         {
@@ -214,13 +214,24 @@ namespace NuGet.Protocol
                         return await processAsync(null);
                     }
 
-                    response.EnsureSuccessStatusCode();
+                    EnsureSuccessStatusCode(response);
 
                     return await processAsync(response);
                 },
                 cacheContext : null,
                 log,
                 token);
+        }
+
+        /// <summary>
+        /// Wraps the call to response EnsureSuccessStatusCode and adds status code data to the exception, to work well pre .NET 5.0
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns>Response StatusCode</returns>
+        private static HttpStatusCode EnsureSuccessStatusCode(HttpResponseMessage response)
+        {
+            HttpRequestExceptionUtility.EnsureSuccessAndStashStatusCodeIfThrows(response);
+            return response.StatusCode;
         }
 
         public async Task<T> ProcessStreamAsync<T>(
@@ -240,7 +251,7 @@ namespace NuGet.Protocol
                         return await processAsync(null);
                     }
 
-                    response.EnsureSuccessStatusCode();
+                    EnsureSuccessStatusCode(response);
 
                     var networkStream = await response.Content.ReadAsStreamAsync();
                     return await processAsync(networkStream);

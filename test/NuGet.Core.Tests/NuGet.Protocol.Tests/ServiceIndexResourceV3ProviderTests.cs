@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -76,6 +77,7 @@ namespace NuGet.Protocol.Tests
             });
 
             Assert.IsType<HttpRequestException>(exception.InnerException);
+            Assert.Equal(exception.LogCode, NuGetLogCode.NU1304);
         }
 
         [Theory]

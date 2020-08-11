@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,5 +15,17 @@ namespace NuGet.Protocol.Core.Types
         public FatalProtocolException(string message, Exception innerException) : base(message, innerException)
         {
         }
+
+        public FatalProtocolException(string message, NuGetLogCode logCode) : base(message)
+        {
+            LogCode = logCode;
+        }
+
+        public FatalProtocolException(string message, Exception innerException, NuGetLogCode logCode) : base(message, innerException)
+        {
+            LogCode = logCode;
+        }
+
+        public NuGetLogCode LogCode { get; } = NuGetLogCode.NU1300;
     }
 }

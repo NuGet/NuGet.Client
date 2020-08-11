@@ -75,9 +75,9 @@ namespace NuGet.Protocol.Core.Types
                 var apiKey = getApiKey(_source);
 
                 bool explicitSnupkgPush = true;
-                
+
                 if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
-                {   
+                {
                     await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate,
                                       requestTimeout, log, tokenSource.Token);
 
@@ -358,7 +358,7 @@ namespace NuGet.Protocol.Core.Types
                                 response =>
                                 {
                                     var responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
-                                    
+
                                     var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, response.ReasonPhrase, logger);
                                     showPushCommandPackagePushed = !logOccurred;
 
@@ -430,11 +430,12 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                 AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
+                AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
             }
 
             //No exception to the rule specified.
-            response.EnsureSuccessStatusCode();
+
+            HttpRequestExceptionUtility.EnsureSuccessAndStashStatusCodeIfThrows(response);
             return null;
         }
 
@@ -453,11 +454,11 @@ namespace NuGet.Protocol.Core.Types
             {
                 string messageToLog = null;
                 string messageToLogVerbose = null;
-                
+
                 switch (skippedErrorStatusCode.Value)
                 {
                     case HttpStatusCode.Conflict:
-                        
+
                         messageToLog = string.Format(
                                    CultureInfo.CurrentCulture,
                                    Strings.AddPackage_PackageAlreadyExists,
@@ -603,7 +604,7 @@ namespace NuGet.Protocol.Core.Types
                     throwIfPackageExistsAndInvalid: !skipDuplicate,
                     throwIfPackageExists: !skipDuplicate,
                     extractionContext: packageExtractionContext);
-                
+
                 await OfflineFeedUtility.AddPackageToSource(context, token);
             }
         }
@@ -664,7 +665,7 @@ namespace NuGet.Protocol.Core.Types
                     }),
                 response =>
                 {
-                    response.EnsureSuccessStatusCode();
+                    EnsureSuccessStatusCode(response, codeNotToThrow: null, logger);
 
                     return Task.FromResult(0);
                 },
@@ -823,9 +824,9 @@ namespace NuGet.Protocol.Core.Types
                    logger,
                    token);
 
-                return result.Value<string>("Key")?? InvalidApiKey;
+                return result.Value<string>("Key") ?? InvalidApiKey;
             }
-            catch(HttpRequestException ex)
+            catch (HttpRequestException ex)
             {
 #if NETCOREAPP
                 if (ex.Message.Contains("Response status code does not indicate success: 403 (Forbidden).", StringComparison.OrdinalIgnoreCase))

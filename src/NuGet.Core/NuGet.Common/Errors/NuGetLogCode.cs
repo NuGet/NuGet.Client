@@ -4,18 +4,18 @@
 namespace NuGet.Common
 {
     /// <summary>
-    /// This enum is used to quantify NuGet error and warning codes. 
+    /// This enum is used to quantify NuGet error and warning codes.
     /// Format - NUxyzw where NU is the prefix indicating NuGet and xyzw is a 4 digit code
     ///
     /// Numbers - xyzw
     ///     x - 'x' is the largest digit and should be used to quantify a set of errors.
     ///         For example 1yzw are set of restore related errors and no other code path should use the range 1000 to 1999 for errors or warnings.
-    ///         
+    ///
     ///     y - 'y' is the second largest digit and should be used for sub sections withing a broad category.
-    ///     
+    ///
     ///         For example 12zw cvould be http related errors.
     ///         Further 'y' = 0-4 should be used for errors and 'y' = 5-9 should be warnings.
-    ///         
+    ///
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
     ///
@@ -31,9 +31,9 @@ namespace NuGet.Common
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
-    /// 
+    ///
     /// All new codes need a corresponding MarkDown file under https://github.com/NuGet/docs.microsoft.com-nuget/tree/master/docs/reference/errors-and-warnings.
-    /// 
+    ///
     /// </summary>
     public enum NuGetLogCode
     {
@@ -161,7 +161,7 @@ namespace NuGet.Common
         /// <summary>
         /// Invalid package types
         /// </summary>
-        NU1204 = 1204, 
+        NU1204 = 1204,
 
         /// <summary>
         /// Project has an invalid dependency count
@@ -177,6 +177,36 @@ namespace NuGet.Common
         /// Incompatible package type
         /// </summary>
         NU1213 = 1213,
+
+        /// <summary>
+        /// Uncategorized FatalProtocolException
+        /// </summary>
+        NU1300 = 1300,
+
+        /// <summary>
+        /// Feed was Unauthorized (HTTP 401)
+        /// </summary>
+        NU1301 = 1301,
+
+        /// <summary>
+        /// Fallback folder or local feed folder does not exist
+        /// </summary>
+        NU1302 = 1302,
+
+        /// <summary>
+        /// Feed was Forbidden (HTTP 403)
+        /// </summary>
+        NU1303 = 1303,
+
+        /// <summary>
+        /// Url was Not Found, server exists (HTTP 404)
+        /// </summary>
+        NU1304 = 1304,
+
+        /// <summary>
+        /// Feed needs Proxy Authentication (HTTP 407)
+        /// </summary>
+        NU1307 = 1307,
 
         /// <summary>
         /// Package MinClientVersion did not match.

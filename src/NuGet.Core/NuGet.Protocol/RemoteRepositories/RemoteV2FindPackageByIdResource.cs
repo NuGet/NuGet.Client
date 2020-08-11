@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -550,6 +551,11 @@ namespace NuGet.Protocol
 
                     return results;
                 }
+                catch (HttpRequestException httpEx) when (retry == maxRetries)
+                {
+                    HttpRequestExceptionUtility.ThrowFatalProtocolExceptionIfCritical(httpEx, uri);
+                    RaisePackageRetrievalError(id, uri, httpEx);
+                }
                 catch (Exception ex) when (retry < maxRetries)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
@@ -559,17 +565,20 @@ namespace NuGet.Protocol
                 }
                 catch (Exception ex) when (retry == maxRetries)
                 {
-                    var message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Log_FailedToRetrievePackage,
-                        id,
-                        uri);
-
-                    throw new FatalProtocolException(message, ex);
+                    RaisePackageRetrievalError(id, uri, ex);
                 }
             }
-
             return null;
+        }
+
+        private static void RaisePackageRetrievalError(string id, string uri, Exception ex)
+        {
+            var message = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.Log_FailedToRetrievePackage,
+                id,
+                uri);
+            throw new FatalProtocolException(message, ex);
         }
 
         private static PackageInfo BuildModel(string id, XElement element)

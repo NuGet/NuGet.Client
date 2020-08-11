@@ -40,8 +40,13 @@ static internal class ODataServiceDocumentUtils
         }
         catch (Exception ex) when (!(ex is FatalProtocolException) && (!(ex is OperationCanceledException)))
         {
-            string message = String.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, url);
+            HttpRequestException httpEx = ex as HttpRequestException;
+            if (httpEx != null)
+            {
+                HttpRequestExceptionUtility.ThrowFatalProtocolExceptionIfCritical(httpEx, url);
+            }
 
+            string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, url);
             throw new FatalProtocolException(message, ex);
         }
 
