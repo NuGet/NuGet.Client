@@ -39,10 +39,10 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        private async ValueTask<PackageSolutionDetailControlModel> InitializeAsync(
+        private async ValueTask InitializeAsync(
             ISolutionManager solutionManager,
-            IEnumerable<IProjectContextInfo> projects,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
+            IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
             _solutionManager = solutionManager;
@@ -62,19 +62,30 @@ namespace NuGet.PackageManagement.UI
 
             _packageManagerProviders = packageManagerProviders;
 
-            await CreateProjectListsAsync(cancellationToken);
-
-            return this;
+            await CreateProjectListsAsync(serviceBroker, cancellationToken);
         }
 
-        public static ValueTask<PackageSolutionDetailControlModel> CreateAsync(
+        public static async ValueTask<PackageSolutionDetailControlModel> CreateAsync(
             ISolutionManager solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             CancellationToken cancellationToken)
         {
             var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(projects);
-            return packageSolutionDetailControlModel.InitializeAsync(solutionManager, projects, packageManagerProviders, cancellationToken);
+            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, packageManagerProviders, serviceBroker: null, cancellationToken);
+            return packageSolutionDetailControlModel;
+        }
+
+        internal static async ValueTask<PackageSolutionDetailControlModel> CreateAsync(
+            ISolutionManager solutionManager,
+            IEnumerable<IProjectContextInfo> projects,
+            IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
+            IServiceBroker serviceBroker,
+            CancellationToken cancellationToken)
+        {
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(projects);
+            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, packageManagerProviders, serviceBroker, cancellationToken);
+            return packageSolutionDetailControlModel;
         }
 
         public List<PackageInstallationInfo> Projects
@@ -247,7 +258,7 @@ namespace NuGet.PackageManagement.UI
         // The event handler that is called when a project is added, removed or renamed.
         private void SolutionProjectChanged(object sender, NuGetProjectEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateProjectListsAsync(CancellationToken.None))
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateProjectListsAsync(serviceBroker: null, CancellationToken.None))
                 .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageSolutionDetailControlModel), nameof(SolutionProjectChanged)));
         }
 
@@ -277,7 +288,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Creates the project lists. Also called after a project is added/removed/renamed.
-        private async Task CreateProjectListsAsync(CancellationToken cancellationToken)
+        private async Task CreateProjectListsAsync(IServiceBroker serviceBroker, CancellationToken cancellationToken)
         {
             // unhook event handler
             if (Projects != null)
@@ -289,8 +300,13 @@ namespace NuGet.PackageManagement.UI
             }
 
             IReadOnlyCollection<IProjectContextInfo> projectContexts;
-            IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
+
+            if(serviceBroker == null)
+            {
+                serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            }
+
+            using (var nugetProjectManagerService = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
             {
                 Assumes.NotNull(nugetProjectManagerService);
                 projectContexts = await nugetProjectManagerService.GetProjectsAsync(cancellationToken);

@@ -277,7 +277,7 @@ namespace NuGet.PackageManagement.UI
         {
             // this is a project package manager, so there is one and only one project.
             var project = Model.Context.Projects.First();
-            var projectName = await project.GetUniqueNameOrNameAsync();
+            var projectName = await project.GetUniqueNameOrNameAsync(CancellationToken.None);
 
             // TODO: Action needs to return PackageContextInfo
             // we need refresh when packages are installed into or uninstalled from the project

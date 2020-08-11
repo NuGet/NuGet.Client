@@ -30,17 +30,17 @@ namespace NuGet.VisualStudio.Internal.Contracts
             ProjectKind = projectKind;
         }
 
-        public string UniqueId { get; private set; }
-        public NuGetProjectKind ProjectKind { get; private set; }
-        public ProjectStyle ProjectStyle { get; private set; }
+        public string UniqueId { get; }
+        public NuGetProjectKind ProjectKind { get; }
+        public ProjectStyle ProjectStyle { get; }
 
-        public async ValueTask<bool> IsProjectUpgradeableAsync(CancellationToken cancellationToken)
+        public async ValueTask<bool> IsUpgradeableAsync(CancellationToken cancellationToken)
         {
             IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(nugetProjectManagerService);
-                return await nugetProjectManagerService.IsNuGetProjectUpgradeableAsync(UniqueId, cancellationToken);
+                return await nugetProjectManagerService.IsProjectUpgradeableAsync(UniqueId, cancellationToken);
             }
         }
 
@@ -78,16 +78,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
-        public async ValueTask<string> GetUniqueNameOrNameAsync()
+        public async ValueTask<string> GetUniqueNameOrNameAsync(CancellationToken cancellationToken)
         {
-            (bool success, string value) = await TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.UniqueName, CancellationToken.None);
+            (bool success, string value) = await TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.UniqueName, cancellationToken);
             if (success)
             {
                 return value;
             }
 
             // Unique name is not set, simply return the name
-            return await GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None);
+            return await GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, cancellationToken);
         }
 
         public static ValueTask<IProjectContextInfo> CreateAsync(NuGetProject nugetProject, CancellationToken cancellationToken)

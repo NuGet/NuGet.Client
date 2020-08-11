@@ -33,13 +33,13 @@ namespace NuGet.PackageManagement.UI
         public static async ValueTask<PackageInstallationInfo> CreateAsync(IProjectContextInfo project, CancellationToken cancellationToken)
         {
             var packageInstallationInfo = new PackageInstallationInfo(project);
-            await packageInstallationInfo.InitializeAsync();
+            await packageInstallationInfo.InitializeAsync(cancellationToken);
             return packageInstallationInfo;
         }
 
-        private async ValueTask InitializeAsync()
+        private async ValueTask InitializeAsync(CancellationToken cancellationToken)
         {
-            _projectName = await NuGetProject.GetUniqueNameOrNameAsync();
+            _projectName = await NuGetProject.GetUniqueNameOrNameAsync(cancellationToken);
         }
 
         public NuGetVersion InstalledVersion

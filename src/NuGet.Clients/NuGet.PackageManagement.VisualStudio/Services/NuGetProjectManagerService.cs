@@ -67,8 +67,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToArray();
 
             // Read package references from all projects.
-            IEnumerable<Task<IEnumerable<PackageReference>>>? tasks = projects.Select(project => project.GetInstalledPackagesAsync(cancellationToken));
-            IEnumerable<PackageReference>[]? packageReferences = await Task.WhenAll(tasks);
+            IEnumerable<Task<IEnumerable<PackageReference>>> tasks = projects.Select(project => project.GetInstalledPackagesAsync(cancellationToken));
+            IEnumerable<PackageReference>[] packageReferences = await Task.WhenAll(tasks);
 
             return packageReferences.SelectMany(e => e).ToArray();
         }
@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return (success, value);
         }
 
-        public async ValueTask<bool> IsNuGetProjectUpgradeableAsync(string projectGuid, CancellationToken cancellationToken)
+        public async ValueTask<bool> IsProjectUpgradeableAsync(string projectGuid, CancellationToken cancellationToken)
         {
             var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
             Assumes.NotNull(solutionManager);

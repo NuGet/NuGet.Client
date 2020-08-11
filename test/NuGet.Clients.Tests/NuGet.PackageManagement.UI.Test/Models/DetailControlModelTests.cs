@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -99,6 +99,13 @@ namespace NuGet.PackageManagement.UI.Test.Models
             : base(testData)
         {
             var solMgr = new Mock<ISolutionManager>();
+            var serviceBroker = new Mock<IServiceBroker>();
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+
+#pragma warning disable ISB001 // Dispose of proxies
+            serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(projectManagerService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
@@ -106,6 +113,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     solutionManager: solMgr.Object,
                     projects: new List<IProjectContextInfo>(),
                     packageManagerProviders: new List<IVsPackageManagerProvider>(),
+                    serviceBroker: serviceBroker.Object,
                     CancellationToken.None);
             });
 

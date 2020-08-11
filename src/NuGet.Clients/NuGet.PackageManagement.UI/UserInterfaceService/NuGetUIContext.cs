@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<bool> IsNuGetProjectUpgradeableAsync(IProjectContextInfo project, CancellationToken cancellationToken)
         {
-            return await project.IsProjectUpgradeableAsync(cancellationToken);
+            return await project.IsUpgradeableAsync(cancellationToken);
         }
 
         public async Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService)

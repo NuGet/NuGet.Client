@@ -319,7 +319,7 @@ namespace NuGet.PackageManagement.UI
                         listItem.ProvidersLoader = AsyncLazy.New(
                             async () =>
                             {
-                                string uniqueProjectName = await _context.Projects[0].GetUniqueNameOrNameAsync();
+                                string uniqueProjectName = await _context.Projects[0].GetUniqueNameOrNameAsync(CancellationToken.None);
                                 return await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(_context.PackageManagerProviders, listItem.Id, uniqueProjectName);
                             });
                     }
