@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft;
 using Microsoft.VisualStudio.Experimentation;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -27,6 +28,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
@@ -39,127 +41,93 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageManagerControl : UserControl, IVsWindowSearch
     {
-        private readonly bool _initialized;
-
-        private CancellationTokenSource _refreshCts;
+        internal event EventHandler _actionCompleted;
+        internal DetailControlModel _detailModel;
         internal CancellationTokenSource _loadCts;
-
+        private bool _initialized;
+        private IVsWindowSearchHost _windowSearchHost;
+        private IVsWindowSearchHostFactory _windowSearchHostFactory;
+        private INuGetUILogger _uiLogger;
+        private readonly Guid _sessionGuid = Guid.NewGuid();
+        private Stopwatch _sinceLastRefresh;
+        private CancellationTokenSource _refreshCts;
+        private bool _installedTabDataIsLoaded;
+        private bool _updatesTabDataIsLoaded;
+        private bool _forceRecommender;
         // used to prevent starting new search when we update the package sources
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
-
         // When executing a UI operation, we disable the PM UI and ignore any refresh requests.
         // This tells the operation execution part that it needs to trigger a refresh when done.
         private bool _isRefreshRequired;
-
-        // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
-        private bool _isExecutingAction;
+        private bool _isExecutingAction; // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
         private RestartRequestBar _restartBar;
-
-        public PackageRestoreBar RestoreBar { get; private set; }
-
         private PRMigratorBar _migratorBar;
-
-        private readonly IVsWindowSearchHost _windowSearchHost;
-        private readonly IVsWindowSearchHostFactory _windowSearchHostFactory;
-
-        internal readonly DetailControlModel _detailModel;
-
         private bool _missingPackageStatus;
-        private readonly INuGetUILogger _uiLogger;
         private bool _loadedAndInitialized = false;
         private bool _recommendPackages = false;
-
         private (string modelVersion, string vsixVersion)? _recommenderVersion;
 
-        public PackageManagerModel Model { get; }
-
-        public ISettings Settings { get; }
-
-        internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
-
-        internal InfiniteScrollList PackageList { get => _packageList; }
-
-        internal PackageSourceMoniker SelectedSource
+        private PackageManagerControl()
         {
-            get
-            {
-                return _topPanel.SourceRepoList.SelectedItem as PackageSourceMoniker;
-            }
-            set
-            {
-                _topPanel.SourceRepoList.SelectedItem = value;
-            }
+            InitializeComponent();
         }
 
-        internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
-
-        internal IEnumerable<SourceRepository> ActiveSources => SelectedSource?.SourceRepositories ?? Enumerable.Empty<SourceRepository>();
-
-        internal event EventHandler _actionCompleted;
-
-        public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
-
-        private readonly Guid _sessionGuid = Guid.NewGuid();
-        private readonly Stopwatch _sinceLastRefresh;
-        private bool _installedTabDataIsLoaded;
-        private bool _updatesTabDataIsLoaded;
-
-        private bool _forceRecommender;
-
-        public PackageManagerControl(
-            PackageManagerModel model,
-            ISettings nugetSettings,
-            IVsWindowSearchHostFactory searchFactory,
-            IVsShell4 vsShell,
-            INuGetUILogger uiLogger = null)
+        public static async ValueTask<PackageManagerControl> CreateAsync(PackageManagerModel model, INuGetUILogger uiLogger)
         {
-            VSThreadHelper.ThrowIfNotOnUIThread();
+            Assumes.NotNull(model);
+
+            var packageManagerControl = new PackageManagerControl();
+            await packageManagerControl.InitializeAsync(model, uiLogger);
+            return packageManagerControl;
+        }
+
+        private async ValueTask InitializeAsync(PackageManagerModel model, INuGetUILogger uiLogger)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _sinceLastRefresh = Stopwatch.StartNew();
 
-            _uiLogger = uiLogger;
             Model = model;
-            Settings = nugetSettings;
-            if (!Model.IsSolution)
+            _uiLogger = uiLogger;
+            Settings = await ServiceLocator.GetInstanceAsync<ISettings>();
+
+            _windowSearchHostFactory = await ServiceLocator.GetGlobalServiceAsync<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
+
+            if (Model.IsSolution)
             {
-                _detailModel = new PackageDetailControlModel(Model.Context.SolutionManager, Model.Context.Projects);
+                _detailModel = await PackageSolutionDetailControlModel.CreateAsync(Model.Context.SolutionManager, Model.Context.Projects, Model.Context.PackageManagerProviders, CancellationToken.None);
             }
             else
             {
-                _detailModel = new PackageSolutionDetailControlModel(
-                    Model.Context.SolutionManager,
-                    Model.Context.Projects,
-                    Model.Context.PackageManagerProviders);
+                _detailModel = new PackageDetailControlModel(Model.Context.SolutionManager, Model.Context.Projects);
             }
 
-            InitializeComponent();
-            _windowSearchHostFactory = searchFactory;
             if (_windowSearchHostFactory != null)
             {
-                _windowSearchHost = _windowSearchHostFactory.CreateWindowSearchHost(
-                    _topPanel.SearchControlParent);
+                _windowSearchHost = _windowSearchHostFactory.CreateWindowSearchHost(_topPanel.SearchControlParent);
                 _windowSearchHost.SetupSearch(this);
                 _windowSearchHost.IsVisible = true;
             }
 
             AddRestoreBar();
-
-            AddRestartRequestBar(vsShell);
+            await AddRestartRequestBarAsync();
 
             _packageDetail.Control = this;
             _packageDetail.Visibility = Visibility.Hidden;
 
-            SetTitle();
+            await SetTitleAsync();
 
             _topPanel.IsSolution = Model.IsSolution;
+
             if (_topPanel.IsSolution)
             {
                 _topPanel.CreateAndAddConsolidateTab();
             }
-            var settings = LoadSettings();
+
+            var settings = await LoadSettingsAsync(CancellationToken.None);
             InitializeFilterList(settings);
             InitSourceRepoList(settings);
-            ApplySettings(settings, nugetSettings);
+            ApplySettings(settings, Settings);
             _initialized = true;
 
             // UI is initialized. Start the first search
@@ -205,6 +173,27 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public PackageRestoreBar RestoreBar { get; private set; }
+        public PackageManagerModel Model { get; private set; }
+
+        public ISettings Settings { get; private set; }
+
+        internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
+
+        internal InfiniteScrollList PackageList => _packageList;
+
+        internal PackageSourceMoniker SelectedSource
+        {
+            get => _topPanel.SourceRepoList.SelectedItem as PackageSourceMoniker;
+            set => _topPanel.SourceRepoList.SelectedItem = value;
+        }
+
+        internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
+
+        internal IEnumerable<SourceRepository> ActiveSources => SelectedSource?.SourceRepositories ?? Enumerable.Empty<SourceRepository>();
+
+        public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
+
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
         {
             Model.Context.Projects = _detailModel.NuGetProjects;
@@ -215,17 +204,26 @@ namespace NuGet.PackageManagement.UI
             SolutionManager_ProjectsChanged(sender, e);
             if (!Model.IsSolution)
             {
-                var currentNugetProject = Model.Context.Projects.First();
-                string currentFullPath, newFullPath;
-                currentNugetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out currentFullPath);
-                e.NuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out newFullPath);
-                if (currentFullPath == newFullPath)
-                {
-                    Model.Context.Projects = new[] { e.NuGetProject };
-                    SetTitle();
-                }
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SolutionManager_ProjectRenamedAsync(e.NuGetProject))
+                    .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SolutionManager_ProjectRenamed)));
             }
+        }
 
+        private async Task SolutionManager_ProjectRenamedAsync(NuGetProject nugetProject)
+        {
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
+            Model.Context.Projects = new[] { projectContextInfo };
+
+            var currentNugetProject = Model.Context.Projects.First();
+            string newFullPath;
+
+            (bool _, string currentFullPath) = await currentNugetProject.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.FullPath, CancellationToken.None);
+            nugetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out newFullPath);
+
+            if (currentFullPath == newFullPath)
+            {
+                await SetTitleAsync();
+            }
         }
 
         private void SolutionManager_ProjectsChanged(object sender, NuGetProjectEventArgs e)
@@ -242,7 +240,7 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 // get the list of projects
-                var projects = solutionModel.Projects.Select(p => p.NuGetProject);
+                IEnumerable<IProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
                 Model.Context.Projects = projects;
 
                 RefreshWhenNotExecutingAction(RefreshOperationSource.ProjectsChanged, timeSpan);
@@ -265,25 +263,32 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    // this is a project package manager, so there is one and only one project.
-                    var project = Model.Context.Projects.First();
-                    var projectName = NuGetProject.GetUniqueNameOrName(project);
-
-                    // we need refresh when packages are installed into or uninstalled from the project
-                    if (e.Actions.Any(action =>
-                        NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
-                    {
-                        RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
-                    }
-                    else
-                    {
-                        EmitRefreshEvent(timeSpan, RefreshOperationSource.ActionsExecuted, RefreshOperationStatus.NotApplicable);
-                    }
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => RefreshProjectAfterActionAsync(timeSpan, e))
+                        .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SolutionManager_ActionsExecuted)));
                 }
             }
             else
             {
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.ActionsExecuted, RefreshOperationStatus.NoOp);
+            }
+        }
+
+        private async Task RefreshProjectAfterActionAsync(TimeSpan timeSpan, ActionsExecutedEventArgs e)
+        {
+            // this is a project package manager, so there is one and only one project.
+            var project = Model.Context.Projects.First();
+            var projectName = await project.GetUniqueNameOrNameAsync(CancellationToken.None);
+
+            // TODO: Action needs to return PackageContextInfo
+            // we need refresh when packages are installed into or uninstalled from the project
+            if (e.Actions.Any(action =>
+                NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
+            {
+                RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
+            }
+            else
+            {
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.ActionsExecuted, RefreshOperationStatus.NotApplicable);
             }
         }
 
@@ -299,30 +304,33 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    // This is a project package manager, so there is one and only one project.
-                    var project = Model.Context.Projects.First();
-
-                    string projectFullName;
-
-                    var projectContainsFullPath = project.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out projectFullName);
-
-                    var eventProjectFullName = e.Arg;
-
-                    // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
-                    // We also refresh the UI if projectFullPath is not present.
-                    if (!projectContainsFullPath || projectFullName == eventProjectFullName)
-                    {
-                        RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated, timeSpan);
-                    }
-                    else
-                    {
-                        EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NotApplicable);
-                    }
+                    NuGetUIThreadHelper.JoinableTaskFactory
+                        .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e.Arg))
+                        .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SolutionManager_CacheUpdated)));
                 }
             }
             else
             {
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NoOp);
+            }
+        }
+
+        private async Task SolutionManager_CacheUpdatedAsync(TimeSpan timeSpan, string eventProjectFullName)
+        {
+            // This is a project package manager, so there is one and only one project.
+            var project = Model.Context.Projects.First();
+
+            (bool success, string projectFullName) = await project.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.FullPath, CancellationToken.None);
+
+            // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
+            // We also refresh the UI if projectFullPath is not present.
+            if (!success || projectFullName == eventProjectFullName)
+            {
+                RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated, timeSpan);
+            }
+            else
+            {
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NotApplicable);
             }
         }
 
@@ -480,6 +488,12 @@ namespace NuGet.PackageManagement.UI
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             ResetTabDataLoadFlags();
 
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => Sources_PackageSourcesChangedAsync(timeSpan))
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(Sources_PackageSourcesChanged)));
+        }
+
+        private async Task Sources_PackageSourcesChangedAsync(TimeSpan timeSpan)
+        {
             try
             {
                 var prevSelectedItem = SelectedSource;
@@ -492,7 +506,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    SaveSettings();
+                    await SaveSettingsAsync(CancellationToken.None);
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
                     EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success);
                 }
@@ -503,14 +517,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string GetSettingsKey()
+        private async Task<string> GetSettingsKeyAsync(CancellationToken cancellationToken)
         {
             string key;
-            if (Model.Context.Projects.Count() == 1)
+            if (!Model.IsSolution)
             {
                 var project = Model.Context.Projects.First();
-                string projectName = null;
-                if (!project.TryGetMetadata(NuGetProjectMetadataKeys.Name, out projectName))
+                (bool success, string projectName) = await project.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, cancellationToken);
+                if (!success)
                 {
                     projectName = "unknown";
                 }
@@ -527,7 +541,7 @@ namespace NuGet.PackageManagement.UI
         // Save the settings of this doc window in the UIContext. Note that the settings
         // are not guaranteed to be persisted. We need to call Model.Context.SaveSettings()
         // to persist the settings.
-        public void SaveSettings()
+        public async Task SaveSettingsAsync(CancellationToken cancellationToken)
         {
             var settings = new UserSettings
             {
@@ -543,12 +557,15 @@ namespace NuGet.PackageManagement.UI
                 OptionsExpanded = _packageDetail._optionsControl.IsExpanded
             };
             _packageDetail._solutionView.SaveSettings(settings);
-            Model.Context.UserSettingsManager.AddSettings(GetSettingsKey(), settings);
+
+            string settingsKey = await GetSettingsKeyAsync(cancellationToken);
+            Model.Context.UserSettingsManager.AddSettings(settingsKey, settings);
         }
 
-        private UserSettings LoadSettings()
+        private async Task<UserSettings> LoadSettingsAsync(CancellationToken cancellationToken)
         {
-            var settings = Model.Context.UserSettingsManager.GetSettings(GetSettingsKey());
+            string settingsKey = await GetSettingsKeyAsync(cancellationToken);
+            var settings = Model.Context.UserSettingsManager.GetSettings(settingsKey);
 
             if (PreviewWindow.IsDoNotShowPreviewWindowEnabled())
             {
@@ -585,11 +602,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void AddRestartRequestBar(IVsShell4 vsRestarter)
+        private async Task AddRestartRequestBarAsync()
         {
-            if (Model.Context.PackageManager.DeleteOnRestartManager != null && vsRestarter != null)
+            if (Model.Context.PackageManager.DeleteOnRestartManager != null)
             {
-                _restartBar = new RestartRequestBar(Model.Context.PackageManager.DeleteOnRestartManager, vsRestarter);
+                var vsShell = await ServiceLocator.GetGlobalServiceAsync<SVsShell, IVsShell4>();
+                Assumes.NotNull(vsShell);
+
+                _restartBar = new RestartRequestBar(Model.Context.PackageManager.DeleteOnRestartManager, vsShell);
                 DockPanel.SetDock(_restartBar, Dock.Top);
 
                 _root.Children.Insert(0, _restartBar);
@@ -650,18 +670,27 @@ namespace NuGet.PackageManagement.UI
             _packageDetail.Refresh();
         }
 
-        private void SetTitle()
+        private async Task SetTitleAsync()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             if (Model.IsSolution)
             {
                 _topPanel.Title = Resx.Resources.Label_SolutionPackageManager;
             }
             else
             {
-                var project = Model.Context.Projects.FirstOrDefault();
+                var project = Model.Context.Projects.First();
+                string projectName = null;
 
-                if (project == null ||
-                    !project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out var projectName))
+                (bool success, string value) = await project.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None);
+
+                if (success)
+                {
+                    projectName = value;
+                }
+
+                if (string.IsNullOrWhiteSpace(projectName))
                 {
                     projectName = "unknown";
                 }
@@ -757,6 +786,8 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
         {
+            var project = Model.Context.Projects.First();
+
             // only make recommendations when
             //   one of the source repositories is nuget.org,
             //   the package manager was opened for a project, not a solution,
@@ -768,7 +799,7 @@ namespace NuGet.PackageManagement.UI
                 && searchText == string.Empty
                 // also check if this is a PC-style project. We will not provide recommendations for PR-style
                 // projects until we have a way to get dependent packages without negatively impacting perf.
-                && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
+                && project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
                 && loadContext.SourceRepositories.Any(item => TelemetryUtility.IsNuGetOrg(item.PackageSource)))
             {
                 _recommendPackages = true;
@@ -919,7 +950,7 @@ namespace NuGet.PackageManagement.UI
 
                 // Update installed tab warning icon
                 var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(
-                    loadContext, metadataProvider, refreshCts.Token);
+                loadContext, metadataProvider, refreshCts.Token);
 
                 var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
                 _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount);
@@ -1063,7 +1094,7 @@ namespace NuGet.PackageManagement.UI
                 // for now, we are only making recommendations for PC-style projects, and for these the dependent packages are
                 // already included in the installedPackages list. When we implement PR-style projects, we'll need to also pass
                 // the dependent packages to RecommenderPackageFeed.
-                var targetFrameworks = context.GetSupportedFrameworks();
+                var targetFrameworks = await context.GetSupportedFrameworksAsync();
 
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(
                     context.SourceRepositories,
@@ -1137,10 +1168,16 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.SourceToolTip.Visibility = Visibility.Visible;
                 _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
-                SaveSettings();
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SourceRepoList_SelectionChangedAsync(timeSpan))
+                    .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged)));
             }
+        }
+
+        private async Task SourceRepoList_SelectionChangedAsync(TimeSpan timeSpan)
+        {
+            await SaveSettingsAsync(CancellationToken.None);
+            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+            EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success);
         }
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
@@ -1207,8 +1244,7 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    var installedPackages = await PackageCollection.FromProjectsAsync(Model.Context.Projects,
-                        CancellationToken.None);
+                    var installedPackages = await PackageCollection.FromProjectsAsync(Model.Context.Projects, CancellationToken.None);
                     _packageList.UpdatePackageStatus(installedPackages.ToArray());
                 })
                 .PostOnFailure(nameof(PackageManagerControl), nameof(Refresh));
@@ -1219,14 +1255,6 @@ namespace NuGet.PackageManagement.UI
             RefreshConsolidatablePackagesCount();
 
             _packageDetail?.Refresh();
-        }
-
-        private static PackageIdentity[] GetInstalledPackages(IEnumerable<NuGetProject> projects)
-        {
-            var installedPackages = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                () => PackageCollection.FromProjectsAsync(projects, CancellationToken.None));
-
-            return installedPackages.ToArray();
         }
 
         private void CheckboxPrerelease_CheckChanged(object sender, EventArgs e)
@@ -1464,7 +1492,7 @@ namespace NuGet.PackageManagement.UI
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
 
-            nugetUi.Projects = Model.Context.Projects;
+            // nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
         }
 
@@ -1551,9 +1579,9 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                var project = Model.Context.Projects.FirstOrDefault();
+                IProjectContextInfo project = Model.Context.Projects.FirstOrDefault();
                 Debug.Assert(project != null);
-                await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project);
+                await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, null);
             })
             .PostOnFailure(nameof(PackageManagerControl), nameof(UpgradeButton_Click));
         }

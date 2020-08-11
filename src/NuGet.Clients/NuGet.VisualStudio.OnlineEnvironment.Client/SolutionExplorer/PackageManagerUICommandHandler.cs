@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
@@ -21,6 +23,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Internal.Contracts;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Task = System.Threading.Tasks.Task;
@@ -133,7 +136,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         private async Task OpenPackageManagerUIAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            await ShowPackageManagerUI(workspaceVisualNodeBase.NodeMoniker);
+            await ShowPackageManagerUIAsync(workspaceVisualNodeBase);
         }
 
         /// <summary>
@@ -176,7 +179,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             SolutionUserOptions.Value.LoadSettings();
         }
 
-        private async Task ShowPackageManagerUI(string projectPath)
+        private async Task ShowPackageManagerUIAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -185,7 +188,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 await InitializeMEFAsync();
             }
 
-            var window = await CreateNewWindowFrameAsync(projectPath);
+            IVsWindowFrame window = await CreateNewWindowFrameAsync(workspaceVisualNodeBase);
             if (window != null)
             {
                 Search(window, string.Empty);
@@ -193,55 +196,14 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             }
         }
 
-
-        private vsShellInterop.IVsWindowFrame FindExistingWindowFrame(
-            string projectPath)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var uiShell = (vsShellInterop.IVsUIShell)_asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SVsUIShell));
-            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
-            {
-                object docView;
-                var hr = windowFrame.GetProperty(
-                    (int)vsShellInterop.__VSFPROPID.VSFPROPID_DocView,
-                    out docView);
-                if (hr == VSConstants.S_OK
-                    && docView is PackageManagerWindowPane)
-                {
-                    var packageManagerWindowPane = (PackageManagerWindowPane)docView;
-                    if (packageManagerWindowPane.Model.IsSolution)
-                    {
-                        // the window is the solution package manager
-                        continue;
-                    }
-
-                    var projects = packageManagerWindowPane.Model.Context.Projects;
-                    if (projects.Count() != 1)
-                    {
-                        continue;
-                    }
-
-                    var existingProject = projects.First();
-                    var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-                    if (string.Equals(projectName, projectPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return windowFrame;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private async Task<vsShellInterop.IVsWindowFrame> CreateNewWindowFrameAsync(string projectPath)
+        private async Task<IVsWindowFrame> CreateNewWindowFrameAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Find existing hierarchy and item id of the document window if it's already registered.
-            var rdt = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.IVsRunningDocumentTable)) as vsShellInterop.IVsRunningDocumentTable;
+            var rdt = await _asyncServiceProvider.GetServiceAsync(typeof(IVsRunningDocumentTable)) as IVsRunningDocumentTable;
             Assumes.Present(rdt);
-            vsShellInterop.IVsHierarchy hier;
+            IVsHierarchy hier;
             uint itemId;
             var docData = IntPtr.Zero;
             int hr;
@@ -250,8 +212,8 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             {
                 uint cookie;
                 hr = rdt.FindAndLockDocument(
-                    (uint)vsShellInterop._VSRDTFLAGS.RDT_NoLock,
-                    projectPath,
+                    (uint)_VSRDTFLAGS.RDT_NoLock,
+                    workspaceVisualNodeBase.NodeMoniker,
                     out hier,
                     out itemId,
                     out docData,
@@ -272,50 +234,43 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 }
             }
 
-            return await CreateToolWindowAsync(projectPath, hier, itemId);
+            return await CreateToolWindowAsync(workspaceVisualNodeBase, hier, itemId);
         }
 
-        private async Task<vsShellInterop.IVsWindowFrame> CreateToolWindowAsync(
-            string projectPath,
-            vsShellInterop.IVsHierarchy hier,
-            uint itemId)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller's responsibility to dispose.")]
+        private async ValueTask<IVsWindowFrame> CreateToolWindowAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase, IVsHierarchy hier, uint itemId)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var uiController = UIFactory.Value.Create();
+            if (!Guid.TryParse(ProjectContextInfo.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
+            {
+                throw new InvalidOperationException();
+            }
 
-            var model = new PackageManagerModel(
-                uiController,
-                isSolution: false,
-                editorFactoryGuid: GuidList.NuGetEditorType);
+            var projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid.ToString(), CancellationToken.None);
+            var uiController = UIFactory.Value.Create(projectContextInfo);
+            var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
+            var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
+            var caption = string.Format(CultureInfo.CurrentCulture, Resx.Label_NuGetWindowCaption, Path.GetFileNameWithoutExtension(workspaceVisualNodeBase.NodeMoniker));
 
-            var vsWindowSearchHostfactory = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SVsWindowSearchHostFactory)) as vsShellInterop.IVsWindowSearchHostFactory;
-            var vsShell = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SVsShell)) as vsShellInterop.IVsShell4;
-            var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger.Value);
-
-            var caption = string.Format(
-                CultureInfo.CurrentCulture,
-                Resx.Label_NuGetWindowCaption,
-                Path.GetFileNameWithoutExtension(projectPath));
-
-            vsShellInterop.IVsWindowFrame windowFrame;
-            var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SVsUIShell)) as vsShellInterop.IVsUIShell;
+            var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             Assumes.Present(uiShell);
-            var hr = 0;
-            int[] pfDefaultPosition = null;
 
+            int[] pfDefaultPosition = null;
+            IVsWindowFrame windowFrame;
             var windowPane = new PackageManagerToolWindowPane(control);
-            hr = uiShell.CreateToolWindow(
-                (uint)__VSCREATETOOLWIN.CTW_fInitNew,
-                0,              // dwToolWindowId - singleInstance = 0
-                windowPane,     // ToolWindowPane
-                Guid.Empty,     // rclsidTool = GUID_NULL
-                Guid.NewGuid(), // TODO: should be projectGuid...so persistance info works: https://github.com/NuGet/Home/issues/9636
-                Guid.Empty,     // reserved - do not use - GUID_NULL
-                null,           // IServiceProvider
-                caption,
-                pfDefaultPosition,
-                out windowFrame);
+            ErrorHandler.ThrowOnFailure(
+                uiShell.CreateToolWindow(
+                    (uint)__VSCREATETOOLWIN.CTW_fInitNew,
+                    0,              // dwToolWindowId - singleInstance = 0
+                    windowPane,     // ToolWindowPane
+                    Guid.Empty,     // rclsidTool = GUID_NULL
+                    projectGuid,
+                    Guid.Empty,     // reserved - do not use - GUID_NULL
+                    null,           // IServiceProvider
+                    caption,
+                    pfDefaultPosition,
+                    out windowFrame));
 
             if (windowFrame != null)
             {
@@ -324,27 +279,22 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 WindowFrameHelper.DockToolWindow(windowFrame);
             }
 
-            ErrorHandler.ThrowOnFailure(hr);
             return windowFrame;
         }
 
-        private async Task<vsShellInterop.IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
+        private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SVsUIShell)) as vsShellInterop.IVsUIShell;
+            var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 object property;
-                var hr = windowFrame.GetProperty(
-                    (int)vsShellInterop.__VSFPROPID.VSFPROPID_DocData,
-                    out property);
+                var hr = windowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_DocData, out property);
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                 if (hr == VSConstants.S_OK
-                    &&
-                    property is vsShellInterop.IVsSolution
-                    &&
-                    packageManagerControl != null)
+                    && property is IVsSolution
+                    && packageManagerControl != null)
                 {
                     return windowFrame;
                 }
