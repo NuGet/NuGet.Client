@@ -18,11 +18,14 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using Test.Utility;
 using Test.Utility.Threading;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
@@ -616,40 +619,125 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task InstallPackageAsync_AddsPackageReference()
         {
             // Arrange
-            using (var randomTestFolder = TestDirectory.Create())
-            {
-                var projectAdapter = CreateProjectAdapter(randomTestFolder);
+            var packageIdentity1 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("3.3.0"));
+            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.3.0"));
+            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("5.6.0"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var projectDirectories = new List<TestDirectory>();
 
-                var projectServices = new TestProjectSystemServices();
+            using (var settingsDirectory = TestDirectory.Create())
+            using (var settingsDirectory2 = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
+            {
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var projectAdapter = CreateProjectAdapter(settingsDirectory);
+                var projectAdapter2 = CreateProjectAdapter2(settingsDirectory2);
+
+                var projectServices = new TestProjectSystemServices(settingsDirectory2, true);
+                var projectServices2 = new TestProjectSystemServices(settingsDirectory2);
 
                 LibraryDependency actualDependency = null;
                 Mock.Get(projectServices.References)
                     .Setup(x => x.AddOrUpdatePackageReferenceAsync(
                         It.IsAny<LibraryDependency>(), CancellationToken.None))
-                    .Callback<LibraryDependency, CancellationToken>((d, _) => actualDependency = d)
+                    .Callback<LibraryDependency, CancellationToken>((d, _) => {
+                        actualDependency = d;
+                        projectServices._references.Add(d);
+                    })
+                    .Returns(Task.CompletedTask);
+
+                Mock.Get(projectServices2.References)
+                    .Setup(x => x.AddOrUpdatePackageReferenceAsync(
+                        It.IsAny<LibraryDependency>(), CancellationToken.None))
+                    .Callback<LibraryDependency, CancellationToken>((d, _) => {
+                        actualDependency = d;
+                        projectServices2._references.Add(d);
+                    })
                     .Returns(Task.CompletedTask);
 
                 var testProject = new LegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    "foo"); //foo->bar
+
+                var testProject2 = new LegacyPackageReferenceProject(
+                    projectAdapter2,
+                    Guid.NewGuid().ToString(),
+                    projectServices2,
+                    _threadingService,
+                    "bar");
+
+                testSolutionManager.NuGetProjects.Add(testProject);
+                testSolutionManager.NuGetProjects.Add(testProject2);
 
                 var buildIntegratedInstallationContext = new BuildIntegratedInstallationContext(
                     Enumerable.Empty<NuGetFramework>(),
                     Enumerable.Empty<NuGetFramework>(),
                     new Dictionary<NuGetFramework, string>());
 
+                var targetProjects1 = new List<BuildIntegratedNuGetProject>
+                {
+                    testProject,
+                    testProject2
+                };
+                var targetProjects2 = new List<BuildIntegratedNuGetProject>
+                {
+                    testProject,
+                };
+
                 // Act
-                var result = await testProject.InstallPackageAsync(
-                    "packageA",
-                    VersionRange.Parse("1.*"),
+                //var result = await testProject.InstallPackageAsync(
+                //    "packageA",
+                //    VersionRange.Parse("1.*"),
+                //    null,
+                //    buildIntegratedInstallationContext,
+                //    CancellationToken.None);
+
+                var results2 = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                    targetProjects1,
+                    packageIdentity2_UpgradeVersion,
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                var result22 = await testProject.InstallPackageAsync(
+                    packageIdentity2_UpgradeVersion.Id,
+                    new VersionRange(packageIdentity2_UpgradeVersion.Version),
                     null,
                     buildIntegratedInstallationContext,
                     CancellationToken.None);
 
+                var result23 = await testProject2.InstallPackageAsync(
+                    packageIdentity2_UpgradeVersion.Id,
+                    new VersionRange(packageIdentity2_UpgradeVersion.Version),
+                    null,
+                    buildIntegratedInstallationContext,
+                    CancellationToken.None);
+
+                    //await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    //    targetProjects1,
+                    //    results2.Select(r => r.Action),
+                    //    new TestNuGetProjectContext(),
+                    //    new SourceCacheContext(),
+                    //    CancellationToken.None);
+
+                var results3 = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                    targetProjects2,
+                    packageIdentity2,
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
                 // Assert
-                Assert.True(result);
+              //  Assert.True(result);
 
                 Assert.NotNull(actualDependency);
                 Assert.Equal("packageA", actualDependency.LibraryRange.Name);
@@ -856,7 +944,38 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             projectAdapter
                 .SetupGet(x => x.ProjectName)
                 .Returns("TestProject");
+            projectAdapter
+                .Setup(x => x.GetRuntimeIdentifiersAsync())
+                .ReturnsAsync(Enumerable.Empty<RuntimeDescription>);
 
+            projectAdapter
+                .Setup(x => x.GetRuntimeSupportsAsync())
+                .ReturnsAsync(Enumerable.Empty<CompatibilityProfile>);
+
+            projectAdapter
+                .Setup(x => x.Version)
+                .Returns("1.0.0");
+
+            return projectAdapter;
+        }
+
+        private static Mock<IVsProjectAdapter> CreateProjectAdapter3(string path = null)
+        {
+            var projectAdapter = new Mock<IVsProjectAdapter>();
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                projectAdapter
+                    .SetupGet(x => x.ProjectName)
+                    .Returns("TestProject");
+
+            }
+            else
+            {
+                projectAdapter
+                    .SetupGet(x => x.ProjectName)
+                    .Returns(path);
+            }
             projectAdapter
                 .Setup(x => x.GetRuntimeIdentifiersAsync())
                 .ReturnsAsync(Enumerable.Empty<RuntimeDescription>);
@@ -874,7 +993,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         private static IVsProjectAdapter CreateProjectAdapter(string fullPath)
         {
-            var projectAdapter = CreateProjectAdapter();
+            //if (string.IsNullOrWhiteSpace)
+            //{
+
+            //}
+            var projectAdapter = CreateProjectAdapter3();
             projectAdapter
                 .Setup(x => x.FullProjectPath)
                 .Returns(Path.Combine(fullPath, "foo.csproj"));
@@ -890,21 +1013,75 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             return projectAdapter.Object;
         }
+
+
+        private static IVsProjectAdapter CreateProjectAdapter2(string fullPath)
+        {
+            var projectAdapter = CreateProjectAdapter3();
+            projectAdapter
+                .Setup(x => x.FullProjectPath)
+                .Returns(Path.Combine(fullPath, "bar.csproj"));
+            projectAdapter
+                .Setup(x => x.GetTargetFrameworkAsync())
+                .ReturnsAsync(NuGetFramework.Parse("netstandard13"));
+
+            var testMSBuildProjectExtensionsPath = Path.Combine(fullPath, "obj");
+            Directory.CreateDirectory(testMSBuildProjectExtensionsPath);
+            projectAdapter
+                .Setup(x => x.MSBuildProjectExtensionsPath)
+                .Returns(testMSBuildProjectExtensionsPath);
+
+            return projectAdapter.Object;
+        }
+
     }
 
     internal class TestProjectSystemServices : INuGetProjectServices
     {
-        public TestProjectSystemServices()
-        {
-            Mock.Get(ReferencesReader)
-                .Setup(x => x.GetProjectReferencesAsync(
-                    It.IsAny<NuGet.Common.ILogger>(), CancellationToken.None))
-                .ReturnsAsync(() => new ProjectRestoreReference[] { });
 
-            Mock.Get(ReferencesReader)
-                .Setup(x => x.GetPackageReferencesAsync(
-                    It.IsAny<NuGetFramework>(), CancellationToken.None))
-                .ReturnsAsync(() => new LibraryDependency[] { });
+        public TestProjectSystemServices(string path= null, bool flag = false)
+        {
+            if (flag)
+            {
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    Mock.Get(ReferencesReader)
+                        .Setup(x =>x.GetProjectReferencesAsync(
+                            It.IsAny<NuGet.Common.ILogger>(), CancellationToken.None))
+                        .ReturnsAsync(() => new ProjectRestoreReference[] {
+                            new ProjectRestoreReference()
+                                    {
+                                        ProjectPath = Path.Combine(path,"bar.csproj"),
+                                        ProjectUniqueName = Path.Combine(path,"bar.csproj"),
+                                    }
+                            });
+
+                    Mock.Get(ReferencesReader)
+                        .Setup(x => x.GetPackageReferencesAsync(
+                            It.IsAny<NuGetFramework>(), CancellationToken.None))
+                        .ReturnsAsync(() => _references);
+                }
+                else
+                {
+                    Mock.Get(ReferencesReader)
+                        .Setup(x => x.GetProjectReferencesAsync(
+                            It.IsAny<NuGet.Common.ILogger>(), CancellationToken.None))
+                        .ReturnsAsync(() => new ProjectRestoreReference[] { });
+
+                    Mock.Get(ReferencesReader)
+                        .Setup(x => x.GetPackageReferencesAsync(
+                            It.IsAny<NuGetFramework>(), CancellationToken.None))
+                        .ReturnsAsync(() => new LibraryDependency[] { });
+                }
+            }
+            else
+            {
+                // No referenced project but there are referenced packages.
+                Mock.Get(ReferencesReader)
+                    .Setup(x => x.GetPackageReferencesAsync(
+                        It.IsAny<NuGetFramework>(), CancellationToken.None))
+                    .ReturnsAsync(() => _references);
+            }
         }
 
         public IProjectBuildProperties BuildProperties { get; } = Mock.Of<IProjectBuildProperties>();
@@ -916,6 +1093,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public IProjectSystemService ProjectSystem { get; } = Mock.Of<IProjectSystemService>();
 
         public IProjectSystemReferencesService References { get; } = Mock.Of<IProjectSystemReferencesService>();
+
+        public List<LibraryDependency> _references {get;} = new List<LibraryDependency>();
 
         public IProjectScriptHostService ScriptService { get; } = Mock.Of<IProjectScriptHostService>();
 

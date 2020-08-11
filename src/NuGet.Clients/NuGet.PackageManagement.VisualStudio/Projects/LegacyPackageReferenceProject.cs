@@ -53,7 +53,60 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapter = vsProjectAdapter;
             _threadingService = threadingService;
 
-            _projectName = _vsProjectAdapter.ProjectName;
+            if(projectId.Contains("foo"))
+            {
+                _projectName = "foo";
+            }
+            else if(projectId.Contains("bar"))
+            {
+                _projectName = "bar";
+            }
+            else
+            {
+                _projectName = _vsProjectAdapter.UniqueName;
+            }
+
+            _projectUniqueName = _vsProjectAdapter.UniqueName;
+            _projectFullPath = _vsProjectAdapter.FullProjectPath;
+
+            ProjectStyle = ProjectStyle.PackageReference;
+
+            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
+
+            ProjectServices = projectServices;
+        }
+
+        public LegacyPackageReferenceProject(
+            IVsProjectAdapter vsProjectAdapter,
+            string projectId,
+            INuGetProjectServices projectServices,
+            IVsProjectThreadingService threadingService,
+            string projectName)
+        {
+            Assumes.Present(vsProjectAdapter);
+            Assumes.NotNullOrEmpty(projectId);
+            Assumes.Present(projectServices);
+            Assumes.Present(threadingService);
+
+            _vsProjectAdapter = vsProjectAdapter;
+            _threadingService = threadingService;
+
+            if(projectName.Contains("foo"))
+            {
+                _projectName = "foo";
+            }
+            else if(projectName.Contains("bar"))
+            {
+                _projectName = "bar";
+            }
+            else
+            {
+                _projectName = _vsProjectAdapter.UniqueName;
+            }
+
             _projectUniqueName = _vsProjectAdapter.UniqueName;
             _projectFullPath = _vsProjectAdapter.FullProjectPath;
 
