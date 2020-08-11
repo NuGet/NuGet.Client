@@ -9,6 +9,10 @@ namespace NuGet.Common
 {
     public static class MSBuildStringUtility
     {
+#if NET45
+        private static readonly string[] EmptyStringArray = new string[0];
+#endif
+
         /// <summary>
         /// Split on ; and trim. Null or empty inputs will return an
         /// empty array.
@@ -34,7 +38,7 @@ namespace NuGet.Common
                     .ToArray();
             }
 #if NET45
-            return new string[0];
+            return EmptyStringArray;
 #else
             return Array.Empty<string>();
 #endif
@@ -63,7 +67,7 @@ namespace NuGet.Common
             if (strings == null)
             {
 #if NET45
-                return new string[0];
+                return EmptyStringArray;
 #else
                 return Array.Empty<string>();
 #endif
