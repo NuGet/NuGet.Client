@@ -9,6 +9,10 @@ namespace NuGet.Common
 {
     public static class MSBuildStringUtility
     {
+#if NET45
+        private static readonly string[] EmptyStringArray = new string[0];
+#endif
+
         /// <summary>
         /// Split on ; and trim. Null or empty inputs will return an
         /// empty array.
@@ -33,8 +37,11 @@ namespace NuGet.Common
                     .Where(entry => entry.Length != 0)
                     .ToArray();
             }
-
+#if NET45
+            return EmptyStringArray;
+#else
             return Array.Empty<string>();
+#endif
         }
 
         /// <summary>
@@ -59,7 +66,11 @@ namespace NuGet.Common
         {
             if (strings == null)
             {
+#if NET45
+                return EmptyStringArray;
+#else
                 return Array.Empty<string>();
+#endif
             }
 
             return strings
@@ -127,7 +138,7 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Return empty list of NuGetLogCode if all lists of NuGetLogCode are not the same. 
+        /// Return empty list of NuGetLogCode if all lists of NuGetLogCode are not the same.
         /// </summary>
         public static IEnumerable<NuGetLogCode> GetDistinctNuGetLogCodesOrDefault(IEnumerable<IEnumerable<NuGetLogCode>> nugetLogCodeLists)
         {

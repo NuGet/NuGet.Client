@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,12 +22,12 @@ namespace NuGet.Packaging.Core
         {
             if (identityComparer == null)
             {
-                throw new ArgumentNullException("identityComparer");
+                throw new ArgumentNullException(nameof(identityComparer));
             }
 
             if (dependencyComparer == null)
             {
-                throw new ArgumentNullException("dependencyComparer");
+                throw new ArgumentNullException(nameof(dependencyComparer));
             }
 
             _identityComparer = identityComparer;
