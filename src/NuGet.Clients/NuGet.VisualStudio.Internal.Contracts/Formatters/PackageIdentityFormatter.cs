@@ -5,22 +5,23 @@
 
 using MessagePack;
 using MessagePack.Formatters;
-using NuGet.Configuration;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class PackageSourceUpdateOptionsFormatter : IMessagePackFormatter<PackageSourceUpdateOptions?>
+    internal class PackageIdentityFormatter : IMessagePackFormatter<PackageIdentity?>
     {
-        private const string UpdateCredentialsPropertyName = "updatecredentials";
-        private const string UpdateEnabledPropertyName = "updateenabled";
+        private const string NuGetVersionPropertyName = "version";
+        private const string IdPropertyName = "id";
 
-        internal static readonly IMessagePackFormatter<PackageSourceUpdateOptions?> Instance = new PackageSourceUpdateOptionsFormatter();
+        internal static readonly IMessagePackFormatter<PackageIdentity?> Instance = new PackageIdentityFormatter();
 
-        private PackageSourceUpdateOptionsFormatter()
+        private PackageIdentityFormatter()
         {
         }
 
-        public PackageSourceUpdateOptions? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public PackageIdentity? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())
             {
@@ -32,19 +33,19 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             try
             {
-                bool updateCredentials = true;
-                bool updateEnabled = true;
+                string? id = null;
+                NuGetVersion? version = null;
 
                 int propertyCount = reader.ReadMapHeader();
                 for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
                 {
                     switch (reader.ReadString())
                     {
-                        case UpdateCredentialsPropertyName:
-                            updateCredentials = reader.ReadBoolean();
+                        case IdPropertyName:
+                            id = reader.ReadString();
                             break;
-                        case UpdateEnabledPropertyName:
-                            updateEnabled = reader.ReadBoolean();
+                        case NuGetVersionPropertyName:
+                            version = NuGetVersionFormatter.Instance.Deserialize(ref reader, options);
                             break;
                         default:
                             reader.Skip();
@@ -52,7 +53,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
-                return new PackageSourceUpdateOptions(updateCredentials, updateEnabled);
+                return new PackageIdentity(id, version);
             }
             finally
             {
@@ -61,7 +62,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageSourceUpdateOptions? value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, PackageIdentity? value, MessagePackSerializerOptions options)
         {
             if (value == null)
             {
@@ -70,10 +71,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             writer.WriteMapHeader(count: 2);
-            writer.Write(UpdateCredentialsPropertyName);
-            writer.Write(value.UpdateCredentials);
-            writer.Write(UpdateEnabledPropertyName);
-            writer.Write(value.UpdateEnabled);
+            writer.Write(IdPropertyName);
+            writer.Write(value.Id);
+            writer.Write(NuGetVersionPropertyName);
+            NuGetVersionFormatter.Instance.Serialize(ref writer, value.Version, options);
         }
     }
 }

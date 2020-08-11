@@ -504,7 +504,7 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     PackageLoadContext plc = new PackageLoadContext(sourceRepositories: null, isSolution: false, uiService.UIContext);
-                    var frameworks = plc.GetSupportedFrameworks().ToList();
+                    var frameworks = (await plc.GetSupportedFrameworksAsync()).ToList();
 
                     var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),

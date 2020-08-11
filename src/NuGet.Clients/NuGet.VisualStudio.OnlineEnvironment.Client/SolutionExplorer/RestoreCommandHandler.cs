@@ -46,7 +46,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 SB.IBrokeredServiceContainer serviceContainer = await _asyncServiceProvider.GetServiceAsync<SB.SVsBrokeredServiceContainer, SB.IBrokeredServiceContainer>();
                 IServiceBroker serviceBroker = serviceContainer.GetFullAccessServiceBroker();
 
-                INuGetSolutionService nugetSolutionService = await serviceBroker.GetProxyAsync<INuGetSolutionService>(NuGetServices.NuGetSolutionService);
+                INuGetSolutionService nugetSolutionService = await serviceBroker.GetProxyAsync<INuGetSolutionService>(NuGetServices.SolutionService);
 
                 try
                 {

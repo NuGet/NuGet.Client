@@ -7,15 +7,18 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -26,7 +29,7 @@ namespace NuGet.PackageManagement.UI
     public abstract class DetailControlModel : INotifyPropertyChanged
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected IEnumerable<NuGetProject> _nugetProjects;
+        protected IEnumerable<IProjectContextInfo> _nugetProjects;
 
         // all versions of the _searchResultPackage
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
@@ -43,13 +46,13 @@ namespace NuGet.PackageManagement.UI
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
-        protected DetailControlModel(IEnumerable<NuGetProject> nugetProjects)
+        protected DetailControlModel(IEnumerable<IProjectContextInfo> projects)
         {
-            _nugetProjects = nugetProjects;
+            _nugetProjects = projects;
             _options = new Options();
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
-            _options.ShowClassicOptions = nugetProjects.Any(project => !(project is INuGetIntegratedProject));
+            _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.Classic);
         }
 
         /// <summary>
@@ -63,7 +66,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the list of projects that are selected for the given action
         /// </summary>
-        public abstract IEnumerable<NuGetProject> GetSelectedProjects(UserAction action);
+        public abstract IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action);
 
         public int SelectedIndex { get; private set; }
         public int RecommendedCount { get; private set; }
@@ -108,11 +111,11 @@ namespace NuGet.PackageManagement.UI
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
 
             // Filter out projects that are not managed by NuGet.
-            var projects = _nugetProjects.Where(project => !(project is ProjectKNuGetProjectBase)).ToArray();
+            var projects = _nugetProjects.Where(project => project.ProjectKind != NuGetProjectKind.ProjectK).ToArray();
 
             foreach (var project in projects)
             {
-                if (project is MSBuildNuGetProject)
+                if (project.ProjectKind == NuGetProjectKind.MSBuild)
                 {
                     // cache allowed version range for each nuget project for current selected package
                     var packageReference = (await project.GetInstalledPackagesAsync(CancellationToken.None))
@@ -124,7 +127,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         var constraint = new ProjectVersionConstraint()
                         {
-                            ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
+                            ProjectName = await project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None),
                             VersionRange = range,
                             IsPackagesConfig = true,
                         };
@@ -132,7 +135,7 @@ namespace NuGet.PackageManagement.UI
                         _projectVersionConstraints.Add(constraint);
                     }
                 }
-                else if (project is BuildIntegratedNuGetProject)
+                else if (project.ProjectKind == NuGetProjectKind.BuildIntegrated)
                 {
                     var packageReferences = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
@@ -149,7 +152,7 @@ namespace NuGet.PackageManagement.UI
                         // Add constraint for auto referenced package.
                         var constraint = new ProjectVersionConstraint()
                         {
-                            ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
+                            ProjectName = await project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None),
                             VersionRange = new VersionRange(
                                 minVersion: autoReferenced.PackageIdentity.Version,
                                 includeMinVersion: true,
@@ -170,7 +173,7 @@ namespace NuGet.PackageManagement.UI
                 (searchResultPackage.Version, false)
             };
 
-            CreateVersions();
+            await CreateVersionsAsync(CancellationToken.None);
             OnCurrentPackageChanged();
 
             var versions = await getVersionsTask;
@@ -191,7 +194,7 @@ namespace NuGet.PackageManagement.UI
             // hook event handler for dependency behavior changed
             Options.SelectedChanged += DependencyBehavior_SelectedChanged;
 
-            CreateVersions();
+            await CreateVersionsAsync(CancellationToken.None);
             OnCurrentPackageChanged();
         }
 
@@ -208,7 +211,8 @@ namespace NuGet.PackageManagement.UI
 
         protected virtual void DependencyBehavior_SelectedChanged(object sender, EventArgs e)
         {
-            CreateVersions();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAsync(CancellationToken.None))
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(DetailControlModel), nameof(DependencyBehavior_SelectedChanged)));
         }
 
         protected virtual void OnCurrentPackageChanged()
@@ -228,15 +232,15 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    var installedPackages = new List<Packaging.PackageReference>();
-                    foreach (var project in _nugetProjects)
                     {
-                        var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                        installedPackages.AddRange(projectInstalledPackages);
-                    }
-                    return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
-                });
+                        var installedPackages = new List<PackageReference>();
+                        foreach (var project in _nugetProjects)
+                        {
+                            var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                            installedPackages.AddRange(projectInstalledPackages);
+                        }
+                        return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+                    });
             }
         }
 
@@ -249,7 +253,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    var installedPackages = new HashSet<Packaging.Core.PackageDependency>();
+                    var installedPackages = new HashSet<PackageDependency>();
                     foreach (var project in _nugetProjects)
                     {
                         var dependencies = await GetDependencies(project);
@@ -261,18 +265,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static async Task<IReadOnlyList<Packaging.Core.PackageDependency>> GetDependencies(NuGetProject project)
+        private static async Task<IReadOnlyList<PackageDependency>> GetDependencies(IProjectContextInfo project)
         {
-            var results = new List<Packaging.Core.PackageDependency>();
+            var results = new List<PackageDependency>();
 
             var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-            var buildIntegratedProject = project as BuildIntegratedNuGetProject;
 
             foreach (var package in projectInstalledPackages)
             {
-                VersionRange range = null;
+                VersionRange range;
 
-                if (buildIntegratedProject != null && package.HasAllowedVersions)
+                if (project.ProjectKind == NuGetProjectKind.BuildIntegrated && package.HasAllowedVersions)
                 {
                     // The actual range is passed as the allowed version range for build integrated projects.
                     range = package.AllowedVersions;
@@ -286,7 +289,7 @@ namespace NuGet.PackageManagement.UI
                         includeMaxVersion: true);
                 }
 
-                var dependency = new Packaging.Core.PackageDependency(package.PackageIdentity.Id, range);
+                var dependency = new PackageDependency(package.PackageIdentity.Id, range);
 
                 results.Add(dependency);
             }
@@ -295,43 +298,27 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Called after package install/uninstall.
-        public abstract void Refresh();
+        public abstract Task RefreshAsync(CancellationToken cancellationToken);
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string propertyName)
         {
-            var handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public string Id
-        {
-            get { return _searchResultPackage?.Id; }
-        }
+        public string Id => _searchResultPackage?.Id;
 
-        public Uri IconUrl
-        {
-            get { return _searchResultPackage?.IconUrl; }
-        }
+        public Uri IconUrl => _searchResultPackage?.IconUrl;
 
-        public bool PrefixReserved
-        {
-            get { return _searchResultPackage?.PrefixReserved ?? false; }
-        }
+        public bool PrefixReserved => _searchResultPackage?.PrefixReserved ?? false;
 
-        public bool IsPackageDeprecated
-        {
-            get { return _packageMetadata?.DeprecationMetadata != null; }
-        }
+        public bool IsPackageDeprecated => _packageMetadata?.DeprecationMetadata != null;
 
         private string _packageDeprecationReasons;
         public string PackageDeprecationReasons
         {
-            get { return _packageDeprecationReasons; }
+            get => _packageDeprecationReasons;
             set
             {
                 if (_packageDeprecationReasons != value)
@@ -346,7 +333,7 @@ namespace NuGet.PackageManagement.UI
         private string _packageDeprecationAlternatePackageText;
         public string PackageDeprecationAlternatePackageText
         {
-            get { return _packageDeprecationAlternatePackageText; }
+            get => _packageDeprecationAlternatePackageText;
             set
             {
                 if (_packageDeprecationAlternatePackageText != value)
@@ -467,7 +454,7 @@ namespace NuGet.PackageManagement.UI
             return $"{alternatePackageMetadata.PackageId} {versionString}";
         }
 
-        protected abstract void CreateVersions();
+        protected abstract Task CreateVersionsAsync(CancellationToken cancellationToken);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected List<DisplayVersion> _versions;
@@ -684,13 +671,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public IEnumerable<NuGetProject> NuGetProjects
-        {
-            get
-            {
-                return _nugetProjects;
-            }
-        }
+        public IEnumerable<IProjectContextInfo> NuGetProjects => _nugetProjects;
 
         public Func<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
 

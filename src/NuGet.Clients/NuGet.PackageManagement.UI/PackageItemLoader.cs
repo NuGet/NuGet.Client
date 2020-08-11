@@ -26,11 +26,6 @@ namespace NuGet.PackageManagement.UI
         private int _recommendedCount;
         private IEnumerable<Packaging.PackageReference> _packageReferences;
 
-        private SearchFilter SearchFilter => new SearchFilter(includePrerelease: _includePrerelease)
-        {
-            SupportedFrameworks = _context.GetSupportedFrameworks()
-        };
-
         // Never null
         private PackageFeedSearchState _state = new PackageFeedSearchState();
 
@@ -196,19 +191,23 @@ namespace NuGet.PackageManagement.UI
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
-        private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(
-            CancellationToken cancellationToken)
+        private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var searchFilter = new SearchFilter(includePrerelease: _includePrerelease)
+            {
+                SupportedFrameworks = await _context.GetSupportedFrameworksAsync()
+            };
+
             // get the browse/search results
-            SearchResult<IPackageSearchMetadata> browseResult = await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+            SearchResult<IPackageSearchMetadata> browseResult = await _packageFeed.SearchAsync(_searchText, searchFilter, cancellationToken);
 
             // get the recommender results
             SearchResult<IPackageSearchMetadata> recommenderResult = null;
             if (_recommenderPackageFeed != null)
             {
-                recommenderResult = await _recommenderPackageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+                recommenderResult = await _recommenderPackageFeed.SearchAsync(_searchText, searchFilter, cancellationToken);
                 _recommendedCount = recommenderResult.Count();
             }
 
@@ -319,10 +318,11 @@ namespace NuGet.PackageManagement.UI
                     if (!_context.IsSolution && _context.PackageManagerProviders.Any())
                     {
                         listItem.ProvidersLoader = AsyncLazy.New(
-                            () => AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
-                                _context.PackageManagerProviders,
-                                listItem.Id,
-                                _context.Projects[0]));
+                            async () =>
+                            {
+                                string uniqueProjectName = await _context.Projects[0].GetUniqueNameOrNameAsync(CancellationToken.None);
+                                return await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(_context.PackageManagerProviders, listItem.Id, uniqueProjectName);
+                            });
                     }
 
                     return listItem;
