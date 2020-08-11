@@ -1,0 +1,3 @@
+NuGet.Protocol.Core.Types.FatalProtocolException.FatalProtocolException(string message, NuGet.Common.NuGetLogCode logCode) -> void
+NuGet.Protocol.Core.Types.FatalProtocolException.FatalProtocolException(string message, System.Exception innerException, NuGet.Common.NuGetLogCode logCode) -> void
+NuGet.Protocol.Core.Types.FatalProtocolException.LogCode.get -> NuGet.Common.NuGetLogCode
