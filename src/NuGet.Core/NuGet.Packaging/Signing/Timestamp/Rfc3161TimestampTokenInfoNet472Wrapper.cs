@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_SIGNING_SUPPORTED && IS_DESKTOP
 using System;
 using System.Security.Cryptography;
 
 namespace NuGet.Packaging.Signing
 {
-#if IS_SIGNING_SUPPORTED && IS_DESKTOP
     internal sealed class Rfc3161TimestampTokenInfoNet472Wrapper : IRfc3161TimestampTokenInfo
     {
         private Rfc3161TimestampTokenInfo _rfc3161TimestampTokenInfo;
@@ -39,5 +39,5 @@ namespace NuGet.Packaging.Signing
             return _rfc3161TimestampTokenInfo.GetNonce();
         }
     }
-#endif
 }
+#endif

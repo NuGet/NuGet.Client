@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_SIGNING_SUPPORTED && IS_CORECLR
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
@@ -8,7 +9,6 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Packaging.Signing
 {
-#if IS_SIGNING_SUPPORTED && IS_CORECLR
     internal sealed class Rfc3161TimestampTokenNetstandard21Wrapper : IRfc3161TimestampToken
     {
         private readonly System.Security.Cryptography.Pkcs.Rfc3161TimestampToken _rfc3161TimestampToken;
@@ -46,6 +46,5 @@ namespace NuGet.Packaging.Signing
             return _rfc3161TimestampToken.AsSignedCms();
         }
     }
-#endif
 }
-
+#endif
