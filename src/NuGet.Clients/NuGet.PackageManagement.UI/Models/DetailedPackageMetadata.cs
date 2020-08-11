@@ -28,6 +28,7 @@ namespace NuGet.PackageManagement.UI
             IconUrl = serverData.IconUrl;
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
+            ReadmeUrl = serverData.ReadmeUrl;
             ReadmeUrl = serverData.ProjectUrl; // TODO
             ReportAbuseUrl = serverData.ReportAbuseUrl;
             // Some server implementations send down an array with an empty string, which ends up as an empty string.

@@ -2101,7 +2101,18 @@ namespace NuGet.PackageManagement.UI {
                 return ResourceManager.GetString("Text_ViewLicense", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to View README.
+        /// </summary>
+        public static string Text_ViewReadme
+        {
+            get
+            {
+                return ResourceManager.GetString("Text_ViewReadme", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Working....
         /// </summary>

@@ -435,6 +435,9 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Text_ViewLicense" xml:space="preserve">
     <value>View License</value>
   </data>
+  <data name="Text_ViewReadme" xml:space="preserve">
+    <value>View README</value>
+  </data>
   <data name="Text_NotAvailableInSource" xml:space="preserve">
     <value>Not available in this source</value>
   </data>

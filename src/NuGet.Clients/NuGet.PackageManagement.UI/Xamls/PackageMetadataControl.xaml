@@ -194,7 +194,7 @@
 
       <!-- Readme -->
       <TextBlock
-        Visibility="{Binding Path=Readme,Converter={StaticResource NullToVisibilityConverter}}"
+        Visibility="{Binding Path=ReadmeUrl,Converter={StaticResource NullToVisibilityConverter}}"
         Grid.Row="4"
         Grid.Column="0"
         FontWeight="Bold"
@@ -202,14 +202,6 @@
         x:Name="_readmeLabel"
         AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_Readme}"/>
-
-      <!--<ItemsControl Grid.Row="4" Grid.Column="1" ItemsSource="{Binding ReadmeLinks}" IsTabStop="False">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <WrapPanel Margin="8,8,0,0" Orientation="Horizontal" />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-      </ItemsControl>-->
 
       <TextBlock
         Visibility="{Binding Path=ReadmeUrl,Converter={StaticResource NullToVisibilityConverter}}"
@@ -222,7 +214,7 @@
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
           AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_Readme}">
-          <Run Text="{Binding Path=ReadmeUrl}" />
+          <Run Text="{x:Static nuget:Resources.Text_ViewReadme}" />
         </Hyperlink>
       </TextBlock>
 
