@@ -16,5 +16,17 @@ namespace NuGet.Protocol.Core.Types
         public FatalProtocolException(string message, Exception innerException) : base(message, innerException)
         {
         }
+
+        public FatalProtocolException(string message, NuGetLogCode logCode) : base(message)
+        {
+            LogCode = logCode;
+        }
+
+        public FatalProtocolException(string message, Exception innerException, NuGetLogCode logCode) : base(message, innerException)
+        {
+            LogCode = logCode;
+        }
+
+        public NuGetLogCode LogCode { get; } = NuGetLogCode.NU1300;
     }
 }

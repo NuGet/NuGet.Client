@@ -1943,13 +1943,19 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var command = new RestoreCommand(request);
-
                 // Act
-                var result = await command.ExecuteAsync();
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.False(result.Success);
+                IAssetsLogMessage[] logMessages = result.LogMessages.ToArray();
+                Assert.Equal(4, logMessages.Count());
+                Assert.Equal(NuGetLogCode.NU1300, logMessages[0].Code);
+                Assert.Equal(NuGetLogCode.NU1300, logMessages[1].Code);
+                Assert.Equal(NuGetLogCode.NU1300, logMessages[2].Code);
+                Assert.Equal(NuGetLogCode.NU1101, logMessages[3].Code);
             }
         }
 
@@ -1986,11 +1992,15 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var command = new RestoreCommand(request);
-
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await command.ExecuteAsync());
-                Assert.NotNull(ex);
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                Assert.False(result.Success);
+                Assert.Equal(1, logger.ErrorMessages.Count());
+                string[] errors = logger.ErrorMessages.ToArray();
+                Assert.StartsWith("NU1300", errors[0]);
             }
         }
 
@@ -2026,11 +2036,13 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var command = new RestoreCommand(request);
-
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await command.ExecuteAsync());
-                Assert.NotNull(ex);
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                Assert.False(result.Success);
+                Assert.Contains("NU1302", string.Join(Environment.NewLine, logger.ErrorMessages));
             }
         }
 

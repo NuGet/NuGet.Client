@@ -189,7 +189,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet package restore failed. Please see Error List window for detailed warnings and errors..
+        ///   Looks up a localized string similar to NuGet package restore failed. See the Error List window for detailed warnings and errors..
         /// </summary>
         internal static string PackageRestoreFinishedWithError {
             get {

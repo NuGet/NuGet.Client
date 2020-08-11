@@ -489,7 +489,8 @@ namespace NuGet.Protocol.Core.Types
             }
 
             //No exception to the rule specified.
-            response.EnsureSuccessStatusCode();
+
+            HttpRequestExceptionUtility.EnsureSuccessAndStashStatusCodeIfThrows(response);
             return null;
         }
 
@@ -722,7 +723,7 @@ namespace NuGet.Protocol.Core.Types
                     }),
                 response =>
                 {
-                    response.EnsureSuccessStatusCode();
+                    EnsureSuccessStatusCode(response, codeNotToThrow: null, logger);
 
                     return Task.FromResult(0);
                 },

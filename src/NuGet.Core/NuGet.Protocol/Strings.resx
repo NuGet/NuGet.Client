@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -265,7 +265,7 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
     <value>The nupkg at '{0}' is not valid.</value>
   </data>
   <data name="Log_FailedToReadServiceIndex" xml:space="preserve">
-    <value>Unable to load the service index for source {0}.</value>
+    <value>Unable to load the service index for source '{0}'.</value>
   </data>
   <data name="Log_RetryingServiceIndex" xml:space="preserve">
     <value>Retrying service index request for source '{0}'.</value>
@@ -331,6 +331,10 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="Http_CredentialsForForbidden" xml:space="preserve">
     <value>The server responded with HTTP '403 Forbidden' when accessing the source '{0}'. This suggests that the server has authenticated your identity but has not permitted you to access the requested resource. Provide credentials that have permissions to view this resource.</value>
+    <comment>{0} is the source that needs credentials to be accessed.</comment>
+  </data>
+  <data name="Http_UrlNotFound" xml:space="preserve">
+    <value>The server responded with HTTP '404 Not Found' when accessing the source '{0}'. Change the URL to a resource that exists.</value>
     <comment>{0} is the source that needs credentials to be accessed.</comment>
   </data>
   <data name="Http_CredentialsForProxy" xml:space="preserve">
@@ -467,7 +471,7 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
 {1} is the exception ToString() result</comment>
   </data>
   <data name="Log_LocalSourceNotExist" xml:space="preserve">
-    <value>The local source '{0}' doesn't exist.</value>
+    <value>The local source or fallback folder '{0}' doesn't exist. Create the directory or fix packageSource/fallbackPackageFolder declarations.</value>
   </data>
   <data name="Log_FailedToFetchV2FeedHttp" xml:space="preserve">
     <value>Failed to fetch results from V2 feed at '{0}' with following message : {1}</value>
@@ -484,7 +488,7 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="Log_FailedToParseRepoSignInfor" xml:space="preserve">
     <value>Unable to parse {0} information from {1}. </value>
-    <comment>{0} is the information name that needs to be parsed. 
+    <comment>{0} is the information name that needs to be parsed.
 {1} is the repository signature information endpoint.</comment>
   </data>
   <data name="RepositoryContentUrlMustBeHttps" xml:space="preserve">

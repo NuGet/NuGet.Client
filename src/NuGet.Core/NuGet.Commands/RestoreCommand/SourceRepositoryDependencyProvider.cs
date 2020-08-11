@@ -223,9 +223,17 @@ namespace NuGet.Commands
                     };
                 }
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e)
             {
-                await LogWarningAsync(libraryRange.Name, e);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(libraryRange.Name, e);
+                }
+                else
+                {
+                    RestoreLogMessage logMessage = RestoreLogMessage.CreateError(e.LogCode, ExceptionUtilities.DisplayMessage(e));
+                    await logger.LogAsync(logMessage);
+                }
             }
             return null;
         }
@@ -552,10 +560,18 @@ namespace NuGet.Commands
                     logger,
                     cancellationToken);
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e)
             {
-                await LogWarningAsync(id, e);
-                return null;
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(id, e);
+                    return null;
+                }
+                else
+                {
+                    RestoreLogMessage logMessage = RestoreLogMessage.CreateError(e.LogCode, ExceptionUtilities.DisplayMessage(e));
+                    await logger.LogAsync(logMessage);
+                }
             }
             finally
             {

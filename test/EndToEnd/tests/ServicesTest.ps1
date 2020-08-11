@@ -15,7 +15,7 @@ function Test-PackageManagerServicesAreAvailableThroughMEF {
 
 # If this test fails with the cryptic error:
 #
-#    Exception calling "NewProject" with "5" argument(s): "The method or operation is not implemented." 
+#    Exception calling "NewProject" with "5" argument(s): "The method or operation is not implemented."
 #
 # ...it is because the specific Windows 10 SDK build indicated by the <TargetPlatformVersion /> element in the test's
 # project file (test\EndToEnd\ProjectTemplates\UwpClassLibraryProjectJson.zip\ClassLibrary6.csproj) is not installed.
@@ -92,7 +92,7 @@ function Test-GetInstalledPackagesWithCustomRestorePackagesPath {
     # Act
     $packages = @($installerServices.GetInstalledPackages())
 
-    # Assert    
+    # Assert
     Assert-NotNull $packages
     $package = $packages | where Id -eq NuGet.Versioning
     Assert-NotNull $package.InstallPath
@@ -116,7 +116,7 @@ function Test-GetInstalledPackagesForProjectWithCustomRestorePackagesPath {
     # Act
     $packages = @($installerServices.GetInstalledPackages($p))
 
-    # Assert    
+    # Assert
     Assert-NotNull $packages
     $package = $packages | where Id -eq NuGet.Versioning
     Assert-NotNull $package.InstallPath
@@ -423,7 +423,7 @@ function Test-InstallPackageAPIUnreachableSource
     # Act&Assert
     Assert-Throws {
         [API.Test.InternalAPITestHook]::InstallPackageApi("http://packagesource", "owin", "1.0.0", $false)
-    } "Exception calling `"InstallPackageApi`" with `"4`" argument(s): `"Unable to load the service index for source http://packagesource.`""
+    } "Exception calling `"InstallPackageApi`" with `"4`" argument(s): `"Unable to load the service index for source 'http://packagesource'.`""
     Assert-NoPackage $p "owin"
 }
 
@@ -1005,6 +1005,6 @@ function Test-InstallPackageAsyncWithPackageReferenceFormat {
 	# Assert
     $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
     Assert-AreEqual 1 $packageRefs.Count
-    Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'owin' 
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'owin'
     Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '1.0.0'
 }

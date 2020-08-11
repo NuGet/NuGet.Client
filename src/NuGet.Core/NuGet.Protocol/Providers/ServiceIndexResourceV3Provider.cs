@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -150,7 +151,6 @@ namespace NuGet.Protocol
                             async httpSourceResult =>
                             {
                                 var result = await ConsumeServiceIndexStreamAsync(httpSourceResult.Stream, utcNow, token);
-
                                 return result;
                             },
                             log,
@@ -161,6 +161,11 @@ namespace NuGet.Protocol
                         var message = ExceptionUtilities.DisplayMessage(ex);
                         log.LogMinimal(message);
                         throw;
+                    }
+                    catch (HttpRequestException ex) when (retry < maxRetries)
+                    {
+                        HttpRequestExceptionUtility.ThrowFatalProtocolExceptionIfCritical(ex, url);
+                        LogRetryMessage(ex, url, log);
                     }
                     catch (Exception ex) when (retry < maxRetries)
                     {
@@ -185,13 +190,20 @@ namespace NuGet.Protocol
                     catch (Exception ex) when (retry == maxRetries)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, url);
-
                         throw new FatalProtocolException(message, ex);
                     }
                 }
             }
 
             return null;
+        }
+
+        private static void LogRetryMessage(Exception ex, string url, ILogger log)
+        {
+            var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)
+                                        + Environment.NewLine
+                                        + ExceptionUtilities.DisplayMessage(ex);
+            log.LogMinimal(message);
         }
 
         private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, CancellationToken token)

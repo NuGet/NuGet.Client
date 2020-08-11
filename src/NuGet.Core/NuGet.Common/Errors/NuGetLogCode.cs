@@ -203,6 +203,36 @@ namespace NuGet.Common
         NU1213 = 1213,
 
         /// <summary>
+        /// Uncategorized FatalProtocolException
+        /// </summary>
+        NU1300 = 1300,
+
+        /// <summary>
+        /// Feed was Unauthorized (HTTP 401)
+        /// </summary>
+        NU1301 = 1301,
+
+        /// <summary>
+        /// Fallback folder or local feed folder does not exist
+        /// </summary>
+        NU1302 = 1302,
+
+        /// <summary>
+        /// Feed was Forbidden (HTTP 403)
+        /// </summary>
+        NU1303 = 1303,
+
+        /// <summary>
+        /// Url was Not Found, server exists (HTTP 404)
+        /// </summary>
+        NU1304 = 1304,
+
+        /// <summary>
+        /// Feed needs Proxy Authentication (HTTP 407)
+        /// </summary>
+        NU1307 = 1307,
+
+        /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>
         NU1401 = 1401,

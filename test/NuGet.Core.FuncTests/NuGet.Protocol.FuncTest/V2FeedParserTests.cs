@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -28,11 +29,11 @@ namespace NuGet.Protocol.FuncTest
 
             var parser = new V2FeedParser(httpSource, TestSources.NuGetV2Uri);
 
-            // Act 
+            // Act
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(
+                FatalProtocolException ex = await Assert.ThrowsAsync<FatalProtocolException>(
                     async () => await parser.DownloadFromUrl(
                         new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
                         new Uri($"https://www.{randomName}.org/api/v2/"),
@@ -44,6 +45,9 @@ namespace NuGet.Protocol.FuncTest
                 // Assert
                 Assert.NotNull(ex);
                 Assert.Equal($"Error downloading 'not-found.6.2.0' from 'https://www.{randomName}.org/api/v2/'.", ex.Message);
+                Assert.Equal(ex.LogCode, NuGetLogCode.NU1300);
+                Assert.NotNull(ex.InnerException);
+                Assert.IsType<HttpRequestException>(ex.InnerException);
             }
         }
 
@@ -57,7 +61,7 @@ namespace NuGet.Protocol.FuncTest
 
             var parser = new V2FeedParser(httpSource, TestSources.NuGetV2Uri);
 
-            // Act 
+            // Act
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {

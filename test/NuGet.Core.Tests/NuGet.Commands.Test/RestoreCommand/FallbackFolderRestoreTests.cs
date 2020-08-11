@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -91,7 +90,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 await result.CommitAsync(logger, CancellationToken.None);
 
@@ -188,7 +187,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 await result.CommitAsync(logger, CancellationToken.None);
 
@@ -278,7 +277,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 await result.CommitAsync(logger, CancellationToken.None);
 
@@ -366,7 +365,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 await result.CommitAsync(logger, CancellationToken.None);
 
@@ -451,7 +450,15 @@ namespace NuGet.Commands.Test
 
                 // Act & Assert
                 var command = new RestoreCommand(request);
-                await Assert.ThrowsAsync<FatalProtocolException>(async () => await command.ExecuteAsync());
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                Assert.False(result.Success);
+                // ideally, this error wouldn't repeat itself in the same project.
+                Assert.Equal(2, logger.ErrorMessages.Count());
+                string[] errors = logger.ErrorMessages.ToArray();
+                Assert.StartsWith("NU1302", errors[0]);
+                Assert.StartsWith("NU1302", errors[1]);
             }
         }
     }

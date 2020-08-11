@@ -268,6 +268,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The server responded with HTTP &apos;404 Not Found&apos; when accessing the source &apos;{0}&apos;. Change the URL to a resource that exists..
+        /// </summary>
+        internal static string Http_UrlNotFound {
+            get {
+                return ResourceManager.GetString("Http_UrlNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The folder &apos;{0}&apos; contains an invalid version..
         /// </summary>
         internal static string InvalidVersionFolder {
@@ -385,7 +394,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to load the service index for source {0}..
+        ///   Looks up a localized string similar to Unable to load the service index for source &apos;{0}&apos;..
         /// </summary>
         internal static string Log_FailedToReadServiceIndex {
             get {
@@ -448,7 +457,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The local source &apos;{0}&apos; doesn&apos;t exist..
+        ///   Looks up a localized string similar to The local source or fallback folder &apos;{0}&apos; doesn&apos;t exist. Create the directory or fix packageSource/fallbackPackageFolder declarations..
         /// </summary>
         internal static string Log_LocalSourceNotExist {
             get {

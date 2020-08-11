@@ -25,7 +25,7 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
 
-            // Act 
+            // Act
             var resource = await repo.GetResourceAsync<ODataServiceDocumentResourceV2>();
 
             // Assert
@@ -39,7 +39,7 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var repo = Repository.Factory.GetCoreV3("https://www.nuget.org/api/v99///");
 
-            // Act 
+            // Act
             var resource = await repo.GetResourceAsync<ODataServiceDocumentResourceV2>();
 
             // Assert
@@ -55,12 +55,11 @@ namespace NuGet.Protocol.FuncTest
             var repo = Repository.Factory.GetCoreV3($"https://www.{randomName}.org/api/v2");
 
             // Act & Assert
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
+            FatalProtocolException ex = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
                 await repo.GetResourceAsync<ODataServiceDocumentResourceV2>());
 
-            Assert.Equal(
-                $"Unable to load the service index for source https://www.{randomName}.org/api/v2.",
-                ex.Message);
+            Assert.NotNull(ex);
+            Assert.Equal(NuGetLogCode.NU1300, ex.LogCode);
             Assert.NotNull(ex.InnerException);
             Assert.IsType<HttpRequestException>(ex.InnerException);
         }

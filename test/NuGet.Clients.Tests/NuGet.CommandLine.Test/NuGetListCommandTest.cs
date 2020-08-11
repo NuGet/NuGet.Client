@@ -22,8 +22,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var hostName = Guid.NewGuid().ToString();
             var fullHostName = "https://" + hostName + "/";
-            var expected = "NuGet.Protocol.Core.Types.FatalProtocolException: Unable to load the service index for source " +
-                           $"{fullHostName}";
+            var expected = "Unable to load the service index for source";
 
             var args = new[] { "list", "-Source", fullHostName };
 

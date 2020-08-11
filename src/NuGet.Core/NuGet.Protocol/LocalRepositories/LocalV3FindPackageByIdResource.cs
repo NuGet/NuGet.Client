@@ -528,7 +528,7 @@ namespace NuGet.Protocol
                     Strings.Log_LocalSourceNotExist,
                     _source);
 
-                throw new FatalProtocolException(message);
+                throw new FatalProtocolException(message, NuGetLogCode.NU1302);
             }
 
             return versions;
