@@ -6207,10 +6207,10 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
             nuspec
                 .WithReadme("readme.md")
-                .WithFile(@"docs\readme.md");
+                .WithFile($"docs{s}readme.md");
 
             testDir
-                .WithFile(@"docs\readme.md", 6)
+                .WithFile($"docs{s}readme.md", 6)
                 .WithNuspec(nuspec);
 
             TestPackReadmeSuccess(testDir);
@@ -6225,7 +6225,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
             nuspec
                 .WithReadme("readme.md")
-                .WithFile(@"docs\*");
+                .WithFile($"docs{s}*");
 
             testDir
                 .WithFile($"docs{s}readme.md", 6)
@@ -6242,7 +6242,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             var s = Path.DirectorySeparatorChar;
 
             nuspec
-                .WithReadme("docs/readme.md")
+                .WithReadme($"docs{s}readme.md")
                 .WithFile($"content{s}*", "docs");
 
             testDir
@@ -6327,7 +6327,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackReadme_IncorrectReadmeExtension_Succeeds()
+        public void PackCommand_PackReadme_IncorrectReadmeExtension_Fails()
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
@@ -6344,7 +6344,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackReadme_ReadmeFileIsEmpty_Succeeds()
+        public void PackCommand_PackReadme_ReadmeFileIsEmpty_Fails()
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
@@ -6361,7 +6361,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackReadme_ReadmeFileExceedsMaxSize_Succeeds()
+        public void PackCommand_PackReadme_ReadmeFileExceedsMaxSize_Fails()
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
