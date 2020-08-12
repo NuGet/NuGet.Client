@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.UI
             if (!Model.IsSolution)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SolutionManager_ProjectRenamedAsync(e.NuGetProject))
-                    .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SolutionManager_ProjectRenamed)));
+                    .PostOnFailure(nameof(PackageManagerControl), nameof(SolutionManager_ProjectRenamed));
             }
         }
 
@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => RefreshProjectAfterActionAsync(timeSpan, e))
-                        .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SolutionManager_ActionsExecuted)));
+                        .PostOnFailure(nameof(PackageManagerControl), nameof(SolutionManager_ActionsExecuted));
                 }
             }
             else
@@ -306,7 +306,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory
                         .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e.Arg))
-                        .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SolutionManager_CacheUpdated)));
+                        .PostOnFailure(nameof(PackageManagerControl), nameof(SolutionManager_CacheUpdated));
                 }
             }
             else
@@ -489,7 +489,7 @@ namespace NuGet.PackageManagement.UI
             ResetTabDataLoadFlags();
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => Sources_PackageSourcesChangedAsync(timeSpan))
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(Sources_PackageSourcesChanged)));
+                .PostOnFailure(nameof(PackageManagerControl), nameof(Sources_PackageSourcesChanged));
         }
 
         private async Task Sources_PackageSourcesChangedAsync(TimeSpan timeSpan)
@@ -1169,7 +1169,7 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SourceRepoList_SelectionChangedAsync(timeSpan))
-                    .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged)));
+                    .PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
             }
         }
 

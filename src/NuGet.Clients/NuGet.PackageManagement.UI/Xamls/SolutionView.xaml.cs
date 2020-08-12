@@ -160,13 +160,13 @@ namespace NuGet.PackageManagement.UI
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CheckBoxSelectProjectsAsync(select: true))
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(SolutionView), nameof(CheckBox_Checked)));
+                .PostOnFailure(nameof(SolutionView), nameof(CheckBox_Checked));
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CheckBoxSelectProjectsAsync(select: false))
-                  .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(SolutionView), nameof(CheckBox_Unchecked)));
+                  .PostOnFailure(nameof(SolutionView), nameof(CheckBox_Unchecked));
         }
 
         private async Task CheckBoxSelectProjectsAsync(bool select)
@@ -177,7 +177,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // adjust the width of the "project" column so that it takes 
+            // adjust the width of the "project" column so that it takes
             // up all remaining width.
             var gridView = (GridView)_projectList.View;
             var width = _projectList.ActualWidth - 2 * SystemParameters.VerticalScrollBarWidth;

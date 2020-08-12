@@ -259,13 +259,13 @@ namespace NuGet.PackageManagement.UI
         private void SolutionProjectChanged(object sender, NuGetProjectEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateProjectListsAsync(serviceBroker: null, CancellationToken.None))
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageSolutionDetailControlModel), nameof(SolutionProjectChanged)));
+                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(SolutionProjectChanged));
         }
 
         protected override void DependencyBehavior_SelectedChanged(object sender, EventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAndUpdateInstallUninstallAsync())
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageSolutionDetailControlModel), nameof(DependencyBehavior_SelectedChanged)));
+                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(DependencyBehavior_SelectedChanged));
         }
 
         public override void CleanUp()
@@ -377,7 +377,7 @@ namespace NuGet.PackageManagement.UI
             UpdateSelectCheckBoxState();
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAndUpdateInstallUninstallAsync())
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageSolutionDetailControlModel), nameof(Project_SelectedChanged)));
+                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(Project_SelectedChanged));
         }
 
         private async Task CreateVersionsAndUpdateInstallUninstallAsync()
