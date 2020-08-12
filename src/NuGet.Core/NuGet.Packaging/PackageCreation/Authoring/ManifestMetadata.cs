@@ -350,7 +350,7 @@ namespace NuGet.Packaging
                 yield return NuGetResources.IconMissingRequiredValue;
             }
 
-            if (string.IsNullOrWhiteSpace(Readme))
+            if (Readme == string.Empty)
             {
                 yield return NuGetResources.ReadmeMissingRequiredValue;
             }
