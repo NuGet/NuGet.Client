@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Core.FuncTests", "NuG
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DE23D071-162F-47A3-BC68-42E4A354835C}"
 	ProjectSection(SolutionItems) = preProject
+		build\Shared\EncodingUtility.cs = build\Shared\EncodingUtility.cs
 		build\Shared\EqualityUtility.cs = build\Shared\EqualityUtility.cs
 		build\Shared\HashCodeCombiner.cs = build\Shared\HashCodeCombiner.cs
 		build\Shared\TypeExtensions.cs = build\Shared\TypeExtensions.cs
@@ -233,7 +234,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.OnlineEn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Internal.Contracts", "src\NuGet.Clients\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj", "{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Contracts", "src\NuGet.Clients\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj", "{6AF72BEE-70F0-48B2-BD63-0E80D9747342}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Contracts", "src\NuGet.Clients\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj", "{6AF72BEE-70F0-48B2-BD63-0E80D9747342}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Shared;
 
 namespace NuGet.Common
 {
@@ -261,33 +262,7 @@ namespace NuGet.Common
 
                 var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(normalizedPath));
 
-                return ToHex(hash, HashLength);
-            }
-        }
-
-        private static string ToHex(byte[] bytes, int length)
-        {
-            char[] c = new char[length * 2];
-
-            for (int index = 0, outIndex = 0; index < length; index++)
-            {
-                c[outIndex++] = ToHexChar(bytes[index] >> 4);
-                c[outIndex++] = ToHexChar(bytes[index] & 0x0f);
-            }
-
-            return new string(c);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static char ToHexChar(int input)
-        {
-            if (input > 9)
-            {
-                return (char)(input + 0x57);
-            }
-            else
-            {
-                return (char)(input + 0x30);
+                return EncodingUtility.ToHex(hash, HashLength);
             }
         }
     }

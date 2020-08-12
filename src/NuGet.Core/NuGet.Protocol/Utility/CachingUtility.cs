@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Shared;
 
 namespace NuGet.Protocol
 {
@@ -30,7 +31,7 @@ namespace NuGet.Protocol
                 hash = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
             }
 
-            return ToHex(hash, HashLength);
+            return addIdentifiableCharacters ? "$" + trailing : string.Empty + EncodingUtility.ToHex(hash, HashLength);
         }
 
         public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)
@@ -98,31 +99,6 @@ namespace NuGet.Protocol
                 .Replace("__", "_")
                 .Replace("__", "_");
 #endif
-        }
- 
-        private static string ToHex(byte[] bytes, int length)
-        {
-            char[] c = new char[length * 2];
-
-            for (int index = 0, outIndex = 0; index < length; index++)
-            {
-                c[outIndex++] = ToHexChar(bytes[index] >> 4);
-                c[outIndex++] = ToHexChar(bytes[index] & 0x0f);
-            }
-
-            return new string(c);
-        }
-
-        private static char ToHexChar(int input)
-        {
-            if (input > 9)
-            {
-                return (char)(input + 0x57);
-            }
-            else
-            {
-                return (char)(input + 0x30);
-            }
         }
     }
 }
