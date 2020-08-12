@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement.UI
         protected virtual void DependencyBehavior_SelectedChanged(object sender, EventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAsync(CancellationToken.None))
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(DetailControlModel), nameof(DependencyBehavior_SelectedChanged)));
+                .PostOnFailure(nameof(DetailControlModel), nameof(DependencyBehavior_SelectedChanged));
         }
 
         protected virtual void OnCurrentPackageChanged()
