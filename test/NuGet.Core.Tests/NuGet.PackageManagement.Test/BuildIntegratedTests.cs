@@ -1891,7 +1891,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2067,7 +2067,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2255,7 +2255,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2447,7 +2447,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2639,7 +2639,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -2831,7 +2831,7 @@ namespace NuGet.Test
                         deleteOnRestartManager);
 
                     var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
 
                     var configs = new List<string>();
                     var lockFiles = new List<string>();
@@ -3046,7 +3046,7 @@ namespace NuGet.Test
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
                         // We need to treat NU1065 warning as error.
-                        buildIntegratedProject.IsNu1065Error = true;
+                        buildIntegratedProject.IsNu1605Error = true;
 
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
@@ -3235,7 +3235,7 @@ namespace NuGet.Test
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
                         // We need to treat NU1065 warning as error.
-                        buildIntegratedProject.IsNu1065Error = true;
+                        buildIntegratedProject.IsNu1605Error = true;
 
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
@@ -3424,7 +3424,7 @@ namespace NuGet.Test
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
                         // We need to treat NU1065 warning as error.
-                        buildIntegratedProject.IsNu1065Error = true;
+                        buildIntegratedProject.IsNu1605Error = true;
 
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
@@ -3606,7 +3606,7 @@ namespace NuGet.Test
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
                         // We need to treat NU1065 warning as error.
-                        buildIntegratedProject.IsNu1065Error = true;
+                        buildIntegratedProject.IsNu1605Error = true;
 
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
@@ -3774,7 +3774,7 @@ namespace NuGet.Test
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
                         // We need to treat NU1065 warning as error.
-                        buildIntegratedProject.IsNu1065Error = true;
+                        buildIntegratedProject.IsNu1605Error = true;
 
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
@@ -3997,7 +3997,7 @@ namespace NuGet.Test
 
             public bool IsCacheEnabled { get; set; }
 
-            public bool IsNu1065Error { get; set; }
+            public bool IsNu1605Error { get; set; }
 
             public HashSet<PackageSource> ProjectLocalSources { get; set; } = new HashSet<PackageSource>();
 
@@ -4033,7 +4033,7 @@ namespace NuGet.Test
 
                 var packageSpecs = await base.GetPackageSpecsAsync(context);
 
-                if (IsNu1065Error)
+                if (IsNu1605Error)
                 {
                     foreach (var packageSpec in packageSpecs)
                     {
