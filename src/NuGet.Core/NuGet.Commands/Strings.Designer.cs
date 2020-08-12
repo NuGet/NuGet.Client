@@ -268,6 +268,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The PackageReference items {0} do not have corresponding PackageVersions..
+        /// </summary>
+        internal static string Error_CentralPackageVersions_MissingPackageVersion {
+            get {
+                return ResourceManager.GetString("Error_CentralPackageVersions_MissingPackageVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}..
         /// </summary>
         internal static string Error_CentralPackageVersions_VersionsNotAllowed {

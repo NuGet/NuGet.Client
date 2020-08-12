@@ -420,6 +420,13 @@ namespace NuGet.Commands
 
                 return false;
             }
+            IEnumerable<LibraryDependency> packageReferencedDependenciesWithoutCentralVersionDefined = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d=>d.LibraryRange.VersionRange == null));
+            if (packageReferencedDependenciesWithoutCentralVersionDefined.Any())
+            {
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1010, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_MissingPackageVersion, string.Join(";", packageReferencedDependenciesWithoutCentralVersionDefined.Select(d => d.Name)))));
+
+                return false;
+            }
 
             return true;
         }
