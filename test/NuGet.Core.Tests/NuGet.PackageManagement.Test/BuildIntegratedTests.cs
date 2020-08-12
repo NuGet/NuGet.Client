@@ -2847,7 +2847,7 @@ namespace NuGet.Test
             var packageIdentity2 = packageB_Version200.Identity;
             var packageIdentity2_DowngradeVersion = packageB_Version100.Identity;
 
-        //    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            
             var projectDirectories = new List<TestDirectory>();
 
             // Set up Package Source
@@ -2858,7 +2858,6 @@ namespace NuGet.Test
                 new SourcePackageDependencyInfo(packageIdentity2_DowngradeVersion.Id, packageIdentity2_DowngradeVersion.Version, new Packaging.Core.PackageDependency[] { }, true, null),
             };
 
-            
             //var projectDirectories = new List<TestDirectory>();
 
             try
@@ -2885,7 +2884,8 @@ namespace NuGet.Test
                     project1.Create();
                     sources.Add(new PackageSource(pathContext.PackageSource));
 
-                    var sourceRepositoryProvider = CreateSource(packages, sources);
+                    //var sourceRepositoryProvider = CreateSource(packages, sources);
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
 
                     File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
@@ -2931,6 +2931,7 @@ namespace NuGet.Test
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
 
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
                     }
 
                     // Link projects
@@ -3739,6 +3740,8 @@ namespace NuGet.Test
 
             public bool IsNu1065Error { get; set; }
 
+            public HashSet<PackageSource> ProjectLocalSources { get; set; } = new HashSet<PackageSource>();
+
             public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
 
             public IProjectSystemCapabilities Capabilities => throw new NotImplementedException();
@@ -3793,6 +3796,8 @@ namespace NuGet.Test
                             noWarn.Remove(NuGetLogCode.NU1605);
 
                             packageSpec.RestoreMetadata.ProjectWideWarningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors);
+
+                            packageSpec?.RestoreMetadata.Sources.AddRange(new List<PackageSource>(ProjectLocalSources));
                         }
                     }
                 }
