@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +26,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
 using static NuGet.Test.TestHelpers;
@@ -1853,15 +1855,34 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_InstallPackageForAllProjects()
         {
             // Arrange
-            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var sources = new List<PackageSource>();          
             var projectDirectories = new List<TestDirectory>();
 
             try
             {
                 using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -1901,6 +1922,7 @@ namespace NuGet.Test
                         lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+
                     }
 
                     // Link projects
@@ -1955,9 +1977,9 @@ namespace NuGet.Test
 
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-                        buildIntegratedProjects,
-                        packageIdentity,
-                        testNuGetProjectContext,
+						buildIntegratedProjects,
+                        packageB,
+                        new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
 
@@ -1973,22 +1995,23 @@ namespace NuGet.Test
                     // Assert
                     var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
                     
-                    Assert.Equal(actions.Count(), 4);
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
 
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should no error or warning.
+                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
 
+                    // Make sure all 4 project installed packageB
                     foreach (var buildIntegratedProject in buildIntegratedProjects)
                     {
                         var finalInstalledPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageIdentity.Id
-                        && f.PackageIdentity.Version == packageIdentity.Version));
+                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                        && f.PackageIdentity.Version == packageB.Version));
                     }
-
+                    
                     var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
                     var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageIdentity.Id, packageIdentity.Version);
+                    Expected(expected, packageB.Id, packageB.Version);
                     Assert.True(Compare(resulting, expected));
                 }
             }
@@ -2005,17 +2028,37 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageForAllProjects()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.4.3"));
-            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.5.0"));
-            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.6.0"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var sources = new List<PackageSource>();          
             var projectDirectories = new List<TestDirectory>();
 
             try
             {
                 using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100,
+                        packageB_Version200
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -2110,17 +2153,19 @@ namespace NuGet.Test
 
                     for (int i = 0; i < 4; i++)
                     {
-                        // Install both packageIdentity1 and packageIdentity2
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity1, new ResolutionContext(), new TestNuGetProjectContext(),
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
                     }
 
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-                        buildIntegratedProjects,
-                        packageIdentity2_UpgradeVersion,
+						buildIntegratedProjects,
+                        packageB_UpgradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2135,26 +2180,27 @@ namespace NuGet.Test
                         CancellationToken.None);
 
                     // Assert
-
                     var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-
-                    Assert.Equal(actions.Count(), 4);
+                    
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
 
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should no error or warning.
+                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
 
+                    // Make sure all 4 project installed packageB_UpgradeVersion after upgrade from packageB.
                     foreach (var buildIntegratedProject in buildIntegratedProjects)
                     {
                         var finalInstalledPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageIdentity2_UpgradeVersion.Id
-                        && f.PackageIdentity.Version == packageIdentity2_UpgradeVersion.Version));
+                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                        && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
                     }
-
+                    
                     var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
                     var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageIdentity2_UpgradeVersion.Id, packageIdentity2_UpgradeVersion.Version);
+                    Expected(expected, packageB_UpgradeVersion.Id, packageB_UpgradeVersion.Version);
                     Assert.True(Compare(resulting, expected));
+                    Assert.Equal(initialInstalledPackages.Count(), 2);
                 }
             }
             finally
@@ -2170,17 +2216,37 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_OnlyTopParentProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.4.3"));
-            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.5.0"));
-            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.6.0"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var sources = new List<PackageSource>();          
             var projectDirectories = new List<TestDirectory>();
 
             try
             {
                 using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100,
+                        packageB_Version200
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -2261,7 +2327,6 @@ namespace NuGet.Test
 
                     var normalReference = new TestExternalProjectReference(normalProject);
 
-                    //buildIntegratedProjects[0].ProjectReferences.Add(reference0);
                     buildIntegratedProjects[0].ProjectReferences.Add(reference1);
                     buildIntegratedProjects[0].ProjectReferences.Add(reference2);
                     buildIntegratedProjects[0].ProjectReferences.Add(reference3);
@@ -2276,20 +2341,24 @@ namespace NuGet.Test
 
                     for (int i = 0; i < 4; i++)
                     {
-                        // Install both packageIdentity1 and packageIdentity2
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity1, new ResolutionContext(), new TestNuGetProjectContext(),
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
                     }
 
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                    var targetProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>()
+                    {
+                        buildIntegratedProjects[0] // Top parent is only upgraded.
+                    };
+
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-                        new List<TestProjectJsonBuildIntegratedNuGetProject>()
-                        {
-                            buildIntegratedProjects[0] // Top parent is only upgraded.
-                        },
-                        packageIdentity2_UpgradeVersion,
+						targetProjects,
+                        packageB_UpgradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2297,7 +2366,7 @@ namespace NuGet.Test
                     var actions = results.Select(a => a.Action).ToArray();
 
                     await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        buildIntegratedProjects,
+                        targetProjects,
                         actions,
                         testNuGetProjectContext,
                         new SourceCacheContext(),
@@ -2305,24 +2374,25 @@ namespace NuGet.Test
 
                     // Assert
                     var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-
-                    Assert.Equal(actions.Count(), 1);
+                    
+                    Assert.Equal(actions.Count(), targetProjects.Count);
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
 
-                    // Upgrade succeed for this child project, but whole solution might not build depending on other projects after this.
+                    // Upgrade succeed for this top parent(no parent and with childs) project, but whole solution might not build depending on other projects after this.
                     // Upgrade/downgrade of individual project works was existing behavior and making sure that my change is not breaking it.
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
 
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should no error or warning.
+                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
 
                     var finalInstalledPackages = await buildIntegratedProjects[0].GetInstalledPackagesAsync(CancellationToken.None);
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageIdentity2_UpgradeVersion.Id
-                    && f.PackageIdentity.Version == packageIdentity2_UpgradeVersion.Version));
+                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                    && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
 
                     var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
                     var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageIdentity2_UpgradeVersion.Id, packageIdentity2_UpgradeVersion.Version);
+                    Expected(expected, packageB_UpgradeVersion.Id, packageB_UpgradeVersion.Version);
                     Assert.True(Compare(resulting, expected));
+                    Assert.Equal(initialInstalledPackages.Count(), 2);
                 }
             }
             finally
@@ -2338,17 +2408,37 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_OnlyOneMiddleProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.4.3"));
-            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.5.0"));
-            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.6.0"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var sources = new List<PackageSource>();          
             var projectDirectories = new List<TestDirectory>();
 
             try
             {
                 using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100,
+                        packageB_Version200
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -2443,12 +2533,14 @@ namespace NuGet.Test
 
                     for (int i = 0; i < 4; i++)
                     {
-                        // Install both packageIdentity1 and packageIdentity2
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity1, new ResolutionContext(), new TestNuGetProjectContext(),
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
                     }
+
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
 
                     var targetProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>()
                     {
@@ -2457,8 +2549,8 @@ namespace NuGet.Test
 
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-                        targetProjects,
-                        packageIdentity2_UpgradeVersion,
+						targetProjects,
+                        packageB_UpgradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2480,18 +2572,19 @@ namespace NuGet.Test
 
                     // Upgrade succeed for this middle(with parent and child) project, but whole solution might not build depending on other projects after this.
                     // Upgrade/downgrade of individual project works was existing behavior and making sure that my change is not breaking it.
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success)); 
+                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
 
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should no error or warning.
+                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
 
                     var finalInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageIdentity2_UpgradeVersion.Id
-                    && f.PackageIdentity.Version == packageIdentity2_UpgradeVersion.Version));
+                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                    && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
 
                     var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
                     var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageIdentity2_UpgradeVersion.Id, packageIdentity2_UpgradeVersion.Version);
+                    Expected(expected, packageB_UpgradeVersion.Id, packageB_UpgradeVersion.Version);
                     Assert.True(Compare(resulting, expected));
+                    Assert.Equal(initialInstalledPackages.Count(), 2);
                 }
             }
             finally
@@ -2507,17 +2600,37 @@ namespace NuGet.Test
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_OnlyBottomChildProject()
         {
             // Arrange
-            var packageIdentity1 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("4.4.3"));
-            var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.5.0"));
-            var packageIdentity2_UpgradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("4.6.0"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var sources = new List<PackageSource>();          
             var projectDirectories = new List<TestDirectory>();
 
             try
             {
                 using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100,
+                        packageB_Version200
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -2612,20 +2725,211 @@ namespace NuGet.Test
 
                     for (int i = 0; i < 4; i++)
                     {
-                        // Install both packageIdentity1 and packageIdentity2
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity1, new ResolutionContext(), new TestNuGetProjectContext(),
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
                     }
 
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                    var targetProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>()
+                    {
+                        buildIntegratedProjects[3] // Bottom child project.
+                    };
+
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-                        new List<TestProjectJsonBuildIntegratedNuGetProject>()
+                        targetProjects,
+                        packageB_UpgradeVersion,
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+
+                    var actions = results.Select(a => a.Action).ToArray();
+
+                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                        targetProjects,
+                        actions,
+                        testNuGetProjectContext,
+                        new SourceCacheContext(),
+                        CancellationToken.None);
+
+                    // Assert
+                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>();
+
+                    Assert.Equal(actions.Count(), targetProjects.Count());
+                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+
+                    // Upgrade succeed for this bottom child project, but whole solution might not build depending on other projects after this.
+                    // Upgrade/downgrade of individual project works was existing behavior and making sure that my change is not breaking it.
+                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+
+                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
+
+                    var finalInstalledPackages = await buildIntegratedProjects[3].GetInstalledPackagesAsync(CancellationToken.None);
+                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                    && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
+
+                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
+                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
+                    Expected(expected, packageB_UpgradeVersion.Id, packageB_UpgradeVersion.Version);
+                    Assert.True(Compare(resulting, expected));
+                    Assert.Equal(initialInstalledPackages.Count(), 2);
+                }
+            }
+            finally
+            {
+                foreach (TestDirectory projectDirectory in projectDirectories)
+                {
+                    projectDirectory.Dispose();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageForAllProjects()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();          
+            var projectDirectories = new List<TestDirectory>();
+
+            try
+            {
+                using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100,
+                        packageB_Version200
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        NullSettings.Instance,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var projectTargetFramework = NuGetFramework.Parse("netcore50");
+
+                    var configs = new List<string>();
+                    var lockFiles = new List<string>();
+                    var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
+
+                    // Create projects
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var directory = TestDirectory.Create();
+                        projectDirectories.Add(directory);
+
+                        var config = Path.Combine(directory, "project.json");
+
+                        configs.Add(config);
+
+                        GetBasicConfig(config);
+
+                        var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                            projectTargetFramework,
+                            testNuGetProjectContext,
+                            directory,
+                            $"testProjectName{i}");
+
+                        var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
+
+                        buildIntegratedProjects.Add(buildIntegratedProject);
+
+                        lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
+
+                        testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+
+                    }
+
+                    // Link projects
+                    var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
+                    var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+                    var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+                    var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
+
+                    var myProjDirectory = TestDirectory.Create();
+                    projectDirectories.Add(myProjDirectory);
+
+                    var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
+
+                    var normalProject = new TestNonBuildIntegratedNuGetProject()
+                    {
+                        MSBuildProjectPath = myProjPath,
+                        PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
                         {
-                            buildIntegratedProjects[3] // Bottom child is only upgraded.
-                        },
-                        packageIdentity2_UpgradeVersion,
+                            new TargetFrameworkInformation()
+                            {
+                                FrameworkName = projectTargetFramework,
+                            }
+                        })
+                        {
+                            RestoreMetadata = new ProjectRestoreMetadata()
+                            {
+                                ProjectName = myProjPath,
+                                ProjectUniqueName = myProjPath,
+                                ProjectStyle = ProjectStyle.Unknown,
+                                ProjectPath = myProjPath
+                            },
+                            Name = myProjPath,
+                            FilePath = myProjPath
+                        }
+                    };
+
+                    testSolutionManager.NuGetProjects.Add(normalProject);
+
+                    var normalReference = new TestExternalProjectReference(normalProject);
+
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference1);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[2].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
+                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                    }
+
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                    // Act
+                    var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+						buildIntegratedProjects,
+                        packageB_DowngradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2640,25 +2944,27 @@ namespace NuGet.Test
                         CancellationToken.None);
 
                     // Assert
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>();
-
-                    Assert.Equal(actions.Count(), 1);
+                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                    
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
 
-                    // Upgrade succeed for this bottom child project, but whole solution might not build depending on other projects after this.
-                    // Upgrade/downgrade of individual project works was existing behavior and making sure that my change is not breaking it.
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
 
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should no error or warning.
+                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
 
-                    var finalInstalledPackages = await buildIntegratedProjects[3].GetInstalledPackagesAsync(CancellationToken.None);
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageIdentity2_UpgradeVersion.Id
-                    && f.PackageIdentity.Version == packageIdentity2_UpgradeVersion.Version));
-
+                    // Make sure all 4 project installed packageB_DowngradeVersion after downgrade from packageB.
+                    foreach (var buildIntegratedProject in buildIntegratedProjects)
+                    {
+                        var finalInstalledPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_DowngradeVersion.Id
+                        && f.PackageIdentity.Version == packageB_DowngradeVersion.Version));
+                    }
+                    
                     var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
                     var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageIdentity2_UpgradeVersion.Id, packageIdentity2_UpgradeVersion.Version);
+                    Expected(expected, packageB_DowngradeVersion.Id, packageB_DowngradeVersion.Version);
                     Assert.True(Compare(resulting, expected));
+                    Assert.Equal(initialInstalledPackages.Count(), 2);
                 }
             }
             finally
@@ -2670,195 +2976,12 @@ namespace NuGet.Test
             }
         }
 
-        //[Fact]
-        //public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageForAllProjects()
-        //{
-        //    // Arrange
-        //    var packageIdentity1 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("3.3.0"));
-        //    var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
-        //    var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-        //    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-        //    var projectDirectories = new List<TestDirectory>();
-
-        //    try
-        //    {
-        //        using (var settingsDirectory = TestDirectory.Create())
-        //        using (var testSolutionManager = new TestSolutionManager())
-        //        {
-        //            var deleteOnRestartManager = new TestDeleteOnRestartManager();
-        //            var nuGetPackageManager = new NuGetPackageManager(
-        //                sourceRepositoryProvider,
-        //                NullSettings.Instance,
-        //                testSolutionManager,
-        //                deleteOnRestartManager);
-
-        //            var testNuGetProjectContext = new TestNuGetProjectContext();
-        //            var projectTargetFramework = NuGetFramework.Parse("netcore50");
-
-        //            var configs = new List<string>();
-        //            var lockFiles = new List<string>();
-        //            var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
-
-        //            // Create projects
-        //            for (var i = 0; i < 4; i++)
-        //            {
-        //                var directory = TestDirectory.Create();
-        //                projectDirectories.Add(directory);
-
-        //                var config = Path.Combine(directory, "project.json");
-
-        //                configs.Add(config);
-
-        //                GetBasicConfig(config);
-
-        //                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-        //                    projectTargetFramework,
-        //                    testNuGetProjectContext,
-        //                    directory,
-        //                    $"testProjectName{i}");
-
-        //                var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
-
-        //                buildIntegratedProjects.Add(buildIntegratedProject);
-
-        //                lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
-
-        //                testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
-
-        //            }
-
-        //            // Link projects
-        //            var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
-        //            var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
-        //            var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
-        //            var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
-
-        //            var myProjDirectory = TestDirectory.Create();
-        //            projectDirectories.Add(myProjDirectory);
-
-        //            var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
-
-        //            var normalProject = new TestNonBuildIntegratedNuGetProject()
-        //            {
-        //                MSBuildProjectPath = myProjPath,
-        //                PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
-        //                {
-        //                    new TargetFrameworkInformation()
-        //                    {
-        //                        FrameworkName = projectTargetFramework,
-        //                    }
-        //                })
-        //                {
-        //                    RestoreMetadata = new ProjectRestoreMetadata()
-        //                    {
-        //                        ProjectName = myProjPath,
-        //                        ProjectUniqueName = myProjPath,
-        //                        ProjectStyle = ProjectStyle.Unknown,
-        //                        ProjectPath = myProjPath
-        //                    },
-        //                    Name = myProjPath,
-        //                    FilePath = myProjPath
-        //                }
-        //            };
-
-        //            testSolutionManager.NuGetProjects.Add(normalProject);
-
-        //            var normalReference = new TestExternalProjectReference(normalProject);
-
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference1);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference2);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
-
-        //            buildIntegratedProjects[1].ProjectReferences.Add(reference2);
-        //            buildIntegratedProjects[1].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
-
-        //            buildIntegratedProjects[2].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
-
-        //            for (int i = 0; i < 4; i++)
-        //            {
-        //                // Install both packageIdentity1 and packageIdentity2
-        //                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity1, new ResolutionContext(), new TestNuGetProjectContext(),
-        //                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-        //                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
-        //                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-        //            }
-
-        //            // Act
-        //            var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-        //                buildIntegratedProjects,
-        //                packageIdentity2_DowngradeVersion,
-        //                new TestNuGetProjectContext(),
-        //                sourceRepositoryProvider.GetRepositories(),
-        //                CancellationToken.None);
-
-        //            // Assert
-        //            var actions = results.Select(a => a.Action).ToArray();
-        //            var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>();
-
-        //            Assert.Equal(actions.Count(), 4);
-        //            Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-        //            Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-
-        //            var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-        //            var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-        //            Expected(expected, packageIdentity2_DowngradeVersion.Id, packageIdentity2_DowngradeVersion.Version);
-        //            Assert.True(Compare(resulting, expected));
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        foreach (TestDirectory projectDirectory in projectDirectories)
-        //        {
-        //            projectDirectory.Dispose();
-        //        }
-        //    }
-        //}
-
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_OnlyTopParentProject_ShouldFail()
         {
             // Arrange
-           var sources = new List<PackageSource>();
-
-            var project1Json = @"
-            {
-              ""frameworks"": {
-                ""netstandard1.5"": {
-                    ""dependencies"": {
-                        ""packageA"": ""1.0.0""
-                    }
-                }
-              },
-              ""runtimes"": {
-                ""win7-x64"": {}
-              }
-            }";
-
-            var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-            var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-            var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-
-                    //packageB_Version200.PackageName
-
-            var packageIdentity1 = packageA_Version100.Identity;
-            var packageIdentity2 = packageB_Version200.Identity;
-            var packageIdentity2_DowngradeVersion = packageB_Version100.Identity;
-
-            
+            var sources = new List<PackageSource>();          
             var projectDirectories = new List<TestDirectory>();
-
-            // Set up Package Source
-            var packages = new List<SourcePackageDependencyInfo>
-            {
-                new SourcePackageDependencyInfo(packageIdentity1.Id, packageIdentity1.Version, new Packaging.Core.PackageDependency[] { }, true, null),
-                new SourcePackageDependencyInfo(packageIdentity2.Id, packageIdentity2.Version, new Packaging.Core.PackageDependency[] { }, true, null),
-                new SourcePackageDependencyInfo(packageIdentity2_DowngradeVersion.Id, packageIdentity2_DowngradeVersion.Version, new Packaging.Core.PackageDependency[] { }, true, null),
-            };
-
-            //var projectDirectories = new List<TestDirectory>();
 
             try
             {
@@ -2867,6 +2990,14 @@ namespace NuGet.Test
                 using (var testSolutionManager = new TestSolutionManager())
                 {
 
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
 
                     await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                         pathContext.PackageSource,
@@ -2876,18 +3007,9 @@ namespace NuGet.Test
                         packageB_Version200
                         );
 
-                    var packagesDir = new DirectoryInfo(Path.Combine(settingsDirectory, "globalPackages"));
-                    var packageSource = new DirectoryInfo(Path.Combine(settingsDirectory, "packageSource"));
-                    var project1 = new DirectoryInfo(Path.Combine(settingsDirectory, "projects", "project1"));
-                    packagesDir.Create();
-                    packageSource.Create();
-                    project1.Create();
                     sources.Add(new PackageSource(pathContext.PackageSource));
 
-                    //var sourceRepositoryProvider = CreateSource(packages, sources);
                     var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
-
-                    File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
@@ -2913,7 +3035,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        GetBasicConfig(config, "net46", sources: pathContext.PackageSource);
+                        GetBasicConfig(config, "net46");
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -2923,6 +3045,7 @@ namespace NuGet.Test
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
+                        // We need to treat NU1065 warning as error.
                         buildIntegratedProject.IsNu1065Error = true;
 
                         buildIntegratedProjects.Add(buildIntegratedProject);
@@ -2931,6 +3054,7 @@ namespace NuGet.Test
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
 
+                        //Let new project pickup my custom package source.
                         buildIntegratedProject.ProjectLocalSources.AddRange(sources);
                     }
 
@@ -2984,26 +3108,26 @@ namespace NuGet.Test
                     buildIntegratedProjects[2].ProjectReferences.Add(reference3);
                     buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
 
-                    var aa = await buildIntegratedProjects[0].GetInstalledPackagesAsync(CancellationToken.None);
-
                     for (int i = 0; i < 4; i++)
                     {
-                        // Install both packageIdentity1 and packageIdentity2
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity1, new ResolutionContext(), new TestNuGetProjectContext(),
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
                                 sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
                     }
 
-                    var bb = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                    var targetProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>()
+                    {
+                        buildIntegratedProjects[0] // Top parent project.
+                    };
 
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-                        new List<TestProjectJsonBuildIntegratedNuGetProject>
-                        {
-                            buildIntegratedProjects[0] // Only top parent project
-                        },
-                        packageIdentity2_DowngradeVersion,
+                        targetProjects,
+                        packageB_DowngradeVersion,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -3012,26 +3136,25 @@ namespace NuGet.Test
                     var actions = results.Select(a => a.Action).ToArray();
                     var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
 
-                    Assert.Equal(actions.Count(), 1);
+                    Assert.Equal(actions.Count(), targetProjects .Count());
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
 
-                    // Downgrade fails for this top parent project(no parent but with child).
+                    // Downgrade fails for this top parent project(no parent but with childs).
                     // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
                     Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
 
                     // Should cause total 3 NU1605 for all childs.
                     Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code == NuGetLogCode.NU1605)), 3);
 
+                    // There should be no warning other than NU1605.
+                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code != NuGetLogCode.NU1605)), 0);
+
                     var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
                     var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageIdentity2_DowngradeVersion.Id, packageIdentity2_DowngradeVersion.Version);
+                    Expected(expected, packageB_DowngradeVersion.Id, packageB_DowngradeVersion.Version);
                     Assert.True(Compare(resulting, expected));
+                    Assert.Equal(initialInstalledPackages.Count(), 2);
                 }
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
             }
             finally
             {
@@ -3042,578 +3165,722 @@ namespace NuGet.Test
             }
         }
 
-        //[Fact]
-        //public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_OnlyOneMiddleProject_ShouldFail()
-        //{
-        //    // Arrange
-        //    var packageIdentity1 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("3.3.0"));
-        //    var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
-        //    var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-        //    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-        //    var projectDirectories = new List<TestDirectory>();
-
-        //    try
-        //    {
-        //        using (var settingsDirectory = TestDirectory.Create())
-        //        using (var testSolutionManager = new TestSolutionManager())
-        //        {
-        //            var deleteOnRestartManager = new TestDeleteOnRestartManager();
-        //            var nuGetPackageManager = new NuGetPackageManager(
-        //                sourceRepositoryProvider,
-        //                NullSettings.Instance,
-        //                testSolutionManager,
-        //                deleteOnRestartManager);
-
-        //            var testNuGetProjectContext = new TestNuGetProjectContext();
-        //            var projectTargetFramework = NuGetFramework.Parse("netcore50");
-
-        //            var configs = new List<string>();
-        //            var lockFiles = new List<string>();
-        //            var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
-
-        //            // Create projects
-        //            for (var i = 0; i < 4; i++)
-        //            {
-        //                var directory = TestDirectory.Create();
-        //                projectDirectories.Add(directory);
-
-        //                var config = Path.Combine(directory, "project.json");
-
-        //                configs.Add(config);
-
-        //                GetBasicConfig(config);
-
-        //                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-        //                    projectTargetFramework,
-        //                    testNuGetProjectContext,
-        //                    directory,
-        //                    $"testProjectName{i}");
-
-        //                var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
-
-        //                buildIntegratedProjects.Add(buildIntegratedProject);
-
-        //                lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
-
-        //                testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
-
-        //            }
-
-        //            // Link projects
-        //            var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
-        //            var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
-        //            var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
-        //            var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
-
-        //            var myProjDirectory = TestDirectory.Create();
-        //            projectDirectories.Add(myProjDirectory);
-
-        //            var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
-
-        //            var normalProject = new TestNonBuildIntegratedNuGetProject()
-        //            {
-        //                MSBuildProjectPath = myProjPath,
-        //                PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
-        //                {
-        //                    new TargetFrameworkInformation()
-        //                    {
-        //                        FrameworkName = projectTargetFramework,
-        //                    }
-        //                })
-        //                {
-        //                    RestoreMetadata = new ProjectRestoreMetadata()
-        //                    {
-        //                        ProjectName = myProjPath,
-        //                        ProjectUniqueName = myProjPath,
-        //                        ProjectStyle = ProjectStyle.Unknown,
-        //                        ProjectPath = myProjPath
-        //                    },
-        //                    Name = myProjPath,
-        //                    FilePath = myProjPath
-        //                }
-        //            };
-
-        //            testSolutionManager.NuGetProjects.Add(normalProject);
-
-        //            var normalReference = new TestExternalProjectReference(normalProject);
-
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference1);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference2);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
-
-        //            buildIntegratedProjects[1].ProjectReferences.Add(reference2);
-        //            buildIntegratedProjects[1].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
-
-        //            buildIntegratedProjects[2].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
-
-        //            for (int i = 0; i < 4; i++)
-        //            {
-        //                // Install both packageIdentity1 and packageIdentity2
-        //                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity1, new ResolutionContext(), new TestNuGetProjectContext(),
-        //                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-        //                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
-        //                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-        //            }
-
-        //            // Act
-        //            var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-        //                new List<TestProjectJsonBuildIntegratedNuGetProject>
-        //                {
-        //                    buildIntegratedProjects[1] // A middle project with parent  and child projects
-        //                },
-        //                packageIdentity2_DowngradeVersion,
-        //                new TestNuGetProjectContext(),
-        //                sourceRepositoryProvider.GetRepositories(),
-        //                CancellationToken.None);
-
-        //            // Assert
-        //            var actions = results.Select(a => a.Action).ToArray();
-        //            var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>();
-
-        //            Assert.Equal(actions.Count(), 1);
-        //            Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-        //            // Downgrade fails for this middle project(with parent and child).
-        //            // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-        //            Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
-
-        //            var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-        //            var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-        //            Expected(expected, packageIdentity2_DowngradeVersion.Id, packageIdentity2_DowngradeVersion.Version);
-        //            Assert.True(Compare(resulting, expected));
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        foreach (TestDirectory projectDirectory in projectDirectories)
-        //        {
-        //            projectDirectory.Dispose();
-        //        }
-        //    }
-        //}
-
-        //[Fact]
-        //public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_OnlyBottomChildProject()
-        //{
-        //    // Arrange
-        //    var packageIdentity1 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("3.3.0"));
-        //    var packageIdentity2 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("3.3.0"));
-        //    var packageIdentity2_DowngradeVersion = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-        //    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-        //    var projectDirectories = new List<TestDirectory>();
-
-        //    try
-        //    {
-        //        using (var settingsDirectory = TestDirectory.Create())
-        //        using (var testSolutionManager = new TestSolutionManager())
-        //        {
-        //            var deleteOnRestartManager = new TestDeleteOnRestartManager();
-        //            var nuGetPackageManager = new NuGetPackageManager(
-        //                sourceRepositoryProvider,
-        //                NullSettings.Instance,
-        //                testSolutionManager,
-        //                deleteOnRestartManager);
-
-        //            var testNuGetProjectContext = new TestNuGetProjectContext();
-        //            var projectTargetFramework = NuGetFramework.Parse("netcore50");
-
-        //            var configs = new List<string>();
-        //            var lockFiles = new List<string>();
-        //            var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
-
-        //            // Create projects
-        //            for (var i = 0; i < 4; i++)
-        //            {
-        //                var directory = TestDirectory.Create();
-        //                projectDirectories.Add(directory);
-
-        //                var config = Path.Combine(directory, "project.json");
-
-        //                configs.Add(config);
-
-        //                GetBasicConfig(config);
-
-        //                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-        //                    projectTargetFramework,
-        //                    testNuGetProjectContext,
-        //                    directory,
-        //                    $"testProjectName{i}");
-
-        //                var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
-
-        //                buildIntegratedProjects.Add(buildIntegratedProject);
-
-        //                lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
-
-        //                testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
-
-        //            }
-
-        //            // Link projects
-        //            var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
-        //            var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
-        //            var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
-        //            var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
-
-        //            var myProjDirectory = TestDirectory.Create();
-        //            projectDirectories.Add(myProjDirectory);
-
-        //            var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
-
-        //            var normalProject = new TestNonBuildIntegratedNuGetProject()
-        //            {
-        //                MSBuildProjectPath = myProjPath,
-        //                PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
-        //                {
-        //                    new TargetFrameworkInformation()
-        //                    {
-        //                        FrameworkName = projectTargetFramework,
-        //                    }
-        //                })
-        //                {
-        //                    RestoreMetadata = new ProjectRestoreMetadata()
-        //                    {
-        //                        ProjectName = myProjPath,
-        //                        ProjectUniqueName = myProjPath,
-        //                        ProjectStyle = ProjectStyle.Unknown,
-        //                        ProjectPath = myProjPath
-        //                    },
-        //                    Name = myProjPath,
-        //                    FilePath = myProjPath
-        //                }
-        //            };
-
-        //            testSolutionManager.NuGetProjects.Add(normalProject);
-
-        //            var normalReference = new TestExternalProjectReference(normalProject);
-
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference1);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference2);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
-
-        //            buildIntegratedProjects[1].ProjectReferences.Add(reference2);
-        //            buildIntegratedProjects[1].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
-
-        //            buildIntegratedProjects[2].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
-
-        //            for (int i = 0; i < 4; i++)
-        //            {
-        //                // Install both packageIdentity1 and packageIdentity2
-        //                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity1, new ResolutionContext(), new TestNuGetProjectContext(),
-        //                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-        //                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
-        //                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-        //            }
-
-        //            // Act
-        //            var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-        //                new List<TestProjectJsonBuildIntegratedNuGetProject>
-        //                {
-        //                    buildIntegratedProjects[3] // Only bottom child project
-        //                },
-        //                packageIdentity2_DowngradeVersion,
-        //                new TestNuGetProjectContext(),
-        //                sourceRepositoryProvider.GetRepositories(),
-        //                CancellationToken.None);
-
-        //            // Assert
-        //            var actions = results.Select(a => a.Action).ToArray();
-        //            var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>();
-
-        //            Assert.Equal(actions.Count(), 1);
-        //            Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-        //            // Downgrade succeed for this bottom child project, but whole solution might not build depending on other projects after this.
-        //            // Upgrade/downgrade of individual project works was existing behavior and making sure that my change is not breaking it.
-        //            Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-
-        //            var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-        //            var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-        //            Expected(expected, packageIdentity2_DowngradeVersion.Id, packageIdentity2_DowngradeVersion.Version);
-        //            Assert.True(Compare(resulting, expected));
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        foreach (TestDirectory projectDirectory in projectDirectories)
-        //        {
-        //            projectDirectory.Dispose();
-        //        }
-        //    }
-        //}
-
-        //[Fact]
-        //public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_CancellationTokenPassed()
-        //{
-        //    // Arrange
-        //    var packageIdentity = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-        //    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-        //    var projectDirectories = new List<TestDirectory>();
-
-        //    try
-        //    {
-        //        using (var settingsDirectory = TestDirectory.Create())
-        //        using (var testSolutionManager = new TestSolutionManager())
-        //        {
-        //            var deleteOnRestartManager = new TestDeleteOnRestartManager();
-        //            var nuGetPackageManager = new NuGetPackageManager(
-        //                sourceRepositoryProvider,
-        //                NullSettings.Instance,
-        //                testSolutionManager,
-        //                deleteOnRestartManager);
-
-        //            var source = new CancellationTokenSource();
-        //            var token = source.Token;
-
-        //            var testNuGetProjectContext = new TestNuGetProjectContext();
-        //            var projectTargetFramework = NuGetFramework.Parse("netcore50");
-
-        //            var configs = new List<string>();
-        //            var lockFiles = new List<string>();
-        //            var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
-
-        //            // Create projects
-        //            for (var i = 0; i < 4; i++)
-        //            {
-        //                var directory = TestDirectory.Create();
-        //                projectDirectories.Add(directory);
-
-        //                var config = Path.Combine(directory, "project.json");
-
-        //                configs.Add(config);
-
-        //                GetBasicConfig(config);
-
-        //                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-        //                    projectTargetFramework,
-        //                    testNuGetProjectContext,
-        //                    directory,
-        //                    $"testProjectName{i}");
-
-        //                var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
-
-        //                buildIntegratedProjects.Add(buildIntegratedProject);
-
-        //                lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
-
-        //                testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
-        //            }
-
-        //            // Link projects
-        //            var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
-        //            var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
-        //            var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
-        //            var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
-
-        //            var myProjDirectory = TestDirectory.Create();
-        //            projectDirectories.Add(myProjDirectory);
-
-        //            var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
-
-        //            var normalProject = new TestNonBuildIntegratedNuGetProject()
-        //            {
-        //                MSBuildProjectPath = myProjPath,
-        //                PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
-        //                {
-        //                    new TargetFrameworkInformation()
-        //                    {
-        //                        FrameworkName = projectTargetFramework,
-        //                    }
-        //                })
-        //                {
-        //                    RestoreMetadata = new ProjectRestoreMetadata()
-        //                    {
-        //                        ProjectName = myProjPath,
-        //                        ProjectUniqueName = myProjPath,
-        //                        ProjectStyle = ProjectStyle.Unknown,
-        //                        ProjectPath = myProjPath
-        //                    },
-        //                    Name = myProjPath,
-        //                    FilePath = myProjPath
-        //                }
-        //            };
-
-        //            testSolutionManager.NuGetProjects.Add(normalProject);
-
-        //            var normalReference = new TestExternalProjectReference(normalProject);
-
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference1);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference2);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
-
-        //            buildIntegratedProjects[1].ProjectReferences.Add(reference2);
-        //            buildIntegratedProjects[1].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
-
-        //            buildIntegratedProjects[2].ProjectReferences.Add(reference3);
-        //            buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
-
-        //            // Act
-        //            try {
-        //                source.Cancel();
-
-        //                var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-        //                    buildIntegratedProjects,
-        //                    packageIdentity,
-        //                    new TestNuGetProjectContext(),
-        //                    sourceRepositoryProvider.GetRepositories(),
-        //                    token);
-
-        //                throw new Exception("We're not supposed to come here!!!");
-        //            }
-        //            catch (OperationCanceledException)
-        //            {
-        //                // Do nothing, it's good, we got cancellation token exception.
-        //            }
-        //            catch (Exception)
-        //            {
-        //                //Throw on all other exception;
-        //                throw;
-        //            }
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        foreach (TestDirectory projectDirectory in projectDirectories)
-        //        {
-        //            projectDirectory.Dispose();
-        //        }
-        //    }
-        //}
-
-        //[Fact]
-        //public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_RaiseTelemetryEvents()
-        //{
-        //    // Arrange
-        //    var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.7"));
-        //    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-        //    var projectDirectories = new List<TestDirectory>();
-
-        //    // set up telemetry service
-        //    var telemetrySession = new Mock<ITelemetrySession>();
-
-        //    var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
-        //    telemetrySession
-        //        .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
-        //        .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
-
-        //    var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
-        //    TelemetryActivity.NuGetTelemetryService = telemetryService;
-
-        //    try
-        //    {
-        //        using (var settingsDirectory = TestDirectory.Create())
-        //        using (var testSolutionManager = new TestSolutionManager())
-        //        {
-        //            var deleteOnRestartManager = new TestDeleteOnRestartManager();
-        //            var nuGetPackageManager = new NuGetPackageManager(
-        //                sourceRepositoryProvider,
-        //                NullSettings.Instance,
-        //                testSolutionManager,
-        //                deleteOnRestartManager);
-
-        //            var source = new CancellationTokenSource();
-        //            var token = source.Token;
-
-        //            var testNuGetProjectContext = new TestNuGetProjectContext();
-        //            var projectTargetFramework = NuGetFramework.Parse("netcore50");
-
-        //            var configs = new List<string>();
-        //            var lockFiles = new List<string>();
-        //            var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
-
-        //            // Create projects
-        //            for (var i = 0; i < 1; i++)
-        //            {
-        //                var directory = TestDirectory.Create();
-        //                projectDirectories.Add(directory);
-
-        //                var config = Path.Combine(directory, "project.json");
-
-        //                configs.Add(config);
-
-        //                GetBasicConfig(config);
-
-        //                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-        //                    projectTargetFramework,
-        //                    testNuGetProjectContext,
-        //                    directory,
-        //                    $"testProjectName{i}");
-
-        //                var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
-
-        //                buildIntegratedProjects.Add(buildIntegratedProject);
-
-        //                lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
-
-        //                testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
-        //            }
-
-        //            var myProjDirectory = TestDirectory.Create();
-        //            projectDirectories.Add(myProjDirectory);
-
-        //            var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
-
-        //            var normalProject = new TestNonBuildIntegratedNuGetProject()
-        //            {
-        //                MSBuildProjectPath = myProjPath,
-        //                PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
-        //                {
-        //                    new TargetFrameworkInformation()
-        //                    {
-        //                        FrameworkName = projectTargetFramework,
-        //                    }
-        //                })
-        //                {
-        //                    RestoreMetadata = new ProjectRestoreMetadata()
-        //                    {
-        //                        ProjectName = myProjPath,
-        //                        ProjectUniqueName = myProjPath,
-        //                        ProjectStyle = ProjectStyle.Unknown,
-        //                        ProjectPath = myProjPath
-        //                    },
-        //                    Name = myProjPath,
-        //                    FilePath = myProjPath
-        //                }
-        //            };
-
-        //            testSolutionManager.NuGetProjects.Add(normalProject);
-
-        //            // Main Act
-
-        //            var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-        //                buildIntegratedProjects,
-        //                packageIdentity,
-        //                new TestNuGetProjectContext(),
-        //                sourceRepositoryProvider.GetRepositories(),
-        //                CancellationToken.None);
-
-        //            // Assert
-        //            Assert.True(telemetryEvents.Count > 1);
-        //            var actionTelemetryStepEvents = telemetryEvents.OfType<ActionTelemetryStepEvent>();
-        //            Assert.True(actionTelemetryStepEvents.Any(t => t.SubStepName.Contains("Preview build integrated action time")));
-
-        //            var actions = results.Select(a => a.Action).ToArray();
-        //            var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>();
-
-        //            Assert.Equal(actions.Count(), 1);
-        //            Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-        //            Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        foreach (TestDirectory projectDirectory in projectDirectories)
-        //        {
-        //            projectDirectory.Dispose();
-        //        }
-        //    }
-        //}
+        [Fact]
+        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_OnlyOneMiddleProject_ShouldFail()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();          
+            var projectDirectories = new List<TestDirectory>();
+
+            try
+            {
+                using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100,
+                        packageB_Version200
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        NullSettings.Instance,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
+
+                    var configs = new List<string>();
+                    var lockFiles = new List<string>();
+                    var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
+
+                    // Create projects
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var directory = TestDirectory.Create();
+                        projectDirectories.Add(directory);
+
+                        var config = Path.Combine(directory, "project.json");
+
+                        configs.Add(config);
+
+                        GetBasicConfig(config, "net46");
+
+                        var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                            projectTargetFramework,
+                            testNuGetProjectContext,
+                            directory,
+                            $"testProjectName{i}");
+
+                        var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
+
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1065Error = true;
+
+                        buildIntegratedProjects.Add(buildIntegratedProject);
+
+                        lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
+
+                        testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
+                    }
+
+                    // Link projects
+                    var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
+                    var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+                    var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+                    var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
+
+                    var myProjDirectory = TestDirectory.Create();
+                    projectDirectories.Add(myProjDirectory);
+
+                    var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
+
+                    var normalProject = new TestNonBuildIntegratedNuGetProject()
+                    {
+                        MSBuildProjectPath = myProjPath,
+                        PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
+                        {
+                            new TargetFrameworkInformation()
+                            {
+                                FrameworkName = projectTargetFramework,
+                            }
+                        })
+                        {
+                            RestoreMetadata = new ProjectRestoreMetadata()
+                            {
+                                ProjectName = myProjPath,
+                                ProjectUniqueName = myProjPath,
+                                ProjectStyle = ProjectStyle.Unknown,
+                                ProjectPath = myProjPath
+                            },
+                            Name = myProjPath,
+                            FilePath = myProjPath
+                        }
+                    };
+
+                    testSolutionManager.NuGetProjects.Add(normalProject);
+
+                    var normalReference = new TestExternalProjectReference(normalProject);
+
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference1);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[2].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
+                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                    }
+
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                    var targetProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>()
+                    {
+                        buildIntegratedProjects[1] // With parent and child
+                    };
+
+                    // Act
+                    var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                        targetProjects,
+                        packageB_DowngradeVersion,
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+
+                    // Assert
+                    var actions = results.Select(a => a.Action).ToArray();
+                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+
+                    Assert.Equal(actions.Count(), targetProjects.Count());
+                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+
+                    // Downgrade fails for middle project(with both parent and child).
+                    // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
+                    Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
+
+                    // Should cause total 2 NU1605 for all childs.
+                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code == NuGetLogCode.NU1605)), 2);
+
+                    // There should be no warning other than NU1605.
+                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code != NuGetLogCode.NU1605)), 0);
+
+                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
+                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
+                    Expected(expected, packageB_DowngradeVersion.Id, packageB_DowngradeVersion.Version);
+                    Assert.True(Compare(resulting, expected));
+                    Assert.Equal(initialInstalledPackages.Count(), 2);
+                }
+            }
+            finally
+            {
+                foreach (TestDirectory projectDirectory in projectDirectories)
+                {
+                    projectDirectory.Dispose();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_OnlyBottomChildProject()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();          
+            var projectDirectories = new List<TestDirectory>();
+
+            try
+            {
+                using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100,
+                        packageB_Version200
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        NullSettings.Instance,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
+
+                    var configs = new List<string>();
+                    var lockFiles = new List<string>();
+                    var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
+
+                    // Create projects
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var directory = TestDirectory.Create();
+                        projectDirectories.Add(directory);
+
+                        var config = Path.Combine(directory, "project.json");
+
+                        configs.Add(config);
+
+                        GetBasicConfig(config, "net46");
+
+                        var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                            projectTargetFramework,
+                            testNuGetProjectContext,
+                            directory,
+                            $"testProjectName{i}");
+
+                        var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
+
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1065Error = true;
+
+                        buildIntegratedProjects.Add(buildIntegratedProject);
+
+                        lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
+
+                        testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
+                    }
+
+                    // Link projects
+                    var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
+                    var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+                    var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+                    var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
+
+                    var myProjDirectory = TestDirectory.Create();
+                    projectDirectories.Add(myProjDirectory);
+
+                    var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
+
+                    var normalProject = new TestNonBuildIntegratedNuGetProject()
+                    {
+                        MSBuildProjectPath = myProjPath,
+                        PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
+                        {
+                            new TargetFrameworkInformation()
+                            {
+                                FrameworkName = projectTargetFramework,
+                            }
+                        })
+                        {
+                            RestoreMetadata = new ProjectRestoreMetadata()
+                            {
+                                ProjectName = myProjPath,
+                                ProjectUniqueName = myProjPath,
+                                ProjectStyle = ProjectStyle.Unknown,
+                                ProjectPath = myProjPath
+                            },
+                            Name = myProjPath,
+                            FilePath = myProjPath
+                        }
+                    };
+
+                    testSolutionManager.NuGetProjects.Add(normalProject);
+
+                    var normalReference = new TestExternalProjectReference(normalProject);
+
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference1);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[2].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
+                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                    }
+
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                    var targetProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>()
+                    {
+                        buildIntegratedProjects[3] // Bottom child
+                    };
+
+                    // Act
+                    var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                        targetProjects,
+                        packageB_DowngradeVersion,
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+
+                    // Assert
+                    var actions = results.Select(a => a.Action).ToArray();
+                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+
+                    Assert.Equal(actions.Count(), targetProjects.Count());
+                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+
+                    // Downgrade succeed for bottom child project.
+                    // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
+                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+
+                    // There should be no warning.
+                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
+
+                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
+                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
+                    Expected(expected, packageB_DowngradeVersion.Id, packageB_DowngradeVersion.Version);
+                    Assert.True(Compare(resulting, expected));
+                    Assert.Equal(initialInstalledPackages.Count(), 2);
+                }
+            }
+            finally
+            {
+                foreach (TestDirectory projectDirectory in projectDirectories)
+                {
+                    projectDirectory.Dispose();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_CancellationTokenPassed()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();          
+            var projectDirectories = new List<TestDirectory>();
+
+            try
+            {
+                using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageA = packageA_Version100.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        NullSettings.Instance,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    var source = new CancellationTokenSource();
+                    var token = source.Token;
+
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
+
+                    var configs = new List<string>();
+                    var lockFiles = new List<string>();
+                    var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
+
+                    // Create projects
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var directory = TestDirectory.Create();
+                        projectDirectories.Add(directory);
+
+                        var config = Path.Combine(directory, "project.json");
+
+                        configs.Add(config);
+
+                        GetBasicConfig(config, "net46");
+
+                        var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                            projectTargetFramework,
+                            testNuGetProjectContext,
+                            directory,
+                            $"testProjectName{i}");
+
+                        var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
+
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1065Error = true;
+
+                        buildIntegratedProjects.Add(buildIntegratedProject);
+
+                        lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
+
+                        testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
+                    }
+
+                    // Link projects
+                    var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
+                    var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+                    var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+                    var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
+
+                    var myProjDirectory = TestDirectory.Create();
+                    projectDirectories.Add(myProjDirectory);
+
+                    var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
+
+                    var normalProject = new TestNonBuildIntegratedNuGetProject()
+                    {
+                        MSBuildProjectPath = myProjPath,
+                        PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
+                        {
+                            new TargetFrameworkInformation()
+                            {
+                                FrameworkName = projectTargetFramework,
+                            }
+                        })
+                        {
+                            RestoreMetadata = new ProjectRestoreMetadata()
+                            {
+                                ProjectName = myProjPath,
+                                ProjectUniqueName = myProjPath,
+                                ProjectStyle = ProjectStyle.Unknown,
+                                ProjectPath = myProjPath
+                            },
+                            Name = myProjPath,
+                            FilePath = myProjPath
+                        }
+                    };
+
+                    testSolutionManager.NuGetProjects.Add(normalProject);
+
+                    var normalReference = new TestExternalProjectReference(normalProject);
+
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference1);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[2].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
+
+                    // Act
+                    source.Cancel();
+
+                    var exception = await Assert.ThrowsAsync<OperationCanceledException>(
+                        () => nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                            buildIntegratedProjects,
+                            packageA,
+                            new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(),
+                            token));
+
+                    // Assert
+                    Assert.NotNull(exception);
+                    Assert.Equal(exception.Message, "The operation was canceled.");
+                }
+            }
+            finally
+            {
+                foreach (TestDirectory projectDirectory in projectDirectories)
+                {
+                    projectDirectory.Dispose();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_RaiseTelemetryEvents()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();          
+            var projectDirectories = new List<TestDirectory>();
+
+            // set up telemetry service
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
+
+            try
+            {
+                using (var settingsDirectory = TestDirectory.Create())
+                using (var pathContext = new SimpleTestPathContext())
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+
+                    // Set up Package Source
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageA_Version100,
+                        packageB_Version100,
+                        packageB_Version200
+                        );
+
+                    sources.Add(new PackageSource(pathContext.PackageSource));
+
+                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        NullSettings.Instance,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var projectTargetFramework = NuGetFramework.Parse("net46");
+
+                    var configs = new List<string>();
+                    var lockFiles = new List<string>();
+                    var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
+
+                    // Create projects
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var directory = TestDirectory.Create();
+                        projectDirectories.Add(directory);
+
+                        var config = Path.Combine(directory, "project.json");
+
+                        configs.Add(config);
+
+                        GetBasicConfig(config, "net46");
+
+                        var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                            projectTargetFramework,
+                            testNuGetProjectContext,
+                            directory,
+                            $"testProjectName{i}");
+
+                        var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
+
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1065Error = true;
+
+                        buildIntegratedProjects.Add(buildIntegratedProject);
+
+                        lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
+
+                        testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
+                    }
+
+                    // Link projects
+                    var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
+                    var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+                    var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+                    var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
+
+                    var myProjDirectory = TestDirectory.Create();
+                    projectDirectories.Add(myProjDirectory);
+
+                    var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
+
+                    var normalProject = new TestNonBuildIntegratedNuGetProject()
+                    {
+                        MSBuildProjectPath = myProjPath,
+                        PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
+                        {
+                            new TargetFrameworkInformation()
+                            {
+                                FrameworkName = projectTargetFramework,
+                            }
+                        })
+                        {
+                            RestoreMetadata = new ProjectRestoreMetadata()
+                            {
+                                ProjectName = myProjPath,
+                                ProjectUniqueName = myProjPath,
+                                ProjectStyle = ProjectStyle.Unknown,
+                                ProjectPath = myProjPath
+                            },
+                            Name = myProjPath,
+                            FilePath = myProjPath
+                        }
+                    };
+
+                    testSolutionManager.NuGetProjects.Add(normalProject);
+
+                    var normalReference = new TestExternalProjectReference(normalProject);
+
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference1);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[0].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference2);
+                    buildIntegratedProjects[1].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
+
+                    buildIntegratedProjects[2].ProjectReferences.Add(reference3);
+                    buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        // Install both packageA and packageB
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageA, new ResolutionContext(), new TestNuGetProjectContext(),
+                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                        await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                    }
+
+                    var initialInstalledPackages = await buildIntegratedProjects[1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                    var targetProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>()
+                    {
+                        buildIntegratedProjects[3] // Bottom child
+                    };
+
+                    // Act
+                    var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                        targetProjects,
+                        packageB_DowngradeVersion,
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(telemetryEvents.Count > 1);
+                    var actionTelemetryStepEvents = telemetryEvents.OfType<ActionTelemetryStepEvent>();
+                    Assert.True(actionTelemetryStepEvents.Any(t => t.SubStepName.Contains("Preview build integrated action time")));
+
+                    var actions = results.Select(a => a.Action).ToArray();
+                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>();
+
+                    Assert.Equal(actions.Count(), 1);
+                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                }
+            }
+            finally
+            {
+                foreach (TestDirectory projectDirectory in projectDirectories)
+                {
+                    projectDirectory.Dispose();
+                }
+            }
+        }
 
         private SourceRepositoryProvider CreateSource(List<SourcePackageDependencyInfo> packages, List<PackageSource> additionalPackagesSources = null)
         {
@@ -3665,11 +3932,11 @@ namespace NuGet.Test
             }
         }
 
-        private static void GetBasicConfig(string path, string framework = "net46", string sources = null)
+        private static void GetBasicConfig(string path, string framework = "net46")
         {
             using (var writer = new StreamWriter(path))
             {
-                writer.Write(GetBasicConfigForFramework(framework, sources).ToString());
+                writer.Write(GetBasicConfigForFramework(framework).ToString());
             }
         }
 
@@ -3681,7 +3948,7 @@ namespace NuGet.Test
             }
         }
 
-        private static JObject GetBasicConfigForFramework(string framework, string sources = null)
+        private static JObject GetBasicConfigForFramework(string framework)
         {
             var json = new JObject();
 
@@ -3692,14 +3959,6 @@ namespace NuGet.Test
 
             json["frameworks"] = frameworks;
 
-            if (!string.IsNullOrWhiteSpace(sources))
-            {
-                var sourcesJobject = new JObject();
-                sourcesJobject[sources] = new JObject();
-                var restoreObject = new JObject();
-                restoreObject["sources"] = sourcesJobject;
-                json["restore"]  = restoreObject;
-            }
             return json;
         }
 
