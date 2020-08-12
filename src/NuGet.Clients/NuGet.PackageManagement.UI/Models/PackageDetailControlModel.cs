@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
         private void NuGetProjectChanged(object sender, NuGetProjectEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => NuGetProjectChangedAsync(e, CancellationToken.None))
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageDetailControlModel), nameof(NuGetProjectChanged)));
+                .PostOnFailure(nameof(PackageDetailControlModel), nameof(NuGetProjectChanged));
         }
 
         private async Task NuGetProjectChangedAsync(NuGetProjectEventArgs e, CancellationToken cancellationToken)
