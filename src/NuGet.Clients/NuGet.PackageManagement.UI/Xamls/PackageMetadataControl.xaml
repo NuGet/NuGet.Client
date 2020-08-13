@@ -213,6 +213,7 @@
           NavigateUri="{Binding Path=ReadmeUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=NavigateUri}"
           AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_Readme}">
           <Run Text="{x:Static nuget:Resources.Text_ViewReadme}" />
         </Hyperlink>
