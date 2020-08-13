@@ -1565,7 +1565,7 @@ namespace NuGet.PackageManagement
 
             if (!activeSources.Any())
             {
-                throw new ArgumentException("At least 1 item expected for " +nameof(activeSources));
+                throw new ArgumentException("At least 1 item expected for " + nameof(activeSources));
             }
 
             if (packageIdentity.Version == null)
