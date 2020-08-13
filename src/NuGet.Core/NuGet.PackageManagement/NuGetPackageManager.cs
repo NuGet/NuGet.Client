@@ -2848,7 +2848,11 @@ namespace NuGet.PackageManagement
                     .Distinct()
                     .ToList();
 
-                var restoreResult = restoreResults.Single(r => string.Equals(r.SummaryRequest.Request.Project.RestoreMetadata.ProjectUniqueName,buildIntegratedProject.MSBuildProjectPath, StringComparison.OrdinalIgnoreCase));
+                var restoreResult = restoreResults.Single(r =>
+                    string.Equals(
+                        r.SummaryRequest.Request.Project.RestoreMetadata.ProjectUniqueName,
+                        buildIntegratedProject.MSBuildProjectPath,
+                        StringComparison.OrdinalIgnoreCase));
 
                 var unsuccessfulFrameworks = restoreResult
                     .Result
