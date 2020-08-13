@@ -599,7 +599,7 @@ namespace NuGet.ProjectModel.Test
                 aliases: null);
 
             // only a central dependency for bar not for foo
-            // foo will be set to VersionRange.All
+            // foo will have null VersionRange
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
             TargetFrameworkInformation tfi = CreateTargetFrameworkInformation(
@@ -616,7 +616,7 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Equal(1, tfms.Count);
             Assert.Equal(2, dependencies.Count);
-            Assert.Equal("(, )", dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.Null(dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange);
             Assert.True(dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
         }
 
