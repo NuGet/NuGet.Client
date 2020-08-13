@@ -2819,8 +2819,7 @@ namespace NuGet.PackageManagement
                 }
             }
 
-            // Restore based on the modified package specs for projects. This operation does not write the lock files to disk.
-            // This operation restores in parallel.
+            // Restore based on the modified package specs for many projects. This operation does not write the lock files to disk.
             var restoreResults = await DependencyGraphRestoreUtility.PreviewRestoreProjectsAsync(
                 SolutionManager,
                 buildIntegratedProjects,
