@@ -1,11 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -17,12 +19,12 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Installed package references.
         /// </summary>
-        public List<PackageReference> PackageReferences { get; }
+        public List<IPackageReferenceContextInfo> PackageReferences { get; }
 
-        public PackageCollectionItem(string id, NuGetVersion version, IEnumerable<PackageReference> installedReferences)
+        public PackageCollectionItem(string id, NuGetVersion version, IEnumerable<IPackageReferenceContextInfo> installedReferences)
             : base(id, version)
         {
-            PackageReferences = installedReferences?.ToList() ?? new List<PackageReference>();
+            PackageReferences = installedReferences?.ToList() ?? new List<IPackageReferenceContextInfo>();
         }
     }
 }

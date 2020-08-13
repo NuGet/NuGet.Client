@@ -13,7 +13,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public interface INuGetProjectManagerService : IDisposable
     {
-        ValueTask<IReadOnlyCollection<PackageReference>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken cancellationToken);
+        ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken cancellationToken);
         ValueTask<object> GetMetadataAsync(string projectGuid, string key, CancellationToken cancellationToken);
         ValueTask<(bool, object)> TryGetMetadataAsync(string projectGuid, string key, CancellationToken cancellationToken);
         ValueTask<IProjectContextInfo> GetProjectAsync(string projectGuid, CancellationToken cancellationToken);
