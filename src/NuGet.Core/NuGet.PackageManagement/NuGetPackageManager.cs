@@ -2737,7 +2737,7 @@ namespace NuGet.PackageManagement
             var now = DateTimeOffset.UtcNow;
             void cacheModifier(SourceCacheContext cache) => cache.MaxAge = now;
 
-            // Add all enabled sources for the existing packages
+            // Add all enabled sources for the existing projects
             var enabledSources = SourceRepositoryProvider.GetRepositories();
             var allSources = new HashSet<SourceRepository>(enabledSources, new SourceRepositoryComparer());
 
