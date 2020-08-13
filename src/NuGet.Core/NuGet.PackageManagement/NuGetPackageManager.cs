@@ -1529,6 +1529,96 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext, primarySources, secondarySources, token);
         }
 
+        // Preview and return ResolvedActions for many NuGetProjects.
+        public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
+            IEnumerable<NuGetProject> nuGetProjects,
+            PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> activeSources,
+            CancellationToken token)
+        {
+            if (nuGetProjects == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjects));
+            }
+
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (resolutionContext == null)
+            {
+                throw new ArgumentNullException(nameof(resolutionContext));
+            }
+
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
+            }
+
+            if (activeSources == null)
+            {
+                throw new ArgumentNullException(nameof(activeSources));
+            }
+
+            if (!activeSources.Any())
+            {
+                throw new ArgumentException("At least 1 item expected for " +nameof(activeSources));
+            }
+
+            if (packageIdentity.Version == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            var results = new List<ResolvedAction>();
+
+            var buildIntegratedProjectsToUpdate = new List<BuildIntegratedNuGetProject>();
+            var otherTargetProjectsToUpdate = new List<NuGetProject>();
+
+            foreach (var proj in nuGetProjects)
+            {
+                if (proj is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
+                {
+                    buildIntegratedProjectsToUpdate.Add(buildIntegratedNuGetProject);
+                }
+                else
+                {
+                    otherTargetProjectsToUpdate.Add(proj);
+                }
+            }
+
+            if (buildIntegratedProjectsToUpdate.Any())
+            {
+                // Run project build integrated project preview in parallel for greater performance,
+                // now they're not dependent on each other's result anymore for correctness.
+                var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
+                    buildIntegratedProjectsToUpdate,
+                    packageIdentity,
+                    nuGetProjectContext,
+                    activeSources,
+                    token);
+                results.AddRange(resolvedActions);
+            }
+
+            foreach (var target in otherTargetProjectsToUpdate)
+            {
+                var actions = await PreviewInstallPackageAsync(
+                    target,
+                    packageIdentity,
+                    resolutionContext,
+                    nuGetProjectContext,
+                    activeSources,
+                    null,
+                    token);
+                results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
+            }
+
+            return results;
+        }
+
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
@@ -2692,7 +2782,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Return list of Resolved actions after running preview (without commit) for buildIntegrated projects.
         /// </summary>
-        public async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
+        internal async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
             IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
             PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,

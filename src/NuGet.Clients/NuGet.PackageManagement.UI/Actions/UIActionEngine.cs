@@ -839,46 +839,14 @@ namespace NuGet.PackageManagement.UI
 
             if (userAction.Action == NuGetProjectActionType.Install)
             {
-                var buildIntegratedProjectsToUpdate = new List<BuildIntegratedNuGetProject>();
-                var otherTargetProjectsToUpdate = new List<NuGetProject>();
-                
-                foreach (var proj in targets)
-                {
-                    if (proj is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
-                    {
-                        buildIntegratedProjectsToUpdate.Add(buildIntegratedNuGetProject);
-                    }
-                    else
-                    {
-                        otherTargetProjectsToUpdate.Add(proj);
-                    }
-                }
-
-                if (buildIntegratedProjectsToUpdate.Any())
-                {
-                    // Run project build integrated project preview in parallel for greater performance,
-                    // now they're not dependent on each other's result anymore for correctness.
-                    var resolvedActions = await _packageManager.PreviewBuildIntegratedProjectsActionsAsync(
-                        buildIntegratedProjectsToUpdate,
-                        new PackageIdentity(userAction.PackageId, userAction.Version),
-                        projectContext,
-                        uiService.ActiveSources,
-                        token);
-                    results.AddRange(resolvedActions);
-                }
-
-                foreach (var target in otherTargetProjectsToUpdate)
-                {
-                    var actions = await _packageManager.PreviewInstallPackageAsync(
-                        target,
-                        new PackageIdentity(userAction.PackageId, userAction.Version),
-                        resolutionContext,
-                        projectContext,
-                        uiService.ActiveSources,
-                        null,
-                        token);
-                    results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
-                }
+                results.AddRange(await _packageManager.PreviewProjectsInstallPackageAsync(
+                    targets,
+                    new PackageIdentity(userAction.PackageId, userAction.Version),
+                    resolutionContext,
+                    projectContext,
+                    uiService.ActiveSources,
+                    token
+                ));
             }
             else
             {
