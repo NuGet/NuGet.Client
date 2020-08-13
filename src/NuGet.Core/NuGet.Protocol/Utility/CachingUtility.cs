@@ -31,7 +31,7 @@ namespace NuGet.Protocol
                 hash = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
             }
 
-            return addIdentifiableCharacters ? "$" + trailing : string.Empty + EncodingUtility.ToHex(hash, HashLength);
+            return EncodingUtility.ToHex(hash, HashLength) + (addIdentifiableCharacters ? "$" + trailing : string.Empty);
         }
 
         public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)
