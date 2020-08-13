@@ -4,4 +4,3 @@ NuGet.Packaging.ManifestMetadata.Readme.set -> void
 NuGet.Packaging.NuspecReader.GetReadme() -> string
 NuGet.Packaging.PackageBuilder.Readme.get -> string
 NuGet.Packaging.PackageBuilder.Readme.set -> void
-const NuGet.Packaging.PackageBuilder.MaxReadmeFileSize = 1048576 -> int
