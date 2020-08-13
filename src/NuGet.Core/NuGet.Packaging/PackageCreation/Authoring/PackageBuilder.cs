@@ -36,11 +36,6 @@ namespace NuGet.Packaging
         /// </summary>
         public const int MaxIconFileSize = 1024 * 1024;
 
-        /// <summary>
-        /// Maximum Readme file size: 1 megabyte
-        /// </summary>
-        public const int MaxReadmeFileSize = 1024 * 1024;
-
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, propertyProvider, includeEmptyDirectories, deterministic: false)
         {
@@ -664,7 +659,7 @@ namespace NuGet.Packaging
         /// <param name="files">Files resolved from the file entries in the nuspec</param>
         /// <param name="readmePath">readmepath found in the .nuspec</param>
         /// <exception cref="PackagingException">When a validation rule is not met</exception>
-        private void ValidateReadmeFile(IEnumerable<IPackageFile> files, string readmePath) // TODO Change all exceptions to new errors for Readmes
+        private void ValidateReadmeFile(IEnumerable<IPackageFile> files, string readmePath)
         {
             if (!string.IsNullOrEmpty(readmePath))
             {
@@ -701,20 +696,13 @@ namespace NuGet.Packaging
                     // Validate Readme open file
                     using (var readmeStream = readmeFile.GetStream())
                     {
-                        // Validate file size
+                        // Validate file size is not 0
                         long fileSize = readmeStream.Length;
-
-                        if (fileSize > MaxReadmeFileSize)
-                        {
-                            throw new PackagingException(
-                                NuGetLogCode.NU5040, 
-                                string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeMaxFileSizeExceeded, readmePath));
-                        }
 
                         if (fileSize == 0)
                         {
                             throw new PackagingException(
-                                NuGetLogCode.NU5041, 
+                                NuGetLogCode.NU5040, 
                                 string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeErrorEmpty, readmePath));
                         }
                     }
@@ -722,7 +710,7 @@ namespace NuGet.Packaging
                 catch (FileNotFoundException e)
                 {
                     throw new PackagingException(
-                        NuGetLogCode.NU5042,
+                        NuGetLogCode.NU5041,
                         string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeCannotOpenFile, readmePath, e.Message));
                 }
             }

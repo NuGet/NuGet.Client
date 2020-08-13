@@ -679,19 +679,14 @@ namespace NuGet.Common
         NU5039 = 5039,
 
         /// <summary>
-        /// Error_ReadmeMaxFileSizeExceeded
+        /// Error_ReadmeErrorEmpty
         /// </summary>
         NU5040 = 5040,
 
         /// <summary>
-        /// Error_ReadmeErrorEmpty
-        /// </summary>
-        NU5041 = 5041,
-
-        /// <summary>
         /// Error_ReadmeCannotOpenFile
         /// </summary>
-        NU5042 = 5042,
+        NU5041 = 5041,
 
         /// <summary>
         /// Error_Manifest_IconCannotOpenFile

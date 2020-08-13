@@ -355,17 +355,6 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The readme file size must not exceed..
-        /// </summary>
-        internal static string ReadmeMaxFileSizeExceeded
-        {
-            get
-            {
-                return ResourceManager.GetString("ReadmeMaxFileSizeExceeded", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to The element &apos;readme&apos; cannot be empty..
         /// </summary>
         internal static string ReadmeMissingRequiredValue
