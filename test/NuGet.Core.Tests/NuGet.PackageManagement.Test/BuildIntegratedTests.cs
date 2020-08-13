@@ -1864,19 +1864,15 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
 
                     var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version100.Identity;
 
                     await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                         pathContext.PackageSource,
                         PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100
+                        packageA_Version100
                         );
 
                     sources.Add(new PackageSource(pathContext.PackageSource));
@@ -1907,7 +1903,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        GetBasicConfig(config);
+                        GetBasicConfig(config, "net46");
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -1917,12 +1913,17 @@ namespace NuGet.Test
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1605Error = true;
+
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
                         lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
 
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
                     }
 
                     // Link projects
@@ -1978,7 +1979,7 @@ namespace NuGet.Test
                     // Act
                     var results = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
 						buildIntegratedProjects,
-                        packageB,
+                        packageA,
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
@@ -2005,13 +2006,13 @@ namespace NuGet.Test
                     foreach (var buildIntegratedProject in buildIntegratedProjects)
                     {
                         var finalInstalledPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                        && f.PackageIdentity.Version == packageB.Version));
+                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageA.Id
+                        && f.PackageIdentity.Version == packageA.Version));
                     }
                     
                     var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
                     var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageB.Id, packageB.Version);
+                    Expected(expected, packageA.Id, packageA.Version);
                     Assert.True(Compare(resulting, expected));
                 }
             }
@@ -2083,7 +2084,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        GetBasicConfig(config);
+                        GetBasicConfig(config, "net46");
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -2093,12 +2094,17 @@ namespace NuGet.Test
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1605Error = true;
+
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
                         lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
 
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
                     }
 
                     // Link projects
@@ -2225,7 +2231,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
@@ -2271,7 +2276,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        GetBasicConfig(config);
+                        GetBasicConfig(config, "net46");
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -2281,12 +2286,17 @@ namespace NuGet.Test
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1605Error = true;
+
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
                         lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
 
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
                     }
 
                     // Link projects
@@ -2417,7 +2427,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
@@ -2463,7 +2472,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        GetBasicConfig(config);
+                        GetBasicConfig(config, "net46");
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -2473,12 +2482,17 @@ namespace NuGet.Test
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1605Error = true;
+
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
                         lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
 
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
                     }
 
                     // Link projects
@@ -2609,7 +2623,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
@@ -2655,7 +2668,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        GetBasicConfig(config);
+                        GetBasicConfig(config, "net46");
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -2665,12 +2678,17 @@ namespace NuGet.Test
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1605Error = true;
+
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
                         lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
 
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
                     }
 
                     // Link projects
@@ -2801,7 +2819,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
@@ -2847,7 +2864,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        GetBasicConfig(config);
+                        GetBasicConfig(config, "net46");
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -2857,12 +2874,17 @@ namespace NuGet.Test
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
 
+                        // We need to treat NU1065 warning as error.
+                        buildIntegratedProject.IsNu1605Error = true;
+
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
                         lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
 
+                        //Let new project pickup my custom package source.
+                        buildIntegratedProject.ProjectLocalSources.AddRange(sources);
                     }
 
                     // Link projects
@@ -2989,7 +3011,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
@@ -3178,7 +3199,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
@@ -3367,7 +3387,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
@@ -3553,7 +3572,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageA = packageA_Version100.Identity;
@@ -3717,7 +3735,6 @@ namespace NuGet.Test
                 using (var pathContext = new SimpleTestPathContext())
                 using (var testSolutionManager = new TestSolutionManager())
                 {
-
                     // Set up Package Source
                     var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
                     var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
