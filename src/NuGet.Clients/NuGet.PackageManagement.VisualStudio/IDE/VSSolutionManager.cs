@@ -491,18 +491,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnAfterClosing()
         {
-            SolutionClosed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnBeforeClosing()
-        {
             DefaultNuGetProjectName = null;
             _projectSystemCache.Clear();
             _cacheInitialized = false;
 
-            SolutionClosing?.Invoke(this, EventArgs.Empty);
+            SolutionClosed?.Invoke(this, EventArgs.Empty);
 
             _solutionOpenedRaised = false;
+        }
+
+        private void OnBeforeClosing()
+        {
+            SolutionClosing?.Invoke(this, EventArgs.Empty);
         }
 
         private void SolutionSaveAs_BeforeExecute(
