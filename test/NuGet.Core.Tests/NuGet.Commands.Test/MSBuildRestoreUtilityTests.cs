@@ -3235,29 +3235,29 @@ namespace NuGet.Commands.Test
             var spec = MSBuildRestoreUtility.GetPackageSpec(new[]
             {
                 CreateItems(
-                    new Dictionary<string, string>()
-                    {
-                        { "Type", "ProjectSpec" },
-                        { "ProjectName", "a" },
-                        { "ProjectStyle", "PackageReference" },
-                        { "ProjectUniqueName", "a" },
-                        { "TargetFrameworks", alias },
-                        { "CrossTargeting", "true" },
-                    }),
+                new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFrameworks", alias },
+                    { "CrossTargeting", "true" },
+                }),
                 CreateItems(new Dictionary<string, string>()
-                    {
-                        { "Type", "TargetFrameworkInformation" },
-                        { "AssetTargetFallback", "" },
-                        { "PackageTargetFallback", "" },
-                        { "ProjectUniqueName", "a" },
-                        { "TargetFramework", alias },
-                        { "TargetFrameworkIdentifier", targetFramework.Framework },
-                        { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
-                        { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
-                        { "TargetPlatformIdentifier", "" },
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", targetFramework.Framework },
+                    { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
+                    { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
+                    { "TargetPlatformIdentifier", "" },
                     { "TargetPlatformMoniker", "" },
-                        { "TargetPlatformVersion", "" },
-                    })
+                    { "TargetPlatformVersion", "" },
+                })
             });
 
             var packageX = new Mock<IMSBuildItem>();
@@ -3301,19 +3301,19 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 }),
                 CreateItems(new Dictionary<string, string>()
-                    {
-                        { "Type", "TargetFrameworkInformation" },
-                        { "AssetTargetFallback", "" },
-                        { "PackageTargetFallback", "" },
-                        { "ProjectUniqueName", "a" },
-                        { "TargetFramework", alias },
-                        { "TargetFrameworkIdentifier", targetFramework.Framework },
-                        { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
-                        { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
-                        { "TargetPlatformIdentifier", "" },
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", targetFramework.Framework },
+                    { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
+                    { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
+                    { "TargetPlatformIdentifier", "" },
                     { "TargetPlatformMoniker", "" },
-                        { "TargetPlatformVersion", "" },
-                    })
+                    { "TargetPlatformVersion", "" },
+                })
                 });
 
             var packageX = new Mock<IMSBuildItem>();
@@ -3363,19 +3363,19 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 }),
                 CreateItems(new Dictionary<string, string>()
-                    {
-                        { "Type", "TargetFrameworkInformation" },
-                        { "AssetTargetFallback", "" },
-                        { "PackageTargetFallback", "" },
-                        { "ProjectUniqueName", "a" },
-                        { "TargetFramework", alias },
-                        { "TargetFrameworkIdentifier", targetFramework.Framework },
-                        { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
-                        { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
-                        { "TargetPlatformIdentifier", "" },
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", targetFramework.Framework },
+                    { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
+                    { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
+                    { "TargetPlatformIdentifier", "" },
                     { "TargetPlatformMoniker", "" },
-                        { "TargetPlatformVersion", "" },
-                    })
+                    { "TargetPlatformVersion", "" },
+                })
                 });
 
             var packageX = new Mock<IMSBuildItem>();

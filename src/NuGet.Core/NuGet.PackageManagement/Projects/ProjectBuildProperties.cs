@@ -24,6 +24,7 @@ namespace NuGet.ProjectManagement
         public const string TargetFrameworkVersion = nameof(TargetFrameworkVersion);
         public const string TargetFrameworks = nameof(TargetFrameworks);
         public const string TargetPlatformIdentifier = nameof(TargetPlatformIdentifier);
+        public const string TargetPlatformMoniker = nameof(TargetPlatformMoniker);
         public const string TargetPlatformMinVersion = nameof(TargetPlatformMinVersion);
         public const string TargetPlatformVersion = nameof(TargetPlatformVersion);
         public const string Version = nameof(Version);
