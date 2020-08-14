@@ -9978,7 +9978,7 @@ namespace NuGet.CommandLine.Test
                 var frameworks = new NuGetFramework[]
                 {
                     NuGetFramework.Parse("net5.0-windows10.0.10000.1"),
-                    NuGetFramework.Parse("net5.0-android21")
+                    NuGetFramework.Parse("net5.0-android21.0")
                 };
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(

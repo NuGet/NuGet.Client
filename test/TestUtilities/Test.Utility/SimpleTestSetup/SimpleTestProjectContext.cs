@@ -489,6 +489,8 @@ namespace NuGet.Test.Utility
                         {
                             tfmProps.Add("TargetPlatformIdentifier", frameworkInfo.Framework.Platform);
                             tfmProps.Add("TargetPlatformVersion", NormalizeVersionString(frameworkInfo.Framework.PlatformVersion));
+                            tfmProps.Add("TargetPlatformMoniker", $"{frameworkInfo.Framework.Platform}, Version={NormalizeVersionString(frameworkInfo.Framework.PlatformVersion)}");
+
                         }
                     }
 

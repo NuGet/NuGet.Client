@@ -799,7 +799,8 @@ namespace NuGet.Build.Tasks.Console.Test
                         { "TargetFrameworkVersion", "v5.0" },
                         { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.NetCore},Version=5.0" },
                         { "TargetPlatformIdentifier", "UAP" },
-                        { "TargetPlatformVersion", "10.1608.1" }
+                        { "TargetPlatformVersion", "10.1608.1" },
+                        { "TargetPlatformMoniker", "UAP,Version=10.1608.1" }
                     },
                     new Dictionary<string, IList<IMSBuildItem>>
                     {
@@ -849,6 +850,7 @@ namespace NuGet.Build.Tasks.Console.Test
                         { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.NetCoreApp},Version=5.0" },
                         { "TargetPlatformIdentifier", "android" },
                         { "TargetPlatformVersion", "21.0" },
+                        { "TargetPlatformMoniker", "android,Version=21.0" },
                         { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
                     },
                     new Dictionary<string, IList<IMSBuildItem>>
@@ -869,6 +871,7 @@ namespace NuGet.Build.Tasks.Console.Test
                         { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.Net},Version=4.6.1" },
                         { "TargetPlatformIdentifier", "" },
                         { "TargetPlatformVersion", "" },
+                        { "TargetPlatformMoniker", "" },
                         { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
                     },
                     new Dictionary<string, IList<IMSBuildItem>>

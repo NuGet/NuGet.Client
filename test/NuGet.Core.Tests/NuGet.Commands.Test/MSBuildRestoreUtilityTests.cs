@@ -86,6 +86,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=v4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
 
@@ -103,6 +104,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
 
@@ -134,6 +136,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.5" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=v4.5" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
 
@@ -151,6 +154,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.0" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.0" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
 
@@ -289,6 +293,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=v4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
                 items.Add(projectATfmInformationNetItem);
@@ -304,6 +309,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
                 items.Add(projectATfmInformationNSItem);
@@ -331,6 +337,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=v4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
                 items.Add(project2TfmInformationNetItem);
@@ -346,6 +353,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
                 items.Add(project2TfmInformationNSItem);
@@ -435,6 +443,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
                 items.Add(project1TfmInformationItem);
@@ -463,6 +472,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
                 items.Add(project2TfmInformationItem);
@@ -548,6 +558,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -562,6 +573,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -645,6 +657,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -659,6 +672,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -747,6 +761,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -761,6 +776,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -792,6 +808,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -806,6 +823,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -981,6 +999,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1086,6 +1105,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1100,6 +1120,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1174,6 +1195,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1188,6 +1210,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1284,6 +1307,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1343,6 +1367,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1400,6 +1425,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1414,6 +1440,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1490,6 +1517,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1504,6 +1532,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1566,6 +1595,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6\n" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6\n" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1579,6 +1609,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6\n" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6\n" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1658,6 +1689,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1672,6 +1704,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1729,6 +1762,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1743,6 +1777,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1803,6 +1838,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1817,6 +1853,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1841,6 +1878,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.0" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.0" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -1855,6 +1893,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.5" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.5" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -2047,6 +2086,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
 
@@ -2064,6 +2104,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 };
 
@@ -2121,6 +2162,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v1.6" },
                     { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -2135,6 +2177,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -2479,6 +2522,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -2629,6 +2673,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -2691,6 +2736,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -2743,6 +2789,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -2792,6 +2839,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -2841,6 +2889,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -3206,6 +3255,7 @@ namespace NuGet.Commands.Test
                         { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
                         { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
                         { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                         { "TargetPlatformVersion", "" },
                     })
             });
@@ -3261,6 +3311,7 @@ namespace NuGet.Commands.Test
                         { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
                         { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
                         { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                         { "TargetPlatformVersion", "" },
                     })
                 });
@@ -3322,6 +3373,7 @@ namespace NuGet.Commands.Test
                         { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
                         { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
                         { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                         { "TargetPlatformVersion", "" },
                     })
                 });
@@ -3341,7 +3393,6 @@ namespace NuGet.Commands.Test
             var exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
         }
 
-        // TODO NK - Continue here.
         [Fact]
         public void MSBuildRestoreUtility_GetDependencySpec_CentralVersionIsMergedWhenCPVMEnabled()
         {
@@ -3377,6 +3428,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v3.0" },
                     { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -3497,6 +3549,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.7.2" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.2" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -3620,6 +3673,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v3.0" },
                     { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -3703,6 +3757,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v3.0" },
                     { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -3801,6 +3856,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v3.0" },
                     { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.NetCoreApp},Version=3.0" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                     { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
                 });
@@ -3845,6 +3901,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v4.6" },
                     { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                     { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
                 });
@@ -3885,6 +3942,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", $"v{framework.Version.ToString(2)}" },
                     { "TargetFrameworkMoniker", framework.DotNetFrameworkName },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                     { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
                 });
@@ -3944,6 +4002,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkMoniker", ".NETCoreApp,Version=v5.0" },
                     { "TargetPlatformIdentifier", "android" },
                     { "TargetPlatformVersion", "29.0" },
+                    { "TargetPlatformMoniker", "android,Version=29.0" },
                 });
 
                 items.Add(new Dictionary<string, string>()
@@ -3956,6 +4015,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworkVersion", "v6.0" },
                     { "TargetFrameworkMoniker", ".NETCoreApp,Version=v6.0" },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
@@ -4020,9 +4080,10 @@ namespace NuGet.Commands.Test
                     { "TargetFramework", alias },
                     { "TargetFrameworkIdentifier", ".NETFramework" },
                     { "TargetFrameworkVersion", "v4.0" },
-                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.0" },
+                    { "TargetFrameworkMoniker", $".NETFramework,Version=v4.0,Profile={profile}" },
                     { "TargetFrameworkProfile", profile },
                     { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
                     { "TargetPlatformVersion", "" },
                 });
 
