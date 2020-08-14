@@ -6374,12 +6374,12 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         [Theory]
         [InlineData('/')]
         [InlineData('\\')]
-        public void PackCommand_PackReadme_FolderNested_Succeeds(char iconSeparator)
+        public void PackCommand_PackReadme_FolderNested_Succeeds(char readmeSeparator)
         {
             var nuspec = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
             var s = Path.DirectorySeparatorChar;
-            var u = iconSeparator;
+            var u = readmeSeparator;
 
             nuspec
                 .WithReadme($"docs{u}nested{u}readme.md")
