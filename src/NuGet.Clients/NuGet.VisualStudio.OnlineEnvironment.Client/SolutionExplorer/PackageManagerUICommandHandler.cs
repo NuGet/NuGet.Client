@@ -265,7 +265,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                     0,              // dwToolWindowId - singleInstance = 0
                     windowPane,     // ToolWindowPane
                     Guid.Empty,     // rclsidTool = GUID_NULL
-                    projectGuid,
+                    Guid.NewGuid(), // rguidPersistenceSlot
                     Guid.Empty,     // reserved - do not use - GUID_NULL
                     null,           // IServiceProvider
                     caption,
