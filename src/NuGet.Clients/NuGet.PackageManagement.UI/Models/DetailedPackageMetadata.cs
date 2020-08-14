@@ -29,7 +29,6 @@ namespace NuGet.PackageManagement.UI
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
             ReadmeUrl = serverData.ReadmeUrl;
-            ReadmeUrl = serverData.ProjectUrl; // TODO
             ReportAbuseUrl = serverData.ReportAbuseUrl;
             // Some server implementations send down an array with an empty string, which ends up as an empty string.
             // In PM UI, we want Tags to work like most other properties from the server (Authors/Owners), and be null, if there is no value.
