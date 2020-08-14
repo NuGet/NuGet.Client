@@ -930,6 +930,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TargetFrameworkVersion>$(TargetFrameworkVersion)</TargetFrameworkVersion>
         <TargetFrameworkMoniker>$(TargetFrameworkMoniker)</TargetFrameworkMoniker>
         <TargetFrameworkProfile>$(TargetFrameworkProfile)</TargetFrameworkProfile>
+        <TargetPlatformMoniker>$(TargetPlatformMoniker)</TargetPlatformMoniker>
         <TargetPlatformIdentifier>$(TargetPlatformIdentifier)</TargetPlatformIdentifier>
         <TargetPlatformVersion>$(TargetPlatformVersion)</TargetPlatformVersion>
         <TargetPlatformMinVersion>$(TargetPlatformMinVersion)</TargetPlatformMinVersion>

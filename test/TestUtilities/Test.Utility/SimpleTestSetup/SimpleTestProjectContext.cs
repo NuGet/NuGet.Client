@@ -13,7 +13,6 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
-using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
@@ -381,6 +380,22 @@ namespace NuGet.Test.Utility
             return context;
         }
 
+        public static SimpleTestProjectContext CreateNETCore(
+            string projectName,
+            string solutionRoot,
+            params string[] frameworks)
+        {
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
+            context.Frameworks.AddRange(frameworks.Select(e =>
+            {
+                var frameworkContext = new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(e));
+                frameworkContext.TargetAlias = e;
+                return frameworkContext;
+            }));
+            context.Properties.Add("RestoreProjectStyle", "PackageReference");
+            return context;
+        }
+
         public static SimpleTestProjectContext CreateNETCoreWithSDK(
             string projectName,
             string solutionRoot,
@@ -466,7 +481,7 @@ namespace NuGet.Test.Utility
                     ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
                         { tfPropName, OriginalFrameworkStrings.Count != 0 ? string.Join(";", OriginalFrameworkStrings): 
-                        string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                        string.Join(";", Frameworks.Select(f => f.TargetAlias)) },
                     });
                 }
 
@@ -484,18 +499,18 @@ namespace NuGet.Test.Utility
                         tfmProps.Add("TargetFrameworkIdentifier", frameworkInfo.Framework.Framework);
                         tfmProps.Add("TargetFrameworkVersion", $"v{NormalizeVersionString(frameworkInfo.Framework.Version)}");
                         tfmProps.Add("_TargetFrameworkVersionWithoutV", NormalizeVersionString(frameworkInfo.Framework.Version));
+                        tfmProps.Add("TargetFrameworkMoniker", $"{frameworkInfo.Framework.Framework}, Version={NormalizeVersionString(frameworkInfo.Framework.Version)}");
 
                         if (frameworkInfo.Framework.HasPlatform)
                         {
                             tfmProps.Add("TargetPlatformIdentifier", frameworkInfo.Framework.Platform);
                             tfmProps.Add("TargetPlatformVersion", NormalizeVersionString(frameworkInfo.Framework.PlatformVersion));
                             tfmProps.Add("TargetPlatformMoniker", $"{frameworkInfo.Framework.Platform}, Version={NormalizeVersionString(frameworkInfo.Framework.PlatformVersion)}");
-
                         }
                     }
 
                     // Add properties with a TFM condition
-                    ProjectFileUtils.AddProperties(xml, tfmProps, $" '$(TargetFramework)' == '{frameworkInfo.Framework.GetShortFolderName()}' ");
+                    ProjectFileUtils.AddProperties(xml, tfmProps, $" '$(TargetFramework)' == '{frameworkInfo.TargetAlias}' ");
 
                     foreach (var package in frameworkInfo.PackageReferences)
                     {
