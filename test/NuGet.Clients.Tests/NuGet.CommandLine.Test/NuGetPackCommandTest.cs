@@ -6257,13 +6257,14 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
 
             nuspec
                 .WithReadme(@"docs/readme.md")
                 .WithFile(@"content/readme.md", "docs");
 
             testDir
-                .WithFile(@"content/readme.md", 6)
+                .WithFile($"content{s}readme.md", 6)
                 .WithNuspec(nuspec);
 
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
@@ -6274,13 +6275,14 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
 
             nuspec
                 .WithReadme(@"docs/readme.md")
                 .WithFile(@"content/*", "docs");
 
             testDir
-                .WithFile(@"content/readme.md", 6)
+                .WithFile($"content{s}readme.md", 6)
                 .WithNuspec(nuspec);
 
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
@@ -6291,13 +6293,14 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
 
             nuspec
                 .WithReadme(@"docs\readme.md")
                 .WithFile(@"content\readme.md", "docs");
 
             testDir
-                .WithFile(@"content\readme.md", 6)
+                .WithFile($"content{s}readme.md", 6)
                 .WithNuspec(nuspec);
 
             TestPackReadmeSuccess(testDir, @"docs\readme.md");
@@ -6308,13 +6311,14 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
 
             nuspec
                 .WithReadme(@"docs\readme.md")
                 .WithFile(@"content\*", "docs");
 
             testDir
-                .WithFile(@"content\readme.md", 6)
+                .WithFile($"content{s}readme.md", 6)
                 .WithNuspec(nuspec);
 
             TestPackReadmeSuccess(testDir, @"docs\readme.md");
@@ -6325,13 +6329,14 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
 
             nuspec
                 .WithReadme(@"docs/readme.md")
                 .WithFile(@"content/*", "docs");
 
             testDir
-                .WithFile(@"content\readme.md", 6)
+                .WithFile($"content{s}readme.md", 6)
                 .WithNuspec(nuspec);
 
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
@@ -6342,13 +6347,14 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
 
             nuspec
                 .WithReadme(@"docs\readme.md")
                 .WithFile(@"content\*", "docs");
 
             testDir
-                .WithFile(@"content/readme.md", 6)
+                .WithFile($"content{s}readme.md", 6)
                 .WithNuspec(nuspec);
 
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
@@ -6359,13 +6365,32 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
 
             nuspec
                 .WithReadme(@"docs/readme.md")
                 .WithFile(@"content\*", "docs");
 
             testDir
-                .WithFile(@"content/readme.md", 6)
+                .WithFile($"content{s}readme.md", 6)
+                .WithNuspec(nuspec);
+
+            TestPackReadmeSuccess(testDir, @"docs/readme.md");
+        }
+
+        [Fact]
+        public void PackCommand_PackReadme_DirSeparatorMix4_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
+
+            nuspec
+                .WithReadme(@"docs\readme.md")
+                .WithFile(@"content/*", "docs");
+
+            testDir
+                .WithFile($"content{s}readme.md", 6)
                 .WithNuspec(nuspec);
 
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
