@@ -3485,7 +3485,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
                 var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
-               
+
                 // Assert
                 Assert.Equal(1, project1Spec.TargetFrameworks.Count());
                 Assert.Equal(2, project1Spec.TargetFrameworks.First().Dependencies.Count);
@@ -3510,7 +3510,7 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal("z", centralDependencyZ.Name);
                 Assert.Equal("[3.0.0, )", centralDependencyZ.VersionRange.ToNormalizedString());
-               
+
                 Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
             }
         }
@@ -3564,7 +3564,7 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 });
 
-                
+
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
@@ -3580,7 +3580,7 @@ namespace NuGet.Commands.Test
                     { "Id", "y" },
                     { "VersionRange", "2.0.0" },
                 });
-                
+
                 var wrappedItems = items.Select(CreateItems).ToList();
 
                 // Act
