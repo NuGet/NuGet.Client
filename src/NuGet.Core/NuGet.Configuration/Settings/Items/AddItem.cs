@@ -27,12 +27,13 @@ namespace NuGet.Configuration
                 !string.Equals(a.Key, ConfigurationConstants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
             ).ToDictionary(a => a.Key, a => a.Value));
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = IReadOnlyCollectionUtility.Create<string>(ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute);
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; } = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
             new Dictionary<string, IReadOnlyCollection<string>>()
             {
-                { ConfigurationConstants.KeyAttribute, new HashSet<string>() { string.Empty } }
+                { ConfigurationConstants.KeyAttribute, IReadOnlyCollectionUtility.Create<string>(string.Empty) }
             });
 
         public AddItem(string key, string value)

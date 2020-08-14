@@ -1,13 +1,9 @@
 <Project>
-  <PropertyGroup>
-  <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
-  </PropertyGroup>
-  
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibraryForSigning)</TargetFrameworks>
     <TargetFramework />
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>

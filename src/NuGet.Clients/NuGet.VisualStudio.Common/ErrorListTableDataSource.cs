@@ -10,9 +10,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
-using NuGet.VisualStudio;
-using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -20,9 +19,9 @@ namespace NuGet.VisualStudio.Common
     /// Add/Remove warnings/errors from the error list.
     /// This persists messages once they are added.
     /// </summary>
-    [Export(typeof(ErrorListTableDataSource))]
+    [Export(typeof(INuGetErrorList))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class ErrorListTableDataSource : ITableDataSource, IDisposable
+    public sealed class ErrorListTableDataSource : INuGetErrorList, ITableDataSource, IDisposable
     {
         private readonly object _initLockObj = new object();
         private readonly object _subscribeLockObj = new object();

@@ -2169,7 +2169,7 @@ public class B
         // Authors is required.
         // Description is required.
         [Fact]
-        public void PackCommand_NuspecFileWithTokens_falls_back_to_assembly_version_when_invalid_informational_version() // @odalet, https://github.com/NuGet/Home/issues/5548
+        public void PackCommand_NuspecFileWithTokensWithInvalidInformationVersion_FallsBackToAssemblyVersion()
         {
             // Arrange
             const string version = "1.2.3.4";
@@ -2195,7 +2195,7 @@ public class B
         }
 
         [Fact]
-        public void PackCommand_NuspecFileWithTokens_uses_informational_version() // @odalet, https://github.com/NuGet/Home/issues/5548
+        public void PackCommand_NuspecFileWithTokens_UsesInformationalVersion()
         {
             // Arrange
             const string version = "1.2.3.4";
@@ -2224,7 +2224,7 @@ public class B
 
         // This test is a bit redundant with the ones before, but still useful for debugging
         [Fact]
-        public void PackCommandRunner_does_not_throw_when_informational_version_is_invalid() // @odalet, https://github.com/NuGet/Home/issues/5548
+        public void PackCommandRunner_WhenInformationalVersionIsInvalid_DoesNotThrow()
         {
             // Arrange
             const string version = "1.2.3.4";

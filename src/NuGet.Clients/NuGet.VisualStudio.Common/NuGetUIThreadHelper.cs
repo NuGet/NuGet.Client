@@ -16,7 +16,7 @@ namespace NuGet.VisualStudio
         /// Initially it will be null and will be initialized to CPS JTF when there is CPS
         /// based project is being created.
         /// </summary>
-        private static Lazy<JoinableTaskFactory> _joinableTaskFactory;
+        private static Lazy<JoinableTaskFactory> LazyJoinableTaskFactory;
 
         /// <summary>
         /// Returns the static instance of JoinableTaskFactory set by SetJoinableTaskFactoryFromService.
@@ -29,7 +29,7 @@ namespace NuGet.VisualStudio
         {
             get
             {
-                return _joinableTaskFactory?.Value ?? GetThreadHelperJoinableTaskFactorySafe();
+                return LazyJoinableTaskFactory?.Value ?? GetThreadHelperJoinableTaskFactorySafe();
             }
         }
 
@@ -44,9 +44,9 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(projectServiceAccessor));
             }
 
-            if (_joinableTaskFactory == null)
+            if (LazyJoinableTaskFactory == null)
             {
-                _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
+                LazyJoinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
                 {
                     // Use IProjectService for Visual Studio 2017
                     var projectService = projectServiceAccessor.GetProjectService();
@@ -66,7 +66,7 @@ namespace NuGet.VisualStudio
             Assumes.Present(joinableTaskFactory);
 
             // This is really just a test-hook
-            _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() => joinableTaskFactory);
+            LazyJoinableTaskFactory = new Lazy<JoinableTaskFactory>(() => joinableTaskFactory);
         }
 
         private static JoinableTaskFactory GetThreadHelperJoinableTaskFactorySafe()

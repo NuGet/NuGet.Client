@@ -84,10 +84,28 @@ namespace NuGet.Build.Tasks.Test
                 })
                 {
 #if IS_CORECLR
-                    task.GetProcessFileName().Should().Be(Path.Combine(testDirectory, "MSBuild", "dotnet"));
+                    task.GetProcessFileName(null).Should().Be(Path.Combine(testDirectory, "MSBuild", "dotnet"));
 #else
-                    task.GetProcessFileName().Should().Be(Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.exe"));
+                    task.GetProcessFileName(null).Should().Be(Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.exe"));
 #endif
+                }
+            }
+        }
+
+        [Fact]
+        public void GetProcessFileName_WithExePathParameter_ReturnsCorrectValue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                string msbuildBinPath = Path.Combine(testDirectory, "MSBuild", "Current", "Bin");
+                string exePath = Path.Combine(testDirectory, "override.exe");
+
+                using (var task = new RestoreTaskEx
+                {
+                    MSBuildBinPath = msbuildBinPath
+                })
+                {
+                    task.GetProcessFileName(exePath).Should().Be(exePath);
                 }
             }
         }

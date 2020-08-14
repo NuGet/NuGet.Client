@@ -113,19 +113,18 @@ namespace NuGet.Configuration
             }
         }
 
-        protected override IReadOnlyCollection<string> AllowedAttributes { get; } = new HashSet<string>
-        {
-            ConfigurationConstants.PackageSourceAttribute,
-            ConfigurationConstants.PathAttribute,
-            ConfigurationConstants.PasswordAttribute,
-            ConfigurationConstants.ClearTextPasswordAttribute
-        };
+        protected override IReadOnlyCollection<string> AllowedAttributes { get; }
+            = IReadOnlyCollectionUtility.Create<string>(
+                ConfigurationConstants.PackageSourceAttribute,
+                ConfigurationConstants.PathAttribute,
+                ConfigurationConstants.PasswordAttribute,
+                ConfigurationConstants.ClearTextPasswordAttribute);
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>
-        {
-            ConfigurationConstants.PackageSourceAttribute,
-            ConfigurationConstants.PathAttribute
-        };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = IReadOnlyCollectionUtility.Create<string>(
+                ConfigurationConstants.PackageSourceAttribute,
+                ConfigurationConstants.PathAttribute);
+
 
         internal override XNode AsXNode()
         {

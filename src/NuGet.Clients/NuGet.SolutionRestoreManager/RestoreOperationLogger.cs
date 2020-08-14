@@ -31,7 +31,7 @@ namespace NuGet.SolutionRestoreManager
         // Queue of (bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage)
         private readonly ConcurrentQueue<Tuple<bool, bool, ILogMessage>> _loggedMessages = new ConcurrentQueue<Tuple<bool, bool, ILogMessage>>();
 
-        private Lazy<ErrorListTableDataSource> _errorListDataSource;
+        private Lazy<INuGetErrorList> _errorList;
         private RestoreOperationSource _operationSource;
         private JoinableTaskFactory _taskFactory;
         private JoinableTaskCollection _jtc;
@@ -69,16 +69,16 @@ namespace NuGet.SolutionRestoreManager
 
         public async Task StartAsync(
             RestoreOperationSource operationSource,
-            Lazy<ErrorListTableDataSource> errorListDataSource,
+            Lazy<INuGetErrorList> errorList,
             JoinableTaskFactory jtf,
             CancellationTokenSource cts)
         {
-            Assumes.Present(errorListDataSource);
+            Assumes.Present(errorList);
             Assumes.Present(jtf);
             Assumes.Present(cts);
 
             _operationSource = operationSource;
-            _errorListDataSource = errorListDataSource;
+            _errorList = errorList;
 
             _jtc = jtf.Context.CreateCollection();
             _taskFactory = jtf.Context.CreateFactory(_jtc);
@@ -109,10 +109,10 @@ namespace NuGet.SolutionRestoreManager
                 }
             });
 
-            if (_errorListDataSource.IsValueCreated)
+            if (_errorList.IsValueCreated)
             {
                 // Clear old entries
-                _errorListDataSource.Value.ClearNuGetEntries();
+                _errorList.Value.ClearNuGetEntries();
             }
         }
 
@@ -123,7 +123,7 @@ namespace NuGet.SolutionRestoreManager
             if (_showErrorList)
             {
                 // Give the error list focus
-                _errorListDataSource.Value.BringToFrontIfSettingsPermit();
+                _errorList.Value.BringToFrontIfSettingsPermit();
             }
         }
 
@@ -204,7 +204,7 @@ namespace NuGet.SolutionRestoreManager
                 var errorListEntry = new ErrorListTableEntry(logMessage);
 
                 // Add the entry to the list
-                _errorListDataSource.Value.AddNuGetEntries(errorListEntry);
+                _errorList.Value.AddNuGetEntries(errorListEntry);
 
                 // Display the error list after restore completes
                 _showErrorList = true;
@@ -306,8 +306,8 @@ namespace NuGet.SolutionRestoreManager
         {
             var entry = new ErrorListTableEntry(errorText, LogLevel.Error);
 
-            _errorListDataSource.Value.AddNuGetEntries(entry);
-            _errorListDataSource.Value.BringToFrontIfSettingsPermit();
+            _errorList.Value.AddNuGetEntries(entry);
+            _errorList.Value.BringToFrontIfSettingsPermit();
         }
 
         public Task WriteHeaderAsync()

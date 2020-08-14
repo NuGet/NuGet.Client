@@ -1588,13 +1588,13 @@ namespace NuGet.CommandLine.Test
 
                 var projects = new List<SimpleTestProjectContext>();
 
-                var project = SimpleTestProjectContext.CreateNETCore(
+                var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     "proj",
                     pathContext.SolutionRoot,
-                    NuGetFramework.Parse("netstandard1.3"),
-                    NuGetFramework.Parse("net4"));
+                    "net46",
+                    "net45");
 
-                project.OriginalFrameworkStrings = new List<string> { "netstandard1.3", "net4" };
+                project.OriginalFrameworkStrings = new List<string> { "net46", "net45" };
 
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
@@ -1614,8 +1614,8 @@ namespace NuGet.CommandLine.Test
 
                 var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
 
-                Assert.Equal("'$(TargetFramework)' == 'net4' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
-                Assert.Equal("'$(TargetFramework)' == 'netstandard1.3' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Contains("'$(TargetFramework)' == 'net45' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Contains("'$(TargetFramework)' == 'net46' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 

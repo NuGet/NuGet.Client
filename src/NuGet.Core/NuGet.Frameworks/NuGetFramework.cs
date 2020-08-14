@@ -45,8 +45,8 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Creates a new NuGetFramework instance, with an optional profile (only available for netframework)
         /// </summary>
-        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile)
-            : this(frameworkIdentifier, frameworkVersion, profile: ProcessProfile(profile), platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
+        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile)
+            : this(frameworkIdentifier, frameworkVersion, profile: ProcessProfile(frameworkProfile), platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
 
         {
         }

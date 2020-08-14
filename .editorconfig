@@ -56,6 +56,9 @@ dotnet_style_explicit_tuple_names = true:suggestion
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 
+; Licence header
+file_header_template = Copyright (c) .NET Foundation. All rights reserved.\nLicensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 ; CSharp code style settings
 [*.cs]
 ; IDE0007 'var' preferences
