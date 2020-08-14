@@ -1712,6 +1712,61 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public async Task RestoreCommand_CentralVersion_ErrorWhenFloatingCentralVersions()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "TestProject";
+                var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+
+                // Package Bar does not have a corresponding PackageVersion 
+                var packageRefDependecyFoo = new LibraryDependency()
+                {
+                    LibraryRange = new LibraryRange("foo", versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
+                };
+
+                var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.*", allowFloating:true));
+
+                var tfi = CreateTargetFrameworkInformation(
+                    new List<LibraryDependency>() { packageRefDependecyFoo },
+                    new List<CentralPackageVersion>() { centralVersionFoo });
+                var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
+                packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
+                {
+                    ProjectUniqueName = projectName,
+                    CentralPackageVersionsEnabled = true,
+                    ProjectStyle = ProjectStyle.PackageReference,
+                };
+                packageSpec.FilePath = projectPath;
+
+                var dgspec = new DependencyGraphSpec();
+                dgspec.AddProject(packageSpec);
+
+                var sources = new List<PackageSource>();
+                var logger = new TestLogger();
+
+                var request = new TestRestoreRequest(dgspec.GetProjectSpec(projectName), sources, "", logger)
+                {
+                    LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+
+                var restoreCommand = new RestoreCommand(request);
+
+                var result = await restoreCommand.ExecuteAsync();
+
+                // Assert
+                Assert.False(result.Success);
+                Assert.Equal(1, logger.ErrorMessages.Count);
+                logger.ErrorMessages.TryDequeue(out var errorMessage);
+                Assert.True(errorMessage.Contains("Central floating versions are not allowed."));
+                var messagesForNU1011 = result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1011);
+                Assert.Equal(1, messagesForNU1011.Count());
+            }
+        }
+
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");

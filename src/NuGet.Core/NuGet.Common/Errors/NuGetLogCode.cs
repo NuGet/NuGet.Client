@@ -93,6 +93,11 @@ namespace NuGet.Common
         NU1009 = 1009,
 
         /// <summary>
+        /// Central floating versions are not allowed.
+        /// </summary>
+        NU1011 = 1011,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
