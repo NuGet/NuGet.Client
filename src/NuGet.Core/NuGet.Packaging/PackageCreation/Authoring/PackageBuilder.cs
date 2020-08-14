@@ -869,7 +869,8 @@ namespace NuGet.Packaging
         {
             exclude = exclude?.Replace('\\', Path.DirectorySeparatorChar);
 
-            List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source.Replace('\\', Path.DirectorySeparatorChar), destination, _includeEmptyDirectories).ToList();
+            // Ensure that the 'source' path uses only the OS-specific directory separating character
+            List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar), destination, _includeEmptyDirectories).ToList();
 
             if (_includeEmptyDirectories)
             {
