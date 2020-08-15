@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Core
         {
             if (versionComparer == null)
             {
-                throw new ArgumentNullException("versionComparer");
+                throw new ArgumentNullException(nameof(versionComparer));
             }
 
             _versionComparer = versionComparer;

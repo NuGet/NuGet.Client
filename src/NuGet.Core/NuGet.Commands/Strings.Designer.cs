@@ -268,7 +268,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The PackageReference items {0} do not have corresponding PackageVersions..
+        ///   Looks up a localized string similar to The PackageReference items {0} do not have corresponding PackageVersion..
         /// </summary>
         internal static string Error_CentralPackageVersions_MissingPackageVersion {
             get {

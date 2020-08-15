@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 #if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
+using NuGet.Packaging.Signing.Utility;
 #endif
 
 namespace NuGet.Packaging.Signing
@@ -38,7 +39,7 @@ namespace NuGet.Packaging.Signing
                 for (var i = 0; i < cmsSigner.Certificates.Count; ++i)
                 {
                     var cert = cmsSigner.Certificates[i];
-                    var context = Marshal.PtrToStructure<CERT_CONTEXT>(cert.Handle);
+                    var context = MarshalUtility.PtrToStructure<CERT_CONTEXT>(cert.Handle);
 
                     certificateBlobs[i] = new BLOB() { cbData = context.cbCertEncoded, pbData = context.pbCertEncoded };
                 }
@@ -118,7 +119,7 @@ namespace NuGet.Packaging.Signing
             var signerInfo = new CMSG_SIGNER_ENCODE_INFO();
 
             signerInfo.cbSize = (uint)Marshal.SizeOf(signerInfo);
-            signerInfo.pCertInfo = Marshal.PtrToStructure<CERT_CONTEXT>(cmsSigner.Certificate.Handle).pCertInfo;
+            signerInfo.pCertInfo = MarshalUtility.PtrToStructure<CERT_CONTEXT>(cmsSigner.Certificate.Handle).pCertInfo;
             signerInfo.hCryptProvOrhNCryptKey = privateKey.Handle.DangerousGetHandle();
             signerInfo.HashAlgorithm.pszObjId = cmsSigner.DigestAlgorithm.Value;
 
@@ -169,16 +170,16 @@ namespace NuGet.Packaging.Signing
 
                 checked
                 {
-                    var attributeSize = Marshal.SizeOf<CRYPT_ATTRIBUTE>();
-                    var blobSize = Marshal.SizeOf<CRYPT_INTEGER_BLOB>();
-                    var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc(attributeSize * cmsSigner.SignedAttributes.Count);
+                    int sizeOfCryptAttribute = MarshalUtility.SizeOf<CRYPT_ATTRIBUTE>();
+                    int sizeOfCryptIntegerBlob = MarshalUtility.SizeOf<CRYPT_INTEGER_BLOB>();
+                    var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc(sizeOfCryptAttribute * cmsSigner.SignedAttributes.Count);
                     var currentAttribute = attributesArray;
 
                     foreach (var attribute in cmsSigner.SignedAttributes)
                     {
                         currentAttribute->pszObjId = hb.AllocAsciiString(attribute.Oid.Value);
                         currentAttribute->cValue = (uint)attribute.Values.Count;
-                        currentAttribute->rgValue = hb.Alloc(blobSize);
+                        currentAttribute->rgValue = hb.Alloc(sizeOfCryptIntegerBlob);
 
                         foreach (var value in attribute.Values)
                         {

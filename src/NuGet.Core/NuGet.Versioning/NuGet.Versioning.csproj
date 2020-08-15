@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
     <TargetFramework />
     <Description>NuGet's implementation of Semantic Versioning.</Description>
     <PackageTags>semver;semantic versioning</PackageTags>
@@ -12,7 +13,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
     <TargetFrameworks />
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
@@ -25,7 +26,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

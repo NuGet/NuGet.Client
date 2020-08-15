@@ -251,7 +251,9 @@
 
   <Target Name="GetBuildOutputWithLocMetadata" DependsOnTargets="BuiltProjectOutputGroup" Returns="@(DllsToLocalizeWithMetadata)">
     <ItemGroup>
-      <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPlat'" KeepDuplicates="false">
+      <!-- remove all net45 assemblies, otherwise loc tools have problem loading two assemblies of same name in same appdomain. net45 doesn't ship in VSIX, so doesn't need loc. -->
+      <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')"
+Condition=" ('%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPlat') AND !($([System.String]::new('%(FullPath)').Contains('\net45\'))) " KeepDuplicates="false">
         <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
 	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
       </DllsToLocalizeWithMetadata>

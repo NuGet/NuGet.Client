@@ -1,19 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_SIGNING_SUPPORTED && IS_CORECLR
 using System;
 using System.Globalization;
-#if IS_SIGNING_SUPPORTED && IS_CORECLR
 using System.Net.Http;
 using System.Net.Http.Headers;
-#endif
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace NuGet.Packaging.Signing
 {
-#if IS_SIGNING_SUPPORTED && IS_CORECLR
     internal sealed class Rfc3161TimestampRequestNetstandard21Wrapper : IRfc3161TimestampRequest
     {
         private static readonly HttpClient HttpClient = new HttpClient();
@@ -87,5 +85,5 @@ namespace NuGet.Packaging.Signing
             return normalizedNonce.HasValue ? normalizedNonce.Value.ToArray() : null;
         }
     }
-#endif
 }
+#endif

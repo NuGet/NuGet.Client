@@ -82,4 +82,3 @@ namespace NuGet.Packaging.Signing
         }
     }
 }
- 

@@ -1103,6 +1103,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>{0} the project path.</comment>
   </data>
   <data name="Error_CentralPackageVersions_MissingPackageVersion" xml:space="preserve">
-    <value>The PackageReference items {0} do not have corresponding PackageVersions.</value>
+    <value>The PackageReference items {0} do not have corresponding PackageVersion.</value>
   </data>
 </root>

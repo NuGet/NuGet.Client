@@ -26,7 +26,8 @@ namespace NuGet.Configuration
 
         public IList<string> Owners { get; private set; }
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.NameAttribute, ConfigurationConstants.ServiceIndex };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = IReadOnlyCollectionUtility.Create<string>(ConfigurationConstants.NameAttribute, ConfigurationConstants.ServiceIndex);
 
         public RepositoryItem(string name, string serviceIndex, params CertificateItem[] certificates)
             : this(name, serviceIndex, owners: null, certificates: certificates)
@@ -46,7 +47,7 @@ namespace NuGet.Configuration
             if (!string.IsNullOrEmpty(owners))
             {
                 _owners = new OwnersItem(owners);
-                Owners =_owners.Content;
+                Owners = _owners.Content;
             }
             else
             {

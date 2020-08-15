@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#if IS_DESKTOP
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -17,8 +18,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal sealed class Rfc3161TimestampRequest : AsnEncodedData
     {
-
-#if IS_DESKTOP
         private class DataType
         {
             internal int _version;
@@ -422,6 +421,6 @@ namespace NuGet.Packaging.Signing
             _data = null;
             base.CopyFrom(asnEncodedData);
         }
-#endif
     }
 }
+#endif

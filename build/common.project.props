@@ -14,17 +14,16 @@
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+    <NETCoreTargetFrameworksForSigning>$(NETCoreTargetFramework);netcoreapp5.0</NETCoreTargetFrameworksForSigning>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
-    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">netcoreapp2.1</NETCoreTargetFrameworks>
-    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">netcoreapp2.1;netcoreapp5.0</NETCoreTargetFrameworks>
-    <NETCoreTestTargetFrameworks>netcoreapp3.1;netcoreapp5.0</NETCoreTestTargetFrameworks>
     <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
-    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFrameworks)</TargetFrameworksExe>
+    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksExe Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
-    <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
-    <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">$(NETFXTargetFramework);$(NetStandardVersion);netcoreapp5.0</TargetFrameworksLibrary>
+    <TargetFrameworksExeForSigning>$(TargetFrameworksExe);netcoreapp5.0</TargetFrameworksExeForSigning>
+    <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
     <TargetFrameworksLibrary Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);netcoreapp5.0</TargetFrameworksLibraryForSigning>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
