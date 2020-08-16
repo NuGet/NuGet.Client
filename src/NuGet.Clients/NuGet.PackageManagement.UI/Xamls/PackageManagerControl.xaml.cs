@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -106,6 +107,26 @@ namespace NuGet.PackageManagement.UI
         private bool _updatesTabDataIsLoaded;
 
         private bool _forceRecommender;
+
+        private object _cachedInstalledItemsLock = new object();
+        private ObservableCollection<PackageItemListViewModel> _cachedInstalledItems;
+        public ObservableCollection<PackageItemListViewModel> CachedInstalledItems
+        {
+            get => _cachedInstalledItems;
+            private set
+            {
+                lock (_cachedInstalledItemsLock)
+                {
+                    if (_cachedInstalledItems?.Count > 0)
+                    {
+                        _packageList.CleanupPackages(_cachedInstalledItems);
+                        _cachedInstalledItems.Clear();
+                    }
+
+                    _cachedInstalledItems = value;
+                }
+            }
+        }
 
         public PackageManagerControl(
             PackageManagerModel model,
@@ -811,6 +832,19 @@ namespace NuGet.PackageManagement.UI
                 FlagTabDataAsLoaded(filterToRender, isLoaded: false);
             }
 
+            //Differentiate Browse versus Installed/Updates/Consolidate.
+            if (filterToRender == ItemFilter.All)
+            {
+                await LoadBrowseData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);
+            }
+            else
+            {
+                await LoadInstalledData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);
+            }
+        }
+
+        private async Task LoadBrowseData(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask, ItemFilter filterToRender, PackageLoadContext loadContext)
+        {
             var packageFeeds = await GetPackageFeedsAsync(searchText, loadContext);
 
             try
@@ -825,6 +859,63 @@ namespace NuGet.PackageManagement.UI
                 var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+
+                if (pSearchCallback != null && searchTask != null)
+                {
+                    var searchResult = await searchResultTask;
+                    pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
+                }
+
+                // When not using Cache, refresh all Counts.
+                if (!useCachedPackageMetadata)
+                {
+                    RefreshInstalledAndUpdatesTabs();
+                }
+
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    foreach (var package in _packageList.PackageItemsFiltered)
+                    {
+                        await package.ReloadPackageVersionsAsync();
+                    }
+                    FlagTabDataAsLoaded(filterToRender);
+
+                    // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
+                    // UI filtering for Updates is ready.
+                    if (filterToRender == ItemFilter.Installed)
+                    {
+                        FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
+                    }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCountAsync));
+            }
+            catch (OperationCanceledException)
+            {
+                // Invalidate cache.
+                Model.CachedUpdates = null;
+                FlagTabDataAsLoaded(filterToRender, isLoaded: false);
+            }
+        }
+
+        private async Task LoadInstalledData(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask, ItemFilter filterToRender, PackageLoadContext loadContext)
+        {
+            var installedFeed = await GetPackageFeedsAsync(searchText, loadContext);
+
+            try
+            {
+                var loader = new PackageItemLoader(
+                    loadContext, installedFeed.mainFeed, searchText, IncludePrerelease, recommenderPackageFeed: null);
+                var loadingMessage = string.IsNullOrWhiteSpace(searchText)
+                    ? Resx.Resources.Text_Loading
+                    : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
+
+                // start SearchAsync task for initial loading of packages
+                Task<SearchResult<IPackageSearchMetadata>> searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
+                // this will wait for searchResultTask to complete instead of creating a new task
+                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+
+                //Store installed items in the control for reuse on any tab based on Installed data.
+                CachedInstalledItems = loader.CachedInstalledItems;
 
                 if (pSearchCallback != null && searchTask != null)
                 {
@@ -1090,37 +1181,11 @@ namespace NuGet.PackageManagement.UI
                     logger);
                 return packageFeeds;
             }
-
-            if (filter == ItemFilter.Installed)
+            else
             {
                 packageFeeds.mainFeed = new InstalledPackageFeed(installedPackages, metadataProvider, logger);
                 return packageFeeds;
             }
-
-            if (filter == ItemFilter.Consolidate)
-            {
-                packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackages, metadataProvider, logger);
-                return packageFeeds;
-            }
-
-            // Search all / updates available cannot work without a source repo
-            if (context.SourceRepositories == null)
-            {
-                return packageFeeds;
-            }
-
-            if (filter == ItemFilter.UpdatesAvailable)
-            {
-                packageFeeds.mainFeed = new UpdatePackageFeed(
-                    installedPackages,
-                    metadataProvider,
-                    context.Projects,
-                    context.CachedPackages,
-                    logger);
-                return packageFeeds;
-            }
-
-            throw new InvalidOperationException("Unsupported feed type");
         }
 
         private static IPackageMetadataProvider CreatePackageMetadataProvider(PackageLoadContext context)
@@ -1174,32 +1239,40 @@ namespace NuGet.PackageManagement.UI
                 oldCts?.Cancel();
                 oldCts?.Dispose();
 
-                var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
-                    (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
-                var switchedToInstalledOrUpdatesTab = _topPanel.Filter == ItemFilter.UpdatesAvailable || _topPanel.Filter == ItemFilter.Installed;
-                var installedAndUpdatesTabDataLoaded = _installedTabDataIsLoaded && _updatesTabDataIsLoaded;
-                var hasPendingBackgroundWork = _packageList.PackageItems.Any(item => item.HasPendingBackgroundWork);
+                var switchedFromBrowse = e.PreviousFilter.HasValue && e.PreviousFilter == ItemFilter.All;
+                var switchedToBrowse = _topPanel.Filter == ItemFilter.All;
 
-                var isUiFiltering = switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabDataLoaded
-                    && !hasPendingBackgroundWork;
+                bool isUIFiltering = false;
 
-                //Installed and Updates tabs don't need to be refreshed when switching between the two, if they're both loaded.
-                if (isUiFiltering)
+                if (switchedToBrowse)
                 {
-                    //UI can apply filtering.
-                    _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
-                }
-                else //Refresh tab from Cache.
-                {
-                    //If we came from a tab outside Installed/Updates, then they need to be Refreshed before UI filtering can take place.
-                    if (!switchedFromInstalledOrUpdatesTab)
-                    {
-                        ResetTabDataLoadFlags();
-                    }
-
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                 }
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUiFiltering);
+                else //Switched to Installed/Updates/Consolidate.
+                {
+                    //First time loading the Installed packages.
+                    if (CachedInstalledItems == null)
+                    {
+                        //Load Installed packages from feed, UpdatePackageList, and store into cache.
+                        SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+                    }
+                    else
+                    {
+                        isUIFiltering = true;
+
+                        //Package List is not currently bound to Installed packages.
+                        if (switchedFromBrowse)
+                        {
+                            //Repopulate with Installed package data.
+                            _packageList.UpdatePackageList(packages: CachedInstalledItems, refresh: true);
+                        }
+                    }
+
+                    //Filter installed packages based on Tab and user selections.
+                    _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
+                }
+
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +38,8 @@ namespace NuGet.PackageManagement.UI
         public IItemLoaderState State => _state;
 
         public bool IsMultiSource => _packageFeed.IsMultiSource;
+
+        internal ObservableCollection<PackageItemListViewModel> CachedInstalledItems { get; private set; }
 
         private class PackageFeedSearchState : IItemLoaderState
         {
@@ -327,6 +330,11 @@ namespace NuGet.PackageManagement.UI
 
                     return listItem;
                 });
+
+            if (_packageFeed is InstalledPackageFeed)
+            {
+                CachedInstalledItems = new ObservableCollection<PackageItemListViewModel>(listItems);
+            }
 
             return listItems.ToArray();
         }

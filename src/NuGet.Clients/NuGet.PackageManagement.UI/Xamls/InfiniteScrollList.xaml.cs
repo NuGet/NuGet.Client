@@ -366,6 +366,8 @@ namespace NuGet.PackageManagement.UI
                     {
                         Items.Remove(_loadingStatusIndicator);
                     }
+
+                    _loadingStatusIndicator.Status = LoadingStatus.NoMoreItems;
                 }
             }
 
@@ -555,7 +557,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="packages">Packages collection to add</param>
         /// <param name="refresh">Clears <see cref="Items"> list if set to <c>true</c></param>
-        private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
+        internal void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
             _joinableTaskFactory.Value.Run(async () =>
             {
@@ -600,6 +602,14 @@ namespace NuGet.PackageManagement.UI
 
             Items.Clear();
             _loadingStatusBar.ItemsLoaded = 0;
+        }
+
+        internal void CleanupPackages(IEnumerable<PackageItemListViewModel> packages)
+        {
+            foreach (var package in packages)
+            {
+                package.PropertyChanged -= Package_PropertyChanged;
+            }
         }
 
         public void UpdatePackageStatus(PackageCollectionItem[] installedPackages)
