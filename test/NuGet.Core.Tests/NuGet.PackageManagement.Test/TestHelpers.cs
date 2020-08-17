@@ -21,18 +21,18 @@ namespace NuGet.Test
 {
     public class TestHelpers
     {
-        internal static void Expected(List<Tuple<PackageIdentity, NuGetProjectActionType>> expected, string id, NuGetVersion oldVersion, NuGetVersion newVersion)
+        public static void Expected(List<Tuple<PackageIdentity, NuGetProjectActionType>> expected, string id, NuGetVersion oldVersion, NuGetVersion newVersion)
         {
             expected.Add(Tuple.Create(new PackageIdentity(id, oldVersion), NuGetProjectActionType.Uninstall));
             expected.Add(Tuple.Create(new PackageIdentity(id, newVersion), NuGetProjectActionType.Install));
         }
 
-        internal static void Expected(List<Tuple<PackageIdentity, NuGetProjectActionType>> expected, string id, NuGetVersion newVersion)
+        public static void Expected(List<Tuple<PackageIdentity, NuGetProjectActionType>> expected, string id, NuGetVersion newVersion)
         {
             expected.Add(Tuple.Create(new PackageIdentity(id, newVersion), NuGetProjectActionType.Install));
         }
 
-        internal static bool Compare(
+        public static bool Compare(
             IEnumerable<Tuple<PackageIdentity, NuGetProjectActionType>> lhs,
             IEnumerable<Tuple<PackageIdentity, NuGetProjectActionType>> rhs)
         {

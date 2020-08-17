@@ -2251,7 +2251,7 @@ namespace NuGet.Test
                     sources.Add(new PackageSource(pathContext.PackageSource));
 
                     var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
-
+                    
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
