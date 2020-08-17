@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -259,9 +260,6 @@ namespace NuGet.PackageManagement.UI
 
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
-                //Any UI filter should be cleared when Loading.
-                ClearUIFilter();
-
                 if (selectedPackageItem != null)
                 {
                     UpdateSelectedItem(selectedPackageItem);
@@ -341,6 +339,9 @@ namespace NuGet.PackageManagement.UI
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
+            CheckBoxesEnabled = itemFilter == ItemFilter.UpdatesAvailable;
+            _updateButtonContainer.Visibility = itemFilter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
+
             try
             {
                 if (itemFilter == ItemFilter.UpdatesAvailable)
@@ -355,6 +356,11 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
+                if (Items.Contains(_loadingStatusIndicator))
+                {
+                    Items.Remove(_loadingStatusIndicator);
+                }
+
                 //If no items are shown in the filter, indicate in the list that no packages are found.
                 if (FilteredItemsCount == 0)
                 {
@@ -362,11 +368,6 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    if (Items.Contains(_loadingStatusIndicator))
-                    {
-                        Items.Remove(_loadingStatusIndicator);
-                    }
-
                     _loadingStatusIndicator.Status = LoadingStatus.NoMoreItems;
                 }
             }
@@ -376,13 +377,21 @@ namespace NuGet.PackageManagement.UI
             LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ApplyUIFilterForUpdatesAvailable()
+       private void WriteToOutputConsole(string message)
         {
-            CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
+            var pmc = this.FindAncestor<PackageManagerControl>();
+            pmc?.WriteToOutputConsole("INFINITESCROLL: " + message);
         }
 
-        private void ClearUIFilter()
+        private void ApplyUIFilterForUpdatesAvailable()
         {
+            WriteToOutputConsole("ApplyUIFilterForUpdatesAvailable " + (CollectionView.Filter != null ? "WAS_FILTERED" : "NO_FILTER"));
+            CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
+        }
+        
+        internal void ClearUIFilter()
+        {
+            WriteToOutputConsole("ClearUIFilter" + (CollectionView.Filter != null ? "WAS_FILTERED" : "NO_FILTER"));
             CollectionView.Filter = null;
         }
 

@@ -818,6 +818,8 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            WriteToOutputConsole("**********SearchPackagesAndRefreshUpdateCountAsync");
+
             ItemFilter filterToRender = _topPanel.Filter;
 
             var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
@@ -835,14 +837,19 @@ namespace NuGet.PackageManagement.UI
             //Differentiate Browse versus Installed/Updates/Consolidate.
             if (filterToRender == ItemFilter.All)
             {
+                WriteToOutputConsole("LoadBrowseData");
+                //Remove any UI filter.
+                _packageList.ClearUIFilter();
                 await LoadBrowseData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);
             }
             else
             {
-                await LoadInstalledData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);
-
+                WriteToOutputConsole("await LoadInstalledData");
                 //Filter installed packages based on Tab and user selections.
                 _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
+
+                await LoadInstalledData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);
+                WriteToOutputConsole("FilterItems");
             }
         }
 
@@ -917,30 +924,36 @@ namespace NuGet.PackageManagement.UI
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
+                WriteToOutputConsole("OLD CachedInstalledItems=" + CachedInstalledItems?.Count);
                 //Store installed items in the control for reuse on any tab based on Installed data.
                 CachedInstalledItems = loader.CachedInstalledItems;
+                WriteToOutputConsole("NEW CachedInstalledItems=" + CachedInstalledItems?.Count);
 
                 if (pSearchCallback != null && searchTask != null)
                 {
                     var searchResult = await searchResultTask;
+                    WriteToOutputConsole("searchResult.RawItemsCount=" + searchResult.RawItemsCount);
                     pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
                 }
 
                 // When not using Cache, refresh all Counts.
                 if (!useCachedPackageMetadata)
                 {
+                    WriteToOutputConsole("**RefreshInstalledAndUpdatesTabs=" + _packageList.Items.Count());
                     RefreshInstalledAndUpdatesTabs();
                 }
 
+               // WriteToOutputConsole("BEFORE ReloadPackageVersionsAsync");
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(); //TODO: needed?
                     foreach (var package in _packageList.PackageItemsFiltered)
                     {
+                        WriteToOutputConsole("ReloadPackageVersionsAsync " + package.Id);
                         await package.ReloadPackageVersionsAsync();
                     }
                     FlagTabDataAsLoaded(filterToRender);
-
+                    //WriteToOutputConsole("DONE WITH ReloadPackageVersionsAsync");
                     // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
                     // UI filtering for Updates is ready.
                     if (filterToRender == ItemFilter.Installed)
@@ -948,9 +961,12 @@ namespace NuGet.PackageManagement.UI
                         FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
                     }
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCountAsync));
+
+                //WriteToOutputConsole("AFTER ReloadPackageVersionsAsync");
             }
             catch (OperationCanceledException)
             {
+                WriteToOutputConsole("OperationCanceledException in ReloadPackageVersionsAsync ");
                 // Invalidate cache.
                 Model.CachedUpdates = null;
                 FlagTabDataAsLoaded(filterToRender, isLoaded: false);
@@ -1226,14 +1242,15 @@ namespace NuGet.PackageManagement.UI
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {
+            WriteToOutputConsole("***************************************************************************");
+            WriteToOutputConsole("START Filter_SelectionChanged Items=" + _packageList.Items.Count());
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.ResetLoadingStatusIndicator();
 
                 // Collapse the Update controls when the current tab is not "Updates".
-                _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
+                //ShowOrCollapseUpdateControls();
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
@@ -1253,11 +1270,13 @@ namespace NuGet.PackageManagement.UI
                 }
                 else //Switched to Installed/Updates/Consolidate.
                 {
+                    WriteToOutputConsole("DEBUG001 Filter_SelectionChanged Items=" + _packageList.Items.Count());
                     //First time loading the Installed packages.
                     if (CachedInstalledItems == null)
                     {
                         //Load Installed packages from feed and store into cache, clear and UpdatePackageList, and Filter based on Tab and user selections.
                         SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+                        WriteToOutputConsole("DEBUG002 Filter_SelectionChanged Items=" + _packageList.Items.Count());
                     }
                     else
                     {
@@ -1268,11 +1287,14 @@ namespace NuGet.PackageManagement.UI
                         {
                             //Repopulate with Installed package data.
                             _packageList.UpdatePackageList(packages: CachedInstalledItems, refresh: true);
+                            WriteToOutputConsole("DEBUG002a Filter_SelectionChanged Items=" + _packageList.Items.Count());
                         }
 
+                        WriteToOutputConsole("DEBUG003 Filter_SelectionChanged Items=" + _packageList.Items.Count());
                         //Filter installed packages based on Tab and user selections.
                         _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
-                    }                    
+                        WriteToOutputConsole("DEBUG004 Filter_SelectionChanged Items=" + _packageList.Items.Count());
+                    }
                 }
 
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering);
@@ -1280,6 +1302,12 @@ namespace NuGet.PackageManagement.UI
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
         }
+
+        //private void ShowOrCollapseUpdateControls()
+        //{
+        //    _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+        //    _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
+        //}
 
         /// <summary>
         /// Refreshes the control after packages are installed or uninstalled.
@@ -1357,6 +1385,7 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
+            WriteToOutputConsole("**********ClearSearch");
             ResetTabDataLoadFlags();
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success);
             SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
@@ -1583,13 +1612,19 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
+            WriteToOutputConsole("**********ExecuteRestartSearchCommand Items = " + _packageList.Items.Count + " Filter: " + _packageList.PackageItemsFiltered.Count());
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
             ResetTabDataLoadFlags();
             SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
             RefreshConsolidatablePackagesCount();
         }
 
-        internal void InstallPackage(string packageId, NuGetVersion version)
+        public void WriteToOutputConsole(string message)
+        {
+            _uiLogger.Log(new LogMessage(LogLevel.Information, "HACK: " + message));
+        }
+
+    internal void InstallPackage(string packageId, NuGetVersion version)
         {
             var action = UserAction.CreateInstallAction(packageId, version);
 
