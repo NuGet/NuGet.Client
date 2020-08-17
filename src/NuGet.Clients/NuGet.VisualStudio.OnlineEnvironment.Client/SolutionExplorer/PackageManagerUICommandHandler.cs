@@ -257,11 +257,12 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             uint toolWindowId;
             bool foundToolWindowId = _projectGuidToToolWindowId.TryGetValue(projectGuid.ToString(), out toolWindowId);
+            const uint FTW_none = 0;
 
             if (foundToolWindowId)
             {
                 uiShell.FindToolWindowEx(
-                    (uint)__VSFINDTOOLWIN.FTW_fFindFirst,
+                    FTW_none, //grfFTW - non-documented enum value I learned from API owner.
                     typeof(PackageManagerToolWindowPane).GUID,    // rguidPersistenceSlot
                     toolWindowId,   // dwToolWindowId
                     out windowFrame);
