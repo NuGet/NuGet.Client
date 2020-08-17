@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -13,14 +14,17 @@ namespace NuGet.PackageManagement.UI
     public class PackageManagerToolWindowPane : ToolWindowPane, IVsWindowFrameNotify3
     {
         private PackageManagerControl _content;
+        private string _projectGuid;
+        public event EventHandler<EventArgs> Closed;
 
         /// <summary>
         /// Initializes a new instance of the EditorPane class.
         /// </summary>
-        public PackageManagerToolWindowPane(PackageManagerControl control)
+        public PackageManagerToolWindowPane(PackageManagerControl control, string projectGuid)
             : base(null)
         {
             _content = control;
+            _projectGuid = projectGuid;
         }
 
         public PackageManagerModel Model
@@ -36,6 +40,11 @@ namespace NuGet.PackageManagement.UI
         public override object Content
         {
             get { return _content; }
+        }
+
+        public string ProjectGuid
+        {
+            get { return _projectGuid; }
         }
 
         private void CleanUp()
@@ -73,6 +82,8 @@ namespace NuGet.PackageManagement.UI
             });
 
             _content?.Model.Context.UserSettingsManager.PersistSettings();
+
+            Closed?.Invoke(this, new EventArgs());
 
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
 
