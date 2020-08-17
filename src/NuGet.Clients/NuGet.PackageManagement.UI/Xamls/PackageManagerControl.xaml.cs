@@ -840,6 +840,9 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 await LoadInstalledData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);
+
+                //Filter installed packages based on Tab and user selections.
+                _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
             }
         }
 
@@ -1253,7 +1256,7 @@ namespace NuGet.PackageManagement.UI
                     //First time loading the Installed packages.
                     if (CachedInstalledItems == null)
                     {
-                        //Load Installed packages from feed, UpdatePackageList, and store into cache.
+                        //Load Installed packages from feed and store into cache, clear and UpdatePackageList, and Filter based on Tab and user selections.
                         SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                     }
                     else
@@ -1266,10 +1269,10 @@ namespace NuGet.PackageManagement.UI
                             //Repopulate with Installed package data.
                             _packageList.UpdatePackageList(packages: CachedInstalledItems, refresh: true);
                         }
-                    }
 
-                    //Filter installed packages based on Tab and user selections.
-                    _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
+                        //Filter installed packages based on Tab and user selections.
+                        _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
+                    }                    
                 }
 
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering);
