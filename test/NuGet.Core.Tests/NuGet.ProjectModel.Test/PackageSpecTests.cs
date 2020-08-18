@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -860,43 +861,44 @@ namespace NuGet.ProjectModel.Test
             leftSide.Should().Be(rightSide);
         }
 
-        [Fact]
-        public void PackageSpec_Equals_WithVersion_ReturnsTrue()
+        [Theory]
+        [InlineData("a", "a", true)]
+        [InlineData("b;a", "a;b", true)]
+        [InlineData("A;b", "a;B", true)]
+        [InlineData("a;b;c", "c;a;B", true)]
+        [InlineData("a;b;c;d", "c;a;b", false)]
+        public void PackageSpec_Equals_WithDependencies(string left, string right, bool expected)
         {
             var leftSide = new PackageSpec(new List<TargetFrameworkInformation>())
             {
-                RestoreMetadata = new ProjectRestoreMetadata
-                {
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
+                Dependencies = left.Split(';').Select(e =>
+                    new LibraryDependency()
                     {
-                        CreateProjectRestoreMetadataFrameworkInfo("net461", "net461"),
-                        CreateProjectRestoreMetadataFrameworkInfo("netcoreapp2.0", "netcoreapp2.0"),
+                        LibraryRange = new LibraryRange(e, VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                     }
-                },
-                RestoreSettings = CreateProjectRestoreSettings()
+                    )
+                .ToList()
             };
 
             var rightSide = new PackageSpec(new List<TargetFrameworkInformation>())
             {
-                RestoreMetadata = new ProjectRestoreMetadata
-                {
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
+                Dependencies = right.Split(';').Select(e =>
+                    new LibraryDependency()
                     {
-                        CreateProjectRestoreMetadataFrameworkInfo("netcoreapp2.0", "netcoreapp2.0"),
-                        CreateProjectRestoreMetadataFrameworkInfo("net461", "net461")
+                        LibraryRange = new LibraryRange(e, VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                     }
-                },
-                RestoreSettings = CreateProjectRestoreSettings()
+                    )
+                .ToList()
             };
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
 
-            leftSide.Should().Be(rightSide);
+            }
         }
-
-        //Dependencies
-        //TargetFrameworks
-        //RuntimeGraph
-        //RestoreMetadata
     }
 }
