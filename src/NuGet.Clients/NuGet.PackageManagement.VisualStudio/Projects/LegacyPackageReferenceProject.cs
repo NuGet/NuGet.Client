@@ -9,11 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -38,6 +40,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private string _projectName;
         private string _projectUniqueName;
         private string _projectFullPath;
+        private Dictionary<string, ProjectInstalledPackage> _installedPackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
+        private DateTime _lastTimeAssetsModified;
 
         public LegacyPackageReferenceProject(
             IVsProjectAdapter vsProjectAdapter,
@@ -170,7 +174,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             // Settings are not needed for this purpose, this only finds the installed packages
-            return GetPackageReferences(await GetPackageSpecAsync(NullSettings.Instance));
+            var packageSpec = await GetPackageSpecAsync(NullSettings.Instance);
+            return await GetPackageReferencesAsync(packageSpec);
         }
 
         public override async Task<bool> InstallPackageAsync(
@@ -333,33 +338,37 @@ namespace NuGet.PackageManagement.VisualStudio
             return settings.GetConfigFilePaths();
         }
 
-        private static PackageReference[] GetPackageReferences(PackageSpec packageSpec)
+        private async Task<IEnumerable<PackageReference>> GetPackageReferencesAsync(PackageSpec packageSpec)
         {
             var frameworkSorter = new NuGetFrameworkSorter();
 
+            var assetsFilePath = await GetAssetsFilePathAsync();
+            var fileInfo = new FileInfo(assetsFilePath);
+            PackageSpec assetsPackageSpec = default;
+            IList<LockFileTarget> targets = default;
+
+            if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified)
+            {
+                await TaskScheduler.Default;
+                var lockFile = new LockFileFormat().Read(assetsFilePath);
+                assetsPackageSpec = lockFile.PackageSpec;
+                targets = lockFile.Targets;
+
+                _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
+            }
+
             return packageSpec
-                .TargetFrameworks
-                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName))
-                .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
-                .ToArray();
+               .TargetFrameworks
+               .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, assetsPackageSpec, targets))
+               .GroupBy(p => p.PackageIdentity)
+               .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
         }
 
-        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework)
+        private IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
         {
             return libraries
-                .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(l => ToPackageReference(l, targetFramework));
-        }
-
-        private static PackageReference ToPackageReference(LibraryDependency library, NuGetFramework targetFramework)
-        {
-            // The VersionRange can be null when the PackageReference items are for a project opted in the central package version management.
-            var identity = new PackageIdentity(
-                library.LibraryRange.Name,
-                library.LibraryRange.VersionRange?.MinVersion);
-
-            return new PackageReference(identity, targetFramework);
+                .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
+                .Select(library => new BuildIntegratedPackageReference(library, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(library, targetFramework, assetsPackageSpec?.TargetFrameworks.FirstOrDefault(), targets, installedPackages)));
         }
 
         /// <summary>

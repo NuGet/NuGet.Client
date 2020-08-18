@@ -171,6 +171,8 @@
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssembly.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
+    <Compile Include="Utility\GetPackageReferenceUtility.cs" />
+    <Compile Include="Utility\ProjectInstalledPackage.cs" />
     <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\NuGetProjectUpgradeUtility.cs" />
     <Compile Include="Utility\ProjectRetargetingUtility.cs" />
