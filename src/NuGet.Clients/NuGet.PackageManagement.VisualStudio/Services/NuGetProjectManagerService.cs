@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return await ProjectContextInfo.CreateAsync(project, cancellationToken);
         }
 
-        public async ValueTask<IReadOnlyCollection<PackageReference>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken cancellationToken)
+        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken cancellationToken)
         {
             var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
             Assumes.NotNull(solutionManager);
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<Task<IEnumerable<PackageReference>>> tasks = projects.Select(project => project.GetInstalledPackagesAsync(cancellationToken));
             IEnumerable<PackageReference>[] packageReferences = await Task.WhenAll(tasks);
 
-            return packageReferences.SelectMany(e => e).ToArray();
+            return packageReferences.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
         }
 
         public async ValueTask<object> GetMetadataAsync(string projectGuid, string key, CancellationToken cancellationToken)

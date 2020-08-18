@@ -123,14 +123,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 var installed = await project.GetInstalledPackagesAsync(cancellationToken);
                 foreach (var installedPackage in installed)
                 {
-                    var installedVersion = installedPackage.PackageIdentity.Version;
+                    var installedVersion = installedPackage.Identity.Version;
                     var allowedVersions = installedPackage.AllowedVersions ?? VersionRange.All;
 
                     // filter packages based on current package identity
                     var allPackages = prefetchedPackages
                         .Where(p => StringComparer.OrdinalIgnoreCase.Equals(
                             p.Identity.Id,
-                            installedPackage.PackageIdentity.Id))
+                            installedPackage.Identity.Id))
                         .ToArray();
 
                     // and allowed versions
