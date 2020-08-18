@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using FluentAssertions;
+using NuGet.Frameworks;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -124,6 +125,136 @@ namespace NuGet.ProjectModel.Test
                     {
                         Name = "first"
                     },
+                }
+            };
+
+            leftSide.Should().NotBe(rightSide);
+        }
+
+        [Fact]
+        public void Equals_WithLockFilTargetOutOfOrder_ReturnsTrue()
+        {
+            var leftSide = new LockFile
+            {
+                Targets = new List<LockFileTarget>
+                {
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net5.0"),
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new LockFileTargetLibrary()
+                            {
+                                Name = "first"
+                            }
+                        }
+                    },
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net6.0"),
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new LockFileTargetLibrary()
+                            {
+                                Name = "second"
+                            }
+                        }
+                    }
+                }
+            };
+            var rightSide = new LockFile
+            {
+                Targets = new List<LockFileTarget>
+                {
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net6.0"),
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new LockFileTargetLibrary()
+                            {
+                                Name = "second"
+                            }
+                        }
+                    },
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net5.0"),
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new LockFileTargetLibrary()
+                            {
+                                Name = "first"
+                            }
+                        }
+                    }
+                }
+            };
+
+            leftSide.Should().Be(rightSide);
+        }
+
+        [Fact]
+        public void Equals_WithDifferentLockFileTarget_ReturnsFalse()
+        {
+            var leftSide = new LockFile
+            {
+                Targets = new List<LockFileTarget>
+                {
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net5.0"),
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new LockFileTargetLibrary()
+                            {
+                                Name = "first"
+                            }
+                        }
+                    },
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net6.0"),
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new LockFileTargetLibrary()
+                            {
+                                Name = "second"
+                            }
+                        }
+                    }
+                }
+            };
+            var rightSide = new LockFile
+            {
+                Targets = new List<LockFileTarget>
+                {
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net472")
+                    },
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net6.0"),
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new LockFileTargetLibrary()
+                            {
+                                Name = "second"
+                            }
+                        }
+                    },
+                    new LockFileTarget()
+                    {
+                        TargetFramework = NuGetFramework.Parse("net5.0"),
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new LockFileTargetLibrary()
+                            {
+                                Name = "first"
+                            }
+                        }
+                    }
                 }
             };
 
