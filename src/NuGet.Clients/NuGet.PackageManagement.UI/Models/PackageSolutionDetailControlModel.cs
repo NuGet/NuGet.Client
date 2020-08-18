@@ -123,12 +123,12 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
-                    PackageReference installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
+                    IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
                     if (installedVersion != null)
                     {
-                        project.InstalledVersion = installedVersion.PackageIdentity.Version;
-                        hash.Add(installedVersion.PackageIdentity.Version);
-                        project.AutoReferenced = (installedVersion as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced == true;
+                        project.InstalledVersion = installedVersion.Identity.Version;
+                        hash.Add(installedVersion.Identity.Version);
+                        project.AutoReferenced = installedVersion.IsAutoReferenced;
                     }
                     else
                     {
@@ -173,11 +173,11 @@ namespace NuGet.PackageManagement.UI
         /// This method is called from several methods that are called from properties and LINQ queries
         /// It is likely not called more than once in an action.
         /// </summary>
-        private static async Task<Packaging.PackageReference> GetInstalledPackageAsync(IProjectContextInfo project, string id, CancellationToken cancellationToken)
+        private static async Task<IPackageReferenceContextInfo> GetInstalledPackageAsync(IProjectContextInfo project, string id, CancellationToken cancellationToken)
         {
-            IEnumerable<PackageReference> installedPackages = await project.GetInstalledPackagesAsync(cancellationToken);
-            PackageReference installedPackage = installedPackages
-                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, id))
+            IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(cancellationToken);
+            IPackageReferenceContextInfo installedPackage = installedPackages
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, id))
                 .FirstOrDefault();
             return installedPackage;
         }

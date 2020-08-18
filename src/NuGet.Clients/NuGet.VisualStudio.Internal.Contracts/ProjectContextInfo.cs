@@ -11,7 +11,6 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -44,7 +43,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
-        public async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken)
         {
             IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
@@ -118,10 +117,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         internal static NuGetProjectKind GetProjectKind(NuGetProject nugetProject)
         {
+            // Order matters
             NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
-            if (nugetProject is INuGetIntegratedProject)
+            if (nugetProject is BuildIntegratedNuGetProject)
             {
-                projectKind = NuGetProjectKind.Classic;
+                projectKind = NuGetProjectKind.BuildIntegrated;
             }
             else if (nugetProject is ProjectKNuGetProjectBase)
             {
@@ -131,9 +131,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 projectKind = NuGetProjectKind.MSBuild;
             }
-            else if (nugetProject is BuildIntegratedNuGetProject)
+            else if (nugetProject is INuGetIntegratedProject)
             {
-                projectKind = NuGetProjectKind.BuildIntegrated;
+                projectKind = NuGetProjectKind.Classic;
             }
 
             return projectKind;

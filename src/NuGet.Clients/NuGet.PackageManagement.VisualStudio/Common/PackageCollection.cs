@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Group all package references for an id/version into a single item.
             var packages = packageReferences
                     .SelectMany(e => e)
-                    .GroupBy(e => e.PackageIdentity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
+                    .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
                     .ToArray();
 
             return new PackageCollection(packages);

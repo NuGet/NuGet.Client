@@ -119,7 +119,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     // cache allowed version range for each nuget project for current selected package
                     var packageReference = (await project.GetInstalledPackagesAsync(CancellationToken.None))
-                        .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, searchResultPackage.Id));
+                        .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, searchResultPackage.Id));
 
                     var range = packageReference?.AllowedVersions;
 
@@ -140,11 +140,10 @@ namespace NuGet.PackageManagement.UI
                     var packageReferences = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
                     // First the lowest auto referenced version of this package.
-                    var autoReferenced = packageReferences.Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.PackageIdentity.Id)
-                                                                      && e.PackageIdentity.Version != null)
-                                                        .Select(e => e as BuildIntegratedPackageReference)
-                                                        .Where(e => e?.Dependency?.AutoReferenced == true)
-                                                        .OrderBy(e => e.PackageIdentity.Version)
+                    var autoReferenced = packageReferences.Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.Identity.Id)
+                                                                      && e.Identity.Version != null)
+                                                        .Where(e => e.IsAutoReferenced)
+                                                        .OrderBy(e => e.Identity.Version)
                                                         .FirstOrDefault();
 
                     if (autoReferenced != null)
@@ -154,9 +153,9 @@ namespace NuGet.PackageManagement.UI
                         {
                             ProjectName = await project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None),
                             VersionRange = new VersionRange(
-                                minVersion: autoReferenced.PackageIdentity.Version,
+                                minVersion: autoReferenced.Identity.Version,
                                 includeMinVersion: true,
-                                maxVersion: autoReferenced.PackageIdentity.Version,
+                                maxVersion: autoReferenced.Identity.Version,
                                 includeMaxVersion: true),
 
                             IsAutoReferenced = true,
@@ -233,13 +232,13 @@ namespace NuGet.PackageManagement.UI
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        var installedPackages = new List<PackageReference>();
+                        var installedPackages = new List<IPackageReferenceContextInfo>();
                         foreach (var project in _nugetProjects)
                         {
                             var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
                             installedPackages.AddRange(projectInstalledPackages);
                         }
-                        return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+                        return installedPackages.Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
                     });
             }
         }
@@ -275,7 +274,7 @@ namespace NuGet.PackageManagement.UI
             {
                 VersionRange range;
 
-                if (project.ProjectKind == NuGetProjectKind.BuildIntegrated && package.HasAllowedVersions)
+                if (project.ProjectKind == NuGetProjectKind.BuildIntegrated && package.AllowedVersions != null)
                 {
                     // The actual range is passed as the allowed version range for build integrated projects.
                     range = package.AllowedVersions;
@@ -283,13 +282,13 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     range = new VersionRange(
-                        minVersion: package.PackageIdentity.Version,
+                        minVersion: package.Identity.Version,
                         includeMinVersion: true,
-                        maxVersion: package.PackageIdentity.Version,
+                        maxVersion: package.Identity.Version,
                         includeMaxVersion: true);
                 }
 
-                var dependency = new PackageDependency(package.PackageIdentity.Id, range);
+                var dependency = new PackageDependency(package.Identity.Id, range);
 
                 results.Add(dependency);
             }

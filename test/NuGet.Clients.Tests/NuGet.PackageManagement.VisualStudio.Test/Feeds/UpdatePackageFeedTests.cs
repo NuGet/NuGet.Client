@@ -259,19 +259,20 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var installedPackages = new[]
             {
-                new PackageReference(
-                    packageIdentity,
-                    NuGetFramework.Parse("net45"),
-                    userInstalled: true,
-                    developmentDependency: false,
-                    requireReinstallation: false,
-                    allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null)
+                PackageReferenceContextInfo.Create(
+                    new PackageReference(
+                        packageIdentity,
+                        NuGetFramework.Parse("net45"),
+                        userInstalled: true,
+                        developmentDependency: false,
+                        requireReinstallation: false,
+                        allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null))
             };
 
             var project = Mock.Of<IProjectContextInfo>();
             Mock.Get(project)
                 .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult<IEnumerable<PackageReference>>(installedPackages));
+                .Returns(Task.FromResult<IEnumerable<IPackageReferenceContextInfo>>(installedPackages));
             return project;
         }
 
