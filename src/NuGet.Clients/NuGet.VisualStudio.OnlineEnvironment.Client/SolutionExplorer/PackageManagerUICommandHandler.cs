@@ -268,7 +268,14 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                         toolWindowId,   // dwToolWindowId
                         out windowFrame));
 
-                ((IVsWindowFrame2)windowFrame)?.ActivateOwnerDockedWindow();
+                if (windowFrame != null)
+                {
+                    ((IVsWindowFrame2)windowFrame).ActivateOwnerDockedWindow();
+                }
+                else
+                {
+                    _projectGuidToToolWindowId.Remove(projectGuid.ToString());
+                }
             }
 
             if (windowFrame == null)
