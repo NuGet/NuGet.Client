@@ -859,5 +859,44 @@ namespace NuGet.ProjectModel.Test
 
             leftSide.Should().Be(rightSide);
         }
+
+        [Fact]
+        public void PackageSpec_Equals_WithVersion_ReturnsTrue()
+        {
+            var leftSide = new PackageSpec(new List<TargetFrameworkInformation>())
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
+                    {
+                        CreateProjectRestoreMetadataFrameworkInfo("net461", "net461"),
+                        CreateProjectRestoreMetadataFrameworkInfo("netcoreapp2.0", "netcoreapp2.0"),
+                    }
+                },
+                RestoreSettings = CreateProjectRestoreSettings()
+            };
+
+            var rightSide = new PackageSpec(new List<TargetFrameworkInformation>())
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
+                    {
+                        CreateProjectRestoreMetadataFrameworkInfo("netcoreapp2.0", "netcoreapp2.0"),
+                        CreateProjectRestoreMetadataFrameworkInfo("net461", "net461")
+                    }
+                },
+                RestoreSettings = CreateProjectRestoreSettings()
+            };
+
+            leftSide.Should().Be(rightSide);
+        }
+
+        //Dependencies
+        //TargetFrameworks
+        //RuntimeGraph
+        //RestoreMetadata
     }
 }
