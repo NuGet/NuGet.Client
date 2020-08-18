@@ -233,7 +233,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.OnlineEn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Internal.Contracts", "src\NuGet.Clients\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj", "{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Contracts", "src\NuGet.Clients\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj", "{6AF72BEE-70F0-48B2-BD63-0E80D9747342}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Contracts", "src\NuGet.Clients\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj", "{6AF72BEE-70F0-48B2-BD63-0E80D9747342}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Packaging.Extraction", "src\NuGet.Core\NuGet.Packaging.Extraction\NuGet.Packaging.Extraction.csproj", "{C7CE3001-1DCB-4D66-B583-AF54A59BD552}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -569,6 +571,10 @@ Global
 		{6AF72BEE-70F0-48B2-BD63-0E80D9747342}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AF72BEE-70F0-48B2-BD63-0E80D9747342}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6AF72BEE-70F0-48B2-BD63-0E80D9747342}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7CE3001-1DCB-4D66-B583-AF54A59BD552}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7CE3001-1DCB-4D66-B583-AF54A59BD552}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7CE3001-1DCB-4D66-B583-AF54A59BD552}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7CE3001-1DCB-4D66-B583-AF54A59BD552}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -666,6 +672,7 @@ Global
 		{290DB64D-74BA-45C5-BAC0-6E31A8AFD5CB} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
 		{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
 		{6AF72BEE-70F0-48B2-BD63-0E80D9747342} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
+		{C7CE3001-1DCB-4D66-B583-AF54A59BD552} = {506AF844-92E0-4404-BBFC-0AB073890A72}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}

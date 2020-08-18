@@ -41,10 +41,8 @@ namespace Dotnet.Integration.Test
 
             var sdkPath = Directory.EnumerateDirectories(Path.Combine(_cliDirectory, "sdk")).Single();
 
-#if NETCOREAPP5_0
             // TODO - remove when shipping. See https://github.com/NuGet/Home/issues/8952
             PatchSDKWithCryptographyDlls(sdkPath);
-#endif
 
             MsBuildSdksPath = Path.Combine(sdkPath, "Sdks");
 
@@ -136,8 +134,8 @@ namespace Dotnet.Integration.Test
             var projectFile = $@"<Project Sdk=""Microsoft.NET.Sdk"">
                 <PropertyGroup><RestoreProjectStyle>DotnetToolReference</RestoreProjectStyle>
                 <OutputType>Exe</OutputType>
-                <TargetFramework> {targetFramework} </TargetFramework>
-                <RuntimeIdentifier>{rid} </RuntimeIdentifier>
+                <TargetFramework>{targetFramework}</TargetFramework>
+                <RuntimeIdentifier>{rid}</RuntimeIdentifier>
                 <!-- Things that do change-->
                 <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
                 <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
@@ -423,7 +421,9 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(sdkDir).Select(Pat
         {
             const string restoreProjectName = "NuGet.Build.Tasks";
             const string restoreTargetsName = "NuGet.targets";
-            var sdkDependencies = new List<string> { restoreProjectName, "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
+            const string restoreTargetsExtName = "NuGet.RestoreEx.targets";
+
+            var sdkDependencies = new List<string> { restoreProjectName, "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials", "NuGet.Build.Tasks.Console" };
 
             var sdkTfm = AssemblyReader.GetTargetFramework(Path.Combine(pathToSdkInCli, "dotnet.dll"));
 
@@ -446,6 +446,10 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(sdkDir).Select(Pat
                     File.Copy(
                         sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsName),
                         destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName),
+                        overwrite: true);
+                    File.Copy(
+                        sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsExtName),
+                        destFileName: Path.Combine(pathToSdkInCli, restoreTargetsExtName),
                         overwrite: true);
                 }
             }

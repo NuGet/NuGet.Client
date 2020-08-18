@@ -140,14 +140,8 @@ namespace NuGet.ProjectModel
 
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
-            if (msbuildMetadata.CrossTargeting)
-            {
-                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy(c => c, StringComparer.Ordinal)); // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
-            }
-            else
-            {
-                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.Select(e => NuGetFramework.Parse(e).GetShortFolderName()).OrderBy(c => c, StringComparer.Ordinal));
-            }
+            // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
+            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy(c => c, StringComparer.Ordinal));
 
             WriteMetadataSources(writer, msbuildMetadata);
             WriteMetadataFiles(writer, msbuildMetadata);
@@ -209,6 +203,8 @@ namespace NuGet.ProjectModel
                         frameworkNames.Add(frameworkName);
 
                         writer.WriteObjectStart(frameworkName);
+
+                        SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);
 
                         writer.WriteObjectStart("projectReferences");
 
@@ -494,12 +490,11 @@ namespace NuGet.ProjectModel
             if (frameworks.Any())
             {
                 writer.WriteObjectStart("frameworks");
-
                 var frameworkSorter = new NuGetFrameworkSorter();
                 foreach (var framework in frameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
                 {
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
-
+                    SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);
                     SetDependencies(writer, framework.Dependencies);
                     SetCentralDependencies(writer, framework.CentralPackageVersions.Values);
                     SetImports(writer, framework.Imports);

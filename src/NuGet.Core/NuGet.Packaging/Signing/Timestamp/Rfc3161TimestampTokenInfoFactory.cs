@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_SIGNING_SUPPORTED
 using System;
 using System.Security.Cryptography;
 
@@ -14,7 +15,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(bytes));
             }
-#if IS_SIGNING_SUPPORTED
+
             IRfc3161TimestampTokenInfo iRfc3161TimestampTokenInfo = null;
 #if IS_DESKTOP
             iRfc3161TimestampTokenInfo = new Rfc3161TimestampTokenInfoNet472Wrapper(bytes);
@@ -22,9 +23,7 @@ namespace NuGet.Packaging.Signing
             iRfc3161TimestampTokenInfo = new Rfc3161TimestampTokenInfoNetstandard21Wrapper(bytes);
 #endif
             return iRfc3161TimestampTokenInfo;
-#else
-            throw new NotSupportedException();
-#endif
         }
     }
 }
+#endif

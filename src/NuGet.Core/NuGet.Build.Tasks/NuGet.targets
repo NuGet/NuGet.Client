@@ -507,7 +507,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- For project.json projects target frameworks will be read from project.json. -->
     <GetProjectTargetFrameworksTask
-      Condition=" '$(RestoreProjectStyle)' != 'ProjectJson' "
+      Condition=" '$(RestoreProjectStyle)' != 'ProjectJson' OR '$(PackageReferenceCompatibleProjectStyle)' == 'true' "
       ProjectPath="$(MSBuildProjectFullPath)"
       TargetFrameworks="$(TargetFrameworks)"
       TargetFramework="$(TargetFramework)"
@@ -711,7 +711,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
-        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
         <RuntimeIdentifiers>$(RuntimeIdentifiers);$(RuntimeIdentifier)</RuntimeIdentifiers>
         <RuntimeSupports>$(RuntimeSupports)</RuntimeSupports>
         <CrossTargeting>$(_RestoreCrossTargeting)</CrossTargeting>
@@ -754,7 +753,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
-        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
         <PackagesConfigPath Condition="Exists('$(MSBuildProjectDirectory)\packages.$(MSBuildProjectName).config')">$(MSBuildProjectDirectory)\packages.$(MSBuildProjectName).config</PackagesConfigPath>
         <PackagesConfigPath Condition="Exists('$(MSBuildProjectDirectory)\packages.config')">$(MSBuildProjectDirectory)\packages.config</PackagesConfigPath>
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
@@ -790,7 +788,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GenerateProjectRestoreGraph"
       DependsOnTargets="
       _GetRestoreProjectStyle;
-      _GetRestoreTargetFrameworksOutput;
       _GenerateRestoreProjectSpec;
       _GenerateRestoreDependencies"
       Returns="@(_RestoreGraphEntry)">
@@ -921,28 +918,22 @@ Copyright (c) .NET Foundation. All rights reserved.
         ItemName="_RestoreGraphEntry" />
     </GetRestoreFrameworkReferencesTask>
 
-    <!-- Write out the TargetFramework specific properties -->
-    <ItemGroup Condition="  '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(RuntimeIdentifierGraphPath)' != '' ">
-      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
-        <Type>TargetFrameworkProperties</Type>
-        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
-      </_RestoreGraphEntry>
-    </ItemGroup>
-
-    <PropertyGroup>
-      <_CombinedFallbacks>$(PackageTargetFallback);$(AssetTargetFallback)</_CombinedFallbacks>
-    </PropertyGroup>
-
     <!-- Write out target framework information -->
-    <ItemGroup Condition="  '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(_CombinedFallbacks)' != '' ">
+    <ItemGroup Condition="  '$(PackageReferenceCompatibleProjectStyle)' == 'true'">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>TargetFrameworkInformation</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <PackageTargetFallback>$(PackageTargetFallback)</PackageTargetFallback>
         <AssetTargetFallback>$(AssetTargetFallback)</AssetTargetFallback>
         <TargetFramework>$(TargetFramework)</TargetFramework>
+        <TargetFrameworkIdentifier>$(TargetFrameworkIdentifier)</TargetFrameworkIdentifier>
+        <TargetFrameworkVersion>$(TargetFrameworkVersion)</TargetFrameworkVersion>
+        <TargetFrameworkMoniker>$(TargetFrameworkMoniker)</TargetFrameworkMoniker>
+        <TargetFrameworkProfile>$(TargetFrameworkProfile)</TargetFrameworkProfile>
+        <TargetPlatformIdentifier>$(TargetPlatformIdentifier)</TargetPlatformIdentifier>
+        <TargetPlatformVersion>$(TargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformMinVersion>$(TargetPlatformMinVersion)</TargetPlatformMinVersion>
+        <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
       </_RestoreGraphEntry>
     </ItemGroup>
   </Target>

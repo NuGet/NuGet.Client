@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_SIGNING_SUPPORTED
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -21,7 +22,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(messageHash));
             }
-#if IS_SIGNING_SUPPORTED
+
             IRfc3161TimestampRequest iRfc3161TimestampRequest = null;
 #if IS_DESKTOP
             iRfc3161TimestampRequest = new Rfc3161TimestampRequestNet472Wrapper(
@@ -41,9 +42,8 @@ namespace NuGet.Packaging.Signing
                 extensions);
 #endif
             return iRfc3161TimestampRequest;
-#else
-            throw new NotSupportedException();
-#endif
+
         }
     }
 }
+#endif

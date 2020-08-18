@@ -3507,6 +3507,49 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedResult, packageSpec.FilePath);
         }
 
+        [Fact]
+        public void GetTargetFrameworkInformation_WithAnAlias()
+        {
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"net46\":{ \"targetAlias\" : \"alias\"}}}");
+
+            Assert.Equal("alias", framework.TargetAlias);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithAliases()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""frameworks"": {
+      ""frameworkidentifier123-frameworkprofile"": {
+        ""targetAlias"" : ""alias"",
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+    }
+  }
+}";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
+
+            Assert.NotNull(metadata);
+            Assert.Equal("alias", metadata.TargetFrameworks.Single().TargetAlias);
+        }
+
         private static PackageSpec GetPackageSpec(string json)
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))

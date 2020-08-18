@@ -1,0 +1,2 @@
+NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.get -> string
+NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.set -> void

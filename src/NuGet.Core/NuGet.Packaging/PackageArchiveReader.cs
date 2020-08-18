@@ -157,6 +157,72 @@ namespace NuGet.Packaging
             }
         }
 
+        /// <summary>
+        /// This class literally just exists so CopyToFile gets a file size
+        /// </summary>
+        private sealed class SizedArchiveEntryStream : Stream
+        {
+            private readonly Stream _inner;
+
+            private readonly long _size;
+
+            private bool _isDisposed;
+
+            public SizedArchiveEntryStream(Stream inner, long size)
+            {
+                _inner = inner;
+                _size = size;
+            }
+
+            public override long Length { get => _size; }
+
+            public override bool CanRead => _inner.CanRead;
+
+            public override bool CanSeek => _inner.CanSeek;
+
+            public override bool CanWrite => _inner.CanWrite;
+
+            public override long Position { get => _inner.Position; set => _inner.Position = value; }
+
+            public override void Flush()
+            {
+                _inner.Flush();
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                return _inner.Read(buffer, offset, count);
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                return _inner.Seek(offset, origin);
+            }
+
+            public override void SetLength(long value)
+            {
+                _inner.SetLength(value);
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                _inner.Write(buffer, offset, count);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (!_isDisposed)
+                {
+                    if (disposing)
+                    {
+                        _inner.Dispose();
+                    }
+
+                    _isDisposed = true;
+                }
+            }
+        }
+
         public override IEnumerable<string> CopyFiles(
             string destination,
             IEnumerable<string> packageFiles,
@@ -191,8 +257,9 @@ namespace NuGet.Packaging
                 var targetFilePath = Path.Combine(destination, normalizedPath);
 
                 using (var stream = entry.Open())
+                using (var sizedStream = new SizedArchiveEntryStream(stream, entry.Length))
                 {
-                    var copiedFile = extractFile(packageFileName, targetFilePath, stream);
+                    string copiedFile = extractFile(packageFileName, targetFilePath, sizedStream);
                     if (copiedFile != null)
                     {
                         entry.UpdateFileTimeFromEntry(copiedFile, logger);

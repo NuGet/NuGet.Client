@@ -20,6 +20,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         ProjectFullPath="$(MSBuildProjectFullPath)"
         Recursive="$([MSBuild]::ValueOrDefault('$(RestoreRecursive)', 'true'))"
         RestorePackagesConfig="$(RestorePackagesConfig)"
-        SolutionPath="$(SolutionPath)" />
+        SolutionPath="$(SolutionPath)"
+        ProcessFileName="$(NuGetConsoleProcessFileName)"
+        />
   </Target>
 </Project>
