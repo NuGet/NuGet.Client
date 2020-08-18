@@ -943,6 +943,160 @@ EndGlobal";
             }
         }
 #endif
+
+        [Theory]
+        [InlineData("netcoreapp3.0;net5.0;net472", true)]
+        [InlineData("netcoreapp2.1;netcoreapp3.0;netcoreapp3.1", true)]
+        [InlineData("netcoreapp3.0;net5.0;net472", false)]
+        [InlineData("netcoreapp2.1;netcoreapp3.0;netcoreapp3.1", false)]
+        public async Task DotnetRestore_MultiTargettingProject_WithDifferentPackageReferences_ForceDoesNotRewriteAssetsFile(string targetFrameworks, bool useStaticGraphRestore)
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                var projectName = "ClassLibrary1";
+                var testDirectory = pathContext.SolutionRoot;
+                var originalFrameworks = MSBuildStringUtility.Split(targetFrameworks);
+
+                var packages = new SimpleTestPackageContext[originalFrameworks.Length];
+                for (int i = 0; i < originalFrameworks.Length; i++)
+                {
+                    packages[i] = CreateNetstandardCompatiblePackage("x", $"{i + 1}.0.0");
+                }
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packages);
+
+                var projectDirectory = Path.Combine(testDirectory, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, "classlib");
+
+                using (var stream = File.Open(projectFilePath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", targetFrameworks);
+                    ProjectFileUtils.AddProperty(xml, "AutomaticallyUseReferenceAssemblyPackages", "false");
+                    for (int i = 0; i < originalFrameworks.Length; i++)
+                    {
+                        var attributes = new Dictionary<string, string>() { { "Version", packages[i].Version} };
+                        ProjectFileUtils.AddItem(
+                            xml,
+                            "PackageReference",
+                            packages[i].Id,
+                            originalFrameworks[i],
+                            new Dictionary<string, string>(),
+                            attributes);
+                    }
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Preconditions
+                var additionalArgs = useStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+                var result = _msbuildFixture.RunDotnet(projectDirectory, $"restore {projectFilePath} {additionalArgs}", ignoreExitCode: true);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                var assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
+                DateTime originalAssetsFileWriteTime = new FileInfo(assetsFilePath).LastWriteTimeUtc;
+
+                //Act
+                result = _msbuildFixture.RunDotnet(projectDirectory, $"restore {projectFilePath} --force {additionalArgs}", ignoreExitCode: true);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                DateTime forceAssetsFileWriteTime = new FileInfo(assetsFilePath).LastWriteTimeUtc;
+
+                forceAssetsFileWriteTime.Should().Be(originalAssetsFileWriteTime);
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0;netcoreapp3.0;net472", true)]
+        [InlineData("netcoreapp3.0;netcoreapp2.1;netcoreapp3.1", true)]
+        [InlineData("net5.0;netcoreapp3.0;net472", false)]
+        [InlineData("netcoreapp3.0;netcoreapp2.1;netcoreapp3.1", false)]
+        public async Task DotnetRestore_MultiTargettingProject_WithDifferentProjectReferences_ForceDoesNotRewriteAssetsFile(string targetFrameworks, bool useStaticGraphRestore)
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                var projectName = "ClassLibrary1";
+                var testDirectory = pathContext.SolutionRoot;
+                var originalFrameworks = MSBuildStringUtility.Split(targetFrameworks);
+
+                var projectDirectory = Path.Combine(testDirectory, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, CreateNetstandardCompatiblePackage("x", "1.0.0"));
+
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, "classlib");
+
+                var projectPaths = new List<string>(originalFrameworks.Length);
+                foreach (var originalFramework in originalFrameworks)
+                {
+                    var p2pProjectName = $"project-{originalFramework}";
+                    _msbuildFixture.CreateDotnetNewProject(testDirectory, p2pProjectName, "classlib");
+                    var p2pProjectFilePath = Path.Combine(testDirectory, p2pProjectName, $"{p2pProjectName}.csproj");
+                    projectPaths.Add(p2pProjectFilePath);
+
+                    using (var stream = File.Open(p2pProjectFilePath, FileMode.Open, FileAccess.ReadWrite))
+                    {
+                        var xml = XDocument.Load(stream);
+                        ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", originalFramework);
+                        ProjectFileUtils.AddProperty(xml, "AutomaticallyUseReferenceAssemblyPackages", "false");
+                        ProjectFileUtils.AddProperty(xml, "DisableImplicitFrameworkReferences", "true");
+                        ProjectFileUtils.WriteXmlToFile(xml, stream);
+                    }
+                }
+
+                using (var stream = File.Open(projectFilePath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", targetFrameworks);
+                    ProjectFileUtils.AddProperty(xml, "AutomaticallyUseReferenceAssemblyPackages", "false");
+                    ProjectFileUtils.AddProperty(xml, "DisableImplicitFrameworkReferences", "true");
+                    for (int i = 0; i < originalFrameworks.Length; i++)
+                    {
+                        var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
+                        ProjectFileUtils.AddItem(
+                            xml,
+                            "PackageReference",
+                            "x",
+                            originalFrameworks[i],
+                            new Dictionary<string, string>(),
+                            attributes);
+
+                        ProjectFileUtils.AddItem(
+                            xml,
+                            "ProjectReference",
+                            projectPaths[i],
+                            originalFrameworks[i],
+                            new Dictionary<string, string>(),
+                            new Dictionary<string, string>());
+                    }
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Preconditions
+                var additionalArgs = useStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+                var result = _msbuildFixture.RunDotnet(projectDirectory, $"restore {projectFilePath} {additionalArgs}", ignoreExitCode: true);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                var assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
+                DateTime originalAssetsFileWriteTime = new FileInfo(assetsFilePath).LastWriteTimeUtc;
+
+                //Act
+                result = _msbuildFixture.RunDotnet(projectDirectory, $"restore {projectFilePath} --force {additionalArgs}", ignoreExitCode: true);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                DateTime forceAssetsFileWriteTime = new FileInfo(assetsFilePath).LastWriteTimeUtc;
+
+                forceAssetsFileWriteTime.Should().Be(originalAssetsFileWriteTime);
+            }
+        }
+
+        private static SimpleTestPackageContext CreateNetstandardCompatiblePackage(string id, string version)
+        {
+            var pkgX = new SimpleTestPackageContext(id, version);
+            pkgX.Files.Clear();
+            pkgX.AddFile($"lib/netstandard2.0/x.dll");
+            return pkgX;
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -15,7 +16,8 @@ using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
-    public class PackageSpecCloningTests
+    public class PackageSpecTests
+
     {
         private BuildOptions CreateBuildOptions()
         {
@@ -341,17 +343,7 @@ namespace NuGet.ProjectModel.Test
 
         private ProjectRestoreMetadata CreateProjectRestoreMetadata()
         {
-            var projectReference = new ProjectRestoreReference();
-            projectReference.ProjectPath = "Path";
-            projectReference.ProjectUniqueName = "ProjectUniqueName";
-            projectReference.IncludeAssets = LibraryIncludeFlags.All;
-            projectReference.ExcludeAssets = LibraryIncludeFlags.Analyzers;
-            projectReference.PrivateAssets = LibraryIncludeFlags.Build;
-            var nugetFramework = NuGetFramework.Parse("net461");
-            var originalPRMFI = new ProjectRestoreMetadataFrameworkInfo(nugetFramework);
-            originalPRMFI.TargetAlias = Guid.NewGuid().ToString();
-            originalPRMFI.ProjectReferences = new List<ProjectRestoreReference>() { projectReference };
-            var targetframeworks = new List<ProjectRestoreMetadataFrameworkInfo>() { originalPRMFI };
+            var projectRestoreMetadataFrameworkInfo = CreateProjectRestoreMetadataFrameworkInfo();
 
             var allWarningsAsErrors = true;
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
@@ -371,8 +363,8 @@ namespace NuGet.ProjectModel.Test
             originalProjectRestoreMetadata.LegacyPackagesDirectory = true;
             originalProjectRestoreMetadata.ValidateRuntimeAssets = true;
             originalProjectRestoreMetadata.SkipContentFileWrite = true;
-            originalProjectRestoreMetadata.TargetFrameworks = targetframeworks;
-            originalProjectRestoreMetadata.Sources = new List<PackageSource>() { new PackageSource("http://api.nuget.org/v3/index.json") }; ;
+            originalProjectRestoreMetadata.TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>() { projectRestoreMetadataFrameworkInfo };
+            originalProjectRestoreMetadata.Sources = new List<PackageSource>() { new PackageSource("http://api.nuget.org/v3/index.json") };
             originalProjectRestoreMetadata.FallbackFolders = new List<string>() { "fallback1" };
             originalProjectRestoreMetadata.ConfigFilePaths = new List<string>() { "config1" };
             originalProjectRestoreMetadata.OriginalTargetFrameworks = new List<string>() { "net45" };
@@ -380,6 +372,21 @@ namespace NuGet.ProjectModel.Test
             originalProjectRestoreMetadata.ProjectWideWarningProperties = warningProperties;
 
             return originalProjectRestoreMetadata;
+        }
+
+        private static ProjectRestoreMetadataFrameworkInfo CreateProjectRestoreMetadataFrameworkInfo(string frameworkName = "net461", string alias = "net461")
+        {
+            var projectReference = new ProjectRestoreReference();
+            projectReference.ProjectPath = "Path";
+            projectReference.ProjectUniqueName = "ProjectUniqueName";
+            projectReference.IncludeAssets = LibraryIncludeFlags.All;
+            projectReference.ExcludeAssets = LibraryIncludeFlags.Analyzers;
+            projectReference.PrivateAssets = LibraryIncludeFlags.Build;
+            var nugetFramework = NuGetFramework.Parse(frameworkName);
+            var originalPRMFI = new ProjectRestoreMetadataFrameworkInfo(nugetFramework);
+            originalPRMFI.TargetAlias = alias ?? Guid.NewGuid().ToString();
+            originalPRMFI.ProjectReferences = new List<ProjectRestoreReference>() { projectReference };
+            return originalPRMFI;
         }
 
         [Fact]
@@ -594,7 +601,7 @@ namespace NuGet.ProjectModel.Test
             Assert.False(object.ReferenceEquals(originalProjectRestoreSettings, clone));
         }
 
-        internal static TargetFrameworkInformation CreateTargetFrameworkInformation(string tfm = "net461")
+        internal static TargetFrameworkInformation CreateTargetFrameworkInformation(string tfm = "net461", string alias = null)
         {
             var framework = NuGetFramework.Parse(tfm);
             var dependency = new LibraryDependency(
@@ -611,7 +618,7 @@ namespace NuGet.ProjectModel.Test
             var imports = NuGetFramework.Parse("net45"); // This makes no sense in the context of fallback, just for testing :)
 
             var originalTargetFrameworkInformation = new TargetFrameworkInformation();
-            originalTargetFrameworkInformation.TargetAlias = Guid.NewGuid().ToString();
+            originalTargetFrameworkInformation.TargetAlias = alias ?? Guid.NewGuid().ToString();
             originalTargetFrameworkInformation.FrameworkName = framework;
             originalTargetFrameworkInformation.Dependencies = new List<LibraryDependency>() { dependency };
             originalTargetFrameworkInformation.AssetTargetFallback = false;
@@ -790,6 +797,67 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedResult, packageSpec.IsDefaultVersion);
             Assert.Equal(expectedResult, clone.IsDefaultVersion);
             Assert.True(packageSpec.Equals(clone));
+        }
+
+        [Fact]
+        public void PackageSpec_Equals_WithTargetFrameworkInformationOutOfOrder_ReturnsTrue()
+        {
+            var leftSide = new PackageSpec(new List<TargetFrameworkInformation>()
+            {
+                CreateTargetFrameworkInformation("net461", "net461"),
+                CreateTargetFrameworkInformation("netcoreapp2.0", "netcoreapp2.0"),
+            })
+            {
+                RestoreMetadata = CreateProjectRestoreMetadata(),
+                RestoreSettings = CreateProjectRestoreSettings()
+            };
+
+            var rightSide = new PackageSpec(new List<TargetFrameworkInformation>()
+            {
+                CreateTargetFrameworkInformation("netcoreapp2.0", "netcoreapp2.0"),
+                CreateTargetFrameworkInformation("net461", "net461"),
+            })
+            {
+                RestoreMetadata = CreateProjectRestoreMetadata(),
+                RestoreSettings = CreateProjectRestoreSettings()
+            };
+
+            leftSide.Should().Be(rightSide);
+        }
+
+
+        [Fact]
+        public void PackageSpec_Equals_WithProjectRestoreMetadataFrameworkInfoOutOfOrder_ReturnsTrue()
+        {
+            var leftSide = new PackageSpec(new List<TargetFrameworkInformation>())
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
+                    {
+                        CreateProjectRestoreMetadataFrameworkInfo("net461", "net461"),
+                        CreateProjectRestoreMetadataFrameworkInfo("netcoreapp2.0", "netcoreapp2.0"),
+                    }
+                },
+                RestoreSettings = CreateProjectRestoreSettings()
+            };
+
+            var rightSide = new PackageSpec(new List<TargetFrameworkInformation>())
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
+                    {
+                        CreateProjectRestoreMetadataFrameworkInfo("netcoreapp2.0", "netcoreapp2.0"),
+                        CreateProjectRestoreMetadataFrameworkInfo("net461", "net461")
+                    }
+                },
+                RestoreSettings = CreateProjectRestoreSettings()
+            };
+
+            leftSide.Should().Be(rightSide);
         }
     }
 }

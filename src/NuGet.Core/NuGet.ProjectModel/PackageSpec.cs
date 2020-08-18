@@ -181,7 +181,7 @@ namespace NuGet.ProjectModel
                    EqualityUtility.DictionaryOfSequenceEquals(Scripts, other.Scripts) &&
                    EqualityUtility.DictionaryEquals(PackInclude, other.PackInclude, (s, o) => StringComparer.Ordinal.Equals(s, o)) &&
                    EqualityUtility.EqualsWithNullCheck(PackOptions, other.PackOptions) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) && // TODO NK - Sort these.
                    EqualityUtility.EqualsWithNullCheck(RuntimeGraph, other.RuntimeGraph) &&
                    EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata);
         }
