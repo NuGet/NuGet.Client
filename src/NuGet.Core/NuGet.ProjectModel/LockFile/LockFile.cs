@@ -105,6 +105,17 @@ namespace NuGet.ProjectModel
                  string.Equals(runtimeIdentifier, t.RuntimeIdentifier, StringComparison.OrdinalIgnoreCase))));
         }
 
+        public LockFileTarget GetTarget(string frameworkAlias, string runtimeIdentifier)
+        {
+            var framework = PackageSpec.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(frameworkAlias, StringComparison.OrdinalIgnoreCase))?.FrameworkName;
+
+            if (framework != null)
+            {
+                return GetTarget(framework, runtimeIdentifier);
+            }
+            return null;
+        }
+
         public LockFileLibrary GetLibrary(string name, NuGetVersion version)
         {
             return Libraries.FirstOrDefault(l =>

@@ -18,6 +18,8 @@ namespace NuGet.Test.Utility
         /// </summary>
         public NuGetFramework Framework { get; }
 
+        public string TargetAlias { get; set; }
+
         /// <summary>
         /// Package dependencies.
         /// </summary>
@@ -76,6 +78,7 @@ namespace NuGet.Test.Utility
             Framework = framework;
             PackageReferences.AddRange(packageReferences);
             ProjectReferences.AddRange(projectReferences);
+            TargetAlias = framework.GetShortFolderName();
         }
     }
 }

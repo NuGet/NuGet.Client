@@ -532,11 +532,7 @@ namespace NuGet.Build.Tasks.Console
                 NuGetFramework targetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
                     projectFilePath: projectInnerNode.Value.FullPath,
                     targetFrameworkMoniker: msBuildProjectInstance.GetProperty("TargetFrameworkMoniker"),
-                    targetFrameworkIdentifier: msBuildProjectInstance.GetProperty("TargetFrameworkIdentifier"),
-                    targetFrameworkVersion: msBuildProjectInstance.GetProperty("TargetFrameworkVersion"),
-                    targetFrameworkProfile: msBuildProjectInstance.GetProperty("TargetFrameworkProfile"),
-                    targetPlatformIdentifier: msBuildProjectInstance.GetProperty("TargetPlatformIdentifier"),
-                    targetPlatformVersion: msBuildProjectInstance.GetProperty("TargetPlatformVersion"),
+                    targetPlatformMoniker: msBuildProjectInstance.GetProperty("TargetPlatformMoniker"),
                     targetPlatformMinVersion: msBuildProjectInstance.GetProperty("TargetPlatformMinVersion"));
 
                 var targetFrameworkInformation = new TargetFrameworkInformation()

@@ -9975,16 +9975,19 @@ namespace NuGet.CommandLine.Test
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
+                var net50Windows = "net5.0-windows10.0.10000.1";
+                var net50Android = "net5.0-android21";
                 var frameworks = new NuGetFramework[]
                 {
-                    NuGetFramework.Parse("net5.0-windows10.0.10000.1"),
-                    NuGetFramework.Parse("net5.0-android21")
+                    NuGetFramework.Parse(net50Windows),
+                    NuGetFramework.Parse(net50Android)
                 };
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                     "a",
                     pathContext.SolutionRoot,
-                    frameworks
+                    net50Windows,
+                    net50Android
                     );
 
                 projectA.Properties.Add("AssetTargetFallback", "net472");
