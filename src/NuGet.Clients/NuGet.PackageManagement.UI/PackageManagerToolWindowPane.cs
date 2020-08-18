@@ -15,7 +15,6 @@ namespace NuGet.PackageManagement.UI
     {
         private PackageManagerControl _content;
         private string _projectGuid;
-        public event EventHandler<EventArgs> Closed;
 
         /// <summary>
         /// Initializes a new instance of the EditorPane class.
@@ -73,6 +72,8 @@ namespace NuGet.PackageManagement.UI
                 base.Dispose(disposing);
             }
         }
+
+        public event EventHandler<EventArgs> Closed;
 
         public int OnClose(ref uint pgrfSaveOptions)
         {
