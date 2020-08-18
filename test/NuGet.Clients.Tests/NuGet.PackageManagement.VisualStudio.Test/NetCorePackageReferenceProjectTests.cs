@@ -23,7 +23,6 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
-using static NuGet.Test.TestHelpers;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -138,10 +137,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                     Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
-                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageB.Id, packageB.Version);
-                    Assert.True(Compare(resulting, expected));
                 }
             }
             finally
@@ -286,10 +281,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                     Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
-                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageB_UpgradeVersion.Id, packageB_UpgradeVersion.Version);
-                    Assert.True(Compare(resulting, expected));
                     // Make sure all 4 project installed packageB upgraded version.
                     foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
                     {
@@ -903,10 +894,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                     Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
-                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageB_DowngradeVersion.Id, packageB_DowngradeVersion.Version);
-                    Assert.True(Compare(resulting, expected));
                     // Make sure all 4 project installed packageB downgrade version.
                     foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
                     {
@@ -1063,10 +1050,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code == NuGetLogCode.NU1605)), 1);
                     // There should be no warning other than NU1605.
                     Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code != NuGetLogCode.NU1605)), 0);
-                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageB_DowngradeVersion.Id, packageB_DowngradeVersion.Version);
-                    Assert.True(Compare(resulting, expected));
                 }
             }
             finally
@@ -1216,10 +1199,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code == NuGetLogCode.NU1605)), 1);
                     // There should be no warning other than NU1605.
                     Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code != NuGetLogCode.NU1605)), 0);
-                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageB_DowngradeVersion.Id, packageB_DowngradeVersion.Version);
-                    Assert.True(Compare(resulting, expected));
                 }
             }
             finally
@@ -1364,10 +1343,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                     // There should be no error/warnings
                     Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
-                    var resulting = actions.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                    Expected(expected, packageB_DowngradeVersion.Id, packageB_DowngradeVersion.Version);
-                    Assert.True(Compare(resulting, expected));
                 }
             }
             finally
