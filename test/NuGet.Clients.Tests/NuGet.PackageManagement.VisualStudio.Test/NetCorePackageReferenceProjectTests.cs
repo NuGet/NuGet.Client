@@ -274,9 +274,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
-
                     var actions = results.Select(a => a.Action).ToArray();
-
                     await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
                         netCorePackageReferenceProjects,
                         actions,
@@ -735,7 +733,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     var targetProjects = new List<NetCorePackageReferenceProject>()
                     {
-                        netCorePackageReferenceProjects[0] // Bottom project.
+                        netCorePackageReferenceProjects[0] // Bottom child project.
                     };
 
                     // Act
@@ -1219,7 +1217,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
                     Assert.Equal(actions.Count(), targetProjects .Count());
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    // Downgrade fails for this middle parent project(no parent but with childs).
+                    // Downgrade fails for this middle parent project(with both parent and child).
                     // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
                     Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
                     // Should cause total 1 NU1605 for all childs.
@@ -1353,7 +1351,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     var targetProjects = new List<NetCorePackageReferenceProject>()
                     {
-                        netCorePackageReferenceProjects[0] // Bottom project.
+                        netCorePackageReferenceProjects[0] // Bottom child project.
                     };
 
                     // Act
@@ -1485,12 +1483,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // set up telemetry service
             var telemetrySession = new Mock<ITelemetrySession>();
-
             var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
-
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
