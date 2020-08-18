@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
 
 using MessagePack;
+using MessagePack.Formatters;
 using Microsoft;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using MessagePack.Formatters;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
@@ -67,7 +67,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             isDevelopmentDependency = reader.ReadBoolean();
                             break;
                         case AllowedVersionsPropertyName:
-                            if(!reader.TryReadNil()) // Advances beyond the current value if the current value is nil and returns true; otherwise leaves the reader's position unchanged and returns false.
+                            if (!reader.TryReadNil()) // Advances beyond the current value if the current value is nil and returns true; otherwise leaves the reader's position unchanged and returns false.
                             {
                                 allowedVersions = reader.ReadString();
                             }
@@ -88,7 +88,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     IsDevelopmentDependency = isDevelopmentDependency
                 };
 
-                if(!string.IsNullOrWhiteSpace(allowedVersions) && VersionRange.TryParse(allowedVersions, out VersionRange versionRange))
+                if (!string.IsNullOrWhiteSpace(allowedVersions) && VersionRange.TryParse(allowedVersions, out VersionRange versionRange))
                 {
                     packageReferenceContextInfo.AllowedVersions = versionRange;
                 }
@@ -122,13 +122,13 @@ namespace NuGet.VisualStudio.Internal.Contracts
             writer.Write(IsDevelopmentDependencyPropertyName);
             writer.Write(value.IsDevelopmentDependency);
             writer.Write(AllowedVersionsPropertyName);
-            if(value.AllowedVersions != null)
+            if (value.AllowedVersions == null)
             {
-                writer.Write(value.AllowedVersions.ToString());
+                writer.WriteNil();
             }
             else
             {
-                writer.WriteNil();
+                writer.Write(value.AllowedVersions.ToString());
             }
         }
     }

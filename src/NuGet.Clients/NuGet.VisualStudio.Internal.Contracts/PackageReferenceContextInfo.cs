@@ -46,7 +46,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public PackageIdentity Identity { get; internal set; }
         public NuGetFramework Framework { get; internal set; }
         public VersionRange? AllowedVersions { get; internal set; }
-        public bool IsAutoReferenced { get; internal set; } // Property is determined by (packageReference as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced
+        public bool IsAutoReferenced { get; internal set; }
         public bool IsUserInstalled { get; internal set; }
         public bool IsDevelopmentDependency { get; internal set; }
     }

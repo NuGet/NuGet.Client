@@ -383,7 +383,6 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
-            Loaded -= PackageManagerLoaded;
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not trigger a refresh if the browse tab is open and this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
