@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -17,10 +18,11 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Initializes a new instance of the EditorPane class.
         /// </summary>
-        public PackageManagerToolWindowPane(PackageManagerControl control)
+        public PackageManagerToolWindowPane(PackageManagerControl control, string projectGuid)
             : base(null)
         {
             _content = control;
+            ProjectGuid = projectGuid;
         }
 
         public PackageManagerModel Model
@@ -37,6 +39,8 @@ namespace NuGet.PackageManagement.UI
         {
             get { return _content; }
         }
+
+        public string ProjectGuid { get; }
 
         private void CleanUp()
         {
@@ -65,6 +69,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public event EventHandler<EventArgs> Closed;
+
         public int OnClose(ref uint pgrfSaveOptions)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -73,6 +79,8 @@ namespace NuGet.PackageManagement.UI
             });
 
             _content?.Model.Context.UserSettingsManager.PersistSettings();
+
+            Closed?.Invoke(this, EventArgs.Empty);
 
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
 

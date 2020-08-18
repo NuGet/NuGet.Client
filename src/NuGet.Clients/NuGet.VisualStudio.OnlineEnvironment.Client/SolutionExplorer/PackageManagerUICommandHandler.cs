@@ -46,6 +46,8 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         private uint _solutionExistsAndFullyLoadedContextCookie;
         private uint _solutionNotBuildingAndNotDebuggingContextCookie;
         private uint _solutionExistsCookie;
+        private uint _maxToolWindowId = 0;
+        private Dictionary<string, uint> _projectGuidToToolWindowId;
 
         private bool _initialized;
 
@@ -117,6 +119,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                     return vsMonitorSelection;
                 },
                 ThreadHelper.JoinableTaskFactory);
+            _projectGuidToToolWindowId = new Dictionary<string, uint>();
         }
 
         public bool IsPackageManagerUISupported(WorkspaceVisualNodeBase workspaceVisualNodeBase)
@@ -247,39 +250,76 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 throw new InvalidOperationException();
             }
 
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid.ToString(), CancellationToken.None);
-            var uiController = UIFactory.Value.Create(projectContextInfo);
-            var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
-            var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
-            var caption = string.Format(CultureInfo.CurrentCulture, Resx.Label_NuGetWindowCaption, Path.GetFileNameWithoutExtension(workspaceVisualNodeBase.NodeMoniker));
+            IVsWindowFrame windowFrame = null;
 
             var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             Assumes.Present(uiShell);
 
-            int[] pfDefaultPosition = null;
-            IVsWindowFrame windowFrame;
-            var windowPane = new PackageManagerToolWindowPane(control);
-            ErrorHandler.ThrowOnFailure(
-                uiShell.CreateToolWindow(
-                    (uint)__VSCREATETOOLWIN.CTW_fInitNew,
-                    0,              // dwToolWindowId - singleInstance = 0
-                    windowPane,     // ToolWindowPane
-                    Guid.Empty,     // rclsidTool = GUID_NULL
-                    projectGuid,
-                    Guid.Empty,     // reserved - do not use - GUID_NULL
-                    null,           // IServiceProvider
-                    caption,
-                    pfDefaultPosition,
-                    out windowFrame));
+            uint toolWindowId;
+            bool foundToolWindowId = _projectGuidToToolWindowId.TryGetValue(projectGuid.ToString(), out toolWindowId);
+            const uint FTW_none = 0;
 
-            if (windowFrame != null)
+            if (foundToolWindowId)
             {
-                WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
-                WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
-                WindowFrameHelper.DockToolWindow(windowFrame);
+                ErrorHandler.ThrowOnFailure(
+                    uiShell.FindToolWindowEx(
+                        FTW_none, //grfFTW - badly-documented enum value.
+                        typeof(PackageManagerToolWindowPane).GUID,    // rguidPersistenceSlot
+                        toolWindowId,   // dwToolWindowId
+                        out windowFrame));
+
+                if (windowFrame != null)
+                {
+                    ((IVsWindowFrame2)windowFrame).ActivateOwnerDockedWindow();
+                }
+                else
+                {
+                    _projectGuidToToolWindowId.Remove(projectGuid.ToString());
+                }
+            }
+
+            if (windowFrame == null)
+            {
+                IProjectContextInfo projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid.ToString(), CancellationToken.None);
+                INuGetUI uiController = UIFactory.Value.Create(projectContextInfo);
+                var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
+                var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
+                var caption = string.Format(CultureInfo.CurrentCulture, Resx.Label_NuGetWindowCaption, Path.GetFileNameWithoutExtension(workspaceVisualNodeBase.NodeMoniker));
+
+                int[] pfDefaultPosition = null;
+
+                var windowPane = new PackageManagerToolWindowPane(control, projectGuid.ToString());
+                ErrorHandler.ThrowOnFailure(
+                    uiShell.CreateToolWindow(
+                        (uint)__VSCREATETOOLWIN.CTW_fInitNew,
+                        ++_maxToolWindowId,    // dwToolWindowId
+                        windowPane,     // ToolWindowPane
+                        Guid.Empty,     // rclsidTool = GUID_NULL
+                        typeof(PackageManagerToolWindowPane).GUID,    // rguidPersistenceSlot
+                        Guid.Empty,     // reserved - do not use - GUID_NULL
+                        null,           // IServiceProvider
+                        caption,
+                        pfDefaultPosition,
+                        out windowFrame));
+                _projectGuidToToolWindowId.Add(projectGuid.ToString(), _maxToolWindowId);
+                windowPane.Closed += WindowPane_Closed;
+
+                if (windowFrame != null)
+                {
+                    WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
+                    WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
+                    WindowFrameHelper.DockToolWindow(windowFrame);
+                }
             }
 
             return windowFrame;
+        }
+
+        private void WindowPane_Closed(object sender, EventArgs e)
+        {
+            var windowPane = (PackageManagerToolWindowPane)sender;
+            _projectGuidToToolWindowId.Remove(windowPane.ProjectGuid);
+            windowPane.Closed -= WindowPane_Closed;
         }
 
         private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
