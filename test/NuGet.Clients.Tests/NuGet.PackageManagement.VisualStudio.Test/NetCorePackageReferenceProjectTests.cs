@@ -602,7 +602,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
                     Assert.Equal(actions.Count(), targetProjects .Count());
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    // Uprade succeed for this middle parent project(with parent and childs).
+                    // Upgrade succeed for this middle parent project(with parent and childs).
                     // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
