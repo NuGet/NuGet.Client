@@ -52,6 +52,7 @@ namespace NuGet.Protocol.Core.Types
 
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
+            public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
             public bool IsListed { get; set; }
             public Func<PackageReaderBase> PackageReader { get; set; }
         }
@@ -102,6 +103,7 @@ namespace NuGet.Protocol.Core.Types
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
+                Vulnerabilities = _metadata.Vulnerabilities,
                 PackageReader =
                     (_metadata as LocalPackageSearchMetadata)?.PackageReader ??
                     (_metadata as ClonedPackageSearchMetadata)?.PackageReader,

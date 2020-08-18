@@ -140,6 +140,8 @@ namespace NuGet.Protocol
 
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
 
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; } = null; // Vulnerability metadata is not added to the v2 feed.
+
         public bool IsListed { get; }
     }
 }

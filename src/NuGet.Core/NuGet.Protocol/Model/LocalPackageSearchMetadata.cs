@@ -115,6 +115,11 @@ namespace NuGet.Protocol
         /// </remarks>
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
 
+        /// <remarks>
+        /// Vulnerability metadata is not stored within the package and requires an online package source.
+        /// </remarks>
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => null;
+
         private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
 
         public string LoadFileAsText(string path)
