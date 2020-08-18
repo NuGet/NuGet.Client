@@ -82,8 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
@@ -210,8 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
@@ -366,8 +364,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
@@ -520,8 +517,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
@@ -675,8 +671,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
@@ -829,8 +824,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
@@ -987,8 +981,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
@@ -1141,8 +1134,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
@@ -1295,8 +1287,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
+
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
                         netCorePackageReferenceProjects.Add(project);
@@ -1434,8 +1426,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectDirectories.Add(directory);
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                    TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
+
                     // We need to treat NU1605 warning as error.
                     //project.IsNu1605Error = true;
                     netCorePackageReferenceProjects.Add(project);
@@ -1538,8 +1530,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
                         var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        TestProjectSystemServices testProjectSystemServices = string.IsNullOrEmpty(prevProj) ? null : new TestProjectSystemServices(prevProj);
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache, testProjectSystemServices);
+                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                         // We need to treat NU1605 warning as error.
                         project.IsNu1605Error = true;
