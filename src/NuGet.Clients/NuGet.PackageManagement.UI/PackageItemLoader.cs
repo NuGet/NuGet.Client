@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -24,7 +25,7 @@ namespace NuGet.PackageManagement.UI
         private readonly IPackageFeed _recommenderPackageFeed;
         private PackageCollection _installedPackages;
         private int _recommendedCount;
-        private IEnumerable<Packaging.PackageReference> _packageReferences;
+        private IEnumerable<IPackageReferenceContextInfo> _packageReferences;
 
         // Never null
         private PackageFeedSearchState _state = new PackageFeedSearchState();
@@ -287,7 +288,7 @@ namespace NuGet.PackageManagement.UI
                     // get the allowed version range and pass it to package item view model to choose the latest version based on that
                     if (_packageReferences != null)
                     {
-                        var matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, metadata.Identity.Id));
+                        var matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, metadata.Identity.Id));
                         var allowedVersionsRange = matchedPackageReferences.Select(r => r.AllowedVersions).Where(v => v != null).ToArray();
 
                         if (allowedVersionsRange.Length > 0)
