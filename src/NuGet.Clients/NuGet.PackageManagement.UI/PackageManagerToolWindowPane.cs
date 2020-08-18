@@ -14,7 +14,6 @@ namespace NuGet.PackageManagement.UI
     public class PackageManagerToolWindowPane : ToolWindowPane, IVsWindowFrameNotify3
     {
         private PackageManagerControl _content;
-        private string _projectGuid;
 
         /// <summary>
         /// Initializes a new instance of the EditorPane class.
@@ -23,7 +22,7 @@ namespace NuGet.PackageManagement.UI
             : base(null)
         {
             _content = control;
-            _projectGuid = projectGuid;
+            ProjectGuid = projectGuid;
         }
 
         public PackageManagerModel Model
@@ -41,10 +40,7 @@ namespace NuGet.PackageManagement.UI
             get { return _content; }
         }
 
-        public string ProjectGuid
-        {
-            get { return _projectGuid; }
-        }
+        public string ProjectGuid { get; }
 
         private void CleanUp()
         {
@@ -84,7 +80,7 @@ namespace NuGet.PackageManagement.UI
 
             _content?.Model.Context.UserSettingsManager.PersistSettings();
 
-            Closed?.Invoke(this, new EventArgs());
+            Closed?.Invoke(this, EventArgs.Empty);
 
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
 

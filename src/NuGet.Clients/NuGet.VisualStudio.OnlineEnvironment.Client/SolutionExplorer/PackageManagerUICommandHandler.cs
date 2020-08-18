@@ -261,12 +261,14 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             if (foundToolWindowId)
             {
-                uiShell.FindToolWindowEx(
-                    FTW_none, //grfFTW - badly-documented enum value.
-                    typeof(PackageManagerToolWindowPane).GUID,    // rguidPersistenceSlot
-                    toolWindowId,   // dwToolWindowId
-                    out windowFrame);
-                ((IVsWindowFrame2)windowFrame).ActivateOwnerDockedWindow();
+                ErrorHandler.ThrowOnFailure(
+                    uiShell.FindToolWindowEx(
+                        FTW_none, //grfFTW - badly-documented enum value.
+                        typeof(PackageManagerToolWindowPane).GUID,    // rguidPersistenceSlot
+                        toolWindowId,   // dwToolWindowId
+                        out windowFrame));
+
+                ((IVsWindowFrame2)windowFrame)?.ActivateOwnerDockedWindow();
             }
 
             if (windowFrame == null)
