@@ -183,12 +183,18 @@ namespace NuGet.PackageManagement.UI
 
         private static void AddToCache(Uri iconUrl, BitmapSource iconBitmapImage)
         {
+            string cacheKey = iconUrl == null ? string.Empty : iconUrl.ToString();
+            AddToCache(cacheKey, iconBitmapImage);
+        }
+
+        private static void AddToCache(string cacheKey, BitmapSource iconBitmapImage)
+        {
             var policy = new CacheItemPolicy
             {
                 SlidingExpiration = TimeSpan.FromMinutes(10),
                 RemovedCallback = CacheEntryRemoved
             };
-            BitmapImageCache.Set(iconUrl.ToString(), iconBitmapImage, policy);
+            BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
         }
 
         private static void CacheEntryRemoved(CacheEntryRemovedArguments arguments)
@@ -221,7 +227,7 @@ namespace NuGet.PackageManagement.UI
             var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != Images.DefaultPackageIcon)
             {
-                AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
+                AddToCache(cacheKey, Images.DefaultPackageIcon);
 
                 var webex = e.ErrorException as WebException;
                 if (webex != null && FatalErrors.Any(c => webex.Status == c))

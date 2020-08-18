@@ -80,8 +80,8 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
-        public void Convert_WithValidImageUrl_DownloadsImage()
+        [LocalOnlyFact]
+        public void Convert_WithValidImageUrl_DownloadsImage_DefaultImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
 
@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Theory(Skip = "Runs only on Windows Desktop with WPF support")]
+        [LocalOnlyTheory]
         [InlineData("icon.png", "icon.png", "icon.png", "")]
         [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder")]
         [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder")]
@@ -150,6 +150,59 @@ namespace NuGet.PackageManagement.UI.Test
                 Assert.NotNull(result);
                 Assert.NotSame(DefaultPackageIcon, result);
                 Assert.Equal(32, image.PixelWidth);
+            }
+        }
+
+        [Theory]
+        [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "")]
+        public void Convert_EmbeddedIcon_NotAnIcon_ReturnsDefault(
+            string iconElement,
+            string iconFileLocation,
+            string fileSourceElement,
+            string fileTargetElement)
+        {
+            using (var testDir = TestDirectory.Create())
+            {
+                // Create decoy nuget package
+                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
+                CreateDummyPackage(
+                    zipPath: zipPath,
+                    iconName: iconElement,
+                    iconFile: iconFileLocation,
+                    iconFileSourceElement: fileSourceElement,
+                    iconFileTargetElement: fileTargetElement,
+                    isRealImage: false);
+
+                // prepare test
+                var converter = new IconUrlToImageCacheConverter();
+
+                UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
+                {
+                    Fragment = iconElement
+                };
+
+                output.WriteLine($"ZipPath {zipPath}");
+                output.WriteLine($"File Exists {File.Exists(zipPath)}");
+                output.WriteLine($"Url {builder.Uri.ToString()}");
+
+                // Act
+                var result = converter.Convert(
+                    values: new object[]
+                    {
+                        builder.Uri,
+                        new Func<PackageReaderBase>(() => new Packaging.PackageArchiveReader(zipPath))
+                    },
+                    targetType: null,
+                    parameter: DefaultPackageIcon,
+                    culture: null);
+
+                var image = result as BitmapImage;
+
+                output.WriteLine($"result {result.ToString()}");
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.Same(DefaultPackageIcon, result);
             }
         }
 
@@ -272,7 +325,8 @@ namespace NuGet.PackageManagement.UI.Test
             string iconName = "icon.png",
             string iconFile = "icon.png",
             string iconFileSourceElement = "icon.png",
-            string iconFileTargetElement = "")
+            string iconFileTargetElement = "",
+            bool isRealImage = true)
         {
             var dir = Path.GetDirectoryName(zipPath);
             var holdDir = "pkg";
@@ -290,7 +344,19 @@ namespace NuGet.PackageManagement.UI.Test
             var iconPath = Path.Combine(folderPath, iconFile);
             var iconDir = Path.GetDirectoryName(iconPath);
             Directory.CreateDirectory(iconDir);
-            CreateNoisePngImage(iconPath);
+
+            if (isRealImage)
+            {
+                CreateNoisePngImage(iconPath);
+            }
+            else
+            {
+                using (var fs = File.OpenWrite(iconPath))
+                {
+                    fs.Write(new byte[] {0xFF, 0xFF, 0xFF}, 0, 3);
+                }
+                //File.WriteAllText(iconPath, "asdf asdf asdf");
+            }
 
             // Create nuget package
             using (var nuspecStream = new MemoryStream())
