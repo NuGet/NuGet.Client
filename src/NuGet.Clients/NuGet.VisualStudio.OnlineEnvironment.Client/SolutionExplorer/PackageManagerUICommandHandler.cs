@@ -262,7 +262,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             if (foundToolWindowId)
             {
                 uiShell.FindToolWindowEx(
-                    FTW_none, //grfFTW - non-documented enum value I learned from API owner.
+                    FTW_none, //grfFTW - badly-documented enum value.
                     typeof(PackageManagerToolWindowPane).GUID,    // rguidPersistenceSlot
                     toolWindowId,   // dwToolWindowId
                     out windowFrame);
