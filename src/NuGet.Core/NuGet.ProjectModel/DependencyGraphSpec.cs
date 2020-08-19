@@ -21,7 +21,7 @@ namespace NuGet.ProjectModel
         private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
         private readonly Lazy<JObject> _json;
-
+        private readonly object _lockObj = new object();
         private const int Version = 1;
 
         private readonly bool _isReadOnly;
@@ -235,25 +235,31 @@ namespace NuGet.ProjectModel
 
         public void AddRestore(string projectUniqueName)
         {
-            _restore.Add(projectUniqueName);
+            lock (_lockObj)
+            {
+                _restore.Add(projectUniqueName);
+            }
         }
 
         public void AddProject(PackageSpec projectSpec)
         {
-            // Find the unique name in the spec, otherwise generate a new one.
-            string projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
-                ?? Guid.NewGuid().ToString();
-
-            if (!_projects.ContainsKey(projectUniqueName))
+            lock (_lockObj)
             {
-                PackageSpec projectToRestore = projectSpec;
+                // Find the unique name in the spec, otherwise generate a new one.
+                string projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
+                    ?? Guid.NewGuid().ToString();
 
-                if (projectSpec.RestoreMetadata != null && projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+                if (!_projects.ContainsKey(projectUniqueName))
                 {
-                    projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
-                }
+                    PackageSpec projectToRestore = projectSpec;
 
-                _projects.Add(projectUniqueName, projectToRestore);
+                    if (projectSpec.RestoreMetadata != null && projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+                    {
+                        projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
+                    }
+
+                    _projects.Add(projectUniqueName, projectToRestore);
+                }
             }
         }
 
@@ -313,6 +319,7 @@ namespace NuGet.ProjectModel
                                 {
                                     if (!string.IsNullOrEmpty(restorePropertyName))
                                     {
+                                        // No need to add synchronization lock here because we're always in same thread which called this method.
                                         dgspec._restore.Add(restorePropertyName);
                                     }
                                 });
@@ -323,6 +330,7 @@ namespace NuGet.ProjectModel
                                 {
                                     PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(jsonReader, path);
 
+                                    // No need to add synchronization lock here because we're always in same thread which called this method.
                                     dgspec._projects.Add(projectsPropertyName, packageSpec);
                                 });
                                 break;
@@ -371,7 +379,10 @@ namespace NuGet.ProjectModel
             var restoreObj = json.GetValue<JObject>("restore");
             if (restoreObj != null)
             {
-                _restore.UnionWith(restoreObj.Properties().Select(prop => prop.Name));
+                lock (_lockObj)
+                {
+                    _restore.UnionWith(restoreObj.Properties().Select(prop => prop.Name));
+                }
             }
 
             var projectsObj = json.GetValue<JObject>("projects");
@@ -383,7 +394,10 @@ namespace NuGet.ProjectModel
 #pragma warning disable CS0618
                     var spec = JsonPackageSpecReader.GetPackageSpec(specJson);
 #pragma warning restore CS0618
-                    _projects.Add(prop.Name, spec);
+                    lock (_lockObj)
+                    {
+                        _projects.Add(prop.Name, spec);
+                    }
                 }
             }
         }
