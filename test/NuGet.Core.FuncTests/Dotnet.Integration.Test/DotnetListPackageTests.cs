@@ -214,7 +214,7 @@ namespace Dotnet.Integration.Test
                     true);
 
                 Assert.False(listResult.Success);
-                Assert.Contains(Strings.ListPkg_InvalidOptionsOutdatedAndDeprecated, listResult.Errors);
+                Assert.Contains(string.Format(Strings.ListPkg_InvalidOptions, "--deprecated", "--outdated"), listResult.Errors);
             }
         }
 

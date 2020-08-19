@@ -43,14 +43,24 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_FrameworkDescription,
                     CommandOptionType.MultipleValue);
 
-                var includeOutdated = listpkg.Option(
+                var outdatedReport = listpkg.Option(
                     "--outdated",
                     Strings.ListPkg_OutdatedDescription,
                     CommandOptionType.NoValue);
 
-                var includeDeprecated = listpkg.Option(
+                var deprecatedReport = listpkg.Option(
                     "--deprecated",
                     Strings.ListPkg_DeprecatedDescription,
+                    CommandOptionType.NoValue);
+
+                var vulnerableReport = listpkg.Option(
+                    "--vulnerable",
+                    Strings.ListPkg_VulnerableDescription,
+                    CommandOptionType.NoValue);
+
+                var isOffline = listpkg.Option(
+                    "--offline",
+                    Strings.ListPkg_OfflineDescription,
                     CommandOptionType.NoValue);
 
                 var includeTransitive = listpkg.Option(
@@ -110,8 +120,10 @@ namespace NuGet.CommandLine.XPlat
                         path.Value,
                         packageSources,
                         framework.Values,
-                        includeOutdated.HasValue(),
-                        includeDeprecated.HasValue(),
+                        outdatedReport.HasValue(),
+                        deprecatedReport.HasValue(),
+                        vulnerableReport.HasValue(),
+                        isOffline.HasValue(),
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
@@ -119,10 +131,7 @@ namespace NuGet.CommandLine.XPlat
                         logger,
                         CancellationToken.None);
 
-                    if (includeOutdated.HasValue() && includeDeprecated.HasValue())
-                    {
-                        throw new ArgumentException(Strings.ListPkg_InvalidOptionsOutdatedAndDeprecated);
-                    }
+                    ProcessOptionRules(packageRefArgs);
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
@@ -131,6 +140,46 @@ namespace NuGet.CommandLine.XPlat
                     return 0;
                 });
             });
+        }
+
+        private static void ProcessOptionRules(ListPackageArgs packageRefArgs)
+        {
+            // Critical rule breaks
+            var firstOption = string.Empty;
+            var incompatibleOption = string.Empty;
+            if (packageRefArgs.DeprecatedReport)
+            {
+                firstOption = "--deprecated";
+                incompatibleOption = packageRefArgs.OutdatedReport ? "--outdated" : incompatibleOption;
+                incompatibleOption = packageRefArgs.VulnerableReport ? "--vulnerable" : incompatibleOption;
+                incompatibleOption = packageRefArgs.IsOffline ? "--offline" : incompatibleOption;
+            }
+            else if (packageRefArgs.VulnerableReport)
+            {
+                firstOption = "--vulnerable";
+                incompatibleOption = packageRefArgs.OutdatedReport ? "--outdated" : incompatibleOption;
+                incompatibleOption = packageRefArgs.IsOffline ? "--offline" : incompatibleOption;
+            }
+            else if (packageRefArgs.OutdatedReport)
+            {
+                firstOption = "--outdated";
+                incompatibleOption = packageRefArgs.IsOffline ? "--offline" : incompatibleOption;
+            }
+
+            if (incompatibleOption != string.Empty)
+            {
+                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions, firstOption, incompatibleOption));
+            }
+
+            // Informationals/adjustments
+            if (packageRefArgs.VulnerableReport &&
+                (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
+            {
+                Console.WriteLine(Strings.ListPkg_VulnerableIgnoredOptions);
+                packageRefArgs.Prerelease = false;
+                packageRefArgs.HighestPatch = false;
+                packageRefArgs.HighestMinor = false;
+            }
         }
 
         private static void VerifyValidFrameworks(CommandOption framework)

@@ -15,12 +15,14 @@ namespace NuGet.CommandLine.XPlat
         public string Path { get; }
         public IEnumerable<PackageSource> PackageSources { get; }
         public IEnumerable<string> Frameworks { get; }
-        public bool IncludeOutdated { get; }
-        public bool IncludeDeprecated { get; }
+        public bool OutdatedReport { get; }
+        public bool DeprecatedReport { get; }
+        public bool VulnerableReport { get; }
+        public bool IsOffline { get; }
         public bool IncludeTransitive { get; }
-        public bool Prerelease { get; }
-        public bool HighestPatch { get; }
-        public bool HighestMinor { get; }
+        public bool Prerelease { get; internal set; }
+        public bool HighestPatch { get; internal set; }
+        public bool HighestMinor { get; internal set; }
         public CancellationToken CancellationToken { get; }
 
         /// <summary>
@@ -31,8 +33,10 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="path"> The path to the solution or project file </param>
         /// <param name="packageSources"> The sources for the packages to check in the case of --outdated </param>
         /// <param name="frameworks"> The user inputed frameworks to look up for their packages </param>
-        /// <param name="includeOutdated"> Bool for --outdated present </param>
-        /// <param name="includeDeprecated"> Bool for --deprecated present </param>
+        /// <param name="outdatedReport"> Bool for --outdated present </param>
+        /// <param name="deprecatedReport"> Bool for --deprecated present </param>
+        /// <param name="vulnerableReport"> Bool for --vulnerable present </param>
+        /// <param name="isOffline"> Bool for --offline present </param>
         /// <param name="includeTransitive"> Bool for --include-transitive present </param>
         /// <param name="prerelease"> Bool for --include-prerelease present </param>
         /// <param name="highestPatch"> Bool for --highest-patch present </param>
@@ -43,8 +47,10 @@ namespace NuGet.CommandLine.XPlat
             string path,
             IEnumerable<PackageSource> packageSources,
             IEnumerable<string> frameworks,
-            bool includeOutdated,
-            bool includeDeprecated,
+            bool outdatedReport,
+            bool deprecatedReport,
+            bool vulnerableReport,
+            bool isOffline,
             bool includeTransitive,
             bool prerelease,
             bool highestPatch,
@@ -55,8 +61,10 @@ namespace NuGet.CommandLine.XPlat
             Path = path ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
-            IncludeOutdated = includeOutdated;
-            IncludeDeprecated = includeDeprecated;
+            OutdatedReport = outdatedReport;
+            DeprecatedReport = deprecatedReport;
+            VulnerableReport = vulnerableReport;
+            IsOffline = isOffline;
             IncludeTransitive = includeTransitive;
             Prerelease = prerelease;
             HighestPatch = highestPatch;

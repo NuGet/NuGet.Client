@@ -477,6 +477,12 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="ListPkg_DeprecatedDescription" xml:space="preserve">
     <value>Displays only the packages marked deprecated by the authors.</value>
   </data>
+  <data name="ListPkg_VulnerableDescription" xml:space="preserve">
+    <value>Displays only the packages flagged as vulnerable.</value>
+  </data>
+  <data name="ListPkg_OfflineDescription" xml:space="preserve">
+    <value>Prevents online resources to be queried for information about newer package versions, deprecation metadata, or known vulnerabilities. Cannot be combined with `--outdated`, `--deprecated`, or `--vulnerable` options.</value>
+  </data>
   <data name="ListPkg_Description" xml:space="preserve">
     <value>Lists all the packages used by the current project(s).</value>
   </data>
@@ -525,8 +531,14 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_NotPRProject" xml:space="preserve">
     <value>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</value>
   </data>
+  <data name="ListPkg_OutdatedPkgDescription" xml:space="preserve">
+    <value>(O): Outdated package(s). Use 'dotnet list package --outdated' for more info.</value>
+  </data>
   <data name="ListPkg_DeprecatedPkgDescription" xml:space="preserve">
     <value>(D): Deprecated package(s). Use 'dotnet list package --deprecated' for more info.</value>
+  </data>
+  <data name="ListPkg_VulnerablePkgDescription" xml:space="preserve">
+    <value>(V): Vulnerable package(s). Use 'dotnet list package --vulnerable' for more info.</value>
   </data>
   <data name="ListPkg_ErrorReadingAssetsFile" xml:space="preserve">
     <value>Unable to read the assets file `{0}`. Please make sure the file has the write format.</value>
@@ -573,23 +585,41 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="ListPkg_SourcesUsedDescription" xml:space="preserve">
     <value>The following sources were used:</value>
   </data>
-  <data name="ListPkg_InvalidOptionsOutdatedAndDeprecated" xml:space="preserve">
-    <value>Option '--outdated' and '--deprecated' cannot be combined.</value>
+  <data name="ListPkg_InvalidOptions" xml:space="preserve">
+    <value>Option '{0}' and '{1}' cannot be combined.</value>
   </data>
   <data name="ListPkg_NoDeprecatedPackagesForProject" xml:space="preserve">
     <value>The given project `{0}` has no deprecated packages given the current sources.</value>
   </data>
+  <data name="ListPkg_NoVulnerablePackagesForProject" xml:space="preserve">
+    <value>The given project `{0}` has no vulnerable packages given the current sources.</value>
+  </data>
+  <data name="ListPkg_VulnerableIgnoredOptions" xml:space="preserve">
+    <value>The command option(s) '--include-prerelease', '--highest-minor', and '--highest-patch' are ignored by this command.</value>
+  </data>
   <data name="ListPkg_ProjectDeprecationsHeaderLog" xml:space="preserve">
     <value>Project `{0}` has the following deprecated packages</value>
   </data>
+  <data name="ListPkg_ProjectVulnerabilitiesHeaderLog" xml:space="preserve">
+    <value>Project `{0}` has the following vulnerable packages</value>
+  </data>
   <data name="ListPkg_NoDeprecationsForFramework" xml:space="preserve">
     <value>No deprecated packages for this framework.</value>
+  </data>
+  <data name="ListPkg_NoVulnerabilitiesForFramework" xml:space="preserve">
+    <value>No vulnerable packages for this framework.</value>
   </data>
   <data name="ListPkg_DeprecationAlternative" xml:space="preserve">
     <value>Alternative</value>
   </data>
   <data name="ListPkg_DeprecationReasons" xml:space="preserve">
     <value>Reason(s)</value>
+  </data>
+  <data name="ListPkg_VulnerabilitySeverity" xml:space="preserve">
+    <value>Severity</value>
+  </data>
+  <data name="ListPkg_VulnerabilityAdvisoryUrl" xml:space="preserve">
+    <value>Advisory URL</value>
   </data>
   <data name="PushCommandSkipDuplicateDescription" xml:space="preserve">
     <value>If a package and version already exists, skip it and continue with the next package in the push, if any.</value>
