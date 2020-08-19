@@ -4516,6 +4516,155 @@ namespace ClassLibrary
         }
 
         [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageReadmeFile_BasicFunc_Succeeds()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\readme.md", 10)
+                .WithFile("test\\folder\\notes.txt", 10)
+                .WithFile("test\\folder\\nested\\content.txt", 10)
+                .WithFile("test\\folder\\nested\\sample.txt", 10)
+                .WithFile("test\\icon.jpg", 10)
+                .WithFile("test\\other\\files.txt", 10)
+                .WithFile("test\\utils\\sources.txt", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageReadmeFile("readme.md")
+                .WithItem(itemType: "None", itemPath: "readme.md", packagePath: string.Empty, pack: "true")
+                .WithItem(itemType: "None", itemPath: "other\\files.txt", packagePath: null, pack: "true")
+                .WithItem(itemType: "None", itemPath: "folder\\**", packagePath: "media", pack: "true")
+                .WithItem(itemType: "None", itemPath: "utils\\*", packagePath: "utils", pack: "true");
+
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+
+                // Validate embedded readme in package
+                ValidatePackReadme(projectBuilder);
+
+                // Validate that other content is also included
+                var nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    Assert.NotNull(nupkgReader.GetEntry("content/other/files.txt"));
+                    Assert.NotNull(nupkgReader.GetEntry("utils/sources.txt"));
+                    Assert.NotNull(nupkgReader.GetEntry("media/nested/sample.txt"));
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageReadmeFile_MissingReadmeFileInPackage_Fails()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\readme.md", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageReadmeFile("readme.md");
+
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+
+                Assert.NotEqual(0, result.ExitCode);
+                Assert.Contains(NuGetLogCode.NU5039.ToString(), result.Output);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageReadmeFile_MissingReadmeFileInFolder_Fails()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageReadmeFile("readme.md")
+                .WithItem(itemType: "None", itemPath: "readme.md", packagePath: string.Empty, pack: "true");
+
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+
+                Assert.NotEqual(0, result.ExitCode);
+                Assert.Contains(NuGetLogCode.NU5019.ToString(), result.Output);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageReadmeFile_IncorrectReadmeExtension_Fails()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\readme.txt", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageReadmeFile("readme.txt")
+                .WithItem(itemType: "None", itemPath: "readme.txt", packagePath: string.Empty, pack: "true");
+
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+
+                Assert.NotEqual(0, result.ExitCode);
+                Assert.Contains(NuGetLogCode.NU5038.ToString(), result.Output);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageReadmeFile_ReadmeFileIsEmpty_Fails()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\readme.md", 0);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageReadmeFile("readme.md")
+                .WithItem(itemType: "None", itemPath: "readme.md", packagePath: string.Empty, pack: "true");
+
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+
+                Assert.NotEqual(0, result.ExitCode);
+                Assert.Contains(NuGetLogCode.NU5040.ToString(), result.Output);
+            }
+        }
+
+        private void ValidatePackReadme(ProjectFileBuilder projectBuilder)
+        {
+            Assert.True(File.Exists(projectBuilder.ProjectFilePath), "No project was produced");
+            var nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
+
+            Assert.True(File.Exists(nupkgPath), "No package was produced");
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var nuspecReader = nupkgReader.NuspecReader;
+
+                Assert.Equal(projectBuilder.PackageReadmeFile, nuspecReader.GetReadme());
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_DoesNotGenerateOwnersElement()
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
