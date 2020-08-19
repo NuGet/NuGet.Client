@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool _isRequestedVisible = false;
+        public bool _isRequestedVisible;
 
         public bool IsRequestedVisible
         {
@@ -134,8 +134,13 @@ namespace NuGet.PackageManagement.UI
         {
             var hash = new HashSet<NuGetVersion>();
 
+            IsRequestedVisible = false;
             foreach (var project in _projects)
             {
+                if (IsRequestedVisible.Equals(false) && project.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference))
+                {
+                    IsRequestedVisible = true;
+                }
                 try
                 {
                     IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
@@ -167,8 +172,6 @@ namespace NuGet.PackageManagement.UI
                     ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                 }
             }
-
-            IsRequestedVisible = _projects.Any(p => p.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference));
 
             InstalledVersionsCount = hash.Count;
 

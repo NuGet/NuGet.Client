@@ -322,7 +322,7 @@
                 PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
                 Focusable="True"
                 IsTabStop="True"
-                Unloaded="RequestedVersionColumnHeader_Loaded"
+                Loaded="RequestedVersionColumnHeader_Loaded"
                 Visibility="{Binding IsRequestedVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                 FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
             </GridViewColumn.Header>

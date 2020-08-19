@@ -231,7 +231,7 @@ namespace NuGet.PackageManagement.UI
         private void RequestedVersionColumnHeader_Loaded(object sender, RoutedEventArgs e)
         {
             var model = DataContext as PackageSolutionDetailControlModel;
-            _versionColumnHeader.Width = model.IsRequestedVisible ? _versionColumnHeader.Width : 0;
+            _versionColumn.Width = model.IsRequestedVisible ? _versionColumn.Width : 0;
         }
     }
 }
