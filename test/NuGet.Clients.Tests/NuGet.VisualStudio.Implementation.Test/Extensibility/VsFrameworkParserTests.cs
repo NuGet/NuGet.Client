@@ -146,8 +146,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             // Assert
             Assert.True(result, "Return value was not true");
-            Assert.Equal(expected.TargetFrameworkMoniker, actual.TargetFrameworkMoniker);
-            Assert.Equal(expected.TargetPlatformMoniker, actual.TargetPlatformMoniker);
+            Assert.Equal(expected.DotNetFrameworkName, actual.TargetFrameworkMoniker);
+            Assert.Equal(expected.DotNetPlatformName, actual.TargetPlatformMoniker);
             Assert.Null(actual.TargetPlatformMinVersion);
         }
 

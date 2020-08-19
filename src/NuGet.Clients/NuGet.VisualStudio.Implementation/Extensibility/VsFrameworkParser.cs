@@ -66,8 +66,8 @@ namespace NuGet.VisualStudio
 
             NuGetFramework framework = NuGetFramework.Parse(input);
 
-            string targetFrameworkMoniker = framework.TargetFrameworkMoniker;
-            string targetPlatformMoniker = framework.TargetPlatformMoniker;
+            string targetFrameworkMoniker = framework.DotNetFrameworkName;
+            string targetPlatformMoniker = framework.DotNetPlatformName;
             string targetPlatforMinVersion = null;
 
             nuGetFramework = new VsNuGetFramework(targetFrameworkMoniker, targetPlatformMoniker, targetPlatforMinVersion);

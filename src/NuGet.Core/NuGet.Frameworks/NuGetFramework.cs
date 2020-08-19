@@ -154,36 +154,54 @@ namespace NuGet.Frameworks
             get { return _frameworkProfile; }
         }
 
-        /// <summary>
-        /// The portion of this framework that is represented by the MSBuild property TargetFrameworkMoniker.
-        /// </summary>
-        public string TargetFrameworkMoniker
+        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>
+        public string DotNetFrameworkName
         {
             get
             {
                 if (_targetFrameworkMoniker == null)
                 {
-                    if (IsSpecificFramework)
-                    {
-                        var framework = DefaultFrameworkNameProvider.Instance.GetFullNameReplacement(this);
-                        _targetFrameworkMoniker = string.IsNullOrEmpty(framework._frameworkProfile)
-                            ? framework._frameworkIdentifier + ",Version=v" + GetDisplayVersion(framework._frameworkVersion)
-                            : framework._frameworkIdentifier + ",Version=v" + GetDisplayVersion(framework._frameworkVersion) + ",Profile=" + framework._frameworkProfile;
-                    }
-                    else
-                    {
-                        _targetFrameworkMoniker = _frameworkIdentifier + ",Version=v0.0";
-                    }
+                    _targetFrameworkMoniker = GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
                 }
-
                 return _targetFrameworkMoniker;
             }
         }
 
-        /// <summary>
-        /// The portion of this framework that is represented by the MSBuild property TargetPlatformMoniker.
-        /// </summary>
-        public string TargetPlatformMoniker
+        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>
+        public string GetDotNetFrameworkName(IFrameworkNameProvider mappings)
+        {
+            if (mappings == null)
+            {
+                throw new ArgumentNullException("mappings");
+            }
+
+            // Check for rewrites
+            var framework = mappings.GetFullNameReplacement(this);
+
+            if (framework.IsSpecificFramework)
+            {
+                var parts = new List<string>(3) { Framework };
+
+                parts.Add(string.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
+
+                if (!string.IsNullOrEmpty(framework.Profile))
+                {
+                    parts.Add(string.Format(CultureInfo.InvariantCulture, "Profile={0}", framework.Profile));
+                }
+
+                return string.Join(",", parts);
+            }
+            else
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
+            }
+        }
+
+        /// <summary>The TargetPlatformMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <remarks>Similar to a System.Versioning.FrameworkName, but missing the v at the beginning of the version.</remarks>
+        public string DotNetPlatformName
         {
             get
             {
@@ -195,33 +213,6 @@ namespace NuGet.Frameworks
                 }
 
                 return _targetPlatformMoniker;
-            }
-        }
-
-        /// <summary>
-        /// Formatted to a System.Versioning.FrameworkName
-        /// </summary>
-        public string DotNetFrameworkName
-        {
-            get
-            {
-                return GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
-            }
-        }
-
-        /// <summary>
-        /// Formatted to a System.Versioning.FrameworkName
-        /// </summary>
-        public string GetDotNetFrameworkName(IFrameworkNameProvider mappings)
-        {
-            // Check for rewrites
-            if (IsNet5Era)
-            {
-                return GetShortFolderName();
-            }
-            else 
-            {
-                return TargetFrameworkMoniker;
             }
         }
 
