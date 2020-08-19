@@ -2664,7 +2664,7 @@ namespace NuGet.PackageManagement
                 {
                     if (primarySources == null || !primarySources.Any())
                     {
-                        throw new ArgumentNullException($"Either should have value in {nameof(primarySources)} if there is {nameof(packageIdentity)}");
+                        throw new ArgumentNullException($"Should have value in {nameof(primarySources)} if there is value for {nameof(packageIdentity)}");
                     }
 
                     var nugetAction = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);
@@ -2675,7 +2675,7 @@ namespace NuGet.PackageManagement
                 {
                     if (!nugetProjectActionsLookup.ContainsKey(buildIntegratedProject.MSBuildProjectPath))
                     {
-                        throw new ArgumentNullException($"Either should have value in {nameof(nugetProjectActionsLookup)} or {nameof(packageIdentity)}");
+                        throw new ArgumentNullException($"Either should have value in {nameof(nugetProjectActionsLookup)} or {nameof(packageIdentity)} & {nameof(primarySources)}");
                     }
 
                     nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath].ToArray();

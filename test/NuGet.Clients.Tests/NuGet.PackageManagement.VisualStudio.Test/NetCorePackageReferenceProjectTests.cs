@@ -2,31 +2,31 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
-using NuGet.VisualStudio;
-using NuGet.Test.Utility;
-using System.Threading;
-using System.IO;
-using Moq;
-using FluentAssertions;
-using NuGet.ProjectModel;
-using NuGet.Commands.Test;
-using NuGet.Commands;
-using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
-using NuGet.ProjectManagement;
-using NuGet.LibraryModel;
-using NuGet.Frameworks;
-using NuGet.Common;
-using Test.Utility;
-using NuGet.Protocol.Core.Types;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.VisualStudio.ProjectSystem;
+using Moq;
+using NuGet.Commands;
+using NuGet.Commands.Test;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
+using NuGet.VisualStudio;
+using Test.Utility;
+using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
