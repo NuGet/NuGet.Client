@@ -154,9 +154,9 @@ namespace NuGet.ProjectModel
                 hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(reference));
             }
             hashCode.AddSequence(TargetFrameworks.OrderBy(dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase));
-            foreach (var reference in OriginalTargetFrameworks.OrderBy(s => s, PathUtility.GetStringComparerBasedOnOS()))
+            foreach (var reference in OriginalTargetFrameworks.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(reference));
+                hashCode.AddObject(StringComparer.OrdinalIgnoreCase.GetHashCode(reference));
             }
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);

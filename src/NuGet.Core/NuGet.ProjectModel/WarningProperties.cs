@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Shared;
 
@@ -47,8 +48,9 @@ namespace NuGet.ProjectModel
         {
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddSequence(WarningsAsErrors);
-            hashCode.AddSequence(NoWarn);
+            hashCode.AddObject(AllWarningsAsErrors);
+            hashCode.AddSequence(WarningsAsErrors.OrderBy(e => e));
+            hashCode.AddSequence(NoWarn.OrderBy(e => e));
 
             return hashCode.CombinedHash;
         }

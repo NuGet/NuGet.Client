@@ -72,7 +72,10 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(Warn);
             hashCode.AddSequence(DownloadDependencies.OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase));
             hashCode.AddSequence(FrameworkReferences.OrderBy(s => s.Name, ComparisonUtility.FrameworkReferenceNameComparer));
-            hashCode.AddStringIgnoreCase(RuntimeIdentifierGraphPath);
+            if (RuntimeIdentifierGraphPath != null)
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(RuntimeIdentifierGraphPath));
+            }
             hashCode.AddSequence(CentralPackageVersions.Values.OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase));
             hashCode.AddStringIgnoreCase(TargetAlias);
             return hashCode.CombinedHash;
