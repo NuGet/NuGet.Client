@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -68,9 +69,10 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(AssetTargetFallback);
             hashCode.AddSequence(Dependencies);
             hashCode.AddSequence(Imports);
+            hashCode.AddObject(Warn);
             hashCode.AddSequence(DownloadDependencies);
             hashCode.AddSequence(FrameworkReferences);
-            hashCode.AddObject(RuntimeIdentifierGraphPath);
+            hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(RuntimeIdentifierGraphPath));
             hashCode.AddSequence(CentralPackageVersions);
             hashCode.AddSequence(TargetAlias);
             return hashCode.CombinedHash;
@@ -96,11 +98,12 @@ namespace NuGet.ProjectModel
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
                    Dependencies.OrderedEquals(other.Dependencies, dependency => dependency.Name, StringComparer.OrdinalIgnoreCase) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
+                   Warn == other.Warn &&
                    AssetTargetFallback == other.AssetTargetFallback &&
                    DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
                    FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr) &&
-                   CentralPackageVersions.Values.SequenceEqualWithNullCheck(other.CentralPackageVersions.Values) &&
-                   EqualityUtility.EqualsWithNullCheck(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath) &&
+                   EqualityUtility.OrderedEquals(CentralPackageVersions.Values, other.CentralPackageVersions.Values, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
+                   PathUtility.GetStringComparerBasedOnOS().Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath) &&
                    EqualityUtility.EqualsWithNullCheck(TargetAlias, other.TargetAlias);
         }
 
