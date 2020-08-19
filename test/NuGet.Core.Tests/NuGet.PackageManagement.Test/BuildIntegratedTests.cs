@@ -1673,7 +1673,6 @@ namespace NuGet.Test
             // Arrange
             var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.3"));
             var updateIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.5"));
-            var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             using (var testSolutionManager = new TestSolutionManager())

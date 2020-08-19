@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly UnconfiguredProject _unconfiguredProject;
-        private List<(NuGetFramework, Dictionary<string, ProjectInstalledPackages>)> _installedPackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackages>)>();
+        private List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> _installedPackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
         private DateTime _lastTimeAssetsModified;
 
         public NetCorePackageReferenceProject(
@@ -221,10 +221,16 @@ namespace NuGet.PackageManagement.VisualStudio
         public async override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             var packageSpec = GetPackageSpec();
-            return packageSpec != null ? await GetPackageReferences(packageSpec) : new PackageReference[0];
+
+            if (packageSpec != null)
+            {
+                return await GetPackageReferencesAsync(packageSpec);
+            }
+
+            return Array.Empty<PackageReference>();
         }
 
-        private async Task<IEnumerable<PackageReference>> GetPackageReferences(PackageSpec packageSpec)
+        private async Task<IEnumerable<PackageReference>> GetPackageReferencesAsync(PackageSpec packageSpec)
         {
             var frameworkSorter = new NuGetFrameworkSorter();
 
@@ -247,11 +253,10 @@ namespace NuGet.PackageManagement.VisualStudio
                .TargetFrameworks
                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, assetsPackageSpec, targets))
                .GroupBy(p => p.PackageIdentity)
-               .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
-               .ToArray();
+               .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
         }
 
-        private IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackages>)> installedPackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
+        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
         {
             TargetFrameworkInformation assetsTargetFrameworkInformation = assetsPackageSpec?.TargetFrameworks.First(t => t.FrameworkName.Equals(targetFramework));
 
@@ -260,7 +265,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (targetFrameworkPackages.Item2 == null)
             {
                 targetFrameworkPackages.Item1 = targetFramework;
-                targetFrameworkPackages.Item2 = new Dictionary<string, ProjectInstalledPackages>();
+                targetFrameworkPackages.Item2 = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
                 installedPackages.Add(targetFrameworkPackages);
             }
 

@@ -25,6 +25,7 @@
   <ItemGroup>
     <Compile Include="Feeds\SourceRepositoryCreator.cs" />
     <Compile Include="Feeds\SourceRepositoryExtensionsTests.cs" />
+    <Compile Include="NetCorePackageReferenceProjectTests.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
     <Compile Include="DispatcherThreadCollection.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
@@ -32,7 +33,6 @@
     <Compile Include="Feeds\InstalledPackageFeedTests.cs" />
     <Compile Include="FrameworkAssemblyResolverTests.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceRestoreUtilityTests.cs" />
-    <Compile Include="NetCorePackageReferenceProjectTests.cs" />
     <Compile Include="ProjectSystems\ProjectKNuGetProjectTests.cs" />
     <Compile Include="ProjectSystems\ProjectSystemCacheTests.cs" />
     <Compile Include="ProjectSystems\TestVSProjectAdapter.cs" />
@@ -76,7 +76,7 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
       <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-    </Reference>    
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

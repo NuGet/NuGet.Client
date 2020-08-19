@@ -8,6 +8,7 @@
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Frameworks.</Description>
+    <UserSecretsId>f889ae50-c1f1-4c63-beae-292414bb3939</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,6 @@
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

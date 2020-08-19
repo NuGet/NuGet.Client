@@ -6,46 +6,61 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio.Utility
 {
     internal static class GetPackageReferenceUtility
     {
-        internal static PackageIdentity UpdateResolvedVersion(LibraryDependency library, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackages> installedPackages)
+        /// <summary>
+        /// Compares the project and the assets files returning the installed package.
+        /// Assets information can be null and returns the package from the project files.
+        /// Checks if package already exists in the project and return it, otherwise update the project installed packages.
+        /// </summary>
+        /// <param name="projectLibrary">Library from the project file.</param>
+        /// <param name="targetFramework">Target framework from the project file.</param>
+        /// <param name="assetsTargetFrameworkInformation">Target framework information from the assets file.</param>
+        /// <param name="targets">Target assets file with the package information.</param>
+        /// <param name="installedPackages">Installed packages information from the project.</param>
+        internal static PackageIdentity UpdateResolvedVersion(LibraryDependency projectLibrary, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IEnumerable<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
             NuGetVersion resolvedVersion = default;
 
-            if (installedPackages.TryGetValue(library.Name, out ProjectInstalledPackages installedVersion) && installedVersion.AllowedVersions.Equals(library.LibraryRange.VersionRange) && targets == null)
+            // Returns the installed version if the package:
+            // 1. Already exists in the installedPackages
+            // 2. The range is the same as the installed one
+            // 3. There are no changes in the assets file
+            if (installedPackages.TryGetValue(projectLibrary.Name, out ProjectInstalledPackage installedVersion) && installedVersion.AllowedVersions.Equals(projectLibrary.LibraryRange.VersionRange) && targets == null)
             {
                 return installedVersion.InstalledPackage;
             }
 
-            resolvedVersion = GetInstalledVersion(library, targetFramework, assetsTargetFrameworkInformation, targets);
+            resolvedVersion = GetInstalledVersion(projectLibrary, targetFramework, assetsTargetFrameworkInformation, targets);
 
             if (resolvedVersion == null)
             {
-                resolvedVersion = library.LibraryRange?.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
+                resolvedVersion = projectLibrary.LibraryRange?.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
             }
 
-            if (installedPackages.TryGetValue(library.Name, out ProjectInstalledPackages installedPackage))
+            // Add or update the the version of the package in the project
+            if (installedPackages.TryGetValue(projectLibrary.Name, out ProjectInstalledPackage installedPackage))
             {
-                installedPackages[library.Name] = new ProjectInstalledPackages(library.LibraryRange.VersionRange, new PackageIdentity(library.Name, resolvedVersion));
+                installedPackages[projectLibrary.Name] = new ProjectInstalledPackage(projectLibrary.LibraryRange.VersionRange, new PackageIdentity(projectLibrary.Name, resolvedVersion));
             }
             else
             {
-                ProjectInstalledPackages newInstalledPackage = new ProjectInstalledPackages(library.LibraryRange.VersionRange, new PackageIdentity(library.Name, resolvedVersion));
-                installedPackages.Add(library.Name, newInstalledPackage);
+                ProjectInstalledPackage newInstalledPackage = new ProjectInstalledPackage(projectLibrary.LibraryRange.VersionRange, new PackageIdentity(projectLibrary.Name, resolvedVersion));
+                installedPackages.Add(projectLibrary.Name, newInstalledPackage);
             }
 
-            return new PackageIdentity(library.Name, resolvedVersion);
+            return new PackageIdentity(projectLibrary.Name, resolvedVersion);
         }
 
-        private static NuGetVersion GetInstalledVersion(LibraryDependency libraryProjectFile, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IList<LockFileTarget> targets)
+        private static NuGetVersion GetInstalledVersion(LibraryDependency libraryProjectFile, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IEnumerable<LockFileTarget> targets)
         {
-            LibraryDependency libraryAsset = assetsTargetFrameworkInformation?.Dependencies.First(e => e.Name.Equals(libraryProjectFile.Name, StringComparison.OrdinalIgnoreCase));
+            LibraryDependency libraryAsset = assetsTargetFrameworkInformation?.Dependencies.FirstOrDefault(e => e.Name.Equals(libraryProjectFile.Name, StringComparison.OrdinalIgnoreCase));
 
             if (libraryAsset == null)
             {
@@ -53,8 +68,8 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             }
 
             return targets
-                .Where(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
-                .SelectMany(l => l?.Libraries)
+                .FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
+                ?.Libraries
                 .FirstOrDefault(a => a.Name.Equals(libraryAsset.Name, StringComparison.OrdinalIgnoreCase))?.Version;
         }
     }

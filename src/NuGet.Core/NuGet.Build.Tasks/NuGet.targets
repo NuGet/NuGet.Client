@@ -57,6 +57,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NuGetInteractive Condition=" '$(NuGetInteractive)' == '' ">$(MSBuildInteractive)</NuGetInteractive>
     <!-- Mark that this targets file supports package download. -->
     <PackageDownloadSupported>true</PackageDownloadSupported>
+    <!-- Mark that this targets file GetReferenceNearestTargetFrameworkTask task supports the TargetPlatformMoniker -->
+    <GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>true</GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>
     <!-- Flag if the Central package file is enabled -->
     <_CentralPackageVersionsEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
   </PropertyGroup>
@@ -930,6 +932,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TargetFrameworkVersion>$(TargetFrameworkVersion)</TargetFrameworkVersion>
         <TargetFrameworkMoniker>$(TargetFrameworkMoniker)</TargetFrameworkMoniker>
         <TargetFrameworkProfile>$(TargetFrameworkProfile)</TargetFrameworkProfile>
+        <TargetPlatformMoniker>$(TargetPlatformMoniker)</TargetPlatformMoniker>
         <TargetPlatformIdentifier>$(TargetPlatformIdentifier)</TargetPlatformIdentifier>
         <TargetPlatformVersion>$(TargetPlatformVersion)</TargetPlatformVersion>
         <TargetPlatformMinVersion>$(TargetPlatformMinVersion)</TargetPlatformMinVersion>
