@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [LocalOnlyFact]
+        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
         public void Convert_WithValidImageUrl_DownloadsImage_DefaultImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "")]
         public void Convert_EmbeddedIcon_NotAnIcon_ReturnsDefault(
             string iconElement,
@@ -353,9 +353,8 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 using (var fs = File.OpenWrite(iconPath))
                 {
-                    fs.Write(new byte[] {0xFF, 0xFF, 0xFF}, 0, 3);
+                    fs.Write(array: new byte[] {0xFF, 0xFF, 0xFF}, offset: 0, count: 3);
                 }
-                //File.WriteAllText(iconPath, "asdf asdf asdf");
             }
 
             // Create nuget package
