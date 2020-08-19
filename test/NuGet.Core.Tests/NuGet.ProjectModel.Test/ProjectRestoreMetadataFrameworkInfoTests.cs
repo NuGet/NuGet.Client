@@ -15,7 +15,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData("net461", "net461", true)]
         [InlineData("net461", "NET461", true)]
         [InlineData("net461", "net462", false)]
-        [InlineData("", "", false)]
+        [InlineData("", "", true)]
         public void Equals_WithTargetAlias(string left, string right, bool expected)
         {
             var leftSide = new ProjectRestoreMetadataFrameworkInfo()
@@ -76,7 +76,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData("net461", "net461", true)]
         [InlineData("net461", "NET461", true)]
         [InlineData("net461", "net462", false)]
-        [InlineData("", "", false)]
+        [InlineData("", "", true)]
         public void HashCode_WithTargetAlias(string left, string right, bool expected)
         {
             var leftSide = new ProjectRestoreMetadataFrameworkInfo()

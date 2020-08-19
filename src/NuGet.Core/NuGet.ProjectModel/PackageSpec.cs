@@ -177,11 +177,11 @@ namespace NuGet.ProjectModel
                    EqualityUtility.EqualsWithNullCheck(BuildOptions, other.BuildOptions) &&
                    EqualityUtility.SequenceEqualWithNullCheck(Tags, other.Tags) &&
                    EqualityUtility.SequenceEqualWithNullCheck(ContentFiles, other.ContentFiles) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies) &&
+                   EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, dep => dep.Name, StringComparer.OrdinalIgnoreCase) &&
                    EqualityUtility.DictionaryOfSequenceEquals(Scripts, other.Scripts) &&
                    EqualityUtility.DictionaryEquals(PackInclude, other.PackInclude, (s, o) => StringComparer.Ordinal.Equals(s, o)) &&
                    EqualityUtility.EqualsWithNullCheck(PackOptions, other.PackOptions) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) && // TODO NK - Sort these.
+                   EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, tfm => tfm.TargetAlias, StringComparer.OrdinalIgnoreCase) &&
                    EqualityUtility.EqualsWithNullCheck(RuntimeGraph, other.RuntimeGraph) &&
                    EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata);
         }

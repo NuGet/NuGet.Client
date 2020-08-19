@@ -382,7 +382,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [InlineData("net462", "net461", true)]
+        [InlineData("net461", "net461", true)]
         [InlineData("net462", "net461;net472", false)]
         [InlineData("net462;net472", "net472;net462", true)]
         [InlineData("net462;net472;net5.0", "net472;net462", false)]
@@ -643,7 +643,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [InlineData("net462", "net461", true)]
+        [InlineData("net461", "net461", true)]
         [InlineData("net462", "net461;net472", false)]
         [InlineData("net462;net472", "net472;net462", true)]
         [InlineData("net462;net472;net5.0", "net472;net462", false)]

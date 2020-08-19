@@ -66,7 +66,7 @@ namespace NuGet.ProjectModel.Test
 
         [Theory]
         [InlineData("net461", "net461", true)]
-        [InlineData("net461", "NET461", false)]
+        [InlineData("net461", "NET461", true)]
         [InlineData("net461", "", false)]
         public void Equals_WithTargetAlias(string left, string right, bool expected)
         {
@@ -317,7 +317,7 @@ namespace NuGet.ProjectModel.Test
 
         [Theory]
         [InlineData("net461", "net461", true)]
-        [InlineData("net461", "NET461", false)]
+        [InlineData("net461", "NET461", true)]
         [InlineData("net461", "", false)]
         public void HashCode_WithTargetAlias(string left, string right, bool expected)
         {

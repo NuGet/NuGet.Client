@@ -67,14 +67,14 @@ namespace NuGet.ProjectModel
 
             hashCode.AddObject(FrameworkName);
             hashCode.AddObject(AssetTargetFallback);
-            hashCode.AddSequence(Dependencies);
+            hashCode.AddSequence(Dependencies.OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase));
             hashCode.AddSequence(Imports);
             hashCode.AddObject(Warn);
-            hashCode.AddSequence(DownloadDependencies);
-            hashCode.AddSequence(FrameworkReferences);
-            hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(RuntimeIdentifierGraphPath));
-            hashCode.AddSequence(CentralPackageVersions);
-            hashCode.AddSequence(TargetAlias);
+            hashCode.AddSequence(DownloadDependencies.OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase));
+            hashCode.AddSequence(FrameworkReferences.OrderBy(s => s.Name, ComparisonUtility.FrameworkReferenceNameComparer));
+            hashCode.AddStringIgnoreCase(RuntimeIdentifierGraphPath);
+            hashCode.AddSequence(CentralPackageVersions.Values.OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase));
+            hashCode.AddStringIgnoreCase(TargetAlias);
             return hashCode.CombinedHash;
         }
 
@@ -100,11 +100,11 @@ namespace NuGet.ProjectModel
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    Warn == other.Warn &&
                    AssetTargetFallback == other.AssetTargetFallback &&
-                   DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
-                   FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr) &&
+                   EqualityUtility.OrderedEquals(DownloadDependencies, other.DownloadDependencies, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
+                   EqualityUtility.OrderedEquals(FrameworkReferences, other.FrameworkReferences, e => e.Name, ComparisonUtility.FrameworkReferenceNameComparer) &&
                    EqualityUtility.OrderedEquals(CentralPackageVersions.Values, other.CentralPackageVersions.Values, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
                    PathUtility.GetStringComparerBasedOnOS().Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath) &&
-                   EqualityUtility.EqualsWithNullCheck(TargetAlias, other.TargetAlias);
+                   StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias);
         }
 
         public TargetFrameworkInformation Clone()

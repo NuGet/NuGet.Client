@@ -1,12 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using FluentAssertions;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using Xunit;
-
 
 namespace NuGet.ProjectModel.Test
 {
@@ -15,7 +12,7 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData("path1", "path1", true)]
         [InlineData("path1", "path2", false)]
-        [InlineData("", "", false)]
+        [InlineData("", "", true)]
         public void Equals_WithProjectPath(string left, string right, bool expected)
         {
             var leftSide = new ProjectRestoreReference()
@@ -34,7 +31,7 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData("path1", "path1", true)]
         [InlineData("path1", "path2", false)]
-        [InlineData("", "", false)]
+        [InlineData("", "", true)]
         public void Equals_WithProjectUniqueName(string left, string right, bool expected)
         {
             var leftSide = new ProjectRestoreReference()
@@ -58,11 +55,15 @@ namespace NuGet.ProjectModel.Test
         {
             var leftSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 IncludeAssets = left
             };
 
             var rightSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 IncludeAssets = right
             };
 
@@ -77,11 +78,15 @@ namespace NuGet.ProjectModel.Test
         {
             var leftSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 PrivateAssets = left
             };
 
             var rightSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 PrivateAssets = right
             };
 
@@ -96,11 +101,15 @@ namespace NuGet.ProjectModel.Test
         {
             var leftSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 ExcludeAssets = left
             };
 
             var rightSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 ExcludeAssets = right
             };
 
@@ -110,16 +119,18 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData("path1", "path1", true)]
         [InlineData("path1", "path2", false)]
-        [InlineData("", "", false)]
+        [InlineData("", "", true)]
         public void HashCode_WithProjectPath(string left, string right, bool expected)
         {
             var leftSide = new ProjectRestoreReference()
             {
+                ProjectUniqueName = "path",
                 ProjectPath = left
             };
 
             var rightSide = new ProjectRestoreReference()
             {
+                ProjectUniqueName = "path",
                 ProjectPath = right
             };
 
@@ -129,16 +140,18 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData("path1", "path1", true)]
         [InlineData("path1", "path2", false)]
-        [InlineData("", "", false)]
+        [InlineData("", "", true)]
         public void HashCode_WithProjectUniqueName(string left, string right, bool expected)
         {
             var leftSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
                 ProjectUniqueName = left
             };
 
             var rightSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
                 ProjectUniqueName = right
             };
 
@@ -153,11 +166,15 @@ namespace NuGet.ProjectModel.Test
         {
             var leftSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 IncludeAssets = left
             };
 
             var rightSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 IncludeAssets = right
             };
 
@@ -172,11 +189,15 @@ namespace NuGet.ProjectModel.Test
         {
             var leftSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 PrivateAssets = left
             };
 
             var rightSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 PrivateAssets = right
             };
 
@@ -191,11 +212,15 @@ namespace NuGet.ProjectModel.Test
         {
             var leftSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 ExcludeAssets = left
             };
 
             var rightSide = new ProjectRestoreReference()
             {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
                 ExcludeAssets = right
             };
 

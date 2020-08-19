@@ -43,7 +43,7 @@ namespace NuGet.ProjectModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(FrameworkName);
-            hashCode.AddObject(TargetAlias);
+            hashCode.AddStringIgnoreCase(TargetAlias);
             hashCode.AddSequence(ProjectReferences);
 
             return hashCode.CombinedHash;
@@ -67,7 +67,7 @@ namespace NuGet.ProjectModel
             }
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
-                   EqualityUtility.EqualsWithNullCheck(TargetAlias, other.TargetAlias) &&
+                   StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias) &&
                    ProjectReferences.OrderedEquals(other.ProjectReferences, e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS());
         }
 

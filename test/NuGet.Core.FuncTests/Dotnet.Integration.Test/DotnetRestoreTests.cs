@@ -975,6 +975,7 @@ EndGlobal";
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", targetFrameworks);
                     ProjectFileUtils.AddProperty(xml, "AutomaticallyUseReferenceAssemblyPackages", "false");
+                    ProjectFileUtils.AddProperty(xml, "DisableImplicitFrameworkReferences", "true");
                     for (int i = 0; i < originalFrameworks.Length; i++)
                     {
                         var attributes = new Dictionary<string, string>() { { "Version", packages[i].Version} };
