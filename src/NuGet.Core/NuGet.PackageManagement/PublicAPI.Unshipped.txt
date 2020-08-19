@@ -1,3 +1,4 @@
+NuGet.ProjectManagement.BuildIntegratedPackageReference.BuildIntegratedPackageReference(NuGet.LibraryModel.LibraryDependency dependency, NuGet.Frameworks.NuGetFramework projectFramework, NuGet.Packaging.Core.PackageIdentity installedVersion) -> void
 NuGet.ProjectManagement.MessageLevelExtensions
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkIdentifier = "TargetFrameworkIdentifier" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkProfile = "TargetFrameworkProfile" -> string
