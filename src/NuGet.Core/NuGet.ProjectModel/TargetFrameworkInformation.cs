@@ -99,7 +99,7 @@ namespace NuGet.ProjectModel
             }
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
-                   Dependencies.OrderedEquals(other.Dependencies, dependency => dependency.Name, StringComparer.OrdinalIgnoreCase) &&
+                   EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, dependency => dependency.Name, StringComparer.OrdinalIgnoreCase) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    Warn == other.Warn &&
                    AssetTargetFallback == other.AssetTargetFallback &&

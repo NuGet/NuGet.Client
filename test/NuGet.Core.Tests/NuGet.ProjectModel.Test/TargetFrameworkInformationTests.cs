@@ -217,6 +217,8 @@ namespace NuGet.ProjectModel.Test
         [InlineData("a;b", "a;b", true)]
         [InlineData("a;B", "A;b", true)]
         [InlineData("B;a", "A;b", true)]
+        [InlineData("a;B", "b;a", true)]
+        [InlineData("a;c;b", "c;B;a", true)]
         [InlineData("B;a;c", "A;b", false)]
         [InlineData("B;a", "A;b;c", false)]
         public void Equals_WithDependencies(string left, string right, bool expected)
