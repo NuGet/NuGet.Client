@@ -60,6 +60,7 @@
     <Compile Include="Converters\AdditionConverter.cs" />
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
     <Compile Include="Converters\AccessibleConverter.cs" />
+    <Compile Include="Converters\BooleanToWidthConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="Converters\SubstractionConverter.cs" />

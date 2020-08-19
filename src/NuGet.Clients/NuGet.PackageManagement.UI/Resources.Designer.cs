@@ -574,6 +574,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Installed.
+        /// </summary>
+        public static string ColumnHeader_InstalledVersion {
+            get {
+                return ResourceManager.GetString("ColumnHeader_InstalledVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project.
         /// </summary>
         public static string ColumnHeader_Project {

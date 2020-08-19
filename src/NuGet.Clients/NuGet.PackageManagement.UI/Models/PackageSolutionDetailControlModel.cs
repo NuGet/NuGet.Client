@@ -115,6 +115,21 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool _isRequestedVisible = false;
+
+        public bool IsRequestedVisible
+        {
+            get
+            {
+                return _isRequestedVisible;
+            }
+            set
+            {
+                _isRequestedVisible = value;
+                OnPropertyChanged(nameof(IsRequestedVisible));
+            }
+        }
+
         private async Task UpdateInstalledVersionsAsync(CancellationToken cancellationToken)
         {
             var hash = new HashSet<NuGetVersion>();
@@ -129,9 +144,15 @@ namespace NuGet.PackageManagement.UI
                         project.InstalledVersion = installedVersion.Identity.Version;
                         hash.Add(installedVersion.Identity.Version);
                         project.AutoReferenced = installedVersion.IsAutoReferenced;
+                        
+                        if (project.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference))
+                        {
+                            project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
+                        }
                     }
                     else
                     {
+                        project.RequestedVersion = null;
                         project.InstalledVersion = null;
                         project.AutoReferenced = false;
                     }
@@ -146,6 +167,8 @@ namespace NuGet.PackageManagement.UI
                     ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                 }
             }
+
+            IsRequestedVisible = _projects.Any(p => p.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference));
 
             InstalledVersionsCount = hash.Count;
 

@@ -16,14 +16,16 @@
       <local:TooltipConverter
         x:Key="TooltipConverter" />
       <local:NotNullToBooleanConverter
-        x:Key="NotNullToBooleanConverter" />  
+        x:Key="NotNullToBooleanConverter" />
+      <local:BooleanToWidthConverter
+        x:Key="BooleanToWidthConverter" />
       <ControlTemplate
         x:Key="SeparatorControlTemplate">
         <Separator
             HorizontalAlignment="Stretch"
             IsEnabled="False" />
       </ControlTemplate>
-      
+
       <!-- style of the list view headers -->
       <Style x:Uid="Style_1" x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}">
         <Setter x:Uid="Setter_1" Property="Canvas.Right" Value="-8.5" />
@@ -233,7 +235,7 @@
           </Setter>
         </Style>
       </ListView.Style>
-      
+
       <!-- set the list view item style -->
       <ListView.ItemContainerStyle>
         <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemStyle1}" >
@@ -241,10 +243,9 @@
           <Setter Property="IsTabStop" Value="True"/>
         </Style>
       </ListView.ItemContainerStyle>
-      
+
       <ListView.View>
         <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-
           <!-- checkbox column -->
           <GridViewColumn>
             <GridViewColumn.Header>
@@ -290,7 +291,6 @@
               Focusable="True"
               IsTabStop="True"
               FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
-            
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <StackPanel Orientation="Horizontal">
@@ -307,13 +307,36 @@
 
           <!-- the version column -->
           <GridViewColumn
-            DisplayMemberBinding="{Binding InstalledVersion,Converter={StaticResource VersionToStringConverter}}">
+            DisplayMemberBinding="{Binding RequestedVersion}"
+            x:Name="_versionColumn"
+            Width="{Binding IsRequestedVisible, Converter={StaticResource BooleanToWidthConverter}}">
             <GridViewColumn.Header>
               <GridViewColumnHeader
                 AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Version}"
                 x:Name="_versionColumnHeader"
                 Click="ColumnHeader_Clicked"
                 Content="{x:Static local:Resources.ColumnHeader_Version}"
+                local:SortableColumnHeaderAttachedProperties.SortPropertyName="VersionColumn"
+                HorizontalContentAlignment="Left"
+                SizeChanged="SortableColumnHeader_SizeChanged"
+                PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
+                Focusable="True"
+                IsTabStop="True"
+                Unloaded="RequestedVersionColumnHeader_Loaded"
+                Visibility="{Binding IsRequestedVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+
+          <!-- the installed column -->
+          <GridViewColumn
+            DisplayMemberBinding="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader
+                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
+                x:Name="_installedVersionColumnHeader"
+                Click="ColumnHeader_Clicked"
+                Content="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
                 local:SortableColumnHeaderAttachedProperties.SortPropertyName="InstalledVersion"
                 HorizontalContentAlignment="Left"
                 SizeChanged="SortableColumnHeader_SizeChanged"
@@ -351,7 +374,7 @@
         VerticalAlignment="Center"
         Text="{x:Static local:Resources.Label_InstalledColon}" />
 
-        <TextBox
+      <TextBox
           FocusVisualStyle="{DynamicResource MarginFocusVisualStyle}"
           Grid.Row="0"
           Grid.Column="2"
@@ -398,28 +421,28 @@
         AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
         ItemsSource="{Binding Path=Versions}"
         SelectedItem="{Binding Path=SelectedVersion}">
-        
-          <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}"> 
-                <Style.Triggers>
-                    <DataTrigger 
+
+        <ComboBox.ItemContainerStyle>
+          <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
+            <Style.Triggers>
+              <DataTrigger 
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
                         Value="True" >
-                        <Setter 
+                <Setter 
                             Property="ToolTipService.ShowOnDisabled"
                             Value="True" />
-                        <Setter 
+                <Setter 
                             Property="ToolTip" 
                             Value="{Binding Converter={StaticResource TooltipConverter}}" />
-                        <Setter
+                <Setter
                             Property="IsEnabled"
                             Value="{Binding IsValidVersion}" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
         </ComboBox.ItemContainerStyle>
       </ComboBox>
-        
+
       <!-- install button -->
       <Button
         x:Name="_installButton"

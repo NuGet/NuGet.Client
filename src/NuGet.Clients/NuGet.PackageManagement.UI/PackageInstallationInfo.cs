@@ -19,7 +19,6 @@ namespace NuGet.PackageManagement.UI
     {
         public event EventHandler SelectedChanged;
 
-        private NuGetVersion _version;
         private bool _autoReferenced;
         private bool _isSelected;
         private string _projectName;
@@ -42,15 +41,30 @@ namespace NuGet.PackageManagement.UI
             _projectName = await NuGetProject.GetUniqueNameOrNameAsync(cancellationToken);
         }
 
+        private NuGetVersion _versionInstalled;
+        private string _versionRequested;
+
         public NuGetVersion InstalledVersion
         {
-            get => _version;
+            get { return _versionInstalled; }
             set
             {
-                _version = value;
+                _versionInstalled = value;
                 OnPropertyChanged(nameof(InstalledVersion));
             }
         }
+
+        public string RequestedVersion
+        {
+            get { return _versionRequested; }
+            set
+            {
+                _versionRequested = value;
+                OnPropertyChanged(nameof(RequestedVersion));
+            }
+        }
+
+        private bool _autoReferenced;
 
         public bool AutoReferenced
         {
