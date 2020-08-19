@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,8 +19,9 @@ namespace NuGet.ProjectModel
     {
         private const string DGSpecFileNameExtension = "{0}.nuget.dgspec.json";
 
-        private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
-        private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
+        // Here I know we're wasting bool value which is extra overhead, but it's most closest builtin thing to HashSet and make it thread safe.
+        private readonly ConcurrentDictionary<string, bool> _restore = new ConcurrentDictionary<string, bool>();
+        private readonly ConcurrentDictionary<string, PackageSpec> _projects = new ConcurrentDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
         private readonly Lazy<JObject> _json;
 
         private const int Version = 1;
@@ -66,7 +68,7 @@ namespace NuGet.ProjectModel
         {
             get
             {
-                return _restore.ToList();
+                return _restore.Keys.OrderBy(r => r, PathUtility.GetStringComparerBasedOnOS()).ToList();
             }
         }
 
@@ -77,7 +79,7 @@ namespace NuGet.ProjectModel
         {
             get
             {
-                return _projects.Values.ToList();
+                return _projects.OrderBy(p => p.Key, PathUtility.GetStringComparerBasedOnOS()).Select(p => p.Value).ToList();
             }
         }
 
@@ -235,7 +237,7 @@ namespace NuGet.ProjectModel
 
         public void AddRestore(string projectUniqueName)
         {
-            _restore.Add(projectUniqueName);
+            _restore.TryAdd(projectUniqueName, false);
         }
 
         public void AddProject(PackageSpec projectSpec)
@@ -253,7 +255,7 @@ namespace NuGet.ProjectModel
                     projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
                 }
 
-                _projects.Add(projectUniqueName, projectToRestore);
+                _projects.TryAdd(projectUniqueName, projectToRestore);
             }
         }
 
@@ -313,7 +315,7 @@ namespace NuGet.ProjectModel
                                 {
                                     if (!string.IsNullOrEmpty(restorePropertyName))
                                     {
-                                        dgspec._restore.Add(restorePropertyName);
+                                        dgspec._restore.TryAdd(restorePropertyName, false);
                                     }
                                 });
                                 break;
@@ -323,7 +325,7 @@ namespace NuGet.ProjectModel
                                 {
                                     PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(jsonReader, path);
 
-                                    dgspec._projects.Add(projectsPropertyName, packageSpec);
+                                    dgspec._projects.TryAdd(projectsPropertyName, packageSpec);
                                 });
                                 break;
 
@@ -371,7 +373,8 @@ namespace NuGet.ProjectModel
             var restoreObj = json.GetValue<JObject>("restore");
             if (restoreObj != null)
             {
-                _restore.UnionWith(restoreObj.Properties().Select(prop => prop.Name));
+                _restore.AddRange(restoreObj.Properties().Select(prop => prop.Name)
+                    .ToDictionary(name => name, name => false));
             }
 
             var projectsObj = json.GetValue<JObject>("projects");
@@ -383,7 +386,7 @@ namespace NuGet.ProjectModel
 #pragma warning disable CS0618
                     var spec = JsonPackageSpecReader.GetPackageSpec(specJson);
 #pragma warning restore CS0618
-                    _projects.Add(prop.Name, spec);
+                    _projects.TryAdd(prop.Name, spec);
                 }
             }
         }
@@ -422,9 +425,9 @@ namespace NuGet.ProjectModel
             writer.WriteObjectStart("restore");
 
             // Preserve default sort order
-            foreach (var restoreName in _restore)
+            foreach (var restoreName in _restore.OrderBy(r => r.Key, PathUtility.GetStringComparerBasedOnOS()))
             {
-                writer.WriteObjectStart(restoreName);
+                writer.WriteObjectStart(restoreName.Key);
                 writer.WriteObjectEnd();
             }
 
@@ -433,7 +436,7 @@ namespace NuGet.ProjectModel
             writer.WriteObjectStart("projects");
 
             // Preserve default sort order
-            foreach (var pair in _projects)
+            foreach (var pair in _projects.OrderBy(p => p.Key, PathUtility.GetStringComparerBasedOnOS()))
             {
                 var project = pair.Value;
 
@@ -497,7 +500,7 @@ namespace NuGet.ProjectModel
                     newSpec.AddProject(project);
 
                     // Add to restore if it existed in the current dg file
-                    if (_restore.Contains(project.RestoreMetadata.ProjectUniqueName))
+                    if (_restore.ContainsKey(project.RestoreMetadata.ProjectUniqueName))
                     {
                         newSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
                     }
