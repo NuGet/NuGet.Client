@@ -140,6 +140,20 @@ namespace NuGet.PackageManagement.UI
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
 
+            foreach (var project in _nugetProjects) {
+                if (project.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference) && installedDependency != null)
+                {
+                    _versions.Add(new DisplayVersion(VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, true), additionalInfo: null));
+                }
+                else
+                {
+                    if (installedDependency != null)
+                    {
+                        _versions.Add(new DisplayVersion(VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, false), additionalInfo: null));
+                    }
+                }
+            }
+
             // Add latest prerelease if neeeded
             if (latestPrerelease.version != null
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version) &&
