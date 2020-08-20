@@ -458,7 +458,9 @@ namespace NuGet.Frameworks
 
         public override string ToString()
         {
-            return DotNetFrameworkName;
+            return IsNet5Era
+                ? GetShortFolderName()
+                : DotNetFrameworkName;
         }
 
         public bool Equals(NuGetFramework other)
