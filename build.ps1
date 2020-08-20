@@ -23,6 +23,9 @@ Indicates whether to create the end to end package.
 .PARAMETER SkipDelaySigning
 Indicates whether to skip delay signing.  By default assemblies will be delay signed.
 
+.PARAMETER Internal
+Indicates whether to build on Microsoft internal machine against daily builds of VS and dependencies.
+
 .EXAMPLE
 .\build.ps1
 To run full clean build, e.g after switching branches
@@ -52,7 +55,8 @@ param (
     [switch]$CI,
     [switch]$PackageEndToEnd,
     [switch]$SkipDelaySigning,
-    [switch]$Binlog
+    [switch]$Binlog,
+    [switch]$internal
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -106,6 +110,12 @@ else {
 Invoke-BuildStep 'Running Restore' {
 
     # Restore
+    if ($Internal)
+    {
+        Trace-Log ". dotnet nuget enable source dotnet5-internal"
+        & dotnet nuget enable source dotnet5-internal
+    }
+
     $args = "build\build.proj", "/t:EnsurePackageReferenceVersionsInSolution", "/p:Configuration=$Configuration"
     if ($Binlog)
     {
@@ -122,6 +132,12 @@ Invoke-BuildStep 'Running Restore' {
     }
     Trace-Log ". `"$MSBuildExe`" $args"
     & $MSBuildExe @args
+
+    if ($Internal)
+    {
+        Trace-Log ". dotnet nuget disable source dotnet5-internal"
+        & dotnet nuget disable source dotnet5-internal
+    }
 
     if (-not $?)
     {
