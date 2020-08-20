@@ -283,7 +283,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // Right now, the UI only handles installation of specific versions, which is just the minimum version of
             // the provided version range.
-            var formattedRange = range.MinVersion.ToNormalizedString();
+            var formattedRange = range.OriginalString ?? range.MinVersion.ToNormalizedString();
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, $"{packageId} {formattedRange}");
 

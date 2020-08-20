@@ -3,3 +3,4 @@ NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.get -> string
 NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.set -> void
 NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.get -> string
 NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.set -> void
+static NuGet.ProjectModel.PackageSpecOperations.AddOrUpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageIdentity identity, NuGet.Versioning.VersionRange versionRange, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworksToAdd) -> void

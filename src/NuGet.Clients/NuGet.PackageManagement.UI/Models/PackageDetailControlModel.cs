@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.Resolver;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -127,6 +125,20 @@ namespace NuGet.PackageManagement.UI
 
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
+
+            foreach (var project in _nugetProjects) {
+                if (project.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference) && installedDependency != null)
+                {
+                    _versions.Add(new DisplayVersion(VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, true), additionalInfo: null));
+                }
+                else
+                {
+                    if (installedDependency != null)
+                    {
+                        _versions.Add(new DisplayVersion(VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, false), additionalInfo: null));
+                    }
+                }
+            }
 
             // Add latest prerelease if neeeded
             if (latestPrerelease.version != null

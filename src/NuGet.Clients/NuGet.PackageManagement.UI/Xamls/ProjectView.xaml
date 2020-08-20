@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.ProjectView"
+<UserControl x:Class="NuGet.PackageManagement.UI.ProjectView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -98,31 +98,38 @@
       Grid.Column="2"
       MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
+      IsReadOnly="False"
       ItemsSource="{Binding Path=Versions}"
-      SelectedItem="{Binding Path=SelectedVersion}">
+      IsEditable="True"
+      StaysOpenOnEdit="True"
+      IsTextSearchEnabled="False"
+      KeyUp="VersionsKeyUp"
+      GotFocus="OpenComboBox"
+      Text="{Binding UserInput}"
+      SelectedValue="{Binding Path=SelectedVersion}">
       <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
-                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding Path=IsValidVersion}" Value="false">
-                        <Setter Property="Foreground" Value="{x:Static SystemColors.GrayTextBrush}" />
-                    </DataTrigger>
-                    <DataTrigger
+        <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
+          <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=IsValidVersion}" Value="false">
+              <Setter Property="Foreground" Value="{x:Static SystemColors.GrayTextBrush}" />
+            </DataTrigger>
+            <DataTrigger
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
                         Value="True" >
-                        <Setter
+              <Setter
                             Property="IsEnabled"
                             Value="{Binding IsValidVersion}" />
-                        <Setter
+              <Setter
                             Property="ToolTipService.ShowOnDisabled"
                             Value="True" />
-                        <Setter
+              <Setter
                             Property="ToolTip"
                             Value="{Binding Converter={StaticResource TooltipConverter}}" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </ComboBox.ItemContainerStyle>
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </ComboBox.ItemContainerStyle>
     </ComboBox>
 
     <!-- install button and update button. They are in fact the same button. Which
@@ -148,7 +155,6 @@
       AutomationProperties.AutomationId="Project_Button_Update"
       Click="InstallButton_Clicked"
       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
-      IsEnabled="{Binding SelectedVersion.IsCurrentInstalled,Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       Content="{x:Static local:Resources.Button_Update}" />
   </Grid>
 </UserControl>

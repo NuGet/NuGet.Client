@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Diagnostics;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
@@ -36,6 +37,8 @@ namespace NuGet.PackageManagement
         /// </summary>
         public PackageIdentity PackageIdentity { get; private set; }
 
+        public VersionRange VersionRange { get; private set; }
+
         /// <summary>
         /// Type of NuGetProjectAction. Install/Uninstall
         /// </summary>
@@ -52,11 +55,11 @@ namespace NuGet.PackageManagement
         /// </summary>
         public NuGetProject Project { get; private set; }
 
-        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository = null)
+        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository)
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             PackageIdentity = packageIdentity;
@@ -65,9 +68,28 @@ namespace NuGet.PackageManagement
             Project = project;
         }
 
+        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository, VersionRange versionRange)
+        {
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            PackageIdentity = packageIdentity;
+            NuGetProjectActionType = nuGetProjectActionType;
+            SourceRepository = sourceRepository;
+            Project = project;
+            VersionRange = versionRange;
+        }
+
         public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project)
         {
             return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, project, sourceRepository);
+        }
+
+        public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project, VersionRange versionRange)
+        {
+            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, project, sourceRepository, versionRange);
         }
 
         public static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity, NuGetProject project)

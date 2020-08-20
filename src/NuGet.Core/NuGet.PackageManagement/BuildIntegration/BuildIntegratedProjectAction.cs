@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
@@ -52,7 +53,56 @@ namespace NuGet.PackageManagement
             IReadOnlyList<SourceRepository> sources,
             IReadOnlyList<NuGetProjectAction> originalActions,
             BuildIntegratedInstallationContext installationContext)
-            : base(packageIdentity, nuGetProjectActionType, project)
+            : base(packageIdentity, nuGetProjectActionType, project, null)
+        {
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (originalLockFile == null)
+            {
+                throw new ArgumentNullException(nameof(originalLockFile));
+            }
+
+            if (restoreResultPair == null)
+            {
+                throw new ArgumentNullException(nameof(restoreResultPair));
+            }
+
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            if (originalActions == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            if (installationContext == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            OriginalLockFile = originalLockFile;
+            RestoreResult = restoreResultPair.Result;
+            RestoreResultPair = restoreResultPair;
+            Sources = sources;
+            OriginalActions = originalActions;
+            InstallationContext = installationContext;
+        }
+
+        public BuildIntegratedProjectAction(NuGetProject project,
+            PackageIdentity packageIdentity,
+            NuGetProjectActionType nuGetProjectActionType,
+            LockFile originalLockFile,
+            RestoreResultPair restoreResultPair,
+            IReadOnlyList<SourceRepository> sources,
+            IReadOnlyList<NuGetProjectAction> originalActions,
+            BuildIntegratedInstallationContext installationContext,
+            VersionRange versionRange)
+            : base(packageIdentity, nuGetProjectActionType, project, null, versionRange)
         {
             if (packageIdentity == null)
             {

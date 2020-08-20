@@ -191,7 +191,6 @@ NuGet.PackageManagement.NuGetPackageManager.PreviewUpdatePackagesAsync(string pa
 NuGet.PackageManagement.NuGetPackageManager.RestorePackageAsync(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, NuGet.Protocol.Core.Types.PackageDownloadContext downloadContext, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> sourceRepositories, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
 NuGet.PackageManagement.NuGetPackageManager.UninstallPackageAsync(NuGet.ProjectManagement.NuGetProject nuGetProject, string packageId, NuGet.PackageManagement.UninstallationContext uninstallationContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
 NuGet.PackageManagement.NuGetProjectAction
-NuGet.PackageManagement.NuGetProjectAction.NuGetProjectAction(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.PackageManagement.NuGetProjectActionType nuGetProjectActionType, NuGet.ProjectManagement.NuGetProject project, NuGet.Protocol.Core.Types.SourceRepository sourceRepository = null) -> void
 NuGet.PackageManagement.NuGetProjectAction.NuGetProjectActionType.get -> NuGet.PackageManagement.NuGetProjectActionType
 NuGet.PackageManagement.NuGetProjectAction.PackageIdentity.get -> NuGet.Packaging.Core.PackageIdentity
 NuGet.PackageManagement.NuGetProjectAction.Project.get -> NuGet.ProjectManagement.NuGetProject

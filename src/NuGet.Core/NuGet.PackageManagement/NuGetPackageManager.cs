@@ -1534,6 +1534,14 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
+            return await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext, primarySources, secondarySources, token, null);
+        }
+
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token, VersionRange versionRange)
+        {
             if (nuGetProject == null)
             {
                 throw new ArgumentNullException(nameof(nuGetProject));
@@ -1566,17 +1574,17 @@ namespace NuGet.PackageManagement
 
             if (!primarySources.Any())
             {
-                throw new ArgumentException(nameof(primarySources));
+                throw new ArgumentException(nameof(SourceRepository));
             }
 
             if (packageIdentity.Version == null)
             {
-                throw new ArgumentNullException("packageIdentity.Version");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             if (nuGetProject is INuGetIntegratedProject)
             {
-                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), nuGetProject);
+                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), nuGetProject, versionRange);
                 var actions = new[] { action };
 
                 var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
@@ -2561,7 +2569,7 @@ namespace NuGet.PackageManagement
                 {
                     if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                     {
-                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, action.VersionRange, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
                     }
                     else
                     {
@@ -2686,7 +2694,8 @@ namespace NuGet.PackageManagement
                 restoreResult,
                 sources.ToList(),
                 nugetProjectActionsList,
-                installationContext);
+                installationContext,
+                nuGetProjectActions.First().VersionRange);
         }
 
         /// <summary>
@@ -2773,7 +2782,7 @@ namespace NuGet.PackageManagement
                         // Install the package to the project
                         await buildIntegratedProject.InstallPackageAsync(
                             originalAction.PackageIdentity.Id,
-                            new VersionRange(originalAction.PackageIdentity.Version),
+                            originalAction.VersionRange ?? new VersionRange(originalAction.PackageIdentity.Version),
                             nuGetProjectContext,
                             projectAction.InstallationContext,
                             token: token);

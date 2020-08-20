@@ -846,7 +846,8 @@ namespace NuGet.PackageManagement.UI
                         projectContext,
                         uiService.ActiveSources,
                         null,
-                        token);
+                        token,
+                        userAction.VersionRange);
                     results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
                 }
             }
