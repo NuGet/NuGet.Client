@@ -56,7 +56,7 @@ param (
     [switch]$PackageEndToEnd,
     [switch]$SkipDelaySigning,
     [switch]$Binlog,
-    [switch]$internal
+    [switch]$Internal
 )
 
 . "$PSScriptRoot\build\common.ps1"
