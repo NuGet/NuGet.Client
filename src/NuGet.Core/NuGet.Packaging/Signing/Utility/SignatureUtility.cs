@@ -16,6 +16,9 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignatureUtility
     {
+        //Length of a SHA-1 hash byte array 
+        private const int HashLength = 20;
+
         private enum SigningCertificateRequirement
         {
             NoRequirement,
@@ -581,14 +584,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            byte[] actualHash;
-
-            using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
-            {
-                actualHash = hashAlgorithm.ComputeHash(certificate.RawData);
-            }
-
-            return essCertId.CertificateHash.SequenceEqual(actualHash);
+            return essCertId.CertificateHash.Length == HashLength;
         }
 
         private static bool AreGeneralNamesEqual(IssuerSerial issuerSerial, X509Certificate2 certificate)

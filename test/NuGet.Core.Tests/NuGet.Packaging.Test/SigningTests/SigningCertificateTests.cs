@@ -77,11 +77,13 @@ namespace NuGet.Packaging.Test
 
         private static BcEssCertId CreateBcEssCertId(string text)
         {
-            using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
+            byte[] randomHash = new byte[20];           
+         
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
             {
-                var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(text));
+                rng.GetBytes(randomHash);
 
-                return new BcEssCertId(hash);
+                return new BcEssCertId(randomHash);
             }
         }
     }
