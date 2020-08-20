@@ -1025,7 +1025,6 @@ NuGet.Packaging.Signing.SignatureType
 NuGet.Packaging.Signing.SignatureType.Author = 1 -> NuGet.Packaging.Signing.SignatureType
 NuGet.Packaging.Signing.SignatureType.Repository = 2 -> NuGet.Packaging.Signing.SignatureType
 NuGet.Packaging.Signing.SignatureType.Unknown = 0 -> NuGet.Packaging.Signing.SignatureType
-NuGet.Packaging.Signing.SignatureUtility
 NuGet.Packaging.Signing.SignatureVerificationBehavior
 NuGet.Packaging.Signing.SignatureVerificationBehavior.Always = 3 -> NuGet.Packaging.Signing.SignatureVerificationBehavior
 NuGet.Packaging.Signing.SignatureVerificationBehavior.IfExists = 1 -> NuGet.Packaging.Signing.SignatureVerificationBehavior
