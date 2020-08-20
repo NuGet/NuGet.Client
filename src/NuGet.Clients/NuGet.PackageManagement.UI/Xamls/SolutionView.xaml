@@ -400,12 +400,19 @@
         MinHeight="22"
         AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
         ItemsSource="{Binding Path=Versions}"
-        SelectedItem="{Binding Path=SelectedVersion}">
-
-        <ComboBox.ItemContainerStyle>
-          <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
-            <Style.Triggers>
-              <DataTrigger 
+        IsEditable="True"
+        KeyUp="VersionsKeyUp"
+        IsTextSearchEnabled="False"
+        IsDropDownOpen="True"
+        GotFocus="Start_Combobox"
+        StaysOpenOnEdit="True"
+        Text="{Binding UserInput, Mode=TwoWay}"
+        SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
+        
+          <ComboBox.ItemContainerStyle>
+            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}"> 
+                <Style.Triggers>
+                    <DataTrigger 
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
                         Value="True" >
                 <Setter 
@@ -433,7 +440,6 @@
         HorizontalAlignment="Left"
         AutomationProperties.AutomationId="Solution_Button_Install"
         Click="InstallButton_Clicked"
-        IsEnabled="{Binding CanInstall}"
         Content="{x:Static local:Resources.Button_Install}" />
     </Grid>
   </Grid>

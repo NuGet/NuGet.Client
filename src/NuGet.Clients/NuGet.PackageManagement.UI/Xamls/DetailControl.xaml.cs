@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -95,7 +96,8 @@ namespace NuGet.PackageManagement.UI
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
-                    model.SelectedVersion.Version);
+                    model.SelectedVersion.Version,
+                    model.SelectedVersion.Range);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -120,7 +122,8 @@ namespace NuGet.PackageManagement.UI
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
-                    model.SelectedVersion.Version);
+                    model.SelectedVersion.Version,
+                    model.SelectedVersion.Range);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }

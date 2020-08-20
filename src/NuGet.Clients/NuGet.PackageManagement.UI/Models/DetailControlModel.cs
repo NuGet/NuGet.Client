@@ -529,6 +529,20 @@ namespace NuGet.PackageManagement.UI
         }
 
         public virtual void OnSelectedVersionChanged() { }
+        private string _userInput;
+
+        public string UserInput
+        {
+            get
+            {
+                return _userInput;
+            }
+            set
+            {
+                _userInput = value;
+                OnPropertyChanged(nameof(UserInput));
+            }
+        }
 
         private DisplayVersion _selectedVersion;
 
@@ -608,6 +622,34 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private bool _isEnableInstallButton;
+        public bool EnableInstallButton
+        {
+            get { return _isEnableInstallButton; }
+            set
+            {
+                if (SelectedVersion.IsCurrentInstalled)
+                {
+                    _isEnableInstallButton = value;
+                }
+                OnPropertyChanged(nameof(EnableInstallButton));
+            }
+        }
+
+        private bool _isInputValid;
+        public bool IsInputValid
+        {
+            get { return _isInputValid; }
+            set
+            {
+                if (SelectedVersion.IsCurrentInstalled)
+                {
+                    _isInputValid = value;
+                }
+                OnPropertyChanged(nameof(IsInputValid));
+            }
+        }
+
         // Calculate the version to select among _versions and select it
         protected void SelectVersion()
         {
@@ -632,6 +674,7 @@ namespace NuGet.PackageManagement.UI
                 SelectedVersion =
                     possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
                     ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
+                UserInput = SelectedVersion.Range.OriginalString;
             }
         }
 

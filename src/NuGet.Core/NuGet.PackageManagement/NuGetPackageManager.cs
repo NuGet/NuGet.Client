@@ -1633,6 +1633,14 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
+            return await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext, primarySources, secondarySources, token, null);
+        }
+
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token, VersionRange versionRange)
+        {
             if (nuGetProject == null)
             {
                 throw new ArgumentNullException(nameof(nuGetProject));
@@ -1679,7 +1687,7 @@ namespace NuGet.PackageManagement
 
             if (nuGetProject is INuGetIntegratedProject)
             {
-                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), nuGetProject);
+                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), nuGetProject, versionRange);
                 var actions = new[] { action };
 
                 var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
@@ -3038,7 +3046,8 @@ namespace NuGet.PackageManagement
                     restoreResult,
                     sources.ToList(),
                     nuGetProjectActionsList,
-                    installationContext);
+                    installationContext,
+                    nuGetProjectActions.First().VersionRange);
 
                 result.Add(new ResolvedAction(buildIntegratedProject, nugetProjectAction));
             }
@@ -3137,7 +3146,7 @@ namespace NuGet.PackageManagement
                         // Install the package to the project
                         await buildIntegratedProject.InstallPackageAsync(
                             originalAction.PackageIdentity.Id,
-                            new VersionRange(originalAction.PackageIdentity.Version),
+                            originalAction.VersionRange ?? new VersionRange(originalAction.PackageIdentity.Version),
                             nuGetProjectContext,
                             projectAction.InstallationContext,
                             token: token);

@@ -1,5 +1,11 @@
+NuGet.ProjectModel.LockFile.GetTarget(string frameworkAlias, string runtimeIdentifier) -> NuGet.ProjectModel.LockFileTarget
 NuGet.ProjectModel.LockFileValidationResult
 NuGet.ProjectModel.LockFileValidationResult.InvalidReasons.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.ProjectModel.LockFileValidationResult.IsValid.get -> bool
 NuGet.ProjectModel.LockFileValidationResult.LockFileValidationResult(bool isValid, System.Collections.Generic.IReadOnlyList<string> invalidReasons) -> void
+NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.get -> string
+NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.set -> void
+NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.get -> string
+NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.set -> void
 static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> NuGet.ProjectModel.LockFileValidationResult
+static NuGet.ProjectModel.PackageSpecOperations.AddOrUpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageIdentity identity, NuGet.Versioning.VersionRange versionRange, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworksToAdd) -> void

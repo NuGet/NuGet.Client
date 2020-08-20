@@ -64,6 +64,15 @@ namespace NuGet.ProjectModel
             AddOrUpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)), frameworksToAdd);
         }
 
+        public static void AddOrUpdateDependency(
+            PackageSpec spec,
+            PackageIdentity identity,
+            VersionRange versionRange,
+            IEnumerable<NuGetFramework> frameworksToAdd)
+        {
+            AddOrUpdateDependency(spec, new PackageDependency(identity.Id, versionRange ?? new VersionRange(identity.Version)), frameworksToAdd);
+        }
+
         public static void RemoveDependency(
             PackageSpec spec,
             string packageId)
