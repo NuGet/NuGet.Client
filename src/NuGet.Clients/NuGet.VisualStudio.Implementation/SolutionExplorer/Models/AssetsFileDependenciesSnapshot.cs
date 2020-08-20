@@ -139,7 +139,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
 
             static ImmutableDictionary<string, AssetsFileTargetLibrary> ParseLibraries(LockFileTarget lockFileTarget)
             {
-                ImmutableDictionary<string, AssetsFileTargetLibrary>.Builder builder = ImmutableDictionary.CreateBuilder<string, AssetsFileTargetLibrary>(StringComparer.Ordinal);
+                ImmutableDictionary<string, AssetsFileTargetLibrary>.Builder builder = ImmutableDictionary.CreateBuilder<string, AssetsFileTargetLibrary>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (LockFileTargetLibrary lockFileLibrary in lockFileTarget.Libraries)
                 {
