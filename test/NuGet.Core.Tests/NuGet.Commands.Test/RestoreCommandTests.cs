@@ -1761,7 +1761,7 @@ namespace NuGet.Commands.Test
                 Assert.False(result.Success);
                 Assert.Equal(1, logger.ErrorMessages.Count);
                 logger.ErrorMessages.TryDequeue(out var errorMessage);
-                Assert.True(errorMessage.Contains("Central floating versions are not allowed."));
+                Assert.True(errorMessage.Contains("Centrally defined floating package versions are not allowed."));
                 var messagesForNU1011 = result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1011);
                 Assert.Equal(1, messagesForNU1011.Count());
             }
