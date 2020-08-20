@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
+using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
@@ -134,12 +135,12 @@ namespace NuGet.PackageManagement.UI
         {
             var hash = new HashSet<NuGetVersion>();
 
-            IsRequestedVisible = false;
+            bool anyRequested = false;
             foreach (var project in _projects)
             {
-                if (IsRequestedVisible.Equals(false) && project.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference))
+                if (!anyRequested && project.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference))
                 {
-                    IsRequestedVisible = true;
+                    anyRequested = true;
                 }
                 try
                 {
@@ -153,6 +154,7 @@ namespace NuGet.PackageManagement.UI
                         if (project.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference))
                         {
                             project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
+                            anyRequested = true;
                         }
                     }
                     else
@@ -174,6 +176,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             InstalledVersionsCount = hash.Count;
+            IsRequestedVisible = anyRequested;
 
             if (hash.Count == 0)
             {
