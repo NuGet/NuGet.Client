@@ -109,7 +109,7 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void GetSha2HashProvider_ReturnsCorrectImplementation()
+        public void GetHashProvider_WhenHashAlgorithmNameIsSupported_ReturnsCorrectImplementation()
         {
             using (var hashAlgorithm = CryptoHashUtility.GetHashProvider(HashAlgorithmName.SHA256))
             {
