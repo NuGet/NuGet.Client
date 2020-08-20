@@ -53,23 +53,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         }
 
         [Fact]
-        public void VsFrameworkCompatibility_GetNearestNet5EraFails()
-        {
-            // Arrange
-            var target = new VsFrameworkCompatibility();
-            var targetFramework = new FrameworkName(".NETCoreApp,Version=v5.0");
-            var frameworks = new[] {
-                new FrameworkName(".NETCoreApp,Version=v4.0"),
-                new FrameworkName(".NETCoreApp,Version=v5.0.0"),
-                new FrameworkName(".NETCoreApp,Version=v5.1.0"),
-                new FrameworkName(".NETCoreApp,Version=v6.0"),
-            };
-
-            // Act
-            Assert.Throws<System.ArgumentException>(() => target.GetNearest(targetFramework, frameworks));
-        }
-
-        [Fact]
         public void VsFrameworkCompatibility_GetNearestWithNoneCompatible()
         {
             // Arrange
