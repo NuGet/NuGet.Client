@@ -25,6 +25,7 @@
   <ItemGroup>
     <Compile Include="Feeds\SourceRepositoryCreator.cs" />
     <Compile Include="Feeds\SourceRepositoryExtensionsTests.cs" />
+    <Compile Include="NetCorePackageReferenceProjectTests.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
     <Compile Include="DispatcherThreadCollection.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
@@ -72,6 +73,9 @@
     <Reference Include="VSLangProj150">
       <HintPath>$(SolutionPackagesFolder)vslangproj150\1.0.0\lib\net46\VSLangProj150.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
+      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

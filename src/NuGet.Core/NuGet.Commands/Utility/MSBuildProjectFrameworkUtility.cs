@@ -44,21 +44,15 @@ namespace NuGet.Commands
         public static NuGetFramework GetProjectFramework(
             string projectFilePath,
             string targetFrameworkMoniker,
-            string targetFrameworkIdentifier,
-            string targetFrameworkVersion,
-            string targetFrameworkProfile,
-            string targetPlatformIdentifier,
-            string targetPlatformVersion,
+            string targetPlatformMoniker,
             string targetPlatformMinVersion)
         {
             return GetProjectFramework(
                 projectFilePath,
                 targetFrameworkMoniker,
-                targetFrameworkIdentifier,
-                targetFrameworkVersion,
-                targetFrameworkProfile,
-                targetPlatformIdentifier,
-                targetPlatformVersion,
+                targetPlatformMoniker,
+                targetPlatformIdentifier: null,
+                targetPlatformVersion : null,
                 targetPlatformMinVersion,
                 isXnaWindowsPhoneProject: false,
                 isManagementPackProject: false,
@@ -84,9 +78,7 @@ namespace NuGet.Commands
                 targetFrameworks,
                 targetFramework,
                 targetFrameworkMoniker,
-                targetFrameworkIdentifier: null,
-                targetFrameworkVersion: null,
-                targetFrameworkProfile: null,
+                targetPlatformMoniker: null,
                 targetPlatformIdentifier,
                 targetPlatformVersion,
                 targetPlatformMinVersion,
@@ -100,9 +92,7 @@ namespace NuGet.Commands
             string targetFrameworks,
             string targetFramework,
             string targetFrameworkMoniker,
-            string targetFrameworkIdentifier,
-            string targetFrameworkVersion,
-            string targetFrameworkProfile,
+            string targetPlatformMoniker,
             string targetPlatformIdentifier,
             string targetPlatformVersion,
             string targetPlatformMinVersion,
@@ -133,9 +123,7 @@ namespace NuGet.Commands
             return new T[] { GetProjectFramework(
                 projectFilePath,
                 targetFrameworkMoniker,
-                targetFrameworkIdentifier,
-                targetFrameworkVersion,
-                targetFrameworkProfile,
+                targetPlatformMoniker,
                 targetPlatformIdentifier,
                 targetPlatformVersion,
                 targetPlatformMinVersion,
@@ -147,9 +135,7 @@ namespace NuGet.Commands
         internal static T GetProjectFramework<T>(
             string projectFilePath,
             string targetFrameworkMoniker,
-            string targetFrameworkIdentifier,
-            string targetFrameworkVersion,
-            string targetFrameworkProfile,
+            string targetPlatformMoniker,
             string targetPlatformIdentifier,
             string targetPlatformVersion,
             string targetPlatformMinVersion,
@@ -173,14 +159,15 @@ namespace NuGet.Commands
             }
 
             // UAP/Windows store projects
-            var platformIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformIdentifier);
-            var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMinVersion);
+            var platformMoniker = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMoniker);
+            var platformMonikerIdentifier = GetParts(platformMoniker).FirstOrDefault();
 
-            // if targetPlatformMinVersion isn't defined then fallback to targetPlatformVersion
-            if (string.IsNullOrEmpty(platformVersion))
-            {
-                platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
-            }
+            var platformIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformIdentifier);
+            var platformMinVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMinVersion);
+            var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
+
+            var effectivePlatformVersion = platformMinVersion ?? platformVersion;
+            var effectivePlatformIdentifier = platformMonikerIdentifier ?? platformIdentifier;
 
             // Check for JS project
             if (projectFilePath?.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase) == true)
@@ -188,33 +175,44 @@ namespace NuGet.Commands
                 // JavaScript apps do not have a TargetFrameworkMoniker property set.
                 // We read the TargetPlatformIdentifier and targetPlatformMinVersion instead
                 // use the default values for JS if they were not given
-                if (string.IsNullOrEmpty(platformVersion))
+
+                // Prefer moniker over individual properties
+                if (!string.IsNullOrEmpty(platformMoniker))
                 {
-                    platformVersion = "0.0";
+                    return GetFrameworkFromMoniker(valueFactory, platformMonikerIdentifier, platformMoniker, platformMinVersion);
                 }
 
-                if (string.IsNullOrEmpty(platformIdentifier))
+                if (string.IsNullOrEmpty(effectivePlatformVersion))
                 {
-                    platformIdentifier = FrameworkConstants.FrameworkIdentifiers.Windows;
+                    effectivePlatformVersion = "0.0";
                 }
 
-                return valueFactory($"{platformIdentifier}, Version={platformVersion}");
+                if (string.IsNullOrEmpty(effectivePlatformIdentifier))
+                {
+                    effectivePlatformIdentifier = FrameworkConstants.FrameworkIdentifiers.Windows;
+                }
+
+                return valueFactory($"{effectivePlatformIdentifier}, Version={effectivePlatformVersion}");
             }
 
-            if (!string.IsNullOrEmpty(platformVersion)
-                && StringComparer.OrdinalIgnoreCase.Equals(platformIdentifier, "UAP"))
+            if (StringComparer.OrdinalIgnoreCase.Equals(effectivePlatformIdentifier, "UAP"))
             {
                 // Use the platform id and versions, this is done for UAP projects
-                return valueFactory($"{platformIdentifier}, Version={platformVersion}");
+                // Prefer moniker over individual properties
+                if (!string.IsNullOrEmpty(platformMoniker))
+                {
+                    return GetFrameworkFromMoniker(valueFactory, effectivePlatformIdentifier, platformMoniker, platformMinVersion);
+                }
+                if (!string.IsNullOrEmpty(effectivePlatformVersion))
+                {
+                    return valueFactory($"{effectivePlatformIdentifier}, Version={effectivePlatformVersion}");
+                }
             }
 
             // TargetFrameworkMoniker
             var currentFrameworkString = MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkMoniker);
-            var trimmedTargetFrameworkIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkIdentifier);
-            var trimmedTargetFrameworkVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkVersion);
-            var hasTFIandTFV = trimmedTargetFrameworkIdentifier != null && trimmedTargetFrameworkVersion != null;
 
-            if (!string.IsNullOrEmpty(currentFrameworkString) || hasTFIandTFV)
+            if (!string.IsNullOrEmpty(currentFrameworkString))
             {
                 // XNA project lies about its true identity, reporting itself as a normal .NET 4.0 project.
                 // We detect it and changes its target framework to Silverlight4-WindowsPhone71
@@ -224,15 +222,7 @@ namespace NuGet.Commands
                     currentFrameworkString = "Silverlight,Version=v4.0,Profile=WindowsPhone71";
                     return valueFactory(currentFrameworkString);
                 }
-
-                NuGetFramework framework = hasTFIandTFV ?
-                    NuGetFramework.ParseComponents(
-                           trimmedTargetFrameworkIdentifier,
-                           trimmedTargetFrameworkVersion,
-                           MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkProfile),
-                           platformIdentifier,
-                           platformVersion) :
-                    NuGetFramework.Parse(currentFrameworkString);
+                NuGetFramework framework = NuGetFramework.ParseComponents(currentFrameworkString, platformMoniker);
 
                 return valueFactory(framework);
             }
@@ -240,6 +230,26 @@ namespace NuGet.Commands
             // Default to unsupported it no framework was found.
             return valueFactory(NuGetFramework.UnsupportedFramework);
         }
+
+        private static T GetFrameworkFromMoniker<T>(Func<object, T> valueFactory, string platformIdentifier, string platformMoniker, string platformMinVersion)
+        {
+            if (!string.IsNullOrEmpty(platformMinVersion))
+            {
+                return valueFactory($"{platformIdentifier}, Version={platformMinVersion}");
+            }
+            else
+            {
+                return valueFactory(platformMoniker);
+            }
+        }
+
+        private static string[] GetParts(string targetPlatformMoniker)
+        {
+            return targetPlatformMoniker != null ?
+                targetPlatformMoniker.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray() :
+                new string[] { };
+        }
+
 
         /// <summary>
         /// Parse project framework strings into NuGetFrameworks.
