@@ -14,7 +14,7 @@ namespace NuGet.VisualStudio.Common
     public class ErrorListTableEntry : ITableEntry
     {
         internal const string ErrorSouce = "NuGet";
-        internal const string HelpLink = "https://msdn.microsoft.com/query/dev15.query?appId=Dev15IDEF1&l={0}&k=k({1})&rd=true";
+        internal const string HelpLink = "https://msdn.microsoft.com/query/dev16.query?appId=Dev16IDEF1&l={0}&k=k({1})&rd=true";
 
         public ILogMessage Message { get; }
 
