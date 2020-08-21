@@ -27,7 +27,7 @@ namespace NuGet.Packaging.FuncTest.SigningTests
         {
             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
-        
+
 #if IS_DESKTOP
         [Fact]
         public async Task GetTimestampCertificateChain_WithNoSigningCertificateUsage_Throws()
@@ -123,7 +123,7 @@ namespace NuGet.Packaging.FuncTest.SigningTests
             {
                 SigningCertificateUsage = signingCertificateUsage,
                 SigningCertificateV1Hash = new byte[SHA1HashLength]
-        };
+            };
             TimestampService timestampService = TimestampService.Create(rootCa, options);
 
             using (testServer.RegisterResponder(timestampService))
