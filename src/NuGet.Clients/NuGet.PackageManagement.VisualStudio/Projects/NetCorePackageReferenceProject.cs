@@ -44,6 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly UnconfiguredProject _unconfiguredProject;
+        WeakReference<PackageSpec> _lastPackageSpec;
         private List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> _installedPackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
         private DateTime _lastTimeAssetsModified;
 
@@ -238,15 +239,22 @@ namespace NuGet.PackageManagement.VisualStudio
             var fileInfo = new FileInfo(assetsFilePath);
             PackageSpec assetsPackageSpec = default;
             IList<LockFileTarget> targets = default;
+            PackageSpec lastPackageSpec = default;
 
-            if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified)
+            if (_lastPackageSpec != null)
+            {
+                _lastPackageSpec.TryGetTarget(out lastPackageSpec);
+            }
+
+            if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified && !ReferenceEquals(lastPackageSpec, packageSpec))
             {
                 await TaskScheduler.Default;
                 var lockFile = new LockFileFormat().Read(assetsFilePath);
-                assetsPackageSpec = lockFile.PackageSpec;           
+                assetsPackageSpec = lockFile.PackageSpec;
                 targets = lockFile.Targets;
 
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
+                _lastPackageSpec = new WeakReference<PackageSpec>(packageSpec);
             }
 
             return packageSpec
