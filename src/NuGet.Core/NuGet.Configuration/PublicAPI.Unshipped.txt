@@ -1,0 +1,1 @@
+static readonly NuGet.Configuration.NuGetConstants.ReadmeExtension -> string

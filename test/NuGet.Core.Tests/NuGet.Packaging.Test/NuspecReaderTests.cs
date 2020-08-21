@@ -471,7 +471,7 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
-        private const string EmbeddedIconTestTemplate = @"<?xml version=""1.0""?>
+        private const string EmbeddedElementTestTemplate = @"<?xml version=""1.0""?>
                 <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
                   <metadata>
                     <id>trumpet</id>
@@ -479,7 +479,7 @@ namespace NuGet.Packaging.Test
                     <title>trumpet package</title>
                     <authors>alice, bob</authors>
                     <owners>alice, bob</owners>
-                    <description>This is a package icon test</description>
+                    <description>This is an embedded package element test</description>
                     {0}
                   </metadata>
                 </package>";
@@ -1130,7 +1130,7 @@ namespace NuGet.Packaging.Test
         [InlineData("<icon>content\\icon.jpg</icon>", "content\\icon.jpg")]
         public void NuspecReaderTests_EmbeddedIcon(string icon, string expectedRead)
         {
-            string nuspec = string.Format(EmbeddedIconTestTemplate, icon);
+            string nuspec = string.Format(EmbeddedElementTestTemplate, icon);
 
             // Arrange
             var reader = GetReader(nuspec);
@@ -1140,6 +1140,27 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.Equal(iconPath, expectedRead);
+        }
+
+        [Theory]
+        [InlineData("<readme>readme.md</readme>", "readme.md")]
+        [InlineData("<readme></readme>", "")]
+        [InlineData("<readme/>", "")]
+        [InlineData("", null)]
+        [InlineData("<readme>path/readme.md</readme>", "path/readme.md")]
+        [InlineData("<readme>content\\readme.md</readme>", "content\\readme.md")]
+        public void NuspecReaderTests_EmbeddedReadme(string readme, string expectedRead)
+        {
+            string nuspec = string.Format(EmbeddedElementTestTemplate, readme);
+
+            // Arrange
+            var reader = GetReader(nuspec);
+
+            // Act
+            var readmePath = reader.GetReadme();
+
+            // Assert
+            Assert.Equal(readmePath, expectedRead);
         }
 
         private static NuspecReader GetReader(string nuspec)

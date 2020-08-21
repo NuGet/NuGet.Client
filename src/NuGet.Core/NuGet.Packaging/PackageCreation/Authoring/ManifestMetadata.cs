@@ -63,6 +63,7 @@ namespace NuGet.Packaging
             Repository = copy.Repository;
             LicenseMetadata = copy.LicenseMetadata;
             Icon = copy.Icon;
+            Readme = copy.Readme;
         }
 
         [ManifestVersion(5)]
@@ -103,7 +104,7 @@ namespace NuGet.Packaging
         }
 
         // The (Icon/License/Project)Url properties have backing strings as we need to be able to differentiate
-        //   between the property not being set (valid) and set to an empty value (invalid). 
+        //   between the property not being set (valid) and set to an empty value (invalid).
         public void SetIconUrl(string iconUrl)
         {
             _iconUrl = iconUrl;
@@ -179,6 +180,8 @@ namespace NuGet.Packaging
         public string Language { get; set; }
 
         public string Tags { get; set; }
+
+        public string Readme { get; set; }
 
         public bool Serviceable { get; set; }
 
@@ -348,6 +351,11 @@ namespace NuGet.Packaging
             if (Icon == string.Empty)
             {
                 yield return NuGetResources.IconMissingRequiredValue;
+            }
+
+            if (Readme == string.Empty)
+            {
+                yield return NuGetResources.ReadmeMissingRequiredValue;
             }
 
             if (RequireLicenseAcceptance)

@@ -17,6 +17,7 @@ namespace NuGet.Test.Utility
     {
         public string PackageIcon { get; private set; }
         public string PackageIconUrl { get; private set; }
+        public string PackageReadmeFile { get; private set; }
         public string ProjectName { get; private set; }
         public List<ItemEntry> ItemGroupEntries { get; private set; }
         public string BaseDir { get; private set; }
@@ -78,6 +79,13 @@ namespace NuGet.Test.Utility
             return this;
         }
 
+        public ProjectFileBuilder WithPackageReadmeFile(string packageReadmeFile)
+        {
+            PackageReadmeFile = packageReadmeFile;
+
+            return this;
+        }
+
         public ProjectFileBuilder WithProjectName(string projectName)
         {
             ProjectName = projectName;
@@ -106,6 +114,11 @@ namespace NuGet.Test.Utility
                 if (PackageIcon != null)
                 {
                     ProjectFileUtils.AddProperty(xml, "PackageIcon", PackageIcon);
+                }
+
+                if (PackageReadmeFile != null)
+                {
+                    ProjectFileUtils.AddProperty(xml, "PackageReadmeFile", PackageReadmeFile);
                 }
 
                 ProjectFileUtils.AddProperties(xml, Properties);

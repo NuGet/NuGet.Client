@@ -41,6 +41,7 @@ namespace NuGet.Packaging
         private const string LicenseUrl = "licenseUrl";
         private const string Repository = "repository";
         private const string Icon = "icon";
+        private const string Readme = "readme";
 
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
@@ -579,6 +580,16 @@ namespace NuGet.Packaging
         public string GetIcon()
         {
             var node = MetadataNode.Elements(XName.Get(Icon, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+            return node?.Value;
+        }
+
+        /// <summary>
+        /// Gets the readme metadata from the .nuspec
+        /// </summary>
+        /// <returns>A string containing the readme path or null if no readme entry is found</returns>
+        public string GetReadme()
+        {
+            var node = MetadataNode.Elements(XName.Get(Readme, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node?.Value;
         }
 
