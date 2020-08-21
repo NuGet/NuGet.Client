@@ -17,7 +17,8 @@ namespace NuGet.VisualStudio
         /// <summary>The platform moniker.</summary>
         string TargetPlatformMoniker { get; }
 
-        /// <summary>The framework platform version.</summary>
+        /// <summary>The platform minimum version.</summary>
+        /// <remarks>This property is read by <see cref="IVsFrameworkCompatibility3" />, but will always have a null value when returned from <see cref="IVsFrameworkParser2"/>.</remarks>
         string TargetPlatformMinVersion { get; }
     }
 }
