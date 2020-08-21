@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.UI
 
         private static void AddToCache(Uri iconUrl, BitmapSource iconBitmapImage)
         {
-            string cacheKey = iconUrl == null ? string.Empty : iconUrl.ToString();
+            string cacheKey = GenerateKeyFromIconUri(iconUrl);
             AddToCache(cacheKey, iconBitmapImage);
         }
 
@@ -195,6 +195,11 @@ namespace NuGet.PackageManagement.UI
                 RemovedCallback = CacheEntryRemoved
             };
             BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
+        }
+
+        private static string GenerateKeyFromIconUri(Uri iconUrl)
+        {
+            return iconUrl == null ? string.Empty : iconUrl.ToString();
         }
 
         private static void CacheEntryRemoved(CacheEntryRemovedArguments arguments)
@@ -222,7 +227,7 @@ namespace NuGet.PackageManagement.UI
 
             var uri = bitmapImage.UriSource;
 
-            string cacheKey = uri == null ? string.Empty : uri.ToString();
+            string cacheKey = GenerateKeyFromIconUri(bitmapImage.UriSource);
             // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.            
             var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != Images.DefaultPackageIcon)
