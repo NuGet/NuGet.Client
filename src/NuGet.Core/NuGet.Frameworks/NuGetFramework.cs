@@ -22,6 +22,8 @@ namespace NuGet.Frameworks
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
         private readonly string _frameworkProfile;
+        private string _targetFrameworkMoniker;
+        private string _targetPlatformMoniker;
         private const string Portable = "portable";
         private int? _hashCode;
 
@@ -47,7 +49,6 @@ namespace NuGet.Frameworks
         /// </summary>
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile)
             : this(frameworkIdentifier, frameworkVersion, profile: ProcessProfile(frameworkProfile), platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
-
         {
         }
 
@@ -153,30 +154,33 @@ namespace NuGet.Frameworks
             get { return _frameworkProfile; }
         }
 
-        /// <summary>
-        /// Formatted to a System.Versioning.FrameworkName
-        /// </summary>
+        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>
         public string DotNetFrameworkName
         {
             get
             {
-                return GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
+                if (_targetFrameworkMoniker == null)
+                {
+                    _targetFrameworkMoniker = GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
+                }
+                return _targetFrameworkMoniker;
             }
         }
 
-        /// <summary>
-        /// Formatted to a System.Versioning.FrameworkName
-        /// </summary>
+        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>
         public string GetDotNetFrameworkName(IFrameworkNameProvider mappings)
         {
+            if (mappings == null)
+            {
+                throw new ArgumentNullException("mappings");
+            }
+
             // Check for rewrites
             var framework = mappings.GetFullNameReplacement(this);
 
-            if (framework.IsNet5Era)
-            {
-                return GetShortFolderName();
-            }
-            else if (framework.IsSpecificFramework)
+            if (framework.IsSpecificFramework)
             {
                 var parts = new List<string>(3) { Framework };
 
@@ -192,6 +196,23 @@ namespace NuGet.Frameworks
             else
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
+            }
+        }
+
+        /// <summary>The TargetPlatformMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <remarks>Similar to a System.Versioning.FrameworkName, but missing the v at the beginning of the version.</remarks>
+        public string DotNetPlatformName
+        {
+            get
+            {
+                if (_targetPlatformMoniker == null)
+                {
+                    _targetPlatformMoniker = string.IsNullOrEmpty(Platform)
+                        ? string.Empty
+                        : Platform + ",Version=" + GetDisplayVersion(PlatformVersion);
+                }
+
+                return _targetPlatformMoniker;
             }
         }
 
@@ -437,7 +458,9 @@ namespace NuGet.Frameworks
 
         public override string ToString()
         {
-            return DotNetFrameworkName;
+            return IsNet5Era
+                ? GetShortFolderName()
+                : DotNetFrameworkName;
         }
 
         public bool Equals(NuGetFramework other)

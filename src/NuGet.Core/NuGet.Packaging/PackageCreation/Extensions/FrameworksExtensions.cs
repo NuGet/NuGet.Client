@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace NuGet.Packaging
             bool isNet5Era = (self.Version.Major >= 5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, self.Framework));
             if (isNet5Era)
             {
-                return self.DotNetFrameworkName;
+                return self.GetShortFolderName();
             }
 
             var frameworkName = new FrameworkName(self.DotNetFrameworkName);
