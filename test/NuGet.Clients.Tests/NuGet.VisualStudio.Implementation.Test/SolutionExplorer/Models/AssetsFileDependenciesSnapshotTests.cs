@@ -1,15 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
 {
-   public class AssetsFileDependenciesSnapshotTests
+    public class AssetsFileDependenciesSnapshotTests
     {
         [Fact]
         public void ParseLibraries_IgnoreCaseInDependenciesTree_Succeeds()
