@@ -7,7 +7,7 @@ using NuGet.ProjectModel;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 using Xunit;
 
-namespace NuGet.VisualStudio.Implementation.Test
+namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
 {
    public class AssetsFileDependenciesSnapshotTests
     {
