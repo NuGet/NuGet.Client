@@ -21,6 +21,7 @@ namespace NuGet.Packaging.FuncTest.SigningTests
     public class SignatureUtilityTests
     {
         private readonly SigningTestFixture _fixture;
+        private const int SHA1HashLength = 20;
 
         public SignatureUtilityTests(SigningTestFixture fixture)
         {
@@ -69,7 +70,7 @@ namespace NuGet.Packaging.FuncTest.SigningTests
         }
 
         [Theory]
-        [InlineData(SigningCertificateUsage.V1TestShortHash)]
+        [InlineData(SigningCertificateUsage.V1)]
         public async Task GetTimestampCertificateChain_WithShortEssCertIdCertificateHash_Throws(
             SigningCertificateUsage signingCertificateUsage)
         {
@@ -77,7 +78,8 @@ namespace NuGet.Packaging.FuncTest.SigningTests
             CertificateAuthority rootCa = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
             var options = new TimestampServiceOptions()
             {
-                SigningCertificateUsage = signingCertificateUsage
+                SigningCertificateUsage = signingCertificateUsage,
+                SigningCertificateV1Hash = new byte[SHA1HashLength - 1]
             };
             TimestampService timestampService = TimestampService.Create(rootCa, options);
 
@@ -111,7 +113,7 @@ namespace NuGet.Packaging.FuncTest.SigningTests
         }
 
         [Theory]
-        [InlineData(SigningCertificateUsage.V1TestMismatchedHash)]
+        [InlineData(SigningCertificateUsage.V1)]
         public async Task GetTimestampCertificateChain_WithMismatchedEssCertIdCertificateHash_ReturnsChain(
             SigningCertificateUsage signingCertificateUsage)
         {
@@ -119,8 +121,9 @@ namespace NuGet.Packaging.FuncTest.SigningTests
             CertificateAuthority rootCa = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
             var options = new TimestampServiceOptions()
             {
-                SigningCertificateUsage = signingCertificateUsage
-            };
+                SigningCertificateUsage = signingCertificateUsage,
+                SigningCertificateV1Hash = new byte[SHA1HashLength]
+        };
             TimestampService timestampService = TimestampService.Create(rootCa, options);
 
             using (testServer.RegisterResponder(timestampService))
