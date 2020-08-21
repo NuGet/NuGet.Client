@@ -234,6 +234,31 @@ namespace Test.Utility.Signing
                 signedAttributes.Add(attribute);
             }
 
+            if (_options.SigningCertificateUsage.HasFlag(SigningCertificateUsage.V1TestShortHash))
+            {
+                byte[] hash = DigestUtilities.CalculateDigest("SHA-1", certificateBytes.Value);
+                byte[] shortHash = new byte[hash.Length - 1];
+                Array.Copy(hash, shortHash, hash.Length - 1);
+                var signingCertificate = new SigningCertificate(new EssCertID(shortHash));
+                var attributeValue = new DerSet(signingCertificate);
+                var attribute = new BcAttribute(PkcsObjectIdentifiers.IdAASigningCertificate, attributeValue);
+
+                signedAttributes.Add(attribute);
+            }
+
+
+            if (_options.SigningCertificateUsage.HasFlag(SigningCertificateUsage.V1TestMismatchedHash))
+            {
+                byte[] hash = DigestUtilities.CalculateDigest("SHA-1", certificateBytes.Value);
+                //Change the hash byte array to make it mismatched
+                hash[0] = (byte)((hash[0] + 1) % 256);
+                var signingCertificate = new SigningCertificate(new EssCertID(hash));
+                var attributeValue = new DerSet(signingCertificate);
+                var attribute = new BcAttribute(PkcsObjectIdentifiers.IdAASigningCertificate, attributeValue);
+
+                signedAttributes.Add(attribute);
+            }
+
             var generator = new CmsSignedDataGenerator();
 
             if (_options.ReturnSigningCertificate)

@@ -10,6 +10,8 @@ namespace Test.Utility.Signing
     {
         None = 0,
         V1 = 1,
-        V2 = 2
+        V2 = 2,
+        V1TestShortHash = 4,
+        V1TestMismatchedHash = 8
     }
 }
