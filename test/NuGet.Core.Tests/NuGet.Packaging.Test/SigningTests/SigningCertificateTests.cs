@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Read_WithPolicyInformation_ReturnsSigningCertificate()
         {
-            var bcEssCertId = CreateBcEssCertId("1");
+            var bcEssCertId = CreateBcEssCertId();
             var bcPolicyInfo = new BcPolicyInformation(new DerObjectIdentifier(Oids.AnyPolicy));
             var bcSigningCertificate = new BcSigningCertificate(
                 new DerSequence(new DerSequence(bcEssCertId), new DerSequence(bcPolicyInfo)));
@@ -47,9 +47,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Read_WithMultipleEssCertIds_ReturnsSigningCertificate()
         {
-            var bcEssCertId1 = CreateBcEssCertId("1");
-            var bcEssCertId2 = CreateBcEssCertId("2");
-            var bcEssCertId3 = CreateBcEssCertId("3");
+            var bcEssCertId1 = CreateBcEssCertId();
+            var bcEssCertId2 = CreateBcEssCertId();
+            var bcEssCertId3 = CreateBcEssCertId();
             var bcSigningCertificate = new BcSigningCertificate(
                 new DerSequence(new DerSequence(bcEssCertId1, bcEssCertId2, bcEssCertId3)));
             var bytes = bcSigningCertificate.GetDerEncoded();
@@ -75,13 +75,15 @@ namespace NuGet.Packaging.Test
             Assert.Null(signingCertificate.Certificates[2].IssuerSerial);
         }
 
-        private static BcEssCertId CreateBcEssCertId(string text)
+        private static BcEssCertId CreateBcEssCertId()
         {
-            using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
+            byte[] randomHash = new byte[20];           
+         
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
             {
-                var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(text));
+                rng.GetBytes(randomHash);
 
-                return new BcEssCertId(hash);
+                return new BcEssCertId(randomHash);
             }
         }
     }
