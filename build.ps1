@@ -110,6 +110,9 @@ else {
 Invoke-BuildStep 'Running Restore' {
 
     # Restore
+    Trace-Log ". dotnet nuget disable source dotnet5-internal"
+    & dotnet nuget disable source dotnet5-internal
+
     if ($Internal)
     {
         Trace-Log ". dotnet nuget enable source dotnet5-internal"
