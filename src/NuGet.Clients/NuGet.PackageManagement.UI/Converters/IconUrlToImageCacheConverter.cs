@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Cache;
 using System.Runtime.Caching;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -146,7 +147,7 @@ namespace NuGet.PackageManagement.UI
             return imageResult;
         }
 
-        public BitmapSource FinishImageProcessing(BitmapImage iconBitmapImage, Uri iconUrl, BitmapSource defaultPackageIcon)
+        private BitmapSource FinishImageProcessing(BitmapImage iconBitmapImage, Uri iconUrl, BitmapSource defaultPackageIcon)
         {
             // Default cache policy: Per MSDN, satisfies a request for a resource either by using the cached copy of the resource or by sending a request
             // for the resource to the server. The action taken is determined by the current cache policy and the age of the content in the cache.
@@ -221,7 +222,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void IconBitmapImage_DownloadOrDecodeFailed(object sender, System.Windows.Media.ExceptionEventArgs e)
+        private void IconBitmapImage_DownloadOrDecodeFailed(object sender, ExceptionEventArgs e)
         {
             var bitmapImage = sender as BitmapImage;
 
