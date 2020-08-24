@@ -31,9 +31,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'">xcopy /diye ^
-    $(ArtifactsDirectory)TestablePlugin\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\*    ^
-    $(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\win7-x64\TestablePlugin\
+    <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'">
+      xcopy /diye $(ArtifactsDirectory)TestablePlugin\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\* $(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\win7-x64\TestablePlugin\
     </PostBuildEvent>
   </PropertyGroup>
   
