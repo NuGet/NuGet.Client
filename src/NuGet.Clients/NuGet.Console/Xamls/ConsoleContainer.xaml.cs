@@ -1,21 +1,29 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGetConsole
 {
     /// <summary>
     /// Interaction logic for ConsoleContainer.xaml
     /// </summary>
-    public partial class ConsoleContainer : UserControl
+    public sealed partial class ConsoleContainer : UserControl, IDisposable
     {
+        private INuGetSolutionManagerService _solutionManager;
+
         public ConsoleContainer()
         {
             InitializeComponent();
@@ -26,7 +34,14 @@ namespace NuGetConsole
                     await System.Threading.Tasks.Task.Run(
                         async () =>
                         {
-                            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+                            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+
+                            _solutionManager = await serviceBroker.GetProxyAsync<INuGetSolutionManagerService>(
+                                NuGetServices.SolutionManagerService,
+                                cancellationToken: CancellationToken.None);
+
+                            Assumes.NotNull(_solutionManager);
+
                             var productUpdateService = ServiceLocator.GetInstance<IProductUpdateService>();
                             var packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
                             var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
@@ -35,7 +50,7 @@ namespace NuGetConsole
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                             RootLayout.Children.Add(new ProductUpdateBar(productUpdateService));
-                            RootLayout.Children.Add(new PackageRestoreBar(solutionManager, packageRestoreManager));
+                            RootLayout.Children.Add(PackageRestoreBar.Create(_solutionManager, packageRestoreManager));
                             RootLayout.Children.Add(new RestartRequestBar(deleteOnRestartManager, shell));
                         });
                 }, VsTaskRunContext.UIThreadIdlePriority);
@@ -56,6 +71,17 @@ namespace NuGetConsole
         public void NotifyInitializationCompleted()
         {
             RootLayout.Children.Remove(InitializeText);
+        }
+
+        public void Dispose()
+        {
+            // Use more verbose null-checking syntax to avoid ISB001 misfiring.
+            if (_solutionManager != null)
+            {
+                _solutionManager.Dispose();
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

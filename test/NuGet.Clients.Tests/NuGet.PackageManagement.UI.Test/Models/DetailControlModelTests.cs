@@ -68,8 +68,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public PackageDetailControlModelTests(LocalPackageSearchMetadataFixture testData)
             : base(testData)
         {
-            var solMgr = new Mock<ISolutionManager>();
-            _testInstance = new PackageDetailControlModel(
+            var solMgr = new Mock<INuGetSolutionManagerService>();
+            _testInstance = PackageDetailControlModel.Create(
                 solutionManager: solMgr.Object,
                 projects: new List<IProjectContextInfo>());
 
@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public PackageSolutionDetailControlModelTests(LocalPackageSearchMetadataFixture testData)
             : base(testData)
         {
-            var solMgr = new Mock<ISolutionManager>();
+            var solMgr = new Mock<INuGetSolutionManagerService>();
             var serviceBroker = new Mock<IServiceBroker>();
             var projectManagerService = new Mock<INuGetProjectManagerService>();
             projectManagerService.Setup(x => x.GetProjectsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<IProjectContextInfo>());

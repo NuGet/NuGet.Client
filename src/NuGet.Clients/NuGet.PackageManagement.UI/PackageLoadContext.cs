@@ -19,20 +19,20 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
 
-        public IEnumerable<SourceRepository> SourceRepositories { get; private set; }
+        public IEnumerable<SourceRepository> SourceRepositories { get; }
 
-        public NuGetPackageManager PackageManager { get; private set; }
+        public NuGetPackageManager PackageManager { get; }
 
-        public IProjectContextInfo[] Projects { get; private set; }
+        public IProjectContextInfo[] Projects { get; }
 
         // Indicates whether the loader is created by solution package manager.
-        public bool IsSolution { get; private set; }
+        public bool IsSolution { get; }
 
-        public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; private set; }
+        public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
         public PackageSearchMetadataCache CachedPackages { get; set; }
 
-        public IVsSolutionManager SolutionManager { get; private set; }
+        public INuGetSolutionManagerService SolutionManager { get; }
 
         public PackageLoadContext(
             IEnumerable<SourceRepository> sourceRepositories,
@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.UI
             PackageManager = uiContext.PackageManager;
             Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
             PackageManagerProviders = uiContext.PackageManagerProviders;
-            SolutionManager = uiContext.SolutionManager;
+            SolutionManager = uiContext.SolutionManagerService;
 
             _installedPackagesTask = PackageCollection.FromProjectsAsync(Projects, CancellationToken.None);
         }

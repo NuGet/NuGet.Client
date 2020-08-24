@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 
 namespace NuGet.VisualStudio.Internal.Contracts
@@ -15,13 +16,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
     /// </summary>
     public interface IProjectContextInfo
     {
-        string UniqueId { get; }
+        string ProjectId { get; }
         ProjectStyle ProjectStyle { get; }
         NuGetProjectKind ProjectKind { get; }
         ValueTask<bool> IsUpgradeableAsync(CancellationToken cancellationToken);
-        Task<IEnumerable<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken);
+        ValueTask<IEnumerable<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken);
         ValueTask<(bool, T)> TryGetMetadataAsync<T>(string key, CancellationToken cancellationToken);
         ValueTask<T> GetMetadataAsync<T>(string key, CancellationToken cancellationToken);
         ValueTask<string> GetUniqueNameOrNameAsync(CancellationToken cancellationToken);
+        ValueTask<(bool, string?)> TryGetInstalledPackageFilePathAsync(
+            PackageIdentity packageIdentity,
+            CancellationToken cancellationToken);
     }
 }

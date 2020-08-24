@@ -4,6 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
@@ -71,21 +76,34 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
-        public INuGetUI Create(params IProjectContextInfo[] projects)
+        public async ValueTask<INuGetUI> CreateAsync(params IProjectContextInfo[] projects)
         {
-            var uiContext = CreateUIContext(projects);
+            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+
+            // NuGetUI takes ownership and must be disposed of by the caller.
+#pragma warning disable ISB001 // Dispose of proxies
+            INuGetSolutionManagerService solutionManagerService = await serviceBroker.GetProxyAsync<INuGetSolutionManagerService>(
+                NuGetServices.SolutionManagerService, CancellationToken.None);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            Assumes.NotNull(solutionManagerService);
+
+            INuGetUIContext uiContext = CreateUIContext(solutionManagerService, projects);
 
             var adapterLogger = new LoggerAdapter(ProjectContext);
+
             ProjectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
-                    adapterLogger);
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
+                adapterLogger);
 
             return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
         }
 
-        private INuGetUIContext CreateUIContext(params IProjectContextInfo[] projects)
+        private INuGetUIContext CreateUIContext(
+            INuGetSolutionManagerService solutionManagerService,
+            params IProjectContextInfo[] projects)
         {
             var packageManager = new NuGetPackageManager(
                 SourceRepositoryProvider.Value,
@@ -106,6 +124,7 @@ namespace NuGet.PackageManagement.UI
             var context = new NuGetUIContext(
                 SourceRepositoryProvider.Value,
                 SolutionManager,
+                solutionManagerService,
                 packageManager,
                 actionEngine,
                 PackageRestoreManager.Value,

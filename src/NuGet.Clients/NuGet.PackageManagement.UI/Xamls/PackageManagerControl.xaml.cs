@@ -95,11 +95,15 @@ namespace NuGet.PackageManagement.UI
 
             if (Model.IsSolution)
             {
-                _detailModel = await PackageSolutionDetailControlModel.CreateAsync(Model.Context.SolutionManager, Model.Context.Projects, Model.Context.PackageManagerProviders, CancellationToken.None);
+                _detailModel = await PackageSolutionDetailControlModel.CreateAsync(
+                    Model.Context.SolutionManagerService,
+                    Model.Context.Projects,
+                    Model.Context.PackageManagerProviders,
+                    CancellationToken.None);
             }
             else
             {
-                _detailModel = new PackageDetailControlModel(Model.Context.SolutionManager, Model.Context.Projects);
+                _detailModel = PackageDetailControlModel.Create(Model.Context.SolutionManagerService, Model.Context.Projects);
             }
 
             if (_windowSearchHostFactory != null)
@@ -143,13 +147,12 @@ namespace NuGet.PackageManagement.UI
                 controller.PackageManagerControl = this;
             }
 
-            var solutionManager = Model.Context.SolutionManager;
-            solutionManager.NuGetProjectAdded += SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectRemoved += SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectUpdated += SolutionManager_ProjectsUpdated;
-            solutionManager.NuGetProjectRenamed += SolutionManager_ProjectRenamed;
-            solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
-            solutionManager.AfterNuGetCacheUpdated += SolutionManager_CacheUpdated;
+            var solutionManager = Model.Context.SolutionManagerService;
+            solutionManager.ProjectAdded += OnProjectChanged;
+            solutionManager.ProjectRemoved += OnProjectChanged;
+            solutionManager.ProjectUpdated += OnProjectUpdated;
+            solutionManager.ProjectRenamed += OnProjectRenamed;
+            solutionManager.AfterNuGetCacheUpdated += OnNuGetCacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
@@ -194,39 +197,41 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
 
-        private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
+        private void OnProjectUpdated(object sender, IProjectContextInfo project)
         {
             Model.Context.Projects = _detailModel.NuGetProjects;
         }
 
-        private void SolutionManager_ProjectRenamed(object sender, NuGetProjectEventArgs e)
+        private void OnProjectRenamed(object sender, IProjectContextInfo project)
         {
-            SolutionManager_ProjectsChanged(sender, e);
+            OnProjectChanged(sender, project);
             if (!Model.IsSolution)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SolutionManager_ProjectRenamedAsync(e.NuGetProject))
-                    .PostOnFailure(nameof(PackageManagerControl), nameof(SolutionManager_ProjectRenamed));
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SolutionManager_ProjectRenamedAsync(project))
+                    .PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectRenamed));
             }
         }
 
-        private async Task SolutionManager_ProjectRenamedAsync(NuGetProject nugetProject)
+        private async Task SolutionManager_ProjectRenamedAsync(IProjectContextInfo project)
         {
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
-            Model.Context.Projects = new[] { projectContextInfo };
+            Model.Context.Projects = new[] { project };
 
             var currentNugetProject = Model.Context.Projects.First();
-            string newFullPath;
 
-            (bool _, string currentFullPath) = await currentNugetProject.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.FullPath, CancellationToken.None);
-            nugetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out newFullPath);
+            (bool currentSuccess, string currentFullPath) = await currentNugetProject.TryGetMetadataAsync<string>(
+                NuGetProjectMetadataKeys.FullPath,
+                CancellationToken.None);
+            (bool newSuccess, string newFullPath) = await project.TryGetMetadataAsync<string>(
+                NuGetProjectMetadataKeys.FullPath,
+                CancellationToken.None);
 
-            if (currentFullPath == newFullPath)
+            if (currentSuccess && newSuccess && currentFullPath == newFullPath)
             {
                 await SetTitleAsync();
             }
         }
 
-        private void SolutionManager_ProjectsChanged(object sender, NuGetProjectEventArgs e)
+        private void OnProjectChanged(object sender, IProjectContextInfo project)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
@@ -251,28 +256,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void SolutionManager_ActionsExecuted(object sender, ActionsExecutedEventArgs e)
-        {
-            var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
-            if (IsVisible)
-            {
-                if (Model.IsSolution)
-                {
-                    RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
-                }
-                else
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => RefreshProjectAfterActionAsync(timeSpan, e))
-                        .PostOnFailure(nameof(PackageManagerControl), nameof(SolutionManager_ActionsExecuted));
-                }
-            }
-            else
-            {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.ActionsExecuted, RefreshOperationStatus.NoOp);
-            }
-        }
-
         private async Task RefreshProjectAfterActionAsync(TimeSpan timeSpan, ActionsExecutedEventArgs e)
         {
             // this is a project package manager, so there is one and only one project.
@@ -292,7 +275,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void SolutionManager_CacheUpdated(object sender, NuGetEventArgs<string> e)
+        private void OnNuGetCacheUpdated(object sender, string e)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
@@ -305,8 +288,8 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory
-                        .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e.Arg))
-                        .PostOnFailure(nameof(PackageManagerControl), nameof(SolutionManager_CacheUpdated));
+                        .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e))
+                        .PostOnFailure(nameof(PackageManagerControl), nameof(OnNuGetCacheUpdated));
                 }
             }
             else
@@ -584,7 +567,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (Model.Context.PackageRestoreManager != null)
             {
-                RestoreBar = new PackageRestoreBar(Model.Context.SolutionManager, Model.Context.PackageRestoreManager);
+                RestoreBar = PackageRestoreBar.Create(Model.Context.SolutionManagerService, Model.Context.PackageRestoreManager);
                 DockPanel.SetDock(RestoreBar, Dock.Top);
 
                 _root.Children.Insert(0, RestoreBar);
@@ -629,7 +612,7 @@ namespace NuGet.PackageManagement.UI
 
         private void AddMigratorBar()
         {
-            _migratorBar = new PRMigratorBar(Model);
+            _migratorBar = PRMigratorBar.Create(Model);
 
             DockPanel.SetDock(_migratorBar, Dock.Top);
 
@@ -1386,15 +1369,16 @@ namespace NuGet.PackageManagement.UI
             RemoveRestoreBar();
             RemoveRestartBar();
 
-            var solutionManager = Model.Context.SolutionManager;
-            solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectRemoved -= SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsUpdated;
-            solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
-            solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
-            solutionManager.AfterNuGetCacheUpdated -= SolutionManager_CacheUpdated;
+            INuGetSolutionManagerService solutionManager = Model.Context.SolutionManagerService;
+            solutionManager.ProjectAdded -= OnProjectChanged;
+            solutionManager.ProjectRemoved -= OnProjectChanged;
+            solutionManager.ProjectUpdated -= OnProjectUpdated;
+            solutionManager.ProjectRenamed -= OnProjectRenamed;
+            solutionManager.AfterNuGetCacheUpdated -= OnNuGetCacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
+
+            Model.Dispose();
 
             // make sure to cancel currently running load or refresh tasks
             _loadCts?.Cancel();

@@ -42,15 +42,15 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<PackageCollection> FromProjectsAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
             // Read package references from all projects.
-            var tasks = projects
-                .Select(project => project.GetInstalledPackagesAsync(cancellationToken));
-            var packageReferences = await Task.WhenAll(tasks);
+            IEnumerable<Task<IEnumerable<IPackageReferenceContextInfo>>>? tasks = projects
+                .Select(project => project.GetInstalledPackagesAsync(cancellationToken).AsTask());
+            IEnumerable<IPackageReferenceContextInfo>[]? packageReferences = await Task.WhenAll(tasks);
 
             // Group all package references for an id/version into a single item.
-            var packages = packageReferences
-                    .SelectMany(e => e)
-                    .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
-                    .ToArray();
+            PackageCollectionItem[]? packages = packageReferences
+                .SelectMany(e => e)
+                .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
+                .ToArray();
 
             return new PackageCollection(packages);
         }

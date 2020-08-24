@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +15,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI
@@ -25,12 +25,13 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageRestoreBar : UserControl, INuGetProjectContext
     {
-        private IPackageRestoreManager PackageRestoreManager { get; }
-        private ISolutionManager SolutionManager { get; }
-        private Dispatcher UIDispatcher { get; }
-        private Exception RestoreException { get; set; }
-        private Storyboard showRestoreBar;
-        private Storyboard hideRestoreBar;
+        private readonly IPackageRestoreManager _packageRestoreManager;
+        // This class does not own this instance, so do not dispose of it in this class.
+        private readonly INuGetSolutionManagerService _solutionManager;
+        private readonly Dispatcher _uiDispatcher;
+        private Exception _restoreException;
+        private Storyboard _showRestoreBar;
+        private Storyboard _hideRestoreBar;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
@@ -44,16 +45,16 @@ namespace NuGet.PackageManagement.UI
 
         public Guid OperationId { get; set; }
 
-        public PackageRestoreBar(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager)
+        private PackageRestoreBar(INuGetSolutionManagerService solutionManager, IPackageRestoreManager packageRestoreManager)
         {
             InitializeComponent();
-            UIDispatcher = Dispatcher.CurrentDispatcher;
-            SolutionManager = solutionManager;
-            PackageRestoreManager = packageRestoreManager;
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
+            _solutionManager = solutionManager;
+            _packageRestoreManager = packageRestoreManager;
 
-            if (PackageRestoreManager != null)
+            if (_packageRestoreManager != null)
             {
-                PackageRestoreManager.PackagesMissingStatusChanged += OnPackagesMissingStatusChanged;
+                _packageRestoreManager.PackagesMissingStatusChanged += OnPackagesMissingStatusChanged;
             }
 
             // Set DynamicResource binding in code
@@ -65,30 +66,37 @@ namespace NuGet.PackageManagement.UI
             RestoreBar.SetResourceReference(Border.BorderBrushProperty, VsBrushes.ActiveBorderKey);
 
             // Find storyboards that will be used to smoothly show and hide the restore bar.
-            showRestoreBar = this.FindResource("ShowSmoothly") as Storyboard;
-            hideRestoreBar = this.FindResource("HideSmoothly") as Storyboard;
+            _showRestoreBar = FindResource("ShowSmoothly") as Storyboard;
+            _hideRestoreBar = FindResource("HideSmoothly") as Storyboard;
+        }
+
+        public static PackageRestoreBar Create(
+            INuGetSolutionManagerService solutionManager,
+            IPackageRestoreManager packageRestoreManager)
+        {
+            return new PackageRestoreBar(solutionManager, packageRestoreManager);
         }
 
         public void CleanUp()
         {
-            if (PackageRestoreManager != null)
+            if (_packageRestoreManager != null)
             {
-                PackageRestoreManager.PackagesMissingStatusChanged -= OnPackagesMissingStatusChanged;
+                _packageRestoreManager.PackagesMissingStatusChanged -= OnPackagesMissingStatusChanged;
             }
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            if (PackageRestoreManager != null)
+            if (_packageRestoreManager != null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     try
                     {
-                        var solutionDirectory = SolutionManager.SolutionDirectory;
+                        string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(CancellationToken.None);
 
                         // when the control is first loaded, check for missing packages
-                        await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                        await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
                     }
                     catch (Exception ex)
                     {
@@ -124,8 +132,8 @@ namespace NuGet.PackageManagement.UI
                 // In order to hide the restore bar:
                 // * stop the reveal animation, in case it was still going.
                 // * begin the hide animation.
-                showRestoreBar.Stop();
-                hideRestoreBar.Begin();
+                _showRestoreBar.Stop();
+                _hideRestoreBar.Begin();
             }
         }
 
@@ -142,21 +150,21 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                PackageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
-                var solutionDirectory = SolutionManager.SolutionDirectory;
-                await PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
+                _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
+                string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(token);
+                await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
                     this,
                     new LoggerAdapter(this),
                     token);
 
-                if (RestoreException == null)
+                if (_restoreException == null)
                 {
                     // when the control is first loaded, check for missing packages
-                    await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
+                    await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
                 }
                 else
                 {
-                    ShowErrorUI(RestoreException.Message);
+                    ShowErrorUI(_restoreException.Message);
                     return false;
                 }
             }
@@ -167,8 +175,8 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
-                PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreFailedEvent;
-                RestoreException = null;
+                _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreFailedEvent;
+                _restoreException = null;
             }
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);
@@ -208,9 +216,9 @@ namespace NuGet.PackageManagement.UI
         private void PackageRestoreFailedEvent(object sender, PackageRestoreFailedEventArgs e)
         {
             // We just store any one of the package restore failures and show it on the yellow bar
-            if (RestoreException == null)
+            if (_restoreException == null)
             {
-                RestoreException = e.Exception;
+                _restoreException = e.Exception;
             }
         }
 
@@ -219,7 +227,7 @@ namespace NuGet.PackageManagement.UI
             // If the restoreBar isn't visible, begin the animation to reveal it.
             if (RestoreBar.Visibility != Visibility.Visible)
             {
-                showRestoreBar.Begin();
+                _showRestoreBar.Begin();
             }
         }
 

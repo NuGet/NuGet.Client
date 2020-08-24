@@ -1,13 +1,16 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.VisualStudio
 {
-    internal class PackageSourceMoniker : IEquatable<PackageSourceMoniker>
+    public sealed class PackageSourceMoniker : IEquatable<PackageSourceMoniker>
     {
-        public SourceRepository[] SourceRepositories { get; private set; }
+        public IReadOnlyList<SourceRepository> SourceRepositories { get; private set; }
 
         public IEnumerable<string> PackageSources => SourceRepositories.Select(s => s.PackageSource.Name);
 
@@ -17,7 +20,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return SourceRepositories.Length > 1;
+                return SourceRepositories.Count > 1;
             }
         }
 
@@ -52,7 +55,7 @@ namespace NuGet.PackageManagement.UI
                 : $"{packageSource.Name} - {packageSource.Description} - {packageSource.Source}";
         }
 
-        public bool Equals(PackageSourceMoniker other) => StringComparer.OrdinalIgnoreCase.Equals(this.ToString(), other.ToString());
+        public bool Equals(PackageSourceMoniker other) => StringComparer.OrdinalIgnoreCase.Equals(ToString(), other.ToString());
 
         public override bool Equals(object obj)
         {
@@ -84,7 +87,7 @@ namespace NuGet.PackageManagement.UI
 
         public static PackageSourceMoniker Aggregated(IEnumerable<SourceRepository> sourceRepositories)
         {
-            return new PackageSourceMoniker(Resources.AggregateSourceName, sourceRepositories);
+            return new PackageSourceMoniker(Strings.AggregateSourceName, sourceRepositories);
         }
 
         public static List<PackageSourceMoniker> PopulateList(ISourceRepositoryProvider sourceRepositoryProvider)

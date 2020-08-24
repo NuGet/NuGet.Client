@@ -10,11 +10,11 @@ using NuGet.ProjectModel;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class IProjectContextInfoFormatter : IMessagePackFormatter<IProjectContextInfo?>
+    internal sealed class IProjectContextInfoFormatter : IMessagePackFormatter<IProjectContextInfo?>
     {
+        private const string ProjectIdPropertyName = "projectid";
         private const string ProjectKindPropertyName = "projectkind";
         private const string ProjectStylePropertyName = "projectstyle";
-        private const string UniqueIdPropertyName = "uniqueid";
 
         internal static readonly IMessagePackFormatter<IProjectContextInfo?> Instance = new IProjectContextInfoFormatter();
 
@@ -43,7 +43,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 {
                     switch (reader.ReadString())
                     {
-                        case UniqueIdPropertyName:
+                        case ProjectIdPropertyName:
                             uniqueId = reader.ReadString();
                             break;
                         case ProjectKindPropertyName:
@@ -78,8 +78,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             writer.WriteMapHeader(count: 3);
-            writer.Write(UniqueIdPropertyName);
-            writer.Write(value.UniqueId);
+            writer.Write(ProjectIdPropertyName);
+            writer.Write(value.ProjectId);
             writer.Write(ProjectKindPropertyName);
             options.Resolver.GetFormatter<NuGetProjectKind>().Serialize(ref writer, value.ProjectKind, options);
             writer.Write(ProjectStylePropertyName);

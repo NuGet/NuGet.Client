@@ -21,14 +21,18 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
             var formatters = new IMessagePackFormatter[]
             {
-                PackageSourceFormatter.Instance,
-                PackageSourceUpdateOptionsFormatter.Instance,
+                FloatRangeFormatter.Instance,
+                IPackageReferenceContextInfoFormatter.Instance,
+                IProjectContextInfoFormatter.Instance,
+                NuGetFrameworkFormatter.Instance,
                 NuGetVersionFormatter.Instance,
+                PackageDependencyFormatter.Instance,
+                PackageDependencyInfoFormatter.Instance,
                 PackageIdentityFormatter.Instance,
                 PackageReferenceFormatter.Instance,
-                NuGetFrameworkFormatter.Instance,
-                IProjectContextInfoFormatter.Instance,
-                IPackageReferenceContextInfoFormatter.Instance
+                PackageSourceFormatter.Instance,
+                PackageSourceUpdateOptionsFormatter.Instance,
+                VersionRangeFormatter.Instance
             };
             var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
 

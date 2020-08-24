@@ -23,6 +23,7 @@ namespace NuGet.PackageManagement.UI
 {
     public partial class PRMigratorBar : UserControl, INuGetProjectContext
     {
+        // This class does not own this instance, so do not dispose of it in this class.
         private readonly PackageManagerModel _model;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
@@ -37,7 +38,7 @@ namespace NuGet.PackageManagement.UI
 
         public Guid OperationId { get; set; }
 
-        public PRMigratorBar(PackageManagerModel model)
+        private PRMigratorBar(PackageManagerModel model)
         {
             InitializeComponent();
             _model = model;
@@ -45,6 +46,11 @@ namespace NuGet.PackageManagement.UI
             UpgradeMessage.SetResourceReference(TextBlock.ForegroundProperty, VsBrushes.InfoTextKey);
             MigratorBar.SetResourceReference(Border.BackgroundProperty, VsBrushes.InfoBackgroundKey);
             MigratorBar.SetResourceReference(Border.BorderBrushProperty, VsBrushes.ActiveBorderKey);
+        }
+
+        public static PRMigratorBar Create(PackageManagerModel model)
+        {
+            return new PRMigratorBar(model);
         }
 
         public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)

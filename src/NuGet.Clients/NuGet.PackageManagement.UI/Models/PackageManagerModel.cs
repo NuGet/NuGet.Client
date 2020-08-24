@@ -17,18 +17,13 @@ namespace NuGet.PackageManagement.UI
     /// fit into the VS model. It's basically an adaptor that turns PackageManagerSession into an IVsPersistDocData
     /// so VS is happy.
     /// </remarks>
-    public class PackageManagerModel : IVsPersistDocData, INotifyPropertyChanged
+    public sealed class PackageManagerModel : IVsPersistDocData, INotifyPropertyChanged, IDisposable
     {
         private readonly Guid _editorFactoryGuid;
 
         public PackageManagerModel(INuGetUI uiController, bool isSolution, Guid editorFactoryGuid)
         {
-            if (uiController == null)
-            {
-                throw new ArgumentNullException(nameof(uiController));
-            }
-
-            UIController = uiController;
+            UIController = uiController ?? throw new ArgumentNullException(nameof(uiController));
             IsSolution = isSolution;
 
             _editorFactoryGuid = editorFactoryGuid;
@@ -55,16 +50,10 @@ namespace NuGet.PackageManagement.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged(string propertyName)
+        private void OnPropertyChanged(string propertyName)
         {
-            var handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        #region IVsPersistDocData
 
         public int Close()
         {
@@ -124,6 +113,11 @@ namespace NuGet.PackageManagement.UI
             return VSConstants.E_NOTIMPL;
         }
 
-        #endregion IVsPersistDocData
+        public void Dispose()
+        {
+            UIController.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
     }
 }

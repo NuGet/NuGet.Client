@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +12,13 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public interface INuGetUIContext
+    public interface INuGetUIContext : IDisposable
     {
         ISourceRepositoryProvider SourceProvider { get; }
 
         IVsSolutionManager SolutionManager { get; }
+
+        INuGetSolutionManagerService SolutionManagerService { get; }
 
         NuGetPackageManager PackageManager { get; }
 

@@ -8,12 +8,14 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Rules;
-using NuGet.ProjectManagement;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -24,7 +26,7 @@ namespace NuGet.PackageManagement.UI
         private string _projectName;
         private bool _hasNotFoundPackages;
 
-        public NuGetProjectUpgradeWindowModel(MSBuildNuGetProject project, IList<PackageDependencyInfo> packageDependencyInfos)
+        public NuGetProjectUpgradeWindowModel(IProjectContextInfo project, IList<PackageDependencyInfo> packageDependencyInfos)
         {
             PackageDependencyInfos = packageDependencyInfos;
             Project = project;
@@ -32,13 +34,9 @@ namespace NuGet.PackageManagement.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public MSBuildNuGetProject Project { get; }
+        public IProjectContextInfo Project { get; }
 
-        public bool HasIssues
-        {
-            get;
-            private set;
-        }
+        public bool HasIssues { get; private set; }
 
         public string Title => string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_NuGetMigrator, ProjectName);
 
@@ -48,7 +46,11 @@ namespace NuGet.PackageManagement.UI
             {
                 if (string.IsNullOrEmpty(_projectName))
                 {
-                    _projectName = NuGetProject.GetUniqueNameOrName(Project);
+                    _projectName = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                    {
+                        return await Project.GetUniqueNameOrNameAsync(CancellationToken.None);
+                    });
+
                     return _projectName;
                 }
                 else
@@ -97,13 +99,17 @@ namespace NuGet.PackageManagement.UI
         public IEnumerable<NuGetProjectUpgradeDependencyItem> TransitiveDependencies => UpgradeDependencyItems
                 .Where(e => !e.IsTopLevel);
 
-        private void InitPackageUpgradeIssues(FolderNuGetProject folderNuGetProject, NuGetProjectUpgradeDependencyItem package)
+        private void InitPackageUpgradeIssues(IProjectContextInfo project, NuGetProjectUpgradeDependencyItem package)
         {
             _notFoundPackages = new HashSet<PackageIdentity>();
             var packageIdentity = new PackageIdentity(package.Id, NuGetVersion.Parse(package.Version));
-            // Confirm package exists
-            var packagePath = folderNuGetProject.GetInstalledPackageFilePath(packageIdentity);
-            if (string.IsNullOrEmpty(packagePath))
+
+            (bool success, string packagePath) = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                return await project.TryGetInstalledPackageFilePathAsync(packageIdentity, CancellationToken.None);
+            });
+
+            if (success && string.IsNullOrEmpty(packagePath))
             {
                 HasIssues = true;
                 HasNotFoundPackages = true;
@@ -129,7 +135,7 @@ namespace NuGet.PackageManagement.UI
                         issues.AddRange(foundIssues);
                     }
 
-                    if(!package.InstallAsTopLevel)
+                    if (!package.InstallAsTopLevel)
                     {
                         PromoteToTopLevelIfNeeded(reader, package);
                     }
@@ -140,10 +146,10 @@ namespace NuGet.PackageManagement.UI
         /* The package will be installed as top level if :
          * 1) The package contains build, buildCrossTargeting, contentFiles or analyzers folder.
          * 2) The package has developmentDependency set to true.
-         */         
+         */
         private void PromoteToTopLevelIfNeeded(PackageArchiveReader reader, NuGetProjectUpgradeDependencyItem item)
         {
-            if(reader.GetDevelopmentDependency() ||
+            if (reader.GetDevelopmentDependency() ||
                 reader.GetFiles(PackagingConstants.Folders.Build).Any() ||
                 reader.GetFiles(PackagingConstants.Folders.BuildCrossTargeting).Any() ||
                 reader.GetFiles(PackagingConstants.Folders.ContentFiles).Any() ||
@@ -151,16 +157,17 @@ namespace NuGet.PackageManagement.UI
             {
                 item.InstallAsTopLevel = true;
             }
-
         }
 
         private ObservableCollection<NuGetProjectUpgradeDependencyItem> GetUpgradeDependencyItems()
         {
-            var upgradeDependencyItems = PackageGraphAnalysisUtilities.GetPackagesWithDependants(PackageDependencyInfos).Select(e => new NuGetProjectUpgradeDependencyItem(e.Identity, e));
-            var folderNuGetProject = Project.FolderNuGetProject;
-            foreach (var package in upgradeDependencyItems)
+            IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems =
+                PackageGraphAnalysisUtilities.GetPackagesWithDependants(PackageDependencyInfos)
+                    .Select(e => new NuGetProjectUpgradeDependencyItem(e.Identity, e));
+
+            foreach (NuGetProjectUpgradeDependencyItem package in upgradeDependencyItems)
             {
-                InitPackageUpgradeIssues(folderNuGetProject, package);
+                InitPackageUpgradeIssues(Project, package);
             }
 
             return new ObservableCollection<NuGetProjectUpgradeDependencyItem>(upgradeDependencyItems);
@@ -182,7 +189,7 @@ namespace NuGet.PackageManagement.UI
         private static readonly PackageIdentity PackageTwo = new PackageIdentity("Test.Package.Two", new NuGetVersion("4.5.6"));
         private static readonly PackageIdentity PackageThree = new PackageIdentity("Test.Package.Three", new NuGetVersion("7.8.9"));
 
-        public static readonly ObservableCollection<NuGetProjectUpgradeDependencyItem> DesignTimeUpgradeDependencyItems = new ObservableCollection<NuGetProjectUpgradeDependencyItem>( new List<NuGetProjectUpgradeDependencyItem>
+        public static readonly ObservableCollection<NuGetProjectUpgradeDependencyItem> DesignTimeUpgradeDependencyItems = new ObservableCollection<NuGetProjectUpgradeDependencyItem>(new List<NuGetProjectUpgradeDependencyItem>
         {
             new NuGetProjectUpgradeDependencyItem(PackageOne, new PackageWithDependants(PackageOne, Enumerable.Empty<PackageIdentity>().ToList())),
             new NuGetProjectUpgradeDependencyItem(PackageTwo, new PackageWithDependants(PackageTwo, new List<PackageIdentity> {PackageOne})),
@@ -197,7 +204,6 @@ namespace NuGet.PackageManagement.UI
             new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
             new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
             new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}))
-
         });
 #endif
     }
