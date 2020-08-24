@@ -19,7 +19,6 @@ namespace NuGet.ProjectModel
     {
         private const string DGSpecFileNameExtension = "{0}.nuget.dgspec.json";
 
-        // Here I know we're wasting bool value which is extra overhead, but it's most closest builtin thing to HashSet and make it thread safe.
         private readonly ConcurrentDictionary<string, bool> _restore = new ConcurrentDictionary<string, bool>();
         private readonly ConcurrentDictionary<string, PackageSpec> _projects = new ConcurrentDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
         private readonly Lazy<JObject> _json;
