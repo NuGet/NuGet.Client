@@ -136,21 +136,21 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
 
                 return builder.ToImmutable();
             }
+        }
 
-            static ImmutableDictionary<string, AssetsFileTargetLibrary> ParseLibraries(LockFileTarget lockFileTarget)
+        internal static ImmutableDictionary<string, AssetsFileTargetLibrary> ParseLibraries(LockFileTarget lockFileTarget)
+        {
+            ImmutableDictionary<string, AssetsFileTargetLibrary>.Builder builder = ImmutableDictionary.CreateBuilder<string, AssetsFileTargetLibrary>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (LockFileTargetLibrary lockFileLibrary in lockFileTarget.Libraries)
             {
-                ImmutableDictionary<string, AssetsFileTargetLibrary>.Builder builder = ImmutableDictionary.CreateBuilder<string, AssetsFileTargetLibrary>(StringComparer.Ordinal);
-
-                foreach (LockFileTargetLibrary lockFileLibrary in lockFileTarget.Libraries)
+                if (AssetsFileTargetLibrary.TryCreate(lockFileLibrary, out AssetsFileTargetLibrary? library))
                 {
-                    if (AssetsFileTargetLibrary.TryCreate(lockFileLibrary, out AssetsFileTargetLibrary? library))
-                    {
-                        builder.Add(library.Name, library);
-                    }
+                    builder.Add(library.Name, library);
                 }
-
-                return builder.ToImmutable();
             }
+
+            return builder.ToImmutable();
         }
 
         public bool TryGetTarget(string? target, [NotNullWhen(returnValue: true)] out AssetsFileTarget? targetData)
