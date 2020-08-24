@@ -194,22 +194,19 @@ namespace NuGet.Protocol
             return invalidLicenseIdentifiers;
         }
 
+        /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
 
         [JsonProperty(PropertyName = JsonProperties.Listed)]
         public bool IsListed { get; private set; } = true;
 
-        /// <summary>
-        /// If deprecated, contains deprecation information for this package; otherwise <c>null</c>.
-        /// </summary>
         [JsonProperty(PropertyName = JsonProperties.Deprecation)]
         public PackageDeprecationMetadata DeprecationMetadata { get; private set; }
 
+        /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
 
-        /// <summary>
-        /// If vulnerability advisory is current, contains vulnerability information for this package; otherwise <c>null</c>.
-        /// </summary>
+        /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
     }
