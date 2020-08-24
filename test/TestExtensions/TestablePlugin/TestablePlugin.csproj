@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
-    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
     <OutputType>Exe</OutputType>
     <AssemblyName>Plugin.Testable</AssemblyName>
