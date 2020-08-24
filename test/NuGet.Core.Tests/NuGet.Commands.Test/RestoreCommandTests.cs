@@ -1761,7 +1761,7 @@ namespace NuGet.Commands.Test
                 Assert.False(result.Success);
                 Assert.Equal(1, logger.ErrorMessages.Count);
                 logger.ErrorMessages.TryDequeue(out var errorMessage);
-                Assert.True(errorMessage.Contains("The PackageReference items bar do not have corresponding PackageVersions."));
+                Assert.True(errorMessage.Contains("The PackageReference items bar do not have corresponding PackageVersion."));
                 var messagesForNU1010 = result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1010);
                 Assert.Equal(1, messagesForNU1010.Count());
             }
