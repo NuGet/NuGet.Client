@@ -1592,9 +1592,8 @@ namespace NuGet.PackageManagement
 
             if (buildIntegratedProjectsToUpdate.Any())
             {
-                // Run project build integrated project preview in parallel for greater performance,
-                // now they're not dependent on each other's result anymore for correctness.
-                var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
+                // Run build integrated project preview for all projects at the same time
+                var resolvedActions = await PreviewResolveActionsForBuildIntegratedProjectsAsync(
                     buildIntegratedProjectsToUpdate,
                     packageIdentity,
                     nuGetProjectContext,
@@ -2549,7 +2548,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Run project actions for build integrated a project.
+        /// Run project actions for a build integrated project.
         /// </summary>
         public async Task<BuildIntegratedProjectAction> PreviewBuildIntegratedProjectActionsAsync(
             BuildIntegratedNuGetProject buildIntegratedProject,
@@ -2607,7 +2606,7 @@ namespace NuGet.PackageManagement
         {
             if (nugetProjectActionsLookup == null)
             {
-                nugetProjectActionsLookup = new Dictionary<string, IEnumerable<NuGetProjectAction>>(StringComparer.OrdinalIgnoreCase) {};
+                nugetProjectActionsLookup = new Dictionary<string, IEnumerable<NuGetProjectAction>>(StringComparer.OrdinalIgnoreCase);
             }
 
             if (buildIntegratedProjects == null)
@@ -2675,7 +2674,7 @@ namespace NuGet.PackageManagement
                 {
                     if (!nugetProjectActionsLookup.ContainsKey(buildIntegratedProject.MSBuildProjectPath))
                     {
-                        throw new ArgumentNullException($"Either should have value in {nameof(nugetProjectActionsLookup)} or {nameof(packageIdentity)} & {nameof(primarySources)}");
+                        throw new ArgumentNullException($"Either should have value in {nameof(nugetProjectActionsLookup)} for {buildIntegratedProject.MSBuildProjectPath} or {nameof(packageIdentity)} & {nameof(primarySources)}");
                     }
 
                     nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath].ToArray();
@@ -2789,7 +2788,7 @@ namespace NuGet.PackageManagement
 
                 var restoreResult = restoreResults.Single(r =>
                     string.Equals(
-                        r.SummaryRequest.Request.Project.RestoreMetadata.ProjectUniqueName,
+                        r.SummaryRequest.Request.Project.RestoreMetadata.ProjectPath,
                         buildIntegratedProject.MSBuildProjectPath,
                         StringComparison.OrdinalIgnoreCase));
 
@@ -2898,7 +2897,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Return list of Resolved actions after running preview (without commit) for buildIntegrated projects.
         /// </summary>
-        internal async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
+        internal async Task<IEnumerable<ResolvedAction>> PreviewResolveActionsForBuildIntegratedProjectsAsync(
             IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
             PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
@@ -2924,7 +2923,7 @@ namespace NuGet.PackageManagement
 
             var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
                 buildIntegratedProjects,
-                nugetProjectActionsLookup : null, // no nugetProjectActionsLookup it'll be derived from packageIdentity and primarySources
+                nugetProjectActionsLookup : null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and primarySources
                 packageIdentity,
                 primarySources,
                 nuGetProjectContext,

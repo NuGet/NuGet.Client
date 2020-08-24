@@ -19,7 +19,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 using TelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
-using NuGet.ProjectManagement.Projects;
 
 namespace NuGet.PackageManagement.UI
 {

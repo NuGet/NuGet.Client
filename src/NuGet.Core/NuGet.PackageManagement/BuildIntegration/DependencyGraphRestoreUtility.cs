@@ -189,6 +189,7 @@ namespace NuGet.PackageManagement
 
         /// <summary>
         /// Restore many projects without writing the lock file
+        /// SourceRepositories(sources) is only used for the CachingSourceProvider, the project-specific sources will still be resolved in RestoreRunner.
         /// </summary>
         internal static async Task<IEnumerable<RestoreResultPair>> PreviewRestoreProjectsAsync(
             ISolutionManager solutionManager,
