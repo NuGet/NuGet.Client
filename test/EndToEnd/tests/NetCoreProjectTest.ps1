@@ -153,7 +153,8 @@ function Test-NetCoreVSandMSBuildNoOp {
     
     $MSBuildExe = Get-MSBuildExe
     
-    & "$MSBuildExe" /t:restore
+    & "$MSBuildExe" /t:restore  $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
 
@@ -175,8 +176,9 @@ function Test-NetCoreTargetFrameworksVSandMSBuildNoOp {
     $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
     
     $MSBuildExe = Get-MSBuildExe
-    
-    & "$MSBuildExe" /t:restore
+
+    & "$MSBuildExe" /t:restore  $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
 
@@ -199,7 +201,8 @@ function Test-NetCoreMultipleTargetFrameworksVSandMSBuildNoOp {
     
     $MSBuildExe = Get-MSBuildExe
     
-    & "$MSBuildExe" /t:restore
+    & "$MSBuildExe" /t:restore  $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
 
@@ -220,7 +223,8 @@ function Test-NetCoreToolsVSandMSBuildNoOp {
     
     $MSBuildExe = Get-MSBuildExe
     
-    & "$MSBuildExe" /t:restore
+    & "$MSBuildExe" /t:restore  $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $ToolsCacheFile -Name LastWriteTime).lastwritetime).Ticks
 
