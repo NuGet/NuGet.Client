@@ -323,54 +323,87 @@ namespace NuGet.PackageManagement
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
             var knownProjects = projects.Select(e => e.MSBuildProjectPath).ToHashSet(PathUtility.GetStringComparerBasedOnOS());
 
-            for (var i = 0; i < projects.Count; i++)
+            var maxTasks = Environment.ProcessorCount;
+            var tasks = new List<Task>();
+
+            foreach (var project in projects)
             {
-                var (packageSpecs, projectAdditionalMessages) = await projects[i].GetPackageSpecsAndAdditionalMessagesAsync(context);
-
-                if (projectAdditionalMessages != null && projectAdditionalMessages.Count > 0)
+                tasks.Add(Task.Run(() => GetProjectRestoreSpecAndAdditionalMessages(
+                    dgSpec,
+                    project,
+                    knownProjects,
+                    allAdditionalMessages,
+                    context)));
+                if (maxTasks <= tasks.Count)
                 {
-                    if (allAdditionalMessages == null)
-                    {
-                        allAdditionalMessages = new List<IAssetsLogMessage>();
-                    }
+                    var finishedTask = await Task.WhenAny(tasks);
+                    tasks.Remove(finishedTask);
+                }
+            }
 
-                    allAdditionalMessages.AddRange(projectAdditionalMessages);
+            await Task.WhenAll(tasks);
+
+            foreach (var t in tasks)
+            {
+                await t;
+            }
+
+            // Return dg file
+            return (dgSpec, allAdditionalMessages);
+        }
+
+        internal static async Task GetProjectRestoreSpecAndAdditionalMessages(
+            DependencyGraphSpec dgSpec,
+            IDependencyGraphProject project,
+            HashSet<string> knownProjects,
+            List<IAssetsLogMessage> allAdditionalMessages,
+            DependencyGraphCacheContext context)
+        {
+            var (packageSpecs, projectAdditionalMessages) = await project.GetPackageSpecsAndAdditionalMessagesAsync(context);
+
+            if (projectAdditionalMessages?.Any() ?? false)
+            {
+                if (allAdditionalMessages == null)
+                {
+                    allAdditionalMessages = new List<IAssetsLogMessage>();
                 }
 
-                foreach (var packageSpec in packageSpecs)
+                allAdditionalMessages.AddRange(projectAdditionalMessages);
+            }
+
+            foreach (var packageSpec in packageSpecs)
+            {
+                dgSpec.AddProject(packageSpec);
+
+                if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
                 {
-                    dgSpec.AddProject(packageSpec);
+                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
 
-                    if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
-                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
-                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
-                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
+                    var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
+                    var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
+                    var outputPath = packageSpec.RestoreMetadata.OutputPath;
+
+                    if (!string.IsNullOrEmpty(outputPath))
                     {
-                        dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-
-                        var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
-                        var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
-                        var outputPath = packageSpec.RestoreMetadata.OutputPath;
-
-                        if (!string.IsNullOrEmpty(outputPath))
+                        for (int frameworkCount = 0; frameworkCount < packageSpec.RestoreMetadata.TargetFrameworks.Count; frameworkCount++)
                         {
-                            for (int frameworkCount = 0; frameworkCount < packageSpec.RestoreMetadata.TargetFrameworks.Count; frameworkCount++)
+                            for (var projectReferenceCount = 0; projectReferenceCount < packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences.Count; projectReferenceCount++)
                             {
-                                for (var projectReferenceCount = 0; projectReferenceCount < packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences.Count; projectReferenceCount++)
+                                if (!knownProjects.Contains(packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
                                 {
-                                    if (!knownProjects.Contains(packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
+                                    var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
+                                    if (File.Exists(persistedDGSpecPath))
                                     {
-                                        var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
-                                        if (File.Exists(persistedDGSpecPath))
+                                        var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
+                                        foreach (var dependentPackageSpec in persistedDGSpec.Projects.Where(e => !knownProjects.Contains(e.RestoreMetadata.ProjectPath)))
                                         {
-                                            var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
-                                            foreach (var dependentPackageSpec in persistedDGSpec.Projects.Where(e => !knownProjects.Contains(e.RestoreMetadata.ProjectPath)))
-                                            {
-                                                // Include all the missing projects from the closure.
-                                                // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
-                                                knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
-                                                dgSpec.AddProject(dependentPackageSpec);
-                                            }
+                                            // Include all the missing projects from the closure.
+                                            // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
+                                            knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
+                                            dgSpec.AddProject(dependentPackageSpec);
                                         }
                                     }
                                 }
@@ -379,9 +412,6 @@ namespace NuGet.PackageManagement
                     }
                 }
             }
-
-            // Return dg file
-            return (dgSpec, allAdditionalMessages);
         }
 
         /// <summary>
