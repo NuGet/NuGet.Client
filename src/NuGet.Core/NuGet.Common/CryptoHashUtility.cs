@@ -203,22 +203,6 @@ namespace NuGet.Common
                 nameof(hashAlgorithmName));
         }
 
-        public static HashAlgorithm GetSha1HashProvider()
-        {
-#if !IS_CORECLR
-            if (AllowFipsAlgorithmsOnly.Value)
-            {
-                return new SHA1CryptoServiceProvider();
-            }
-            else
-            {
-                return new SHA1Managed();
-            }
-#else
-            return SHA1.Create();
-#endif
-        }
-
         // Read this value once.
         private static Lazy<bool> AllowFipsAlgorithmsOnly = new Lazy<bool>(() => ReadFipsConfigValue());
 

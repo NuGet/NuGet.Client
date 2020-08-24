@@ -420,12 +420,8 @@ namespace NuGet.Commands
             foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
             {
                 var frameworkString = item.GetProperty("TargetFramework");
-                var targetFrameworkIdentifier = item.GetProperty("TargetFrameworkIdentifier");
-                var targetFrameworkVersion = item.GetProperty("TargetFrameworkVersion");
                 var targetFrameworkMoniker = item.GetProperty("TargetFrameworkMoniker");
-                var targetFrameworkProfile = item.GetProperty("TargetFrameworkProfile");
-                var targetPlatformIdentifier = item.GetProperty("TargetPlatformIdentifier");
-                var targetPlatformVersion = item.GetProperty("TargetPlatformVersion");
+                var targetPlatforMoniker = item.GetProperty("TargetPlatformMoniker");
                 var targetPlatformMinVersion = item.GetProperty("TargetPlatformMinVersion");
 
                 var targetAlias = string.IsNullOrEmpty(frameworkString) ? string.Empty : frameworkString;
@@ -438,11 +434,7 @@ namespace NuGet.Commands
                 NuGetFramework targetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
                     projectFilePath: filePath,
                     targetFrameworkMoniker: targetFrameworkMoniker,
-                    targetFrameworkIdentifier: targetFrameworkIdentifier,
-                    targetFrameworkVersion: targetFrameworkVersion,
-                    targetFrameworkProfile: targetFrameworkProfile,
-                    targetPlatformIdentifier: targetPlatformIdentifier,
-                    targetPlatformVersion: targetPlatformVersion,
+                    targetPlatformMoniker: targetPlatforMoniker,
                     targetPlatformMinVersion: targetPlatformMinVersion);
 
                 var targetFrameworkInfo = new TargetFrameworkInformation()

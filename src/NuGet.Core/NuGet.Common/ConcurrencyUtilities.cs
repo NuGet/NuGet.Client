@@ -9,12 +9,15 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Shared;
 
 namespace NuGet.Common
 {
     public static class ConcurrencyUtilities
     {
         private const int NumberOfRetries = 3000;
+        // To maintain SHA-1 backwards compatibility with respect to the length of the hex-encoded hash, the hash will be truncated to a length of 20 bytes.
+        private const int HashLength = 20;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
         private static readonly KeyedLock PerFileLock = new KeyedLock();
 
@@ -251,7 +254,7 @@ namespace NuGet.Common
             // the ctor of semaphore looks for the file and throws an IOException
             // when the file doesn't exist. So we need a conversion from a file path
             // to a unique lock name.
-            using (var sha = SHA1.Create())
+            using (var sha = SHA256.Create())
             {
                 // To avoid conflicts on package id casing a case-insensitive lock is used.
                 var fullPath = Path.IsPathRooted(filePath) ? Path.GetFullPath(filePath) : filePath;
@@ -259,33 +262,7 @@ namespace NuGet.Common
 
                 var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(normalizedPath));
 
-                return ToHex(hash);
-            }
-        }
-
-        private static string ToHex(byte[] bytes)
-        {
-            char[] c = new char[bytes.Length * 2];
-
-            for (int index = 0, outIndex = 0; index < bytes.Length; index++)
-            {
-                c[outIndex++] = ToHexChar(bytes[index] >> 4);
-                c[outIndex++] = ToHexChar(bytes[index] & 0x0f);
-            }
-
-            return new string(c);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static char ToHexChar(int input)
-        {
-            if (input > 9)
-            {
-                return (char)(input + 0x57);
-            }
-            else
-            {
-                return (char)(input + 0x30);
+                return EncodingUtility.ToHex(hash, HashLength);
             }
         }
     }

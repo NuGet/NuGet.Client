@@ -6,12 +6,15 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Shared;
 
 namespace NuGet.Protocol
 {
     public class CachingUtility
     {
         public const int BufferSize = 8192;
+        // To maintain SHA-1 backwards compatibility with respect to the length of the hex-encoded hash, the hash will be truncated to a length of 20 bytes.
+        private const int HashLength = 20;
 
         /// <summary>
         /// Given a string, it hashes said string and if <paramref name="addIdentifiableCharacters"/> is true appends identifiable characters to make the root of the cache more human readable
@@ -23,13 +26,12 @@ namespace NuGet.Protocol
         {
             var trailing = value.Length > 32 ? value.Substring(value.Length - 32) : value;
             byte[] hash;
-            using (var sha = SHA1.Create())
+            using (var sha = SHA256.Create())
             {
                 hash = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
             }
 
-            const string hex = "0123456789abcdef";
-            return hash.Aggregate(addIdentifiableCharacters ? "$" + trailing : string.Empty, (result, ch) => "" + hex[ch / 0x10] + hex[ch % 0x10] + result);
+            return EncodingUtility.ToHex(hash, HashLength) + (addIdentifiableCharacters ? "$" + trailing : string.Empty);
         }
 
         public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)

@@ -226,63 +226,49 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData(".NETFramework,Version=v.4.5", ".NETFramework", "v4.5", "", "", "", "", "net45")]
-        [InlineData(null, ".NETFramework", "v4.5", "", "", "", "", "net45")]
-        [InlineData(".NETFramework,Version=v.4.5", ".NETFramework", "v4.5", "client", "", "", "", "net45-client")]
-        [InlineData(".NETCoreApp,Version=v.5.0", ".NETCoreApp", "v5.0", "", "android", "10", "", "net5.0-android10.0")]
-        [InlineData(".NETCoreApp,Version=v.5.0", ".NETCoreApp", "v5.0", "", "ios", "21.0", "", "net5.0-ios21.0")]
-        [InlineData(null, ".NETCoreApp", "v6.0", "", "ios", "21.0", "", "net6.0-ios21.0")]
-        [InlineData(null, ".NETCoreApp", "v6.0", "", "ios", "v21.0", "", "net6.0-ios21.0")]
-        [InlineData(null, null, null, "", "ios", "v21.0", "", "unsupported")]
-        [InlineData(null, ".NETCoreApp", "v6.0", "", "UAP", "10.0.1.2", "", "uap10.0.1.2")]
-        [InlineData(null, ".NETCoreApp", "v6.0", "", "UAP", "10.0.1.2", "10.0.1.3", "uap10.0.1.3")]
-        [InlineData(".NETCoreApp,Version=v3.0", ".NETCoreApp", "v3.0", "", "android", "10", "", "netcoreapp3.0")]
+        [InlineData(".NETFramework,Version=v4.5", "", "", "net45")]
+        [InlineData(".NETFramework,Version=4.5", "", "", "net45")]
+        [InlineData(".NETFramework,Version=v4.5,Profile=Client", "", "", "net45-client")]
+        [InlineData(".NETCoreApp,Version=v5.0", "android,Version=10.0", "", "net5.0-android10.0")]
+        [InlineData(".NETCoreApp,Version=v5.0", "ios,Version=21.0", "", "net5.0-ios21.0")]
+        [InlineData(".NETCoreApp,Version=v6.0", "ios,Version=21.0", "", "net6.0-ios21.0")]
+        [InlineData(null, "ios,Version=21.0", "", "unsupported")]
+        [InlineData(".NETCoreApp,Version=v6.0", "UAP,Version=10.0.1.2", "", "uap10.0.1.2")]
+        [InlineData(".NETCoreApp,Version=v6.0", "UAP,Version=10.0.1.2", "10.0.1.3", "uap10.0.1.3")]
+        [InlineData(".NETCoreApp,Version=v3.0", "android,Version=10.0", "", "netcoreapp3.0")]
+        [InlineData(".NETCoreApp,Version=v3.0", "android,Version=10.0", "9.0", "netcoreapp3.0")]
+        // Hack scenarios: See https://github.com/NuGet/Home/issues/9913
+        [InlineData(".NETCoreApp,Version=v5.0", " ,Version= ", "", "net5.0")]
+        [InlineData(".NETCoreApp,Version=v5.0", ",Version= ", "", "net5.0")]
+        [InlineData(".NETCoreApp,Version=v5.0", " ,Version=", "", "net5.0")]
         public void GetProjectFramework_WithCanonicalProperties_Succeeds(
                 string targetFrameworkMoniker,
-                string targetFrameworkIdentifier,
-                string targetFrameworkVersion,
-                string targetFrameworkProfile,
-                string targetPlatformIdentifier,
-                string targetPlatformVersion,
+                string targetPlatformMoniker,
                 string targetPlatformMinVersion,
                 string expectedShortName)
         {
             var nugetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
-
                 projectFilePath: @"C:\csproj",
                 targetFrameworkMoniker,
-
-                targetFrameworkIdentifier,
-                targetFrameworkVersion,
-                targetFrameworkProfile,
-                targetPlatformIdentifier,
-                targetPlatformVersion,
+                targetPlatformMoniker,
                 targetPlatformMinVersion);
 
             Assert.Equal(expectedShortName, nugetFramework.GetShortFolderName());
         }
 
         [Theory]
-        [InlineData(null, ".NETCoreApp", "v6.0", "", "ios", "5.0-preview.3", "")]
-        [InlineData(null, ".NETCoreApp", "v6.0-preview.3", "", "ios", "5.0", "")]
-        [InlineData(".NETCoreApp,Version=v.5.0", ".NETCoreApp", "v5.0", "NET50CannotHaveProfiles", "android", "10", "")]
+        [InlineData(".NETCoreApp,Version=v6.0", "ios,Version=5.0-preview.3", "")]
+        [InlineData(".NETCoreApp,Version=v6.0-preview.3", "ios,Version=5.0", "")]
+        [InlineData(".NETCoreApp,Version=v5.0,Profile=NET50CannotHaveProfiles", "android,Version=10", "")]
         public void GetProjectFramework_WithInvalidInput_Throws(
         string targetFrameworkMoniker,
-        string targetFrameworkIdentifier,
-        string targetFrameworkVersion,
-        string targetFrameworkProfile,
-        string targetPlatformIdentifier,
-        string targetPlatformVersion,
+        string targetPlatformMoniker, 
         string targetPlatformMinVersion)
         {
             Assert.ThrowsAny<Exception>(() => MSBuildProjectFrameworkUtility.GetProjectFramework(
                projectFilePath: @"C:\csproj",
                targetFrameworkMoniker,
-               targetFrameworkIdentifier,
-               targetFrameworkVersion,
-               targetFrameworkProfile,
-               targetPlatformIdentifier,
-               targetPlatformVersion,
+               targetPlatformMoniker,
                targetPlatformMinVersion));
         }
 

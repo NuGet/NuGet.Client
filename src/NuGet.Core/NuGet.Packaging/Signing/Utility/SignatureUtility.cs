@@ -1,13 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_SIGNING_SUPPORTED
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing.DerEncoding;
@@ -16,6 +15,8 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignatureUtility
     {
+        private const int SHA1HashLength = 20;
+
         private enum SigningCertificateRequirement
         {
             NoRequirement,
@@ -23,7 +24,6 @@ namespace NuGet.Packaging.Signing
             EitherOrBoth
         }
 
-#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Gets certificates in the certificate chain for the primary signature.
         /// </summary>
@@ -581,14 +581,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            byte[] actualHash;
-
-            using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
-            {
-                actualHash = hashAlgorithm.ComputeHash(certificate.RawData);
-            }
-
-            return essCertId.CertificateHash.SequenceEqual(actualHash);
+            return essCertId.CertificateHash.Length == SHA1HashLength;
         }
 
         private static bool AreGeneralNamesEqual(IssuerSerial issuerSerial, X509Certificate2 certificate)
@@ -678,6 +671,6 @@ namespace NuGet.Packaging.Signing
                 ChainBuildingFailed = chainBuildingFailed;
             }
         }
-#endif
     }
 }
+#endif

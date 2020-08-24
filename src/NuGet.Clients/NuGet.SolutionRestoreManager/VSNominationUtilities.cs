@@ -155,21 +155,13 @@ namespace NuGet.SolutionRestoreManager
         internal static NuGetFramework GetTargetFramework(IVsProjectProperties properties, string projectFullPath)
         {
             var targetFrameworkMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkMoniker);
-            var targetFrameworkIdentifier = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkIdentifier);
-            var targetFrameworkVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkVersion);
-            var targetFrameworkProfile = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkProfile);
-            var targetPlatformIdentifier = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformIdentifier);
-            var targetPlatformVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformVersion);
+            var targetPlatformMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformIdentifier);
             var targetPlatformMinVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformMinVersion);
 
             return MSBuildProjectFrameworkUtility.GetProjectFramework(
                 projectFullPath,
                 targetFrameworkMoniker,
-                targetFrameworkIdentifier,
-                targetFrameworkVersion,
-                targetFrameworkProfile,
-                targetPlatformIdentifier,
-                targetPlatformVersion,
+                targetPlatformMoniker,
                 targetPlatformMinVersion);
         }
 

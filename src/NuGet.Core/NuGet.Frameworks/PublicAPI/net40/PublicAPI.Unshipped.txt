@@ -1,3 +1,4 @@
 NuGet.Frameworks.FrameworkNameProvider.TryGetPlatformVersion(string versionString, out System.Version version) -> bool
 NuGet.Frameworks.IFrameworkNameProvider.TryGetPlatformVersion(string versionString, out System.Version version) -> bool
-static NuGet.Frameworks.NuGetFramework.ParseComponents(string targetFrameworkIdentifier, string targetFrameworkVersion, string targetFrameworkProfile, string targetPlatformIdentifier, string targetPlatformVersion) -> NuGet.Frameworks.NuGetFramework
+NuGet.Frameworks.NuGetFramework.DotNetPlatformName.get -> string
+static NuGet.Frameworks.NuGetFramework.ParseComponents(string targetFrameworkMoniker, string targetPlatformMoniker) -> NuGet.Frameworks.NuGetFramework

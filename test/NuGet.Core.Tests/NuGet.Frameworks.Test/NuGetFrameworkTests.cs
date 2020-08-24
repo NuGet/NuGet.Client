@@ -14,6 +14,8 @@ namespace NuGet.Test
         [InlineData("net45", "net45")]
         [InlineData("net5.0", "net5.0")]
         [InlineData("net50", "net5.0")]
+        [InlineData("net5.0-windows7.0", "net5.0-windows7.0")]
+        [InlineData("net5.0-android11.0", "net5.0-android11.0")]
         [InlineData("portable-net45+win8+monoandroid", "portable-net45+win8")]
         [InlineData("portable-net45+win8+xamarin.ios", "portable-net45+win8")]
         [InlineData("portable-net45+win8", "portable-net45+win8")]
@@ -33,7 +35,7 @@ namespace NuGet.Test
         [InlineData("portable-monoandroid+xamarin.ios+xamarin.watchos+monotouch+win8+net45", "portable-net45+win8")]
         [InlineData("portable-win8+net45+monoandroid+monotouch+xamarin.ios+xamarin.tvos", "portable-net45+win8")]
         [InlineData("portable-monoandroid+xamarin.ios+xamarin.tvos+monotouch+win8+net45", "portable-net45+win8")]
-        public void NuGetFramework_ShortName(string input, string expected)
+        public void NuGetFramework_ShortFolderName(string input, string expected)
         {
             var fw = NuGetFramework.Parse(input);
 
@@ -43,7 +45,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("net5.0", "net5.0")]
+        [InlineData("net5.0", ".NETCoreApp,Version=v5.0")]
         [InlineData("net452", ".NETFramework,Version=v4.5.2")]
         [InlineData("netcoreapp3.1", ".NETCoreApp,Version=v3.1")]
         public void NuGetFramework_GetDotNetFrameworkName(string input, string expected)
@@ -53,6 +55,20 @@ namespace NuGet.Test
             string result = fw.GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
 
             Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("net48", ".NETFramework,Version=v4.8", "")]
+        [InlineData("netstandard2.1", ".NETStandard,Version=v2.1", "")]
+        [InlineData("net5.0", ".NETCoreApp,Version=v5.0", "")]
+        [InlineData("net5.0-windows7.0", ".NETCoreApp,Version=v5.0", "windows,Version=7.0")]
+        [InlineData("portable-net45+win8", ".NETPortable,Version=v0.0,Profile=Profile7", "")]
+        public void NuGetFramework_TargetFrameworkMoniker_TargetPlatformMoniker(string input, string expectedTfm, string expectedTpm)
+        {
+            var framework = NuGetFramework.Parse(input);
+
+            Assert.Equal(expectedTfm, framework.DotNetFrameworkName);
+            Assert.Equal(expectedTpm, framework.DotNetPlatformName);
         }
 
         public static TheoryData EqualsFrameworkData

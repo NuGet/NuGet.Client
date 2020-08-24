@@ -7,11 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
+using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -847,6 +849,322 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(2, centralPackageVersions.Count);
             Assert.Equal(VersionRange.Parse(packageAv1.Version), centralPackageVersions[packageAv1.PackageId].VersionRange);
             Assert.Equal(VersionRange.Parse(packageB.Version), centralPackageVersions[packageB.PackageId].VersionRange);
+        }
+
+        [Fact]
+        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+
+                var settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "2.15.3");
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                Assert.True(result.Success);
+                var packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Asert
+                packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
+            }
+        }
+
+        [Fact]
+        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs_ValidateCache()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+
+                var settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "2.15.3");
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                Assert.True(result.Success);
+                var packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Asert
+                packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
+
+                var cache_packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+                cache_packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
+            }
+        }
+
+        [Fact]
+        public async Task GetInstalledVersion_WithFloating_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.*, )");
+
+                var settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "4.0.0");
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                Assert.True(result.Success);
+                var packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Asert
+                packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("4.0.0"))));
+
+                var cache_packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+                cache_packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("4.0.0"))));
+            }
+        }
+
+        [Fact]
+        public async Task GetInstalledVersion_WithoutAssetsFile_ReturnsVersionsFromPackageSpecs()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.0.0, )");
+
+                var settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Asert
+                packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.0.0"))));
+            }
+        }
+
+        [Fact]
+        public async Task GetInstalledVersion_WithoutPackages_ReturnsEmpty()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProjectNoPackages(testDirectory);
+
+                var settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                var packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Asert
+                packages.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVsersionsFromAssets()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.0.0, )");
+
+                var settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "4.0.0");
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                var packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Asert
+                var exists = packages.Where(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("4.0.0"))));
+                Assert.True(exists.Count() == 1);
+            }
+        }
+
+        [Fact]
+        public async Task GetInstalledVersion_WithoutPackages_WithAssets_ReturnsEmpty()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProjectNoPackages(testDirectory);
+
+                var settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "1.0.0");
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                var packages = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Asert
+                packages.Should().BeEmpty();
+            }
+        }
+
+        private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)
+        {
+            var framework = NuGetFramework.Parse("netstandard13");
+            var projectAdapter = CreateProjectAdapter(testDirectory);
+
+            var projectServices = new TestProjectSystemServices();
+            projectServices.SetupInstalledPackages(
+                framework,
+                new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange(
+                        "packageA",
+                        VersionRange.Parse(range),
+                        LibraryDependencyTarget.Package)
+                });
+
+            var testProject = new LegacyPackageReferenceProject(
+                projectAdapter,
+                Guid.NewGuid().ToString(),
+                projectServices,
+                _threadingService);
+            return testProject;
+        }
+
+        private LegacyPackageReferenceProject CreateLegacyPackageReferenceProjectNoPackages(TestDirectory testDirectory)
+        {
+            var projectAdapter = CreateProjectAdapter(testDirectory);
+
+            var projectServices = new TestProjectSystemServices();
+
+            var testProject = new LegacyPackageReferenceProject(
+                projectAdapter,
+                Guid.NewGuid().ToString(),
+                projectServices,
+                _threadingService);
+            return testProject;
         }
 
         private static Mock<IVsProjectAdapter> CreateProjectAdapter()
