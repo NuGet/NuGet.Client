@@ -1,13 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Utility;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -26,21 +30,22 @@ namespace NuGet.XPlat.FuncTest
         // Argument parsing related tests
 
         [Theory]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dg-file", "dgfile_foo", "--project", "project_foo.csproj", "", "", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "--framework", "net46;netcoreapp1.0", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "-f", "net46 ; netcoreapp1.0 ; ", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "-f", "net46", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "--source", "a;b", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "-s", "a ; b ;", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "-s", "a", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "--package-directory", @"foo\dir", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "--no-restore", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n", "--interactive")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dg-file", "dgfile_foo", "--project", "project_foo.csproj", "", "", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "--framework", "net46;netcoreapp1.0", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "-f", "net46 ; netcoreapp1.0 ; ", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "-f", "net46", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "--source", "a;b", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "-s", "a ; b ;", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "-s", "a", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "--package-directory", @"foo\dir", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "--no-restore", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n", "--interactive", "")]
+        [InlineData("--package", "package_foo", "", "", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "", "", "--prerelease")]
         public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dgFileOption,
             string dgFilePath, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
-            string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch, string interactiveSwitch)
+            string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch, string interactiveSwitch, string prereleaseOption)
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -54,13 +59,19 @@ namespace NuGet.XPlat.FuncTest
                 "add",
                 packageOption,
                 package,
-                versionOption,
-                version,
                 dgFileOption,
                 dgFilePath,
                 projectOption,
                 projectPath};
 
+                if (!string.IsNullOrEmpty(versionOption))
+                {
+                    argList.Add(versionOption);
+                }
+                if (!string.IsNullOrEmpty(version))
+                {
+                    argList.Add(version);
+                }
                 if (!string.IsNullOrEmpty(frameworkOption))
                 {
                     foreach (var framework in frameworks)
@@ -90,6 +101,10 @@ namespace NuGet.XPlat.FuncTest
                 {
                     argList.Add(interactiveSwitch);
                 }
+                if (!string.IsNullOrEmpty(prereleaseOption))
+                {
+                    argList.Add(prereleaseOption);
+                }
 
                 var logger = new TestCommandOutputLogger();
                 var testApp = new CommandLineApplication();
@@ -109,17 +124,104 @@ namespace NuGet.XPlat.FuncTest
                 XPlatTestUtils.DisposeTemporaryFile(projectPath);
 
                 // Assert
-                mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageDependency.Id == package &&
-                p.PackageDependency.VersionRange.OriginalString == version &&
+                mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageId == package &&
+                (!string.IsNullOrEmpty(versionOption) == string.IsNullOrEmpty(prereleaseOption) ||
+                    (string.IsNullOrEmpty(versionOption) == !string.IsNullOrEmpty(prereleaseOption) && p.PackageVersion == version)) &&
                 p.ProjectPath == projectPath &&
                 p.DgFilePath == dgFilePath &&
                 p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
                 (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(frameworks)) &&
                 (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MSBuildStringUtility.Split(sourceString))) &&
-                (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory) && p.Interactive == !string.IsNullOrEmpty(interactiveSwitch)),
+                (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory) &&
+                p.Interactive == !string.IsNullOrEmpty(interactiveSwitch) &&
+                p.Prerelease == !string.IsNullOrEmpty(prereleaseOption)),
                 It.IsAny<MSBuildAPIUtility>()));
 
                 Assert.Equal(0, result);
+            }
+        }
+
+        [Theory]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "", "", "--prerelease")]
+        public void AddPkg_Error_ArgParsingPrerelease(string packageOption, string package, string versionOption, string version, string dgFileOption,
+            string dgFilePath, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
+            string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch, string interactiveSwitch, string prereleaseOption)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectPath = Path.Combine(testDirectory, project);
+                var frameworks = MSBuildStringUtility.Split(frameworkString);
+                var sources = MSBuildStringUtility.Split(sourceString);
+                File.Create(projectPath).Dispose();
+
+                var argList = new List<string>() {
+                "add",
+                packageOption,
+                package,
+                dgFileOption,
+                dgFilePath,
+                projectOption,
+                projectPath};
+
+                if (!string.IsNullOrEmpty(versionOption))
+                {
+                    argList.Add(versionOption);
+                }
+                if (!string.IsNullOrEmpty(version))
+                {
+                    argList.Add(version);
+                }
+                if (!string.IsNullOrEmpty(frameworkOption))
+                {
+                    foreach (var framework in frameworks)
+                    {
+                        argList.Add(frameworkOption);
+                        argList.Add(framework);
+                    }
+                }
+                if (!string.IsNullOrEmpty(sourceOption))
+                {
+                    foreach (var source in sources)
+                    {
+                        argList.Add(sourceOption);
+                        argList.Add(source);
+                    }
+                }
+                if (!string.IsNullOrEmpty(packageDirectoryOption))
+                {
+                    argList.Add(packageDirectoryOption);
+                    argList.Add(packageDirectory);
+                }
+                if (!string.IsNullOrEmpty(noRestoreSwitch))
+                {
+                    argList.Add(noRestoreSwitch);
+                }
+                if (!string.IsNullOrEmpty(interactiveSwitch))
+                {
+                    argList.Add(interactiveSwitch);
+                }
+                if (!string.IsNullOrEmpty(prereleaseOption))
+                {
+                    argList.Add(prereleaseOption);
+                }
+
+                var logger = new TestCommandOutputLogger();
+                var testApp = new CommandLineApplication();
+                var mockCommandRunner = new Mock<IPackageReferenceCommandRunner>();
+                mockCommandRunner
+                    .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
+                    .ReturnsAsync(0);
+
+                testApp.Name = "dotnet nuget_test";
+                AddPackageReferenceCommand.Register(testApp,
+                    () => logger,
+                    () => mockCommandRunner.Object);
+
+                // Act & Assert
+                var exception = Assert.Throws<ArgumentException>(() => testApp.Execute(argList.ToArray()));
+                Assert.Equal(Strings.Error_PrereleaseWhenVersionSpecified, exception.Message);
+                XPlatTestUtils.DisposeTemporaryFile(projectPath);
             }
         }
 
@@ -130,6 +232,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("*")]
         [InlineData("1.*")]
         [InlineData("1.0.*")]
+        [InlineData("[1.0.*, )")]
         public async Task AddPkg_UnconditionalAdd_Success(string userInputVersion)
         {
             // Arrange
@@ -158,6 +261,105 @@ namespace NuGet.XPlat.FuncTest
                 Assert.NotNull(itemGroup);
                 Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
                 Assert.True(XPlatTestUtils.ValidateAssetsFile(projectA, packageX.Id));
+            }
+        }
+
+        public static readonly List<object[]> AddPkg_PackageVersionsLatestPrereleaseSucessData
+            = new List<object[]>
+            {
+                    new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0-preview.3" }, "1.0.0-preview.3", true },
+                    new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0-preview.3", "1.1.1-preview.7" }, "1.1.1-preview.7", true },
+                    new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0" }, "1.0.0", true },
+                    new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0-preview.3", "2.0.0" }, "2.0.0", true },
+                    new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0-preview.3" }, "0.9.0", false },
+                    new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0-preview.3", "1.0.0" }, "1.0.0", false },
+                    new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0" }, "1.0.0", false },
+                    new object[] { new string[] { "1.0.0-preview.1", "1.0.0-preview.2", "1.0.0-preview.3" }, "1.0.0-preview.3", true },
+            };
+
+        [Theory]
+        [MemberData(nameof(AddPkg_PackageVersionsLatestPrereleaseSucessData))]
+        public async Task AddPkg_UnconditionalAddPrereleaseSuccess(string[] inputVersions, string expectedVersion, bool prerelease)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
+                var packages = inputVersions.Select(e => XPlatTestUtils.CreatePackage(packageVersion: e)).ToArray();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packages);
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packages[0].Id, "*", projectA, noVersion: true, prerelease: prerelease);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+                var msBuild = MsBuild;
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, msBuild).Result;
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packages[0].Id, expectedVersion), projectXmlRoot.ToString());
+            }
+        }
+
+        public static readonly List<object[]> AddPkg_PackageVersionsLatestPrereleasNoStableAvailableData
+            = new List<object[]>
+            {
+                    new object[] { new string[] { "1.0.0-preview.1", "1.0.0-preview.2", "1.0.0-preview.3" }, false },
+            };
+
+        [Theory]
+        [MemberData(nameof(AddPkg_PackageVersionsLatestPrereleasNoStableAvailableData))]
+        public async Task AddPkg_NoStablePackageAvailable(string[] inputVersions, bool prerelease)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
+                var packages = inputVersions.Select(e => XPlatTestUtils.CreatePackage(packageVersion: e)).ToArray();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packages);
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packages[0].Id, "*", projectA, noVersion: true, prerelease: prerelease);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+                var msBuild = MsBuild;
+
+                // Act & Assert
+                var result = await Assert.ThrowsAsync<CommandException>(() => commandRunner.ExecuteCommand(packageArgs, msBuild));
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.PrereleaseVersionsAvailable, packages.Max(x => x.Identity.Version)), result.Message);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task AddPkg_NoVersionsAvailable(bool prerelease)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    XPlatTestUtils.CreatePackage(packageVersion: "1.0.0"));
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs("packageY", "*",projectA, noVersion: true, prerelease: prerelease);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+                var msBuild = MsBuild;
+
+                // Act & Assert
+                var result = await Assert.ThrowsAsync<CommandException>(() => commandRunner.ExecuteCommand(packageArgs, msBuild));
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoVersionsAvailable, "packageY"), result.Message);
             }
         }
 
@@ -865,7 +1067,7 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 // Verify that the only package reference is with the new version
                 Assert.Equal(0, result);
-                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packages[0].Id, noVersion ? latestVersion : userInputVersionNew));
+                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packages[0].Id, noVersion ? latestVersion : userInputVersionNew), projectXmlRoot.ToString());
             }
         }
 

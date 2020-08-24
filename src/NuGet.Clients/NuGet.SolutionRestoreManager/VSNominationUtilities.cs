@@ -90,11 +90,12 @@ namespace NuGet.SolutionRestoreManager
         }
 
         internal static TargetFrameworkInformation ToTargetFrameworkInformation(
-            IVsTargetFrameworkInfo targetFrameworkInfo, bool cpvmEnabled)
+            IVsTargetFrameworkInfo targetFrameworkInfo, bool cpvmEnabled, string projectFullPath)
         {
             var tfi = new TargetFrameworkInformation
             {
-                FrameworkName = NuGetFramework.Parse(targetFrameworkInfo.TargetFrameworkMoniker)
+                FrameworkName = GetTargetFramework(targetFrameworkInfo.Properties, projectFullPath),
+                TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework)
             };
 
             var ptf = MSBuildStringUtility.Split(GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.PackageTargetFallback))
@@ -151,13 +152,28 @@ namespace NuGet.SolutionRestoreManager
             return tfi;
         }
 
+        internal static NuGetFramework GetTargetFramework(IVsProjectProperties properties, string projectFullPath)
+        {
+            var targetFrameworkMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkMoniker);
+            var targetPlatformMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformIdentifier);
+            var targetPlatformMinVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformMinVersion);
+
+            return MSBuildProjectFrameworkUtility.GetProjectFramework(
+                projectFullPath,
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformMinVersion);
+        }
+
         internal static ProjectRestoreMetadataFrameworkInfo ToProjectRestoreMetadataFrameworkInfo(
             IVsTargetFrameworkInfo targetFrameworkInfo,
-            string projectDirectory)
+            string projectDirectory,
+            string projectFullPath)
         {
             var tfi = new ProjectRestoreMetadataFrameworkInfo
             {
-                FrameworkName = NuGetFramework.Parse(targetFrameworkInfo.TargetFrameworkMoniker)
+                FrameworkName = GetTargetFramework(targetFrameworkInfo.Properties, projectFullPath),
+                TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework)
             };
 
             if (targetFrameworkInfo.ProjectReferences != null)

@@ -832,7 +832,7 @@ namespace NuGet.DependencyResolver.Tests
 
             transitiveCentralPackageVersions.Add(centralPackageVersionDependency, parent);
             bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
-            // nothing more to take 
+            // nothing more to take
             bool resultTake2 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake2);
 
             // Assert
@@ -889,9 +889,9 @@ namespace NuGet.DependencyResolver.Tests
             var provider = new DependencyProvider();
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
-            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B
 
-            // Input 
+            // Input
             // A -> B (version = otherVersion) -> C (version = otherVersion) -> D (version = otherVersion)
             // A ~> D (the version 2.0.0 or as defined by "centralPackageVersion" argument
             //         the dependency is not direct,
@@ -948,7 +948,7 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Fact]
-        public async Task WalkAsyncDowngradesBecauseOfCentralDependecy()
+        public async Task WalkAsyncDowngradesBecauseOfCentralDependency()
         {
             var centralPackageName = "D";
             var centralPackageVersion = "2.0.0";
@@ -959,7 +959,7 @@ namespace NuGet.DependencyResolver.Tests
             var provider = new DependencyProvider();
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
-            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B
 
             // Picture:
             // A -> B -> C -> D (version 1.0.0 or 2.0.0 as defined by "otherVersion" argument.
@@ -1015,7 +1015,7 @@ namespace NuGet.DependencyResolver.Tests
             var centralPackageName = "D";
             var context = new TestRemoteWalkContext();
             var centralPackageVersion = new CentralPackageVersion(centralPackageName, VersionRange.Parse("2.0.0"));
-            var centralPackageVersionDependecy_VersionCentrallyManaged = new LibraryDependency()
+            var centralPackageVersionDependency_VersionCentrallyManaged = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
                 VersionCentrallyManaged = versionCentrallyManaged,
@@ -1024,7 +1024,7 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
 
             // Act
-            var expectedResult = walker.IsDependencyValidForGraph(centralPackageVersionDependecy_VersionCentrallyManaged);
+            var expectedResult = walker.IsDependencyValidForGraph(centralPackageVersionDependency_VersionCentrallyManaged);
 
             // Assert
             if (referenceType != LibraryDependencyReferenceType.None)
@@ -1180,7 +1180,7 @@ namespace NuGet.DependencyResolver.Tests
         ///   -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 1.0.0
         ///
         ///  D has version defined centrally 2.0.0 and E is centrally as well with version 3.0.0
-        ///  and 
+        ///  and
         ///  D 2.0.0 -> I 2.0.0 -> E 2.0.0
         /// </summary>
         /// <returns></returns>
@@ -1264,7 +1264,7 @@ namespace NuGet.DependencyResolver.Tests
                 Assert.Equal(Disposition.Rejected, node.Disposition);
                 node.ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
             }
-                      
+
             var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
             Assert.Equal(3, notCentralTransitiveNodes.Count);
             foreach (var node in notCentralTransitiveNodes)
@@ -1285,7 +1285,7 @@ namespace NuGet.DependencyResolver.Tests
             }
 
             Assert.Equal(0, result.Downgrades.Count);
-        }    
+        }
 
         /// <summary>
         /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 1.0.0 -> E 1.0.0
@@ -1573,7 +1573,7 @@ namespace NuGet.DependencyResolver.Tests
         /// <summary>
         /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0(this will be downgraded due to central 1.0.0) -> E 1.0.0
         ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
-        ///   -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0 
+        ///   -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0
         ///
         ///  D has version defined centrally 1.0.0
         ///  D 1.0.0 -> I 1.0.0
@@ -1606,7 +1606,7 @@ namespace NuGet.DependencyResolver.Tests
             provider.Package("C", version200)
                     .DependsOn("H", version200);
 
-            // A -> -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0 
+            // A -> -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0
             provider.Package("A", version100)
                     .DependsOn("G", version100);
             provider.Package("G", version100)

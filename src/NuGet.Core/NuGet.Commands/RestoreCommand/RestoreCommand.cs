@@ -177,25 +177,8 @@ namespace NuGet.Commands
 
                 if (isCpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
                 {
-                    restoreTime.Stop();
+                    // the errors will be added to the assets file
                     _success = false;
-
-                    return new RestoreResult(
-                        success: _success,
-                        restoreGraphs: Enumerable.Empty<RestoreTargetGraph>(),
-                        compatibilityCheckResults: Enumerable.Empty<CompatibilityCheckResult>(),
-                        msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                        lockFile: _request.ExistingLockFile,
-                        previousLockFile: _request.ExistingLockFile,
-                        lockFilePath: _request.ExistingLockFile?.Path,
-                        cacheFile: null,
-                        cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
-                        packagesLockFilePath: null,
-                        packagesLockFile: null,
-                        projectStyle: _request.ProjectStyle,
-                        dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
-                        dependencyGraphSpec: _request.DependencyGraphSpec,
-                        elapsedTime: restoreTime.Elapsed);
                 }
 
                 // evaluate packages.lock.json file
@@ -428,7 +411,6 @@ namespace NuGet.Commands
             if (dependenciesWithDefinedVersion.Any())
             {
                 await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
-
                 return false;
             }
             IEnumerable<LibraryDependency> autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));

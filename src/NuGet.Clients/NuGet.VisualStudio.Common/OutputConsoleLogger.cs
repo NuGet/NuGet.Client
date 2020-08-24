@@ -4,16 +4,15 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
+using AsyncLazyInt = Microsoft.VisualStudio.Threading.AsyncLazy<int>;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -21,61 +20,51 @@ namespace NuGet.VisualStudio.Common
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class OutputConsoleLogger : INuGetUILogger, IDisposable
     {
-        private const string LogEntrySource = "NuGet Package Manager";
         private const string DTEProjectPage = "ProjectsAndSolution";
         private const string DTEEnvironmentCategory = "Environment";
         private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
 
         private const int DefaultVerbosityLevel = 2;
-        private int _verbosityLevel;
-        private EnvDTE.DTE _dte;
 
-        // keeps a reference to BuildEvents so that our event handler
-        // won't get disconnected because of GC.
-        private EnvDTE.BuildEvents _buildEvents;
-        private EnvDTE.SolutionEvents _solutionEvents;
+        private readonly IVisualStudioShell _visualStudioShell;
+        private readonly Lazy<INuGetErrorList> _errorList;
 
         [SuppressMessage("Build", "CA2213:'OutputConsoleLogger' contains field '_semaphore' that is of IDisposable type 'ReentrantSemaphore', but it is never disposed. Change the Dispose method on 'OutputConsoleLogger' to call Close or Dispose on this field.", Justification = "Field is disposed from async task invoked from Dispose.")]
         private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.NotAllowed);
 
-        public IOutputConsole OutputConsole { get; private set; }
-
-        public Lazy<ErrorListTableDataSource> ErrorListTableDataSource { get; private set; }
+        private IOutputConsole _outputConsole;
+        private AsyncLazyInt _verbosityLevel;
 
         [ImportingConstructor]
         public OutputConsoleLogger(
             IOutputConsoleProvider consoleProvider,
-            Lazy<ErrorListTableDataSource> errorListDataSource)
-            : this(AsyncServiceProvider.GlobalProvider, consoleProvider, errorListDataSource)
-        { }
-
-        public OutputConsoleLogger(
-            IAsyncServiceProvider asyncServiceProvider,
-            IOutputConsoleProvider consoleProvider,
-            Lazy<ErrorListTableDataSource> errorListDataSource)
+            Lazy<INuGetErrorList> errorList)
+            : this(
+                  new VisualStudioShell(AsyncServiceProvider.GlobalProvider),
+                  consoleProvider,
+                  errorList)
         {
-            if (asyncServiceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(asyncServiceProvider));
-            }
+        }
 
-            if (consoleProvider == null)
-            {
-                throw new ArgumentNullException(nameof(consoleProvider));
-            }
+        internal OutputConsoleLogger(
+            IVisualStudioShell visualStudioShell,
+            IOutputConsoleProvider consoleProvider,
+            Lazy<INuGetErrorList> errorList)
+        {
+            Verify.ArgumentIsNotNull(visualStudioShell, nameof(visualStudioShell));
+            Verify.ArgumentIsNotNull(consoleProvider, nameof(consoleProvider));
+            Verify.ArgumentIsNotNull(errorList, nameof(errorList));
 
-            ErrorListTableDataSource = errorListDataSource;
+            _visualStudioShell = visualStudioShell;
+            _errorList = errorList;
+            _verbosityLevel = new AsyncLazyInt(() => GetMSBuildVerbosityLevelAsync(), NuGetUIThreadHelper.JoinableTaskFactory);
 
             Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _dte = await asyncServiceProvider.GetDTEAsync();
-                _buildEvents = _dte.Events.BuildEvents;
-                _buildEvents.OnBuildBegin += (_, __) => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
-                _solutionEvents = _dte.Events.SolutionEvents;
-                _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
-                OutputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
+                await _visualStudioShell.SubscribeToBuildBeginAsync(() => _errorList.Value.ClearNuGetEntries());
+                await _visualStudioShell.SubscribeToAfterClosingAsync(() => _errorList.Value.ClearNuGetEntries());
+                _outputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
             });
         }
 
@@ -86,78 +75,57 @@ namespace NuGet.VisualStudio.Common
                 await _semaphore.ExecuteAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    ErrorListTableDataSource.Value.Dispose();
+                    _errorList.Value.Dispose();
                 });
 
                 _semaphore.Dispose();
             }
-            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(Dispose)));
+            ).PostOnFailure(nameof(OutputConsoleLogger), nameof(Dispose));
         }
 
         public void End()
         {
             Run(async () =>
             {
-                await OutputConsole.WriteLineAsync(Resources.Finished);
-                await OutputConsole.WriteLineAsync(string.Empty);
+                await _outputConsole.WriteLineAsync(Resources.Finished);
+                await _outputConsole.WriteLineAsync(string.Empty);
 
                 // Give the error list focus
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
+                _errorList.Value.BringToFrontIfSettingsPermit();
             });
-        }
-
-        public void Log(MessageLevel level, string message, params object[] args)
-        {
-            Run(async () =>
-            {
-                if (level == MessageLevel.Info
-                    || level == MessageLevel.Error
-                    || level == MessageLevel.Warning
-                    || _verbosityLevel > DefaultVerbosityLevel)
-                {
-                    if (args.Length > 0)
-                    {
-                        message = string.Format(CultureInfo.CurrentCulture, message, args);
-                    }
-
-                    await OutputConsole.WriteLineAsync(message);
-                }
-            },
-            $"{nameof(Log)}/{nameof(String)}");
         }
 
         public void Log(ILogMessage message)
         {
             Run(async () =>
             {
+                var verbosityLevel = await _verbosityLevel.GetValueAsync();
+
                 if (message.Level == LogLevel.Information
                     || message.Level == LogLevel.Error
                     || message.Level == LogLevel.Warning
-                    || _verbosityLevel > DefaultVerbosityLevel)
+                    || verbosityLevel > DefaultVerbosityLevel)
                 {
-                    await OutputConsole.WriteLineAsync(message.FormatWithCode());
+                    await _outputConsole.WriteLineAsync(message.FormatWithCode());
 
                     if (message.Level == LogLevel.Error ||
                         message.Level == LogLevel.Warning)
                     {
-                        ReportError(message);
+                        await ReportAsync(message);
                     }
                 }
-            },
-            $"{nameof(Log)}/{nameof(ILogMessage)}");
+            });
         }
 
         public void Start()
         {
             Run(async () =>
             {
-                await OutputConsole.ActivateAsync();
-                await OutputConsole.ClearAsync();
-                _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
-
+                await _outputConsole.ActivateAsync();
+                await _outputConsole.ClearAsync();
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorListTableDataSource.Value.ClearNuGetEntries();
+                _errorList.Value.ClearNuGetEntries();
             });
         }
 
@@ -165,8 +133,7 @@ namespace NuGet.VisualStudio.Common
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
-            var value = properties.Item(MSBuildVerbosityKey).Value;
+            var value = await _visualStudioShell.GetPropertyValueAsync(DTEEnvironmentCategory, DTEProjectPage, MSBuildVerbosityKey);
             if (value is int)
             {
                 return (int)value;
@@ -175,35 +142,24 @@ namespace NuGet.VisualStudio.Common
             return DefaultVerbosityLevel;
         }
 
-        public void ReportError(string message)
-        {
-            Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
-                ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
-            },
-            $"{nameof(ReportError)}/{nameof(String)}");
-        }
-
         public void ReportError(ILogMessage message)
         {
-            Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            Run(() => ReportAsync(message));
+        }
 
-                var errorListEntry = new ErrorListTableEntry(message);
-                ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
-            },
-            $"{nameof(ReportError)}/{nameof(ILogMessage)}");
+        private async Task ReportAsync(ILogMessage message)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var errorListEntry = new ErrorListTableEntry(message);
+            _errorList.Value.AddNuGetEntries(errorListEntry);
         }
 
         private void Run(Func<Task> action, [CallerMemberName] string methodName = null)
         {
             NuGetUIThreadHelper.JoinableTaskFactory
                                .RunAsync(() => _semaphore.ExecuteAsync(action))
-                               .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), methodName));
+                               .PostOnFailure(nameof(OutputConsoleLogger), methodName);
         }
     }
 }

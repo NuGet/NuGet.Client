@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
@@ -27,7 +26,7 @@ namespace NuGet.Frameworks
         private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
-            : this(framework.Framework, framework.Version, framework.Profile)
+            : this(framework.Framework, framework.Version, framework.Profile, framework.Platform, framework.PlatformVersion)
         {
         }
 
@@ -37,13 +36,35 @@ namespace NuGet.Frameworks
         }
 
         public NuGetFramework(string framework, Version version)
-            : this(framework, version, null)
+            : this(framework, version, string.Empty, FrameworkConstants.EmptyVersion)
         {
         }
 
         private const int Version5 = 5;
 
+        /// <summary>
+        /// Creates a new NuGetFramework instance, with an optional profile (only available for netframework)
+        /// </summary>
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile)
+            : this(frameworkIdentifier, frameworkVersion, profile: ProcessProfile(frameworkProfile), platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
+
+        {
+        }
+
+        private static string ProcessProfile(string profile)
+        {
+            return profile ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Creates a new NuGetFramework instance, with an optional platform and platformVersion (only available for net5.0+)
+        /// </summary>
+        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string platform, Version platformVersion)
+            : this(frameworkIdentifier, frameworkVersion, profile: string.Empty, platform: platform, platformVersion: platformVersion)
+        {
+        }
+
+        internal NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile, string platform, Version platformVersion)
         {
             if (frameworkIdentifier == null)
             {
@@ -55,10 +76,23 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException("frameworkVersion");
             }
 
+            if (platform == null)
+            {
+                throw new ArgumentNullException("platform");
+            }
+
+            if (platformVersion == null)
+            {
+                throw new ArgumentNullException("platformVersion");
+            }
+
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
-            _frameworkProfile = frameworkProfile ?? string.Empty;
+            _frameworkProfile = profile;
+
             IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
+            Platform = IsNet5Era ? platform : string.Empty;
+            PlatformVersion = IsNet5Era ? NormalizeVersion(platformVersion) : FrameworkConstants.EmptyVersion;
         }
 
         /// <summary>
@@ -75,6 +109,32 @@ namespace NuGet.Frameworks
         public Version Version
         {
             get { return _frameworkVersion; }
+        }
+
+        /// <summary>
+        /// Framework Platform (net5.0+)
+        /// </summary>
+        public string Platform
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Framework Platform Version (net5.0+)
+        /// </summary>
+        public Version PlatformVersion
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// True if the platform is non-empty
+        /// </summary>
+        public bool HasPlatform
+        {
+            get { return !string.IsNullOrEmpty(Platform); }
         }
 
         /// <summary>
@@ -112,9 +172,11 @@ namespace NuGet.Frameworks
             // Check for rewrites
             var framework = mappings.GetFullNameReplacement(this);
 
-            var result = string.Empty;
-
-            if (framework.IsSpecificFramework)
+            if (framework.IsNet5Era)
+            {
+                return GetShortFolderName();
+            }
+            else if (framework.IsSpecificFramework)
             {
                 var parts = new List<string>(3) { Framework };
 
@@ -125,14 +187,12 @@ namespace NuGet.Frameworks
                     parts.Add(string.Format(CultureInfo.InvariantCulture, "Profile={0}", framework.Profile));
                 }
 
-                result = string.Join(",", parts);
+                return string.Join(",", parts);
             }
             else
             {
-                result = string.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
+                return string.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
             }
-
-            return result;
         }
 
         /// <summary>
@@ -216,6 +276,19 @@ namespace NuGet.Frameworks
                             CultureInfo.CurrentCulture,
                             Strings.MissingPortableFrameworks,
                             framework.DotNetFrameworkName));
+                    }
+                }
+                else if (IsNet5Era)
+                {
+                    if (!string.IsNullOrEmpty(framework.Platform))
+                    {
+                        sb.Append("-");
+                        sb.Append(framework.Platform.ToLowerInvariant());
+
+                        if (framework.PlatformVersion != FrameworkConstants.EmptyVersion)
+                        {
+                            sb.Append(mappings.GetVersionString(framework.Framework, framework.PlatformVersion));
+                        }
                     }
                 }
                 else
@@ -350,7 +423,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// True if this framework is Net5 or later, until we invent something new.
         /// </summary>
-        internal bool IsNet5Era { get; set; }
+        internal bool IsNet5Era { get; private set; }
 
         /// <summary>
         /// Full framework comparison of the identifier, version, profile, platform, and platform version

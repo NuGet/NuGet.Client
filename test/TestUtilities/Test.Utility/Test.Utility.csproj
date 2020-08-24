@@ -1,13 +1,9 @@
 <Project>
-  <PropertyGroup>
-    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
-  </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <NoWarn Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
@@ -17,6 +13,7 @@
     <NoWarn>$(NoWarn);VSTHRD001;VSTHRD002;VSTHRD110</NoWarn>
     <Description>A collection of test utilities, such as generating packages, mocking servers, stub implementations of interfaces, etc.</Description>
     <SkipAnalyzers>true</SkipAnalyzers>
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -69,8 +66,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Diagnostics.Process" />
-    <PackageReference Include="System.IO.Compression.ZipFile" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 

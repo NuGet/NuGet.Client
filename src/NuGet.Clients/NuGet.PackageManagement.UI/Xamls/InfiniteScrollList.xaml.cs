@@ -19,7 +19,6 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
@@ -263,7 +262,7 @@ namespace NuGet.PackageManagement.UI
                 // The user cancelled the login, but treat as a load error in UI
                 // So the retry button and message is displayed
                 // Do not log to the activity log, since it is not a NuGet error
-                _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
+                _logger.Log(new LogMessage(LogLevel.Error, Resx.Resources.Text_UserCanceled));
 
                 _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
 
@@ -282,7 +281,7 @@ namespace NuGet.PackageManagement.UI
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                 var errorMessage = ExceptionUtilities.DisplayMessage(ex);
-                _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
+                _logger.Log(new LogMessage(LogLevel.Error, errorMessage));
 
                 _loadingStatusIndicator.SetError(errorMessage);
 

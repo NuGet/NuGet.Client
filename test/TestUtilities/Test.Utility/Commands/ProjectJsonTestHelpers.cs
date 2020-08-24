@@ -110,7 +110,8 @@ namespace NuGet.Commands.Test
         }
 
         /// <summary>
-        /// Add fake PackageReference restore metadata. 
+        /// Add fake PackageReference restore metadata.
+        /// This resembles the .NET Core based projects (<see cref="ProjectRestoreSettings"/>.
         /// </summary>
         public static PackageSpec WithTestRestoreMetadata(this PackageSpec spec)
         {
@@ -136,7 +137,6 @@ namespace NuGet.Commands.Test
             {
                 updated.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
             }
-
             return updated;
         }
     }

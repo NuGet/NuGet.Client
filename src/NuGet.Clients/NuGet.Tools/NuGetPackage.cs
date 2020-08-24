@@ -29,7 +29,6 @@ using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
 using NuGetConsole.Implementation;
-using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
@@ -76,7 +75,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "5.7.0";
+        public const string ProductVersion = "5.8.0";
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
 
         private AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
@@ -564,11 +563,7 @@ namespace NuGetVSExtension
             {
                 await ExecuteUpgradeNuGetProjectCommandAsync(sender, e);
             })
-          .FileAndForget(
-                          TelemetryUtility.CreateFileAndForgetEventName(
-                              nameof(NuGetPackage),
-                              nameof(ExecuteUpgradeNuGetProjectCommand)));
-
+           .PostOnFailure(nameof(NuGetPackage), nameof(ExecuteUpgradeNuGetProjectCommand));
         }
 
         private async Task ExecuteUpgradeNuGetProjectCommandAsync(object sender, EventArgs e)
@@ -662,10 +657,7 @@ namespace NuGetVSExtension
 
                     MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
                 }
-            }).FileAndForget(
-                          TelemetryUtility.CreateFileAndForgetEventName(
-                              nameof(NuGetPackage),
-                              nameof(ShowManageLibraryPackageDialog)));
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
         }
 
         private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
@@ -839,10 +831,7 @@ namespace NuGetVSExtension
 
                     windowFrame.Show();
                 }
-            }).FileAndForget(
-                          TelemetryUtility.CreateFileAndForgetEventName(
-                              nameof(NuGetPackage),
-                              nameof(ShowManageLibraryPackageForSolutionDialog)));
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
         }
 
         /// <summary>
@@ -891,13 +880,13 @@ namespace NuGetVSExtension
             {
                 if (ShouldMEFBeInitialized())
                 {
-                  await InitializeMEFAsync();
+                    await InitializeMEFAsync();
                 }
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var command = (OleMenuCommand)sender;
-                
+
                 var isConsoleBusy = false;
                 if (ConsoleStatus != null)
                 {

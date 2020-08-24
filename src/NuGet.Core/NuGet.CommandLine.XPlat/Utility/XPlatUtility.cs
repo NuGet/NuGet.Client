@@ -18,7 +18,31 @@ namespace NuGet.CommandLine.XPlat
     internal static class XPlatUtility
     {
         public const string HelpOption = "-h|--help";
-        public const string VerbosityOption = "-v|--verbosity <verbosity>";
+
+        /// <summary>
+        /// Note that the .NET CLI itself has parameter parsing which limits the values that will be passed here by the
+        /// user. In other words, the default case should only be hit with <c>m</c> or <c>minimal</c> but we use <see cref="Common.LogLevel.Minimal"/>
+        /// as the default case to avoid errors.
+        /// </summary>
+        public static LogLevel MSBuildVerbosityToNuGetLogLevel(string verbosity)
+        {
+            switch (verbosity?.ToUpperInvariant())
+            {
+                case "Q":
+                case "QUIET":
+                    return LogLevel.Warning;
+                case "N":
+                case "NORMAL":
+                    return LogLevel.Information;
+                case "D":
+                case "DETAILED":
+                case "DIAG":
+                case "DIAGNOSTIC":
+                    return LogLevel.Debug;
+                default:
+                    return LogLevel.Minimal;
+            }
+        }
 
         public static ISettings CreateDefaultSettings()
         {

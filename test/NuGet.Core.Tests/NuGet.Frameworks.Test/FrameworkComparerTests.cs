@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -186,6 +186,48 @@ namespace NuGet.Test
 
             Assert.True(comparer.Equals(fw1, fw2), "2");
             Assert.True(comparer.Equals(fw1, fw3), "3");
+        }
+
+        [Fact]
+        public void FrameworkSorter_OrderingFrameworksWithPlatform()
+        {
+            // Arrange
+            var fw1 = NuGetFramework.Parse("net5.0");
+            var fw2 = NuGetFramework.Parse("net6.0");
+            var fw3 = NuGetFramework.Parse("net6.0-android10.0");
+            var fw4 = NuGetFramework.Parse("net6.0-android13.0");
+            var fw5 = NuGetFramework.Parse("net6.0-ios");
+            var fw6 = NuGetFramework.Parse("net6.0-ios1.0");
+            var fw7 = NuGetFramework.Parse("net7.0-android11.0");
+            var fw8 = NuGetFramework.Parse("net8.0");
+
+            var list = new List<NuGetFramework>
+            {
+                fw3,
+                fw6,
+                fw5,
+                fw2,
+                fw4,
+                fw1,
+                fw7,
+                fw8,
+            };
+
+            // Act
+            list = list
+                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance, false))
+                .ThenBy(f => f, new NuGetFrameworkSorter())
+                .ToList();
+
+            // Assert
+            Assert.Equal(fw1, list[0]);
+            Assert.Equal(fw2, list[1]);
+            Assert.Equal(fw3, list[2]);
+            Assert.Equal(fw4, list[3]);
+            Assert.Equal(fw5, list[4]);
+            Assert.Equal(fw6, list[5]);
+            Assert.Equal(fw7, list[6]);
+            Assert.Equal(fw8, list[7]);
         }
     }
 }

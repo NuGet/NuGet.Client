@@ -167,6 +167,26 @@ namespace NuGet.Frameworks
             return false;
         }
 
+        public bool TryGetPlatformVersion(string versionString, out Version version)
+        {
+            version = null;
+
+            if (string.IsNullOrEmpty(versionString))
+            {
+                version = new Version(0, 0);
+            }
+            else
+            {
+                if (versionString.IndexOf('.') < 0)
+                {
+                    versionString += ".0";
+                }
+                return Version.TryParse(versionString, out version);
+            }
+
+            return false;
+        }
+
         public string GetVersionString(string framework, Version version)
         {
             var versionString = string.Empty;

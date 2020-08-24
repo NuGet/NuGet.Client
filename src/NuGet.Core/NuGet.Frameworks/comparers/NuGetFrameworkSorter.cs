@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -81,6 +81,20 @@ namespace NuGet.Frameworks
             }
 
             result = StringComparer.OrdinalIgnoreCase.Compare(x.Profile, y.Profile);
+
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = StringComparer.OrdinalIgnoreCase.Compare(x.Platform, y.Platform);
+
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = x.PlatformVersion.CompareTo(y.PlatformVersion);
 
             if (result != 0)
             {

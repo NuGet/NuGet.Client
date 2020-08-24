@@ -1,0 +1,4 @@
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetPlatform.get -> string
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetPlatform.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.get -> string
+NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.set -> void

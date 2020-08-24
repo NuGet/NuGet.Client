@@ -151,6 +151,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allows prerelease packages to be installed..
+        /// </summary>
+        internal static string AddPkg_PackagePrerelease {
+            get {
+                return ResourceManager.GetString("AddPkg_PackagePrerelease", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Version of the package to be added..
         /// </summary>
         internal static string AddPkg_PackageVersionDescription {
@@ -412,6 +421,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are no versions available for the package &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_NoVersionsAvailable {
+            get {
+                return ResourceManager.GetString("Error_NoVersionsAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to {0} package. Argument &apos;{1}&apos; not provided..
         /// </summary>
         internal static string Error_PkgMissingArgument {
@@ -426,6 +444,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_PkgMissingOrInvalidProjectFile {
             get {
                 return ResourceManager.GetString("Error_PkgMissingOrInvalidProjectFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The --prerelease and --version options are not supported in the same command..
+        /// </summary>
+        internal static string Error_PrereleaseWhenVersionSpecified {
+            get {
+                return ResourceManager.GetString("Error_PrereleaseWhenVersionSpecified", resourceCulture);
             }
         }
         
@@ -1275,6 +1302,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are no stable versions available, {0} is the best available. Consider adding the --prerelease option.
+        /// </summary>
+        internal static string PrereleaseVersionsAvailable {
+            get {
+                return ResourceManager.GetString("PrereleaseVersionsAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pushes a package to the server and publishes it..
         /// </summary>
         internal static string Push_Description {
@@ -1676,6 +1712,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string UpdateSourceCommandDescription {
             get {
                 return ResourceManager.GetString("UpdateSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]..
+        /// </summary>
+        internal static string Verbosity_Description {
+            get {
+                return ResourceManager.GetString("Verbosity_Description", resourceCulture);
             }
         }
         

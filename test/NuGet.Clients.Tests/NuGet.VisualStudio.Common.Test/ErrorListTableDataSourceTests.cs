@@ -18,7 +18,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_AddEntriesVerifyEntryExists()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
 
@@ -52,7 +52,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_AddMultipleEntriesVerifyEntriesExists()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
 
@@ -91,7 +91,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_ClearEntriesVerifyEmpty()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
 
@@ -124,7 +124,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_SubscribeAndVerifyResult()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
             var sink = Mock.Of<ITableDataSink>();
@@ -167,7 +167,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_SubscribeDisposeAndVerifyResult()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
             var sink = Mock.Of<ITableDataSink>();
@@ -225,7 +225,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_SubscribeDisposeNullSinkAndVerifyResult()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
 
@@ -258,7 +258,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_VerifyDisposedSinksAreNotCalled()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
             var sink = Mock.Of<ITableDataSink>();
@@ -346,7 +346,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_WithAllDisposedSinksVerifyNoCalls()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
             var sink = Mock.Of<ITableDataSink>();
@@ -438,7 +438,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_VerifyExistingEntriesAreAddedToNewSinks()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
             var sink = Mock.Of<ITableDataSink>();
@@ -504,7 +504,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_AddWithNoSinksVerifyAllAddedToNextSink()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
             var sink = Mock.Of<ITableDataSink>();
@@ -571,7 +571,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ErrorListTableDataSource_ClearWithNoEntriesVerifyNoErrors()
         {
             // Arrange
-            var errorList = Mock.Of<IErrorList>();
+            var errorList = Mock.Of<Microsoft.VisualStudio.Shell.IErrorList>();
             var tableControl = Mock.Of<IWpfTableControl>();
             var tableManager = Mock.Of<ITableManager>();
             var sink = Mock.Of<ITableDataSink>();

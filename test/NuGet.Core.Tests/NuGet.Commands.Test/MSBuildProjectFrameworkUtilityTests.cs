@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -225,6 +224,54 @@ namespace NuGet.Commands.Test
             // Assert
             Assert.Equal(NuGetFramework.UnsupportedFramework, framework);
         }
+
+        [Theory]
+        [InlineData(".NETFramework,Version=v4.5", "", "", "net45")]
+        [InlineData(".NETFramework,Version=4.5", "", "", "net45")]
+        [InlineData(".NETFramework,Version=v4.5,Profile=Client", "", "", "net45-client")]
+        [InlineData(".NETCoreApp,Version=v5.0", "android,Version=10.0", "", "net5.0-android10.0")]
+        [InlineData(".NETCoreApp,Version=v5.0", "ios,Version=21.0", "", "net5.0-ios21.0")]
+        [InlineData(".NETCoreApp,Version=v6.0", "ios,Version=21.0", "", "net6.0-ios21.0")]
+        [InlineData(null, "ios,Version=21.0", "", "unsupported")]
+        [InlineData(".NETCoreApp,Version=v6.0", "UAP,Version=10.0.1.2", "", "uap10.0.1.2")]
+        [InlineData(".NETCoreApp,Version=v6.0", "UAP,Version=10.0.1.2", "10.0.1.3", "uap10.0.1.3")]
+        [InlineData(".NETCoreApp,Version=v3.0", "android,Version=10.0", "", "netcoreapp3.0")]
+        [InlineData(".NETCoreApp,Version=v3.0", "android,Version=10.0", "9.0", "netcoreapp3.0")]
+        // Hack scenarios: See https://github.com/NuGet/Home/issues/9913
+        [InlineData(".NETCoreApp,Version=v5.0", " ,Version= ", "", "net5.0")]
+        [InlineData(".NETCoreApp,Version=v5.0", ",Version= ", "", "net5.0")]
+        [InlineData(".NETCoreApp,Version=v5.0", " ,Version=", "", "net5.0")]
+        public void GetProjectFramework_WithCanonicalProperties_Succeeds(
+                string targetFrameworkMoniker,
+                string targetPlatformMoniker,
+                string targetPlatformMinVersion,
+                string expectedShortName)
+        {
+            var nugetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                projectFilePath: @"C:\csproj",
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformMinVersion);
+
+            Assert.Equal(expectedShortName, nugetFramework.GetShortFolderName());
+        }
+
+        [Theory]
+        [InlineData(".NETCoreApp,Version=v6.0", "ios,Version=5.0-preview.3", "")]
+        [InlineData(".NETCoreApp,Version=v6.0-preview.3", "ios,Version=5.0", "")]
+        [InlineData(".NETCoreApp,Version=v5.0,Profile=NET50CannotHaveProfiles", "android,Version=10", "")]
+        public void GetProjectFramework_WithInvalidInput_Throws(
+        string targetFrameworkMoniker,
+        string targetPlatformMoniker, 
+        string targetPlatformMinVersion)
+        {
+            Assert.ThrowsAny<Exception>(() => MSBuildProjectFrameworkUtility.GetProjectFramework(
+               projectFilePath: @"C:\csproj",
+               targetFrameworkMoniker,
+               targetPlatformMoniker,
+               targetPlatformMinVersion));
+        }
+
 
         /// <summary>
         /// Test helper

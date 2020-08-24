@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
@@ -43,9 +44,8 @@ namespace NuGet.PackageManagement.UI
 
         public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
-            _logger.Log(level, message, args);
+            _logger.Log(new LogMessage(level.ToLogLevel(), string.Format(CultureInfo.CurrentCulture, message, args)));
         }
-
 
         public FileConflictAction ShowFileConflictResolution(string message)
         {
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.UI
 
         public void ReportError(string message)
         {
-            _logger.ReportError(message);
+            _logger.ReportError(new LogMessage(LogLevel.Error, message));
         }
 
         public void Log(ILogMessage message)

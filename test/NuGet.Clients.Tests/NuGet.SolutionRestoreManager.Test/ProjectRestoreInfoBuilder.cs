@@ -3,8 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 
 namespace NuGet.SolutionRestoreManager.Test
@@ -187,6 +191,68 @@ namespace NuGet.SolutionRestoreManager.Test
                 packageDownloads,
                 frameworkReferences,
                 projectProperties.Concat(globalProperties));
+        }
+
+        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(NuGetFramework framework, string originalString = null)
+        {
+            return new IVsProjectProperty[]
+            {
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkMoniker, GetTargetFrameworkMoniker(framework)),
+                new VsProjectProperty(ProjectBuildProperties.TargetPlatformMoniker, GetTargetPlatformMoniker(framework)),
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkIdentifier, framework.Framework),
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkVersion, "v" + framework.Version),
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkProfile, framework.Profile),
+                new VsProjectProperty(ProjectBuildProperties.TargetPlatformIdentifier, framework.Platform),
+                new VsProjectProperty(ProjectBuildProperties.TargetPlatformVersion, framework.PlatformVersion.ToString()),
+                new VsProjectProperty(ProjectBuildProperties.TargetFramework, originalString ?? framework.GetShortFolderName())
+            };
+        }
+
+        private static string GetTargetPlatformMoniker(NuGetFramework framework)
+        {
+            if (framework.HasPlatform)
+            {
+                return $"{framework.Platform} Version=v{GetDisplayVersion(framework.PlatformVersion)}";
+            }
+            return null;
+        }
+
+        private static string GetTargetFrameworkMoniker(NuGetFramework framework)
+        {
+            var parts = new List<string>(3) { framework.Framework };
+
+            parts.Add(string.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
+
+            if (!string.IsNullOrEmpty(framework.Profile))
+            {
+                parts.Add(string.Format(CultureInfo.InvariantCulture, "Profile={0}", framework.Profile));
+            }
+
+            return string.Join(",", parts);
+        }
+
+        private static string GetDisplayVersion(Version version)
+        {
+            var sb = new StringBuilder(string.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
+
+            if (version.Build > 0
+                || version.Revision > 0)
+            {
+                sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", version.Build);
+
+                if (version.Revision > 0)
+                {
+                    sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", version.Revision);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(string shortFrameworkName)
+        {
+            var framework = NuGetFramework.Parse(shortFrameworkName);
+            return GetTargetFrameworkProperties(framework, shortFrameworkName);
         }
 
         private static IVsReferenceItem ToFrameworkReference(FrameworkDependency frameworkDependency)

@@ -565,10 +565,9 @@ namespace Dotnet.Integration.Test
                 var referencedProject = "ClassLibrary2";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp31;
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "console -f netcoreapp3.1");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "console");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -611,9 +610,6 @@ namespace Dotnet.Integration.Test
 
                     Assert.Equal(1,
                         dependencyGroups.Count);
-
-                    Assert.Equal(framework,
-                        dependencyGroups[0].TargetFramework);
                         
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1,
@@ -626,12 +622,11 @@ namespace Dotnet.Integration.Test
 
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
-                    Assert.Equal(1, libItems.Count);
-                    Assert.Equal(framework, libItems[0].TargetFramework);
-                    Assert.Equal(
-                        new[]
-                        {$"lib/{framework.GetShortFolderName()}/ClassLibrary1.dll", $"lib/{framework.GetShortFolderName()}/ClassLibrary1.runtimeconfig.json"},
-                        libItems[0].Items);
+                    libItems.Should().HaveCount(1);
+                    var files = libItems[0].Items;
+                    files.Should().HaveCount(2);
+                    files.Should().ContainSingle(filePath => filePath.Contains("ClassLibrary1.runtimeconfig.json"));
+                    files.Should().ContainSingle(filePath => filePath.Contains("ClassLibrary1.dll"));
                 }
             }
         }
@@ -639,6 +634,10 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+#if NETCOREAPP5_0
+        [InlineData("TargetFramework", "net5.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#endif
         public void PackCommand_PackProject_ExactVersionOverrideProjectRefVersionInMsbuild(string tfmProperty, string tfmValue)
         {
             // Arrange
@@ -727,6 +726,10 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+#if NETCOREAPP5_0
+        [InlineData("TargetFramework", "net5.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#endif
         public void PackCommand_PackProject_GetsProjectRefVersionFromMsbuild(string tfmProperty, string tfmValue)
         {
             // Arrange
@@ -802,6 +805,10 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+#if NETCOREAPP5_0
+        [InlineData("TargetFramework", "net5.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#endif
         public void PackCommand_PackProject_GetPackageVersionDependsOnWorks(string tfmProperty, string tfmValue)
         {
             // Arrange
@@ -1657,6 +1664,80 @@ namespace Dotnet.Integration.Test
                 }
             }
         }
+
+#if NETCOREAPP5_0
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_SingleFramework_GeneratesPackageOnBuildUsingNet5()
+        {
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net5.0");
+                    ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
+                    ProjectFileUtils.AddProperty(xml, "NuspecOutputPath", "obj\\Debug");
+
+                    var attributes = new Dictionary<string, string>();
+
+                    attributes["Version"] = "9.0.1";
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "Newtonsoft.json",
+                        "",
+                        new Dictionary<string, string>(),
+                        attributes);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
+                    Assert.Equal("", nuspecReader.GetOwners());
+                    Assert.Equal("Package Description", nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+
+                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
+                    Assert.Equal(1, dependencyGroups.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net50, dependencyGroups[0].TargetFramework);
+                    var packages = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(1, packages.Count);
+                    Assert.Equal("Newtonsoft.json", packages[0].Id);
+                    Assert.Equal(new VersionRange(new NuGetVersion("9.0.1")), packages[0].VersionRange);
+                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
+                    Assert.Empty(packages[0].Include);
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net50, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/net5.0/ClassLibrary1.dll" }, libItems[0].Items);
+                }
+
+            }
+        }
+#endif
 
         [PlatformFact(Platform.Windows)]
         public void PackCommand_SingleFramework_GeneratesPackageOnBuild()
@@ -2701,6 +2782,10 @@ namespace ClassLibrary
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+#if NETCOREAPP5_0
+        [InlineData("TargetFramework", "net5.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#endif
         public void PackCommand_PackTargetHook_ExecutesBeforePack(string tfmProperty,
     string tfmValue)
         {
@@ -2735,13 +2820,17 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.True(indexOfHelloWorld < indexOfPackSuccessful, "The custom target RunBeforePack did not run before pack target.");
-                
+
             }
         }
-        
+
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+#if NETCOREAPP5_0
+        [InlineData("TargetFramework", "net5.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#endif
         public void PackCommand_PackTarget_IsIncremental(string tfmProperty, string tfmValue)
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
@@ -4202,10 +4291,10 @@ namespace ClassLibrary
                 .WithProjectName("test")
                 .WithPackageIcon("icon.jpg")
                 .WithPackageIconUrl("http://test.icon")
-                .WithItem("None", "icon.jpg", string.Empty)
-                .WithItem("None", "other\\files.txt", null)
-                .WithItem("None", "folder\\**", "media")
-                .WithItem("None", "utils\\*", "utils");
+                .WithItem(itemType: "None", itemPath: "icon.jpg", packagePath: string.Empty, pack: "true")
+                .WithItem(itemType: "None", itemPath: "other\\files.txt", packagePath: null, pack: "true")
+                .WithItem(itemType: "None", itemPath: "folder\\**", packagePath: "media", pack: "true")
+                .WithItem(itemType: "None", itemPath: "utils\\*", packagePath: "utils", pack: "true");
 
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
@@ -4260,7 +4349,7 @@ namespace ClassLibrary
             projectBuilder
                 .WithProjectName("test")
                 .WithPackageIcon("icon.jpg")
-                .WithItem("None", "icon.jpg", "icon.jpg");
+                .WithItem(itemType: "None", itemPath: "icon.jpg", packagePath: "icon.jpg", pack: "true");
 
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {

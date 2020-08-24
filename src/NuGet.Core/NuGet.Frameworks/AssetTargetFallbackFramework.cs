@@ -49,13 +49,8 @@ namespace NuGet.Frameworks
         }
 
         public AssetTargetFallbackFramework(NuGetFramework framework, FallbackList fallbackFrameworks)
-            : base(framework)
+            : base(ValidateFrameworkArgument(framework))
         {
-            if (framework == null)
-            {
-                throw new ArgumentNullException("framework");
-            }
-
             if (fallbackFrameworks == null)
             {
                 throw new ArgumentNullException("fallbackFrameworks");
@@ -68,6 +63,16 @@ namespace NuGet.Frameworks
 
             _fallback = fallbackFrameworks;
             _rootFramework = framework;
+        }
+
+
+        private static NuGetFramework ValidateFrameworkArgument(NuGetFramework framework)
+        {
+            if (framework == null)
+            {
+                throw new ArgumentNullException("framework");
+            }
+            return framework;
         }
 
         /// <summary>

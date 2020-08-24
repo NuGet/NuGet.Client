@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement
 
             // walk the dependency graph both upwards and downwards for the new package
             // this is done in multiple passes to find the complete closure when
-            // new dependecies are found
+            // new dependencies are found
             while (true)
             {
                 token.ThrowIfCancellationRequested();
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement
 
                 // Get a unique list of packages
                 // Results are ordered by their request order. If the same version of package
-                // exists in multiple sources the hashset will contain the package from the 
+                // exists in multiple sources the hashset will contain the package from the
                 // source where it was requested from first.
                 var currentResults = new HashSet<SourcePackageDependencyInfo>(
                     currentItems.OrderBy(item => item.Request.Order)
@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement
         {
             // Start new tasks and process the work at least once
             // Continuing looping under the number of tasks has gone
-            // below the limit. While we are at the limit there is no 
+            // below the limit. While we are at the limit there is no
             // need to queue up additional work.
             do
             {
@@ -492,7 +492,7 @@ namespace NuGet.PackageManagement
 
             try
             {
-                // Call the dependecy info resource
+                // Call the dependency info resource
                 if (version == null)
                 {
                     // find all versions of a package
@@ -534,7 +534,7 @@ namespace NuGet.PackageManagement
         private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage)
         {
             // No-op if the id has already been searched for
-            // Exact versions are not added to the list since we may need to search for the full 
+            // Exact versions are not added to the list since we may need to search for the full
             // set of packages for that id later if it becomes part of the closure later.
             if (package.HasVersion || _idsSearched.Add(package.Id))
             {

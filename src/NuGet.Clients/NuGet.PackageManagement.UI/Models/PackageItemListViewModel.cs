@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -308,10 +307,7 @@ namespace NuGet.PackageManagement.UI
                     _providersLoaderStarted = true;
                     NuGetUIThreadHelper.JoinableTaskFactory
                         .RunAsync(ReloadProvidersAsync)
-                        .FileAndForget(
-                            TelemetryUtility.CreateFileAndForgetEventName(
-                                nameof(PackageItemListViewModel),
-                                nameof(ReloadProvidersAsync)));
+                        .PostOnFailure(nameof(PackageItemListViewModel), nameof(ReloadProvidersAsync));
                 }
 
                 return _providers;
@@ -390,10 +386,7 @@ namespace NuGet.PackageManagement.UI
             {
                 NuGetUIThreadHelper.JoinableTaskFactory
                     .RunAsync(ReloadPackageVersionsAsync)
-                    .FileAndForget(
-                        TelemetryUtility.CreateFileAndForgetEventName(
-                            nameof(PackageItemListViewModel),
-                            nameof(ReloadPackageVersionsAsync)));
+                    .PostOnFailure(nameof(PackageItemListViewModel), nameof(ReloadPackageVersionsAsync));
             }
 
 
@@ -401,10 +394,7 @@ namespace NuGet.PackageManagement.UI
             {
                 NuGetUIThreadHelper.JoinableTaskFactory
                     .RunAsync(ReloadPackageDeprecationAsync)
-                    .FileAndForget(
-                        TelemetryUtility.CreateFileAndForgetEventName(
-                            nameof(PackageItemListViewModel),
-                            nameof(ReloadPackageDeprecationAsync)));
+                    .PostOnFailure(nameof(PackageItemListViewModel), nameof(ReloadPackageDeprecationAsync));
             }
         }
 

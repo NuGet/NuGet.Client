@@ -13,7 +13,6 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
-using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
@@ -381,15 +380,18 @@ namespace NuGet.Test.Utility
             return context;
         }
 
-        public static SimpleTestProjectContext CreateNETCoreWithSDK(
+        public static SimpleTestProjectContext CreateNETCore(
             string projectName,
             string solutionRoot,
-            bool isToolingVersion15,
-            params NuGetFramework[] frameworks)
+            params string[] frameworks)
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
-            context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
-            context.ToolingVersion15 = isToolingVersion15;
+            context.Frameworks.AddRange(frameworks.Select(e =>
+            {
+                var frameworkContext = new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(e));
+                frameworkContext.TargetAlias = e;
+                return frameworkContext;
+            }));
             context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
@@ -479,7 +481,7 @@ namespace NuGet.Test.Utility
                     ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
                         { tfPropName, OriginalFrameworkStrings.Count != 0 ? string.Join(";", OriginalFrameworkStrings): 
-                        string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                        string.Join(";", Frameworks.Select(f => f.TargetAlias)) },
                     });
                 }
 
@@ -489,8 +491,26 @@ namespace NuGet.Test.Utility
 
                 foreach (var frameworkInfo in Frameworks)
                 {
+                    // Add TFM properties
+                    var tfmProps = new Dictionary<string, string>(frameworkInfo.Properties);
+
+                    if (!(Type == ProjectStyle.PackageReference && ToolingVersion15))
+                    {
+                        tfmProps.Add("TargetFrameworkIdentifier", frameworkInfo.Framework.Framework);
+                        tfmProps.Add("TargetFrameworkVersion", $"v{NormalizeVersionString(frameworkInfo.Framework.Version)}");
+                        tfmProps.Add("_TargetFrameworkVersionWithoutV", NormalizeVersionString(frameworkInfo.Framework.Version));
+                        tfmProps.Add("TargetFrameworkMoniker", $"{frameworkInfo.Framework.Framework}, Version={NormalizeVersionString(frameworkInfo.Framework.Version)}");
+
+                        if (frameworkInfo.Framework.HasPlatform)
+                        {
+                            tfmProps.Add("TargetPlatformIdentifier", frameworkInfo.Framework.Platform);
+                            tfmProps.Add("TargetPlatformVersion", NormalizeVersionString(frameworkInfo.Framework.PlatformVersion));
+                            tfmProps.Add("TargetPlatformMoniker", $"{frameworkInfo.Framework.Platform}, Version={NormalizeVersionString(frameworkInfo.Framework.PlatformVersion)}");
+                        }
+                    }
+
                     // Add properties with a TFM condition
-                    ProjectFileUtils.AddProperties(xml, frameworkInfo.Properties, $" '$(TargetFramework)' == '{frameworkInfo.Framework.GetShortFolderName()}' ");
+                    ProjectFileUtils.AddProperties(xml, tfmProps, $" '$(TargetFramework)' == '{frameworkInfo.TargetAlias}' ");
 
                     foreach (var package in frameworkInfo.PackageReferences)
                     {
@@ -698,6 +718,19 @@ namespace NuGet.Test.Utility
             }
 
             return xml;
+        }
+
+        private static string NormalizeVersionString(Version version)
+        {
+            if (version.Build != 0)
+            {
+                return version.ToString(4);
+            }
+            if (version.Revision != 0)
+            {
+                return version.ToString(3);
+            }
+            return version.ToString(2);
         }
 
         public override bool Equals(object obj)

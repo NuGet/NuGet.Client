@@ -130,7 +130,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Darwin)] // https://github.com/NuGet/Home/issues/9771
         public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestamp_SuccessAsync()
         {
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -181,7 +181,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9763
+        [PlatformFact(Platform.Windows)] // https://github.com/NuGet/Home/issues/9763
         public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestampWithTooLargeRange_FailsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();

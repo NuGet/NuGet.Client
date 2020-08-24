@@ -19,7 +19,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         [Fact]
         public void PackTaskLogic_ProducesBasicPackage()
         {
-            // This test uses the ...\NuGet.Build.Tasks.Pack.Test\compiler\resources\project.assets.json assets file. 
+            // This test uses the ...\NuGet.Build.Tasks.Pack.Test\compiler\resources\project.assets.json assets file.
             // Arrange
             using (var testDir = TestDirectory.Create())
             {
@@ -49,15 +49,15 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[0].TargetFramework);
                     Assert.Equal(new[] { "lib/net45/a.dll" }, libItems[0].Items);
 
-                    var dependecyGroups = nuspecReader.GetDependencyGroups().ToList();
-                    var dependecyGroup = dependecyGroups.First();
-                    var dependecyGroupFramework = dependecyGroup.TargetFramework.Framework;
-                    var dependentPackages = dependecyGroup.Packages.ToList();
+                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
+                    var dependencyGroup = dependencyGroups.First();
+                    var dependencyGroupFramework = dependencyGroup.TargetFramework.Framework;
+                    var dependentPackages = dependencyGroup.Packages.ToList();
                     var centralTransitiveDependentPackage = dependentPackages
                         .Where(p => p.Id.Equals("Newtonsoft.Json", StringComparison.OrdinalIgnoreCase))
                         .FirstOrDefault();
-                    Assert.Equal(1, dependecyGroups.Count);
-                    Assert.Equal(".NETStandard", dependecyGroupFramework);
+                    Assert.Equal(1, dependencyGroups.Count);
+                    Assert.Equal(".NETStandard", dependencyGroupFramework);
                     Assert.NotNull(centralTransitiveDependentPackage);
                     Assert.Equal(new List<string> { "Analyzers", "Build", "Runtime" }, centralTransitiveDependentPackage.Exclude);
                 }

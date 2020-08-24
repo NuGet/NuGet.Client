@@ -648,7 +648,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Option_ConfigFile" xml:space="preserve">
     <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior.</value>
   </data>
-   <data name="Option_ConfigFile_Docs" xml:space="preserve">
+  <data name="Option_ConfigFile_Docs" xml:space="preserve">
     <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).</value>
   </data>
   <data name="Option_PackageSource" xml:space="preserve">
@@ -711,5 +711,24 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="AddClientCertCommandDescription" xml:space="preserve">
     <value>Adds a client certificate configuration that matches the given package source name.</value>
+  </data>
+  <data name="Verbosity_Description" xml:space="preserve">
+    <value>Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</value>
+    <comment>Please don't localize "q[uiet]", "m[inimal]", "n[ormal]", "d[etailed]", or "diag[nostic]"</comment>
+  </data>
+  <data name="AddPkg_PackagePrerelease" xml:space="preserve">
+    <value>Allows prerelease packages to be installed.</value>
+  </data>
+  <data name="Error_PrereleaseWhenVersionSpecified" xml:space="preserve">
+    <value>The --prerelease and --version options are not supported in the same command.</value>
+    <comment>Please don't localize "prerelease" and "version"</comment>
+  </data>
+  <data name="Error_NoVersionsAvailable" xml:space="preserve">
+    <value>There are no versions available for the package '{0}'.</value>
+    <comment>{0} - PackageID</comment>
+  </data>
+  <data name="PrereleaseVersionsAvailable" xml:space="preserve">
+    <value>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</value>
+    <comment>{0} - Package Version</comment>
   </data>
 </root>

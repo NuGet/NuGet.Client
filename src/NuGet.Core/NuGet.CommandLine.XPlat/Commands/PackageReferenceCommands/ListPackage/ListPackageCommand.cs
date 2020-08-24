@@ -15,9 +15,12 @@ using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public static class ListPackageCommand
+    internal static class ListPackageCommand
     {
-        public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
+        public static void Register(
+            CommandLineApplication app,
+            Func<ILogger> getLogger,
+            Action<LogLevel> setLogLevel,
             Func<IListPackageCommandRunner> getCommandRunner)
         {
             app.Command("list", listpkg =>
@@ -85,9 +88,16 @@ namespace NuGet.CommandLine.XPlat
                     Strings.NuGetXplatCommand_Interactive,
                     CommandOptionType.NoValue);
 
+                var verbosity = listpkg.Option(
+                    "-v|--verbosity",
+                    Strings.Verbosity_Description,
+                    CommandOptionType.SingleValue);
+
                 listpkg.OnExecute(async () =>
                 {
                     var logger = getLogger();
+
+                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
                     var settings = ProcessConfigFile(config.Value(), path.Value);
                     var sources = source.Values;

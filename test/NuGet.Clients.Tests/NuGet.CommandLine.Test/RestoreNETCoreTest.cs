@@ -1588,13 +1588,13 @@ namespace NuGet.CommandLine.Test
 
                 var projects = new List<SimpleTestProjectContext>();
 
-                var project = SimpleTestProjectContext.CreateNETCore(
+                var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     "proj",
                     pathContext.SolutionRoot,
-                    NuGetFramework.Parse("netstandard1.3"),
-                    NuGetFramework.Parse("net4"));
+                    "net46",
+                    "net45");
 
-                project.OriginalFrameworkStrings = new List<string> { "netstandard1.3", "net4" };
+                project.OriginalFrameworkStrings = new List<string> { "net46", "net45" };
 
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
@@ -1614,8 +1614,8 @@ namespace NuGet.CommandLine.Test
 
                 var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
 
-                Assert.Equal("'$(TargetFramework)' == 'net4' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
-                Assert.Equal("'$(TargetFramework)' == 'netstandard1.3' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Contains("'$(TargetFramework)' == 'net45' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Contains("'$(TargetFramework)' == 'net46' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 
@@ -9963,6 +9963,49 @@ namespace NuGet.CommandLine.Test
                 var expectedCentralfileDependencyGroups = new List<string>() { $"{framework.DotNetFrameworkName}_P.[3.0.0, )", $"{framework.DotNetFrameworkName}_S.[3.0.0, )" };
 
                 Assert.Equal(expectedCentralfileDependencyGroups, centralfileDependencyGroups);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void RestoreNetCore_WithMultipleFrameworksWithPlatformAndAssetTargetFallback_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net50Windows = "net5.0-windows10.0.10000.1";
+                var net50Android = "net5.0-android21";
+                var frameworks = new NuGetFramework[]
+                {
+                    NuGetFramework.Parse(net50Windows),
+                    NuGetFramework.Parse(net50Android)
+                };
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net50Windows,
+                    net50Android
+                    );
+
+                projectA.Properties.Add("AssetTargetFallback", "net472");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                var targets = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Select(e => e);
+                targets.Should().HaveCount(2);
+                foreach (var framework in frameworks)
+                {
+                    targets.Select(e => e.TargetFramework).Should().Contain(framework);
+                }
             }
         }
 

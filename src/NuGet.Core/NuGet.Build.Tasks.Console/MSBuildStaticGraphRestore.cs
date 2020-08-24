@@ -154,33 +154,6 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Gets the original target frameworks for the specified project.
-        /// </summary>
-        /// <param name="project">An <see cref="IMSBuildItem" /> representing the project.</param>
-        /// <param name="frameworks">An <see cref="IReadOnlyCollection{NuGetFrameowrk}" /> object containing the frameworks that were parsed from the outer project.</param>
-        /// <returns>A <see cref="List{String}" /> containing the original target frameworks of the project.</returns>
-        internal static List<string> GetOriginalTargetFrameworks(IMSBuildProject project, IReadOnlyCollection<NuGetFramework> frameworks)
-        {
-            // If the project specified the TargetFrameworks property, just return that list
-            var projectTargetFrameworks = project.SplitPropertyValueOrNull("TargetFrameworks");
-
-            if (projectTargetFrameworks != null)
-            {
-                return projectTargetFrameworks.ToList();
-            }
-
-            // If the project did not specify a value for TargetFrameworks, return the short folder name of the frameworks which where parsed via other properties
-            var targetFrameworks = new List<string>(frameworks.Count);
-
-            foreach (var framework in frameworks)
-            {
-                targetFrameworks.Add(framework.GetShortFolderName());
-            }
-
-            return targetFrameworks;
-        }
-
-        /// <summary>
         /// Gets the package downloads for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get package downloads for.</param>
@@ -343,15 +316,17 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="projects">A <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance}" /> representing the target frameworks and their corresponding projects.</param>
         /// <returns>A <see cref="List{ProjectRestoreMetadataFrameworkInfo}" /> containing the restore metadata framework information for the specified project.</returns>
-        internal static List<ProjectRestoreMetadataFrameworkInfo> GetProjectRestoreMetadataFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projects)
+        internal static List<ProjectRestoreMetadataFrameworkInfo> GetProjectRestoreMetadataFrameworkInfos(List<TargetFrameworkInformation> targetFrameworkInfos, IReadOnlyDictionary<string, IMSBuildProject> projects)
         {
             var projectRestoreMetadataFrameworkInfos = new List<ProjectRestoreMetadataFrameworkInfo>(projects.Count);
 
-            foreach (var project in projects)
+            foreach (var targetFrameworkInfo in targetFrameworkInfos)
             {
-                projectRestoreMetadataFrameworkInfos.Add(new ProjectRestoreMetadataFrameworkInfo(project.Key)
+                var project = projects[targetFrameworkInfo.TargetAlias];
+                projectRestoreMetadataFrameworkInfos.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName)
                 {
-                    ProjectReferences = GetProjectReferences(project.Value)
+                    TargetAlias = targetFrameworkInfo.TargetAlias,
+                    ProjectReferences = GetProjectReferences(project)
                 });
             }
 
@@ -364,34 +339,44 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="project">An <see cref="IMSBuildProject" /> representing the main project.</param>
         /// <param name="innerNodes">An <see cref="IReadOnlyDictionary{String,IMSBuildProject}" /> representing all inner projects by their target framework.</param>
         /// <returns></returns>
-        internal static IReadOnlyDictionary<NuGetFramework, IMSBuildProject> GetProjectTargetFrameworks(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> innerNodes)
+        internal static IReadOnlyDictionary<string, IMSBuildProject> GetProjectTargetFrameworks(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> innerNodes)
         {
-            // Get the raw list of target frameworks that the project specifies
-            var projectFrameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
-                projectFilePath: project.FullPath,
-                targetFrameworks: project.GetProperty("TargetFrameworks"),
-                targetFramework: project.GetProperty("TargetFramework"),
-                targetFrameworkMoniker: project.GetProperty("TargetFrameworkMoniker"),
-                targetPlatformIdentifier: project.GetProperty("TargetPlatformIdentifier"),
-                targetPlatformVersion: project.GetProperty("TargetPlatformVersion"),
-                targetPlatformMinVersion: project.GetProperty("TargetPlatformMinVersion")).ToList();
+            var projectFrameworkStrings = GetTargetFrameworkStrings(project);
+            var projectTargetFrameworks = new Dictionary<string, IMSBuildProject>();
 
-            var projectTargetFrameworks = new Dictionary<NuGetFramework, IMSBuildProject>();
-
-            foreach (var projectTargetFramework in projectFrameworkStrings)
+            if (projectFrameworkStrings.Length > 0)
+            {
+                foreach (var projectTargetFramework in projectFrameworkStrings)
+                {
+                    // Attempt to get the corresponding project instance for the target framework.  If one is not found, then the project must not target multiple frameworks
+                    // and the main project should be used
+                    if (!innerNodes.TryGetValue(projectTargetFramework, out IMSBuildProject innerNode))
+                    {
+                        innerNode = project;
+                    }
+                    // Add the target framework and associate it with the project instance to be used for gathering details
+                    projectTargetFrameworks[projectTargetFramework] = innerNode;
+                }
+            }
+            else
             {
                 // Attempt to get the corresponding project instance for the target framework.  If one is not found, then the project must not target multiple frameworks
                 // and the main project should be used
-                if (!innerNodes.TryGetValue(projectTargetFramework, out IMSBuildProject innerNode))
-                {
-                    innerNode = project;
-                }
-
-                // Add the target framework and associate it with the project instance to be used for gathering details
-                projectTargetFrameworks[NuGetFramework.Parse(projectTargetFramework)] = innerNode;
+                projectTargetFrameworks[string.Empty] = project;
             }
 
             return projectTargetFrameworks;
+        }
+
+        internal static string[] GetTargetFrameworkStrings(IMSBuildProject project)
+        {
+            var targetFrameworks = project.GetProperty("TargetFrameworks");
+            if (string.IsNullOrEmpty(targetFrameworks))
+            {
+                targetFrameworks = project.GetProperty("TargetFramework");
+            }
+            var projectFrameworkStrings = MSBuildStringUtility.Split(targetFrameworks);
+            return projectFrameworkStrings;
         }
 
         /// <summary>
@@ -535,17 +520,25 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="projectInnerNodes">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
         /// <param name="isCpvmEnabled">A flag that is true if the Central Package Management was enabled.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
-        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
+        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<string, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
         {
             var targetFrameworkInfos = new List<TargetFrameworkInformation>(projectInnerNodes.Count);
 
             foreach (var projectInnerNode in projectInnerNodes)
             {
                 var msBuildProjectInstance = projectInnerNode.Value;
+                var targetAlias = string.IsNullOrEmpty(projectInnerNode.Key) ? string.Empty : projectInnerNode.Key;
 
-                var targetFrameworkInformation = new TargetFrameworkInformation
+                NuGetFramework targetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                    projectFilePath: projectInnerNode.Value.FullPath,
+                    targetFrameworkMoniker: msBuildProjectInstance.GetProperty("TargetFrameworkMoniker"),
+                    targetPlatformMoniker: msBuildProjectInstance.GetProperty("TargetPlatformMoniker"),
+                    targetPlatformMinVersion: msBuildProjectInstance.GetProperty("TargetPlatformMinVersion"));
+
+                var targetFrameworkInformation = new TargetFrameworkInformation()
                 {
-                    FrameworkName = projectInnerNode.Key,
+                    FrameworkName = targetFramework,
+                    TargetAlias = targetAlias,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath))
                 };
 
@@ -726,7 +719,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="projectsByTargetFramework">A <see cref="IReadOnlyDictionary{NuGetFramework,IMSBuildProject}" /> containing the inner nodes by target framework.</param>
         /// <param name="settings">The <see cref="ISettings" /> of the specified project.</param>
         /// <returns>A <see cref="Tuple" /> containing the <see cref="ProjectRestoreMetadata" /> and <see cref="List{TargetFrameworkInformation}" /> for the specified project.</returns>
-        private (ProjectRestoreMetadata RestoreMetadata, List<TargetFrameworkInformation> TargetFrameworkInfos) GetProjectRestoreMetadataAndTargetFrameworkInformation(IMSBuildProject project, IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectsByTargetFramework, ISettings settings)
+        private (ProjectRestoreMetadata RestoreMetadata, List<TargetFrameworkInformation> TargetFrameworkInfos) GetProjectRestoreMetadataAndTargetFrameworkInformation(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> projectsByTargetFramework, ISettings settings)
         {
             var projectName = GetProjectName(project);
 
@@ -762,7 +755,9 @@ namespace NuGet.Build.Tasks.Console
             {
                 restoreMetadata = new ProjectRestoreMetadata
                 {
-                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && projectsByTargetFramework.Count > 1,
+                    // CrossTargeting is on, even if the TargetFrameworks property has only 1 tfm.
+                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && (
+                        projectsByTargetFramework.Count > 1 || !string.IsNullOrWhiteSpace(project.GetProperty("TargetFrameworks"))),
                     FallbackFolders = BuildTasksUtility.GetFallbackFolders(
                         project.Directory,
                         project.SplitPropertyValueOrNull("RestoreFallbackFolders"),
@@ -779,7 +774,7 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, project.FullPath);
             restoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
             restoreMetadata.OutputPath = outputPath;
-            restoreMetadata.OriginalTargetFrameworks = GetOriginalTargetFrameworks(project, projectsByTargetFramework.Keys.ToList());
+            restoreMetadata.OriginalTargetFrameworks.AddRange(targetFrameworkInfos.Select(e => e.TargetAlias));
             restoreMetadata.PackagesPath = GetPackagesPath(project, settings);
             restoreMetadata.ProjectName = projectName;
             restoreMetadata.ProjectPath = project.FullPath;
@@ -788,7 +783,7 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn"));
             restoreMetadata.RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode"));
             restoreMetadata.Sources = GetSources(project, innerNodes, settings);
-            restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(projectsByTargetFramework);
+            restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
 
             return (restoreMetadata, targetFrameworkInfos);
         }

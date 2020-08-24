@@ -11,6 +11,9 @@
     <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
     <description>NuGet localization package.</description>
     <tags>nuget</tags>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
   </metadata>
 
   <files>

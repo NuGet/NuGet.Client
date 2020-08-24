@@ -17,7 +17,7 @@ All source code files (mostly `src/**/*.cs` and `test/**/*.cs`) require this exa
 
 It is not mandatory to add the header to generated files, such as `*.designer.cs`.
 
-Every repo also needs the Apache 2.0 License in a file called LICENSE.txt in the root of the repo. 
+Every repo also needs the Apache 2.0 License in a file called LICENSE.txt in the root of the repo.
 
 ## C# Coding Style
 
@@ -72,7 +72,7 @@ For example the following are correct:
     The following are correct:
 
     ```cs
-    public string TrimString(string s) 
+    public string TrimString(string s)
     {
         return string.IsNullOrEmpty(s)
             ? null
@@ -85,7 +85,7 @@ For example the following are correct:
     The following are incorrect:
 
     ```cs
-    public String TrimString(String s) 
+    public String TrimString(String s)
     {
         return String.IsNullOrEmpty(s)
             ? null
@@ -117,8 +117,8 @@ For example the following are correct:
     ```cs
     var packages = new List<PackageIdentity>;
 
-    var packageIdentity = new PackageIdentity();  
-    packageIdentity.Id = "NuGet.Commands";  
+    var packageIdentity = new PackageIdentity();
+    packageIdentity.Id = "NuGet.Commands";
     packageIdentity.Version = "5.4.0";
 
     var idList = new List<string>();
@@ -131,9 +131,9 @@ For example the following are correct:
     These are correct:
 
     ```cs
-    var packageIdentity = new PackageIdentity();  
+    var packageIdentity = new PackageIdentity();
     {
-        Id = "NuGet.Commands";  
+        Id = "NuGet.Commands";
         Version = "5.4.0";
     }
 
@@ -162,7 +162,7 @@ For example the following are correct:
        ...
     }
     ```
-  
+
     This is incorrect:
     ```cs
     public MyClass(string arg) : this(arg, arg2: false)
@@ -170,6 +170,29 @@ For example the following are correct:
       ...
     }
     ```
+
+1. Do not use `Func<>` or `Action<>` as return types. Instead, let the compiler convert the method into a func or action as necessary.
+
+    This is correct:
+    ```cs
+    Func<string, int> factory = DoSomething;
+
+    int DoSomething(string input)
+    {
+        // method body
+    }
+    ```
+
+    This is incorrect:
+    ```cs
+    Func<string, int> factory = GetFactory();
+
+    Func<string, int> GetFactory()
+    {
+        return (string input) => // method body
+    }
+    ```
+
 
 Many of the guidelines, wherever possible, and potentially some not listed here, are enforced by an [EditorConfig](https://editorconfig.org "EditorConfig homepage") file (`.editorconfig`) at the root of the repository.
 
@@ -305,8 +328,8 @@ GetData
 The contents of every unit test should be split into three distinct stages, optionally separated by these comments:
 
 ```cs
-// Arrange  
-// Act  
+// Arrange
+// Act
 // Assert
 ```
 

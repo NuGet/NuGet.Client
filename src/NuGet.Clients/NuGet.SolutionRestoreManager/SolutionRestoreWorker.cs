@@ -63,7 +63,7 @@ namespace NuGet.SolutionRestoreManager
 
         private Common.ILogger Logger => _logger.Value;
 
-        private Lazy<ErrorListTableDataSource> _errorListTableDataSource;
+        private Lazy<INuGetErrorList> _errorList;
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
@@ -86,13 +86,13 @@ namespace NuGet.SolutionRestoreManager
             Lazy<INuGetLockService> lockService,
             [Import("VisualStudioActivityLogger")]
             Lazy<Common.ILogger> logger,
-            Lazy<ErrorListTableDataSource> errorListTableDataSource,
+            Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
                   logger,
-                  errorListTableDataSource,
+                  errorList,
                   outputConsoleProvider)
         { }
 
@@ -101,7 +101,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<IVsSolutionManager> solutionManager,
             Lazy<INuGetLockService> lockService,
             Lazy<Common.ILogger> logger,
-            Lazy<ErrorListTableDataSource> errorListTableDataSource,
+            Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider)
         {
             if (asyncServiceProvider == null)
@@ -124,9 +124,9 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (errorListTableDataSource == null)
+            if (errorList == null)
             {
-                throw new ArgumentNullException(nameof(errorListTableDataSource));
+                throw new ArgumentNullException(nameof(errorList));
             }
 
             if (outputConsoleProvider == null)
@@ -138,7 +138,7 @@ namespace NuGet.SolutionRestoreManager
             _solutionManager = solutionManager;
             _lockService = lockService;
             _logger = logger;
-            _errorListTableDataSource = errorListTableDataSource;
+            _errorList = errorList;
             _outputConsoleProvider = outputConsoleProvider;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
@@ -279,9 +279,9 @@ namespace NuGet.SolutionRestoreManager
             Reset();
 
             // Clear warnings/errors from nuget
-            if (_errorListTableDataSource.IsValueCreated)
+            if (_errorList.IsValueCreated)
             {
-                _errorListTableDataSource.Value.ClearNuGetEntries();
+                _errorList.Value.ClearNuGetEntries();
             }
         }
 
@@ -488,7 +488,8 @@ namespace NuGet.SolutionRestoreManager
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
-                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
+                            // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
+                            if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
                             {
                                 if (isAllProjectsNominated)
                                 {
@@ -509,6 +510,8 @@ namespace NuGet.SolutionRestoreManager
                                 // we don't want to delay explicit solution restore request so just break at this time.
                                 break;
                             }
+
+                            await Task.Delay(IdleTimeoutMs, token);
 
                             if (!isAllProjectsNominated)
                             {
@@ -620,7 +623,7 @@ namespace NuGet.SolutionRestoreManager
                             // Start logging
                             await logger.StartAsync(
                                 request.RestoreSource,
-                                _errorListTableDataSource,
+                                _errorList,
                                 JoinableTaskFactory,
                                 jobCts);
 

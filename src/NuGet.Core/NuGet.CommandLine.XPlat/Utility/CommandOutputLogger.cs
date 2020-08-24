@@ -12,7 +12,7 @@ namespace NuGet.CommandLine.XPlat
     /// <summary>
     /// Logger to print formatted command output.
     /// </summary>
-    public class CommandOutputLogger : LegacyLoggerAdapter, ILogger
+    internal class CommandOutputLogger : LegacyLoggerAdapter, ILogger
     {
         private static readonly bool _useConsoleColor = true;
         private LogLevel _logLevel;

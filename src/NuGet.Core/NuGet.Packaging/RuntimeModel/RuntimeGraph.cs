@@ -327,6 +327,11 @@ namespace NuGet.RuntimeModel
                     && StringComparer.OrdinalIgnoreCase.Equals(PackageId, other.PackageId);
             }
 
+#if NET45
+            public override bool Equals(object obj)
+                => obj is RuntimeDependencyKey objS && Equals(objS);
+#endif
+
             public override int GetHashCode()
             {
                 var hashCode = new HashCodeCombiner();
@@ -358,6 +363,11 @@ namespace NuGet.RuntimeModel
                 return StringComparer.Ordinal.Equals(RuntimeName, other.RuntimeName)
                     && StringComparer.Ordinal.Equals(Other, other.Other);
             }
+
+#if NET45
+            public override bool Equals(object obj)
+                => obj is RuntimeCompatKey objS && Equals(objS);
+#endif
 
             public override int GetHashCode()
             {

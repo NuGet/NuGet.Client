@@ -754,7 +754,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         await CommandUiUtilities.InvalidateDefaultProjectAsync();
                     }
                 })
-                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PowerShellHost), nameof(StartAsyncDefaultProjectUpdate)));
+                .PostOnFailure(nameof(PowerShellHost), nameof(StartAsyncDefaultProjectUpdate));
         }
 
         public string[] GetAvailableProjects()

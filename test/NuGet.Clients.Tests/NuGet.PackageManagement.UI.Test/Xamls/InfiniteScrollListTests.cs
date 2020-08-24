@@ -8,8 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using Moq;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using Xunit;
@@ -241,14 +241,11 @@ namespace NuGet.PackageManagement.UI.Test
                 list.LoadItemsCompleted += (sender, args) => taskCompletionSource.TrySetResult(null);
 
                 loader.Setup(x => x.Reset());
-                logger.Setup(x => x.Log(
-                        It.Is<MessageLevel>(m => m == MessageLevel.Error),
-                        It.IsNotNull<string>(),
-                        It.IsAny<object[]>()))
-                    .Callback<MessageLevel, string, object[]>(
-                        (messageLevel, message, args) =>
+                logger.Setup(x => x.Log(It.Is<ILogMessage>(lm => lm.Level == LogLevel.Error && lm.Message != null)))
+                      .Callback<ILogMessage>(
+                        (logMessage) =>
                             {
-                                taskCompletionSource.TrySetResult(message);
+                                taskCompletionSource.TrySetResult(logMessage.Message);
                             });
                 loader.Setup(x => x.GetCurrent())
                     .Returns(() =>
@@ -284,7 +281,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var loaderMock = new Mock<IPackageItemLoader>(MockBehavior.Strict);
             var stateMock = new Mock<IItemLoaderState>();
-            var searchTask = Task.FromResult(SearchResult.FromItems( searchItems ));
+            var searchTask = Task.FromResult(SearchResult.FromItems(searchItems));
             var testLogger = new TestNuGetUILogger(_output);
             var tcs = new TaskCompletionSource<int>();
             var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => _joinableTaskContext.Factory));
@@ -304,7 +301,8 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsNotNull<IProgress<IItemLoaderState>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(0))
-                .Callback(() => {
+                .Callback(() =>
+                {
                     currentStatus = searchItems.Length > 0 ? LoadingStatus.Ready : LoadingStatus.NoItemsFound;
                 });
             loaderMock.Setup(x => x.UpdateStateAsync(

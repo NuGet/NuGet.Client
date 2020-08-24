@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Packaging;
@@ -433,6 +434,56 @@ namespace Dotnet.Integration.Test
 
                 Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
             }
+        }
+
+        [PlatformTheory(Platform.Windows, Skip = "Enabled after .NET CLI integration. Tracked by https://github.com/NuGet/Home/issues/9800.")]
+        [InlineData("", false)]
+        [InlineData("--verbosity minimal", false)]
+        [InlineData("--verbosity normal", true)]
+        public void DotnetListPackage_VerbositySwitchTogglesHttpVisibility(string args, bool showsHttp)
+        {
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                var source = "https://api.nuget.org/v3/index.json";
+                var emptyHttpCache = new Dictionary<string, string>
+                {
+                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder },
+                };
+
+                ProjectFileBuilder
+                    .Create()
+                    .WithProjectName(ProjectName)
+                    .WithProperty("targetFramework", "net46")
+                    .WithItem("PackageReference", "BaseTestPackage.SearchFilters", version: "1.1.0")
+                    .WithProperty("RestoreSources", source)
+                    .Build(_fixture, pathContext.SolutionRoot);
+
+                var workingDirectory = Path.Combine(pathContext.SolutionRoot, ProjectName);
+                _fixture.RunDotnet(workingDirectory, $"restore {ProjectName}.csproj");
+
+                // Act
+                CommandRunnerResult listResult = _fixture.RunDotnet(
+                    workingDirectory,
+                    $"list package --outdated --source {source} {args}",
+                    additionalEnvVars: emptyHttpCache);
+
+                // Assert
+                if (showsHttp)
+                {
+                    Assert.Contains("GET http", CollapseSpaces(listResult.AllOutput));
+                }
+                else
+                {
+                    Assert.DoesNotContain("GET http", CollapseSpaces(listResult.AllOutput));
+                }
+
+                Assert.Contains("BaseTestPackage.SearchFilters 1.1.0 1.1.0 1.3.0", CollapseSpaces(listResult.AllOutput));
+            }
+        }
+
+        private static string CollapseSpaces(string input)
+        {
+            return Regex.Replace(input, " +", " ");
         }
 
         private static bool ContainsIgnoringSpaces(string output, string pattern)

@@ -209,31 +209,35 @@ namespace NuGet.XPlat.FuncTest
             return package;
         }
 
-        public static PackageReferenceArgs GetPackageReferenceArgs(string packageId, SimpleTestProjectContext project)
+        internal static PackageReferenceArgs GetPackageReferenceArgs(string packageId, SimpleTestProjectContext project)
         {
             var logger = new TestCommandOutputLogger();
-            var packageDependency = new PackageDependency(packageId);
-            return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger);
+            return new PackageReferenceArgs(project.ProjectPath, logger)
+            {
+                PackageId = packageId
+            };
         }
 
-        public static PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
-            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false)
+        internal static PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
+            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false)
         {
             var logger = new TestCommandOutputLogger();
-            var packageDependency = new PackageDependency(packageId, VersionRange.Parse(packageVersion));
             var dgFilePath = string.Empty;
             if (!noRestore)
             {
                 dgFilePath = CreateDGFileForProject(project);
             }
-            return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger)
+            return new PackageReferenceArgs(project.ProjectPath, logger)
             {
                 Frameworks = MSBuildStringUtility.Split(frameworks),
                 Sources = MSBuildStringUtility.Split(sources),
                 PackageDirectory = packageDirectory,
                 NoRestore = noRestore,
                 NoVersion = noVersion,
-                DgFilePath = dgFilePath
+                DgFilePath = dgFilePath,
+                Prerelease = prerelease,
+                PackageVersion = packageVersion,
+                PackageId = packageId
             };
         }
 

@@ -152,7 +152,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             var status = InstalledPackageResultStatus.Unknown;
 
             var notImplementedException = new NotImplementedException($"Project type {project.GetType().Name} is not implemented");
-            TelemetryUtility.EmitException(nameof(NuGetProjectService), nameof(GetInstalledPackagesAsync), notImplementedException);
+            await TelemetryUtility.PostFaultAsync(notImplementedException, nameof(NuGetProjectService));
 
             IEnumerable<PackageReference> projectPackages = await project.GetInstalledPackagesAsync(cancellationToken);
 

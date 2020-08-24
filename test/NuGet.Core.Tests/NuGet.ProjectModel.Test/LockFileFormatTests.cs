@@ -15,8 +15,6 @@ using static NuGet.Test.Utility.TestPackagesCore;
 
 namespace NuGet.ProjectModel.Test
 {
-    // This project can output the Class library as a NuGet Package.
-    // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public class LockFileFormatTests
     {
         // Verify the value of locked has no impact on the parsed lock file

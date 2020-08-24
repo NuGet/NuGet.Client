@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
-    public static class TableParser
+    internal static class TableParser
     {
         internal static Task<IEnumerable<string>> ToStringTableAsync<T>(
           this IEnumerable<T> values,

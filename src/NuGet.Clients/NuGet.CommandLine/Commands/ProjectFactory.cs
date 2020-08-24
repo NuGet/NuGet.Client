@@ -1,4 +1,4 @@
-extern alias CoreV2; 
+extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace NuGet.CommandLine
 {
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider 
+    public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -68,7 +68,7 @@ namespace NuGet.CommandLine
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
             return new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)
-            {                
+            {
                 IsTool = packArgs.Tool,
                 LogLevel = packArgs.LogLevel,
                 Logger = packArgs.Logger,
@@ -131,7 +131,7 @@ namespace NuGet.CommandLine
             string targetFrameworkMoniker = _project.GetPropertyValue("TargetFrameworkMoniker");
             if (!String.IsNullOrEmpty(targetFrameworkMoniker))
             {
-                TargetFramework = new FrameworkName(targetFrameworkMoniker);
+                TargetFramework = NuGetFramework.Parse(targetFrameworkMoniker);
             }
 
             // This happens before we obtain warning properties, so this Logger is still IConsole.
@@ -170,7 +170,7 @@ namespace NuGet.CommandLine
             set;
         }
 
-        private FrameworkName TargetFramework
+        private NuGetFramework TargetFramework
         {
             get;
             set;
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine
         {
             IncludeSymbols = includeSymbols;
         }
-        public bool IncludeSymbols { get; set; } 
+        public bool IncludeSymbols { get; set; }
 
         public bool IncludeReferencedProjects { get; set; }
         public bool Build { get; set; }
@@ -264,8 +264,8 @@ namespace NuGet.CommandLine
                 builder.Version = version;
             }
 
-            // Only override properties from assembly extracted metadata if they haven't 
-            // been specified also at construction time for the factory (that is, 
+            // Only override properties from assembly extracted metadata if they haven't
+            // been specified also at construction time for the factory (that is,
             // console properties always take precedence.
             foreach (var key in builder.Properties.Keys)
             {
@@ -303,7 +303,7 @@ namespace NuGet.CommandLine
             ApplyAction(p => p.AddOutputFiles(builder));
 
             // Add content files if there are any. They could come from a project or nuspec file
-            // In order to be compliant with the documented behavior, if the nuspec file has an 
+            // In order to be compliant with the documented behavior, if the nuspec file has an
             // empty <files> element, we do not add any content files at all. If the <files> element
             // has one or more files specified, then those files are added to the package along with
             // any files of type Content from the csproj file.
@@ -319,7 +319,7 @@ namespace NuGet.CommandLine
                 {
                     ApplyAction(p => p.AddFiles(builder, SourcesItemType, SourcesFolder));
                 }
-                
+
             }
 
             ProcessDependencies(builder);
@@ -493,7 +493,7 @@ namespace NuGet.CommandLine
         // The type of projectProperty is Microsoft.Build.Evaluation.ProjectProperty
         private static bool IsGlobalProperty(object projectProperty)
         {
-            // This property isn't available on xbuild (mono)            
+            // This property isn't available on xbuild (mono)
             var property = projectProperty.GetType().GetProperty("IsGlobalProperty", BindingFlags.Public | BindingFlags.Instance);
             if (property != null)
             {
@@ -773,7 +773,7 @@ namespace NuGet.CommandLine
                 // path or the gac. In this case, we should just skip it and extract metadata from the project.
                 try
                 {
-                    AssemblyMetadataExtractor.ExtractMetadata(builder, TargetPath);
+                    new AssemblyMetadataExtractor(Logger).ExtractMetadata(builder, TargetPath);
                 }
                 catch (Exception ex)
                 {
@@ -804,7 +804,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                nugetFramework = TargetFramework != null ? NuGetFramework.Parse(TargetFramework.FullName) : null;
+                nugetFramework = TargetFramework;
             }
 
             var projectOutputDirectory = Path.GetDirectoryName(TargetPath);
@@ -963,7 +963,7 @@ namespace NuGet.CommandLine
         private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             // returns true if the dependency should be added to the package
-            // This happens if the dependency is not a dependency of a dependecy
+            // This happens if the dependency is not a dependency of a dependency
             // Or if the project dependency version is != the dependency's dependency version
             bool found = false;
             foreach (var reader in packagesAndDependencies)
@@ -1001,7 +1001,7 @@ namespace NuGet.CommandLine
 
             if (!props.ContainsKey(NuGetProjectMetadataKeys.TargetFramework))
             {
-                props.Add(NuGetProjectMetadataKeys.TargetFramework, new NuGetFramework(TargetFramework.Identifier, TargetFramework.Version, TargetFramework.Profile));
+                props.Add(NuGetProjectMetadataKeys.TargetFramework, TargetFramework);
             }
             if (!props.ContainsKey(NuGetProjectMetadataKeys.Name))
             {
@@ -1421,7 +1421,11 @@ namespace NuGet.CommandLine
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
-                TargetFramework = FrameworkNameUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
+                NuGetFramework = NuGet.Packaging.FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(Path, out _effectivePath);
+                if (NuGetFramework != null && NuGetFramework.Version.Major < 5)
+                {
+                    TargetFramework = new FrameworkName(NuGetFramework.DotNetFrameworkName);
+                }
             }
 
             public string Path
@@ -1480,6 +1484,12 @@ namespace NuGet.CommandLine
             }
 
             public FrameworkName TargetFramework
+            {
+                get;
+                private set;
+            }
+
+            public NuGetFramework NuGetFramework
             {
                 get;
                 private set;

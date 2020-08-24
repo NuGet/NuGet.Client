@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
+using NuGet.CommandLine.XPlat.Utility;
 
 #if DEBUG
 using Microsoft.Build.Locator;
@@ -16,7 +17,7 @@ using Microsoft.Build.Locator;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class Program
+    internal class Program
     {
 #if DEBUG
         private const string DebugOption = "--debug";
@@ -166,12 +167,15 @@ namespace NuGet.CommandLine.XPlat
 
         private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
         {
-            // Many commands don't want prefixes output. Use loggerFunc(log) instead of log to set the HidePrefix property first.
-            Func<CommandOutputLogger, Func<ILogger>> loggerFunc = (commandOutputLogger) =>
-             {
-                 commandOutputLogger.HidePrefixForInfoAndMinimal = true;
-                 return () => commandOutputLogger;
-             };
+            // Many commands don't want prefixes output. Use this func instead of () => log to set the HidePrefix property first.
+            Func<ILogger> getHidePrefixLogger = () =>
+            {
+                log.HidePrefixForInfoAndMinimal = true;
+                return log;
+            };
+
+            // Allow commands to set the NuGet log level
+            Action<LogLevel> setLogLevel = (logLevel) => log.LogLevel = logLevel;
 
             var app = new CommandLineApplication();
 
@@ -181,16 +185,16 @@ namespace NuGet.CommandLine.XPlat
                 app.Name = DotnetPackageAppName;
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
-                ListPackageCommand.Register(app, () => log, () => new ListPackageCommandRunner());
+                ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
             }
             else
             {
                 // "dotnet nuget *" commands
                 app.Name = DotnetNuGetAppName;
-                CommandParsers.Register(app, loggerFunc(log));
-                DeleteCommand.Register(app, () => log);
-                PushCommand.Register(app, () => log);
-                LocalsCommand.Register(app, () => log);
+                CommandParsers.Register(app, getHidePrefixLogger);
+                DeleteCommand.Register(app, getHidePrefixLogger);
+                PushCommand.Register(app, getHidePrefixLogger);
+                LocalsCommand.Register(app, getHidePrefixLogger);
             }
 
             app.FullName = Strings.App_FullName;

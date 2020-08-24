@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace NuGet.Versioning
@@ -10,6 +11,7 @@ namespace NuGet.Versioning
     /// <summary>
     /// A strict SemVer implementation
     /// </summary>
+    [TypeConverter(typeof(SemanticVersionConverter))]
     public partial class SemanticVersion
     {
         // store as array to avoid enumerator allocations

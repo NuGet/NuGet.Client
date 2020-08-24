@@ -43,13 +43,13 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("net5.0", ".NETCoreApp,Version=v5.0")]
+        [InlineData("net5.0", "net5.0")]
         [InlineData("net452", ".NETFramework,Version=v4.5.2")]
         [InlineData("netcoreapp3.1", ".NETCoreApp,Version=v3.1")]
         public void NuGetFramework_GetDotNetFrameworkName(string input, string expected)
         {
             var fw = NuGetFramework.Parse(input);
-            
+
             string result = fw.GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
 
             Assert.Equal(expected, result);
@@ -357,6 +357,19 @@ namespace NuGet.Test
                 "Invalid portable frameworks 'net45+net-cf+win8'. " +
                 "A hyphen may not be in any of the portable framework names.",
                 ex.Message);
+        }
+
+        [Theory]
+        [InlineData("netcoreapp5.0")]
+        [InlineData("net45")]
+        [InlineData("net5.0-windows10.0.16000.1")]
+        public void NuGetFramework_WithCopyConstructor_CreatesEquivalentFrameworks(string frameworkName)
+        {
+            var originalFramework = NuGetFramework.Parse(frameworkName);
+
+            var copiedFramework = new NuGetFramework(originalFramework);
+
+            Assert.Equal(originalFramework, copiedFramework);
         }
     }
 }

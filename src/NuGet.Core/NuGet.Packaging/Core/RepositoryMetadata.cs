@@ -10,7 +10,7 @@ namespace NuGet.Packaging.Core
     {
         public RepositoryMetadata()
         {
-            
+
         }
         public RepositoryMetadata(string type, string url, string branch, string commit)
         {
@@ -66,8 +66,10 @@ namespace NuGet.Packaging.Core
             }
 
             return
-                Type.Equals(other.Type, StringComparison.OrdinalIgnoreCase) &&
-                Url == other.Url;
+                string.Equals(Type, other.Type, StringComparison.OrdinalIgnoreCase) &&
+                Url == other.Url &&
+                Branch == other.Branch &&
+                Commit == other.Commit;
         }
 
         public override int GetHashCode()
@@ -76,6 +78,8 @@ namespace NuGet.Packaging.Core
 
             combiner.AddObject(Type, StringComparer.OrdinalIgnoreCase);
             combiner.AddObject(Url);
+            combiner.AddObject(Branch);
+            combiner.AddObject(Commit);
 
             return combiner.CombinedHash;
         }

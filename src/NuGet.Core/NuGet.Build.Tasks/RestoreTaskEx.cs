@@ -101,6 +101,11 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public string SolutionPath { get; set; }
 
+        /// <summary>
+        /// The path to the file to start the additional process with.
+        /// </summary>
+        public string ProcessFileName { get; set; }
+
         /// <inheritdoc cref="ICancelableTask.Cancel" />
         public void Cancel() => _cancellationTokenSource.Cancel();
 
@@ -115,6 +120,13 @@ namespace NuGet.Build.Tasks
         {
             try
             {
+#if DEBUG
+                var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK_EX");
+                if (!string.IsNullOrEmpty(debugRestoreTask) && debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                {
+                    Debugger.Launch();
+                }
+#endif
                 using (var semaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1))
                 using (var loggingQueue = new TaskLoggingQueue(Log))
                 using (var process = new Process())
@@ -124,7 +136,7 @@ namespace NuGet.Build.Tasks
                     {
                         Arguments = $"\"{string.Join("\" \"", GetCommandLineArguments())}\"",
                         CreateNoWindow = true,
-                        FileName = GetProcessFileName(),
+                        FileName = GetProcessFileName(ProcessFileName),
                         RedirectStandardOutput = true,
                         UseShellExecute = false,
                         WorkingDirectory = Environment.CurrentDirectory,
@@ -221,8 +233,12 @@ namespace NuGet.Build.Tasks
         /// Gets the file name of the process.
         /// </summary>
         /// <returns>The full path to the file for the process.</returns>
-        internal string GetProcessFileName()
+        internal string GetProcessFileName(string processFileName)
         {
+            if (!string.IsNullOrEmpty(processFileName))
+            {
+                return Path.GetFullPath(processFileName);
+            }
 #if IS_CORECLR
             // In .NET Core, the path to dotnet is the file to run
             return Path.GetFullPath(Path.Combine(MSBuildBinPath, "..", "..", "dotnet"));
