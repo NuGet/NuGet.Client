@@ -1,5 +1,5 @@
 <RunSettings>
     <RunConfiguration>
-        <ReporterSwitch>verbose</ReporterSwitch>
+        <TargetFrameworkVersion>FrameworkCore10</TargetFrameworkVersion>
     </RunConfiguration>
 </RunSettings>
