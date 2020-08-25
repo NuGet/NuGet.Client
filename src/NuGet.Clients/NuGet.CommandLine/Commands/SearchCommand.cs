@@ -73,8 +73,9 @@ namespace NuGet.CommandLine
 
             SearchFilter searchFilter = new SearchFilter(includePrerelease: PreRelease);
 
-            int maxTasks = Environment.ProcessorCount;
-            var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
+            //int maxTasks = Environment.ProcessorCount;
+            int maxTasks = 2;
+            var taskList = new List<Task<(IEnumerable<IPackageSearchMetadata>, PackageSource)>>();
             IList<PackageSource> listEndpoints = GetEndpointsAsync();
 
             foreach (PackageSource source in listEndpoints)
@@ -84,49 +85,42 @@ namespace NuGet.CommandLine
 
                 if (resource is null)
                 {
-                    taskList.Add((null, source));
+                    PrintNullResourceOutput(source.Name);
                     continue;
                 }
 
                 if (taskList.Count == maxTasks)
                 {
-                    var (targetTask, targetSource) = taskList[0];
-
-                    if (targetTask is null)
-                    {
-                        PrintNullResourceOutput(targetSource.Name);
-                    }
-                    else
-                    {
-                        var targetResults = await targetTask;
-
-                        CompleteSearchTask(targetResults, targetSource);
-                    }
-
+                    /*
+                    var targetTask = await Task.WhenAny(taskList);
+                    taskList.Remove(targetTask);
+                    var (targetResults, targetSource) = await targetTask;
+                    CompleteSearchTask(targetResults, targetSource);
+                    */
+                    
+                    var (targetResults, targetSource) = await taskList[0];
+                    CompleteSearchTask(targetResults, targetSource);
                     taskList.RemoveAt(0);
+                    
                 }
 
-                taskList.Add((Task.Run(() => resource.SearchAsync(
-                    string.Join(" ", Arguments).Trim(), // The arguments are joined with spaces to form a single query string
-                    searchFilter,
-                    skip: 0,
-                    take: Take,
-                    logger,
-                    cancellationToken)), source));
+                taskList.Add(Task.Run(async () =>
+                {
+                     var results = await resource.SearchAsync(
+                     string.Join(" ", Arguments).Trim(), // The arguments are joined with spaces to form a single query string
+                     searchFilter,
+                     skip: 0,
+                     take: Take,
+                     logger,
+                     cancellationToken);
+
+                     return (results, source);
+                }));
             }
 
             foreach (var taskItem in taskList)
             {
-                var (task, source) = taskItem;
-
-                if (task is null)
-                {
-                    PrintNullResourceOutput(source.Name);
-                    continue;
-                }
-
-                var results = await task;
-
+                var (results, source) = await taskItem;
                 CompleteSearchTask(results, source);
             }
         }
