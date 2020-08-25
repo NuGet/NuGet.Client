@@ -328,12 +328,16 @@ namespace NuGet.PackageManagement
 
             foreach (var project in projects)
             {
-                tasks.Add(Task.Run(() => GetProjectRestoreSpecAndAdditionalMessages(
+                var (packageSpecs, projectAdditionalMessages) = await project.GetPackageSpecsAndAdditionalMessagesAsync(context);
+                tasks.Add(
+                    Task.Run(() => GetProjectRestoreSpecAndAdditionalMessages(
                     dgSpec,
-                    project,
+                    packageSpecs,
+                    projectAdditionalMessages,
                     knownProjects,
-                    allAdditionalMessages,
-                    context)));
+                    allAdditionalMessages
+                    )));
+
                 if (maxTasks <= tasks.Count)
                 {
                     var finishedTask = await Task.WhenAny(tasks);
@@ -352,15 +356,13 @@ namespace NuGet.PackageManagement
             return (dgSpec, allAdditionalMessages);
         }
 
-        internal static async Task GetProjectRestoreSpecAndAdditionalMessages(
+        internal static void GetProjectRestoreSpecAndAdditionalMessages(
             DependencyGraphSpec dgSpec,
-            IDependencyGraphProject project,
+            IReadOnlyList<PackageSpec> packageSpecs,
+            IReadOnlyList<IAssetsLogMessage> projectAdditionalMessages,
             HashSet<string> knownProjects,
-            List<IAssetsLogMessage> allAdditionalMessages,
-            DependencyGraphCacheContext context)
+            List<IAssetsLogMessage> allAdditionalMessages)
         {
-            var (packageSpecs, projectAdditionalMessages) = await project.GetPackageSpecsAndAdditionalMessagesAsync(context);
-
             if (projectAdditionalMessages?.Any() ?? false)
             {
                 if (allAdditionalMessages == null)
