@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -24,7 +25,7 @@ namespace NuGet.ProjectModel.Test
             var dependencies = nullDependencies ? null : Enumerable.Empty<LibraryDependency>();
 
             // Act + Assert
-            Assert.Throws<ArgumentNullException>(() => new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework, dependencies));
+            Assert.Throws<ArgumentNullException>(() => new CentralTransitiveDependencyGroup(nuGetFramework, dependencies));
         }
 
         [Fact]
@@ -96,10 +97,10 @@ namespace NuGet.ProjectModel.Test
             var dependencies1 = new List<LibraryDependency>() { libraryDep1 };
             var dependencies2 = new List<LibraryDependency>() { libraryDep2 };
 
-            var centralTransitiveDependencyGroup11 = new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework1, dependencies1);
-            var centralTransitiveDependencyGroup12 = new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework1, dependencies2);
-            var centralTransitiveDependencyGroup21 = new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework2, dependencies1);
-            var centralTransitiveDependencyGroup22 = new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework2, dependencies2);
+            var centralTransitiveDependencyGroup11 = new CentralTransitiveDependencyGroup(nuGetFramework1, dependencies1);
+            var centralTransitiveDependencyGroup12 = new CentralTransitiveDependencyGroup(nuGetFramework1, dependencies2);
+            var centralTransitiveDependencyGroup21 = new CentralTransitiveDependencyGroup(nuGetFramework2, dependencies1);
+            var centralTransitiveDependencyGroup22 = new CentralTransitiveDependencyGroup(nuGetFramework2, dependencies2);
 
             // Act = Assert
             Assert.False(centralTransitiveDependencyGroup11.Equals(null));
@@ -112,5 +113,51 @@ namespace NuGet.ProjectModel.Test
 
             Assert.False(centralTransitiveDependencyGroup21.Equals(centralTransitiveDependencyGroup22));
         }
+        [Fact]
+        public void Equals_WithOutOfOrderDependencies_ReturnsTrue()
+        {
+            // Arrange
+            var leftSide = new CentralTransitiveDependencyGroup(
+                                NuGetFramework.Parse("net461"),
+                                new LibraryDependency[]
+                                {
+                                    new LibraryDependency()
+                                    {
+                                        LibraryRange = new LibraryRange()
+                                        {
+                                            Name = "first"
+                                        }
+                                    },
+                                    new LibraryDependency()
+                                    {
+                                        LibraryRange = new LibraryRange()
+                                        {
+                                            Name = "second"
+                                        }
+                                    }
+                                });
+            var rightSide = new CentralTransitiveDependencyGroup(
+                                NuGetFramework.Parse("net461"),
+                                new LibraryDependency[]
+                                {
+                                    new LibraryDependency()
+                                    {
+                                        LibraryRange = new LibraryRange()
+                                        {
+                                            Name = "second"
+                                        }
+                                    },
+                                    new LibraryDependency()
+                                    {
+                                        LibraryRange = new LibraryRange()
+                                        {
+                                            Name = "first"
+                                        }
+                                    }
+                                });
+
+            leftSide.Should().Be(rightSide);
+        }
+
     }
 }

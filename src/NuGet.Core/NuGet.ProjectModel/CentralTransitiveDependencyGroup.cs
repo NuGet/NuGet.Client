@@ -45,7 +45,7 @@ namespace NuGet.ProjectModel
 
             if (string.Equals(FrameworkName, other.FrameworkName, StringComparison.OrdinalIgnoreCase))
             {
-                return TransitiveDependencies.SequenceEqual(other.TransitiveDependencies);
+                return EqualityUtility.OrderedEquals(TransitiveDependencies, other.TransitiveDependencies, dep => dep.Name, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;
@@ -61,7 +61,7 @@ namespace NuGet.ProjectModel
             var combiner = new HashCodeCombiner();
             combiner.AddStringIgnoreCase(FrameworkName);
 
-            foreach (var dependency in TransitiveDependencies)
+            foreach (var dependency in TransitiveDependencies.OrderBy(dep => dep.Name, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(dependency);
             }
