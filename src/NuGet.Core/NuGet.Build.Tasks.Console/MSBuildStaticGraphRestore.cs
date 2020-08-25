@@ -622,11 +622,7 @@ namespace NuGet.Build.Tasks.Console
                                 projectPathLookup.TryAdd(projectPath, projectPath);
                             }
 
-                            // TODO: Remove this lock once https://github.com/NuGet/Home/issues/9002 is fixed
-                            lock (dependencyGraphSpec)
-                            {
-                                dependencyGraphSpec.AddProject(packageSpec);
-                            }
+                            dependencyGraphSpec.AddProject(packageSpec);
                         }
                     });
                 }
