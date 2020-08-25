@@ -228,15 +228,15 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    var installedPackages = new List<Packaging.PackageReference>();
+                    foreach (var project in _nugetProjects)
                     {
-                        var installedPackages = new List<Packaging.PackageReference>();
-                        foreach (var project in _nugetProjects)
-                        {
-                            var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                            installedPackages.AddRange(projectInstalledPackages);
-                        }
-                        return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
-                    });
+                        var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                        installedPackages.AddRange(projectInstalledPackages);
+                    }
+                    return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+                });
             }
         }
 
@@ -358,6 +358,26 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool IsPackageVulnerable
+        {
+            get { return PackageVulnerabilityMaxSeverity > -1; }
+        }
+
+        private int _packageVulnerabilityMaxSeverity = -1;
+        public int PackageVulnerabilityMaxSeverity
+        {
+            get { return _packageVulnerabilityMaxSeverity; }
+            set
+            {
+                if (_packageVulnerabilityMaxSeverity != value)
+                {
+                    _packageVulnerabilityMaxSeverity = value;
+
+                    OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
+                }
+            }
+        }
+
         public string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
         {
             if (reasons == null || !reasons.Any())
@@ -402,6 +422,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _packageMetadata = value;
 
+                    // deprecation metadata
                     string newDeprecationReasons = null;
                     string newAlternatePackageText = null;
                     if (_packageMetadata?.DeprecationMetadata != null)
@@ -418,8 +439,19 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationReasons = newDeprecationReasons;
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
+                    // vulnerability metadata
+                    int newVulnerabilityMaxSeverity = -1;
+                    if (_packageMetadata?.Vulnerabilities != null)
+                    {
+                        newVulnerabilityMaxSeverity = _packageMetadata.Vulnerabilities.Max(v => v.Severity);
+                    }
+
+                    PackageVulnerabilityMaxSeverity = newVulnerabilityMaxSeverity;
+
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
+                    OnPropertyChanged(nameof(IsPackageVulnerable));
+                    OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
                 }
             }
         }
@@ -503,7 +535,7 @@ namespace NuGet.PackageManagement.UI
 
         internal async Task LoadPackageMetadataAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)
         {
-            var versions = await GetVersionsWithDeprecationMetadataAsync();
+            var versions = await GetVersionsWithExtendedMetadataAsync();
 
             // First try to load the metadata from the version info. This will happen if we already fetched metadata
             // about each version at the same time as fetching the version list (that is, V2). This also acts as a
@@ -512,7 +544,9 @@ namespace NuGet.PackageManagement.UI
                 .Where(v => v.versionInfo.PackageSearchMetadata != null)
                 .ToDictionary(
                     v => v.versionInfo.Version,
-                    v => new DetailedPackageMetadata(v.versionInfo.PackageSearchMetadata, v.deprecationMetadata, v.versionInfo.DownloadCount));
+                    v => new DetailedPackageMetadata(v.versionInfo.PackageSearchMetadata,
+                        v.deprecationMetadata,
+                        v.versionInfo.DownloadCount));
 
             // If we are missing any metadata, go to the metadata provider and fetch all of the data again.
             if (versions.Select(v => v.versionInfo.Version).Except(_metadataDict.Keys).Any())
@@ -526,14 +560,14 @@ namespace NuGet.PackageManagement.UI
                         includeUnlisted: false,
                         cancellationToken: token);
 
-                    var packagesWithDeprecationMetadata = await Task.WhenAll(
+                    var packagesWithExtendedMetadata = await Task.WhenAll(
                         packages.Select(async searchMetadata =>
                         {
                             var deprecationMetadata = await searchMetadata.GetDeprecationMetadataAsync();
                             return (searchMetadata, deprecationMetadata);
                         }));
 
-                    var uniquePackages = packagesWithDeprecationMetadata
+                    var uniquePackages = packagesWithExtendedMetadata
                         .GroupBy(
                             m => m.searchMetadata.Identity.Version,
                             (v, ms) => ms.First());
@@ -570,13 +604,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<IEnumerable<(VersionInfo versionInfo, PackageDeprecationMetadata deprecationMetadata)>> GetVersionsWithDeprecationMetadataAsync()
+        private async Task<IEnumerable<(VersionInfo versionInfo,
+            PackageDeprecationMetadata deprecationMetadata)>> GetVersionsWithExtendedMetadataAsync()
         {
             var versions = await _searchResultPackage.GetVersionsAsync();
             return await Task.WhenAll(
                 versions.Select(async version =>
                 {
-                    var deprecationMetadata = version != null && version.PackageSearchMetadata != null
+                    var deprecationMetadata = version?.PackageSearchMetadata != null
                         ? await version.PackageSearchMetadata.GetDeprecationMetadataAsync()
                         : null;
 

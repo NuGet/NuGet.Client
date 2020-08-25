@@ -84,6 +84,7 @@ namespace NuGet.Protocol
             }
         }
 
+        /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
 
         /// <summary>
@@ -110,10 +111,11 @@ namespace NuGet.Protocol
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
-        /// <remarks>
-        /// Deprecation metadata is not stored within the package and requires an online package source.
-        /// </remarks>
+        /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
+
+        /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => null;
 
         private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
 
