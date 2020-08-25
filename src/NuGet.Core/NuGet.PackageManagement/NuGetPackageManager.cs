@@ -3133,6 +3133,16 @@ namespace NuGet.PackageManagement
                         log: logger,
                         token: token);
                 }
+
+                foreach (var parent in parents)
+                {
+                    // Now by this time we already evaluated parents, so let's add to hash and don't need evaluate next time.
+                    if (_buildIntegratedProjectsUpdateSet == null ||
+                        !_buildIntegratedProjectsUpdateSet.Contains(parent.MSBuildProjectPath))
+                    {
+                        _buildIntegratedProjectsUpdateSet.Add(parent.MSBuildProjectPath);
+                    }
+                }
             }
             else
             {
