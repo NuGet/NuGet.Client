@@ -192,7 +192,23 @@ For example the following are correct:
         return (string input) => // method body
     }
     ```
+1. Prefer a using directive over fully qualifying a type.
 
+    This is correct:
+    ```cs
+    using System.Threading.Tasks;
+
+    Task DoSomethingAsync()
+    ```
+
+    This is incorrect:
+    ```cs
+    using System;
+
+    System.Threading.Tasks.Task DoSomethingAsync()
+    ```
+
+Exceptions are allowed when multiple type names coming from different namespaces are available.
 
 Many of the guidelines, wherever possible, and potentially some not listed here, are enforced by an [EditorConfig](https://editorconfig.org "EditorConfig homepage") file (`.editorconfig`) at the root of the repository.
 
