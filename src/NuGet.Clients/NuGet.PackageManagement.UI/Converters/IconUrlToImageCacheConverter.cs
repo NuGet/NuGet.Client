@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Protocol.Plugins;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -94,23 +95,22 @@ namespace NuGet.PackageManagement.UI
                                     .Substring(1)); // Substring skips the '#' in the URI fragment
                             iconBitmapImage.StreamSource = par.GetEntry(iconEntryNormalized).Open();
 
-                            iconBitmapImage.DecodeFailed += (sender, args) =>
+                            void EmbeddedIcon_DownloadOrDecodeFailded(object sender, ExceptionEventArgs args)
                             {
                                 reader.Dispose();
-                                IconBitmapImage_DownloadOrDecodeFailed(sender, args);
-                                AddToCache(iconUrl, defaultPackageIcon);
-                            };
-                            iconBitmapImage.DownloadFailed += (sender, args) =>
-                            {
-                                reader.Dispose();
-                                IconBitmapImage_DownloadOrDecodeFailed(sender, args);
-                                AddToCache(iconUrl, defaultPackageIcon);
-                            };
-                            iconBitmapImage.DownloadCompleted += (sender, args) =>
+                                string cacheKey = GenerateKeyFromIconUri(iconUrl);
+                                CheckForFailedCacheEntry(cacheKey, args);
+                            }
+
+                            void EmbeddedIcon_DownloadCompleted(object sender, EventArgs args)
                             {
                                 reader.Dispose();
                                 IconBitmapImage_DownloadCompleted(sender, args);
-                            };
+                            }
+
+                            iconBitmapImage.DecodeFailed += EmbeddedIcon_DownloadOrDecodeFailded;
+                            iconBitmapImage.DownloadFailed += EmbeddedIcon_DownloadOrDecodeFailded;
+                            iconBitmapImage.DownloadCompleted += EmbeddedIcon_DownloadCompleted;
 
                             imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                         }
@@ -216,7 +216,7 @@ namespace NuGet.PackageManagement.UI
         private void IconBitmapImage_DownloadCompleted(object sender, EventArgs e)
         {
             var bitmapImage = sender as BitmapImage;
-            if (!bitmapImage.IsFrozen)
+            if (bitmapImage != null && bitmapImage.CanFreeze && !bitmapImage.IsFrozen)
             {
                 bitmapImage.Freeze();
             }
@@ -226,9 +226,12 @@ namespace NuGet.PackageManagement.UI
         {
             var bitmapImage = sender as BitmapImage;
 
-            var uri = bitmapImage.UriSource;
+            string cacheKey = GenerateKeyFromIconUri(bitmapImage?.UriSource);
+            CheckForFailedCacheEntry(cacheKey, e);
+        }
 
-            string cacheKey = GenerateKeyFromIconUri(bitmapImage.UriSource);
+        private void CheckForFailedCacheEntry(string cacheKey, ExceptionEventArgs e)
+        {
             // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.            
             var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != Images.DefaultPackageIcon)

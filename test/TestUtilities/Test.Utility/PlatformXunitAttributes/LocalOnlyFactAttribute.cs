@@ -6,7 +6,7 @@ using Xunit;
 namespace NuGet.Test.Utility
 {
     /// <summary>
-    /// Skip Fact if it is running on a CI machine 
+    /// Skip Fact if it is running on a CI machine
     /// </summary>
     /// <remarks>Unset CI environment variable or set it to CI=false to run this Fact</remarks>
     public class LocalOnlyFactAttribute

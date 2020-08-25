@@ -6,7 +6,7 @@ using Xunit;
 namespace NuGet.Test.Utility
 {
     /// <summary>
-    /// Skip Theory if it is running on a CI machine 
+    /// Skip Theory if it is running on a CI machine
     /// </summary>
     /// <remarks>Unset CI environment variable or set it to CI=false to run this Theory</remarks>
     public class LocalOnlyTheoryAttribute
