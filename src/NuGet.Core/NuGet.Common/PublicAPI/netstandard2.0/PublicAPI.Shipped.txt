@@ -496,7 +496,6 @@ static NuGet.Common.CryptoHashUtility.GetHashAlgorithm(NuGet.Common.HashAlgorith
 static NuGet.Common.CryptoHashUtility.GetHashAlgorithm(string hashAlgorithmName) -> System.Security.Cryptography.HashAlgorithm
 static NuGet.Common.CryptoHashUtility.GetHashAlgorithmName(string hashAlgorithm) -> NuGet.Common.HashAlgorithmName
 static NuGet.Common.CryptoHashUtility.GetHashProvider(this NuGet.Common.HashAlgorithmName hashAlgorithmName) -> System.Security.Cryptography.HashAlgorithm
-static NuGet.Common.CryptoHashUtility.GetSha1HashProvider() -> System.Security.Cryptography.HashAlgorithm
 static NuGet.Common.CryptoHashUtility.OidToHashAlgorithmName(string oid) -> NuGet.Common.HashAlgorithmName
 static NuGet.Common.CultureUtility.DisableLocalization() -> void
 static NuGet.Common.DatetimeUtility.ToReadableTimeFormat(System.TimeSpan time) -> string
