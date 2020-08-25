@@ -115,6 +115,7 @@ namespace NuGet.PackageManagement.UI
             get => _cachedInstalledItems;
             private set
             {
+                WriteToOutputConsole("SET CachedInstalledItems=" + value.Count);
                 lock (_cachedInstalledItemsLock)
                 {
                     if (_cachedInstalledItems?.Count > 0)
@@ -184,7 +185,7 @@ namespace NuGet.PackageManagement.UI
             _initialized = true;
 
             // UI is initialized. Start the first search
-            _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+            ShowOrCollapseUpdateControls();
             _packageList.IsSolution = Model.IsSolution;
 
             Loaded += PackageManagerLoaded;
@@ -749,18 +750,21 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        private void SearchPackagesAndRefreshUpdateCount(bool useCacheForUpdates)
+        private void SearchPackagesAndRefreshUpdateCount(bool useCacheForUpdates, bool useNewCancellationToken = true)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                // Set a new cancellation token source which will be used to cancel this task in case
-                // new loading task starts or manager ui is closed while loading packages.
-                var loadCts = new CancellationTokenSource();
-                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
-                oldCts?.Cancel();
-                oldCts?.Dispose();
+                if (useNewCancellationToken)
+                {
+                    // Set a new cancellation token source which will be used to cancel this task in case
+                    // new loading task starts or manager ui is closed while loading packages.
+                    var loadCts = new CancellationTokenSource();
+                    var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+                    oldCts?.Cancel();
+                    oldCts?.Dispose();
+                }
 
                 await SearchPackagesAndRefreshUpdateCountAsync(
                     searchText: _windowSearchHost.SearchQuery.SearchString,
@@ -834,23 +838,25 @@ namespace NuGet.PackageManagement.UI
                 FlagTabDataAsLoaded(filterToRender, isLoaded: false);
             }
 
+            //Apply or remove UI Filtering based on tab.
+            _packageList.UIFilter(filterToRender);
+
             //Differentiate Browse versus Installed/Updates/Consolidate.
             if (filterToRender == ItemFilter.All)
             {
                 WriteToOutputConsole("LoadBrowseData");
-                //Remove any UI filter.
-                _packageList.ClearUIFilter();
                 await LoadBrowseData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);
             }
             else
             {
-                WriteToOutputConsole("await LoadInstalledData");
-                //Filter installed packages based on Tab and user selections.
-                _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
+                ////Filter installed packages based on Tab and user selections.
+                //_packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
 
-                await LoadInstalledData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);
-                WriteToOutputConsole("FilterItems");
+                WriteToOutputConsole("await LoadInstalledData");
+                await LoadInstalledData(searchText, useCachedPackageMetadata, pSearchCallback, searchTask, filterToRender, loadContext);   
             }
+
+            WriteToOutputConsole($"done with SearchPackagesAndRefreshUpdateCountAsync ********** Items({_packageList.Items.Count} FilterItems({_packageList.PackageItemsFiltered.Count()}))");
         }
 
         private async Task LoadBrowseData(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask, ItemFilter filterToRender, PackageLoadContext loadContext)
@@ -868,7 +874,7 @@ namespace NuGet.PackageManagement.UI
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
                 // this will wait for searchResultTask to complete instead of creating a new task
-                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts);
 
                 if (pSearchCallback != null && searchTask != null)
                 {
@@ -922,7 +928,7 @@ namespace NuGet.PackageManagement.UI
                 // start SearchAsync task for initial loading of packages
                 Task<SearchResult<IPackageSearchMetadata>> searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
                 // this will wait for searchResultTask to complete instead of creating a new task
-                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts);
 
                 WriteToOutputConsole("OLD CachedInstalledItems=" + CachedInstalledItems?.Count);
                 //Store installed items in the control for reuse on any tab based on Installed data.
@@ -939,7 +945,7 @@ namespace NuGet.PackageManagement.UI
                 // When not using Cache, refresh all Counts.
                 if (!useCachedPackageMetadata)
                 {
-                    WriteToOutputConsole("**RefreshInstalledAndUpdatesTabs=" + _packageList.Items.Count());
+                    WriteToOutputConsole("**calling RefreshInstalledAndUpdatesTabs=" + _packageList.Items.Count());
                     RefreshInstalledAndUpdatesTabs();
                 }
 
@@ -1020,6 +1026,7 @@ namespace NuGet.PackageManagement.UI
 
         private void RefreshInstalledAndUpdatesTabs()
         {
+            WriteToOutputConsole("**RefreshInstalledAndUpdatesTabs=" + _packageList.Items.Count());
             // clear existing caches
             Model.CachedUpdates = null;
 
@@ -1250,7 +1257,7 @@ namespace NuGet.PackageManagement.UI
                 _packageList.ResetLoadingStatusIndicator();
 
                 // Collapse the Update controls when the current tab is not "Updates".
-                //ShowOrCollapseUpdateControls();
+                ShowOrCollapseUpdateControls();
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
@@ -1259,42 +1266,53 @@ namespace NuGet.PackageManagement.UI
                 oldCts?.Cancel();
                 oldCts?.Dispose();
 
+                var itemFilter = _topPanel.Filter;
                 var switchedFromBrowse = e.PreviousFilter.HasValue && e.PreviousFilter == ItemFilter.All;
-                var switchedToBrowse = _topPanel.Filter == ItemFilter.All;
-
+                var switchedToBrowse = itemFilter == ItemFilter.All;
+                _packageList.EnableLoadOnScroll = itemFilter == ItemFilter.All;
                 bool isUIFiltering = false;
 
                 if (switchedToBrowse)
                 {
-                    SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+                    //Synchronize tab selection with any UI Filter as early as possible.
+                    _packageList.UIFilter(itemFilter);
+                    SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true, useNewCancellationToken: false);
                 }
                 else //Switched to Installed/Updates/Consolidate.
                 {
-                    WriteToOutputConsole("DEBUG001 Filter_SelectionChanged Items=" + _packageList.Items.Count());
-                    //First time loading the Installed packages.
-                    if (CachedInstalledItems == null)
-                    {
-                        //Load Installed packages from feed and store into cache, clear and UpdatePackageList, and Filter based on Tab and user selections.
-                        SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
-                        WriteToOutputConsole("DEBUG002 Filter_SelectionChanged Items=" + _packageList.Items.Count());
-                    }
-                    else
-                    {
-                        isUIFiltering = true;
+                    //_packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
 
-                        //Package List is not currently bound to Installed packages.
-                        if (switchedFromBrowse)
+                    //Filter installed packages based on Tab and user selections.
+                    //Synchronize tab selection with any UI Filter as early as possible.
+                    _packageList.UIFilter(itemFilter);
+
+                    //NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    //{
+                    //    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_loadCts.Token);
+                    WriteToOutputConsole("DEBUG001 Filter_SelectionChanged Items=" + _packageList.Items.Count());
+                        //First time loading the Installed packages.
+                        if (CachedInstalledItems == null)
                         {
-                            //Repopulate with Installed package data.
-                            _packageList.UpdatePackageList(packages: CachedInstalledItems, refresh: true);
-                            WriteToOutputConsole("DEBUG002a Filter_SelectionChanged Items=" + _packageList.Items.Count());
+                            //Load Installed packages from feed and store into cache, clear and UpdatePackageList, and Filter based on Tab and user selections.
+                            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true, useNewCancellationToken: false);
+                            WriteToOutputConsole("DEBUG002 Filter_SelectionChanged Items=" + _packageList.Items.Count());
+                        }
+                        else
+                        {
+                            isUIFiltering = true;
+
+                            //Package List is not currently bound to Installed packages.
+                            if (switchedFromBrowse)
+                            {
+                                //Repopulate with Installed package data and apply UI filtering.
+                                _packageList.UpdatePackageList(packages: CachedInstalledItems, refresh: true, tabToUIFilter: itemFilter, loadCts: _loadCts);
+                                WriteToOutputConsole("DEBUG002a Filter_SelectionChanged Items=" + _packageList.Items.Count());
+                            }
+
+                            WriteToOutputConsole("DEBUG003 Filter_SelectionChanged Items=" + _packageList.Items.Count());
                         }
 
-                        WriteToOutputConsole("DEBUG003 Filter_SelectionChanged Items=" + _packageList.Items.Count());
-                        //Filter installed packages based on Tab and user selections.
-                        _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
-                        WriteToOutputConsole("DEBUG004 Filter_SelectionChanged Items=" + _packageList.Items.Count());
-                    }
+                    //});
                 }
 
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering);
@@ -1303,11 +1321,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        //private void ShowOrCollapseUpdateControls()
-        //{
-        //    _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-        //    _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
-        //}
+        private void ShowOrCollapseUpdateControls()
+        {
+            _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+            _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         /// <summary>
         /// Refreshes the control after packages are installed or uninstalled.
