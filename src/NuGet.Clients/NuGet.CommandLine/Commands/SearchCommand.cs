@@ -32,7 +32,8 @@ namespace NuGet.CommandLine
             UsageSummaryResourceName = "SearchCommandUsageSummary", UsageExampleResourceName = "SearchCommandUsageExamples")]
     public class SearchCommand : Command
     {
-        private readonly int _lineSeparatorLength = 20;
+        private readonly string _sourceSeparator = new string('=', 20);
+        private readonly string _packageSeparator = new string('-', 20);
 
         private readonly List<string> _sources = new List<string>();
 
@@ -67,14 +68,12 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
-            string sourceSeparator = new string('=', _lineSeparatorLength);
-            string packageSeparator = new string('-', _lineSeparatorLength);
-
             ILogger logger = Console;
             CancellationToken cancellationToken = CancellationToken.None;
 
             SearchFilter searchFilter = new SearchFilter(includePrerelease: PreRelease);
 
+            int maxTasks = Environment.ProcessorCount;
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
             IList<PackageSource> listEndpoints = GetEndpointsAsync();
 
@@ -87,6 +86,24 @@ namespace NuGet.CommandLine
                 {
                     taskList.Add((null, source));
                     continue;
+                }
+
+                if (taskList.Count == maxTasks)
+                {
+                    var (targetTask, targetSource) = taskList[0];
+
+                    if (targetTask is null)
+                    {
+                        PrintNullResourceOutput(targetSource.Name);
+                    }
+                    else
+                    {
+                        var targetResults = await targetTask;
+
+                        CompleteSearchTask(targetResults, targetSource);
+                    }
+
+                    taskList.RemoveAt(0);
                 }
 
                 taskList.Add((Task.Run(() => resource.SearchAsync(
@@ -104,46 +121,44 @@ namespace NuGet.CommandLine
 
                 if (task is null)
                 {
-                    Console.WriteLine(sourceSeparator);
-                    System.Console.WriteLine($"Source: {source.Name}");
-                    System.Console.WriteLine(packageSeparator);
-                    System.Console.WriteLine("Failed to obtain a search resource.");
-                    Console.WriteLine(packageSeparator);
-                    System.Console.WriteLine();
+                    PrintNullResourceOutput(source.Name);
                     continue;
                 }
 
                 var results = await task;
 
-                Console.WriteLine(sourceSeparator);
-                System.Console.WriteLine($"Source: {source.Name}"); // System.Console is used so that output is not suppressed by Verbosity.Quiet
+                CompleteSearchTask(results, source);
+            }
+        }
 
-                if (results.Any())
-                {
-                    if (Verbosity == Verbosity.Quiet)
-                    {
-                        System.Console.WriteLine(packageSeparator);
-                    }
+        private void CompleteSearchTask(IEnumerable<IPackageSearchMetadata> results, PackageSource source)
+        {
+            Console.WriteLine(_sourceSeparator);
+            System.Console.WriteLine($"Source: {source.Name}"); // System.Console is used so that output is not suppressed by Verbosity.Quiet
 
-                    PrintResults(results);
-                }
-                else
+            if (results.Any())
+            {
+                if (Verbosity == Verbosity.Quiet)
                 {
-                    System.Console.WriteLine(packageSeparator);
-                    System.Console.WriteLine("No results found.");
-                    Console.WriteLine(packageSeparator);
-                    System.Console.WriteLine();
+                    System.Console.WriteLine(_packageSeparator);
                 }
+
+                PrintResults(results);
+            }
+            else
+            {
+                System.Console.WriteLine(_packageSeparator);
+                System.Console.WriteLine("No results found.");
+                Console.WriteLine(_packageSeparator);
+                System.Console.WriteLine();
             }
         }
 
         private void PrintResults(IEnumerable<IPackageSearchMetadata> results)
         {
-            string packageSeparator = new string('-', _lineSeparatorLength);
-
             foreach (IPackageSearchMetadata result in results)
             {
-                Console.WriteLine(packageSeparator);
+                Console.WriteLine(_packageSeparator);
 
                 CultureInfo culture = CultureInfo.CurrentCulture;
 
@@ -178,7 +193,17 @@ namespace NuGet.CommandLine
                 }
             }
 
-            Console.WriteLine(packageSeparator);
+            Console.WriteLine(_packageSeparator);
+            System.Console.WriteLine();
+        }
+
+        private void PrintNullResourceOutput(string source)
+        {
+            Console.WriteLine(_sourceSeparator);
+            System.Console.WriteLine($"Source: {source}");
+            System.Console.WriteLine(_packageSeparator);
+            System.Console.WriteLine("Failed to obtain a search resource.");
+            Console.WriteLine(_packageSeparator);
             System.Console.WriteLine();
         }
 
