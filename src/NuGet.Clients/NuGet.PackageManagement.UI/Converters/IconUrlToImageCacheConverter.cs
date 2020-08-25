@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.UI
                                     .Substring(1)); // Substring skips the '#' in the URI fragment
                             iconBitmapImage.StreamSource = par.GetEntry(iconEntryNormalized).Open();
 
-                            void EmbeddedIcon_DownloadOrDecodeFailded(object sender, ExceptionEventArgs args)
+                            void EmbeddedIcon_DownloadOrDecodeFailed(object sender, ExceptionEventArgs args)
                             {
                                 reader.Dispose();
                                 string cacheKey = GenerateKeyFromIconUri(iconUrl);
@@ -108,8 +108,8 @@ namespace NuGet.PackageManagement.UI
                                 IconBitmapImage_DownloadCompleted(sender, args);
                             }
 
-                            iconBitmapImage.DecodeFailed += EmbeddedIcon_DownloadOrDecodeFailded;
-                            iconBitmapImage.DownloadFailed += EmbeddedIcon_DownloadOrDecodeFailded;
+                            iconBitmapImage.DecodeFailed += EmbeddedIcon_DownloadOrDecodeFailed;
+                            iconBitmapImage.DownloadFailed += EmbeddedIcon_DownloadOrDecodeFailed;
                             iconBitmapImage.DownloadCompleted += EmbeddedIcon_DownloadCompleted;
 
                             imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.UI
             return imageResult;
         }
 
-        private BitmapSource FinishImageProcessing(BitmapImage iconBitmapImage, Uri iconUrl, BitmapSource defaultPackageIcon)
+        public BitmapSource FinishImageProcessing(BitmapImage iconBitmapImage, Uri iconUrl, BitmapSource defaultPackageIcon)
         {
             // Default cache policy: Per MSDN, satisfies a request for a resource either by using the cached copy of the resource or by sending a request
             // for the resource to the server. The action taken is determined by the current cache policy and the age of the content in the cache.
