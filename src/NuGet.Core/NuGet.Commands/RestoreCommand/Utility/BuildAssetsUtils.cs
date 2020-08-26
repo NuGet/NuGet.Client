@@ -472,7 +472,7 @@ namespace NuGet.Commands
                         CultureInfo.InvariantCulture,
                         TargetFrameworkCondition,
                         GetMatchingFrameworkStrings(project, ridlessTarget.TargetFramework));
-                
+
                 // Find matching target in the original target graphs.
                 var targetGraph = targetGraphs.FirstOrDefault(e =>
                     string.IsNullOrEmpty(e.RuntimeIdentifier)
@@ -750,7 +750,7 @@ namespace NuGet.Commands
         }
 
         private static string GetMatchingFrameworkStrings(PackageSpec spec, NuGetFramework framework)
-        {           
+        {
             var frameworkString = spec.TargetFrameworks.Where(e => e.FrameworkName.Equals(framework)).FirstOrDefault()?.TargetAlias;
 
             // If there were no matches, use the generated name

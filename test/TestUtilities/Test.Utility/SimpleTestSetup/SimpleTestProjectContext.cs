@@ -400,7 +400,7 @@ namespace NuGet.Test.Utility
             params string[] frameworks)
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
-            context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f)) { TargetAlias = f}));
+            context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f)) { TargetAlias = f }));
             context.ToolingVersion15 = true;
             context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
