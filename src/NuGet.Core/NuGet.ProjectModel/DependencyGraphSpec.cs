@@ -19,7 +19,7 @@ namespace NuGet.ProjectModel
     {
         private const string DGSpecFileNameExtension = "{0}.nuget.dgspec.json";
 
-        private readonly ConcurrentDictionary<string, bool> _restore = new ConcurrentDictionary<string, bool>();
+        private readonly ConcurrentDictionary<string, bool> _restore = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
         private readonly ConcurrentDictionary<string, PackageSpec> _projects = new ConcurrentDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
         private readonly Lazy<JObject> _json;
 
@@ -254,7 +254,7 @@ namespace NuGet.ProjectModel
                     projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
                 }
 
-                _projects.TryAdd(projectUniqueName, projectToRestore);
+                ConcurrentDictAddCheckDuplicateKey(_projects, projectUniqueName, projectToRestore);
             }
         }
 
@@ -324,7 +324,7 @@ namespace NuGet.ProjectModel
                                 {
                                     PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(jsonReader, path);
 
-                                    dgspec._projects.TryAdd(projectsPropertyName, packageSpec);
+                                    ConcurrentDictAddCheckDuplicateKey(dgspec._projects, projectsPropertyName, packageSpec);
                                 });
                                 break;
 
@@ -372,8 +372,10 @@ namespace NuGet.ProjectModel
             var restoreObj = json.GetValue<JObject>("restore");
             if (restoreObj != null)
             {
-                _restore.AddRange(restoreObj.Properties().Select(prop => prop.Name)
-                    .ToDictionary(name => name, name => false));
+                foreach (var props in restoreObj.Properties())
+                {
+                    _restore.TryAdd(props.Name, false);
+                }
             }
 
             var projectsObj = json.GetValue<JObject>("projects");
@@ -385,7 +387,7 @@ namespace NuGet.ProjectModel
 #pragma warning disable CS0618
                     var spec = JsonPackageSpecReader.GetPackageSpec(specJson);
 #pragma warning restore CS0618
-                    _projects.TryAdd(prop.Name, spec);
+                    ConcurrentDictAddCheckDuplicateKey(_projects, prop.Name, spec);
                 }
             }
         }
@@ -528,6 +530,16 @@ namespace NuGet.ProjectModel
                 .Select(r => r.ProjectUniqueName)
                 .Distinct(PathUtility.GetStringComparerBasedOnOS())
                 .ToArray();
+        }
+
+        private static void ConcurrentDictAddCheckDuplicateKey<K, V>(ConcurrentDictionary<K, V> dict, K key, V value)
+        {
+            if (dict.ContainsKey(key))
+            {
+                throw new ArgumentException("An element with the same key already exists in the System.Collections.Generic.Dictionary: " + nameof(dict) + " key:" + key);
+            }
+
+            dict.TryAdd(key, value);
         }
     }
 }
