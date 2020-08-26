@@ -468,11 +468,11 @@ namespace NuGet.Commands
 
             foreach (var ridlessTarget in ridlessTargets)
             {
-                // There could be multiple string matches from the MSBuild project.
-                var frameworkConditions = GetMatchingFrameworkStrings(project, ridlessTarget.TargetFramework)
-                    .Select(match => string.Format(CultureInfo.InvariantCulture, TargetFrameworkCondition, match))
-                    .ToArray();
-
+                var frameworkConditions = string.Format(
+                        CultureInfo.InvariantCulture,
+                        TargetFrameworkCondition,
+                        GetMatchingFrameworkStrings(project, ridlessTarget.TargetFramework));
+                
                 // Find matching target in the original target graphs.
                 var targetGraph = targetGraphs.FirstOrDefault(e =>
                     string.IsNullOrEmpty(e.RuntimeIdentifier)
@@ -534,7 +534,7 @@ namespace NuGet.Commands
                 props.AddRange(GenerateGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
 
                 // Create an empty PropertyGroup for package properties
-                var packagePathsPropertyGroup = MSBuildRestoreItemGroup.Create("PropertyGroup", Enumerable.Empty<XElement>(), 1000, isMultiTargeting ? frameworkConditions : Enumerable.Empty<string>());
+                var packagePathsPropertyGroup = MSBuildRestoreItemGroup.Create("PropertyGroup", Enumerable.Empty<XElement>(), 1000, isMultiTargeting ? new string[] { frameworkConditions } : Enumerable.Empty<string>());
 
                 var projectGraph = targetGraph.Graphs.FirstOrDefault();
 
@@ -749,24 +749,17 @@ namespace NuGet.Commands
             return items.Where(c => extension.Equals(Path.GetExtension(c.Path), StringComparison.OrdinalIgnoreCase));
         }
 
-        private static HashSet<string> GetMatchingFrameworkStrings(PackageSpec spec, NuGetFramework framework)
-        {
-            // Ignore case since msbuild does
-            var matches = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            if (spec.RestoreMetadata != null)
-            {
-                matches.UnionWith(spec.RestoreMetadata.OriginalTargetFrameworks
-                    .Where(s => framework.Equals(NuGetFramework.Parse(s))));
-            }
+        private static string GetMatchingFrameworkStrings(PackageSpec spec, NuGetFramework framework)
+        {           
+            var frameworkString = spec.TargetFrameworks.Where(e => e.FrameworkName.Equals(framework)).FirstOrDefault()?.TargetAlias;
 
             // If there were no matches, use the generated name
-            if (matches.Count < 1)
+            if (string.IsNullOrEmpty(frameworkString))
             {
-                matches.Add(framework.GetShortFolderName());
+                return framework.GetShortFolderName();
             }
 
-            return matches;
+            return frameworkString;
         }
 
         private static HashSet<PackageDependencyInfo> ConvertToPackageDependencyInfo(

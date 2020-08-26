@@ -1594,8 +1594,6 @@ namespace NuGet.CommandLine.Test
                     "net46",
                     "net45");
 
-                project.OriginalFrameworkStrings = new List<string> { "net46", "net45" };
-
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
                 solution.Create(pathContext.SolutionRoot);
@@ -10007,6 +10005,60 @@ namespace NuGet.CommandLine.Test
                 {
                     targets.Select(e => e.TargetFramework).Should().Contain(framework);
                 }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task RestoreNetCore_WithCustomAliases_WritesConditionWithCorrectAlias()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    "proj",
+                    pathContext.SolutionRoot,
+                    "net5.0-windows",
+                    "net50-android");
+
+                // Workaround: Set all the TFM properties ourselves.
+                // We can't rely on the SDK setting them, as only .NET 5 SDK P8 and later applies these correctly.
+                var net50windowsTFM = project.Frameworks.Where(f => f.TargetAlias.Equals("net5.0-windows")).Single();
+                var net50AndroidTFM = project.Frameworks.Where(f => f.TargetAlias.Equals("net50-android")).Single();
+                net50windowsTFM.Properties.Add("TargetFrameworkMoniker", ".NETCoreApp, Version=v5.0");
+                net50windowsTFM.Properties.Add("TargetPlatformMoniker", "Windows, Version=7.0");
+                net50AndroidTFM.Properties.Add("TargetFrameworkMoniker", ".NETCoreApp, Version=v5.0");
+                net50AndroidTFM.Properties.Add("TargetPlatformMoniker", "Android,Version=21.0");
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+                Assert.Equal(0, r.Item1);
+                Assert.True(File.Exists(project.PropsOutput), r.Item2);
+                var propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
+
+                var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
+
+                Assert.Contains("'$(TargetFramework)' == 'net5.0-windows' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Contains("'$(TargetFramework)' == 'net50-android' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 

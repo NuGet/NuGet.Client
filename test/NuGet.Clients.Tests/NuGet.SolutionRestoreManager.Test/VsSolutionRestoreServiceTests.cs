@@ -271,8 +271,12 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(
 @"{
     ""frameworks"": {
-        ""netstandard1.4"": { },
-        ""net46"": { }
+        ""netstandard1.4"": {
+            ""targetAlias"": ""netstandard1.4""
+        },
+        ""net46"": {
+            ""targetAlias"": ""net46""
+        }
     }
 }", "netstandard1.4;net46", "netstandard1.4;net46")]
         [InlineData(
@@ -291,8 +295,12 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(
 @"{
     ""frameworks"": {
-        ""netstandard1.4"": { },
-        ""net46"": { }
+        ""netstandard1.4"": {
+            ""targetAlias"": ""netstandard1.4""
+        },
+        ""net46"": {
+            ""targetAlias"": ""net46""
+        }
     }
 }", "netstandard1.4;net46", "netstandard1.4;net46", false)]
         [InlineData(

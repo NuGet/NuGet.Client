@@ -2646,10 +2646,9 @@ namespace NuGet.PackageManagement
 
             // Build the installation context
             var originalFrameworks = updatedPackageSpec
-                .RestoreMetadata
-                .OriginalTargetFrameworks
-                .GroupBy(x => NuGetFramework.Parse(x))
-                .ToDictionary(x => x.Key, x => x.First());
+                .TargetFrameworks
+                .ToDictionary(x => x.FrameworkName, x => x.TargetAlias);
+
             var installationContext = new BuildIntegratedInstallationContext(
                 successfulFrameworks,
                 unsuccessfulFrameworks,

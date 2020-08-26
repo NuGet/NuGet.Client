@@ -13,6 +13,7 @@ using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
@@ -676,6 +677,71 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, result);
                 Assert.NotNull(itemGroup);
                 Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, packageX.Version));
+            }
+        }
+
+        [Theory]
+        [InlineData("net46", "net46; netcoreapp1.0", ".NETFramework,Version=v4.7.2;NetCoreApp,Version=v1.0", "Windows,Version=7.0;,Version=", "net46")]
+        [InlineData("netcoreapp2.0", "net46;netcoreapp20;net50", ".NETFramework,Version=v4.6;NetCoreApp,Version=v2.0;NetCoreApp,Version=v5.0", "Windows,Version=7.0;,Version=;,Version=", "netcoreapp20;net50")]
+        public async Task AddPkg_ConditionalWithAlias_Success(
+            string packageFrameworks,
+            string projectFrameworks,
+            string projectTargetFrameworkMonikers,
+            string projectTargetPlatforMonikers,
+            string expectedConditions)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var userInputVersion = "1.0.0";
+                var actualProjectFrameworks = MSBuildStringUtility.Split(projectFrameworks);
+                var actualProjectTargetFrameworkMonikers = MSBuildStringUtility.Split(projectTargetFrameworkMonikers);
+                var actualProjectTargetPlatforMonikers = MSBuildStringUtility.Split(projectTargetPlatforMonikers);
+                var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
+                var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                        projectName: ProjectName,
+                        solutionRoot: pathContext.SolutionRoot,
+                        frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                for (int i = 0; i < actualProjectFrameworks.Length; i++)
+                {
+                    var framework = project.Frameworks.Single(e => e.TargetAlias.Equals(actualProjectFrameworks[i]));
+                    framework.Properties.Add("TargetFrameworkMoniker", actualProjectTargetFrameworkMonikers[i]);
+                    framework.Properties.Add("TargetPlatformMoniker", actualProjectTargetPlatforMonikers[i]);
+                }
+
+                project.FallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
+                project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                project.Sources = packageSourceProvider.LoadPackageSources();
+
+                project.Save();
+
+                var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersion, project);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
+                    .Result;
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(project.ProjectPath).Root;
+
+                // Assert
+                Assert.Equal(0, result);
+
+                foreach (var framework in MSBuildStringUtility.Split(expectedConditions))
+                {
+                    var itemGroup = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, framework);
+                    Assert.NotNull(itemGroup);
+                    Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
+                }
             }
         }
 

@@ -209,9 +209,9 @@ namespace NuGet.CommandLine.XPlat
                     packageReferenceArgs.PackageId,
                     packageReferenceArgs.ProjectPath));
 
-                var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
-                    .OriginalTargetFrameworks
-                    .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
+                var compatibleOriginalFrameworks = compatibleFrameworks
+                    .Select(e => GetAliasForFramework(originalPackageSpec, e))
+                    .Where(originalFramework => originalFramework != null);
 
                 // generate a library dependency with all the metadata like Include, Exlude and SuppressParent
                 var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs, restorePreviewResult, userSpecifiedFrameworks, packageDependency);
@@ -225,6 +225,11 @@ namespace NuGet.CommandLine.XPlat
             await RestoreRunner.CommitAsync(restorePreviewResult, CancellationToken.None);
 
             return 0;
+        }
+
+        private static string GetAliasForFramework(PackageSpec spec, NuGetFramework framework)
+        {
+            return spec.TargetFrameworks.Where(e => e.FrameworkName.Equals(framework)).FirstOrDefault()?.TargetAlias;
         }
 
         public static async Task<NuGetVersion> GetLatestVersionAsync(PackageSpec originalPackageSpec, string packageId, ILogger logger, bool prerelease)
