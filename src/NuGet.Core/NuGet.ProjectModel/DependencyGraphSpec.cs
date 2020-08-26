@@ -236,7 +236,7 @@ namespace NuGet.ProjectModel
 
         public void AddRestore(string projectUniqueName)
         {
-            _restore[projectUniqueName] = false;
+            _restore.TryAdd(projectUniqueName, false);
         }
 
         public void AddProject(PackageSpec projectSpec)
@@ -254,7 +254,7 @@ namespace NuGet.ProjectModel
                     projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
                 }
 
-                _projects[projectUniqueName] = projectToRestore;
+                _projects.TryAdd(projectUniqueName, projectToRestore);
             }
         }
 
@@ -314,7 +314,7 @@ namespace NuGet.ProjectModel
                                 {
                                     if (!string.IsNullOrEmpty(restorePropertyName))
                                     {
-                                        dgspec._restore[restorePropertyName] = false;
+                                        dgspec._restore.TryAdd(restorePropertyName, false);
                                     }
                                 });
                                 break;
@@ -324,7 +324,7 @@ namespace NuGet.ProjectModel
                                 {
                                     PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(jsonReader, path);
 
-                                    dgspec._projects[projectsPropertyName] = packageSpec;
+                                    dgspec._projects.TryAdd(projectsPropertyName, packageSpec);
                                 });
                                 break;
 
@@ -372,7 +372,8 @@ namespace NuGet.ProjectModel
             var restoreObj = json.GetValue<JObject>("restore");
             if (restoreObj != null)
             {
-                _restore.AddRange(restoreObj.Properties().Select(props => new KeyValuePair<string, bool>(props.Name, false)));
+                _restore.AddRange(restoreObj.Properties().Select(prop => prop.Name)
+                    .ToDictionary(name => name, name => false));
             }
 
             var projectsObj = json.GetValue<JObject>("projects");
@@ -384,7 +385,7 @@ namespace NuGet.ProjectModel
 #pragma warning disable CS0618
                     var spec = JsonPackageSpecReader.GetPackageSpec(specJson);
 #pragma warning restore CS0618
-                    _projects[prop.Name] = spec;
+                    _projects.TryAdd(prop.Name, spec);
                 }
             }
         }
