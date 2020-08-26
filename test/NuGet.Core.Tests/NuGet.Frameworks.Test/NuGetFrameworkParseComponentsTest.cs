@@ -86,12 +86,12 @@ namespace NuGet.Test
 
         [Theory]
         // Net5.0 ERA
-        [InlineData(".NETCoreApp,Version=v5.0", null, "net5.0")]
-        [InlineData(".NETCoreApp,Version=v10.1.2.3", null, "net10.1.2.3")]
-        [InlineData("netcoreapp,Version=5.0", null, "net5.0")]
-        [InlineData("netcoreapp,Version=v5.0", null, "net5.0")]
-        [InlineData(".NETCoreApp,Version=v5.0", "android", "net5.0-android")]
-        [InlineData(".NETCoreApp,Version=5.0", "ios,Version=14.0", "net5.0-ios14.0")]
+        [InlineData(".NETCoreApp,Version=v5.0", null, ".NETCoreApp,Version=v5.0")]
+        [InlineData(".NETCoreApp,Version=v10.1.2.3", null, ".NETCoreApp,Version=v10.1.2.3")]
+        [InlineData("netcoreapp,Version=5.0", null, ".NETCoreApp,Version=v5.0")]
+        [InlineData("netcoreapp,Version=v5.0", null, ".NETCoreApp,Version=v5.0")]
+        [InlineData(".NETCoreApp,Version=v5.0", "android", ".NETCoreApp,Version=v5.0")]
+        [InlineData(".NETCoreApp,Version=5.0", "ios,Version=14.0", ".NETCoreApp,Version=v5.0")]
 
         // Pre-Net5.0 ERA
         [InlineData("net,Version=v10.1.2.3", null, ".NETFramework,Version=v10.1.2.3")]
@@ -143,9 +143,9 @@ namespace NuGet.Test
         [InlineData(".NETCoreApp,Version=v3.1,Profile=client", null, ".NETCoreApp,Version=v3.1,Profile=Client")]
         [InlineData(".NETCoreApp,Version=v3.0,Profile=client", "Windows,Version=7.0", ".NETCoreApp,Version=v3.0,Profile=Client")]
         // Hack scenarios: See https://github.com/NuGet/Home/issues/9913
-        [InlineData(".NETCoreApp,Version=5.0", ",Version=", "net5.0")]
-        [InlineData(".NETCoreApp,Version=5.0", " ,Version=", "net5.0")]
-        [InlineData(".NETCoreApp,Version=5.0", " ,Version= ", "net5.0")]
+        [InlineData(".NETCoreApp,Version=5.0", ",Version=", ".NETCoreApp,Version=v5.0")]
+        [InlineData(".NETCoreApp,Version=5.0", " ,Version=", ".NETCoreApp,Version=v5.0")]
+        [InlineData(".NETCoreApp,Version=5.0", " ,Version= ", ".NETCoreApp,Version=v5.0")]
         public void NuGetFramework_Basic(string targetFrameworkMoniker, string targetPlatformMoniker, string fullName)
         {
             string output = NuGetFramework.ParseComponents(targetFrameworkMoniker, targetPlatformMoniker).DotNetFrameworkName;
