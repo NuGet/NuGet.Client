@@ -29,6 +29,10 @@
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="System.Threading.Tasks.Dataflow" />
+  </ItemGroup>
+    
+  <ItemGroup>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
