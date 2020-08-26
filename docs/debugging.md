@@ -142,4 +142,4 @@ There are 2 ways to patch dotnet.exe with the latest NuGet bits.
 
 When working with private feeds, NuGet defers the heavy lifting for authorization and authentication to a plugin.
 To investigate issues related to NuGet <-> Plugin interactions, plugin logging was added.
-Refer to [Plugin Diagnostic logging](plugin-v2-logging.md) for more details.
+Refer to [Plugin Diagnostic logging](plugin-logging.md) for more details.
