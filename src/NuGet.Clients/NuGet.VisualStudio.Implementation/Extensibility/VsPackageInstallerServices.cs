@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -23,7 +24,6 @@ using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
-using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.VisualStudio
 {
@@ -63,7 +63,7 @@ namespace NuGet.VisualStudio
                         await TaskScheduler.Default;
 
                         NuGetPackageManager nuGetPackageManager = CreateNuGetPackageManager();
-                        
+
                         foreach (var project in (await _solutionManager.GetNuGetProjectsAsync()))
                         {
                             FallbackPackagePathResolver pathResolver = null;

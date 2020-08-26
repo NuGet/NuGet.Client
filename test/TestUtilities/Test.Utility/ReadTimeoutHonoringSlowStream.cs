@@ -23,7 +23,7 @@ namespace Test.Utility
         {
             _innerStream = innerStream;
             _cancellationToken = cancellationToken;
-        } 
+        }
 
         public override int Read(byte[] buffer, int offset, int count)
         {

@@ -70,7 +70,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
                         waitForExit: true,
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
-                }    
+                }
                 // Assert
                 Assert.True(result.Success, $"{result.Output} {result.Errors}");
                 Assert.Contains(MESSAGE_PACKAGE_PUSHED, result.Output);
@@ -497,7 +497,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var nuget = Util.GetNuGetExePath();
 
                 string packageId = "packageWithSnupkg";
-                
+
                 //Create nupkg in test directory.
                 string version = "1.1.0";
                 string nupkgFullPath = Util.CreateTestPackage(packageId, version, packageDirectory);
@@ -793,7 +793,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.DoesNotContain(MESSAGE_RESPONSE_NO_SUCCESS, result.Errors); //snupkg duplicate is ignored
                 Assert.DoesNotContain(MESSAGE_PACKAGE_PUSHED, result.Output); //snupkgFileName and snupkgFileName2 are not pushed (just skipped conflicts)
                 Assert.Contains(MESSAGE_EXISTING_PACKAGE, result.AllOutput);
-                
+
                 Assert.Contains(snupkgFileName, result.AllOutput); //first snupkg push is attempted
                 Assert.Contains(snupkgFileName2, result.AllOutput); //second snupkg push is attempted
 

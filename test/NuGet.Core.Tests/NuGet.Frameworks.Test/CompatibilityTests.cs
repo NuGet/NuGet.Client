@@ -17,7 +17,7 @@ namespace NuGet.Test
         [InlineData("net5.0", "net482", false)]
         [InlineData("net50", "net5.0", true)]
         [InlineData("net5.0", "net50", true)]
-        
+
         // netcoreapp 5.0 and later are still valid for now
         [InlineData("netcoreapp5.0", "netcoreapp5.0", true)]
         [InlineData("net5.0", "netcoreapp5.0", true)]

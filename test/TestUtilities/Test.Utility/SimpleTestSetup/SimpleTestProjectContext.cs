@@ -236,7 +236,9 @@ namespace NuGet.Test.Utility
             get
             {
                 var _packageSpec = new PackageSpec(Frameworks
-                    .Select(f => new TargetFrameworkInformation() { FrameworkName = f.Framework,
+                    .Select(f => new TargetFrameworkInformation()
+                    {
+                        FrameworkName = f.Framework,
                         Dependencies = f.PackageReferences.Select(e => new LibraryDependency() { LibraryRange = new LibraryRange(e.Id, VersionRange.Parse(e.Version), LibraryDependencyTarget.Package) }).ToList()
                     }).ToList());
                 _packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
@@ -480,7 +482,7 @@ namespace NuGet.Test.Utility
 
                     ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
-                        { tfPropName, OriginalFrameworkStrings.Count != 0 ? string.Join(";", OriginalFrameworkStrings): 
+                        { tfPropName, OriginalFrameworkStrings.Count != 0 ? string.Join(";", OriginalFrameworkStrings):
                         string.Join(";", Frameworks.Select(f => f.TargetAlias)) },
                     });
                 }

@@ -985,7 +985,7 @@ namespace NuGet.Protocol
                 {
                     packagePath = packagePath + '*';
                 }
-                packagePath = packagePath + (isSnupkg? NuGetConstants.SnupkgExtension : NuGetConstants.PackageExtension);
+                packagePath = packagePath + (isSnupkg ? NuGetConstants.SnupkgExtension : NuGetConstants.PackageExtension);
             }
             return packagePath;
         }
@@ -1177,7 +1177,8 @@ namespace NuGet.Protocol
                             var packageHash = packageReader.GetContentHash(
                                 CancellationToken.None,
                                 GetUnsignedPackageHash:
-                                () => {
+                                () =>
+                                {
                                     if (!string.IsNullOrEmpty(hashPath) && File.Exists(hashPath))
                                     {
                                         return File.ReadAllText(hashPath);

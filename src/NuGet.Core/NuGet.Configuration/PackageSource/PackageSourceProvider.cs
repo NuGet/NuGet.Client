@@ -36,7 +36,7 @@ namespace NuGet.Configuration
             ISettings settings,
             IEnumerable<PackageSource> configurationDefaultSources)
 #pragma warning disable CS0618 // Type or member is obsolete
-            : this (settings, configurationDefaultSources, enablePackageSourcesChangedEvent: true)
+            : this(settings, configurationDefaultSources, enablePackageSourcesChangedEvent: true)
 #pragma warning restore CS0618 // Type or member is obsolete
         {
         }
@@ -549,7 +549,7 @@ namespace NuGet.Configuration
         private void UpdatePackageSource(
             PackageSource newSource,
             PackageSource existingSource,
-            AddItem existingDisabledSourceItem, 
+            AddItem existingDisabledSourceItem,
             CredentialsItem existingCredentialsItem,
             bool updateEnabled,
             bool updateCredentials,
@@ -841,7 +841,7 @@ namespace NuGet.Configuration
 
                 if (activePackageSourceSection != null)
                 {
-                    foreach(var activePackageSource in activePackageSourceSection.Items)
+                    foreach (var activePackageSource in activePackageSourceSection.Items)
                     {
                         Settings.Remove(ConfigurationConstants.ActivePackageSourceSectionName, activePackageSource);
                     }

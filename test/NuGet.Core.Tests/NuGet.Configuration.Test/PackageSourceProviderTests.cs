@@ -1494,7 +1494,7 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>
 ";
-              File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), config1Contents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), config1Contents);
 
                 var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
                 Directory.CreateDirectory(rootPath);

@@ -8,12 +8,12 @@ namespace NuGet.Common
     public class PathValidatorTest
     {
         [Theory]
-        [InlineData(@"C:\","windows")]
-        [InlineData(@"C:\path","windows")]
-        [InlineData(@"C:\path\to\","windows")]
-        [InlineData(@"/","unix-base")]
-        [InlineData(@"/users","unix-base")]
-        [InlineData(@"/users/path","unix-base")]
+        [InlineData(@"C:\", "windows")]
+        [InlineData(@"C:\path", "windows")]
+        [InlineData(@"C:\path\to\", "windows")]
+        [InlineData(@"/", "unix-base")]
+        [InlineData(@"/users", "unix-base")]
+        [InlineData(@"/users/path", "unix-base")]
         public void PathValidatorTest_ValidLocalPath(string path, string os)
         {
             if ((os == "windows" && RuntimeEnvironmentHelper.IsWindows) || (os == "unix-base" && !RuntimeEnvironmentHelper.IsWindows))
@@ -24,9 +24,9 @@ namespace NuGet.Common
 
         [Theory]
         //[InlineData(@"C:\path\*\","windows")] TODO: Enabled once this issue is fixed: https://github.com/NuGet/Home/issues/7588
-        [InlineData(@"\\share\packages","windows")]
-        [InlineData(@"packages\test","windows")]
-        [InlineData(@"https://test","windows")]
+        [InlineData(@"\\share\packages", "windows")]
+        [InlineData(@"packages\test", "windows")]
+        [InlineData(@"https://test", "windows")]
         [InlineData(@"https://test", "unix-base")]
         [InlineData(@"./packages", "unix-base")]
         public void PathValidatorTest_InvalidLocalPath(string path, string os)
@@ -38,7 +38,7 @@ namespace NuGet.Common
         }
 
         [Theory]
-        [InlineData(@"\\server\share","windows")]
+        [InlineData(@"\\server\share", "windows")]
         public void PathValidatorTest_ValidUncSharePath(string path, string os)
         {
             if ((os == "windows" && RuntimeEnvironmentHelper.IsWindows) || (os == "unix-base" && !RuntimeEnvironmentHelper.IsWindows))
@@ -48,10 +48,10 @@ namespace NuGet.Common
         }
 
         [Theory]
-        [InlineData(@"C:","windows")]
+        [InlineData(@"C:", "windows")]
         //[InlineData(@"\\server\invalid\*\","windows")] TODO: Enabled once this issue is fixed: https://github.com/NuGet/Home/issues/7588
-        [InlineData(@"https://test","windows")]
-        [InlineData(@"..\packages","windows")]
+        [InlineData(@"https://test", "windows")]
+        [InlineData(@"..\packages", "windows")]
         public void PathValidatorTest_InvalidUncSharePath(string path, string os)
         {
             if ((os == "windows" && RuntimeEnvironmentHelper.IsWindows) || (os == "unix-base" && !RuntimeEnvironmentHelper.IsWindows))
@@ -69,7 +69,7 @@ namespace NuGet.Common
         }
 
         [Theory]
-        [InlineData(@"..\packages","windows")]
+        [InlineData(@"..\packages", "windows")]
         [InlineData(@"C:\", "windows")]
         [InlineData(@"\\test\packages", "windows")]
         [InlineData(@"/user/test", "unix-base")]
@@ -82,12 +82,12 @@ namespace NuGet.Common
         }
 
         [Theory]
-        [InlineData(@"package\path","windows")]
-        [InlineData(@"package/path","unix-base")]
-        [InlineData(@"../package/path","unix-base")]
-        [InlineData(@"..\package\path","windows")]
-        [InlineData(@"./package/path","unix-base")]
-        [InlineData(@".\package\path","windows")]
+        [InlineData(@"package\path", "windows")]
+        [InlineData(@"package/path", "unix-base")]
+        [InlineData(@"../package/path", "unix-base")]
+        [InlineData(@"..\package\path", "windows")]
+        [InlineData(@"./package/path", "unix-base")]
+        [InlineData(@".\package\path", "windows")]
         public void PathValidatorTest_ValidRelativePath(string path, string os)
         {
             if ((os == "windows" && RuntimeEnvironmentHelper.IsWindows) || (os == "unix-base" && !RuntimeEnvironmentHelper.IsWindows))
@@ -98,10 +98,10 @@ namespace NuGet.Common
 
         [Theory]
         //[InlineData(@"package\path\*","windows")] TODO: Enabled once this issue is fixed: https://github.com/NuGet/Home/issues/7588
-        [InlineData(@"\\package\path","windows")]
-        [InlineData(@"https://test","windows")]
+        [InlineData(@"\\package\path", "windows")]
+        [InlineData(@"https://test", "windows")]
         [InlineData(@"https://test", "unix-base")]
-        [InlineData(@"/test/path","unix-base")]
+        [InlineData(@"/test/path", "unix-base")]
         public void PathValidatorTest_InvalidRelativePath(string path, string os)
         {
             if ((os == "windows" && RuntimeEnvironmentHelper.IsWindows) || (os == "unix-base" && !RuntimeEnvironmentHelper.IsWindows))

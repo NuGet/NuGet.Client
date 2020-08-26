@@ -160,7 +160,7 @@ namespace NuGet.CommandLine
                 Console.WriteLine(attribute.UsageExample);
                 Console.WriteLine();
             }
-            
+
             Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
                 LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
                 CommandLineConstants.NuGetDocsCommandLineReference));

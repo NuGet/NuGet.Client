@@ -102,7 +102,7 @@ namespace NuGet.Packaging.Test
                 var attribute = AttributeUtility.CreateSigningCertificateV2(test.Certificate, HashAlgorithmName.SHA256);
 
                 attribute.Values.Add(attribute.Values[0]);
-                
+
                 test.CmsSigner.SignedAttributes.Add(attribute);
 
                 test.SignedCms.ComputeSignature(test.CmsSigner);

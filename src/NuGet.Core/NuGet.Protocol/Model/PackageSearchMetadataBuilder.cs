@@ -112,7 +112,7 @@ namespace NuGet.Protocol.Core.Types
             return clonedMetadata;
         }
 
-        public static PackageSearchMetadataBuilder FromMetadata(IPackageSearchMetadata metadata) 
+        public static PackageSearchMetadataBuilder FromMetadata(IPackageSearchMetadata metadata)
             => new PackageSearchMetadataBuilder(metadata);
 
         public static PackageSearchMetadataBuilder FromIdentity(PackageIdentity identity)

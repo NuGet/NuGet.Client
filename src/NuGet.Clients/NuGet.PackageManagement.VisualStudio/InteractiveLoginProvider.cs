@@ -17,7 +17,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    class InteractiveLoginProvider: IInteractiveLoginProvider
+    class InteractiveLoginProvider : IInteractiveLoginProvider
     {
         private const string VsoEndpointResource = "499b84ac-1321-427f-aa17-267ca6975798";
         private const string VssResourceTenant = "X-VSS-ResourceTenant";

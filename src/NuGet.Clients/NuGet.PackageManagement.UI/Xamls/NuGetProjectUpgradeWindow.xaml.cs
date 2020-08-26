@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.UI
         {
             var model = DataContext as NuGetProjectUpgradeWindowModel;
             var checkBox = sender as CheckBox;
-            foreach(var item in model.TransitiveDependencies)
+            foreach (var item in model.TransitiveDependencies)
             {
                 item.InstallAsTopLevel = checkBox.IsChecked.GetValueOrDefault();
             }

@@ -133,7 +133,7 @@ namespace NuGet.CommandLine.Test.Caching
                             response.StatusCode = 404;
                             return;
                         }
-                        
+
                         var packagePath = getPackagePath();
                         var mockResponse = builder.BuildODataResponse(packagePath);
 
@@ -155,7 +155,7 @@ namespace NuGet.CommandLine.Test.Caching
                         {
                             packagePaths.Add(getPackagePath());
                         }
-                        
+
                         var mockResponse = builder.BuildFindPackagesByIdResponse(packagePaths);
 
                         response.ContentType = mockResponse.ContentType;
@@ -258,7 +258,7 @@ namespace NuGet.CommandLine.Test.Caching
         {
             var directory = Path.Combine(repositoryPath, Guid.NewGuid().ToString());
             Directory.CreateDirectory(directory);
-            
+
             File.WriteAllBytes(Path.Combine(directory, contentFileName), new byte[0]);
 
             var assemblyFileName = "assembly.dll";

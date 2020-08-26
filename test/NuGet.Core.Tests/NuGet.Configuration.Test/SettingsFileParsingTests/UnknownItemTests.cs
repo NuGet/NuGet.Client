@@ -922,7 +922,7 @@ namespace NuGet.Configuration.Test
         {
             var originalSetting = new UnknownItem("Unknown",
                 attributes: null,
-                children: new List<SettingBase>() { new AddItem("key",  "val") });
+                children: new List<SettingBase>() { new AddItem("key", "val") });
 
             var newSetting = new UnknownItem("Unknown",
                 attributes: null,

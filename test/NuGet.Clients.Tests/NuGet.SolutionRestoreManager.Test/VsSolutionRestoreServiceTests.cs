@@ -1880,7 +1880,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var packageVersion = Assert.Single(tfm.CentralPackageVersions);
             Assert.Equal("foo", packageVersion.Key);
-            Assert.Equal("[2.0.0, )", packageVersion.Value.VersionRange.ToNormalizedString()) ;
+            Assert.Equal("[2.0.0, )", packageVersion.Value.VersionRange.ToNormalizedString());
             var packageReference = Assert.Single(tfm.Dependencies);
             Assert.Null(packageReference.LibraryRange.VersionRange);
             Assert.True(result.RestoreMetadata.CentralPackageVersionsEnabled);

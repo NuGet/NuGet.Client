@@ -109,7 +109,7 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, logger.Errors);
-                
+
                 if (RuntimeEnvironmentHelper.IsLinux)
                 {
 #if NETCORE5_0

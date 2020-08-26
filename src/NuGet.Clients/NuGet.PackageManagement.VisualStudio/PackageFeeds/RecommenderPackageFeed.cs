@@ -8,10 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DataAI.NuGetRecommender.Contracts;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

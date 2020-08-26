@@ -110,7 +110,7 @@ namespace NuGet.Commands.Test
             {
                 test.Args.CertificateSubjectName = "Root";
                 //X509 store is opened in ReadOnly mode in this code path. Hence StoreLocation is set to LocalMachine.
-                test.Args.CertificateStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: true);         
+                test.Args.CertificateStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: true);
                 test.Args.CertificateStoreName = StoreName.Root;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(

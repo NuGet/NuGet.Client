@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,9 +32,9 @@ namespace NuGet.Options
 
             // delay 5 milliseconds to give the Options dialog a chance to close itself
             var timer = new Timer
-                {
-                    Interval = 5
-                };
+            {
+                Interval = 5
+            };
             timer.Tick += OnTimerTick;
             timer.Start();
         }

@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         Strings.DTE_ProjectUnsupported, vsProjectAdapter.ProjectName));
             }
 
-            if (!vsProjectAdapter.IsDeferred 
+            if (!vsProjectAdapter.IsDeferred
                 && EnvDTEProjectUtility.SupportsProjectKPackageManager(vsProjectAdapter.Project))
             {
                 throw new InvalidOperationException(

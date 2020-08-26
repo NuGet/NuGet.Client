@@ -187,7 +187,7 @@ namespace NuGet.CommandLine.Test
                 of.Write(buffer, 0, buffer.Length);
             }
         }
-        
+
         /// <summary>
         /// Returns the index of the first occurrence of <paramref name="pattern"/> in
         /// <paramref name="buffer"/>. The search starts at a specified position.
@@ -421,7 +421,7 @@ namespace NuGet.CommandLine.Test
                     new XElement(nsDataService + "PackageHashAlgorithm", "SHA512"),
                     new XElement(nsDataService + "Description", package.Description),
                     new XElement(nsDataService + "Listed", package.Listed),
-                    new XElement(nsDataService + "Published",package.Published)));
+                    new XElement(nsDataService + "Published", package.Published)));
             return entry;
         }
 

@@ -143,10 +143,10 @@ namespace NuGet.Commands.Test
 
             spec.Projects.First().RestoreMetadata.TargetFrameworks.Single()
                 .ProjectReferences.Add(new ProjectRestoreReference()
-            {
-                ProjectPath = "b.csproj",
-                ProjectUniqueName = "b"
-            });
+                {
+                    ProjectPath = "b.csproj",
+                    ProjectUniqueName = "b"
+                });
 
             spec.Projects.First().Dependencies.Add(new LibraryDependency()
             {
@@ -366,7 +366,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             spec.AddProject(project);
-    
+
             SpecValidationUtility.ValidateDependencySpec(spec);
 
         }

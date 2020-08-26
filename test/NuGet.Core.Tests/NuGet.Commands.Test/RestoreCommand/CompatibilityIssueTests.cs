@@ -18,17 +18,17 @@ namespace NuGet.Commands.Test
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
             var b = CompatibilityIssue.IncompatiblePackage(
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net45"), NuGetFramework.Parse("net40") });
-            
+                new[] { NuGetFramework.Parse("net45"), NuGetFramework.Parse("net40") });
+
             // Act & Assert
             Assert.Equal(a, b);
         }
-        
+
         [Fact]
         public void CompatibilityIssue_Equals_DifferentAvailableFrameworks()
         {
@@ -37,17 +37,17 @@ namespace NuGet.Commands.Test
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
             var b = CompatibilityIssue.IncompatiblePackage(
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") });
-            
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") });
+
             // Act & Assert
             Assert.NotEqual(a, b);
         }
-        
+
         [Fact]
         public void CompatibilityIssue_Equals_DifferentPackageIdentity()
         {
@@ -56,17 +56,17 @@ namespace NuGet.Commands.Test
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
             var b = CompatibilityIssue.IncompatiblePackage(
                 new PackageIdentity("foo", new NuGetVersion("2.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
-            
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
+
             // Act & Assert
             Assert.NotEqual(a, b);
         }
-        
+
         [Fact]
         public void CompatibilityIssue_Equals_DifferentRuntime()
         {
@@ -75,17 +75,17 @@ namespace NuGet.Commands.Test
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
             var b = CompatibilityIssue.IncompatiblePackage(
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x86",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
-            
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
+
             // Act & Assert
             Assert.NotEqual(a, b);
         }
-        
+
         [Fact]
         public void CompatibilityIssue_Equals_DifferentFramework()
         {
@@ -94,13 +94,13 @@ namespace NuGet.Commands.Test
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net451"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
             var b = CompatibilityIssue.IncompatiblePackage(
                 new PackageIdentity("foo", new NuGetVersion("1.0.0")),
                 NuGetFramework.Parse("net46"),
                 "win10-x64",
-                new [] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
-            
+                new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net45") });
+
             // Act & Assert
             Assert.NotEqual(a, b);
         }

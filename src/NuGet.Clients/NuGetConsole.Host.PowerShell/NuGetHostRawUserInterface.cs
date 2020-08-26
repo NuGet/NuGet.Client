@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Windows.Input;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -44,7 +44,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public override Coordinates CursorPosition
         {
             get
-            { 
+            {
                 // no op
                 Debug.Assert(false, "Not Implemented");
                 return new Coordinates();
@@ -55,7 +55,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public override int CursorSize
         {
             get
-            { 
+            {
                 // no op
                 Debug.Assert(false, "Not Implemented");
                 return 0;
@@ -94,7 +94,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override Size MaxPhysicalWindowSize
         {
-            get {
+            get
+            {
                 // no op
                 Debug.Assert(false, "Not Implemented");
                 return new Size();
@@ -104,7 +105,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public override Size MaxWindowSize
         {
             get
-            { 
+            {
                 // no op
                 Debug.Assert(false, "Not Implemented");
                 return new Size();
@@ -151,7 +152,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public override Coordinates WindowPosition
         {
             get
-            {  
+            {
                 // no op
                 Debug.Assert(false, "Not Implemented");
                 return new Coordinates();
@@ -168,7 +169,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public override string WindowTitle
         {
             get
-            { 
+            {
                 // no op
                 Debug.Assert(false, "Not Implemented");
                 return null;

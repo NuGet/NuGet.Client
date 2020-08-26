@@ -220,7 +220,7 @@ namespace NuGet.Test.Utility
                     var metadata = xml.Element(XName.Get("package")).Element(XName.Get("metadata"));
                     var frameworkReferencesNode = new XElement(XName.Get("frameworkReferences"));
 
-                    foreach(var kvp in packageContext.FrameworkReferences)
+                    foreach (var kvp in packageContext.FrameworkReferences)
                     {
                         var groupNode = new XElement(XName.Get("group"));
                         groupNode.SetAttributeValue("targetFramework", kvp.Key.GetFrameworkString());
@@ -602,7 +602,8 @@ namespace NuGet.Test.Utility
         /// <param name="nupkgPath">Path to package file</param>
         public static Task DeleteNuspecFileFromPackageAsync(string nupkgPath)
         {
-            return Task.Run(() => {
+            return Task.Run(() =>
+            {
                 using (FileStream zipToOpen = new FileStream(nupkgPath, FileMode.Open))
                 {
                     using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update))

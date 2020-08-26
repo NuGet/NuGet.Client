@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI
             _installedPackagesTask = PackageCollection.FromProjectsAsync(Projects, CancellationToken.None);
         }
 
-        public Task<PackageCollection> GetInstalledPackagesAsync() =>_installedPackagesTask;
+        public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
         public IEnumerable<string> GetSupportedFrameworks()

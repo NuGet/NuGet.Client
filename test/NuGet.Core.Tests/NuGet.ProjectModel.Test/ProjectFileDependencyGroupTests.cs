@@ -36,7 +36,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void Equals_WithCaseInsensitiveDependencies_ReturnsTrue()
         {
-            var leftSide = new ProjectFileDependencyGroup("frameworkName", new string[] { "a", "c", "b"});
+            var leftSide = new ProjectFileDependencyGroup("frameworkName", new string[] { "a", "c", "b" });
             var rightSide = new ProjectFileDependencyGroup("frameworkName", new string[] { "B", "a", "C" });
             leftSide.Should().Be(rightSide);
         }

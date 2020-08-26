@@ -168,7 +168,7 @@ namespace NuGetConsole
 
             return result;
         }
-        
+
         private async Task ExecuteScriptCoreAsync(ScriptExecutionRequest request)
         {
             var console = await OutputConsoleProvider.CreatePowerShellConsoleAsync();

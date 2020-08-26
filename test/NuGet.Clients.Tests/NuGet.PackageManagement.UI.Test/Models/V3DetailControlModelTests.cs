@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testViewModel = new PackageItemListViewModel()
             {
                 Version = testVersion,
-                Versions = new Lazy<Task<IEnumerable<VersionInfo>>> (() => Task.FromResult<IEnumerable<VersionInfo>>(testVersions)),
+                Versions = new Lazy<Task<IEnumerable<VersionInfo>>>(() => Task.FromResult<IEnumerable<VersionInfo>>(testVersions)),
                 InstalledVersion = testVersion,
             };
 

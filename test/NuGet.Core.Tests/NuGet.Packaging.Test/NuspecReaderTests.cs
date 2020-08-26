@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using NuGet.Frameworks;
-using Xunit;
-using NuGet.Packaging.Core;
-using System.Collections.Generic;
-using NuGet.Versioning;
 using FluentAssertions;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
-using System.Globalization;
+using NuGet.Versioning;
+using Xunit;
 
 namespace NuGet.Packaging.Test
 {
@@ -393,7 +393,7 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
-        private const string LicenseExpressionBasicNonStandardLicense= @"<?xml version=""1.0""?>
+        private const string LicenseExpressionBasicNonStandardLicense = @"<?xml version=""1.0""?>
                 <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
                   <metadata>
                     <id>packageA</id>

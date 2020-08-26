@@ -569,7 +569,7 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<FrameworkReferenceGroup> GetFrameworkRefGroups()
         {
-            return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, useMetadataNamespace : true);
+            return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, useMetadataNamespace: true);
         }
 
         /// <summary>

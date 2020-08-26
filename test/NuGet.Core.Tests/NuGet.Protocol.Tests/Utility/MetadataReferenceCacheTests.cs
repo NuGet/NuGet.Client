@@ -157,7 +157,7 @@ namespace NuGet.Protocol.Tests
             // Strings
             Assert.NotSame(objectToCache.StringCachedBefore, stringCachedBefore);
             Assert.Equal(objectToCache.StringCachedBefore, stringCachedBefore);
-            
+
             Assert.NotSame(objectToCache.StringCachedDuring1, objectToCache.StringCachedDuring2);
             Assert.Equal(objectToCache.StringCachedDuring1, objectToCache.StringCachedDuring2);
 

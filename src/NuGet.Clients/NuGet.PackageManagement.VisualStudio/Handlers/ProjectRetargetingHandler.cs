@@ -185,8 +185,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), pAfterChangeHier, TaskErrorCategory.Error, TaskPriority.High);
                     }
-// NuGet/Home#4833 Baseline
-// Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
+                    // NuGet/Home#4833 Baseline
+                    // Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
 #pragma warning disable CS4014
                     ProjectRetargetingUtility.MarkPackagesForReinstallation(retargetedProject, packagesToBeReinstalled);
 #pragma warning restore CS4014
@@ -280,8 +280,8 @@ namespace NuGet.PackageManagement.VisualStudio
                                         var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
                                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
                                     }
-// NuGet/Home#4833 Baseline
-// Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
+                                    // NuGet/Home#4833 Baseline
+                                    // Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
 #pragma warning disable CS4014
                                     ProjectRetargetingUtility.MarkPackagesForReinstallation(nuGetProject, packagesToBeReinstalled);
 #pragma warning restore CS4014

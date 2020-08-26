@@ -12,7 +12,7 @@ namespace NuGet.ProjectModel
     {
         internal const int CurrentVersion = 2;
 
-        public string DgSpecHash { get;}
+        public string DgSpecHash { get; }
 
         public int Version { get; set; }
 
@@ -35,7 +35,7 @@ namespace NuGet.ProjectModel
 
         public IList<IAssetsLogMessage> LogMessages { get; set; }
 
-        public bool IsValid { get { return Version == CurrentVersion && Success && DgSpecHash != null;  } }
+        public bool IsValid { get { return Version == CurrentVersion && Success && DgSpecHash != null; } }
 
         public CacheFile(string dgSpecHash)
         {

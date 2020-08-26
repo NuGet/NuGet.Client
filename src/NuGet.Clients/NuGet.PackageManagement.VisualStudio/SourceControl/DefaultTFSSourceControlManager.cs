@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using EnvDTE80;
+using Microsoft;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using NuGet.Common;
 using NuGet.ProjectManagement;
-using Microsoft;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private Workspace PrivateWorkspace { get; }
 
         public DefaultTFSSourceControlManager(
-            Configuration.ISettings settings, 
+            Configuration.ISettings settings,
             SourceControlBindings sourceControlBindings)
             : base(settings)
         {

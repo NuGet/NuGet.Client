@@ -147,8 +147,8 @@ namespace NuGet.Common
             // Starting from the base path, enumerate over all files and match it using the wildcard expression provided by the user.
             // Note: We use Directory.GetFiles() instead of Directory.EnumerateFiles() here to support Mono
             IEnumerable<SearchPathResult> matchedFiles = from file in Directory.GetFiles(normalizedBasePath, "*.*", searchOption)
-                               where searchRegex.IsMatch(file)
-                               select new SearchPathResult(file, isFile: true);
+                                                         where searchRegex.IsMatch(file)
+                                                         select new SearchPathResult(file, isFile: true);
 
             if (!includeEmptyDirectories)
             {
@@ -158,8 +158,8 @@ namespace NuGet.Common
             // retrieve empty directories
             // Note: We use Directory.GetDirectories() instead of Directory.EnumerateDirectories() here to support Mono
             IEnumerable<SearchPathResult> matchedDirectories = from directory in Directory.GetDirectories(normalizedBasePath, "*.*", searchOption)
-                                     where searchRegex.IsMatch(directory) && IsEmptyDirectory(directory)
-                                     select new SearchPathResult(directory, isFile: false);
+                                                               where searchRegex.IsMatch(directory) && IsEmptyDirectory(directory)
+                                                               select new SearchPathResult(directory, isFile: false);
 
             if (searchDirectory && IsEmptyDirectory(normalizedBasePath))
             {

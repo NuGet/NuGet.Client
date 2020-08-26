@@ -92,7 +92,7 @@ namespace Test.Utility.Signing
             if (RuntimeEnvironmentHelper.IsLinux)
             {
                 Thread.Sleep(1500);
-                
+
                 var MaxTries = 30;
 
                 for (var i = 0; i < MaxTries; i++)
@@ -111,7 +111,7 @@ namespace Test.Utility.Signing
                         }
                     }
                 }
-            }           
+            }
         }
 
         //According to https://github.com/dotnet/runtime/blob/master/docs/design/features/cross-platform-cryptography.md#x509store,
@@ -146,7 +146,7 @@ namespace Test.Utility.Signing
             finally
             {
                 certFile.Delete();
-            } 
+            }
         }
 
         private static void RunMacCommand(string cmd)

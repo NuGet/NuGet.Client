@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     WritePackagesFromRemoteSource(
                         remotePackages.Take(First),
                         outputWarning: true,
-                        outputOnEmpty: outputOnEmpty); 
+                        outputOnEmpty: outputOnEmpty);
 
                     if (_enablePaging)
                     {
@@ -223,7 +223,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     return metadata;
                 }));
 
-            foreach (var task in installedPackages.Zip(metadataTasks, (p,t) => Tuple.Create(t, p)))
+            foreach (var task in installedPackages.Zip(metadataTasks, (p, t) => Tuple.Create(t, p)))
             {
                 var metadata = await task.Item1;
 

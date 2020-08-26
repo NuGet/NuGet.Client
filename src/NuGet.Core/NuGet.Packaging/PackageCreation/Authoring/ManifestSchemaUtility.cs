@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -90,12 +90,12 @@ namespace NuGet.Packaging
 
                     // Update the xsd with the right schema namespace
                     var assembly = typeof(Manifest).Assembly;
-                    
+
                     var names = assembly.GetManifestResourceNames();
 
                     foreach (var s in names)
                     {
-                        
+
                     }
 
                     var stream = assembly.GetManifestResourceStream(schemaResourceName);

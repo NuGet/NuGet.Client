@@ -1,16 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
@@ -42,7 +42,7 @@ namespace NuGet.ProjectManagement
         public static async Task<LockFile> GetLockFileOrNull(BuildIntegratedNuGetProject buildIntegratedProject)
         {
             var lockFilePath = await buildIntegratedProject.GetAssetsFilePathOrNullAsync();
-            
+
             if (lockFilePath == null)
             {
                 return null;

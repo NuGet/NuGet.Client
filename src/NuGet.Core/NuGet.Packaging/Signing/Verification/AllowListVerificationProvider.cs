@@ -118,7 +118,7 @@ namespace NuGet.Packaging.Signing
                                         return true;
                                     }
                                 }
-                                else 
+                                else
                                 {
                                     return true;
                                 }
@@ -164,7 +164,7 @@ namespace NuGet.Packaging.Signing
                 fingerprintString = CertificateUtility.GetHashString(signature.SignerInfo.Certificate, fingerprintAlgorithm);
                 CertificateFingerprintLookUp[fingerprintAlgorithm] = fingerprintString;
             }
-            
+
             return fingerprintString;
         }
 

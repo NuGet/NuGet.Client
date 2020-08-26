@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.UI
                         project.AutoReferenced = false;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     project.InstalledVersion = null;
 

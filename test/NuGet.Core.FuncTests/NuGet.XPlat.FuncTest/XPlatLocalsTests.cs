@@ -152,7 +152,7 @@ namespace NuGet.XPlat.FuncTest
                     // Http cache and Temp cahce should be untouched
                     DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
                     DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
-                    DotnetCliUtil.VerifyNoClear(mockPluginsCacheDirectory.FullName);                    
+                    DotnetCliUtil.VerifyNoClear(mockPluginsCacheDirectory.FullName);
 
                     // Assert clear message
                     DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet global packages folder:");

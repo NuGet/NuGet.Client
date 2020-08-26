@@ -40,7 +40,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var dependencyInfo2 = LibraryDependencyInfo.Create(higherIdentity, framework, dependencies);
 
             var downloadCount = 0;
-            
+
             // Source1 returns 1.0.0-beta.1
             var remoteProvider = new Mock<IRemoteDependencyProvider>();
             remoteProvider.Setup(e => e.FindLibraryAsync(range, It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))

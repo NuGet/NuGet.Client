@@ -77,8 +77,8 @@ namespace NuGet.Packaging.Test
 
         private static BcEssCertId CreateBcEssCertId()
         {
-            byte[] randomHash = new byte[20];           
-         
+            byte[] randomHash = new byte[20];
+
             using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
             {
                 rng.GetBytes(randomHash);

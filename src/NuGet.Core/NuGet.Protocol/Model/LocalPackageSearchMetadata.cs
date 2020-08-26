@@ -36,7 +36,7 @@ namespace NuGet.Protocol
         /// </remarks>
         public long? DownloadCount => 0;
 
-        public Uri IconUrl =>  GetIconUri();
+        public Uri IconUrl => GetIconUri();
 
         public PackageIdentity Identity => _nuspec.GetIdentity();
 

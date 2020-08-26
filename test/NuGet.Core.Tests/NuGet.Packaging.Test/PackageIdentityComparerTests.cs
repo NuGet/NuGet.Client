@@ -1,4 +1,4 @@
-﻿
+
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
@@ -19,21 +19,21 @@ namespace NuGet.Protocol.Tests
         public void PackageIdentityComparer_Equals()
         {
             // Test equals is Reflexive
-            Assert.True(comp.Equals(A100,A100));
+            Assert.True(comp.Equals(A100, A100));
 
             // Test equals is symmetric
             Assert.True(comp.Equals(A100, A100DUP));
             Assert.True(comp.Equals(A100DUP, A100));
 
             //Test equals is transitive
-            Assert.False(comp.Equals(A100,null));
+            Assert.False(comp.Equals(A100, null));
             Assert.False(comp.Equals(A100DUP, null));
             Assert.True(comp.Equals(A100, A100DUP));
             Assert.True(comp.Equals(A100DUP2, A100DUP));
             Assert.True(comp.Equals(A100DUP2, A100));
 
             // Test equals for null references
-            Assert.False(comp.Equals(A100,null));
+            Assert.False(comp.Equals(A100, null));
             Assert.False(comp.Equals(B100, null));
 
 
@@ -61,14 +61,14 @@ namespace NuGet.Protocol.Tests
         public void PackageIdentityComparer_Compare()
         {
             // Test Compare is Reflexive
-            Assert.True(comp.Compare(A100,A100)==0);
+            Assert.True(comp.Compare(A100, A100) == 0);
 
             // Test compare is symmetric
             Assert.True(comp.Compare(A100, A100DUP) == 0);
             Assert.True(comp.Compare(A100DUP, A100) == 0);
             Assert.True(comp.Compare(A100, A200) < 0);
             Assert.True(comp.Compare(A200, A100) > 0);
-            Assert.True(comp.Compare(B100,B200) < 0);
+            Assert.True(comp.Compare(B100, B200) < 0);
             Assert.True(comp.Compare(B200, B100) > 0);
 
             // Test null references
@@ -76,8 +76,8 @@ namespace NuGet.Protocol.Tests
             Assert.True(comp.Compare(null, A100) < 0);
 
             // Test transitivity
-            Assert.True(comp.Compare(A100,A200) < 0);
-            Assert.True(comp.Compare(A200,B100) < 0);
+            Assert.True(comp.Compare(A100, A200) < 0);
+            Assert.True(comp.Compare(A200, B100) < 0);
             Assert.True(comp.Compare(B100, A100) > 0);
 
             //Run all tests again to check for consistency

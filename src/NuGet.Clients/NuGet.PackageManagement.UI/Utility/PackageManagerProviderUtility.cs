@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.Utilities;
@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.UI
     public static class PackageManagerProviderUtility
     {
         public static List<IVsPackageManagerProvider> Sort(
-            IEnumerable<Lazy<IVsPackageManagerProvider, IOrderable>> packageManagerProviders, 
+            IEnumerable<Lazy<IVsPackageManagerProvider, IOrderable>> packageManagerProviders,
             int max)
         {
             var sortedProviders = new List<IVsPackageManagerProvider>();

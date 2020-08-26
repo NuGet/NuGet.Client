@@ -216,7 +216,7 @@ namespace NuGet.Commands
 
                 var trustedSignerBuilder = new StringBuilder();
 
-                var index = $" {i+1}.".PadRight(6);
+                var index = $" {i + 1}.".PadRight(6);
                 var defaultIndentation = string.Empty.PadRight(6);
 
                 trustedSignerBuilder.AppendLine($"{index}{string.Format(CultureInfo.CurrentCulture, Strings.TrustedSignerLogTitle, item.Name, item.ElementName)}");

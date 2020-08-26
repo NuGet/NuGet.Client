@@ -227,7 +227,7 @@ namespace NuGet.CommandLine.Test
             CultureInfo startingCulture = Thread.CurrentThread.CurrentCulture;
 
             // Change culture to Ukrainian (any culture with comma and period swapped compared to english in floating point)
-            Thread.CurrentThread.CurrentCulture 
+            Thread.CurrentThread.CurrentCulture
                 = CultureInfo.GetCultureInfo("uk-UA");
 
             using (var vsPath = TestDirectory.Create())
@@ -314,7 +314,7 @@ namespace NuGet.CommandLine.Test
                 var msBuild160ExePath = Path.Combine(msBuild160BinPath, "msbuild.exe").ToString();
 
                 File.WriteAllText(msBuild160ExePath, "foo 16.0");
-                
+
                 var newPathValue = new StringBuilder();
                 newPathValue.Append('\"');
                 newPathValue.Append(msBuild160BinPath);

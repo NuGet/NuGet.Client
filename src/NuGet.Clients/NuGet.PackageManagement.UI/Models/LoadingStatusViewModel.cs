@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI
             ItemsFound = loaderState.ItemsCount;
 
             var convertedList = new System.Collections.SortedList();
-            foreach( var kv in loaderState.SourceLoadingStatus)
+            foreach (var kv in loaderState.SourceLoadingStatus)
             {
                 convertedList.Add(kv.Key, Convert(kv.Value));
             }
@@ -324,7 +324,7 @@ namespace NuGet.PackageManagement.UI
 
         private static PackageSearchStatus Convert(LoadingStatus status)
         {
-            switch(status)
+            switch (status)
             {
                 case LoadingStatus.Cancelled:
                     return PackageSearchStatus.Cancelled;

@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Rules
         private static readonly string ToolsDirectory = PackagingConstants.Folders.Tools;
 
         public string MessageFormat { get; }
-        
+
         public UnrecognizedScriptFileRule(string messageFormat)
         {
             MessageFormat = messageFormat;

@@ -311,7 +311,7 @@ namespace NuGet.PackageManagement.UI
                         DeprecationMetadata = AsyncLazy.New(metadata.GetDeprecationMetadataAsync),
                         Vulnerabilities = metadata.Vulnerabilities,
                         Recommended = index < _recommendedCount,
-                        PackageReader = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) ?.PackageReader,
+                        PackageReader = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackageReader,
                     };
 
                     listItem.UpdatePackageStatus(_installedPackages);

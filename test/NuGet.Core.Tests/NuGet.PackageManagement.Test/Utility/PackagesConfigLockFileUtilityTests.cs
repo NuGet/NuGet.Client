@@ -186,7 +186,7 @@ namespace NuGet.PackageManagement.Test.Utility
             // Act
             PackagesConfigLockFileUtility.ApplyChanges(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
 
-             // Assert
+            // Assert
             Assert.Equal(1, lockFile.Targets[0].Dependencies.Count);
             Assert.Equal(actionList[0].PackageIdentity.Id, lockFile.Targets[0].Dependencies[0].Id);
             Assert.Equal(NuGetVersion.Parse("2.0.0"), lockFile.Targets[0].Dependencies[0].ResolvedVersion);

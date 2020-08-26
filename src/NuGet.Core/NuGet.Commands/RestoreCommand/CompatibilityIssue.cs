@@ -71,7 +71,7 @@ namespace NuGet.Commands
         {
             return new CompatibilityIssue(
                 type: CompatibilityIssueType.IncompatiblePackageWithDotnetTool,
-                package : referenceAssemblyPackage,
+                package: referenceAssemblyPackage,
                 assemblyName: string.Empty,
                 framework: null,
                 runtimeIdentifier: null,
@@ -297,7 +297,7 @@ namespace NuGet.Commands
                     sb.Append($" {FormatFramework(AvailableFrameworks.Single())}");
                 }
             }
-            else if(AvailableFrameworkRuntimePairs.Any())
+            else if (AvailableFrameworkRuntimePairs.Any())
             {
                 sb.AppendFormat(supports);
 

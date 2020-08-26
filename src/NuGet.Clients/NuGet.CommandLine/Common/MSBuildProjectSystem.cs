@@ -14,12 +14,12 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.Common
 {
-    public sealed class MSBuildProjectSystem 
+    public sealed class MSBuildProjectSystem
         : MSBuildUser
         , IMSBuildProjectSystem
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
-        
+
         public MSBuildProjectSystem(
             string msbuildDirectory,
             string projectFullPath,

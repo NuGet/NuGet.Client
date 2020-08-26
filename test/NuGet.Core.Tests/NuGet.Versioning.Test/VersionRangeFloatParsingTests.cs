@@ -275,7 +275,7 @@ namespace NuGet.Versioning.Test
             var range = VersionRange.Parse(declaredRange);
 
             var versions = new List<NuGetVersion>();
-            foreach(var version in availableVersions.Split(';'))
+            foreach (var version in availableVersions.Split(';'))
             {
                 versions.Add(NuGetVersion.Parse(version));
             }

@@ -5,10 +5,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using NuGet.Common;
-using VsTelemetryEvent = Microsoft.VisualStudio.Telemetry.TelemetryEvent;
-using VsTelemetryService = Microsoft.VisualStudio.Telemetry.TelemetryService;
-using VsTelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
 using VsTelemetryComplexProperty = Microsoft.VisualStudio.Telemetry.TelemetryComplexProperty;
+using VsTelemetryEvent = Microsoft.VisualStudio.Telemetry.TelemetryEvent;
+using VsTelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
+using VsTelemetryService = Microsoft.VisualStudio.Telemetry.TelemetryService;
 
 namespace NuGet.VisualStudio.Telemetry
 {

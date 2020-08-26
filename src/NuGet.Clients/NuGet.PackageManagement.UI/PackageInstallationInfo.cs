@@ -62,7 +62,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public NuGetProject NuGetProject { get; }        
+        public NuGetProject NuGetProject { get; }
 
         public PackageInstallationInfo(
             NuGetProject project)

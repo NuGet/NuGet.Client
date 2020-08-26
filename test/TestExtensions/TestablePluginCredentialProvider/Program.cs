@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,7 +27,7 @@ namespace NuGet.Test.TestExtensions.TestablePluginCredentialProvider
             var responseUsername = Environment.GetEnvironmentVariable(TestCredentialResponse.ResponseUserName);
             var responsePassword = Environment.GetEnvironmentVariable(TestCredentialResponse.ResponsePassword);
 
-            System.Threading.Thread.Sleep(ToInt(responseDelaySeconds)*1000);
+            System.Threading.Thread.Sleep(ToInt(responseDelaySeconds) * 1000);
 
             if (ToBool(responseShouldThrow))
             {

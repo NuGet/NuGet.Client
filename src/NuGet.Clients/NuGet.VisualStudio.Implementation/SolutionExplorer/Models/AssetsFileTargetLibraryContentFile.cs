@@ -16,7 +16,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
         public AssetsFileTargetLibraryContentFile(LockFileContentFile file)
         {
             Requires.NotNull(file, nameof(file));
-            
+
             BuildAction = file.BuildAction.Value;
             CodeLanguage = file.CodeLanguage;
             CopyToOutput = file.CopyToOutput;

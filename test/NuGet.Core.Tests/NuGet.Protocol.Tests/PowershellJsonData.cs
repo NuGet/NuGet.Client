@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Protocol.Tests
@@ -37,7 +37,7 @@ namespace NuGet.Protocol.Tests
     ""Elmah.RavenDB.3"",
     ""Elmah.RavenDB-4.5""
 ]";
-        
+
         public const string AutoCompleteV3Example = @"{
               ""@context"": {
                 ""@vocab"": ""http://schema.nuget.org/schema#""
@@ -228,7 +228,7 @@ namespace NuGet.Protocol.Tests
                 ""4.0.0-rc2"",
                 ""4.0.0-rc-2048""
             ]";
-        
+
         public const string IndexJson = @"{
  ""version"": ""3.0.0-beta.1"",
  ""resources"": [

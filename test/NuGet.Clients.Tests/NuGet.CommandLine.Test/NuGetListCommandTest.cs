@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
+using FluentAssertions;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
-using System.Text;
-using NuGet.Common;
-using FluentAssertions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -850,7 +850,7 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                Assert.Contains($"Unable to load the service index for source {invalidInput}.", result.Item3);
+            Assert.Contains($"Unable to load the service index for source {invalidInput}.", result.Item3);
         }
 
         [Theory]

@@ -11,7 +11,7 @@ namespace NuGet.Packaging.Signing
     /// Log message for signature verification.
     /// </summary>
     public class SignatureLog : ILogMessage, IEquatable<SignatureLog>
-    { 
+    {
         public LogLevel Level { get; set; }
 
         public string Message { get; set; }

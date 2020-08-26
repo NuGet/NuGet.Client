@@ -166,7 +166,7 @@ namespace NuGet.Commands
 
             if (targetFramework == null)
             {
-                throw new ArgumentNullException(nameof(targetFramework)); 
+                throw new ArgumentNullException(nameof(targetFramework));
             }
 
             if (cacheContext == null)
@@ -229,7 +229,7 @@ namespace NuGet.Commands
                 // Select the best match
                 var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
 
-                if(packageVersion != null)
+                if (packageVersion != null)
                 {
                     return new LibraryIdentity
                     {
@@ -239,7 +239,7 @@ namespace NuGet.Commands
                     };
                 }
             }
-            catch(FatalProtocolException e) when(_ignoreFailedSources)
+            catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
                 await LogWarningAsync(libraryRange.Name, e);
             }
@@ -327,7 +327,7 @@ namespace NuGet.Commands
             {
                 await EnsureResource();
 
-                if(_throttle != null)
+                if (_throttle != null)
                 {
                     await _throttle.WaitAsync();
                 }
@@ -413,7 +413,7 @@ namespace NuGet.Commands
             {
                 await EnsureResource();
 
-                if(_throttle != null)
+                if (_throttle != null)
                 {
                     await _throttle.WaitAsync();
                 }
@@ -431,7 +431,7 @@ namespace NuGet.Commands
                 {
                     if (exception is FatalProtocolException e && _ignoreFailedSources)
                     {
-                        await LogWarningAsync(packageIdentity.Id, e); 
+                        await LogWarningAsync(packageIdentity.Id, e);
                         return true;
                     }
 
@@ -529,7 +529,7 @@ namespace NuGet.Commands
                 {
                     await _throttle.WaitAsync();
                 }
-                if(_findPackagesByIdResource == null)
+                if (_findPackagesByIdResource == null)
                 {
                     return null;
                 }
@@ -554,7 +554,7 @@ namespace NuGet.Commands
 
         private async Task LogWarningAsync(string id, FatalProtocolException e)
         {
-            if(!_ignoreWarning)
+            if (!_ignoreWarning)
             {
                 await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
             }

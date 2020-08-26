@@ -133,7 +133,7 @@ namespace NuGet.SolutionRestoreManager
                 // Fast path. Skip Pass #2
                 if (dirtySpecs.Count == 0 && dirtyOutputs.Count == 0)
                 {
-                    ReplayAllWarnings(_restoreData, (string projectName) => true , logger);
+                    ReplayAllWarnings(_restoreData, (string projectName) => true, logger);
                     return Enumerable.Empty<string>();
                 }
                 // Update the cache before Pass #2

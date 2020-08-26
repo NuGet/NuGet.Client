@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Tokenattributes;
-using Lucene.Net.Index;
-using Lucene.Net.Search;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Tokenattributes;
+using Lucene.Net.Index;
+using Lucene.Net.Search;
 
 namespace NuGet.Indexing
 {

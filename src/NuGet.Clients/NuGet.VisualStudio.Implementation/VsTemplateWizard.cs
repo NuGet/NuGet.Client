@@ -135,25 +135,25 @@ namespace NuGet.VisualStudio
         private IEnumerable<PreinstalledPackageInfo> GetPackages(XElement packagesElement)
         {
             var declarations = (from packageElement in packagesElement.ElementsNoNamespace("package")
-                let id = packageElement.GetOptionalAttributeValue("id")
-                let version = packageElement.GetOptionalAttributeValue("version")
-                let skipAssemblyReferences = packageElement.GetOptionalAttributeValue("skipAssemblyReferences")
-                let includeDependencies = packageElement.GetOptionalAttributeValue("includeDependencies")
-                select new { id, version, skipAssemblyReferences, includeDependencies }).ToList();
+                                let id = packageElement.GetOptionalAttributeValue("id")
+                                let version = packageElement.GetOptionalAttributeValue("version")
+                                let skipAssemblyReferences = packageElement.GetOptionalAttributeValue("skipAssemblyReferences")
+                                let includeDependencies = packageElement.GetOptionalAttributeValue("includeDependencies")
+                                select new { id, version, skipAssemblyReferences, includeDependencies }).ToList();
 
             NuGetVersion semVer = null;
             bool skipAssemblyReferencesValue;
             bool includeDependenciesValue;
             var missingOrInvalidAttributes = from declaration in declarations
-                where
-                    String.IsNullOrWhiteSpace(declaration.id) ||
-                    String.IsNullOrWhiteSpace(declaration.version) ||
-                    !NuGetVersion.TryParse(declaration.version, out semVer) ||
-                    (declaration.skipAssemblyReferences != null &&
-                     !Boolean.TryParse(declaration.skipAssemblyReferences, out skipAssemblyReferencesValue)) ||
-                    (declaration.includeDependencies != null &&
-                     !Boolean.TryParse(declaration.includeDependencies, out includeDependenciesValue))
-                select declaration;
+                                             where
+                                                 String.IsNullOrWhiteSpace(declaration.id) ||
+                                                 String.IsNullOrWhiteSpace(declaration.version) ||
+                                                 !NuGetVersion.TryParse(declaration.version, out semVer) ||
+                                                 (declaration.skipAssemblyReferences != null &&
+                                                  !Boolean.TryParse(declaration.skipAssemblyReferences, out skipAssemblyReferencesValue)) ||
+                                                 (declaration.includeDependencies != null &&
+                                                  !Boolean.TryParse(declaration.includeDependencies, out includeDependenciesValue))
+                                             select declaration;
 
             if (missingOrInvalidAttributes.Any())
             {
@@ -163,15 +163,15 @@ namespace NuGet.VisualStudio
             }
 
             return from declaration in declarations
-                select new PreinstalledPackageInfo(
-                    declaration.id,
-                    declaration.version,
-                    skipAssemblyReferences: declaration.skipAssemblyReferences != null && Boolean.Parse(declaration.skipAssemblyReferences),
+                   select new PreinstalledPackageInfo(
+                       declaration.id,
+                       declaration.version,
+                       skipAssemblyReferences: declaration.skipAssemblyReferences != null && Boolean.Parse(declaration.skipAssemblyReferences),
 
-                    // Note that the declaration uses "includeDependencies" but we need to invert it to become ignoreDependencies
-                    // The declaration uses includeDependencies so that the default value can be 'false'
-                    ignoreDependencies: !(declaration.includeDependencies != null && Boolean.Parse(declaration.includeDependencies))
-                    );
+                       // Note that the declaration uses "includeDependencies" but we need to invert it to become ignoreDependencies
+                       // The declaration uses includeDependencies so that the default value can be 'false'
+                       ignoreDependencies: !(declaration.includeDependencies != null && Boolean.Parse(declaration.includeDependencies))
+                       );
         }
 
         private string GetRepositoryPath(
@@ -412,7 +412,7 @@ namespace NuGet.VisualStudio
             {
                 var console = await _consoleProvider.CreatePackageManagerConsoleAsync();
                 await console.WriteLineAsync(message);
-                }
+            }
             );
         }
 

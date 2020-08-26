@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -220,8 +220,8 @@ namespace NuGet.Packaging
                         }
                     }
                     else if (string.Equals(
-                        package.PackageIdentity.Id, 
-                        lastIdentity.Id, 
+                        package.PackageIdentity.Id,
+                        lastIdentity.Id,
                         StringComparison.OrdinalIgnoreCase))
                     {
                         // Id only compare

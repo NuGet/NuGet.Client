@@ -25,7 +25,7 @@ namespace NuGet.Protocol
             {
                 throw new ArgumentNullException(nameof(networkStream));
             }
-            
+
             _downloadName = downloadName;
             _networkStream = networkStream;
             _timeout = timeout;
@@ -55,7 +55,7 @@ namespace NuGet.Protocol
         {
             throw new NotSupportedException();
         }
-        
+
         public override int EndRead(IAsyncResult asyncResult)
         {
             throw new NotSupportedException();
@@ -80,7 +80,7 @@ namespace NuGet.Protocol
                     timeout: _timeout,
                     timeoutMessage: null,
                     token: cancellationToken).ConfigureAwait(false);
-                    
+
                 return result;
             }
             catch (TimeoutException e)

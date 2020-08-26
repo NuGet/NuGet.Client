@@ -262,7 +262,7 @@ namespace NuGet.Commands.Test
         [InlineData(".NETCoreApp,Version=v5.0,Profile=NET50CannotHaveProfiles", "android,Version=10", "")]
         public void GetProjectFramework_WithInvalidInput_Throws(
         string targetFrameworkMoniker,
-        string targetPlatformMoniker, 
+        string targetPlatformMoniker,
         string targetPlatformMinVersion)
         {
             Assert.ThrowsAny<Exception>(() => MSBuildProjectFrameworkUtility.GetProjectFramework(
@@ -282,10 +282,10 @@ namespace NuGet.Commands.Test
             string targetFramework = "",
             string targetFrameworkMoniker = "",
             string targetPlatformIdentifier = "",
-            string targetPlatformVersion="",
+            string targetPlatformVersion = "",
             string targetPlatformMinVersion = "",
-            bool isXnaWindowsPhoneProject=false,
-            bool isManagementPackProject=false)
+            bool isXnaWindowsPhoneProject = false,
+            bool isManagementPackProject = false)
         {
             return MSBuildProjectFrameworkUtility.GetProjectFrameworks(
                 MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(

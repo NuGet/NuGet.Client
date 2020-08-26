@@ -214,7 +214,7 @@ namespace NuGet.Protocol.Plugins
 
                 var sender = new Sender(pluginProcess.StandardInput);
                 var receiver = new StandardOutputReceiver(pluginProcess);
-                var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod> { MessageMethod.Handshake, MessageMethod.Log});
+                var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod> { MessageMethod.Handshake, MessageMethod.Log });
                 var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), processingHandler, _logger);
                 connection = new Connection(messageDispatcher, sender, receiver, options, _logger);
 

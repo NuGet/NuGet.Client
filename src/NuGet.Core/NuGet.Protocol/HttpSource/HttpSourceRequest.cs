@@ -30,10 +30,10 @@ namespace NuGet.Protocol
             {
                 throw new ArgumentNullException(nameof(requestFactory));
             }
-            
+
             RequestFactory = requestFactory;
         }
-        
+
         /// <summary>
         /// A factory that can be called repeatedly to build the HTTP request message.
         /// </summary>

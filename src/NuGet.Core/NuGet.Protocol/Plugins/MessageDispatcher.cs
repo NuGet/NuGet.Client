@@ -68,7 +68,7 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(idGenerator));
             }
 
-            if(inboundRequestProcessingHandler == null)
+            if (inboundRequestProcessingHandler == null)
             {
                 throw new ArgumentNullException(nameof(inboundRequestProcessingHandler));
             }

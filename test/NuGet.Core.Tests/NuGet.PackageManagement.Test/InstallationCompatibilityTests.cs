@@ -331,7 +331,7 @@ namespace NuGet.PackageManagement.Test
             public TestContext(string userPackageFolder = null)
             {
                 // Dependencies
-                SourceRepository = new SourceRepository(new PackageSource("http://example/index.json"), Enumerable.Empty <INuGetResourceProvider>());
+                SourceRepository = new SourceRepository(new PackageSource("http://example/index.json"), Enumerable.Empty<INuGetResourceProvider>());
 
                 PackageIdentityA = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0"));
                 PackageIdentityB = new PackageIdentity("PackageB", NuGetVersion.Parse("1.0.0"));

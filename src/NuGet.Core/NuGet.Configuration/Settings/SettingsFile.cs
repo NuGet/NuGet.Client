@@ -177,7 +177,7 @@ namespace NuGet.Configuration
         /// </remarks>
         internal bool TryGetSection(string sectionName, out SettingSection section)
         {
-           return _rootElement.Sections.TryGetValue(sectionName, out section);
+            return _rootElement.Sections.TryGetValue(sectionName, out section);
         }
 
         internal void MergeSectionsInto(Dictionary<string, VirtualSettingSection> sectionsContainer)

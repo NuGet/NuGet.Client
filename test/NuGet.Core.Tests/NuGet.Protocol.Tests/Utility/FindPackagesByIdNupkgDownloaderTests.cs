@@ -365,7 +365,7 @@ namespace NuGet.Protocol.Tests
 
                 RequestCount = 0;
 
-                Target = new FindPackagesByIdNupkgDownloader(HttpSource);                
+                Target = new FindPackagesByIdNupkgDownloader(HttpSource);
             }
 
             public byte[] ExpectedContent { get; }

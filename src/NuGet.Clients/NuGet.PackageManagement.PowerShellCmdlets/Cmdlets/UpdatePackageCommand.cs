@@ -158,7 +158,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (Source != null)
             {
                 var projectNames = string.Join(",", Projects.Where(e => e is BuildIntegratedNuGetProject).Select(p => NuGetProject.GetUniqueNameOrName(p)));
-                if (!string.IsNullOrEmpty(projectNames)) {
+                if (!string.IsNullOrEmpty(projectNames))
+                {
                     var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), projectNames);
                     Log(MessageLevel.Warning, warning);
                 }

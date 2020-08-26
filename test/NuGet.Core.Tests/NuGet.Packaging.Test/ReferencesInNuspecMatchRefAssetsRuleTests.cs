@@ -228,7 +228,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("MyLib.dll", missingReferences.First().MissingItems[0]);
             Assert.Equal("ref", missingReferences.First().MissingFrom);
         }
-    
+
         [Fact]
         public void Compare_NuspecHasFilesWithNoSpecificTfmWithMatchingRefFiles_ShouldBeEmpty()
         {
@@ -252,7 +252,7 @@ namespace NuGet.Packaging.Test
             //Assert
             Assert.Empty(missingReferences);
         }
-        
+
         [Fact]
         public void Compare_MissingSubFolderInNuspec_ShouldHaveSubFolder()
         {

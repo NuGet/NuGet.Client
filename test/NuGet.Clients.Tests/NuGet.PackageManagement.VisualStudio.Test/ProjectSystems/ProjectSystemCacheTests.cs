@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 shortName: projectNamesA.ShortName,
                 customUniqueName: @"folderB\project",
                 projectId: _projectGuid2);
-            
+
             target.AddProject(projectNamesA, vsProjectAdapter: null, nuGetProject: null);
             target.AddProject(projectNamesB, vsProjectAdapter: null, nuGetProject: null);
 

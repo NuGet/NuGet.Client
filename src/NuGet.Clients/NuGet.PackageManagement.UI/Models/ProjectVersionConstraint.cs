@@ -1,4 +1,4 @@
-﻿using NuGet.Versioning;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {

@@ -150,8 +150,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 CancellationToken.None);
 
             // Assert
-            _mockLoginProvider.Verify( x => x.PromptUserForAccount(
-                It.IsAny<string>(), It.IsAny<VSAccountProvider>(), false,It.IsAny<CancellationToken>()),
+            _mockLoginProvider.Verify(x => x.PromptUserForAccount(
+               It.IsAny<string>(), It.IsAny<VSAccountProvider>(), false, It.IsAny<CancellationToken>()),
                 Times.Once);
             Assert.Equal(cred.Credentials, _mockUserEnteredCredentials.Object); //get returned the user credentails
         }
@@ -230,11 +230,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var exception =
                 await Assert.ThrowsAsync<InvalidOperationException>(
                         async () => await _provider.GetAsync(
-                            uri, 
-                            webProxy, 
+                            uri,
+                            webProxy,
                             type,
                             message,
-                            isRetry, 
+                            isRetry,
                             nonInteractive,
                             CancellationToken.None));
 

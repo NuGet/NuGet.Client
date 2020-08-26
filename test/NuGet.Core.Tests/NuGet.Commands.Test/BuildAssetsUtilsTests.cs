@@ -740,7 +740,7 @@ namespace NuGet.Commands.Test
                 var expectedPropertyGroup = outputFiles.FirstOrDefault().Content.Root.Elements().LastOrDefault();
 
                 Assert.NotNull(expectedPropertyGroup);
-                
+
                 Assert.Equal(" '$(ExcludeRestorePackageImports)' != 'true' ", expectedPropertyGroup.Attribute("Condition")?.Value);
 
                 var expectedProperty = expectedPropertyGroup.Elements().FirstOrDefault();

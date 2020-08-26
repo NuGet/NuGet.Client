@@ -203,8 +203,8 @@ namespace NuGet.CommandLine.XPlat
 
             return app;
         }
-		
-		private static void ShowBestHelp(CommandLineApplication app, string[] args)
+
+        private static void ShowBestHelp(CommandLineApplication app, string[] args)
         {
             CommandLineApplication lastCommand = null;
             List<CommandLineApplication> commands = app.Commands;

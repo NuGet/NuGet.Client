@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Test.Utility;
-using System.IO;
-using Xunit;
 using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using NuGet.Test.Utility;
+using Xunit;
 
 namespace NuGet.Common.Test
 {
@@ -340,7 +340,7 @@ namespace NuGet.Common.Test
                         {
                             using (var reader2 = new StreamReader(stream2))
                             {
-                               return await reader2.ReadToEndAsync();
+                                return await reader2.ReadToEndAsync();
                             }
                         }
                     }

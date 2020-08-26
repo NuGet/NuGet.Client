@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,7 +39,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Constructor_InitializesProperties()
         {
-            var response = new CopyFilesInPackageResponse(MessageResponseCode.Success, new [] { "a" });
+            var response = new CopyFilesInPackageResponse(MessageResponseCode.Success, new[] { "a" });
 
             Assert.Equal(MessageResponseCode.Success, response.ResponseCode);
             Assert.Equal(new[] { "a" }, response.CopiedFiles);

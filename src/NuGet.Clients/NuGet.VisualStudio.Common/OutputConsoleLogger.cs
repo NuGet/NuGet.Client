@@ -11,8 +11,8 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using Task = System.Threading.Tasks.Task;
 using AsyncLazyInt = Microsoft.VisualStudio.Threading.AsyncLazy<int>;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.Common
 {

@@ -577,7 +577,7 @@ namespace NuGet.Packaging.Test
                 {
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256),
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256)
-                }; 
+                };
 
                 entries.Should().BeEquivalentTo(expectedEntries);
             }

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
-using NuGet.Protocol.Core.Types;
-using NuGet.Configuration;
 using System.Net;
+using System.Net.Http;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {

@@ -44,7 +44,7 @@ namespace NuGet.Build.Tasks
 
             var entries = new List<ITaskItem>();
             var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-           
+
             foreach (var msbuildItem in CentralPackageVersions)
             {
                 string packageId = msbuildItem.ItemSpec;

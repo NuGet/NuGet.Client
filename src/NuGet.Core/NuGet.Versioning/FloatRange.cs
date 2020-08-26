@@ -200,7 +200,7 @@ namespace NuGet.Versioning
 
                     if (dashPosition != -1 &&
                         lastStarPosition == versionString.Length - 1 && // Last star is at the end of the full string
-                        firstStarPosition == (dashPosition-1) // First star is right before the first dash.
+                        firstStarPosition == (dashPosition - 1) // First star is right before the first dash.
                         )
                     {
                         // Get the stable part.

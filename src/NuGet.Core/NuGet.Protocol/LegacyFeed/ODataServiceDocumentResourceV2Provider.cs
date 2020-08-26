@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,7 +57,7 @@ namespace NuGet.Protocol
                     if (!_cache.TryGetValue(url, out cacheInfo) || entryValidCutoff > cacheInfo.CachedTime)
                     {
                         var client = (await source.GetResourceAsync<HttpSourceResource>(token)).HttpSource;
-                        serviceDocument = await ODataServiceDocumentUtils.CreateODataServiceDocumentResourceV2(url,client, utcNow, NullLogger.Instance, token);
+                        serviceDocument = await ODataServiceDocumentUtils.CreateODataServiceDocumentResourceV2(url, client, utcNow, NullLogger.Instance, token);
 
                         // cache the value even if it is null to avoid checking it again later
                         var cacheEntry = new ODataServiceDocumentCacheInfo

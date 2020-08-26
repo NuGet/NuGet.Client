@@ -39,7 +39,7 @@ namespace NuGet.Test.Utility
                     }
                     else
                     {
-                        
+
                         var fullPath = Path.Combine(Root, ConfigFile);
                         // Skip if a file does not exist, otherwise run the test.
                         if (!File.Exists(fullPath))

@@ -3,15 +3,15 @@
 
 using System;
 using System.Linq;
-using NuGet.Common;
-using NuGet.Frameworks;
-using NuGet.Packaging.Rules;
-using Xunit;
-using NuGet.RuntimeModel;
-using NuGet.Client;
-using NuGet.ContentModel;
-using NuGet.Packaging.Core;
 using System.Reflection;
+using NuGet.Client;
+using NuGet.Common;
+using NuGet.ContentModel;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Packaging.Rules;
+using NuGet.RuntimeModel;
+using Xunit;
 
 namespace NuGet.Packaging.Test
 {
@@ -447,7 +447,7 @@ namespace NuGet.Packaging.Test
                 "lib/netstandard1.3/test.dll",
                 "lib/netstandard2.0/test.dll",
             };
-            
+
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();

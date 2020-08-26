@@ -74,7 +74,7 @@ namespace NuGet.Build.Tasks.Test
                 </packageSources>
             </configuration>";
 
-     
+
 
             var baseConfigPath = "NuGet.Config";
 
@@ -91,7 +91,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Test
 
-                var settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory,null, machineWideSettings);
+                var settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, null, machineWideSettings);
                 var filePaths = settings.GetConfigFilePaths();
 
                 Assert.Equal(3, filePaths.Count()); // Solution, app data + machine wide
@@ -99,8 +99,8 @@ namespace NuGet.Build.Tasks.Test
                 Assert.True(filePaths.Contains(Path.Combine(machineWide, baseConfigPath)));
 
                 // Test 
-                 settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
-                 filePaths = settings.GetConfigFilePaths();
+                settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
+                filePaths = settings.GetConfigFilePaths();
 
                 Assert.Equal(1, filePaths.Count());
                 Assert.True(filePaths.Contains(Path.Combine(subFolder, baseConfigPath)));

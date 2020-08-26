@@ -13,9 +13,9 @@ using System.Xml.Linq;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-using NuGet.Test.Utility;
 
 namespace NuGet.Packaging.Test
 {
@@ -2575,7 +2575,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 exceptionMessage: null);
         }
 
-        [Fact(Skip="Need to solve https://github.com/NuGet/Home/issues/6941 to run this test case")]
+        [Fact(Skip = "Need to solve https://github.com/NuGet/Home/issues/6941 to run this test case")]
         public void Icon_MultipleIconFilesResolved_ThrowsException()
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
