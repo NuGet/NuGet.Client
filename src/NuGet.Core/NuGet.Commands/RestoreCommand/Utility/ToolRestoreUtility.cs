@@ -34,6 +34,7 @@ namespace NuGet.Commands
                 {
                     new TargetFrameworkInformation
                     {
+                        TargetAlias = frameworkShortFolderName,
                         FrameworkName = framework,
                         Dependencies = new List<LibraryDependency>
                         {
@@ -60,6 +61,7 @@ namespace NuGet.Commands
                     {
                         new ProjectRestoreMetadataFrameworkInfo
                         {
+                            TargetAlias = frameworkShortFolderName,
                             FrameworkName = framework,
                             ProjectReferences = { }
                         }

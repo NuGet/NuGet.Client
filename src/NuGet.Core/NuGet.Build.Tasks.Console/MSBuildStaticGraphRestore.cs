@@ -774,7 +774,11 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, project.FullPath);
             restoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
             restoreMetadata.OutputPath = outputPath;
-            restoreMetadata.OriginalTargetFrameworks.AddRange(targetFrameworkInfos.Select(e => e.TargetAlias));
+            targetFrameworkInfos.ForEach(tfi =>
+                restoreMetadata.OriginalTargetFrameworks.Add(
+                        !string.IsNullOrEmpty(tfi.TargetAlias) ?
+                            tfi.TargetAlias :
+                            tfi.FrameworkName.GetShortFolderName()));
             restoreMetadata.PackagesPath = GetPackagesPath(project, settings);
             restoreMetadata.ProjectName = projectName;
             restoreMetadata.ProjectPath = project.FullPath;
