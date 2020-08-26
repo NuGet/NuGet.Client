@@ -39,7 +39,7 @@
     <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console\2.4.1\tools\net472\xunit.console.x86.exe</XunitConsoleExePath>
     <ILMergeExePath>$(SolutionPackagesFolder)ilmerge\3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
     <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)xunitxml.testlogger\2.0.0\build\_common</XunitXmlLoggerDirectory>
-    <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)nuget.build.tasks.pack\5.6.0\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)nuget.build.tasks.pack\5.6.0\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
+    <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)nuget.build.tasks.pack\5.7.0\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)nuget.build.tasks.pack\5.7.0\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
