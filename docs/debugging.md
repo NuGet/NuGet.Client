@@ -137,3 +137,9 @@ There are 2 ways to patch dotnet.exe with the latest NuGet bits.
 
 * Refer to the [PowerShell helper scripts](..\scripts\nuget-debug-helpers.ps1) for a helper script to patch a zip of the SDK that can be acquired from the [dotnet installer](https://github.com/dotnet/installer/blob/master/README.md#installers-and-binaries). Note that when running you [might](https://github.com/dotnet/runtime/blob/master/docs/project/dogfooding.md) need to disable MULTI_LEVEL_LOOKUP. dotnet.exe has a special logic for the discovering the SDK, and it's possible it's discovering a different SDK from the one you patched.
 * Refer to [dotnet/sdk](https://github.com/dotnet/sdk) repo to build it locally and test through that. The sdk consumes NuGet through packages, use `Ctrl + F` in your trusty editor to figure out how to make those changes. Keep in mind that you might need to add a new source in their build.
+
+### Debugging the NuGet and plugin interaction
+
+When working with private feeds, NuGet defers the heavy lifting for authorization and authentication to a plugin.
+To investigate issues related to NuGet <-> Plugin interactions, plugin logging was added.
+Refer to [Plugin Diagnostic logging](plugin-v2-logging.md) for more details.
