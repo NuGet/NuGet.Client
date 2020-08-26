@@ -237,7 +237,7 @@ namespace NuGet.Packaging
         }
 
         public IEnumerable<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
-        
+
         public IEnumerable<PackageType> PackageTypes { get; set; } = new List<PackageType>();
 
         public LicenseMetadata LicenseMetadata { get; set; } = null;

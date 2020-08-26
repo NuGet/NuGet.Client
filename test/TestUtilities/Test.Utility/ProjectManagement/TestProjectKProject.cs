@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,10 +57,10 @@ namespace Test.Utility.ProjectManagement
             return Task.Run(() =>
                 {
                     _installedPackages.Add(new NuGetPackageMoniker
-                        {
-                            Id = package.Id,
-                            Version = package.Version
-                        });
+                    {
+                        Id = package.Id,
+                        Version = package.Version
+                    });
                 });
         }
 

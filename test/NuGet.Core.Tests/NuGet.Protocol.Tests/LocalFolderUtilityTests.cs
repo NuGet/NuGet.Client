@@ -260,7 +260,7 @@ namespace NuGet.Protocol.Tests
                 }
 
                 var a = new PackageIdentity(id, NuGetVersion.Parse("1.0.0"));
-                
+
                 // Act
                 var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
 
@@ -1041,7 +1041,7 @@ namespace NuGet.Protocol.Tests
 
             //Act
             var ex = Assert.Throws<ArgumentException>(() => LocalFolderUtility.EnsurePackageFileExists(packagePath, emptyTestList));
-          
+
             //Assert
             //Expected an exception explaining that the file wasn't found in the list.
             string expectedError = string.Format(CultureInfo.CurrentCulture,
@@ -1074,7 +1074,7 @@ namespace NuGet.Protocol.Tests
                 //Arrange
                 string nonexistentPath = "nonexistentPath";
                 var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
-                
+
                 await SimpleTestPackageUtility.CreateFolderFeedPackagesConfigAsync(root, a);
 
                 //Act

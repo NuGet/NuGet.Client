@@ -148,7 +148,7 @@ namespace NuGet.VisualStudio
             var projects = dte.Solution.Projects;
 
             var results = new Dictionary<string, ISet<VsHierarchyItem>>(StringComparer.OrdinalIgnoreCase);
-            foreach (var project in projects.Cast< EnvDTE.Project>())
+            foreach (var project in projects.Cast<EnvDTE.Project>())
             {
                 var expandedNodes =
                     GetExpandedProjectHierarchyItems(project);
@@ -168,7 +168,7 @@ namespace NuGet.VisualStudio
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
             var projects = dte.Solution.Projects;
 
-            foreach (var project in projects.Cast< EnvDTE.Project>())
+            foreach (var project in projects.Cast<EnvDTE.Project>())
             {
                 ISet<VsHierarchyItem> expandedNodes;
                 if (ignoreNodes.TryGetValue(EnvDTEProjectInfoUtility.GetUniqueName(project), out expandedNodes)

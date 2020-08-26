@@ -44,7 +44,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             var target = new PackTask();
             target.PackTaskLogic = logic.Object;
-            
+
             // Act
             var result = target.Execute();
 
@@ -324,7 +324,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 AllowedOutputExtensionsInPackageBuildOutputFolder = Array.Empty<string>(),
                 AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = Array.Empty<string>(),
                 BuildOutputFolders = new string[] { "lib", "embed" },
-                ContentTargetFolders = new string[] { "ContentTargetFolders" } ,
+                ContentTargetFolders = new string[] { "ContentTargetFolders" },
                 ContinuePackingAfterGeneratingNuspec = true,
                 Copyright = "Copyright",
                 Description = "Description",
@@ -361,7 +361,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 BuildOutputInPackage = new ITaskItem[0],
                 TargetPathsToSymbols = new ITaskItem[0],
                 FrameworksWithSuppressedDependencies = new ITaskItem[0],
-    };
+            };
 
             var settings = new JsonSerializerSettings
             {
@@ -408,7 +408,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             logic
                 .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>()))
                 .Callback<IPackTaskRequest<IMSBuildItem>>(r => request = r);
-            
+
             target.PackTaskLogic = logic.Object;
 
             // Act

@@ -34,7 +34,7 @@ namespace NuGet.Packaging
         /// Specifies assemblies from GAC that the package depends on.
         /// </summary>
         IEnumerable<FrameworkAssemblyReference> FrameworkReferences { get; }
-        
+
         /// <summary>
         /// Returns sets of References specified in the manifest.
         /// </summary>

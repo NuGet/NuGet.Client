@@ -28,7 +28,7 @@ namespace NuGet.SolutionRestoreManager
     /// UpdateSolution_Cancel
     /// UpdateSolution_Done
     /// </remarks>
-    public sealed class SolutionRestoreBuildHandler 
+    public sealed class SolutionRestoreBuildHandler
         : IVsUpdateSolutionEvents5, IDisposable
     {
         private const uint VSCOOKIE_NIL = 0;

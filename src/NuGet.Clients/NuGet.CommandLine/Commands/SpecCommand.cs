@@ -109,7 +109,7 @@ namespace NuGet.CommandLine
             }
 
             manifest.Metadata.SetProjectUrl(sampleProjectUrl);
-            manifest.Metadata.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), new string[] {}, LicenseMetadata.CurrentVersion);
+            manifest.Metadata.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), new string[] { }, LicenseMetadata.CurrentVersion);
             manifest.Metadata.SetIconUrl(sampleIconUrl);
             manifest.Metadata.Tags = sampleTags;
             manifest.Metadata.Copyright = "$copyright$";

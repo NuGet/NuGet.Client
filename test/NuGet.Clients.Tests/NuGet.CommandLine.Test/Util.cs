@@ -8,18 +8,18 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 using Moq;
 using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-using System.Reflection;
-using NuGet.Configuration;
 
 namespace NuGet.CommandLine.Test
 {

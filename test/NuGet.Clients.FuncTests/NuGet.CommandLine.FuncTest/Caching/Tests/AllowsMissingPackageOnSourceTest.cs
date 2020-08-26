@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.Test.Caching
 
             // The package is not available on the source.
             context.IsPackageBAvailable = false;
-            
+
             return command.PrepareArguments(context, context.PackageIdentityB);
         }
 

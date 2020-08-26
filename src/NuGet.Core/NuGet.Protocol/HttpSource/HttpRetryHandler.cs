@@ -83,7 +83,7 @@ namespace NuGet.Protocol
                     }
                     requestMessage.Properties[StopwatchPropertyName] = stopwatches;
                     var requestUri = requestMessage.RequestUri;
-                    
+
                     try
                     {
                         // The only time that we will be disposing this existing response is if we have 

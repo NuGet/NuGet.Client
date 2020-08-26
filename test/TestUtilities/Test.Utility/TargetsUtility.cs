@@ -69,7 +69,7 @@ namespace NuGet.Test.Utility
                     if (!result.ContainsKey(key))
                     {
                         var attributeValues = new Dictionary<string, string>();
-                        foreach(var attribute in item.Attributes())
+                        foreach (var attribute in item.Attributes())
                         {
                             attributeValues.Add(attribute.Name.LocalName, attribute.Value);
                         }

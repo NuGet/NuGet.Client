@@ -148,7 +148,7 @@ EndGlobal";
 
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");                
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib");
 
@@ -189,7 +189,7 @@ EndGlobal";
 
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
                 result.Success.Should().BeFalse();
-                result.ExitCode.Should().Be(1, because: "error text should be displayed as restore failed");                
+                result.ExitCode.Should().Be(1, because: "error text should be displayed as restore failed");
             }
         }
 
@@ -300,13 +300,13 @@ EndGlobal";
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
 
-                        ProjectFileUtils.AddItem(
-                            xml,
-                            "PackageReference",
-                            "x",
-                            "netstandard1.3",
-                            new Dictionary<string, string>(),
-                            attributes);
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "x",
+                        "netstandard1.3",
+                        new Dictionary<string, string>(),
+                        attributes);
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -525,7 +525,7 @@ EndGlobal";
                 var sources = new List<string>();
                 var projFramework = FrameworkConstants.CommonFrameworks.Net462;
 
-                foreach (var letter in new[] { "A", "B", "C"})
+                foreach (var letter in new[] { "A", "B", "C" })
                 {
                     // Project
                     var project = SimpleTestProjectContext.CreateNETCore(
@@ -624,7 +624,7 @@ EndGlobal";
                 var sources = new List<string>();
                 var projFramework = FrameworkConstants.CommonFrameworks.Net462;
 
-                foreach (var letter in new[] { "A", "B", "C"})
+                foreach (var letter in new[] { "A", "B", "C" })
                 {
                     // Project
                     var project = SimpleTestProjectContext.CreateNETCore(
@@ -978,7 +978,7 @@ EndGlobal";
                     ProjectFileUtils.AddProperty(xml, "DisableImplicitFrameworkReferences", "true");
                     for (int i = 0; i < originalFrameworks.Length; i++)
                     {
-                        var attributes = new Dictionary<string, string>() { { "Version", packages[i].Version} };
+                        var attributes = new Dictionary<string, string>() { { "Version", packages[i].Version } };
                         ProjectFileUtils.AddItem(
                             xml,
                             "PackageReference",

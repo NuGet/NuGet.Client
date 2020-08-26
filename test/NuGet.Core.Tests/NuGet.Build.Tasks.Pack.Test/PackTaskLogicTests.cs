@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
-using System.Reflection;
 
 namespace NuGet.Build.Tasks.Pack.Test
 {

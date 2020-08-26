@@ -15,7 +15,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Contains Package specific properties for Warnings.
     /// </summary>
-    public class PackageSpecificWarningProperties : IEquatable <PackageSpecificWarningProperties>
+    public class PackageSpecificWarningProperties : IEquatable<PackageSpecificWarningProperties>
     {
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace NuGet.Commands
         /// <param name="packageSpec">PackageSpec containing the Dependencies with WarningProperties</param>
         /// <param name="framework">NuGetFramework for which the properties should be assessed.</param>
         /// <returns>PackageSpecific WarningProperties extracted from a PackageSpec for a specific NuGetFramework</returns>
-        public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(PackageSpec packageSpec, 
+        public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(PackageSpec packageSpec,
             NuGetFramework framework)
         {
             // NuGetLogCode -> LibraryId -> Set of Frameworks.
@@ -71,7 +71,7 @@ namespace NuGet.Commands
             }
 
             var targetFrameworkInformation = packageSpec.GetTargetFramework(framework);
-            
+
             foreach (var dependency in targetFrameworkInformation.Dependencies)
             {
                 warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);

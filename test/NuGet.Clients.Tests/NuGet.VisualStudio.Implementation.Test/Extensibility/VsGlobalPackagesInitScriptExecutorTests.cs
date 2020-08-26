@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.PackageManagement.VisualStudio;
@@ -14,7 +14,7 @@ namespace NuGet.VisualStudio.Implementation.Test
             var scriptExecutor = new Mock<IScriptExecutor>();
             var executor = new VsGlobalPackagesInitScriptExecutor(scriptExecutor.Object);
             await Assert.ThrowsAsync<ArgumentException>(async ()
-                => await executor.ExecuteInitScriptAsync(packageId:  null, packageVersion: "1.0.0"));
+                => await executor.ExecuteInitScriptAsync(packageId: null, packageVersion: "1.0.0"));
         }
 
         [Fact]

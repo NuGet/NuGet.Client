@@ -2407,7 +2407,7 @@ namespace NuGet.Configuration.Test
                 var settingsLoadContext = new SettingsLoadingContext();
 
                 // Act
-                var settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configAPath, configBPath}, settingsLoadContext);
+                var settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configAPath, configBPath }, settingsLoadContext);
                 // Assert
                 var section = settings.GetSection("SectionName");
                 Assert.Equal(1, section.Items.Count);

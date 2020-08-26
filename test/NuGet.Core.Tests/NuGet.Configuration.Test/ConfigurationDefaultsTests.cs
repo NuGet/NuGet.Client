@@ -344,7 +344,7 @@ namespace NuGet.Configuration
         private ConfigurationDefaults GetConfigurationDefaults(string configurationDefaultsContent, TestDirectory mockBaseDirectory)
         {
             var configurationDefaultsPath = "NuGetDefaults.config";
-      
+
             File.WriteAllText(Path.Combine(mockBaseDirectory, configurationDefaultsPath), configurationDefaultsContent);
             return new ConfigurationDefaults(mockBaseDirectory, configurationDefaultsPath);
         }

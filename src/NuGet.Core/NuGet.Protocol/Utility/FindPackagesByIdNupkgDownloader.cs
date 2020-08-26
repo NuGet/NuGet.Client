@@ -115,7 +115,7 @@ namespace NuGet.Protocol
             return await ProcessNupkgStreamAsync(
                 identity,
                 url,
-                async stream => 
+                async stream =>
                 {
                     await stream.CopyToAsync(destination, token);
                     ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));

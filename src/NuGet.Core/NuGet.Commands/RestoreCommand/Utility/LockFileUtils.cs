@@ -112,7 +112,7 @@ namespace NuGet.Commands
                     }
                 }
                 else
-                { 
+                {
                     AddAssets(libraryDependency, library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
                     // Check if compatile assets were found.
                     // If no compatible assets were found and this is the last check

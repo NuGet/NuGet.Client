@@ -77,7 +77,7 @@ namespace NuGet.CommandLine.XPlat
 
             var matchingPackageSpecs = dgSpec
                 .Projects
-                .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference && 
+                .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference &&
                 PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFullPath(p.RestoreMetadata.ProjectPath), projectFullPath))
                 .ToArray();
 
@@ -165,7 +165,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // If the user has specified frameworks then we intersect that with the compatible frameworks.
                 var userSpecifiedFrameworkSet = new HashSet<NuGetFramework>(
-                    userSpecifiedFrameworks, 
+                    userSpecifiedFrameworks,
                     new NuGetFrameworkFullComparer());
 
                 compatibleFrameworks.IntersectWith(userSpecifiedFrameworkSet);
@@ -185,7 +185,7 @@ namespace NuGet.CommandLine.XPlat
                 return 1;
             }
             // Ignore the graphs with RID
-            else if (compatibleFrameworks.Count == 
+            else if (compatibleFrameworks.Count ==
                 restorePreviewResult.Result.CompatibilityCheckResults.Where(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)).Count())
             {
                 // Package is compatible with all the project TFMs
@@ -329,7 +329,7 @@ namespace NuGet.CommandLine.XPlat
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
                     PreLoadedRequestProviders = providers,
-                    Sources = packageReferenceArgs.Sources?.ToList()                    
+                    Sources = packageReferenceArgs.Sources?.ToList()
                 };
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.
@@ -370,7 +370,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // If the user specified frameworks then we get the flattened graphs  only from the compatible frameworks.
                 var userSpecifiedFrameworkSet = new HashSet<NuGetFramework>(
-                    UserSpecifiedFrameworks, 
+                    UserSpecifiedFrameworks,
                     new NuGetFrameworkFullComparer());
 
                 restoreGraphs = restoreGraphs

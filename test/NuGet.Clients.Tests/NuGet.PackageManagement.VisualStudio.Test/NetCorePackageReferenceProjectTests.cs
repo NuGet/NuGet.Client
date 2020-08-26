@@ -3,21 +3,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
-using NuGet.VisualStudio;
-using NuGet.Test.Utility;
-using System.Threading;
 using System.IO;
-using Moq;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
-using NuGet.ProjectModel;
-using NuGet.Commands.Test;
+using Moq;
 using NuGet.Commands;
+using NuGet.Commands.Test;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
+using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {

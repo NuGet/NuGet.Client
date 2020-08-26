@@ -166,7 +166,7 @@ namespace NuGet.Common
         /// <summary>
         /// Invalid package types
         /// </summary>
-        NU1204 = 1204, 
+        NU1204 = 1204,
 
         /// <summary>
         /// Project has an invalid dependency count

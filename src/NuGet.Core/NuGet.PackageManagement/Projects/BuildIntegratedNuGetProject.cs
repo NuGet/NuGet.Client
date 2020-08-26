@@ -22,7 +22,7 @@ namespace NuGet.ProjectManagement.Projects
     /// These projects contain a project.json or package references in CSProj
     /// </summary>
     [DebuggerDisplay("{ProjectName} [{ProjectStyle}]")]
-    public abstract class BuildIntegratedNuGetProject 
+    public abstract class BuildIntegratedNuGetProject
         : NuGetProject
         , INuGetIntegratedProject
         , IDependencyGraphProject

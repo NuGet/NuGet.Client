@@ -91,7 +91,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var expectedItem = new AddItem("key2", "value2", new ReadOnlyDictionary<string, string>(
-                new Dictionary<string,string> {
+                new Dictionary<string, string> {
                     { "meta3", "data3" }
                 }));
 

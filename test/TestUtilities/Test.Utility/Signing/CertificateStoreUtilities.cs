@@ -12,7 +12,7 @@ namespace Test.Utility.Signing
         {
             // According to https://github.com/dotnet/runtime/blob/master/docs/design/features/cross-platform-cryptography.md#x509store   
             // use different approaches for Windows, Mac and Linux.
-            if(readOnly)
+            if (readOnly)
             {
                 return StoreLocation.LocalMachine;
             }

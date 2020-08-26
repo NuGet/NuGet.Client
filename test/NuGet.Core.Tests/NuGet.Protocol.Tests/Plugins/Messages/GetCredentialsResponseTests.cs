@@ -42,16 +42,16 @@ namespace NuGet.Protocol.Plugins.Tests
         [Theory]
         [InlineData(null)]
         // double arrays to work around C# weirdness with passing arrays as the only argument to a 'params' parameter
-        [InlineData(new object[]{new string[0]})]
-        [InlineData(new object[]{new[] { "a" }})]
-        [InlineData(new object[]{new[] { "a", "b" }})]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "a" } })]
+        [InlineData(new object[] { new[] { "a", "b" } })]
         public void Constructor_AllowsAnyAuthTypes(string[] authTypes)
         {
             new GetCredentialsResponse(MessageResponseCode.Success, username: "a", password: "b", authenticationTypes: authTypes);
         }
 
         [Theory]
-        [InlineData(MessageResponseCode.Success, "a", "b", new[]{"basic"})]
+        [InlineData(MessageResponseCode.Success, "a", "b", new[] { "basic" })]
         [InlineData(MessageResponseCode.NotFound, null, null, null)]
         public void Constructor_InitializesProperties(
             MessageResponseCode responseCode,
@@ -70,7 +70,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Theory]
         [InlineData(MessageResponseCode.NotFound, null, null, null, "{\"ResponseCode\":\"NotFound\"}")]
         [InlineData(MessageResponseCode.Success, "a", "b", null, "{\"Password\":\"b\",\"ResponseCode\":\"Success\",\"Username\":\"a\"}")]
-        [InlineData(MessageResponseCode.Success, "a", "b", new[]{"basic", "negotiate"}, "{\"Password\":\"b\",\"ResponseCode\":\"Success\",\"Username\":\"a\",\"AuthenticationTypes\":[\"basic\",\"negotiate\"]}")]
+        [InlineData(MessageResponseCode.Success, "a", "b", new[] { "basic", "negotiate" }, "{\"Password\":\"b\",\"ResponseCode\":\"Success\",\"Username\":\"a\",\"AuthenticationTypes\":[\"basic\",\"negotiate\"]}")]
         public void JsonSerialization_ReturnsCorrectJson(
             MessageResponseCode responseCode,
             string username,
@@ -88,7 +88,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Theory]
         [InlineData("{\"ResponseCode\":\"NotFound\"}", MessageResponseCode.NotFound, null, null, null)]
         [InlineData("{\"Password\":\"a\",\"ResponseCode\":\"Success\",\"Username\":\"b\"}", MessageResponseCode.Success, "b", "a", null)]
-        [InlineData("{\"Password\":\"a\",\"ResponseCode\":\"Success\",\"Username\":\"b\",\"AuthenticationTypes\":[\"negotiate\",\"NTLM\"]}", MessageResponseCode.Success, "b", "a", new[]{"negotiate", "NTLM"})]
+        [InlineData("{\"Password\":\"a\",\"ResponseCode\":\"Success\",\"Username\":\"b\",\"AuthenticationTypes\":[\"negotiate\",\"NTLM\"]}", MessageResponseCode.Success, "b", "a", new[] { "negotiate", "NTLM" })]
         public void JsonDeserialization_ReturnsCorrectObject(
             string json,
             MessageResponseCode responseCode,

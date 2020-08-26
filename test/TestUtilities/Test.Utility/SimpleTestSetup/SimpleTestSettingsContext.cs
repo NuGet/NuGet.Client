@@ -178,6 +178,6 @@ namespace NuGet.Test.Utility
             var repoPackageDir = Path.Combine(reposRoot.FullName, "packages", packageId);
             return repoPackageDir;
         }
-           
+
     }
 }

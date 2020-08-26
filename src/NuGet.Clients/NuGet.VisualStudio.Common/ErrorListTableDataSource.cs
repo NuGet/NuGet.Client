@@ -80,8 +80,8 @@ namespace NuGet.VisualStudio.Common
                 {
                     subscription.RunWithLock((s) =>
                     {
-                    // Add all existing entries to the new sink
-                    s.AddEntries(_entries.ToList(), removeAllEntries: false);
+                        // Add all existing entries to the new sink
+                        s.AddEntries(_entries.ToList(), removeAllEntries: false);
                     });
                 }
             }
@@ -188,7 +188,7 @@ namespace NuGet.VisualStudio.Common
                         showErrorListOnBuildEnd = result;
                     }
                 }
-               
+
                 if (showErrorListOnBuildEnd)
                 {
                     // Give the error list focus.

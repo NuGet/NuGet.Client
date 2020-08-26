@@ -108,7 +108,7 @@ namespace NuGet.Common
             // In that case we replace this path separator.
             else if (HasTrailingDirectorySeparator(path))
             {
-                return path.Substring(0, path.Length - 1) +  trailingCharacter;
+                return path.Substring(0, path.Length - 1) + trailingCharacter;
             }
 
             return path + trailingCharacter;
@@ -155,7 +155,7 @@ namespace NuGet.Common
                 return ch == Path.DirectorySeparatorChar;
             }
         }
-        
+
         public static void EnsureParentDirectory(string filePath)
         {
             string directory = Path.GetDirectoryName(filePath);

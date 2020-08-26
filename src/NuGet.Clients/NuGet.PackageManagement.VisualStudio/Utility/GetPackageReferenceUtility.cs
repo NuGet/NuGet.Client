@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.ProjectModel;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio.Utility

@@ -359,7 +359,7 @@ namespace NuGet.DependencyResolver
         public static async Task<RemoteMatch> FindLibraryByVersionAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
-            IEnumerable<IRemoteDependencyProvider> providers, 
+            IEnumerable<IRemoteDependencyProvider> providers,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken token)

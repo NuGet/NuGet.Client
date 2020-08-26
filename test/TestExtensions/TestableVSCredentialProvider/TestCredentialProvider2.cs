@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace NuGet.Test.TestExtensions.TestableVSCredentialProvider
 {
 
     [Export(typeof(IVsCredentialProvider))]
-    public sealed class TestCredentialProvider2 
+    public sealed class TestCredentialProvider2
         : TestCredentialProvider
     {
     }

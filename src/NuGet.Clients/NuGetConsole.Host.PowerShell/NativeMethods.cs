@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,10 +76,10 @@ namespace NuGetConsole.Host.PowerShell
             PSCredential credential = null;
 
             var info = new CreduiInfo
-                {
-                    pszCaptionText = caption,
-                    pszMessageText = message
-                };
+            {
+                pszCaptionText = caption,
+                pszMessageText = message
+            };
 
             var pszUserName = new StringBuilder(userName, 0x201);
             var pszPassword = new StringBuilder(0x100);

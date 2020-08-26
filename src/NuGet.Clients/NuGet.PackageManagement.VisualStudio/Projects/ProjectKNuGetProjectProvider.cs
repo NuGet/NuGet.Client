@@ -19,8 +19,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public RuntimeTypeHandle ProjectType => typeof(ProjectKNuGetProject).TypeHandle;
 
         public async Task<NuGetProject> TryCreateNuGetProjectAsync(
-            IVsProjectAdapter project, 
-            ProjectProviderContext context, 
+            IVsProjectAdapter project,
+            ProjectProviderContext context,
             bool forceProjectType)
         {
             Assumes.Present(project);

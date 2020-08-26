@@ -1727,7 +1727,7 @@ namespace NuGet.Commands.Test
                     LibraryRange = new LibraryRange("foo", versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
                 };
 
-                var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.*", allowFloating:true));
+                var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.*", allowFloating: true));
 
                 var tfi = CreateTargetFrameworkInformation(
                     new List<LibraryDependency>() { packageRefDependecyFoo },
@@ -1796,7 +1796,7 @@ namespace NuGet.Commands.Test
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
         }
-        
+
         private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
         {
             var packageSpec = new PackageSpec();

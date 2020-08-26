@@ -15,7 +15,7 @@ namespace NuGet.Test
         {
             // Arrange
             // non-package-based in the precedence list
-            var fw1 = NuGetFramework.Parse("net45");      
+            var fw1 = NuGetFramework.Parse("net45");
             var fw2 = NuGetFramework.Parse("netcore451");
             var fw3 = NuGetFramework.Parse("win81");
             var fw4 = NuGetFramework.Parse("wpa81");

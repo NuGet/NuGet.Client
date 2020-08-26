@@ -179,7 +179,7 @@ namespace NuGet.ProjectModel.Test
             {
                 FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16,
                 Dependencies = new List<LibraryDependency>() { ld }
-               
+
             };
             var spec = new PackageSpec(new[] { frameworkA, frameworkB });
             var identity = new PackageIdentity(packageId, newVersion);

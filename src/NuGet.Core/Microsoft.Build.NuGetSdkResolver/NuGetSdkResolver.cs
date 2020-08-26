@@ -114,7 +114,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             public static SdkResult GetSdkResult(SdkReference sdk, object nuGetVersion, SdkResolverContext context, SdkResultFactory factory)
             {
                 // Cast the NuGet version since the caller does not want to consume NuGet classes directly
-                var parsedSdkVersion = (NuGetVersion) nuGetVersion;
+                var parsedSdkVersion = (NuGetVersion)nuGetVersion;
 
                 // Stores errors and warnings for the result
                 ICollection<string> errors = new List<string>();
@@ -226,7 +226,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 // Get the installed path and add the expected "Sdk" folder.  Windows file systems are not case sensitive
                 installedPath = Path.Combine(packageInfo.PathResolver.GetInstallPath(packageInfo.Id, packageInfo.Version), "Sdk");
 
-                
+
                 if (!NuGet.Common.RuntimeEnvironmentHelper.IsWindows && !Directory.Exists(installedPath))
                 {
                     // Fall back to lower case "sdk" folder in case the file system is case sensitive

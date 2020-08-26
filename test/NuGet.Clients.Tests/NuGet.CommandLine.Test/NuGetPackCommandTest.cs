@@ -2185,7 +2185,7 @@ public class B
                 var r = CommandRunner.Run(nugetexe, projectDirectory, "pack Foo.csproj -build", waitForExit: true);
 
                 // The assembly version was used, not the informational version
-                var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{version}.nupkg"); 
+                var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{version}.nupkg");
                 var outputPackage = new OptimizedZipPackage(outputPackageFileName);
 
                 // Assert
@@ -2213,7 +2213,7 @@ public class B
                 var r = CommandRunner.Run(nugetexe, projectDirectory, "pack Foo.csproj -build", waitForExit: true);
 
                 // The informational version without the build metadata part was used
-                var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{semverVersion}.nupkg"); 
+                var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{semverVersion}.nupkg");
                 var outputPackage = new OptimizedZipPackage(outputPackageFileName);
 
                 // Assert

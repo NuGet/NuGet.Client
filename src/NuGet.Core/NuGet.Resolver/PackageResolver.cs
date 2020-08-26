@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,7 +41,7 @@ namespace NuGet.Resolver
                     throw new NuGetResolverInputException(String.Format(CultureInfo.CurrentCulture, Strings.MissingDependencyInfo, requiredId));
                 }
             }
-            
+
             var invalidExistingPackages = new List<string>();
 
             var installedPackages = context.PackagesConfig.Select(p => p.PackageIdentity).ToArray();

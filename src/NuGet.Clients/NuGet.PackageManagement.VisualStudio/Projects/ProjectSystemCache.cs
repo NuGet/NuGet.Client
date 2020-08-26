@@ -316,14 +316,14 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         private CacheEntry AddOrUpdateCacheEntry(
-            string primaryKey, 
+            string primaryKey,
             Func<string, CacheEntry> addEntryFactory,
             Func<string, CacheEntry, CacheEntry> updateEntryFactory)
         {
             Debug.Assert(_readerWriterLock.IsWriteLockHeld);
 
             CacheEntry newCacheEntry, oldCacheEntry;
-            if(_primaryCache.TryGetValue(primaryKey, out oldCacheEntry))
+            if (_primaryCache.TryGetValue(primaryKey, out oldCacheEntry))
             {
                 newCacheEntry = updateEntryFactory(primaryKey, oldCacheEntry);
                 _primaryCache[primaryKey] = newCacheEntry;
@@ -380,7 +380,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // If there is only one project name instance, that means the short name is unambiguous, in which
                 // case we can return that one project.
                 projectNames = values.Count == 1 ? values.Single() : null;
-                
+
                 return projectNames != null;
             }
 
@@ -493,7 +493,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // We should fire the event only if the cache was clean before.
             // If the cache was dirty already then the VSSolutionsManager is yet to consume the event
             // and will consume current changes as well.
-            if(CacheUpdated != null && TestSetDirtyFlag())
+            if (CacheUpdated != null && TestSetDirtyFlag())
             {
                 CacheUpdated(this, new NuGetEventArgs<string>(projectFullName));
             }

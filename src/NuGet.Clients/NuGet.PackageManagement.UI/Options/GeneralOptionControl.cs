@@ -184,7 +184,7 @@ namespace NuGet.Options
             localsCommandStatusText.AccessibleName = statusText;
             localsCommandStatusText.Visible = visibility;
             localsCommandStatusText.Text = statusText;
-            localsCommandStatusText.Anchor = AnchorStyles.Top|AnchorStyles.Left;
+            localsCommandStatusText.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             localsCommandStatusText.Refresh();
         }
 

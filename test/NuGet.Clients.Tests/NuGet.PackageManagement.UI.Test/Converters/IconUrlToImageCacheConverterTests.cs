@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip="Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
+        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
         public void Convert_WithValidImageUrl_DownloadsImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.UI.Test
                     culture: null);
 
                 var image = result as BitmapImage;
-                
+
                 // Assert
                 Assert.NotNull(result);
                 Assert.NotSame(DefaultPackageIcon, result);
@@ -274,7 +274,7 @@ namespace NuGet.PackageManagement.UI.Test
             string iconFileSourceElement = "icon.png",
             string iconFileTargetElement = "")
         {
-            var dir =  Path.GetDirectoryName(zipPath);
+            var dir = Path.GetDirectoryName(zipPath);
             var holdDir = "pkg";
             var folderPath = Path.Combine(dir, holdDir);
 
@@ -335,7 +335,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
-            using(var fs = File.OpenWrite(path))
+            using (var fs = File.OpenWrite(path))
             {
                 encoder.Save(fs);
             }

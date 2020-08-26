@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Plugins
     {
         [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern int WinVerifyTrust([In] IntPtr hwnd,
-            [In] [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID,
+            [In][MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID,
             [In] WINTRUST_DATA pWVTData);
 
         /// <summary>

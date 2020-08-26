@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            if(builder == null)
+            if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }

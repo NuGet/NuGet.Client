@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         {
             var culture = CultureInfo.GetCultureInfoByIetfLanguageTag(locale);
             var value = new DateTimeOffset(2018, 11, 20, 13, 44, 31, TimeSpan.FromHours(-8));
-            
+
             var converter = new DateTimeConverter();
 
             var converted = converter.Convert(

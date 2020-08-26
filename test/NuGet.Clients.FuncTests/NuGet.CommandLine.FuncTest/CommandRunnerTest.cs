@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -67,7 +67,7 @@ namespace NuGet.CommandLine.FuncTest
                         fileWriter.Write(expectedLine);
                     }
                 }
-                
+
                 // Run a program that just reads a file to stdout.
                 string fileName;
                 string args;

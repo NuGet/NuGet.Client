@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using Xunit;
-using FluentAssertions;
-using System.Diagnostics;
 
 namespace NuGet.Commands.Test
 {
@@ -78,7 +78,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var packageId = "test_package";
-            var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601 , NuGetLogCode.NU1603, NuGetLogCode.NU1605, NuGetLogCode.NU1107 };
+            var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603, NuGetLogCode.NU1605, NuGetLogCode.NU1107 };
             var projectWideNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1605 };
             var packageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1107 };
             var otherPackageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1701 };
@@ -644,7 +644,7 @@ namespace NuGet.Commands.Test
             // Act
             var seen = new HashSet<TransitiveNoWarnUtils.DependencyNode>
             {
-                first                
+                first
             };
 
             // Assert
@@ -656,7 +656,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var projectWideNoWarn = new HashSet<NuGetLogCode>();
-            var packageSpecificNoWarn= new Dictionary<string, HashSet<NuGetLogCode>>();
+            var packageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>();
 
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",

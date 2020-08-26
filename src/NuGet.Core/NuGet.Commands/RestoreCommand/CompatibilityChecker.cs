@@ -165,7 +165,7 @@ namespace NuGet.Commands
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
                 var targetLibrary = compatibilityData.TargetLibrary;
-                if (_validateRuntimeAssets  && !string.IsNullOrEmpty(graph.RuntimeIdentifier))
+                if (_validateRuntimeAssets && !string.IsNullOrEmpty(graph.RuntimeIdentifier))
                 {
                     // Skip runtime checks for packages that have runtime references excluded,
                     // this allows compile only packages that do not have runtimes for the 
@@ -368,7 +368,7 @@ namespace NuGet.Commands
                     var rid = ridObj as string;
                     if (tfm?.IsSpecificFramework == true)
                     {
-                        available.Add(new FrameworkRuntimePair(tfm,rid));
+                        available.Add(new FrameworkRuntimePair(tfm, rid));
                     }
                 }
             }

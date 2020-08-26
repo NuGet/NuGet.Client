@@ -266,7 +266,7 @@ namespace NuGet.Protocol
 
                                 // Nexus will write "null" when there is no depenency version range.
                                 // Parse the optional version range
-                                if (!string.IsNullOrWhiteSpace(versionRangeString) 
+                                if (!string.IsNullOrWhiteSpace(versionRangeString)
                                     && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Attempt to parse the version

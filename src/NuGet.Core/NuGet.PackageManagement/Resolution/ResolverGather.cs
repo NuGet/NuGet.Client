@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System.Globalization;
 
 namespace NuGet.PackageManagement
 {
@@ -469,7 +469,7 @@ namespace NuGet.PackageManagement
 
                 // it maintain each source total time taken so far
                 stopWatch.Stop();
-                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Source, stopWatch.Elapsed, (k,v) => stopWatch.Elapsed + v);
+                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Source, stopWatch.Elapsed, (k, v) => stopWatch.Elapsed + v);
             }
 
             return new GatherResult(request, packages);

@@ -301,7 +301,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     .Returns(() => new VirtualSettingSection("config",
                         new AddItem("globalPackagesFolder", "solution/packages")));
                 Mock.Get(settings);
- 
+
 
                 var solutionManager = new Mock<IVsSolutionManager>();
                 solutionManager

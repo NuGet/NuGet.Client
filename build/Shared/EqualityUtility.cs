@@ -160,7 +160,7 @@ namespace NuGet.Shared
                 equals = true;
                 return true;
             }
-            
+
             // Is only one of the sequences null?
             if (self == null || other == null)
             {

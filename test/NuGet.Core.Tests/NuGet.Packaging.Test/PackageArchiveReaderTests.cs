@@ -1004,7 +1004,7 @@ namespace NuGet.Packaging.Test
             // Arrange
             using (var root = TestDirectory.Create())
             {
-                using(var destination = TestDirectory.Create())
+                using (var destination = TestDirectory.Create())
                 {
                     var resolver = new PackagePathResolver(root);
                     var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));

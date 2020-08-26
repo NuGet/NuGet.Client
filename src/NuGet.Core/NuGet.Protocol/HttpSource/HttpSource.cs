@@ -218,7 +218,7 @@ namespace NuGet.Protocol
 
                     return await processAsync(response);
                 },
-                cacheContext : null,
+                cacheContext: null,
                 log,
                 token);
         }

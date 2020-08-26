@@ -63,7 +63,7 @@ namespace NuGet.Commands
                     throw;
                 }
             }
-            
+
 
             clientCertificateProvider.AddOrUpdate(item);
 

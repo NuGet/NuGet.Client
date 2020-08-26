@@ -63,7 +63,7 @@ namespace NuGet.Packaging.Rules
                             Select(t => t.GetShortFolderName()).ToArray();
 
                         (var tfmNames, var suggestedDirectories) = GenerateWarningString(possibleFrameworks);
-                        
+
                         var issue = new List<PackagingLogMessage>();
                         issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat, tfmNames, suggestedDirectories),
                             NuGetLogCode.NU5127));
@@ -84,7 +84,7 @@ namespace NuGet.Packaging.Rules
             string suggestedDirectories = possibleFrameworks.Length > 1
                 ? CreateDirectoriesMessage(possibleFrameworks)
                 : string.Format("-lib/{0}/_._", possibleFrameworks[0]);
-            
+
             return (tfmNames, suggestedDirectories);
         }
 

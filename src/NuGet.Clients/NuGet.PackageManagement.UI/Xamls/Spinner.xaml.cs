@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI
         public double Left { get; set; }
         public double Top { get; set; }
         public Brush Fill { get; set; }
-        
+
         // Added INotifyPropertyChange to avoid memory leak in Spinner control. 
         public event PropertyChangedEventHandler PropertyChanged;
 

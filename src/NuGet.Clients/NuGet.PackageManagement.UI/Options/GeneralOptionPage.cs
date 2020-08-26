@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,7 +44,7 @@ namespace NuGet.Options
         protected override void OnApply(PageApplyEventArgs e)
         {
             base.OnApply(e);
-            if(!GeneralControl.OnApply()) e.ApplyBehavior = ApplyKind.Cancel;
+            if (!GeneralControl.OnApply()) e.ApplyBehavior = ApplyKind.Cancel;
         }
 
         private GeneralOptionControl GeneralControl

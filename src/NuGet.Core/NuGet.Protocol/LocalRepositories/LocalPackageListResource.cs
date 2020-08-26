@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,7 +29,7 @@ namespace NuGet.Protocol
 
             if (allVersions)
             {
-                filter = new SearchFilter(includePrerelease: prerelease, filter:null)
+                filter = new SearchFilter(includePrerelease: prerelease, filter: null)
                 {
                     OrderBy = SearchOrderBy.Id,
                     IncludeDelisted = includeDelisted
@@ -111,7 +111,7 @@ namespace NuGet.Protocol
 
             public async Task<bool> MoveNextAsync()
             {
-                if (_currentEnumerator == null) 
+                if (_currentEnumerator == null)
                 { // NOTE: We need to sort the values so this is very innefficient by design. 
                   // The FS search resource would return the results ordered in FS nat ordering.
                     var results = await _packageSearchResource.SearchAsync(

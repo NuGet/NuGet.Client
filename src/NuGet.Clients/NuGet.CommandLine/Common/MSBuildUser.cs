@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -69,7 +69,7 @@ namespace NuGet.Common
                 resourceDir = new[] {
                     Path.Combine(_msbuildDirectory, CultureInfo.CurrentCulture.TwoLetterISOLanguageName),
                     Path.Combine(_msbuildDirectory, "en") }
-                    .FirstOrDefault(d => Directory.Exists(d));                
+                    .FirstOrDefault(d => Directory.Exists(d));
             }
             else
             {

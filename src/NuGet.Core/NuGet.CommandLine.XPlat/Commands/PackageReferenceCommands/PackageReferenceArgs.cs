@@ -17,10 +17,10 @@ namespace NuGet.CommandLine.XPlat
         public string PackageDirectory { get; set; }
         public bool NoRestore { get; set; }
         public bool Interactive { get; set; }
-        public bool Prerelease { get; set;}
+        public bool Prerelease { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
-        
+
         public PackageReferenceArgs(string projectPath, ILogger logger, bool noVersion)
         {
             ValidateArgument(projectPath);

@@ -42,11 +42,11 @@ namespace NuGet.VisualStudio
         private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
         {
             var safeSettings = new XmlReaderSettings
-                {
-                    XmlResolver = null,
-                    DtdProcessing = DtdProcessing.Prohibit,
-                    IgnoreWhitespace = ignoreWhiteSpace
-                };
+            {
+                XmlResolver = null,
+                DtdProcessing = DtdProcessing.Prohibit,
+                IgnoreWhitespace = ignoreWhiteSpace
+            };
 
             return safeSettings;
         }

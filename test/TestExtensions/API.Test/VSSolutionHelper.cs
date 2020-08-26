@@ -42,7 +42,7 @@ namespace API.Test
             using (var mre = new ManualResetEvent(false))
             {
                 KnownUIContexts.SolutionExistsAndFullyLoadedContext.WhenActivated(() => mre.Set());
-                mre.WaitOne(); 
+                mre.WaitOne();
             }
         }
 
@@ -98,7 +98,7 @@ namespace API.Test
 
             CreateSolution(solutionDir, solutionName);
         }
-        
+
         public static void CreateNewSolution(string outputPath)
         {
             Utils.ThrowStringArgException(outputPath, nameof(outputPath));
@@ -151,7 +151,7 @@ namespace API.Test
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             return solution2 != null && solution2.IsOpen;
         }
-        
+
         public static void CloseSolution()
         {
             ThreadHelper.JoinableTaskFactory.Run(() => CloseSolutionAsync());
@@ -416,7 +416,7 @@ namespace API.Test
 
             var solution2 = await GetDTESolutionAsync();
 
-            
+
 
             var newSolutionFolderIndex = folderPath.LastIndexOf('\\');
 
@@ -467,9 +467,9 @@ namespace API.Test
             return solution2
                 .Projects
                 .Cast<EnvDTE.Project>()
-                .FirstOrDefault(project => 
-                    { 
-                        ThreadHelper.ThrowIfNotOnUIThread(); return project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase); 
+                .FirstOrDefault(project =>
+                    {
+                        ThreadHelper.ThrowIfNotOnUIThread(); return project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase);
                     });
         }
 
@@ -481,9 +481,9 @@ namespace API.Test
 
             var projectItem = solutionFolderProject.ProjectItems
                 .Cast<EnvDTE.ProjectItem>()
-                .FirstOrDefault(project => 
-                    { 
-                        ThreadHelper.ThrowIfNotOnUIThread(); return project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase); 
+                .FirstOrDefault(project =>
+                    {
+                        ThreadHelper.ThrowIfNotOnUIThread(); return project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase);
                     });
 
             return projectItem?.Object as EnvDTE.Project;
@@ -546,7 +546,7 @@ namespace API.Test
         }
     }
 
-    public sealed class UpdateSolutionEventHandler: IVsUpdateSolutionEvents
+    public sealed class UpdateSolutionEventHandler : IVsUpdateSolutionEvents
     {
         public bool isOperationCompleted;
 

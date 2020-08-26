@@ -51,7 +51,7 @@ namespace NuGet.Protocol
         /// </summary>
         [Obsolete("Use constructor with source parameter")]
         public DownloadResourceV3(HttpSource client, string packageBaseAddress)
-            : this (source: null, client, packageBaseAddress)
+            : this(source: null, client, packageBaseAddress)
         {
         }
 

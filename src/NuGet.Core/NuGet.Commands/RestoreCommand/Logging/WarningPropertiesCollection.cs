@@ -92,7 +92,7 @@ namespace NuGet.Commands
         /// <param name="message">Message to be checked for no warn.</param>
         /// <returns>bool indicating if the IRestoreLogMessage should be suppressed or not.</returns>
         private bool ApplyPackageSpecificNoWarnProperties(IRestoreLogMessage message)
-        {            
+        {
             if (message.Level == LogLevel.Warning &&
                 PackageSpecificWarningProperties != null &&
                 !string.IsNullOrEmpty(message.LibraryId))
@@ -142,7 +142,7 @@ namespace NuGet.Commands
                 {
                     // If the project wide NoWarn contains the message code then suppress it.
                     return true;
-                }              
+                }
             }
 
             // the project wide NoWarn does contain the message code. do not suppress the warning.
@@ -157,7 +157,7 @@ namespace NuGet.Commands
         {
             if (message.Level == LogLevel.Warning && warningProperties != null)
             {
-                if ((warningProperties.AllWarningsAsErrors && message.Code > NuGetLogCode.Undefined) || 
+                if ((warningProperties.AllWarningsAsErrors && message.Code > NuGetLogCode.Undefined) ||
                     warningProperties.WarningsAsErrors.Contains(message.Code))
                 {
                     // If the project wide AllWarningsAsErrors is true and the message has a valid code or

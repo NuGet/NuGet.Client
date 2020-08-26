@@ -35,7 +35,7 @@ namespace NuGet.Test.Utility
                         Severity = 3
                     }
                 }
-            }; 
+            };
         }
 
         protected virtual void Dispose(bool disposing)

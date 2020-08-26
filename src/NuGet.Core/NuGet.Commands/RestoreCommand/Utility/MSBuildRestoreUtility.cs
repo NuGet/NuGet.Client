@@ -228,11 +228,11 @@ namespace NuGet.Commands
                     AddFrameworkReferences(result, items);
 
                     // Store the original framework strings for msbuild conditionals
-                   result.TargetFrameworks.ForEach(tfi =>
-                       result.RestoreMetadata.OriginalTargetFrameworks.Add(
-                               !string.IsNullOrEmpty(tfi.TargetAlias) ?
-                                   tfi.TargetAlias :
-                                   tfi.FrameworkName.GetShortFolderName()));
+                    result.TargetFrameworks.ForEach(tfi =>
+                        result.RestoreMetadata.OriginalTargetFrameworks.Add(
+                                !string.IsNullOrEmpty(tfi.TargetAlias) ?
+                                    tfi.TargetAlias :
+                                    tfi.FrameworkName.GetShortFolderName()));
                 }
 
                 if (restoreType == ProjectStyle.PackageReference
@@ -429,7 +429,7 @@ namespace NuGet.Commands
                 var targetAlias = string.IsNullOrEmpty(frameworkString) ? string.Empty : frameworkString;
                 if (uniqueIds.Contains(targetAlias))
                 {
-                    continue; 
+                    continue;
                 }
                 uniqueIds.Add(targetAlias);
 
@@ -594,7 +594,7 @@ namespace NuGet.Commands
             return false;
         }
 
-        
+
         private static bool AddDependencyIfNotExist(PackageSpec spec, string targetAlias, LibraryDependency dependency)
         {
             var frameworkInfo = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(targetAlias, StringComparison.Ordinal));

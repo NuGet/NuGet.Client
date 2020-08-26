@@ -64,13 +64,13 @@ namespace NuGet.Configuration
         private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
         {
             var safeSettings = new XmlReaderSettings
-                {
+            {
 #if !IS_CORECLR
-                    XmlResolver = null,
+                XmlResolver = null,
 #endif
-                    DtdProcessing = DtdProcessing.Prohibit,
-                    IgnoreWhitespace = ignoreWhiteSpace
-                };
+                DtdProcessing = DtdProcessing.Prohibit,
+                IgnoreWhitespace = ignoreWhiteSpace
+            };
 
             return safeSettings;
         }

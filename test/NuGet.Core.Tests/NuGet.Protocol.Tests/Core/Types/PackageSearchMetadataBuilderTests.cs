@@ -15,7 +15,7 @@ namespace NuGet.Protocol.Core.Types.Tests
             _testData = testData;
         }
 
-        [Fact]        
+        [Fact]
         public void LocalPackageInfo_NotNull()
         {
             var copy1 = PackageSearchMetadataBuilder
@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Core.Types.Tests
                 .FromMetadata(copy1)
                 .Build();
             Assert.True(copy2 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
-                
+
             var clone2 = (PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)copy2;
             Assert.NotNull(clone2.PackageReader);
         }

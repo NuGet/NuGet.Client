@@ -46,7 +46,7 @@ namespace NuGet.Commands.Test
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
                 var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", projectName));
-                
+
                 packagesDir.Create();
                 packageSource.Create();
                 project1.Create();
@@ -57,7 +57,7 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(specPath1, project1Json);
 
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName , specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, specPath1);
 
                 spec1 = spec1.EnsureRestoreMetadata();
                 spec1.RestoreMetadata.Sources = new List<PackageSource> { new PackageSource(packageSource.FullName) };
@@ -475,10 +475,10 @@ namespace NuGet.Commands.Test
                     .Single()
                     .ProjectReferences
                     .Add(new ProjectRestoreReference()
-                {
-                    ProjectPath = projPath2,
-                    ProjectUniqueName = "project2"
-                });
+                    {
+                        ProjectPath = projPath2,
+                        ProjectUniqueName = "project2"
+                    });
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -1040,7 +1040,7 @@ namespace NuGet.Commands.Test
                 }
             }
         }
-             [Fact]
+        [Fact]
         public async Task RestoreRunner_PackageReferenceAndPackageDownloadBothLogErrors()
         {
             // Arrange

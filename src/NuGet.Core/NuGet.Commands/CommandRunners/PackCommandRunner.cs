@@ -900,7 +900,7 @@ namespace NuGet.Commands
             // Always exclude the nuspec file
             // Review: This exclusion should be done by the package builder because it knows which file would collide with the auto-generated
             // manifest file.
-            IEnumerable<string> wildCards = _excludes.Concat(new[] { "**"+ NuGetConstants.ManifestExtension });
+            IEnumerable<string> wildCards = _excludes.Concat(new[] { "**" + NuGetConstants.ManifestExtension });
 
             if (!_packArgs.NoDefaultExcludes)
             {

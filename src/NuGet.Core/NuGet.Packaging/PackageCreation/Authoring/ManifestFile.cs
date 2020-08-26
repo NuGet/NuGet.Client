@@ -24,7 +24,8 @@ namespace NuGet.Packaging
         private string _target;
         public string Source { get; set; }
 
-        public string Target {
+        public string Target
+        {
             get
             {
                 return _target;

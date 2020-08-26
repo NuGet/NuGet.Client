@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     result.Source));
             }
 
-            UpdateActiveSourceRepository(result.SourceRepository);            
+            UpdateActiveSourceRepository(result.SourceRepository);
             DetermineFileConflictAction();
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {

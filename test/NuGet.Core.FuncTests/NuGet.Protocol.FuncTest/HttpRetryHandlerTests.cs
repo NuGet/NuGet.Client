@@ -110,7 +110,7 @@ namespace NuGet.Core.FuncTest
             var innerException = Assert.IsType<WebException>(exception.InnerException);
             Assert.Equal(WebExceptionStatus.ConnectFailure, innerException.Status);
 #endif
-            }
+        }
 
         [Fact]
         public async Task HttpRetryHandler_HandlesInvalidProtocol()

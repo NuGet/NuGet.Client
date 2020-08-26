@@ -243,8 +243,8 @@ namespace NuGet.PackageManagement
         {
             var specs = await project.GetPackageSpecsAsync(context);
 
-            var projectSpec =  specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
-                && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
+            var projectSpec = specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
+               && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 .FirstOrDefault();
 
             return projectSpec;
@@ -347,7 +347,7 @@ namespace NuGet.PackageManagement
 #pragma warning disable CS0618 // Type or member is obsolete
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
 #pragma warning restore CS0618 // Type or member is obsolete
-            foreach ( var source in sources)
+            foreach (var source in sources)
             {
                 caching.AddSourceRepository(source);
             }

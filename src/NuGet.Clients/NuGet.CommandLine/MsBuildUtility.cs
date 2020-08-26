@@ -122,7 +122,7 @@ namespace NuGet.CommandLine
                 inputTargetXML.Save(inputTargetPath);
 
                 // Create msbuild parameters and include global properties that cannot be set in the input targets path
-                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory, msbuildToolset, restoreLockProperties,EnvironmentVariableWrapper.Instance);
+                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory, msbuildToolset, restoreLockProperties, EnvironmentVariableWrapper.Instance);
 
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -194,7 +194,7 @@ namespace NuGet.CommandLine
                     }
 
                     await outputTask;
-                    
+
                     if (process.ExitCode != 0)
                     {
                         // Do not continue if msbuild failed.
@@ -567,13 +567,13 @@ namespace NuGet.CommandLine
             string userVersion,
             IConsole console,
             IEnumerable<MsBuildToolset> installedToolsets,
-            Func<IEnvironmentVariableReader,string> getMsBuildPathInPathVar)
+            Func<IEnvironmentVariableReader, string> getMsBuildPathInPathVar)
         {
             MsBuildToolset toolset;
 
             var toolsetsContainingMSBuild = GetToolsetsContainingValidMSBuildInstallation(installedToolsets);
 
-            if(string.Equals(userVersion, "latest", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(userVersion, "latest", StringComparison.OrdinalIgnoreCase))
             {
                 //If "latest", take the default(highest) path, ignoring $PATH
                 toolset = toolsetsContainingMSBuild.FirstOrDefault();
@@ -632,7 +632,7 @@ namespace NuGet.CommandLine
             }
             //Use mscorlib to find mono and msbuild directory
             var systemLibLocation = Path.GetDirectoryName(typeof(object).Assembly.Location);
-            var msbuildBasePathOnMono = Path.GetFullPath(Path.Combine(systemLibLocation,"..","msbuild"));
+            var msbuildBasePathOnMono = Path.GetFullPath(Path.Combine(systemLibLocation, "..", "msbuild"));
             //Combine msbuild version paths
             var msBuildPathOnMono14 = Path.Combine(msbuildBasePathOnMono, "14.1", "bin");
             var msBuildPathOnMono15 = Path.Combine(msbuildBasePathOnMono, "15.0", "bin");
@@ -835,7 +835,7 @@ namespace NuGet.CommandLine
 
                     throw new CommandException(message);
                 }
-                
+
                 return new Lazy<MsBuildToolset>(() => new MsBuildToolset(msbuildVersion, msbuildPath));
             }
             else
@@ -992,7 +992,7 @@ namespace NuGet.CommandLine
 
         internal static string GetMSBuild(IEnvironmentVariableReader reader)
         {
-            var exeNames = new [] { "msbuild.exe" };
+            var exeNames = new[] { "msbuild.exe" };
 
             if (RuntimeEnvironmentHelper.IsMono)
             {

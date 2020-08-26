@@ -171,7 +171,7 @@ namespace NuGet.XPlat.FuncTest
                     solutionRoot: pathContext.SolutionRoot,
                     frameworks: MSBuildStringUtility.Split(projectFrameworks));
 
-            project.FallbackFolders = (IList<string>) SettingsUtility.GetFallbackPackageFolders(settings);
+            project.FallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
             project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
             var packageSourceProvider = new PackageSourceProvider(settings);
             project.Sources = packageSourceProvider.LoadPackageSources();
@@ -346,7 +346,7 @@ namespace NuGet.XPlat.FuncTest
         {
             var itemGroups = root.Descendants("ItemGroup");
             var referenceType = GetReferenceType(packageType);
-            foreach(var i in itemGroups)
+            foreach (var i in itemGroups)
             {
                 var x = i.Descendants(referenceType);
             }

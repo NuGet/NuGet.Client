@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static IEnumerable<string> HandleClear(IEnumerable<string> values)
         {
-            
+
             if ((MSBuildRestoreUtility.ContainsClearKeyword(values)))
             {
                 return Enumerable.Empty<string>();

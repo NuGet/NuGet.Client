@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Tests.Plugins
             bool canShowDialog,
             bool isNonInteractive)
         {
-            var expectedJson = "{\"Uri\":\"" + uri + "\",\"IsRetry\":" + isRetry.ToString().ToLowerInvariant() + ",\"IsNonInteractive\":" + isNonInteractive.ToString().ToLowerInvariant()  + ",\"CanShowDialog\":" + canShowDialog.ToString().ToLowerInvariant() + "}";
+            var expectedJson = "{\"Uri\":\"" + uri + "\",\"IsRetry\":" + isRetry.ToString().ToLowerInvariant() + ",\"IsNonInteractive\":" + isNonInteractive.ToString().ToLowerInvariant() + ",\"CanShowDialog\":" + canShowDialog.ToString().ToLowerInvariant() + "}";
 
             var request = new GetAuthenticationCredentialsRequest(new Uri(uri), isRetry, isNonInteractive, canShowDialog);
 

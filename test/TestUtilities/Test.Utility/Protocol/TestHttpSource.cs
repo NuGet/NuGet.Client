@@ -68,9 +68,9 @@ namespace Test.Utility
             {
                 return null;
             }
-            
+
             var result = base.TryReadCacheFile(uri, maxAge, cacheFile);
-            
+
             if (result == null)
             {
                 CacheMisses++;

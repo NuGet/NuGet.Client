@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         "VisualStudio",
                         version,
                         sku);
-                }, 
+                },
                 ThreadHelper.JoinableTaskFactory);
         }
 

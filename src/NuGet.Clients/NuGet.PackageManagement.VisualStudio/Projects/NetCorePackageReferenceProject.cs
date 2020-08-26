@@ -243,7 +243,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await TaskScheduler.Default;
                 var lockFile = new LockFileFormat().Read(assetsFilePath);
-                assetsPackageSpec = lockFile.PackageSpec;           
+                assetsPackageSpec = lockFile.PackageSpec;
                 targets = lockFile.Targets;
 
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;

@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement
             // type that is one of the recognized package types.
             var packageTypes = nuspecReader.GetPackageTypes();
             var identityString = $"{packageIdentity.Id} {packageIdentity.Version.ToNormalizedString()}";
-            
+
             if (packageTypes.Count > 1)
             {
                 throw new PackagingException(string.Format(

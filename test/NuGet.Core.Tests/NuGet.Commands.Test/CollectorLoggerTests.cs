@@ -624,7 +624,7 @@ namespace NuGet.Commands.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.AddRangeOfCodes(new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1605}, libraryId, targetFramework);
+            packageSpecificWarningProperties.AddRangeOfCodes(new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1605 }, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
@@ -1044,8 +1044,8 @@ namespace NuGet.Commands.Test
 
         private void VerifyInnerLoggerCalls(Mock<ILogger> innerLogger, LogLevel messageLevel, string message, Times times, NuGetLogCode code = NuGetLogCode.Undefined, string filePath = null)
         {
-            innerLogger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => 
-            l.Level == messageLevel && 
+            innerLogger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l =>
+            l.Level == messageLevel &&
             l.Message == message &&
             (code == NuGetLogCode.Undefined || l.Code == code) &&
             (filePath == null || filePath == l.FilePath))),

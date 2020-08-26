@@ -17,7 +17,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         public static bool IsNonInteractive(this SdkResolverContext context)
         {
             // Determine if SdkResolverContext's Interactive property, defaulting to false
-            var interactive = (bool?) SdkResolverContextInteractivePropertyInfo?.GetValue(context) ?? false;
+            var interactive = (bool?)SdkResolverContextInteractivePropertyInfo?.GetValue(context) ?? false;
 
             return !interactive;
         }

@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Versioning;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 

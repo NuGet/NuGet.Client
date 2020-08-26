@@ -75,7 +75,7 @@ namespace NuGet.VisualStudio
                     .CreateNuGetProjectAsync<LegacyPackageReferenceProject>(
                         project, optionalContext: null);
                 Assumes.Present(legacyPackageRefBasedProject);
-                
+
                 await ProjectJsonToPackageRefMigrator.MigrateAsync(
                     legacyPackageRefBasedProject as BuildIntegratedNuGetProject);
                 var result = new VsProjectJsonToPackageReferenceMigrateResult(success: true, errorMessage: null);

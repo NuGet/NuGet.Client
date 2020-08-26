@@ -780,9 +780,9 @@ namespace NuGet.Test.Utility
             {
                 if (iconByteSize >= 0)
                 {
-                    zip.AddEntry("content/big.jpg", new byte[ iconByteSize ]);
+                    zip.AddEntry("content/big.jpg", new byte[iconByteSize]);
                 }
-                
+
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
                               <metadata>

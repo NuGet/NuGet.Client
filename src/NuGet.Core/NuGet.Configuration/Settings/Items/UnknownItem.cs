@@ -244,7 +244,7 @@ namespace NuGet.Configuration
         {
             base.SetOrigin(origin);
 
-            foreach(var child in _mutableChildren)
+            foreach (var child in _mutableChildren)
             {
                 child.Value.SetOrigin(origin);
             }

@@ -38,7 +38,7 @@ namespace NuGet.LibraryModel
             var compare = string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
             if (compare == 0)
             {
-                
+
                 if (VersionRange == null
                     && other.VersionRange == null)
                 {

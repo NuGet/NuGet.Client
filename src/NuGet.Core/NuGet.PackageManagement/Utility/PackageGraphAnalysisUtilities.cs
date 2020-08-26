@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement
         {
             var packageWithDependants = new List<PackageWithDependants>();
 
-            foreach(var package in packageDependencyInfos)
+            foreach (var package in packageDependencyInfos)
             {
                 packageWithDependants.Add(new PackageWithDependants(package, GetDependantPackages(package, packageDependencyInfos).ToArray()));
             }

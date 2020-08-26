@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Traverse all projects and determine packages with updates
             var packagesWithUpdates = new List<IPackageSearchMetadata>();
-            foreach(var project in _projects)
+            foreach (var project in _projects)
             {
                 var installed = await project.GetInstalledPackagesAsync(cancellationToken);
                 foreach (var installedPackage in installed)

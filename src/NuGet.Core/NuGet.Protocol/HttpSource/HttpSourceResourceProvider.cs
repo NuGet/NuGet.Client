@@ -49,7 +49,7 @@ namespace NuGet.Protocol
                 }
 
                 curResource = _cache.GetOrAdd(
-                    source.PackageSource, 
+                    source.PackageSource,
                     packageSource => new HttpSourceResource(HttpSource.Create(source, throttle)));
             }
 

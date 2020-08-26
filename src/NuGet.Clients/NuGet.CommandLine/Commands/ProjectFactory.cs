@@ -139,20 +139,20 @@ namespace NuGet.CommandLine
             switch (LogLevel)
             {
                 case LogLevel.Verbose:
-                {
-                    console.Verbosity = Verbosity.Detailed;
-                    break;
-                }
+                    {
+                        console.Verbosity = Verbosity.Detailed;
+                        break;
+                    }
                 case LogLevel.Information:
-                {
-                    console.Verbosity = Verbosity.Normal;
-                    break;
-                }
+                    {
+                        console.Verbosity = Verbosity.Normal;
+                        break;
+                    }
                 case LogLevel.Minimal:
-                {
-                    console.Verbosity = Verbosity.Quiet;
-                    break;
-                }
+                    {
+                        console.Verbosity = Verbosity.Quiet;
+                        break;
+                    }
             }
         }
 
@@ -214,7 +214,7 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        public Packaging.PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, Packaging.PackageBuilder builder =null)
+        public Packaging.PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, Packaging.PackageBuilder builder = null)
         {
             if (buildIfNeeded)
             {
@@ -723,7 +723,8 @@ namespace NuGet.CommandLine
                 if (!projectFactory.ProcessJsonFile(builder, project.DirectoryPath, null))
                 {
                     projectFactory.ProcessNuspec(builder, null);
-                } else
+                }
+                else
                 {
                     Logger.Log(
                     PackagingLogMessage.CreateWarning(
@@ -830,7 +831,7 @@ namespace NuGet.CommandLine
             if (IncludeSymbols)
             {
                 // if this is a snupkg package, we don't want any files other than symbol files.
-                if(SymbolPackageFormat == SymbolPackageFormat.Snupkg)
+                if (SymbolPackageFormat == SymbolPackageFormat.Snupkg)
                 {
                     outputFileNames.Clear();
                     outputFileNames.Add($"{targetFileName}.pdb");
@@ -1106,15 +1107,15 @@ namespace NuGet.CommandLine
 
         private ISettings ReadSettings(string solutionDirectory)
         {
-                // Read the solution-level settings
-                var solutionSettingsFile = Path.Combine(
-                    solutionDirectory,
-                    NuGetConstants.NuGetSolutionSettingsFolder);
+            // Read the solution-level settings
+            var solutionSettingsFile = Path.Combine(
+                solutionDirectory,
+                NuGetConstants.NuGetSolutionSettingsFolder);
 
-                return Settings.LoadDefaultSettings(
-                    solutionSettingsFile,
-                    configFileName: null,
-                    machineWideSettings: MachineWideSettings);
+            return Settings.LoadDefaultSettings(
+                solutionSettingsFile,
+                configFileName: null,
+                machineWideSettings: MachineWideSettings);
         }
 
         private static void ProcessTransformFiles(PackageBuilder builder, IEnumerable<IPackageFile> transformFiles)

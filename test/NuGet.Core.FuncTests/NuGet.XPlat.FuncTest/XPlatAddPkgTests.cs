@@ -353,7 +353,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     XPlatTestUtils.CreatePackage(packageVersion: "1.0.0"));
 
-                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs("packageY", "*",projectA, noVersion: true, prerelease: prerelease);
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs("packageY", "*", projectA, noVersion: true, prerelease: prerelease);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var msBuild = MsBuild;
 

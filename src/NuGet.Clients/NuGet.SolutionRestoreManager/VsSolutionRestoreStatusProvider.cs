@@ -44,7 +44,7 @@ namespace NuGet.SolutionRestoreManager
                 var projects = (await _solutionManager.Value.GetNuGetProjectsAsync()).AsList();
 
                 // It could be that the project added to the solution has not yet been updated.
-                if(projects == null || projects.Count == 0)
+                if (projects == null || projects.Count == 0)
                 {
                     return false;
                 }

@@ -822,7 +822,7 @@ namespace NuGet.ProjectModel.Test
             var lockFile_1_2 = new LockFile
             {
                 Version = 3,
-                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>(){ projCTDG_1_2 }
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>() { projCTDG_1_2 }
             };
             var lockFile_11_22 = new LockFile
             {

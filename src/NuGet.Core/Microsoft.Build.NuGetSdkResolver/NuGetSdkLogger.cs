@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Build.Framework;
-using NuGet.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Microsoft.Build.Framework;
+using NuGet.Common;
 using INuGetLogger = NuGet.Common.ILogger;
 
 namespace Microsoft.Build.NuGetSdkResolver
@@ -54,7 +53,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     // Detailed and Diagnostic verbosity in MSBuild shows high, normal, and low importance messages
                     _sdkLogger.LogMessage(data, MessageImportance.Low);
                     break;
-                    
+
                 case LogLevel.Information:
                     // Normal verbosity in MSBuild shows only high and normal importance messages
                     _sdkLogger.LogMessage(data, MessageImportance.Normal);
@@ -64,7 +63,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     // Minimal verbosity in MSBuild shows only high importance messages
                     _sdkLogger.LogMessage(data, MessageImportance.High);
                     break;
-                    
+
                 case LogLevel.Warning:
                     _warnings.Add(data);
                     break;

@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Frameworks;
-using NuGet.Test.Utility;
 using NuGet.ProjectModel;
+using NuGet.Test.Utility;
 using Xunit;
-using System.Collections.Generic;
 
 namespace Msbuild.Integration.Test
 {
@@ -172,7 +172,7 @@ namespace Msbuild.Integration.Test
                     packageX);
 
                 // Act
-                CommandRunnerResult result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode:true);
+                CommandRunnerResult result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);

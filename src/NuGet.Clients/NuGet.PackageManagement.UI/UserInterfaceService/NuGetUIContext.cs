@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        public async  Task<bool> IsNuGetProjectUpgradeable(NuGetProject project)
+        public async Task<bool> IsNuGetProjectUpgradeable(NuGetProject project)
         {
             return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(project);
         }

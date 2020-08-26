@@ -378,7 +378,7 @@ namespace NuGet.ProjectModel.Test
             {
                 ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: false, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
             };
-            AssertEquality(expected:false, leftSide, rightSide);
+            AssertEquality(expected: false, leftSide, rightSide);
         }
 
         [Theory]

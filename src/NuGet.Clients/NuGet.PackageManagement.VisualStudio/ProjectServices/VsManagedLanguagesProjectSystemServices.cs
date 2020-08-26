@@ -233,7 +233,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return VersionRange.Parse(version);
         }
-     
+
         private static string GetReferenceMetadataValue(PackageReference reference, string metadataElement, string defaultValue = "")
         {
             Assumes.Present(reference);

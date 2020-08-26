@@ -107,7 +107,7 @@ namespace NuGet.Commands
                 {
                     projectCacheFilePath = GetBuildIntegratedProjectCacheFilePath(request);
                 }
-                else if(request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                else if (request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
                     projectCacheFilePath = GetToolCacheFilePath(request, lockFile);
                 }
@@ -151,7 +151,7 @@ namespace NuGet.Commands
                         return false;
                     }
                 }
-                
+
             }
 
             if (cacheFile.HasAnyMissingPackageFiles)

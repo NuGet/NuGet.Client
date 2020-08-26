@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -60,7 +60,7 @@ namespace NuGet.VisualStudio.Implementation.Test
             string errorHandlerMessage = null;
             var provider = new PreinstalledRepositoryProvider(
                 registryKeyRoot: $"NuGetTest_{Guid.NewGuid()}",
-                errorHandler: errorMessage => { errorHandlerMessage = errorMessage; }, 
+                errorHandler: errorMessage => { errorHandlerMessage = errorMessage; },
                 provider: srp);
 
             // Act

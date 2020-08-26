@@ -91,7 +91,7 @@ namespace NuGet.Packaging
             return combiner.CombinedHash;
         }
 
-        public Uri LicenseUrl 
+        public Uri LicenseUrl
         {
             get
             {

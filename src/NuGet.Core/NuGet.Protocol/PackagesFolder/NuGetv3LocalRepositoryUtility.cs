@@ -18,7 +18,7 @@ namespace NuGet.Repositories
         {
             LocalPackageInfo package = null;
 
-            for (var i=0; i < repositories.Count; i++)
+            for (var i = 0; i < repositories.Count; i++)
             {
                 var repository = repositories[i];
 

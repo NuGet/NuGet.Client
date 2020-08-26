@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (DataContext is DetailedPackageMetadata metadata)
             {
-          
+
                 var window = new LicenseFileWindow()
                 {
                     DataContext = new LicenseFileData

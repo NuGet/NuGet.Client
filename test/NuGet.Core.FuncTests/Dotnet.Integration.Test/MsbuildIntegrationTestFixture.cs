@@ -216,7 +216,7 @@ namespace Dotnet.Integration.Test
                 // input dictionary to override the defaults.
                 envVars = _processEnvVars
                     .Concat(additionalEnvVars)
-                    .GroupBy(x => x.Key, _processEnvVars.Comparer) 
+                    .GroupBy(x => x.Key, _processEnvVars.Comparer)
                     .ToDictionary(x => x.Key, x => x.Last().Value);
             }
 
