@@ -120,9 +120,11 @@ namespace NuGet.Commands
         {
             outputPath = outputPath ?? GetOutputPath(builder, _packArgs, false, builder.Version);
             var successful = BuildPackage(builder, outputPath, symbolsPackage: false);
-            PackageArchiveReader packageArchiveReader = successful
-                ? new PackageArchiveReader(outputPath)
-                : null;
+            PackageArchiveReader packageArchiveReader = null;
+            if (successful && File.Exists(outputPath))
+            {
+                packageArchiveReader = new PackageArchiveReader(outputPath);
+            }
             return packageArchiveReader;
         }
 
