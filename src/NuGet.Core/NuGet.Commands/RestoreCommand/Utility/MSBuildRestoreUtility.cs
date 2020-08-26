@@ -14,6 +14,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -227,10 +228,11 @@ namespace NuGet.Commands
                     AddFrameworkReferences(result, items);
 
                     // Store the original framework strings for msbuild conditionals
-                    foreach(var tfi in result.TargetFrameworks)
-                    { 
-                        result.RestoreMetadata.OriginalTargetFrameworks.Add(tfi.TargetAlias);
-                    }
+                   result.TargetFrameworks.ForEach(tfi =>
+                       result.RestoreMetadata.OriginalTargetFrameworks.Add(
+                               !string.IsNullOrEmpty(tfi.TargetAlias) ?
+                                   tfi.TargetAlias :
+                                   tfi.FrameworkName.GetShortFolderName()));
                 }
 
                 if (restoreType == ProjectStyle.PackageReference

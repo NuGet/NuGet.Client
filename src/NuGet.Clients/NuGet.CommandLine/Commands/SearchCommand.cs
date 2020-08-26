@@ -75,6 +75,7 @@ namespace NuGet.CommandLine
 
             SearchFilter searchFilter = new SearchFilter(includePrerelease: PreRelease);
 
+            var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
             IList<PackageSource> listEndpoints = GetEndpointsAsync();
 
             foreach (PackageSource source in listEndpoints)
@@ -83,6 +84,25 @@ namespace NuGet.CommandLine
                 PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
 
                 if (resource is null)
+                {
+                    taskList.Add((null, source));
+                    continue;
+                }
+
+                taskList.Add((Task.Run(() => resource.SearchAsync(
+                    string.Join(" ", Arguments).Trim(), // The arguments are joined with spaces to form a single query string
+                    searchFilter,
+                    skip: 0,
+                    take: Take,
+                    logger,
+                    cancellationToken)), source));
+            }
+
+            foreach (var taskItem in taskList)
+            {
+                var (task, source) = taskItem;
+
+                if (task is null)
                 {
                     Console.WriteLine(sourceSeparator);
                     System.Console.WriteLine($"Source: {source.Name}");
@@ -93,13 +113,7 @@ namespace NuGet.CommandLine
                     continue;
                 }
 
-                IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
-                    string.Join(" ", Arguments).Trim(), // The arguments are joined with spaces to form a single query string
-                    searchFilter,
-                    skip: 0,
-                    take: Take,
-                    logger,
-                    cancellationToken);
+                var results = await task;
 
                 Console.WriteLine(sourceSeparator);
                 System.Console.WriteLine($"Source: {source.Name}"); // System.Console is used so that output is not suppressed by Verbosity.Quiet

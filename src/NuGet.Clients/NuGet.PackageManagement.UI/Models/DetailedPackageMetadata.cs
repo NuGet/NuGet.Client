@@ -17,7 +17,9 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public DetailedPackageMetadata(IPackageSearchMetadata serverData, PackageDeprecationMetadata deprecationMetadata, long? downloadCount)
+        public DetailedPackageMetadata(IPackageSearchMetadata serverData,
+            PackageDeprecationMetadata deprecationMetadata,
+            long? downloadCount)
         {
             Id = serverData.Identity.Id;
             Version = serverData.Identity.Version;
@@ -48,6 +50,7 @@ namespace NuGet.PackageManagement.UI
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
             DeprecationMetadata = deprecationMetadata;
+            Vulnerabilities = serverData.Vulnerabilities;
             _localMetadata = serverData as LocalPackageSearchMetadata;
 
             // Determine the package details URL and text.
@@ -109,6 +112,8 @@ namespace NuGet.PackageManagement.UI
         public LicenseMetadata LicenseMetadata { get; set; }
 
         public PackageDeprecationMetadata DeprecationMetadata { get; set; }
+
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
 

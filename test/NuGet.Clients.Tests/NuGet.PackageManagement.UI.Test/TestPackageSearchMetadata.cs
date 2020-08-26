@@ -63,5 +63,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
     }
 }

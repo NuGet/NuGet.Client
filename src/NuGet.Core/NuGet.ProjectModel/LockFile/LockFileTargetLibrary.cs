@@ -68,6 +68,7 @@ namespace NuGet.ProjectModel
                 && string.Equals(Framework, other.Framework, StringComparison.Ordinal)
                 && Dependencies.OrderedEquals(other.Dependencies, dependency => dependency.Id, StringComparer.OrdinalIgnoreCase)
                 && FrameworkAssemblies.OrderedEquals(other.FrameworkAssemblies, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase)
+                && FrameworkReferences.OrderedEquals(other.FrameworkReferences, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase)
                 && RuntimeAssemblies.OrderedEquals(other.RuntimeAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && ResourceAssemblies.OrderedEquals(other.ResourceAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && CompileTimeAssemblies.OrderedEquals(other.CompileTimeAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
@@ -100,6 +101,11 @@ namespace NuGet.ProjectModel
             }
 
             foreach (var reference in FrameworkAssemblies.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddStringIgnoreCase(reference);
+            }
+
+            foreach (var reference in FrameworkReferences.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddStringIgnoreCase(reference);
             }
