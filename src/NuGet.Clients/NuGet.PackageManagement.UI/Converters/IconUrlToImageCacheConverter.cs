@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NuGet.Common;
 using NuGet.Packaging;
-using NuGet.Protocol.Plugins;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -62,7 +61,8 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            var cachedBitmapImage = BitmapImageCache.Get(iconUrl.ToString()) as BitmapSource;
+            string cacheKey = GenerateKeyFromIconUri(iconUrl);
+            var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != null)
             {
                 return cachedBitmapImage;
@@ -98,7 +98,6 @@ namespace NuGet.PackageManagement.UI
                             void EmbeddedIcon_DownloadOrDecodeFailed(object sender, ExceptionEventArgs args)
                             {
                                 reader.Dispose();
-                                string cacheKey = GenerateKeyFromIconUri(iconUrl);
                                 CheckForFailedCacheEntry(cacheKey, args);
                             }
 
@@ -117,19 +116,19 @@ namespace NuGet.PackageManagement.UI
                         else // we cannot use the reader object
                         {
                             reader?.Dispose();
-                            AddToCache(iconUrl, defaultPackageIcon);
+                            AddToCache(cacheKey, defaultPackageIcon);
                             imageResult = defaultPackageIcon;
                         }
                     }
                     catch (Exception)
                     {
-                        AddToCache(iconUrl, defaultPackageIcon);
+                        AddToCache(cacheKey, defaultPackageIcon);
                         imageResult = defaultPackageIcon;
                     }
                 }
                 else // Identified an embedded icon URI, but we are unable to process it
                 {
-                    AddToCache(iconUrl, defaultPackageIcon);
+                    AddToCache(cacheKey, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
                 }
             }
@@ -173,19 +172,14 @@ namespace NuGet.PackageManagement.UI
             {
                 // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
                 var cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
-                AddToCache(iconUrl, cachedBitmapImage);
+                string cacheKey = GenerateKeyFromIconUri(iconUrl);
+                AddToCache(cacheKey, cachedBitmapImage);
                 ErrorFloodGate.ReportAttempt();
 
                 image = cachedBitmapImage;
             }
 
             return image;
-        }
-
-        private static void AddToCache(Uri iconUrl, BitmapSource iconBitmapImage)
-        {
-            string cacheKey = GenerateKeyFromIconUri(iconUrl);
-            AddToCache(cacheKey, iconBitmapImage);
         }
 
         private static void AddToCache(string cacheKey, BitmapSource iconBitmapImage)

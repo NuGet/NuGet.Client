@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 output.WriteLine($"ZipPath {zipPath}");
                 output.WriteLine($"File Exists {File.Exists(zipPath)}");
-                output.WriteLine($"Url {builder.Uri.ToString()}");
+                output.WriteLine($"Url {builder.Uri}");
 
                 // Act
                 var result = converter.Convert(
@@ -198,7 +198,8 @@ namespace NuGet.PackageManagement.UI.Test
 
                 var image = result as BitmapImage;
 
-                output.WriteLine($"result {result.ToString()}");
+                output.WriteLine($"result {result}");
+                output.WriteLine($"Pixel format: {image.Format}");
 
                 // Assert
                 Assert.NotNull(result);
@@ -351,10 +352,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
             else
             {
-                using (var fs = File.OpenWrite(iconPath))
-                {
-                    fs.Write(array: new byte[] {0xFF, 0xFF, 0xFF}, offset: 0, count: 3);
-                }
+                File.WriteAllText(iconPath, "I am an image");
             }
 
             // Create nuget package
