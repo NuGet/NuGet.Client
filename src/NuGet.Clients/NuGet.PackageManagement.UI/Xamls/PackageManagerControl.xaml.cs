@@ -845,12 +845,12 @@ namespace NuGet.PackageManagement.UI
                     {
                         await package.ReloadPackageVersionsAsync();
                     }
-                    FlagTabDataAsLoaded(filterToRender);
 
                     // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
                     // UI filtering for Updates is ready.
                     if (filterToRender == ItemFilter.Installed)
                     {
+                        FlagTabDataAsLoaded(filterToRender);
                         FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
                     }
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCountAsync));
