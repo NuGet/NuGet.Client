@@ -1593,12 +1593,14 @@ namespace NuGet.PackageManagement
             if (buildIntegratedProjectsToUpdate.Any())
             {
                 // Run build integrated project preview for all projects at the same time
-                var resolvedActions = await PreviewResolveActionsForBuildIntegratedProjectsAsync(
-                    buildIntegratedProjectsToUpdate,
-                    packageIdentity,
-                    nuGetProjectContext,
-                    activeSources,
-                    token);
+                var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
+                buildIntegratedProjectsToUpdate,
+                nugetProjectActionsLookup : null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and activeSources
+                packageIdentity,
+                activeSources,
+                nuGetProjectContext,
+                token
+                );
                 results.AddRange(resolvedActions);
             }
 
@@ -2892,45 +2894,6 @@ namespace NuGet.PackageManagement
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
 
             return result;
-        }
-
-        /// <summary>
-        /// Return list of Resolved actions after running preview (without commit) for buildIntegrated projects.
-        /// </summary>
-        internal async Task<IEnumerable<ResolvedAction>> PreviewResolveActionsForBuildIntegratedProjectsAsync(
-            IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
-            PackageIdentity packageIdentity,
-            INuGetProjectContext nuGetProjectContext,
-            IEnumerable<SourceRepository> primarySources,
-            CancellationToken token)
-        {
-            token.ThrowIfCancellationRequested();
-
-            if (buildIntegratedProjects == null)
-            {
-                throw new ArgumentNullException(nameof(buildIntegratedProjects));
-            }
-
-            if (nuGetProjectContext == null)
-            {
-                throw new ArgumentNullException(nameof(nuGetProjectContext));
-            }
-
-            if (primarySources == null)
-            {
-                throw new ArgumentNullException(nameof(primarySources));
-            }
-
-            var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
-                buildIntegratedProjects,
-                nugetProjectActionsLookup : null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and primarySources
-                packageIdentity,
-                primarySources,
-                nuGetProjectContext,
-                token
-                );
-
-            return resolvedActions;
         }
 
         /// <summary>
