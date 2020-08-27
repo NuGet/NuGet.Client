@@ -10,7 +10,7 @@ namespace NuGet.Test
     public class DependencyGraphSpecTests
     {
         [Fact]
-        public void DependencyGraphSpecTests_WithReplacedPackageSpecs()
+        public void DependencyGraphSpecTests_WithPackageSpecs()
         {
             // Arrange
             var packageSpecA = new PackageSpec();
@@ -38,7 +38,7 @@ namespace NuGet.Test
             };
 
             // Act
-            dgSpec = dgSpec.WithReplacedPackageSpecs(newNugetPackageSpecs);
+            dgSpec = dgSpec.WithPackageSpecs(newNugetPackageSpecs);
 
             // Assert
             Assert.Equal(dgSpec.Projects.Count, 3);

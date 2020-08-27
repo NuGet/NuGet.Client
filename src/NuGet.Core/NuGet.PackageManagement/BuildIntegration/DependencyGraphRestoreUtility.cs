@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement
             var dgFile = await GetSolutionRestoreSpec(solutionManager, context);
 
             dgFile = dgFile.WithoutRestores()
-                .WithReplacedPackageSpecs(updatedNugetPackageSpecs);
+                .WithPackageSpecs(updatedNugetPackageSpecs);
 
             foreach (var project in projects)
             {
