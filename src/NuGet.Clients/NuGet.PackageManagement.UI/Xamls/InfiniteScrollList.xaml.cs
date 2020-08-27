@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -144,15 +145,12 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                WriteToOutputConsole("GET PackageItemsFiltered...");
                 if (CollectionView.Filter != null)
                 {
-                    WriteToOutputConsole($"...CollectionView.Filter ({CollectionView.OfType<PackageItemListViewModel>().Count()})");
                     return CollectionView.OfType<PackageItemListViewModel>();
                 }
                 else
                 {
-                    WriteToOutputConsole($"...PackageItems({PackageItems.Count()})");
                     return PackageItems;
                 }
             }
@@ -386,13 +384,11 @@ namespace NuGet.PackageManagement.UI
 
         private void ApplyUIFilterForUpdatesAvailable()
         {
-            WriteToOutputConsole("ApplyUIFilterForUpdatesAvailable " + (CollectionView.Filter != null ? "WAS_FILTERED" : "NO_FILTER"));
             CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
         }
         
         internal void ClearUIFilter()
         {
-            WriteToOutputConsole("ClearUIFilter" + (CollectionView.Filter != null ? "WAS_FILTERED" : "NO_FILTER"));
             CollectionView.Filter = null;
         }
 
@@ -562,19 +558,70 @@ namespace NuGet.PackageManagement.UI
             return statusBarVisibility;
         }
 
+        internal async Task UpdatePackageListAsync(IEnumerable<PackageItemListViewModel> packages, bool refresh,
+            ItemFilter? tabToUIFilter = null, CancellationTokenSource loadCts = null)
+        {
+            loadCts?.Token.ThrowIfCancellationRequested();
+
+            if (_loadCts != null)
+            {
+                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+                lock (oldCts)
+                {
+                    oldCts?.Cancel();
+                    oldCts?.Dispose();
+                }
+            }
+            else if (loadCts != null)
+            {
+                _loadCts = loadCts;
+            }
+            else
+            {
+                _loadCts = new CancellationTokenSource();
+            }
+
+            await _joinableTaskFactory.Value.RunAsync(async () =>
+            {
+                // Synchronize updating Items list
+                await _list.ItemsLock.ExecuteAsync(async () =>
+                {
+                    _loadCts.Token.ThrowIfCancellationRequested();
+                    // remove the loading status indicator if it's in the list
+                    Items.Remove(_loadingStatusIndicator);
+
+                    if (refresh)
+                    {
+                        await ClearPackageListAsync();
+                    }
+                    if (tabToUIFilter.HasValue)
+                    {
+                        //Synchronize tab selection with any UI Filter as early as possible.
+                        UIFilter(tabToUIFilter.Value);
+                    }
+                    // add newly loaded items
+                    foreach (var package in packages)
+                    {
+                        package.PropertyChanged += Package_PropertyChanged;
+                        Items.Add(package);
+                        _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
+                    }
+                    //if (removed)
+                    //{
+                    //    Items.Add(_loadingStatusIndicator);
+                    //}
+                    return Task.CompletedTask;
+                }, _loadCts.Token);
+            });
+        }
+
         /// <summary>
         /// Appends <c>packages</c> to the internal <see cref="Items"> list
         /// </summary>
         /// <param name="packages">Packages collection to add</param>
         /// <param name="refresh">Clears <see cref="Items"> list if set to <c>true</c></param>
-        internal void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh,
-            ItemFilter? tabToUIFilter = null, CancellationTokenSource loadCts = null)
-        {
-            if (loadCts != null)
-            {
-                _loadCts = loadCts;
-            }
-
+        internal void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
+        {   
             _joinableTaskFactory.Value.Run(async () =>
             {
                 // Synchronize updating Items list
@@ -588,12 +635,6 @@ namespace NuGet.PackageManagement.UI
                         await ClearPackageListAsync();
                     }
 
-                    if (tabToUIFilter.HasValue)
-                    {
-                        //Synchronize tab selection with any UI Filter as early as possible.
-                        UIFilter(tabToUIFilter.Value);
-                    }
-
                     // add newly loaded items
                     foreach (var package in packages)
                     {
@@ -601,12 +642,10 @@ namespace NuGet.PackageManagement.UI
                         Items.Add(package);
                         _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
                     }
-
                     if (removed)
                     {
                         Items.Add(_loadingStatusIndicator);
                     }
-
                     return Task.CompletedTask;
                 });
             });
@@ -777,9 +816,19 @@ namespace NuGet.PackageManagement.UI
                 var last = _scrollViewer.ViewportHeight + first;
                 if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
-                        LoadItemsAsync(selectedPackageItem: null, loadCts: _loadCts)
-                    );
+                    if (_loadCts == null)
+                    {
+                        _loadCts = new CancellationTokenSource();
+                    }
+                    
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    {
+                        await _list.ItemsLock.ExecuteAsync(async () =>
+                        {
+                            await LoadItemsAsync(selectedPackageItem: null, loadCts: _loadCts);
+                        }, _loadCts.Token);
+                    });
+                    //);
                 }
             }
         }

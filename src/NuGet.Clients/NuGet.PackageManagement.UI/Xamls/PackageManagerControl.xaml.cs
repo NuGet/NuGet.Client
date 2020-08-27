@@ -930,22 +930,18 @@ namespace NuGet.PackageManagement.UI
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts);
 
-                WriteToOutputConsole("OLD CachedInstalledItems=" + CachedInstalledItems?.Count);
                 //Store installed items in the control for reuse on any tab based on Installed data.
                 CachedInstalledItems = loader.CachedInstalledItems;
-                WriteToOutputConsole("NEW CachedInstalledItems=" + CachedInstalledItems?.Count);
 
                 if (pSearchCallback != null && searchTask != null)
                 {
                     var searchResult = await searchResultTask;
-                    WriteToOutputConsole("searchResult.RawItemsCount=" + searchResult.RawItemsCount);
                     pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
                 }
 
                 // When not using Cache, refresh all Counts.
                 if (!useCachedPackageMetadata)
                 {
-                    WriteToOutputConsole("**calling RefreshInstalledAndUpdatesTabs=" + _packageList.Items.Count());
                     RefreshInstalledAndUpdatesTabs();
                 }
 
@@ -955,7 +951,6 @@ namespace NuGet.PackageManagement.UI
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(); //TODO: needed?
                     foreach (var package in _packageList.PackageItemsFiltered)
                     {
-                        WriteToOutputConsole("ReloadPackageVersionsAsync " + package.Id);
                         await package.ReloadPackageVersionsAsync();
                     }
                     FlagTabDataAsLoaded(filterToRender);
@@ -972,7 +967,6 @@ namespace NuGet.PackageManagement.UI
             }
             catch (OperationCanceledException)
             {
-                WriteToOutputConsole("OperationCanceledException in ReloadPackageVersionsAsync ");
                 // Invalidate cache.
                 Model.CachedUpdates = null;
                 FlagTabDataAsLoaded(filterToRender, isLoaded: false);
@@ -1250,7 +1244,7 @@ namespace NuGet.PackageManagement.UI
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {
             WriteToOutputConsole("***************************************************************************");
-            WriteToOutputConsole("START Filter_SelectionChanged Items=" + _packageList.Items.Count());
+            WriteToOutputConsole("START " + _topPanel.Filter +  " Filter_SelectionChanged Items=" + _packageList.Items.Count());
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
@@ -1263,8 +1257,11 @@ namespace NuGet.PackageManagement.UI
                 // new loading task starts or manager ui is closed while loading packages.
                 var loadCts = new CancellationTokenSource();
                 var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
-                oldCts?.Cancel();
-                oldCts?.Dispose();
+                lock (oldCts)
+                { 
+                    oldCts?.Cancel();
+                    oldCts?.Dispose();
+                }
 
                 var itemFilter = _topPanel.Filter;
                 var switchedFromBrowse = e.PreviousFilter.HasValue && e.PreviousFilter == ItemFilter.All;
@@ -1289,36 +1286,34 @@ namespace NuGet.PackageManagement.UI
                     //NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                     //{
                     //    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_loadCts.Token);
-                    WriteToOutputConsole("DEBUG001 Filter_SelectionChanged Items=" + _packageList.Items.Count());
-                        //First time loading the Installed packages.
-                        if (CachedInstalledItems == null)
-                        {
-                            //Load Installed packages from feed and store into cache, clear and UpdatePackageList, and Filter based on Tab and user selections.
-                            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true, useNewCancellationToken: false);
-                            WriteToOutputConsole("DEBUG002 Filter_SelectionChanged Items=" + _packageList.Items.Count());
-                        }
-                        else
-                        {
-                            isUIFiltering = true;
+                    //First time loading the Installed packages.
+                    if (CachedInstalledItems == null)
+                    {
+                        //Load Installed packages from feed and store into cache, clear and UpdatePackageList, and Filter based on Tab and user selections.
+                        SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true, useNewCancellationToken: false);
+                    }
+                    else
+                    {
+                        isUIFiltering = true;
 
-                            //Package List is not currently bound to Installed packages.
-                            if (switchedFromBrowse)
+                        //Package List is not currently bound to Installed packages.
+                        if (switchedFromBrowse)
+                        {
+                            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                             {
                                 //Repopulate with Installed package data and apply UI filtering.
-                                _packageList.UpdatePackageList(packages: CachedInstalledItems, refresh: true, tabToUIFilter: itemFilter, loadCts: _loadCts);
-                                WriteToOutputConsole("DEBUG002a Filter_SelectionChanged Items=" + _packageList.Items.Count());
-                            }
-
-                            WriteToOutputConsole("DEBUG003 Filter_SelectionChanged Items=" + _packageList.Items.Count());
+                                await _packageList.UpdatePackageListAsync(packages: CachedInstalledItems, refresh: true, tabToUIFilter: itemFilter, loadCts: _loadCts);
+                            });
                         }
-
-                    //});
+                    }
                 }
 
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
+
+            WriteToOutputConsole("END " + _topPanel.Filter + " Filter_SelectionChanged Items=" + _packageList.Items.Count());
         }
 
         private void ShowOrCollapseUpdateControls()
