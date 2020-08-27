@@ -378,16 +378,18 @@ namespace NuGet.ProjectModel.Test
       ""outputPath"": ""X:\\ProjectPath\\obj\\"",
       ""projectStyle"": ""PackageReference"",
       ""originalTargetFrameworks"": [
-        ""netcoreapp1.0""
+        ""netcoreapp10""
       ],
       ""frameworks"": {
         ""netcoreapp1.0"": {
+          ""targetAlias"": ""netcoreapp10"",
           ""projectReferences"": {}
         }
       }
     },
     ""frameworks"": {
       ""netcoreapp1.0"": {
+        ""targetAlias"": ""netcoreapp10"",
         ""dependencies"": {
          ""Microsoft.NET.Sdk"": {
                 ""suppressParent"": ""All"",
@@ -412,6 +414,7 @@ namespace NuGet.ProjectModel.Test
                     new TargetFrameworkInformation
                     {
                         FrameworkName = FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                        TargetAlias = "netcoreapp10",
                         Dependencies = new[]
                         {
                             new LibraryDependency
@@ -445,10 +448,13 @@ namespace NuGet.ProjectModel.Test
                         ProjectPath = @"X:\ProjectPath\ProjectPath.csproj",
                         OutputPath = @"X:\ProjectPath\obj\",
                         ProjectStyle = ProjectStyle.PackageReference,
-                        OriginalTargetFrameworks = new[] { "netcoreapp1.0" },
+                        OriginalTargetFrameworks = new[] { "netcoreapp10" },
                         TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
                         {
                             new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("netcoreapp1.0"))
+                            {
+                                TargetAlias = "netcoreapp10",
+                            }
                         }
                     }
                 }

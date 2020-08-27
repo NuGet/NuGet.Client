@@ -1140,6 +1140,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, project1Spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
                 Assert.Null(project1Spec.RestoreMetadata.ProjectJsonPath);
                 Assert.Equal("net46|netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
+                Assert.Equal("net46|netstandard16", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
                 Assert.Equal("net46|netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.Equal(outputPath1, project1Spec.RestoreMetadata.OutputPath);
                 Assert.Equal("https://nuget.org/a/index.json|https://nuget.org/b/index.json", string.Join("|", project1Spec.RestoreMetadata.Sources.Select(s => s.Source)));
@@ -1322,6 +1323,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal("a", project1Spec.Name);
                 Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
+                Assert.Equal("netstandard16", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.False(project1Spec.RestoreMetadata.CrossTargeting);
             }
@@ -1383,6 +1385,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
+                Assert.Equal("netstandard16", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
                 Assert.False(project1Spec.RestoreMetadata.LegacyPackagesDirectory);
             }
         }
@@ -1649,6 +1652,7 @@ namespace NuGet.Commands.Test
                 // Verify original frameworks are trimmed
                 Assert.Equal("net46", project1Spec.RestoreMetadata.OriginalTargetFrameworks[0]);
                 Assert.Equal("netstandard16", project1Spec.RestoreMetadata.OriginalTargetFrameworks[1]);
+                Assert.Equal("net46|netstandard16", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
             }
         }
 
@@ -2548,6 +2552,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("net46", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("net46", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
+                Assert.Equal("net46", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
                 Assert.Equal("x", project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.SingleOrDefault().Name);
                 Assert.Empty(project1Spec.Dependencies);
             }

@@ -461,7 +461,8 @@ namespace NuGet.Commands.Test
             var frameworkGroups = frameworks.Select(s =>
                 new TargetFrameworkInformation()
                 {
-                    FrameworkName = NuGetFramework.Parse(s)
+                    FrameworkName = NuGetFramework.Parse(s),
+                    TargetAlias = s,
                 })
                 .ToList();
 
@@ -485,7 +486,7 @@ namespace NuGet.Commands.Test
             foreach (var frameworkInfo in frameworkGroups)
             {
                 spec.RestoreMetadata.TargetFrameworks.Add(
-                    new ProjectRestoreMetadataFrameworkInfo(frameworkInfo.FrameworkName));
+                    new ProjectRestoreMetadataFrameworkInfo(frameworkInfo.FrameworkName) { TargetAlias = frameworkInfo.TargetAlias });
             }
 
             return spec;

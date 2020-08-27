@@ -1105,4 +1105,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_CentralPackageVersions_FloatingVersionsAreNotAllowed" xml:space="preserve">
     <value>Centrally defined floating package versions are not allowed.</value>
   </data>
+  <data name="SpecValidation_OriginalTargetFrameworksMustMatchAliases" xml:space="preserve">
+    <value>The original target frameworks value must match the aliases. Original target frameworks: {0}, aliases: {1}.</value>
+  </data>
 </root>

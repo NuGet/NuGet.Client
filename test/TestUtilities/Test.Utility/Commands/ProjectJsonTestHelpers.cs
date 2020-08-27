@@ -133,9 +133,17 @@ namespace NuGet.Commands.Test
             updated.RestoreMetadata.ConfigFilePaths = new List<string>();
             updated.RestoreMetadata.CentralPackageVersionsEnabled = spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
 
-            foreach (var framework in updated.TargetFrameworks.Select(e => e.FrameworkName))
+            // Update the Target Alias.
+            foreach (var framework in updated.TargetFrameworks)
             {
-                updated.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
+                if (string.IsNullOrEmpty(framework.TargetAlias))
+                {
+                    framework.TargetAlias = framework.FrameworkName.GetShortFolderName();
+                }
+            }
+            foreach (var framework in updated.TargetFrameworks)
+            {
+                updated.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework.FrameworkName) { TargetAlias = framework.TargetAlias });
             }
             return updated;
         }
