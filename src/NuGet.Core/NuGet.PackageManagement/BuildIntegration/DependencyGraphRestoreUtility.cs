@@ -353,6 +353,8 @@ namespace NuGet.PackageManagement
         internal static void GetProjectRestoreSpecAndAdditionalMessages(
             ProjectRestoreSpec restoreSpecData)
         {
+            var dgSpec = restoreSpecData.DgSpec;
+
             if (restoreSpecData.ProjectAdditionalMessages?.Any() ?? false)
             {
                 if (restoreSpecData.AllAdditionalMessages == null)
@@ -365,9 +367,9 @@ namespace NuGet.PackageManagement
 
             foreach (var packageSpec in restoreSpecData.PackageSpecs)
             {
-                lock (restoreSpecData.DgSpec)
+                lock (dgSpec)
                 {
-                    restoreSpecData.DgSpec.AddProject(packageSpec);
+                    dgSpec.AddProject(packageSpec);
                 }
 
                 if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
@@ -375,9 +377,9 @@ namespace NuGet.PackageManagement
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
                 {
-                    lock (restoreSpecData.DgSpec)
+                    lock (dgSpec)
                     {
-                        restoreSpecData.DgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                        dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                     }
 
                     var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
@@ -402,9 +404,9 @@ namespace NuGet.PackageManagement
                                             // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
                                             restoreSpecData.KnownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
 
-                                            lock (restoreSpecData.DgSpec)
+                                            lock (dgSpec)
                                             {
-                                                restoreSpecData.DgSpec.AddProject(dependentPackageSpec);
+                                                dgSpec.AddProject(dependentPackageSpec);
                                             }
                                         }
                                     }
