@@ -264,7 +264,6 @@ namespace NuGet.ProjectModel
             {
                 foreach (LibraryDependency d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
                 {
-                    d.LibraryRange.VersionRange = VersionRange.All;
                     if (tfm.CentralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
                     {
                         d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
