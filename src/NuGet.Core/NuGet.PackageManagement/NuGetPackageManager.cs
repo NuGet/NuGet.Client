@@ -3113,6 +3113,7 @@ namespace NuGet.PackageManagement
                     {
                         // Mark project for restore
                         dgSpecForParents.AddRestore(parent.MSBuildProjectPath);
+                        _buildIntegratedProjectsUpdateSet?.Add(parent.MSBuildProjectPath);
                     }
                 }
 
@@ -3132,16 +3133,6 @@ namespace NuGet.PackageManagement
                         isRestoreOriginalAction: false, // not an explicit restore request instead being done as part of install or update
                         log: logger,
                         token: token);
-                }
-
-                foreach (var parent in parents)
-                {
-                    // Now by this time we already evaluated parents, so let's add to hash and don't need evaluate next time.
-                    if (_buildIntegratedProjectsUpdateSet == null ||
-                        !_buildIntegratedProjectsUpdateSet.Contains(parent.MSBuildProjectPath))
-                    {
-                        _buildIntegratedProjectsUpdateSet.Add(parent.MSBuildProjectPath);
-                    }
                 }
             }
             else
