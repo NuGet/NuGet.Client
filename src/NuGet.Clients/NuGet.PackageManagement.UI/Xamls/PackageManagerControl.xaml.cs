@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                _detailModel = PackageDetailControlModel.Create(Model.Context.SolutionManagerService, Model.Context.Projects);
+                _detailModel = new PackageDetailControlModel(Model.Context.SolutionManagerService, Model.Context.Projects);
             }
 
             if (_windowSearchHostFactory != null)
@@ -567,7 +567,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (Model.Context.PackageRestoreManager != null)
             {
-                RestoreBar = PackageRestoreBar.Create(Model.Context.SolutionManagerService, Model.Context.PackageRestoreManager);
+                RestoreBar = new PackageRestoreBar(Model.Context.SolutionManagerService, Model.Context.PackageRestoreManager);
                 DockPanel.SetDock(RestoreBar, Dock.Top);
 
                 _root.Children.Insert(0, RestoreBar);
@@ -612,7 +612,7 @@ namespace NuGet.PackageManagement.UI
 
         private void AddMigratorBar()
         {
-            _migratorBar = PRMigratorBar.Create(Model);
+            _migratorBar = new PRMigratorBar(Model);
 
             DockPanel.SetDock(_migratorBar, Dock.Top);
 

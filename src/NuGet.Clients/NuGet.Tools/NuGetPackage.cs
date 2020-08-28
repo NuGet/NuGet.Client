@@ -486,6 +486,7 @@ namespace NuGetVSExtension
             IProjectContextInfo contextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
             INuGetUI uiController = await UIFactory.Value.CreateAsync(contextInfo);
 
+            // This model takes ownership of --- and Dispose() responsibility for --- the INuGetUI instance.
             var model = new PackageManagerModel(
                 uiController,
                 isSolution: false,
@@ -725,6 +726,7 @@ namespace NuGetVSExtension
             INuGetUI uiController = await UIFactory.Value.CreateAsync(projectContexts.ToArray());
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 
+            // This model takes ownership of --- and Dispose() responsibility for --- the INuGetUI instance.
             var model = new PackageManagerModel(
                 uiController,
                 isSolution: true,

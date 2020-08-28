@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
     /// fit into the VS model. It's basically an adaptor that turns PackageManagerSession into an IVsPersistDocData
     /// so VS is happy.
     /// </remarks>
-    public sealed class PackageManagerModel : IVsPersistDocData, INotifyPropertyChanged, IDisposable
+    public sealed class PackageManagerModel : IVsPersistDocData, IDisposable
     {
         private readonly Guid _editorFactoryGuid;
 
@@ -47,13 +47,6 @@ namespace NuGet.PackageManagement.UI
         /// Cached Package Metadata collected when we set the "count" of updates in the background
         /// </summary>
         public PackageSearchMetadataCache CachedUpdates { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
         public int Close()
         {

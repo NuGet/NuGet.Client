@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Collections.Generic;
+using System.Linq;
 using MessagePack;
 using MessagePack.Formatters;
 using Microsoft;
@@ -35,7 +36,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             try
             {
                 PackageIdentity? packageIdentity = null;
-                IEnumerable<PackageDependency>? packageDependencies = null;
+                List<PackageDependency>? packageDependencies = null;
 
                 int propertyCount = reader.ReadMapHeader();
 
@@ -48,7 +49,18 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             break;
 
                         case PackageDependenciesPropertyName:
-                            packageDependencies = options.Resolver.GetFormatter<IEnumerable<PackageDependency>>().Deserialize(ref reader, options);
+                            packageDependencies = new List<PackageDependency>();
+
+                            int dependenciesCount = reader.ReadArrayHeader();
+
+                            for (var i = 0; i < dependenciesCount; ++i)
+                            {
+                                PackageDependency? packageDependency = PackageDependencyFormatter.Instance.Deserialize(ref reader, options);
+
+                                Assumes.NotNull(packageDependency);
+
+                                packageDependencies.Add(packageDependency);
+                            }
                             break;
 
                         default:
@@ -80,7 +92,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
             writer.Write(PackageIdentityPropertyName);
             PackageIdentityFormatter.Instance.Serialize(ref writer, value, options);
             writer.Write(PackageDependenciesPropertyName);
-            options.Resolver.GetFormatter<IEnumerable<PackageDependency>>().Serialize(ref writer, value.Dependencies, options);
+            writer.WriteArrayHeader(value.Dependencies.Count());
+
+            foreach (PackageDependency packageDependency in value.Dependencies)
+            {
+                PackageDependencyFormatter.Instance.Serialize(ref writer, packageDependency, options);
+            }
         }
     }
 }

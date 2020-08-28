@@ -18,20 +18,13 @@ namespace NuGet.PackageManagement.UI
         // This class does not own this instance, so do not dispose of it in this class.
         private readonly INuGetSolutionManagerService _solutionManager;
 
-        private PackageDetailControlModel(
+        public PackageDetailControlModel(
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects)
             : base(projects)
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
-        }
-
-        public static PackageDetailControlModel Create(
-            INuGetSolutionManagerService solutionManager,
-            IEnumerable<IProjectContextInfo> projects)
-        {
-            return new PackageDetailControlModel(solutionManager, projects);
         }
 
         public async override Task SetCurrentPackage(

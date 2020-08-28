@@ -8,6 +8,10 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
@@ -15,13 +19,9 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 using TelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
-using NuGet.VisualStudio.Internal.Contracts;
-using Microsoft.ServiceHub.Framework;
-using Microsoft;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -141,9 +141,10 @@ namespace NuGet.PackageManagement.UI
                     includeUnresolved: true,
                     CancellationToken.None);
 
-                upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel(
+                upgradeInformationWindowModel = await NuGetProjectUpgradeWindowModel.CreateAsync(
                     project,
-                    packagesDependencyInfo.ToList());
+                    packagesDependencyInfo.ToList(),
+                    CancellationToken.None);
             }
 
             var result = uiService.ShowNuGetUpgradeWindow(upgradeInformationWindowModel);
@@ -166,11 +167,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
+            string projectName = await project.GetUniqueNameOrNameAsync(CancellationToken.None);
             string backupPath;
-            string projectName = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                return await project.GetUniqueNameOrNameAsync(CancellationToken.None);
-            });
 
             var windowTitle = string.Format(
                 CultureInfo.CurrentCulture,
@@ -656,9 +654,9 @@ namespace NuGet.PackageManagement.UI
                     .Select(project => project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, cancellationToken).AsTask())
                     .ToArray();
 
-                await Task.WhenAll(tasks);
+                string[] projectNames = await Task.WhenAll(tasks);
 
-                packageManagementFormat.ProjectNames = tasks.Select(task => task.Result)
+                packageManagementFormat.ProjectNames = projectNames
                     .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                     .ToList();
 

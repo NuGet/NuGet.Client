@@ -6,9 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
-using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
@@ -78,18 +75,6 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public async ValueTask<INuGetUI> CreateAsync(params IProjectContextInfo[] projects)
         {
-            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-
-            // NuGetUI takes ownership and must be disposed of by the caller.
-#pragma warning disable ISB001 // Dispose of proxies
-            INuGetSolutionManagerService solutionManagerService = await serviceBroker.GetProxyAsync<INuGetSolutionManagerService>(
-                NuGetServices.SolutionManagerService, CancellationToken.None);
-#pragma warning restore ISB001 // Dispose of proxies
-
-            Assumes.NotNull(solutionManagerService);
-
-            INuGetUIContext uiContext = CreateUIContext(solutionManagerService, projects);
-
             var adapterLogger = new LoggerAdapter(ProjectContext);
 
             ProjectContext.PackageExtractionContext = new PackageExtractionContext(
@@ -98,44 +83,27 @@ namespace NuGet.PackageManagement.UI
                 ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
                 adapterLogger);
 
-            return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
-        }
-
-        private INuGetUIContext CreateUIContext(
-            INuGetSolutionManagerService solutionManagerService,
-            params IProjectContextInfo[] projects)
-        {
-            var packageManager = new NuGetPackageManager(
-                SourceRepositoryProvider.Value,
-                Settings.Value,
-                SolutionManager,
-                DeleteOnRestartManager.Value);
-
-            var actionEngine = new UIActionEngine(
-                SourceRepositoryProvider.Value,
-                packageManager,
-                LockService.Value);
-
             // only pick up at most three integrated package managers
             const int MaxPackageManager = 3;
             var packageManagerProviders = PackageManagerProviderUtility.Sort(
                 PackageManagerProviders, MaxPackageManager);
 
-            var context = new NuGetUIContext(
+            return await NuGetUI.CreateAsync(
+                CommonOperations,
+                ProjectContext,
                 SourceRepositoryProvider.Value,
+                Settings.Value,
                 SolutionManager,
-                solutionManagerService,
-                packageManager,
-                actionEngine,
                 PackageRestoreManager.Value,
                 OptionsPageActivator.Value,
                 SolutionUserOptions,
-                packageManagerProviders)
-            {
-                Projects = projects
-            };
-
-            return context;
+                DeleteOnRestartManager.Value,
+                packageManagerProviders,
+                SolutionUserOptions,
+                LockService.Value,
+                OutputConsoleLogger,
+                CancellationToken.None,
+                projects);
         }
     }
 }

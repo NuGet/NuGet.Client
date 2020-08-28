@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -31,15 +33,13 @@ namespace NuGet.PackageManagement.UI
 
         private readonly NuGetUIProjectContext _projectContext;
 
-        public NuGetUI(
+        private NuGetUI(
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
-            INuGetUIContext context,
             INuGetUILogger logger)
         {
             CommonOperations = commonOperations;
             _projectContext = projectContext;
-            UIContext = context;
             UILogger = logger;
 
             // set default values of properties
@@ -50,6 +50,62 @@ namespace NuGet.PackageManagement.UI
             Projects = Enumerable.Empty<IProjectContextInfo>();
             DisplayPreviewWindow = true;
             DisplayDeprecatedFrameworkWindow = true;
+        }
+
+        public static async Task<NuGetUI> CreateAsync(
+            ICommonOperations commonOperations,
+            NuGetUIProjectContext projectContext,
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            IVsSolutionManager solutionManager,
+            IPackageRestoreManager packageRestoreManager,
+            IOptionsPageActivator optionsPageActivator,
+            IUserSettingsManager userSettingsManager,
+            IDeleteOnRestartManager deleteOnRestartManager,
+            IReadOnlyList<IVsPackageManagerProvider> packageManagerProviders,
+            SolutionUserOptions solutionUserOptions,
+            INuGetLockService lockService,
+            INuGetUILogger logger,
+            CancellationToken cancellationToken,
+            params IProjectContextInfo[] projects)
+        {
+            Assumes.NotNull(commonOperations);
+            Assumes.NotNull(projectContext);
+            Assumes.NotNull(sourceRepositoryProvider);
+            Assumes.NotNull(settings);
+            Assumes.NotNull(solutionManager);
+            Assumes.NotNull(packageRestoreManager);
+            Assumes.NotNull(optionsPageActivator);
+            Assumes.NotNull(userSettingsManager);
+            Assumes.NotNull(deleteOnRestartManager);
+            Assumes.NotNull(packageManagerProviders);
+            Assumes.NotNull(solutionUserOptions);
+            Assumes.NotNull(lockService);
+            Assumes.NotNull(logger);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var nuGetUi = new NuGetUI(
+                commonOperations,
+                projectContext,
+                logger)
+            {
+                UIContext = await NuGetUIContext.CreateAsync(
+                    sourceRepositoryProvider,
+                    settings,
+                    solutionManager,
+                    packageRestoreManager,
+                    optionsPageActivator,
+                    solutionUserOptions,
+                    deleteOnRestartManager,
+                    packageManagerProviders,
+                    lockService,
+                    cancellationToken)
+            };
+
+            nuGetUi.UIContext.Projects = projects;
+
+            return nuGetUi;
         }
 
         public bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects)
@@ -215,7 +271,7 @@ namespace NuGet.PackageManagement.UI
 
         public ICommonOperations CommonOperations { get; }
 
-        public INuGetUIContext UIContext { get; }
+        public INuGetUIContext UIContext { get; private set; }
 
         public INuGetUILogger UILogger { get; }
 

@@ -125,6 +125,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="UserInterfaceService\NuGetSettings.cs" />
     <Compile Include="UserInterfaceService\NuGetSettingsSerializer.cs" />
+    <Compile Include="UserInterfaceService\NuGetSolutionManagerServiceWrapper.cs" />
     <Compile Include="UserInterfaceService\NuGetUIFactory.cs" />
     <Compile Include="UserInterfaceService\SolutionUserOptions.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgress.cs" />

@@ -74,6 +74,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.NotNullOrEmpty(projectIds);
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             NuGetProject[] projects = await GetProjectsAsync(projectIds);
 
             var upgradeableProjects = new List<IProjectContextInfo>();

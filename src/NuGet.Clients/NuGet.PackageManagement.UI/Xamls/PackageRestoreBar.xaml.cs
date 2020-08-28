@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.UI
 
         public Guid OperationId { get; set; }
 
-        private PackageRestoreBar(INuGetSolutionManagerService solutionManager, IPackageRestoreManager packageRestoreManager)
+        public PackageRestoreBar(INuGetSolutionManagerService solutionManager, IPackageRestoreManager packageRestoreManager)
         {
             InitializeComponent();
             _uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -68,13 +68,6 @@ namespace NuGet.PackageManagement.UI
             // Find storyboards that will be used to smoothly show and hide the restore bar.
             _showRestoreBar = FindResource("ShowSmoothly") as Storyboard;
             _hideRestoreBar = FindResource("HideSmoothly") as Storyboard;
-        }
-
-        public static PackageRestoreBar Create(
-            INuGetSolutionManagerService solutionManager,
-            IPackageRestoreManager packageRestoreManager)
-        {
-            return new PackageRestoreBar(solutionManager, packageRestoreManager);
         }
 
         public void CleanUp()

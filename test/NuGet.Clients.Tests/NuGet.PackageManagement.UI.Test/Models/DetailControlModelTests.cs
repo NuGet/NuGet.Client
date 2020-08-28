@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             : base(testData)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
-            _testInstance = PackageDetailControlModel.Create(
+            _testInstance = new PackageDetailControlModel(
                 solutionManager: solMgr.Object,
                 projects: new List<IProjectContextInfo>());
 

@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.UI
 
         public Guid OperationId { get; set; }
 
-        private PRMigratorBar(PackageManagerModel model)
+        public PRMigratorBar(PackageManagerModel model)
         {
             InitializeComponent();
             _model = model;
@@ -46,11 +46,6 @@ namespace NuGet.PackageManagement.UI
             UpgradeMessage.SetResourceReference(TextBlock.ForegroundProperty, VsBrushes.InfoTextKey);
             MigratorBar.SetResourceReference(Border.BackgroundProperty, VsBrushes.InfoBackgroundKey);
             MigratorBar.SetResourceReference(Border.BorderBrushProperty, VsBrushes.ActiveBorderKey);
-        }
-
-        public static PRMigratorBar Create(PackageManagerModel model)
-        {
-            return new PRMigratorBar(model);
         }
 
         public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)

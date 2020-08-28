@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.UI
 
                     using (INuGetProjectUpgraderService projectUpgrader = await serviceBroker.GetProxyAsync<INuGetProjectUpgraderService>(
                         NuGetServices.ProjectUpgraderService,
-                        CancellationToken.None))
+                        token))
                     {
                         Assumes.NotNull(projectUpgrader);
 
@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    IEnumerable<string> projectIds = await ProjectUtility.GetProjectIdsAsync(uiService.Projects, CancellationToken.None);
+                    IEnumerable<string> projectIds = await ProjectUtility.GetProjectIdsAsync(uiService.Projects, token);
 
                     upgradeInformationTelemetryEvent.SetResult(projectIds, status, packagesCount);
                 }
