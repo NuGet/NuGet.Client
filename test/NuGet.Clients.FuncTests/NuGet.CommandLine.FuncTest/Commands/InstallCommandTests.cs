@@ -101,7 +101,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 };
 
                 // Act
-                var result = RunInstall(_nugetExePath, context, expectedExitCode:0, additionalArgs: args);
+                var result = RunInstall(_nugetExePath, context, expectedExitCode: 0, additionalArgs: args);
 
                 // Assert
                 result.ExitCode.Should().Be(0);

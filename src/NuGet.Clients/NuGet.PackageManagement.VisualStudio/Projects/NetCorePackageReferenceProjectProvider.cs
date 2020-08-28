@@ -57,8 +57,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public async Task<NuGetProject> TryCreateNuGetProjectAsync(
-            IVsProjectAdapter vsProject, 
-            ProjectProviderContext context, 
+            IVsProjectAdapter vsProject,
+            ProjectProviderContext context,
             bool forceProjectType)
         {
             Assumes.Present(vsProject);
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // The project must be an IVsHierarchy.
             var hierarchy = vsProject.VsHierarchy;
-            
+
             if (hierarchy == null)
             {
                 return null;

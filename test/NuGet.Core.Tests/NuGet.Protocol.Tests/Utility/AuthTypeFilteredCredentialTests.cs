@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var expected = new NetworkCredential("username", "password");
-            var credential = new AuthTypeFilteredCredentials(expected, new[] {"basic", "somethirdthing"});
+            var credential = new AuthTypeFilteredCredentials(expected, new[] { "basic", "somethirdthing" });
 
             // Act
             var actual = credential.GetCredential(new Uri("https://example.com/"), authType);
@@ -65,7 +65,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var unexpected = new NetworkCredential("username", "password");
-            var credential = new AuthTypeFilteredCredentials(unexpected, new[] {"basic", "somethirdthing"});
+            var credential = new AuthTypeFilteredCredentials(unexpected, new[] { "basic", "somethirdthing" });
 
             // Act
             var actual = credential.GetCredential(new Uri("https://example.com/"), authType);

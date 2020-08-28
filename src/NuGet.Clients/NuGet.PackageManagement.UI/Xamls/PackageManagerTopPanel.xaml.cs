@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI
             var tabConsolidate = new TabItem();
             tabConsolidate.Name = nameof(tabConsolidate);
             tabConsolidate.Tag = ItemFilter.Consolidate;
-            
+
             var sp = new StackPanel()
             {
                 Orientation = Orientation.Horizontal

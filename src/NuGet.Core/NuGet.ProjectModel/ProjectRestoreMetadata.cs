@@ -120,20 +120,47 @@ namespace NuGet.ProjectModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(ProjectStyle);
-            hashCode.AddObject(ProjectPath);
-            hashCode.AddObject(ProjectJsonPath);
-            hashCode.AddObject(OutputPath);
-            hashCode.AddObject(ProjectName);
-            hashCode.AddObject(ProjectUniqueName);
-            hashCode.AddSequence(Sources);
-            hashCode.AddObject(PackagesPath);
-            hashCode.AddSequence(ConfigFilePaths);
-            hashCode.AddSequence(FallbackFolders);
-            hashCode.AddSequence(TargetFrameworks);
-            hashCode.AddSequence(OriginalTargetFrameworks);
+            if (ProjectPath != null)
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectPath));
+            }
+            if (ProjectJsonPath != null)
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectJsonPath));
+            }
+            if (OutputPath != null)
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(OutputPath));
+            }
+            if (ProjectName != null)
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectName));
+            }
+            if (ProjectUniqueName != null)
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectUniqueName));
+            }
+            hashCode.AddSequence(Sources.OrderBy(e => e.Source, StringComparer.OrdinalIgnoreCase));
+            if (PackagesPath != null)
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(PackagesPath));
+            }
+            foreach (var reference in ConfigFilePaths.OrderBy(s => s, PathUtility.GetStringComparerBasedOnOS()))
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(reference));
+            }
+            foreach (var reference in FallbackFolders.OrderBy(s => s, PathUtility.GetStringComparerBasedOnOS()))
+            {
+                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(reference));
+            }
+            hashCode.AddSequence(TargetFrameworks.OrderBy(dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase));
+            foreach (var reference in OriginalTargetFrameworks.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            {
+                hashCode.AddObject(StringComparer.OrdinalIgnoreCase.GetHashCode(reference));
+            }
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);
-            hashCode.AddObject(Files);
+            hashCode.AddSequence(Files);
             hashCode.AddObject(ValidateRuntimeAssets);
             hashCode.AddObject(SkipContentFileWrite);
             hashCode.AddObject(ProjectWideWarningProperties);
@@ -170,7 +197,7 @@ namespace NuGet.ProjectModel
                    PathUtility.GetStringComparerBasedOnOS().Equals(PackagesPath, other.PackagesPath) &&
                    ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
                    FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
+                   EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase) &&
                    OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase) &&
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&

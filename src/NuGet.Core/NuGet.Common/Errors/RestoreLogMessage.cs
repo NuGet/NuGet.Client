@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,7 +45,7 @@ namespace NuGet.Common
             ShouldDisplay = logToInnerLogger;
         }
 
-        public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
+        public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode,
             string errorString, string targetGraph)
             : this(logLevel, errorCode, errorString, targetGraph, logToInnerLogger: false)
         {

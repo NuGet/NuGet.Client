@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,5 +44,5 @@ namespace NuGet.VisualStudio
         /// <param name="packageId">Current package id</param>
         /// <param name="projectName">Unique project name for finding the project through VS dte</param>
         void GoToPackage(string packageId, string projectName);
-    }    
+    }
 }

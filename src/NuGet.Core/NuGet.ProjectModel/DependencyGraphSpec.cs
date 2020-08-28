@@ -264,7 +264,6 @@ namespace NuGet.ProjectModel
             {
                 foreach (LibraryDependency d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
                 {
-                    d.LibraryRange.VersionRange = VersionRange.All;
                     if (tfm.CentralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
                     {
                         d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
@@ -308,7 +307,7 @@ namespace NuGet.ProjectModel
                     {
                         switch (propertyName)
                         {
-                           case "restore":
+                            case "restore":
                                 jsonReader.ReadObject(restorePropertyName =>
                                 {
                                     if (!string.IsNullOrEmpty(restorePropertyName))

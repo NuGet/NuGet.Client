@@ -52,7 +52,7 @@ namespace NuGet.Commands
                 targetFrameworkMoniker,
                 targetPlatformMoniker,
                 targetPlatformIdentifier: null,
-                targetPlatformVersion : null,
+                targetPlatformVersion: null,
                 targetPlatformMinVersion,
                 isXnaWindowsPhoneProject: false,
                 isManagementPackProject: false,

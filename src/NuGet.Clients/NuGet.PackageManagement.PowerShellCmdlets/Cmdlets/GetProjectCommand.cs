@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 VsSolutionManager.EnsureSolutionIsLoaded();
                 var projects = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                    async() => (await VsSolutionManager.GetAllVsProjectAdaptersAsync()).Select(p => p.Project));
+                    async () => (await VsSolutionManager.GetAllVsProjectAdaptersAsync()).Select(p => p.Project));
 
                 WriteObject(projects, enumerateCollection: true);
             }

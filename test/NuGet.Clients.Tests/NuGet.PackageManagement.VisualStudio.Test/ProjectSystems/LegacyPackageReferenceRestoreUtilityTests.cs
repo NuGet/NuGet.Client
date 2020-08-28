@@ -2215,8 +2215,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectTargetFrameworkStr,
                         restorePackagesWithLockFile: null,
                         nuGetLockFilePath: null,
-                        restoreLockedMode:false,
-                        projectPackageVersions: new List<(string Id, string Version)>() {packageA, packageB });
+                        restoreLockedMode: false,
+                        projectPackageVersions: new List<(string Id, string Version)>() { packageA, packageB });
 
                     var projectServices = new TestProjectSystemServices();
                     projectServices.SetupInstalledPackages(
@@ -2309,7 +2309,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.True(targetFramework.Dependencies.First().VersionCentrallyManaged);
 
                     Assert.Equal(2, assetsFile.Libraries.Count);
-                   
+
                     Assert.Contains(assetsFile.Libraries, l => l.Name == packageA.PackageId);
                     Assert.Contains(assetsFile.Libraries, l => l.Name == packageB.PackageId);
 

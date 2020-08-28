@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 Mock.Get(_metadataResource)
                     .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync( new[] { emptyTestMetadata });
+                    .ReturnsAsync(new[] { emptyTestMetadata });
 
                 // Act
                 var metadata = await _target.GetLocalPackageMetadataAsync(
@@ -319,7 +319,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 CancellationToken token = new CancellationToken(canceled: true);
 
                 // Act
-                Task< IPackageSearchMetadata> task() => _target.GetPackageMetadataAsync(
+                Task<IPackageSearchMetadata> task() => _target.GetPackageMetadataAsync(
                    TestPackageIdentity,
                    includePrerelease: true,
                    cancellationToken: token);

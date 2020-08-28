@@ -10,14 +10,14 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Core;
-using NuGet.Versioning;
+using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Rules;
-using System.Reflection.Emit;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
@@ -770,7 +770,7 @@ namespace NuGet.Packaging
                             package,
                             file.Path,
                             stream,
-                            lastWriteTime : _deterministic ? ZipFormatMinDate : file.LastWriteTime); 
+                            lastWriteTime: _deterministic ? ZipFormatMinDate : file.LastWriteTime);
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)

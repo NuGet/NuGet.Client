@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _accountManager = accountManager;
             _loginProvider = interactiveLogin;
-            Id = $"{typeof (VisualStudioAccountProvider).Name}_{Guid.NewGuid()}";
+            Id = $"{typeof(VisualStudioAccountProvider).Name}_{Guid.NewGuid()}";
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException(Strings.AccountProvider_FailedToLoadAccountManager);
             }
 
-            var provider = (VSAccountProvider) await (await _accountManager.GetValueAsync())
+            var provider = (VSAccountProvider)await (await _accountManager.GetValueAsync())
                 .GetAccountProviderAsync(VSAccountProvider.AccountProviderIdentifier);
 
             if (provider == null)
@@ -204,9 +204,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     // we couldn't finde a unique account with access to the endpoint so we are going to have
                     // to ask the user...
                     credentials = await _loginProvider.PromptUserForAccount(
-                        uriTenantId, 
-                        provider, 
-                        nonInteractive, 
+                        uriTenantId,
+                        provider,
+                        nonInteractive,
                         cancellationToken);
                 }
 
@@ -214,9 +214,9 @@ namespace NuGet.PackageManagement.VisualStudio
             else // count == 0 so we should prompt the user
             {
                 credentials = await _loginProvider.PromptUserForAccount(
-                    uriTenantId, 
-                    provider, 
-                    nonInteractive, 
+                    uriTenantId,
+                    provider,
+                    nonInteractive,
                     cancellationToken);
             }
 

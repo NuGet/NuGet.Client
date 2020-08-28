@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Rules
                     t.StartsWith(PackagingConstants.Folders.Tools + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase)))
             {
-                if(toolItem.EndsWith("install.ps1", StringComparison.OrdinalIgnoreCase))
+                if (toolItem.EndsWith("install.ps1", StringComparison.OrdinalIgnoreCase))
                 {
                     var issue = new List<PackagingLogMessage>();
                     issue.Add(PackagingLogMessage.CreateWarning(

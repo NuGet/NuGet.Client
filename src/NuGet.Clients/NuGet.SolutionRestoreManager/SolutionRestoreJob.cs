@@ -384,8 +384,8 @@ namespace NuGet.SolutionRestoreManager
                         await _logger.RunWithProgressAsync(
                             async (l, _, t) =>
                             {
-                            // Display the restore opt out message if it has not been shown yet
-                            await l.WriteHeaderAsync();
+                                // Display the restore opt out message if it has not been shown yet
+                                await l.WriteHeaderAsync();
 
                                 var sources = _sourceRepositoryProvider
                                     .GetRepositories()
@@ -413,7 +413,7 @@ namespace NuGet.SolutionRestoreManager
                                 var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
                                 _noOpProjectsCount += restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
                                 _solutionUpToDateChecker.SaveRestoreStatus(restoreSummaries);
-                                
+
                                 if (isRestoreFailed)
                                 {
                                     _status = NuGetOperationStatus.Failed;
@@ -643,7 +643,7 @@ namespace NuGet.SolutionRestoreManager
             CancellationToken token)
         {
             await TaskScheduler.Default;
-            
+
             using (var cacheContext = new SourceCacheContext())
             {
                 var downloadContext = new PackageDownloadContext(cacheContext)

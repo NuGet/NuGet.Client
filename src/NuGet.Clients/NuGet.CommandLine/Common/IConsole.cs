@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security;
 
 namespace NuGet.CommandLine
@@ -12,7 +12,7 @@ namespace NuGet.CommandLine
 
         void Write(object value);
         void Write(string value);
-        void Write(string format, params object[] args);        
+        void Write(string format, params object[] args);
 
         void WriteLine();
         void WriteLine(object value);

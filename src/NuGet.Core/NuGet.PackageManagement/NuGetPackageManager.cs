@@ -2847,16 +2847,15 @@ namespace NuGet.PackageManagement
                     await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResult.Result.LockFile?.LogMessages, logger);
                 }
 
-                // Build the installation context
-                var originalFrameworks = updatedPackageSpec
-                    .RestoreMetadata
-                    .OriginalTargetFrameworks
-                    .GroupBy(x => NuGetFramework.Parse(x))
-                    .ToDictionary(x => x.Key, x => x.First());
-                var installationContext = new BuildIntegratedInstallationContext(
-                    successfulFrameworks,
-                    unsuccessfulFrameworks,
-                    originalFrameworks);
+            // Build the installation context
+            var originalFrameworks = updatedPackageSpec
+                .TargetFrameworks
+                .ToDictionary(x => x.FrameworkName, x => x.TargetAlias);
+
+            var installationContext = new BuildIntegratedInstallationContext(
+                successfulFrameworks,
+                unsuccessfulFrameworks,
+                originalFrameworks);
 
                 InstallationCompatibility.EnsurePackageCompatibility(
                     buildIntegratedProject,

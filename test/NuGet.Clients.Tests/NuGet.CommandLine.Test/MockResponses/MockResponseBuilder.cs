@@ -101,7 +101,7 @@ namespace NuGet.CommandLine.Test
                 Content = Encoding.UTF8.GetBytes(document.ToString())
             };
         }
-        
+
         public MockResponse BuildFindPackagesByIdResponse(IEnumerable<string> packagePaths)
         {
             return BuildODataFeedResponse("FindPackagesById", packagePaths);
@@ -116,7 +116,7 @@ namespace NuGet.CommandLine.Test
                     new XElement(XName.Get("id", nsAtom), feedId),
                     new XElement(XName.Get("title", nsAtom), title)));
 
-            foreach(var packagePath in packagePaths)
+            foreach (var packagePath in packagePaths)
             {
                 document.Root.Add(GetODataElement(packagePath));
             }

@@ -36,6 +36,6 @@ namespace NuGet.SolutionRestoreManager
             // ensure we satisfy our imports
             componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
         }
-        
+
     }
 }

@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="packageId">Package to look for</param>
         /// <param name="prerelease">Whether to include prerelease versions</param>
         /// <returns>Return the latest version available from multiple sources and if no version is found returns null.</returns>
-        
+
         public static async Task<NuGetVersion> GetLatestVersionFromSourcesAsync(IList<PackageSource> sources, ILogger logger, string packageId, bool prerelease)
         {
             var maxTasks = Environment.ProcessorCount;

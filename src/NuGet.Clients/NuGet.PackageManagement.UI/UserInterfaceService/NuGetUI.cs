@@ -375,7 +375,7 @@ namespace NuGet.PackageManagement.UI
 
                 errorList.ForEach(p => ProjectContext.Log(p));
                 warningList.ForEach(p => ProjectContext.Log(p));
-            }            
+            }
         }
     }
 }

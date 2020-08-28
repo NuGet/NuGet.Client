@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
-using Xunit;
 using Test.Utility;
-using NuGet.ContentModel;
+using Xunit;
 
 namespace NuGet.DependencyResolver.Tests
 {
@@ -858,7 +858,7 @@ namespace NuGet.DependencyResolver.Tests
             var centralNode = new GraphNode<RemoteResolveResult>(centralPackageVersionDependency.LibraryRange)
             {
                 Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(centralPackageVersionDependency.LibraryRange.Name, NuGetVersion.Parse("1.0.0"), LibraryType.Package))
-             };
+            };
 
             transitiveCentralPackageVersions.Add(centralPackageVersionDependency, parent1);
             transitiveCentralPackageVersions.Add(centralPackageVersionDependency, parent2);
@@ -871,7 +871,7 @@ namespace NuGet.DependencyResolver.Tests
             Assert.True(resultTake1);
             Assert.False(resultTake2);
             Assert.Equal(2, centralNode.ParentNodes.Count);
-            var parentLibraryNames = centralNode.ParentNodes.Select(p => p.Key.Name).OrderBy( n => n).ToArray();
+            var parentLibraryNames = centralNode.ParentNodes.Select(p => p.Key.Name).OrderBy(n => n).ToArray();
             Assert.Equal("parentname1", parentLibraryNames[0]);
             Assert.Equal("parentname2", parentLibraryNames[1]);
         }
@@ -1259,7 +1259,7 @@ namespace NuGet.DependencyResolver.Tests
 
             var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(2, centralTransitiveNodes.Count);
-            foreach( var node in centralTransitiveNodes)
+            foreach (var node in centralTransitiveNodes)
             {
                 Assert.Equal(Disposition.Rejected, node.Disposition);
                 node.ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });

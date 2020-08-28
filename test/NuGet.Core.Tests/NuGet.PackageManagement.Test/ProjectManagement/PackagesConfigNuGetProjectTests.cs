@@ -10,8 +10,8 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 

@@ -2139,8 +2139,8 @@ namespace NuGet.Commands.FuncTest
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -2156,7 +2156,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
+                using (var context = new SourceCacheContext())
                 {
                     context.IgnoreFailedSources = true;
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
@@ -2188,8 +2188,8 @@ namespace NuGet.Commands.FuncTest
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -2205,7 +2205,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
+                using (var context = new SourceCacheContext())
                 {
                     context.IgnoreFailedSources = true;
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
@@ -2237,8 +2237,8 @@ namespace NuGet.Commands.FuncTest
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -2254,7 +2254,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
+                using (var context = new SourceCacheContext())
                 {
                     context.IgnoreFailedSources = true;
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
@@ -2286,8 +2286,8 @@ namespace NuGet.Commands.FuncTest
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -2303,7 +2303,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
+                using (var context = new SourceCacheContext())
                 {
                     context.IgnoreFailedSources = true;
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
@@ -2335,8 +2335,8 @@ namespace NuGet.Commands.FuncTest
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -2352,7 +2352,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
+                using (var context = new SourceCacheContext())
                 {
                     context.IgnoreFailedSources = true;
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
@@ -2384,8 +2384,8 @@ namespace NuGet.Commands.FuncTest
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -2401,7 +2401,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
+                using (var context = new SourceCacheContext())
                 {
                     context.IgnoreFailedSources = true;
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
@@ -2499,7 +2499,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal("1.0.0", result.GetAllInstalled().Single().Version.ToNormalizedString());
                 Assert.Equal(2, result.LockFile.Targets.Count);
                 Assert.Equal("runtimes/win7/lib/net46/a.dll",
-                    string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier)).Libraries.Single().RuntimeAssemblies.Select( e => e.Path)));
+                    string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
                 Assert.Equal("ref/net46/a.dll",
                     string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
             }
@@ -2761,7 +2761,7 @@ namespace NuGet.Commands.FuncTest
                 library.Should().NotBeNull("The assets file is expect to have a single library");
                 library.CompileTimeAssemblies.Count.Should().Be(1, because: "The package has only 1 compatible file");
                 library.CompileTimeAssemblies.Single().Path.Should().Be("lib/net5.0/a.dll");
-                library.CompileTimeAssemblies.Single().Properties.Should().Contain(new KeyValuePair<string,string>(LockFileItem.AliasesProperty, "Core"));
+                library.CompileTimeAssemblies.Single().Properties.Should().Contain(new KeyValuePair<string, string>(LockFileItem.AliasesProperty, "Core"));
             }
         }
 
@@ -2830,7 +2830,7 @@ namespace NuGet.Commands.FuncTest
                 var library = result.LockFile.Targets.First(e => e.TargetFramework.Equals(CommonFrameworks.Net50)).Libraries.Single();
                 library.Should().NotBeNull("The assets file is expect to have a single library");
                 library.CompileTimeAssemblies.Count.Should().Be(2, because: "The package has 2 compatible files");
-                foreach(var assembly in library.CompileTimeAssemblies)
+                foreach (var assembly in library.CompileTimeAssemblies)
                 {
                     assembly.Properties.Should().Contain(new KeyValuePair<string, string>(LockFileItem.AliasesProperty, "Core"));
                 }

@@ -253,7 +253,7 @@ namespace NuGet.Packaging
         {
             return false;
         }
-        
+
         public override string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null)
         {
             throw new NotImplementedException();

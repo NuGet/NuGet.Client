@@ -155,7 +155,7 @@ namespace NuGet.Configuration
 
             try
             {
-                var passwordText = storePasswordInClearText ? password: EncryptionUtility.EncryptString(password);
+                var passwordText = storePasswordInClearText ? password : EncryptionUtility.EncryptString(password);
                 return new PackageSourceCredential(
                     source,
                     username,

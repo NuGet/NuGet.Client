@@ -191,8 +191,8 @@ namespace NuGet.Frameworks
         {
             var versionString = string.Empty;
 
-            if (version != null 
-                && (version.Major > 0 
+            if (version != null
+                && (version.Major > 0
                     || version.Minor > 0
                     || version.Build > 0
                     || version.Revision > 0))
@@ -822,7 +822,7 @@ namespace NuGet.Frameworks
                             foreach (var framework in eqFrameworks)
                             {
                                 remaining.Push(framework);
-                            }   
+                            }
                         }
                     }
 

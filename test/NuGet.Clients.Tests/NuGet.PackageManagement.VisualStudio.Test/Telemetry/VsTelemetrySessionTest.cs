@@ -1,10 +1,10 @@
 using System;
-using System.Linq;
-using NuGet.VisualStudio.Telemetry;
-using NuGet.VisualStudio;
-using Xunit;
 using System.Globalization;
+using System.Linq;
 using NuGet.Common;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
+using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {

@@ -165,7 +165,7 @@ namespace NuGet.Frameworks
 
         private static bool IgnoreTargetPlatformMoniker(string targetPlatformMoniker)
         {
-            if(targetPlatformMoniker.Trim().Equals(",Version=", StringComparison.OrdinalIgnoreCase))
+            if (targetPlatformMoniker.Trim().Equals(",Version=", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

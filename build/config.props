@@ -17,14 +17,9 @@
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
 
-    <!-- ** Change for each new preview/rtm -->
+    <!-- ** Change for each new preview/rc -->
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.3</ReleaseLabel>
-
-    <!-- ** Increment each insertion, set to zero after incrementing Major/Minor or Patch version -->
-    <!-- We need to update this netcoreassembly build number with EVERY insertion into VS to workaround any breaking api
-    changes we might have made. -->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">4</NetCoreAssemblyBuildNumber>
 
     <IsEscrowMode>false</IsEscrowMode>
 

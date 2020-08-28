@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using NuGet.Configuration;
 using NuGet.Common;
-using NuGet.ProjectModel;
+using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {

@@ -214,7 +214,7 @@ namespace NuGet.VisualStudio
                     var disableBindingRedirects = skipAssemblyReferences;
 
                     var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects)
-                    {                        
+                    {
                         PackageExtractionContext = new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
@@ -427,7 +427,7 @@ namespace NuGet.VisualStudio
                     if (package.Version != null &&
                         PackageServiceUtilities.IsPackageInList(installedPackageReferences, package.Id, package.Version))
                     {
-                            continue;
+                        continue;
                     }
 
                     // Perform the install

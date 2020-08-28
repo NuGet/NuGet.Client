@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
@@ -24,7 +24,7 @@ namespace NuGet.Common
         void LogError(string data);
 
         void LogInformationSummary(string data);
-        
+
         void Log(LogLevel level, string data);
 
         Task LogAsync(LogLevel level, string data);

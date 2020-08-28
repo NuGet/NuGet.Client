@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Tests
             var exception = Assert.Throws<ArgumentException>(() => new DownloadResourceResult(status));
 
             var expectedMessage = "A stream should be provided when the result is available.";
-            
+
             Assert.Equal("status", exception.ParamName);
             Assert.Contains(expectedMessage, exception.Message);
 

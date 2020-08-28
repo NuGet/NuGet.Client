@@ -148,7 +148,7 @@ namespace NuGet.PackageManagement.UI
 
         internal void Flush()
         {
-            
+
             using (var xsltStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(XsltManifestResourceName))
             {
                 Debug.Assert(xsltStream != null, $"Resource {XsltManifestResourceName} could not be loaded.");

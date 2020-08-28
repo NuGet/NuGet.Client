@@ -207,9 +207,9 @@ namespace NuGet.ProjectManagement
 
             // Get all directories that this package may have added
             var directories = from grouping in directoryLookup
-                from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
-                orderby directory.Length descending
-                select directory;
+                              from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
+                              orderby directory.Length descending
+                              select directory;
 
             var projectFullPath = projectSystem.ProjectFullPath;
 
@@ -242,7 +242,7 @@ namespace NuGet.ProjectManagement
                     if (projectSystem.IsSupportedFile(path))
                     {
                         // Register the file being uninstalled (used by web site project system).
-                        projectSystem.RegisterProcessedFiles(new[] {path});
+                        projectSystem.RegisterProcessedFiles(new[] { path });
 
                         if (transformer != null)
                         {

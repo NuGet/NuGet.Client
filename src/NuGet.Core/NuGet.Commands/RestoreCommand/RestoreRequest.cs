@@ -179,7 +179,7 @@ namespace NuGet.Commands
         /// </remarks>
         internal IPackageSignatureVerifier SignedPackageVerifier { get; set; }
 
-        public Guid ParentId { get; set;}
+        public Guid ParentId { get; set; }
 
         public bool IsRestoreOriginalAction { get; set; } = true;
 

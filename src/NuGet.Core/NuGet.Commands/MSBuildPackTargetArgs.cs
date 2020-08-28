@@ -9,7 +9,7 @@ namespace NuGet.Commands
 {
     public class MSBuildPackTargetArgs
     {
-        public IEnumerable<OutputLibFile> TargetPathsToSymbols { get; set; } 
+        public IEnumerable<OutputLibFile> TargetPathsToSymbols { get; set; }
         public IEnumerable<OutputLibFile> TargetPathsToAssemblies { get; set; }
         public HashSet<string> AllowedOutputExtensionsInPackageBuildOutputFolder { get; set; }
         public HashSet<string> AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder { get; set; }
@@ -36,13 +36,13 @@ namespace NuGet.Commands
         /// This is the final output path of the assembly on disk as set by msbuild.
         /// </summary>
         public string FinalOutputPath { get; set; }
-        
+
         /// <summary>
         /// This denotes the TargetPath as set by msbuild. Usually this is just the file name, but for satellite DLLs,
         /// this is Culture\filename.
         ///  </summary>
         public string TargetPath { get; set; }
-        
+
         /// <summary>
         /// This is the target framework for which this assembly was built.
         /// </summary>

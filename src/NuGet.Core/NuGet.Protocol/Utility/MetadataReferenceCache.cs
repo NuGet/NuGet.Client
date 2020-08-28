@@ -37,7 +37,7 @@ namespace NuGet.Protocol
             }
 
             string cachedValue;
-            
+
             if (!_stringCache.TryGetValue(s, out cachedValue))
             {
                 _stringCache.Add(s, s);
@@ -116,7 +116,7 @@ namespace NuGet.Protocol
                 CachableMethodTypes.Add(_metadataReferenceCacheType, method);
             }
 
-            for (var i=0; i < properties.Length; i++)
+            for (var i = 0; i < properties.Length; i++)
             {
                 PropertyInfo property = properties[i];
                 object value = property.GetMethod.Invoke(input, null);

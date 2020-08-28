@@ -267,7 +267,7 @@ namespace NuGet.Versioning
 
             var count = Math.Max(version1.Length, version2.Length);
 
-            for (var i=0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var aExists = i < version1.Length;
                 var bExists = i < version2.Length;

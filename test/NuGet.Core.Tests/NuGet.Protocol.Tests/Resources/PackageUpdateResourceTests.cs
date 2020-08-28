@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Text;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -620,7 +620,7 @@ namespace NuGet.Protocol.Tests
                 // Assert
                 Assert.NotNull(sourceRequest);
                 Assert.Equal(HttpMethod.Put, sourceRequest.Method);
-                Assert.Equal(source+"api/v2/package/", sourceRequest.RequestUri.AbsoluteUri);
+                Assert.Equal(source + "api/v2/package/", sourceRequest.RequestUri.AbsoluteUri);
 
             }
         }

@@ -34,7 +34,7 @@ namespace NuGet.Build.Tasks.Pack
         public override bool Execute()
         {
             var assetsFilePath = string.Empty;
-            if(!string.IsNullOrEmpty(ProjectAssetsFileAbsolutePath) && File.Exists(ProjectAssetsFileAbsolutePath))
+            if (!string.IsNullOrEmpty(ProjectAssetsFileAbsolutePath) && File.Exists(ProjectAssetsFileAbsolutePath))
             {
                 assetsFilePath = ProjectAssetsFileAbsolutePath;
             }
@@ -71,7 +71,7 @@ namespace NuGet.Build.Tasks.Pack
                 .Select(library => new TaskItem(Path.GetFullPath(Path.Combine(
                         projectDirectory,
                         PathUtility.GetPathWithDirectorySeparator(library.MSBuildProject)))));
-            if(projectPathToLibraryIdentities != null)
+            if (projectPathToLibraryIdentities != null)
             {
                 ProjectReferences = projectPathToLibraryIdentities.ToArray();
             }

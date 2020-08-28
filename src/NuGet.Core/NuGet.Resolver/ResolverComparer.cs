@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -147,36 +147,36 @@ namespace NuGet.Resolver
             switch (packageBehavior)
             {
                 case DependencyBehavior.Lowest:
-                {
-                    return _versionComparer.Compare(xv, yv);
-                }
+                    {
+                        return _versionComparer.Compare(xv, yv);
+                    }
                 case DependencyBehavior.Ignore:
                 case DependencyBehavior.Highest:
                     return -1 * _versionComparer.Compare(xv, yv);
                 case DependencyBehavior.HighestMinor:
-                {
-                    if (_versionComparer.Equals(xv, yv))
                     {
-                        return 0;
-                    }
+                        if (_versionComparer.Equals(xv, yv))
+                        {
+                            return 0;
+                        }
 
-                    // Take the lowest Major, then the Highest Minor and Patch
-                    return new[] { x, y }.OrderBy(p => p.Version.Major)
-                        .ThenByDescending(p => p.Version.Minor)
-                        .ThenByDescending(p => p.Version.Patch).FirstOrDefault() == x ? -1 : 1;
-                }
+                        // Take the lowest Major, then the Highest Minor and Patch
+                        return new[] { x, y }.OrderBy(p => p.Version.Major)
+                            .ThenByDescending(p => p.Version.Minor)
+                            .ThenByDescending(p => p.Version.Patch).FirstOrDefault() == x ? -1 : 1;
+                    }
                 case DependencyBehavior.HighestPatch:
-                {
-                    if (_versionComparer.Equals(xv, yv))
                     {
-                        return 0;
-                    }
+                        if (_versionComparer.Equals(xv, yv))
+                        {
+                            return 0;
+                        }
 
-                    // Take the lowest Major and Minor, then the Highest Patch
-                    return new[] { x, y }.OrderBy(p => p.Version.Major)
-                        .ThenBy(p => p.Version.Minor)
-                        .ThenByDescending(p => p.Version.Patch).FirstOrDefault() == x ? -1 : 1;
-                }
+                        // Take the lowest Major and Minor, then the Highest Patch
+                        return new[] { x, y }.OrderBy(p => p.Version.Major)
+                            .ThenBy(p => p.Version.Minor)
+                            .ThenByDescending(p => p.Version.Patch).FirstOrDefault() == x ? -1 : 1;
+                    }
                 default:
                     return _versionComparer.Compare(xv, yv);
             }

@@ -69,5 +69,10 @@ namespace NuGet.Protocol
         public const string DeprecationMessage = "message";
         public const string DeprecationReasons = "reasons";
         public const string AlternatePackage = "alternatePackage";
+
+        // vulnerability properties
+        public const string Vulnerabilities = "vulnerabilities";
+        public const string AdvisoryUrl = "advisoryUrl";
+        public const string Severity = "severity";
     }
 }

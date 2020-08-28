@@ -31,7 +31,7 @@ namespace NuGet.Test.Server
             {
                 throw new ArgumentOutOfRangeException(nameof(basePort), "The base port must be greater than zero.");
             }
-            
+
             _basePort = basePort;
         }
 

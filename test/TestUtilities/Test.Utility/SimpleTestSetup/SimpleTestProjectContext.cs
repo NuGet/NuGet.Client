@@ -74,11 +74,6 @@ namespace NuGet.Test.Utility
         public List<SimpleTestProjectFrameworkContext> Frameworks { get; set; } = new List<SimpleTestProjectFrameworkContext>();
 
         /// <summary>
-        /// Original Target framework strings.
-        /// </summary>
-        public List<string> OriginalFrameworkStrings { get; set; } = new List<string>();
-
-        /// <summary>
         /// Project type
         /// </summary>
         public ProjectStyle Type { get; set; }
@@ -236,8 +231,11 @@ namespace NuGet.Test.Utility
             get
             {
                 var _packageSpec = new PackageSpec(Frameworks
-                    .Select(f => new TargetFrameworkInformation() { FrameworkName = f.Framework,
-                        Dependencies = f.PackageReferences.Select(e => new LibraryDependency() { LibraryRange = new LibraryRange(e.Id, VersionRange.Parse(e.Version), LibraryDependencyTarget.Package) }).ToList()
+                    .Select(f => new TargetFrameworkInformation()
+                    {
+                        FrameworkName = f.Framework,
+                        Dependencies = f.PackageReferences.Select(e => new LibraryDependency() { LibraryRange = new LibraryRange(e.Id, VersionRange.Parse(e.Version), LibraryDependencyTarget.Package) }).ToList(),
+                        TargetAlias = f.TargetAlias,
                     }).ToList());
                 _packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
                 _packageSpec.Name = ProjectName;
@@ -247,7 +245,7 @@ namespace NuGet.Test.Utility
                 _packageSpec.RestoreMetadata.ProjectPath = ProjectPath;
                 _packageSpec.RestoreMetadata.ProjectStyle = Type;
                 _packageSpec.RestoreMetadata.OutputPath = OutputPath;
-                _packageSpec.RestoreMetadata.OriginalTargetFrameworks = OriginalFrameworkStrings;
+                _packageSpec.RestoreMetadata.OriginalTargetFrameworks = _packageSpec.TargetFrameworks.Select(e => e.TargetAlias).ToList();
                 _packageSpec.RestoreMetadata.TargetFrameworks = Frameworks
                     .Select(f => new ProjectRestoreMetadataFrameworkInfo(f.Framework))
                     .ToList();
@@ -402,8 +400,7 @@ namespace NuGet.Test.Utility
             params string[] frameworks)
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
-            context.OriginalFrameworkStrings.AddRange(frameworks);
-            context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f))));
+            context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f)) { TargetAlias = f }));
             context.ToolingVersion15 = true;
             context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
@@ -480,8 +477,7 @@ namespace NuGet.Test.Utility
 
                     ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
-                        { tfPropName, OriginalFrameworkStrings.Count != 0 ? string.Join(";", OriginalFrameworkStrings): 
-                        string.Join(";", Frameworks.Select(f => f.TargetAlias)) },
+                        { tfPropName, string.Join(";", Frameworks.Select(f => f.TargetAlias)) },
                     });
                 }
 

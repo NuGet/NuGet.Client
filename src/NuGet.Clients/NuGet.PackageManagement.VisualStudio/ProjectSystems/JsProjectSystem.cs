@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                            _projectName =VsProjectAdapter.ProjectName;
+                            _projectName = VsProjectAdapter.ProjectName;
                         });
                 }
                 return _projectName;

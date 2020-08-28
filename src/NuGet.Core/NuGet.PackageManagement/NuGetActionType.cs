@@ -17,17 +17,17 @@ namespace NuGet.ProjectManagement
         /// Uninstall
         /// </summary>
         Uninstall,
-        
+
         /// <summary>
         /// Reinstall
         /// </summary>
         Reinstall,
-        
+
         /// <summary>
         /// Update
         /// </summary>
         Update,
-        
+
         /// <summary>
         /// UpdateAll
         /// </summary>

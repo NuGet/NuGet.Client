@@ -180,7 +180,7 @@ namespace NuGet.CommandLine.Test
                 Assert.False(attr.Name.ToString().StartsWith("xmlns"));
             }
 
-            foreach(var x in node.Descendants())
+            foreach (var x in node.Descendants())
             {
                 AssertWithoutNamespace(x);
             }

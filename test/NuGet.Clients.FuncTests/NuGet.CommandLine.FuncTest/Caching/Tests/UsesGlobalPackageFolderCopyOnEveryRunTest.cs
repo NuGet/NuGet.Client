@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.Test.Caching
             // A different version of the same package is available on the source.
             context.CurrentPackageAPath = context.PackageAVersionBPath;
             context.IsPackageAAvailable = true;
-            
+
             return command.PrepareArguments(context, context.PackageIdentityA);
         }
 

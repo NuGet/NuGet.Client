@@ -28,6 +28,7 @@ namespace NuGet.SolutionRestoreManager.Test
             IEnumerable<IVsReferenceItem> packageDownloads,
             IEnumerable<IVsReferenceItem> frameworkReferences,
             IEnumerable<IVsProjectProperty> projectProperties,
+            string originalTargetFramework = null,
             bool addTargetFrameworkProperties = true)
         {
             if (string.IsNullOrEmpty(targetFrameworkMoniker))
@@ -67,7 +68,7 @@ namespace NuGet.SolutionRestoreManager.Test
             FrameworkReferences = new VsReferenceItems(frameworkReferences);
             Properties =
                 addTargetFrameworkProperties
-                ? new VsProjectProperties(ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(targetFrameworkMoniker).Concat(projectProperties))
+                ? new VsProjectProperties(ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(targetFrameworkMoniker, originalTargetFramework).Concat(projectProperties))
                 : new VsProjectProperties(projectProperties);
         }
 

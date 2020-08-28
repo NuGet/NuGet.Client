@@ -197,7 +197,7 @@ namespace NuGet.Configuration
 
             // They come in priority order, closest to furthest
             // reverse merge them, so the closest ones apply.
-            for(int i = settingsFiles.Count - 1; i >= 0; i--)
+            for (int i = settingsFiles.Count - 1; i >= 0; i--)
             {
                 settingsFiles[i].MergeSectionsInto(computedSections);
             }
@@ -211,8 +211,9 @@ namespace NuGet.Configuration
             // to that is not clearing the ones before it on the hierarchy
             var writteableSettingsFiles = Priority.Where(f => !f.IsReadOnly);
 
-            var clearedSections = writteableSettingsFiles.Select(f => {
-                if(f.TryGetSection(sectionName, out var section))
+            var clearedSections = writteableSettingsFiles.Select(f =>
+            {
+                if (f.TryGetSection(sectionName, out var section))
                 {
                     return section;
                 }
@@ -236,7 +237,7 @@ namespace NuGet.Configuration
 
         public void SaveToDisk()
         {
-            foreach(var settingsFile in Priority)
+            foreach (var settingsFile in Priority)
             {
                 settingsFile.SaveToDisk();
             }
@@ -539,7 +540,7 @@ namespace NuGet.Configuration
             if (configFileName == null)
             {
                 string userSettingsDir = GetUserSettingsDirectory(rootDirectory, useTestingGlobalPath);
-                if(userSettingsDir == null)
+                if (userSettingsDir == null)
                 {
                     yield break;
                 }

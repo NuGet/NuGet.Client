@@ -12,9 +12,9 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using Moq;
 using NuGet.CommandLine.Test;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using NuGet.Common;
 using Xunit;
 
 namespace NuGet.CommandLine

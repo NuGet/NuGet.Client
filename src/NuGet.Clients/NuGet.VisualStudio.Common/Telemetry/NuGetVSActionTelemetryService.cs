@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio
             _telemetrySession = telemetrySession ?? throw new ArgumentNullException(nameof(telemetrySession));
         }
 
-        public NuGetVSTelemetryService():
+        public NuGetVSTelemetryService() :
             this(VSTelemetrySession.Instance)
         {
         }

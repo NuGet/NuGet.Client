@@ -1,16 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using Moq;
 using NuGet.VisualStudio;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             return importer;
         }
-        
+
         [Fact]
         public void WhenMultipleProvidersMatchingVstsContractFound_ThenInsertAll()
         {

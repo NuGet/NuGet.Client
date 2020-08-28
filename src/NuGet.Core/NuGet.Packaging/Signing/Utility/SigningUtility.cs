@@ -261,7 +261,7 @@ namespace NuGet.Packaging.Signing
                         var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
                         signature = await options.SignatureProvider.CreatePrimarySignatureAsync(signRequest, signatureContent, options.Logger, token);
                     }
-                    
+
                     using (var stream = new MemoryStream(signature.GetBytes()))
                     {
                         await package.AddSignatureAsync(stream, token);

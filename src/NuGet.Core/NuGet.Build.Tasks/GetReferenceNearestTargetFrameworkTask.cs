@@ -137,7 +137,7 @@ namespace NuGet.Build.Tasks
             var referencedProjectTargetFrameworkMonikers = MSBuildStringUtility.Split(referenceTargetFrameworkMonikers);
             var referencedProjectTargetPlatformMonikers = MSBuildStringUtility.Split(referencedProjectPlatformString);
 
-            if(referencedProjectTargetFrameworkMonikers.Length > 0 &&
+            if (referencedProjectTargetFrameworkMonikers.Length > 0 &&
                 (referencedProjectTargetFrameworkMonikers.Length != referencedProjectTargetPlatformMonikers.Length ||
                 referencedProjectTargetFrameworkMonikers.Length != referencedProjectFrameworks.Length))
             {

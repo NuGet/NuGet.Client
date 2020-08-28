@@ -134,7 +134,7 @@
       </PropertyGroup>
     </When>
     <!-- If we are excluding the build number, show the release label unless we are RTM. -->
-    <When Condition="'$(ReleaseLabel)' != 'rtm' AND '$(ReleaseLabel)' != 'svc' ">
+    <When Condition="'$(ReleaseLabel)' != 'rtm' AND '$(ReleaseLabel)' != 'svc' AND '$(ReleaseLabel)' != 'rc' ">
       <PropertyGroup>
         <PreReleaseInformationVersion>-$(ReleaseLabel)</PreReleaseInformationVersion>
       </PropertyGroup>
@@ -200,7 +200,7 @@
 
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <!-- Assembly attributes for net core projects -->
-    <AssemblyVersion>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</AssemblyVersion>
+    <AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyVersion>
     <FileVersion>$(SemanticVersion).$(PreReleaseVersion)</FileVersion>
     <InformationalVersion Condition="'$(BUILD_SOURCEVERSION)' == ''">$(SemanticVersion)$(PreReleaseInformationVersion)</InformationalVersion>
     <InformationalVersion Condition="'$(BUILD_SOURCEVERSION)' != ''">$(SemanticVersion)$(PreReleaseInformationVersion)+$(BUILD_SOURCEVERSION)</InformationalVersion>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -69,9 +69,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Tuple<string, object>[] privateData = { sourceRepoTuple, solutionManagerTuple };
 
             var host = new NuGetPSHost(hostName, privateData)
-                {
-                    ActiveConsole = console
-                };
+            {
+                ActiveConsole = console
+            };
 
             var runspace = RunspaceFactory.CreateRunspace(host, initialSessionState);
             runspace.ThreadOptions = PSThreadOptions.Default;

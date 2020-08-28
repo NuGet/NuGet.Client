@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -167,7 +167,7 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.Equal(
                 "/Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('nuget',tolower(Id)))%20or%20" +
-                "((Description%20ne%20null)%20and%20substringof('nuget',tolower(Description))))%20or%20" + 
+                "((Description%20ne%20null)%20and%20substringof('nuget',tolower(Description))))%20or%20" +
                 "((Tags%20ne%20null)%20and%20substringof('%20nuget%20',tolower(Tags))))%20and%20" +
                 "IsAbsoluteLatestVersion&$orderby=Id&$skip=0&$top=30&semVerLevel=2.0.0",
                 actual);
@@ -194,10 +194,10 @@ namespace NuGet.Protocol.Tests
                 "/Packages()?$filter=(((((((((Id%20ne%20null)%20and%20substringof('foo',tolower(Id)))%20or%20" +
                 "((Description%20ne%20null)%20and%20substringof('foo',tolower(Description))))%20or%20" +
                 "((Tags%20ne%20null)%20and%20substringof('%20foo%20',tolower(Tags))))%20or%20((Id%20ne%20null)" +
-                "%20and%20substringof('bar',tolower(Id))))%20or%20((Description%20ne%20null)%20and%20" + 
+                "%20and%20substringof('bar',tolower(Id))))%20or%20((Description%20ne%20null)%20and%20" +
                 "substringof('bar',tolower(Description))))%20or%20((Tags%20ne%20null)%20and%20" +
                 "substringof('%20bar%20',tolower(Tags))))%20or%20((Id%20ne%20null)%20and%20" +
-                "substringof('baz',tolower(Id))))%20or%20((Description%20ne%20null)%20and%20" + 
+                "substringof('baz',tolower(Id))))%20or%20((Description%20ne%20null)%20and%20" +
                 "substringof('baz',tolower(Description))))%20or%20((Tags%20ne%20null)%20and%20" +
                 "substringof('%20baz%20',tolower(Tags)))&semVerLevel=2.0.0",
                 actual);

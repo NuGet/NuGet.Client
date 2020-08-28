@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -386,6 +388,28 @@ namespace NuGet.Test
             var copiedFramework = new NuGetFramework(originalFramework);
 
             Assert.Equal(originalFramework, copiedFramework);
+        }
+
+        [Fact]
+        public void NuGetFramework_Stuff()
+        {
+            var leftSide = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
+            var rightSide = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
+
+            leftSide.Should().Be(rightSide);
+            leftSide.Should().Be(rightSide);
+            leftSide.GetHashCode().Should().Be(rightSide.GetHashCode(), because: "Equivalent objects should have the same hash code.");
+            leftSide.GetHashCode().Should().Be(rightSide.GetHashCode(), because: "Equivalent objects should have the same hash code.");
+
+            var frameworks = new List<NuGetFramework> { leftSide, rightSide };
+
+            var distinctFrameworksWithComparer = frameworks.Distinct(new NuGetFrameworkFullComparer()).ToArray();
+            var distinctFrameworksWithoutComparer = frameworks.Distinct().ToArray();
+
+            distinctFrameworksWithComparer.Should().HaveCount(1);
+            distinctFrameworksWithoutComparer.Should().HaveCount(1);
+
+
         }
     }
 }

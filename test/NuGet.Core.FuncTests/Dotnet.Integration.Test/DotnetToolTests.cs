@@ -134,7 +134,7 @@ namespace Dotnet.Integration.Test
 
                 var packageName = string.Join("ToolPackage-", tfm, packageRID);
                 var packageVersion = NuGetVersion.Parse("1.0.0");
-                var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion)};
+                var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
                 var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
                 package.Files.Clear();
                 package.AddFile($"tools/{tfm}/{packageRID}/a.dll");
@@ -672,7 +672,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 var lockFilePath = Path.Combine(testDirectory, projectName, "project.assets.json");
                 Assert.True(File.Exists(lockFilePath), result.AllOutput);
-                var lockFile = LockFileUtilities.GetLockFile(lockFilePath,  NullLogger.Instance);
+                var lockFile = LockFileUtilities.GetLockFile(lockFilePath, NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
                 var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);

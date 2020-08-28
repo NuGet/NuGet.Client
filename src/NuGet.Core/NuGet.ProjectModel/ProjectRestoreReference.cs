@@ -32,8 +32,8 @@ namespace NuGet.ProjectModel
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(StringComparer.Ordinal.GetHashCode(ProjectPath));
-            combiner.AddObject(StringComparer.OrdinalIgnoreCase.GetHashCode(ProjectUniqueName));
+            combiner.AddObject(ProjectPath);
+            combiner.AddStringIgnoreCase(ProjectUniqueName);
             combiner.AddObject(IncludeAssets);
             combiner.AddObject(ExcludeAssets);
             combiner.AddObject(PrivateAssets);

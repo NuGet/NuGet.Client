@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.LibraryModel
 {
@@ -51,6 +53,14 @@ namespace NuGet.LibraryModel
 
             return ComparisonUtility.FrameworkReferenceNameComparer.Equals(Name, other.Name) &&
                    PrivateAssets.Equals(other.PrivateAssets);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+            hashCode.AddObject(ComparisonUtility.FrameworkReferenceNameComparer.GetHashCode(Name));
+            hashCode.AddObject(PrivateAssets);
+            return hashCode.CombinedHash;
         }
     }
 }

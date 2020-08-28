@@ -11,7 +11,7 @@ namespace NuGet.Common
 {
     public static class RuntimeEnvironmentHelper
     {
-        private static readonly string[] VisualStudioProcesses = { "DEVENV", "BLEND"};
+        private static readonly string[] VisualStudioProcesses = { "DEVENV", "BLEND" };
 
         private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 

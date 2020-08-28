@@ -105,7 +105,7 @@ namespace API.Test
             return null;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD002", Justification ="Task.Result for a completed task is safe here.")]
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD002", Justification = "Task.Result for a completed task is safe here.")]
         public static bool ExecuteInitScript(string id, string version, int timeoutSec = 30)
         {
             var scriptExecutor = ServiceLocator.GetComponent<IVsGlobalPackagesInitScriptExecutor>();

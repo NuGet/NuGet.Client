@@ -150,7 +150,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             {
                 var tasks = new List<Task>();
 
-                for (int i =0; i < eventsToRaise; i++)
+                for (int i = 0; i < eventsToRaise; i++)
                 {
                     tasks.Add(Task.Run(() => action()));
                 }

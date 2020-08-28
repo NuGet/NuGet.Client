@@ -26,8 +26,8 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using Task = System.Threading.Tasks.Task;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -366,7 +366,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // first check with DTE, and if we find any supported project, then return immediately.
             var dte = await _asyncServiceProvider.GetDTEAsync();
 
-            var isSupported =  EnvDTESolutionUtility.GetAllEnvDTEProjects(dte)
+            var isSupported = EnvDTESolutionUtility.GetAllEnvDTEProjects(dte)
                 .Where(EnvDTEProjectUtility.IsSupported)
                 .Any();
 

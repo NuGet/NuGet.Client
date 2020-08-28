@@ -231,7 +231,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             if (itemName == "PackageVersion")
             {
-                return await Task.FromResult(_projectPackageVersions.Select(x => (ItemId: x.PackageId, ItemMetadata: new string[]{ x.Version })));
+                return await Task.FromResult(_projectPackageVersions.Select(x => (ItemId: x.PackageId, ItemMetadata: new string[] { x.Version })));
             }
 
             return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();

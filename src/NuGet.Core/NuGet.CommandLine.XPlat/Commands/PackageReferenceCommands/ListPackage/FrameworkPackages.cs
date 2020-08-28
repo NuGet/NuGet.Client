@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="framework">Framework name</param>
         public FrameworkPackages(string framework) : this(framework, new List<InstalledPackageReference>(), new List<InstalledPackageReference>())
         {
-            
+
         }
 
         /// <summary>

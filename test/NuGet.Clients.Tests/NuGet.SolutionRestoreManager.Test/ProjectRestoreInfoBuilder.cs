@@ -110,14 +110,14 @@ namespace NuGet.SolutionRestoreManager.Test
         public ProjectRestoreInfoBuilder WithTargetFrameworkInfo(
             IVsTargetFrameworkInfo tfi)
         {
-            if(_projectRestoreInfo.TargetFrameworks is VsTargetFrameworks vsTargetFrameworks && tfi is VsTargetFrameworkInfo)
+            if (_projectRestoreInfo.TargetFrameworks is VsTargetFrameworks vsTargetFrameworks && tfi is VsTargetFrameworkInfo)
             {
                 vsTargetFrameworks.Add(tfi);
             }
 
             if (_projectRestoreInfo2.TargetFrameworks is VsTargetFrameworks2 vsTargetFrameworks2 && tfi is VsTargetFrameworkInfo2)
             {
-                vsTargetFrameworks2.Add((IVsTargetFrameworkInfo2) tfi);
+                vsTargetFrameworks2.Add((IVsTargetFrameworkInfo2)tfi);
             }
 
             return this;
@@ -128,7 +128,7 @@ namespace NuGet.SolutionRestoreManager.Test
         public VsProjectRestoreInfo2 ProjectRestoreInfo2 => _projectRestoreInfo2;
 
         private static VsTargetFrameworkInfo ToTargetFrameworkInfo(
-            TargetFrameworkInformation tfm, 
+            TargetFrameworkInformation tfm,
             IEnumerable<IVsProjectProperty> globalProperties)
         {
             var packageReferences = tfm
@@ -146,14 +146,15 @@ namespace NuGet.SolutionRestoreManager.Test
                 {
                     "PackageTargetFallback",
                     string.Join(";", tfm.Imports.Select(x => x.GetShortFolderName()))
-                }
+                },
             };
 
             return new VsTargetFrameworkInfo(
                 tfm.FrameworkName.ToString(),
                 packageReferences,
                 projectReferences,
-                projectProperties.Concat(globalProperties));
+                projectProperties.Concat(globalProperties),
+                originalTargetFramework: tfm.TargetAlias);
         }
 
         private static VsTargetFrameworkInfo2 ToTargetFrameworkInfo2(
@@ -190,7 +191,8 @@ namespace NuGet.SolutionRestoreManager.Test
                 projectReferences,
                 packageDownloads,
                 frameworkReferences,
-                projectProperties.Concat(globalProperties));
+                projectProperties.Concat(globalProperties),
+                originalTargetFramework: tfm.TargetAlias);
         }
 
         public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(NuGetFramework framework, string originalString = null)
@@ -249,10 +251,26 @@ namespace NuGet.SolutionRestoreManager.Test
             return sb.ToString();
         }
 
-        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(string shortFrameworkName)
+        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(string targetFrameworkMoniker, string originalFrameworkName = null)
         {
-            var framework = NuGetFramework.Parse(shortFrameworkName);
-            return GetTargetFrameworkProperties(framework, shortFrameworkName);
+            var framework = NuGetFramework.Parse(targetFrameworkMoniker);
+            var originalTFM = !string.IsNullOrEmpty(originalFrameworkName) ?
+                            originalFrameworkName :
+                            GetTargetFramework(framework, targetFrameworkMoniker);
+
+            return GetTargetFrameworkProperties(framework, originalTFM);
+        }
+
+        private static string GetTargetFramework(NuGetFramework framework, string targetFrameworkMoniker)
+        {
+            try
+            {
+                return framework.GetShortFolderName();
+            }
+            catch
+            {
+                return targetFrameworkMoniker;
+            }
         }
 
         private static IVsReferenceItem ToFrameworkReference(FrameworkDependency frameworkDependency)

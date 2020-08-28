@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private class AggregatedContinuationToken : ContinuationToken
         {
-            public TelemetryState TelemetryState  { get; set; }
+            public TelemetryState TelemetryState { get; set; }
             public string SearchString { get; set; }
             public IDictionary<string, ContinuationToken> SourceSearchCursors { get; set; } = new Dictionary<string, ContinuationToken>();
         }
@@ -254,7 +254,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     .Where(kv => kv.Value.Exception != null)
                     .ToDictionary(
                         kv => kv.Key,
-                        kv => (Exception) kv.Value.Exception);
+                        kv => (Exception)kv.Value.Exception);
 
                 foreach (var item in exceptions)
                 {
@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static LoadingStatus GetLoadingStatus(TaskStatus taskStatus)
         {
-            switch(taskStatus)
+            switch (taskStatus)
             {
                 case TaskStatus.Canceled:
                     return LoadingStatus.Cancelled;

@@ -51,7 +51,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            return await GetMetadataAsync(packageId, includePrerelease, includeUnlisted, range : VersionRange.All, sourceCacheContext, log, token);
+            return await GetMetadataAsync(packageId, includePrerelease, includeUnlisted, range: VersionRange.All, sourceCacheContext, log, token);
         }
 
         /// <summary>
@@ -69,8 +69,8 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var range = new VersionRange(package.Version, includeMinVersion : true, package.Version, includeMaxVersion : true);
-            var packageMetaDatas = await GetMetadataAsync(package.Id, includePrerelease : true, includeUnlisted : true, range, sourceCacheContext, log, token);
+            var range = new VersionRange(package.Version, includeMinVersion: true, package.Version, includeMaxVersion: true);
+            var packageMetaDatas = await GetMetadataAsync(package.Id, includePrerelease: true, includeUnlisted: true, range, sourceCacheContext, log, token);
 
             return packageMetaDatas.SingleOrDefault();
         }
@@ -126,7 +126,7 @@ namespace NuGet.Protocol
                             throw new InvalidDataException(registrationUri.AbsoluteUri);
                         }
 
-                        ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease,includeUnlisted, metadataCache);
+                        ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease, includeUnlisted, metadataCache);
                     }
                     else
                     {
@@ -201,7 +201,7 @@ namespace NuGet.Protocol
                 log,
                 token);
 
-            return new ValueTuple<RegistrationIndex, HttpSourceCacheContext>(index,httpSourceCacheContext);
+            return new ValueTuple<RegistrationIndex, HttpSourceCacheContext>(index, httpSourceCacheContext);
         }
 
         /// <summary>

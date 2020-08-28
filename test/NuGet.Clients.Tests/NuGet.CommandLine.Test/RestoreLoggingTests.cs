@@ -157,21 +157,21 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     netcoreapp1);
 
-                var packageX = new SimpleTestPackageContext("x", "1.0.0");          
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
-                projectA.AddPackageToAllFrameworks(packageX);                
+                projectA.AddPackageToAllFrameworks(packageX);
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-                
+
                 File.Delete(Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
 
                 // Act                
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
 
                 // Assert
-                r.Success.Should().BeFalse();                
+                r.Success.Should().BeFalse();
                 r.AllOutput.Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
             }
         }

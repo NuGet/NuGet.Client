@@ -27,6 +27,6 @@ namespace NuGet.Protocol.Core.Types
             get { return UriUtility.CreateSourceUri(_source); }
         }
 
-        
+
     }
 }

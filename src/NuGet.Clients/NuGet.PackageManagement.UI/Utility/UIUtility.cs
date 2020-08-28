@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.UI
                 v /= 1000;
                 ++exp;
             }
-            
+
             var s = string.Format(
                 culture,
                 "{0:G3}{1}",

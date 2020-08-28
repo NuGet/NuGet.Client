@@ -2126,9 +2126,9 @@ namespace NuGet.Packaging.Test
                 xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                 clientPolicyContext: new ClientPolicyContext(SignatureValidationMode.Require, allowList: null),
                 logger: NullLogger.Instance)
-                {
-                    SignedPackageVerifier = signedPackageVerifier.Object
-                };
+            {
+                SignedPackageVerifier = signedPackageVerifier.Object
+            };
 
             using (var test = new ExtractPackageAsyncTest(extractionContext))
             {

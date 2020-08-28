@@ -1,6 +1,6 @@
-﻿using System;
-using Xunit;
+using System;
 using NuGet.Common;
+using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.Test
         }
     }
 
-    public class SkipMonoAttribute 
+    public class SkipMonoAttribute
         : FactAttribute
     {
         public SkipMonoAttribute()

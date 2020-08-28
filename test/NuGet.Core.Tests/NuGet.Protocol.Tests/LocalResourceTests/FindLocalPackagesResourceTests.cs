@@ -132,7 +132,7 @@ namespace NuGet.Protocol.Tests
                 // Arrange
                 var testLogger = new TestLogger();
                 await CreateFeedsAsync(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
-                var expected = new HashSet<PackageIdentity>(new[] 
+                var expected = new HashSet<PackageIdentity>(new[]
                 {
                     PackageA1,
                     PackageA2,

@@ -18,7 +18,7 @@ namespace NuGet.Common.Test
         {
             //Act
             var exception = Assert.Throws<ArgumentException>(() => XmlUtility.Load(filePath: null));
-           
+
             //Assert
             Assert.Equal("filePath", exception.ParamName);
         }

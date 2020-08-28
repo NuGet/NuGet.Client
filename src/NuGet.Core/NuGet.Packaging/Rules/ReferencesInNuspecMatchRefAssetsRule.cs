@@ -120,7 +120,7 @@ namespace NuGet.Packaging.Rules
                     }
                 }
             }
-            
+
             return missingReferences;
         }
 
@@ -135,7 +135,7 @@ namespace NuGet.Packaging.Rules
                 var refFilesMissing = missingReferences.Where(t => t.MissingFrom == "ref");
                 foreach (var file in refFilesMissing)
                 {
-                    foreach(var item in file.MissingItems)
+                    foreach (var item in file.MissingItems)
                     {
                         message.AppendLine(string.Format(_addToRefFormat, item, file.Tfm));
                     }
@@ -145,7 +145,7 @@ namespace NuGet.Packaging.Rules
                 {
                     foreach (var item in reference.MissingItems)
                     {
-                        if(reference.Tfm.Equals("any"))
+                        if (reference.Tfm.Equals("any"))
                         {
                             message.AppendLine(string.Format(_addToNuspecNoTfmFormat, item));
                         }

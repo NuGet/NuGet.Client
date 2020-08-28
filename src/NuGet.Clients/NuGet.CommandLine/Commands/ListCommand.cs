@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -6,8 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine;
-using NuGet.Protocol.Core.Types;
 using NuGet.Commands;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
@@ -77,10 +77,10 @@ namespace NuGet.CommandLine
                 Console,
                 Console.PrintJustified,
                 Verbosity == Verbosity.Detailed,
-                LocalizedResourceManager.GetString("ListCommandNoPackages"), 
+                LocalizedResourceManager.GetString("ListCommandNoPackages"),
                 LocalizedResourceManager.GetString("ListCommand_LicenseUrl"),
                 LocalizedResourceManager.GetString("ListCommand_ListNotSupported"),
-                AllVersions, 
+                AllVersions,
                 IncludeDelisted,
                 Prerelease,
                 CancellationToken.None);

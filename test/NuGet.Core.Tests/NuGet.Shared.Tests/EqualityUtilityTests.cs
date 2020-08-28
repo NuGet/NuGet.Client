@@ -76,7 +76,7 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareListsWithDifferentCaseWithOrdinalIgnoreCase_ReturnsTrue()
         {
             // Arrange
-            var list1 = new List<string> { "unit.test"};
+            var list1 = new List<string> { "unit.test" };
             var list2 = new List<string> { "unit.test" };
 
             // Act & Assert

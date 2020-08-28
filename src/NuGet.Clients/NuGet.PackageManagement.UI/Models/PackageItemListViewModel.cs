@@ -377,6 +377,8 @@ namespace NuGet.PackageManagement.UI
         public Lazy<Task<PackageDeprecationMetadata>> DeprecationMetadata { private get; set; }
         public Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
 
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
+
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
         private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
 

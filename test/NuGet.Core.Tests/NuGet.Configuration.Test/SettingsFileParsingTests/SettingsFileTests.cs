@@ -670,7 +670,7 @@ namespace NuGet.Configuration.Test
                 section.Should().BeNull();
             }
         }
-        
+
 
         [Fact]
         public void SettingsFile_Remove_WithValidSectionAndKey_DeletesTheEntry()

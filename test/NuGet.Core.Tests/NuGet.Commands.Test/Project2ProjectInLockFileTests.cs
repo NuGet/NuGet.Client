@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -525,7 +525,7 @@ namespace NuGet.Commands.Test
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
                 spec1.FilePath = project1Path;
                 spec1.RestoreMetadata.ProjectPath = project1Path;
-                spec1.RestoreMetadata.ProjectUniqueName = project1Path;                
+                spec1.RestoreMetadata.ProjectUniqueName = project1Path;
 
                 var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2, spec3);
 

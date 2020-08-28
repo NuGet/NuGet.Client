@@ -6,13 +6,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-using Task = System.Threading.Tasks.Task;
+using NuGet.VisualStudio.Internal.Contracts;
+using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 // Duplicate type declarations due to Microsoft.Internal.VisualStudio.Shell.Embeddable.
 using ProvideBrokeredServiceAttribute = Microsoft.VisualStudio.Shell.ServiceBroker.ProvideBrokeredServiceAttribute;
 using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudience;
-using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 using SVsBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.SVsBrokeredServiceContainer;
-using NuGet.VisualStudio.Internal.Contracts;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -24,7 +24,7 @@ namespace NuGet.SolutionRestoreManager
     // which will allow this package to be loaded asynchronously
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     // BackgroundLoad this package as soon as a Solution exists.
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]	    
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
     // Ensure that this package is loaded in time to listen to solution build events, in order to always be able to restore before build.
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionBuilding_string)]
     [ProvideBrokeredService(BrokeredServicesUtility.NuGetSolutionServiceName, BrokeredServicesUtility.NuGetSolutionServiceVersion, Audience = ServiceAudience.RemoteExclusiveClient)]

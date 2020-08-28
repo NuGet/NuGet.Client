@@ -14,8 +14,8 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using VSLangProj150;
-using ProjectSystem = Microsoft.VisualStudio.ProjectSystem;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using ProjectSystem = Microsoft.VisualStudio.ProjectSystem;
 
 
 namespace NuGet.PackageManagement.VisualStudio

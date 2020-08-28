@@ -322,8 +322,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
 
                 // Assert packagespath
-                Assert.Equal(restorePackagesPath != null? Path.Combine(testDirectory, restorePackagesPath) : SettingsUtility.GetGlobalPackagesFolder(settings),  actualRestoreSpec.RestoreMetadata.PackagesPath);
-                
+                Assert.Equal(restorePackagesPath != null ? Path.Combine(testDirectory, restorePackagesPath) : SettingsUtility.GetGlobalPackagesFolder(settings), actualRestoreSpec.RestoreMetadata.PackagesPath);
+
                 // assert sources
                 var specSources = actualRestoreSpec.RestoreMetadata.Sources.Select(e => e.Source);
                 var expectedSources = sources != null ? MSBuildStringUtility.Split(sources).Select(e => Path.Combine(testDirectory, e)) : SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
@@ -347,8 +347,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Theory]
         [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2")]
         [InlineData(null, @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2")]
-        [InlineData(@"C:\RestorePackagesPath", null , @"C:\Fallback1;C:\Fallback2")]
-        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2",null)]
+        [InlineData(@"C:\RestorePackagesPath", null, @"C:\Fallback1;C:\Fallback2")]
+        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", null)]
         public async Task GetPackageSpecsAsync_ReadSettingsWithFullPaths(string restorePackagesPath, string sources, string fallbackFolders)
         {
             // Arrange

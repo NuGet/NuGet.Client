@@ -14,10 +14,10 @@ namespace NuGet.Configuration.Test
             // Arrange
             var credentials = new PackageSourceCredential("SourceName", "username", "password", isPasswordClearText: false, validAuthenticationTypesText: null);
             var source = new PackageSource("Source", "SourceName", isEnabled: false)
-                {
-                    Credentials = credentials,
-                    ProtocolVersion = 43
-                };
+            {
+                Credentials = credentials,
+                ProtocolVersion = 43
+            };
 
             // Act
             var result = source.Clone();

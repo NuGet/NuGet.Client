@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -133,7 +133,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             var expected = LibraryIncludeFlagUtils.GetFlags(
-                new string[] 
+                new string[]
                     { "build", "runtime", "contentFiles", "native" });
 
             Assert.Equal(expected, dependency.SuppressParent);

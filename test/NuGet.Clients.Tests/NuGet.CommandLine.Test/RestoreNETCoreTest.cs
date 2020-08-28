@@ -174,9 +174,9 @@ namespace NuGet.CommandLine.Test
                         Id = packageId,
                         Version = packageVersion
                     }
-                    );;
+                    ); ;
 
-                foreach (var number in new[] { "2", "3"})
+                foreach (var number in new[] { "2", "3" })
                 {
                     // Project
                     var project = SimpleTestProjectContext.CreateNETCore(
@@ -1593,8 +1593,6 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     "net46",
                     "net45");
-
-                project.OriginalFrameworkStrings = new List<string> { "net46", "net45" };
 
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
@@ -7766,17 +7764,17 @@ namespace NuGet.CommandLine.Test
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
                 var tfm = "net45";
 
-                 var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse(tfm));
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
 
-                 var projectB = SimpleTestProjectContext.CreateNETCore(
-                    "b",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse(tfm));
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                   "b",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
 
-                 var packageX = new SimpleTestPackageContext()
+                var packageX = new SimpleTestPackageContext()
                 {
                     Id = "x",
                     Version = "1.0.0"
@@ -7784,27 +7782,27 @@ namespace NuGet.CommandLine.Test
                 packageX.Files.Clear();
                 packageX.AddFile($"lib/{tfm}/x.dll");
 
-                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageX);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX);
 
-                 // A -> B
+                // A -> B
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
                 projectB.Properties.Add("AssemblyName", "CustomName");
 
                 projectA.AddProjectToAllFrameworks(projectB);
 
-                 // B
+                // B
                 projectB.AddPackageToFramework(tfm, packageX);
 
-                 solution.Projects.Add(projectA);
+                solution.Projects.Add(projectA);
                 solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
-                 // Act
+                // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                 // Assert
+                // Assert
                 r.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectB.AssetsFileOutputPath));
@@ -7816,15 +7814,15 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
                 Assert.Equal("CustomName", lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id);
 
-                 // Setup - Enable locked mode
+                // Setup - Enable locked mode
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Save();
                 File.Delete(projectA.AssetsFileOutputPath);
 
-                 // Act
+                // Act
                 r = Util.RestoreSolution(pathContext);
 
-                 // Assert
+                // Assert
                 r.Success.Should().BeTrue();
             }
         }
@@ -7839,17 +7837,17 @@ namespace NuGet.CommandLine.Test
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
                 var tfm = "net45";
 
-                 var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse(tfm));
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
 
-                 var projectB = SimpleTestProjectContext.CreateNETCore(
-                    "b",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse(tfm));
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                   "b",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
 
-                 var packageX = new SimpleTestPackageContext()
+                var packageX = new SimpleTestPackageContext()
                 {
                     Id = "x",
                     Version = "1.0.0"
@@ -7857,27 +7855,27 @@ namespace NuGet.CommandLine.Test
                 packageX.Files.Clear();
                 packageX.AddFile($"lib/{tfm}/x.dll");
 
-                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageX);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX);
 
-                 // A -> B
+                // A -> B
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
                 projectB.Properties.Add("PackageId", "CustomName");
 
                 projectA.AddProjectToAllFrameworks(projectB);
 
-                 // B
+                // B
                 projectB.AddPackageToFramework(tfm, packageX);
 
                 solution.Projects.Add(projectA);
                 solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
-                 // Act
+                // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                 // Assert
+                // Assert
                 r.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectB.AssetsFileOutputPath));
@@ -7885,19 +7883,19 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(projectB.NuGetLockFileOutputPath));
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
 
-                 // Assert that the project name is the custom name.
+                // Assert that the project name is the custom name.
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
                 Assert.Equal("CustomName", lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id);
 
-                 // Setup - Enable locked mode
+                // Setup - Enable locked mode
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Save();
                 File.Delete(projectA.AssetsFileOutputPath);
 
-                 // Act
+                // Act
                 r = Util.RestoreSolution(pathContext);
 
-                 // Assert
+                // Assert
                 r.Success.Should().BeTrue();
             }
         }
@@ -8343,7 +8341,7 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-                
+
                 // Act
                 var result = Util.RestoreSolution(pathContext);
 
@@ -8541,9 +8539,9 @@ namespace NuGet.CommandLine.Test
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                    "a",
                    pathContext.SolutionRoot,
-                   new NuGetFramework[]{ NuGetFramework.Parse(tfm) });
+                   new NuGetFramework[] { NuGetFramework.Parse(tfm) });
 
-                projectA.Properties.Add("RestorePackagesWithLockFile", "true");             
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
                 projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", intitialRuntimes));
 
                 solution.Projects.Add(projectA);
@@ -8558,7 +8556,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                var lockRuntimes = lockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select( t => t.RuntimeIdentifier).ToList();
+                var lockRuntimes = lockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
                 intitialRuntimes.ShouldBeEquivalentTo(lockRuntimes);
 
                 // Setup - change runtimes
@@ -8666,8 +8664,8 @@ namespace NuGet.CommandLine.Test
                     var version = p.Split('/')[1];
                     var package = new SimpleTestPackageContext()
                     {
-                       Id = id,
-                       Version = version
+                        Id = id,
+                        Version = version
                     };
                     package.Files.Clear();
                     package.AddFile($"lib/netcoreapp2.0/{id}.dll");
@@ -8786,7 +8784,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
-              
+
                 // Assert
                 r.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
@@ -8943,14 +8941,15 @@ namespace NuGet.CommandLine.Test
 
 
         [Fact]
-        public async void RestoreNetCore_PackagesLockFile_WithReorderedRuntimesInLockFile_PassRestore() { 
+        public async void RestoreNetCore_PackagesLockFile_WithReorderedRuntimesInLockFile_PassRestore()
+        {
             // A project with RestoreLockedMode should pass restore if the runtimes in the lock file have been reordered
             using (var pathContext = new SimpleTestPathContext())
             {
 
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-               
+
 
                 var projFramework = Frameworks.FrameworkConstants.CommonFrameworks.NetCoreApp21.GetShortFolderName();
 
@@ -8959,9 +8958,9 @@ namespace NuGet.CommandLine.Test
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse(projFramework));
 
-                var runtimeidentifiers = new List<string>(){ "win7-x64", "win-x86", "win", "z", "a" };
+                var runtimeidentifiers = new List<string>() { "win7-x64", "win-x86", "win", "z", "a" };
                 var ascending = runtimeidentifiers.OrderBy(i => i);
-                
+
                 projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", ascending));
 
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
@@ -9005,13 +9004,13 @@ namespace NuGet.CommandLine.Test
 
                 //Nuget.exe test so reordering to make it not match.  It should still restore correctly
                 packagesLockFile.Targets = packagesLockFile.Targets.
-                    OrderByDescending(t => t.RuntimeIdentifier==null).
-                    ThenByDescending( i => i.RuntimeIdentifier).ToList();
+                    OrderByDescending(t => t.RuntimeIdentifier == null).
+                    ThenByDescending(i => i.RuntimeIdentifier).ToList();
                 var reorderedTargets = packagesLockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
 
                 //The orders are not equal.  Then resave the lock file and project.
                 //The null RID must be the first one otherwise this fails
-                Assert.False(originalTargets.SequenceEqual(reorderedTargets));                
+                Assert.False(originalTargets.SequenceEqual(reorderedTargets));
                 Assert.True(packagesLockFile.Targets[0].RuntimeIdentifier == null);
                 PackagesLockFileFormat.Write(projectA.NuGetLockFileOutputPath, packagesLockFile);
                 projectA.Properties.Add("RestoreLockedMode", "true");
@@ -9023,7 +9022,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeTrue();
-                
+
             }
         }
 
@@ -9864,7 +9863,7 @@ namespace NuGet.CommandLine.Test
                 var packageH200 = createTestPackage("H", version200, packagesForSource);
                 var packageM200 = createTestPackage("M", version200, packagesForSource);
                 var packageN200 = createTestPackage("N", version200, packagesForSource);
-                var packageP200 = createTestPackage("P", version200, packagesForSource);              
+                var packageP200 = createTestPackage("P", version200, packagesForSource);
 
                 var packageE300 = createTestPackage("E", version300, packagesForSource);
                 var packageP300 = createTestPackage("P", version300, packagesForSource);
@@ -9952,7 +9951,7 @@ namespace NuGet.CommandLine.Test
                 var assetFileReader = new LockFileFormat();
                 var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
 
-                var expectedLibraries = new List<string>() { "B.1.0.0", "C.2.0.0", "F.1.0.0", "G.1.0.0", "H.3.0.0", "O.3.0.0", "P.3.0.0", "S.3.0.0", "SS.3.0.0",  "U.1.0.0", "V.1.0.0", "X.1.0.0", "Y.3.0.0" };
+                var expectedLibraries = new List<string>() { "B.1.0.0", "C.2.0.0", "F.1.0.0", "G.1.0.0", "H.3.0.0", "O.3.0.0", "P.3.0.0", "S.3.0.0", "SS.3.0.0", "U.1.0.0", "V.1.0.0", "X.1.0.0", "Y.3.0.0" };
                 var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
                 Assert.Equal(expectedLibraries, libraries);
 
@@ -10006,6 +10005,60 @@ namespace NuGet.CommandLine.Test
                 {
                     targets.Select(e => e.TargetFramework).Should().Contain(framework);
                 }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task RestoreNetCore_WithCustomAliases_WritesConditionWithCorrectAlias()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    "proj",
+                    pathContext.SolutionRoot,
+                    "net5.0-windows",
+                    "net50-android");
+
+                // Workaround: Set all the TFM properties ourselves.
+                // We can't rely on the SDK setting them, as only .NET 5 SDK P8 and later applies these correctly.
+                var net50windowsTFM = project.Frameworks.Where(f => f.TargetAlias.Equals("net5.0-windows")).Single();
+                var net50AndroidTFM = project.Frameworks.Where(f => f.TargetAlias.Equals("net50-android")).Single();
+                net50windowsTFM.Properties.Add("TargetFrameworkMoniker", ".NETCoreApp, Version=v5.0");
+                net50windowsTFM.Properties.Add("TargetPlatformMoniker", "Windows, Version=7.0");
+                net50AndroidTFM.Properties.Add("TargetFrameworkMoniker", ".NETCoreApp, Version=v5.0");
+                net50AndroidTFM.Properties.Add("TargetPlatformMoniker", "Android,Version=21.0");
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+                Assert.Equal(0, r.Item1);
+                Assert.True(File.Exists(project.PropsOutput), r.Item2);
+                var propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
+
+                var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
+
+                Assert.Contains("'$(TargetFramework)' == 'net5.0-windows' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Contains("'$(TargetFramework)' == 'net50-android' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 

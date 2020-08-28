@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -144,7 +144,7 @@ namespace NuGet.Protocol.Tests
                 }
 
                 zipStream.Seek(0, SeekOrigin.Begin);
-                var partialLength = (int) zipStream.Length - 1;
+                var partialLength = (int)zipStream.Length - 1;
                 stream.Write(zipStream.ToArray(), 0, partialLength);
                 stream.Seek(0, SeekOrigin.Begin);
 

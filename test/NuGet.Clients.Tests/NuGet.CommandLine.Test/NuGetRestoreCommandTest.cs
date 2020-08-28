@@ -8,18 +8,18 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
-using Xunit;
-using System.Text.RegularExpressions;
-using NuGet.Common;
-using NuGet.Frameworks;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
@@ -2230,7 +2230,7 @@ EndProject";
 
                 // Assert
                 Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
-                var packageFileA = Path.Combine(randomSolutionFolder, "GlobalPackages", "packagea","1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(randomSolutionFolder, "GlobalPackages", "packagea", "1.1.0", "packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
         }
@@ -2380,7 +2380,7 @@ EndProject";
 
                 // Assert
                 Assert.False(result.Success);
-                Assert.Contains("Error parsing packages.config file", result.AllOutput);                                
+                Assert.Contains("Error parsing packages.config file", result.AllOutput);
                 Assert.False(Directory.Exists(outputPath));
             }
         }

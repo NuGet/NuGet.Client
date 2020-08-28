@@ -110,6 +110,7 @@ NuGet members may contribute directly to the main remote.
 - [Debugging](docs/debugging.md)
 - [New Feature Guide](docs/feature-guide.md)
 - [Design Review guide](docs/design-review-guide.md)
+- [NuGet Client SDK](docs/nuget-sdk.md)
 
 ## Docs generation
 

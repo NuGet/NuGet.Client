@@ -239,7 +239,7 @@ namespace NuGet.Protocol.Tests
 
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             };
-            
+
             var retryHandler = new HttpRetryHandler();
             var testHandler = new HttpRetryTestHandler(handler);
             var httpClient = new HttpClient(testHandler);

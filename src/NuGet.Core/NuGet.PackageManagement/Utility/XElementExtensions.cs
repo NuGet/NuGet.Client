@@ -60,8 +60,8 @@ namespace NuGet.ProjectManagement
             }
 
             var attributesToRemove = from e in source.Attributes()
-                where AttributeEquals(e, target.Attribute(e.Name))
-                select e;
+                                     where AttributeEquals(e, target.Attribute(e.Name))
+                                     select e;
             // Remove the attributes
             foreach (var a in attributesToRemove.ToList())
             {
@@ -222,9 +222,9 @@ namespace NuGet.ProjectManagement
         private static int CountMatches(XElement left, XElement right, Func<XAttribute, XAttribute, bool> matcher)
         {
             return (from la in left.Attributes()
-                from ta in right.Attributes()
-                where matcher(la, ta)
-                select la).Count();
+                    from ta in right.Attributes()
+                    where matcher(la, ta)
+                    select la).Count();
         }
 
         private static bool HasConflict(XElement source, XElement target)

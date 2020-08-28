@@ -93,6 +93,16 @@ namespace NuGet.Common
         NU1009 = 1009,
 
         /// <summary>
+        /// The PackageReference items {0} do not have corresponding PackageVersions.
+        /// </summary>
+        NU1010 = 1010,
+
+        /// <summary>
+        /// Central floating versions are not allowed.
+        /// </summary>
+        NU1011 = 1011,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -161,7 +171,7 @@ namespace NuGet.Common
         /// <summary>
         /// Invalid package types
         /// </summary>
-        NU1204 = 1204, 
+        NU1204 = 1204,
 
         /// <summary>
         /// Project has an invalid dependency count

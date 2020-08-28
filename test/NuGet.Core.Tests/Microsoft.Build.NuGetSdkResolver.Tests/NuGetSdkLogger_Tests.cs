@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Build.Framework;
-using NuGet.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Build.Framework;
+using NuGet.Common;
 using Xunit;
 
 namespace Microsoft.Build.NuGetSdkResolver.Test

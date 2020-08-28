@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.Test.Caching
             validations.Add(
                 CachingValidationType.PackageInstalled,
                 command.IsPackageInstalled(context, context.PackageIdentityA));
-            
+
             var path = command.GetInstalledPackagePath(context, context.PackageIdentityA);
 
             validations.Add(

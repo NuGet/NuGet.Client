@@ -279,7 +279,7 @@ namespace NuGet.Build.Tasks
                             {
                                 return;
                             }
-                            
+
                             // project.assets.json
                             FileUtility.Delete(Path.Combine(project.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName));
 

@@ -24,7 +24,7 @@ namespace NuGet.Packaging.FuncTest
 
         public SigningUtilityTests(SigningTestFixture fixture)
         {
-             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [CIOnlyFact]

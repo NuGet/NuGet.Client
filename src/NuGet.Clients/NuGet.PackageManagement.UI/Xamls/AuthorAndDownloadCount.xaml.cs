@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel;
@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         private static void OnPropertyChanged(
-            DependencyObject dependencyObject, 
+            DependencyObject dependencyObject,
             DependencyPropertyChangedEventArgs e)
         {
             var control = dependencyObject as AuthorAndDownloadCount;
@@ -99,7 +99,7 @@ namespace NuGet.PackageManagement.UI
             _textBlockDownloadCount.Inlines.Clear();
 
             if (DownloadCount.HasValue && DownloadCount.Value > 0)
-            {   
+            {
                 // Processing the format string ourselves. We only support "{0}".
                 var formatString = Resx.Text_Downloads;
                 string begin = string.Empty;
@@ -117,7 +117,7 @@ namespace NuGet.PackageManagement.UI
                     end = formatString.Substring(index + "{0}".Length);
                 }
 
-                _textBlockDownloadCount.Inlines.Add(new Run(begin)); 
+                _textBlockDownloadCount.Inlines.Add(new Run(begin));
                 _textBlockDownloadCount.Inlines.Add(
                     new Run(UIUtility.NumberToString(DownloadCount.Value, CultureInfo.CurrentCulture))
                     {
@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement.UI
                     });
                 _textBlockDownloadCount.Inlines.Add(new Run(end));
                 _textBlockDownloadCount.Visibility = Visibility.Visible;
-            }        
+            }
             else
             {
                 _textBlockDownloadCount.Visibility = Visibility.Collapsed;

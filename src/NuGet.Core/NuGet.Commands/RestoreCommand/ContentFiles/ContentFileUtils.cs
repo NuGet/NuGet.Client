@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace NuGet.Commands
     internal static class ContentFileUtils
     {
         private const string ContentFilesFolderName = "contentFiles/";
-        
+
         /// <summary>
         /// Get all content groups that have the nearest TxM
         /// </summary>
@@ -53,7 +53,7 @@ namespace NuGet.Commands
             {
                 var languageGroups = codeLanguagePair.Value;
 
-                var nearestGroup = NuGetFrameworkUtility.GetNearest<ContentItemGroup>(languageGroups, framework, 
+                var nearestGroup = NuGetFrameworkUtility.GetNearest<ContentItemGroup>(languageGroups, framework,
                     group =>
                        (NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]);
 

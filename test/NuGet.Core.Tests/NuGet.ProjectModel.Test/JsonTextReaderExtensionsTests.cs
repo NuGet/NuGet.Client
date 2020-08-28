@@ -258,7 +258,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.True(test.Reader.Read());
                 Assert.Equal(JsonToken.PropertyName, test.Reader.TokenType);
 
-                Assert.Throws< InvalidCastException>(() => test.Reader.ReadNextTokenAsString());
+                Assert.Throws<InvalidCastException>(() => test.Reader.ReadNextTokenAsString());
             }
         }
 

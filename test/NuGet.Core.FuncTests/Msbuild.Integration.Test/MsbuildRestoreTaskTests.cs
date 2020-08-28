@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
-using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Test.Utility;
 using NuGet.ProjectModel;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace Msbuild.Integration.Test
@@ -172,7 +172,7 @@ namespace Msbuild.Integration.Test
                     packageX);
 
                 // Act
-                CommandRunnerResult result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode:true);
+                CommandRunnerResult result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);
@@ -512,6 +512,74 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     {
                         Assert.True(File.Exists(asset), result.AllOutput);
                     }
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_WithLegacyPackageReferenceProject_BothStaticGraphAndRegularRestoreNoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var project = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.Files.Clear();
+                project.AddPackageToAllFrameworks(packageX);
+                packageX.AddFile("lib/net461/a.dll");
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                var projectOutputPaths = new[]
+                {
+                    project.AssetsFileOutputPath,
+                    project.PropsOutput,
+                    project.TargetsOutput,
+                    project.CacheFileOutputPath,
+                };
+
+                var projectOutputTimestamps = new Dictionary<string, DateTime>();
+
+                // Restore the project with a PackageReference which generates assets
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {project.ProjectPath}", ignoreExitCode: true);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                foreach (var asset in projectOutputPaths)
+                {
+                    var fileInfo = new FileInfo(asset);
+                    fileInfo.Exists.Should().BeTrue(because: result.AllOutput);
+                    projectOutputTimestamps.Add(asset, fileInfo.LastWriteTimeUtc);
+                }
+
+                // Restore the project with a PackageReference which generates assets
+                result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreUseStaticGraphEvaluation=true {project.ProjectPath}", ignoreExitCode: true);
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                foreach (var asset in projectOutputPaths)
+                {
+                    var fileInfo = new FileInfo(asset);
+                    fileInfo.Exists.Should().BeTrue(because: result.AllOutput);
+                    fileInfo.LastWriteTimeUtc.Should().Be(projectOutputTimestamps[asset]);
                 }
             }
         }

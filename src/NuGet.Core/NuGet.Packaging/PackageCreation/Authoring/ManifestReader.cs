@@ -8,12 +8,12 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
-using NuGet.Packaging.Core;
-using NuGet.Frameworks;
-using NuGet.Common;
-using NuGet.Packaging.Licenses;
 
 namespace NuGet.Packaging
 {
@@ -385,16 +385,16 @@ namespace NuGet.Packaging
             // element is <dependency>
 
             var dependency = (from element in containerElement.ElementsNoNamespace("dependency")
-                    let idElement = element.Attribute("id")
-                    where idElement != null && !string.IsNullOrEmpty(idElement.Value)
-                    let elementVersion = element.GetOptionalAttributeValue("version")
-                    select new PackageDependency(
-                        idElement.Value?.Trim(),
-                        // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
-                        elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),
-                        element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
-                        element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
-                    )).ToList();
+                              let idElement = element.Attribute("id")
+                              where idElement != null && !string.IsNullOrEmpty(idElement.Value)
+                              let elementVersion = element.GetOptionalAttributeValue("version")
+                              select new PackageDependency(
+                                  idElement.Value?.Trim(),
+                                  // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
+                                  elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),
+                                  element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
+                                  element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
+                              )).ToList();
             return new HashSet<PackageDependency>(dependency);
         }
 

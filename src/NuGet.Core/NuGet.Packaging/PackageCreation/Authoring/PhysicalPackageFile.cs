@@ -30,7 +30,7 @@ namespace NuGet.Packaging
             _streamFactory = streamFactory;
         }
 
-        private MemoryStream MemoryStream { get; set; } 
+        private MemoryStream MemoryStream { get; set; }
 
         /// <summary>
         /// Path on disk

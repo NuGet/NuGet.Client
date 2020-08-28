@@ -312,7 +312,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var actualPackageIds = packages.Select(p => p.Identity.Id);
 
             // Assert
-            var expectedPackageIdsSorted = new List<string>(){ "AFakePackage", "FakePackage", "ZFakePackage" };
+            var expectedPackageIdsSorted = new List<string>() { "AFakePackage", "FakePackage", "ZFakePackage" };
             Assert.Equal(expectedPackageIdsSorted, actualPackageIds); //Equal considers sort order of collections.
         }
     }

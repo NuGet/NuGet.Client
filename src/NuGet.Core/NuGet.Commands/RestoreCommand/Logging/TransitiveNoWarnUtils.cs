@@ -61,7 +61,7 @@ namespace NuGet.Commands
                     projectFrameworks.Add(targetGraph.Framework);
 
                     transitivePackageSpecificProperties = MergePackageSpecificWarningProperties(
-                        transitivePackageSpecificProperties, 
+                        transitivePackageSpecificProperties,
                         transitiveNoWarnFromTargetGraph);
                 }
             }
@@ -191,14 +191,14 @@ namespace NuGet.Commands
                         // Merge the node's package specific no warn to the one in the path.
                         var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(pathPackageSpecificNoWarn, nodePackageSpecificNoWarn);
 
-                        AddDependenciesToQueue(nodeDependencies, 
-                            queue, 
+                        AddDependenciesToQueue(nodeDependencies,
+                            queue,
                             mergedProjectWideNoWarn,
                             mergedPackageSpecificNoWarn);
 
                     }
                     else if (parentPackageDependencies.Contains(nodeId))
-                    {                 
+                    {
                         // Evaluate the current path for package properties
                         var packageNoWarnFromPath = ExtractPathNoWarnProperties(pathWarningProperties, nodeId);
                         if (packageNoWarn.TryGetValue(nodeId, out var noWarnCodes))
@@ -237,7 +237,7 @@ namespace NuGet.Commands
             }
 
             // At the end of the graph traversal add the remaining package no warn lists into the result
-            foreach(var packageId in packageNoWarn.Keys)
+            foreach (var packageId in packageNoWarn.Keys)
             {
                 resultWarningProperties.AddRangeOfCodes(packageNoWarn[packageId], packageId, parentTargetFramework);
             }
@@ -301,8 +301,8 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies, 
-            Queue<DependencyNode> queue, 
+        private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies,
+            Queue<DependencyNode> queue,
             HashSet<NuGetLogCode> projectWideNoWarn,
             Dictionary<string, HashSet<NuGetLogCode>> packageSpecificNoWarn)
         {
@@ -315,14 +315,14 @@ namespace NuGet.Commands
                     projectWideNoWarn,
                     packageSpecificNoWarn);
 
-                    // Add the metadata from the parent project here.
-                    queue.Enqueue(queueNode);
+                // Add the metadata from the parent project here.
+                queue.Enqueue(queueNode);
             }
         }
 
         private static PackageSpec GetNodePackageSpec(LocalMatch localMatch)
         {
-            return (PackageSpec) localMatch.LocalLibrary.Items[KnownLibraryProperties.PackageSpec];
+            return (PackageSpec)localMatch.LocalLibrary.Items[KnownLibraryProperties.PackageSpec];
         }
 
         /// <summary>
@@ -776,7 +776,7 @@ namespace NuGet.Commands
                 return EqualityUtility.SetEqualsWithNullCheck(ProjectWide, other.ProjectWide) &&
                     EqualityUtility.DictionaryEquals(PackageSpecific, other.PackageSpecific, (s, o) => EqualityUtility.SetEqualsWithNullCheck(s, o));
             }
-            
+
             public NodeWarningProperties GetIntersect(NodeWarningProperties other)
             {
                 if (other == null || ReferenceEquals(this, other))

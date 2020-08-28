@@ -19,7 +19,7 @@ namespace NuGet.Commands
     public class MSBuildProjectFactory : IProjectFactory
     {
         private ILogger _logger;
-        
+
         // Packaging folders
         private static readonly string ReferenceFolder = PackagingConstants.Folders.Lib;
         private static readonly string ToolsFolder = PackagingConstants.Folders.Tools;
@@ -43,8 +43,8 @@ namespace NuGet.Commands
         public Dictionary<string, string> ProjectProperties { get; private set; }
 
         public bool IsTool { get; set; }
-        public ICollection<ManifestFile> Files { get; set; } 
-        
+        public ICollection<ManifestFile> Files { get; set; }
+
         public ILogger Logger
         {
             get
@@ -110,9 +110,9 @@ namespace NuGet.Commands
             {
                 manifest.Save(stream);
             }
-            
+
             builder.PopulateFiles(string.Empty, Files);
-            
+
             return builder;
         }
 
@@ -140,7 +140,7 @@ namespace NuGet.Commands
                 }
                 var tfm = NuGetFramework.Parse(file.TargetFramework).GetShortFolderName();
                 var targetPath = file.TargetPath;
-                for (var i=0; i<targetFolders.Length; i++)
+                for (var i = 0; i < targetFolders.Length; i++)
                 {
                     var packageFile = new ManifestFile()
                     {
@@ -159,7 +159,7 @@ namespace NuGet.Commands
             {
                 var fileExtension = Path.GetExtension(packageFile.Source);
 
-                if(IncludeSymbols &&
+                if (IncludeSymbols &&
                     PackArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
                     !string.Equals(fileExtension, ".pdb", StringComparison.OrdinalIgnoreCase))
                 {
@@ -218,7 +218,7 @@ namespace NuGet.Commands
                             CopyToOutput = contentMetadata.CopyToOutput,
                             Flatten = contentMetadata.Flatten
                         };
-                        
+
                         builder.ContentFiles.Add(manifestContentFile);
                     }
                 }
@@ -243,7 +243,7 @@ namespace NuGet.Commands
 
         public static string GetTargetPathForSourceFile(string sourcePath, string projectDirectory)
         {
-            if(string.IsNullOrEmpty(sourcePath))
+            if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new PackagingException(NuGetLogCode.NU5020, string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFilePath));
             }

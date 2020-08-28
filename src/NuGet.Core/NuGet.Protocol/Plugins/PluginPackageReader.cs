@@ -1098,9 +1098,9 @@ namespace NuGet.Protocol.Plugins
                                 packageVersion));
 
                     case MessageResponseCode.NotFound:
-                        // This class is only created if a success response code is received for a
-                        // PrefetchPackageRequest, meaning that the plugin has already confirmed
-                        // that the package exists.
+                    // This class is only created if a success response code is received for a
+                    // PrefetchPackageRequest, meaning that the plugin has already confirmed
+                    // that the package exists.
 
                     default:
                         break;
@@ -1159,7 +1159,7 @@ namespace NuGet.Protocol.Plugins
 #endif
             return false;
         }
-        
+
         public override string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null)
         {
             // Plugin Download doesn't support signed packages so simply return null... and even then they aren't always packages.

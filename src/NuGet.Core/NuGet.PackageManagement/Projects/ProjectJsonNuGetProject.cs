@@ -159,9 +159,9 @@ namespace NuGet.ProjectManagement.Projects
         protected virtual Task<string> GetMSBuildProjectExtensionsPathAsync()
         {
             // Extending class will implement the functionality.
-            return Task.FromResult((string) null);
+            return Task.FromResult((string)null);
         }
-       
+
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
             var (dgSpecs, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);

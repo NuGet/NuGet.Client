@@ -128,7 +128,7 @@ namespace NuGet.CommandLine.Test
                 List<PackageIdentity> packages,
                 int packageLevel)
             {
-                foreach(var package in packages)
+                foreach (var package in packages)
                 {
                     var packageDirectory = SourceFeed;
                     if (packageLevel == 2)
@@ -290,7 +290,7 @@ namespace NuGet.CommandLine.Test
                 // Main Assert
                 Util.VerifyResultSuccess(result);
                 var output = result.Item2;
-                foreach(var p in packages)
+                foreach (var p in packages)
                 {
                     output.Contains(string.Format(
                     NuGetResources.AddCommand_PackageAlreadyExists,

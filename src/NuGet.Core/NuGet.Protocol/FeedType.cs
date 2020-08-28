@@ -1,4 +1,4 @@
-﻿namespace NuGet.Protocol
+namespace NuGet.Protocol
 {
     public enum FeedType
     {

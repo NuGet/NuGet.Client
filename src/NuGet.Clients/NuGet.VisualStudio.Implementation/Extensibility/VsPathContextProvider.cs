@@ -42,7 +42,7 @@ namespace NuGet.VisualStudio
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         private readonly Lazy<INuGetProjectContext> _projectContext;
-        
+
 
         [ImportingConstructor]
         public VsPathContextProvider(
@@ -114,7 +114,8 @@ namespace NuGet.VisualStudio
             _logger = new Lazy<ILogger>(() => logger);
             _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
 
-            _projectContext = new Lazy<INuGetProjectContext>(() => {
+            _projectContext = new Lazy<INuGetProjectContext>(() =>
+            {
                 return new VSAPIProjectContext
                 {
                     PackageExtractionContext = new PackageExtractionContext(

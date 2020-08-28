@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         _lockCount.Value--;
                     }
                 });
-                
+
             }
             else
             {

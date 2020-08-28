@@ -7,11 +7,11 @@ using System.IO;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
+using FluentAssertions;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
-using NuGet.Common;
-using FluentAssertions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -960,8 +960,8 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             var pluginDirectory = Util.GetTestablePluginDirectory();
-            
-            
+
+
 
             using (var packageDirectory = TestDirectory.Create())
             {
@@ -1027,7 +1027,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
             var pluginDirectory = Util.GetTestablePluginDirectory();
-                        
+
 
             using (var packageDirectory = TestDirectory.Create())
             {
@@ -1043,7 +1043,7 @@ namespace NuGet.CommandLine.Test
                     {
                         var h = r.Headers["Authorization"];
                         var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                        credentialForPutRequest.Insert(0,credential);
+                        credentialForPutRequest.Insert(0, credential);
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
                             res.StatusCode = (int)HttpStatusCode.OK;

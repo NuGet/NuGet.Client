@@ -632,16 +632,16 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         private void WriteErrorLine(string message)
-        {   
-            if(ActiveConsole != null)
+        {
+            if (ActiveConsole != null)
             {
-                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ActiveConsole?.WriteAsync(message + Environment.NewLine, Colors.White, Colors.DarkRed));
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ActiveConsole?.WriteAsync(message + Environment.NewLine, Colors.White, Colors.DarkRed));
             }
         }
 
         private void WriteLine(string message = "")
         {
-            if(ActiveConsole != null)
+            if (ActiveConsole != null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ActiveConsole?.WriteLineAsync(message));
             }

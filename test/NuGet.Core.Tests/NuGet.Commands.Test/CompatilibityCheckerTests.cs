@@ -443,7 +443,7 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("ref/netstandard1.3/a.dll");
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource.FullName, packageA);
-                
+
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();

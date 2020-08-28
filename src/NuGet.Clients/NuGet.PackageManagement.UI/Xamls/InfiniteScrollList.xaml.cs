@@ -362,7 +362,7 @@ namespace NuGet.PackageManagement.UI
         {
             CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
         }
-        
+
         private void ClearUIFilter()
         {
             CollectionView.Filter = null;

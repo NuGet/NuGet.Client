@@ -177,7 +177,7 @@ namespace NuGet.Commands
             {
                 logger.LogMinimal(Strings.Log_AllProjectsUpToDate);
             }
-            else if(noOpCount > 0)
+            else if (noOpCount > 0)
             {
                 logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectUpToDateSummary, noOpCount, restoreSummaries.Count));
             }

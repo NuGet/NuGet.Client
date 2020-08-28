@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Resources;
 using System.Threading;
 
@@ -15,7 +15,7 @@ namespace NuGet.CommandLine
                    _resourceManager.GetString(resourceName, CultureInfo.InvariantCulture);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "the convention is to used lower case letter for language name.")]        
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "the convention is to used lower case letter for language name.")]
         /// <summary>
         /// Returns the 3 letter language name used to locate localized resources.
         /// </summary>
