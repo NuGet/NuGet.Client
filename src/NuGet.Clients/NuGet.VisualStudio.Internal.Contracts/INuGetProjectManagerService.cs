@@ -7,17 +7,26 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
     public interface INuGetProjectManagerService : IDisposable
     {
-        ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken cancellationToken);
-        ValueTask<object> GetMetadataAsync(string projectGuid, string key, CancellationToken cancellationToken);
-        ValueTask<(bool, object)> TryGetMetadataAsync(string projectGuid, string key, CancellationToken cancellationToken);
-        ValueTask<IProjectContextInfo> GetProjectAsync(string projectGuid, CancellationToken cancellationToken);
+        ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken);
+        ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
+            string projectId,
+            bool includeUnresolved,
+            CancellationToken cancellationToken);
+        ValueTask<object> GetMetadataAsync(string projectId, string key, CancellationToken cancellationToken);
+        ValueTask<(bool, object)> TryGetMetadataAsync(string projectId, string key, CancellationToken cancellationToken);
+        ValueTask<IProjectContextInfo> GetProjectAsync(string projectId, CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<IProjectContextInfo>> GetProjectsAsync(CancellationToken cancellationToken);
-        ValueTask<bool> IsProjectUpgradeableAsync(string projectGuid, CancellationToken cancellationToken);
+        ValueTask<(bool, string?)> TryGetInstalledPackageFilePathAsync(
+            string projectId,
+            PackageIdentity packageIdentity,
+            CancellationToken cancellationToken);
     }
 }

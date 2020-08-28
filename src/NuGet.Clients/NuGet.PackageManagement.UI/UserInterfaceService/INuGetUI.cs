@@ -10,6 +10,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -17,13 +18,13 @@ namespace NuGet.PackageManagement.UI
     /// The NuGet package management UI
     /// </summary>
     /// <remarks>This is not expected to be thread safe.</remarks>
-    public interface INuGetUI
+    public interface INuGetUI : IDisposable
     {
         bool PromptForPackageManagementFormat(PackageManagementFormat selectedFormat);
 
         bool ShowNuGetUpgradeWindow(NuGetProjectUpgradeWindowModel nuGetProjectUpgradeWindowModel);
 
-        Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects);
+        Task UpgradeProjectsToPackageReferenceAsync(IEnumerable<IProjectContextInfo> msBuildProjects);
 
         bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects);
 
@@ -66,7 +67,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Target projects
         /// </summary>
-        IEnumerable<NuGetProject> Projects { get; }
+        IEnumerable<IProjectContextInfo> Projects { get; }
 
         /// <summary>
         /// True if the option to preview actions first is checked
@@ -92,12 +93,6 @@ namespace NuGet.PackageManagement.UI
         /// File conflict option
         /// </summary>
         FileConflictAction FileConflictAction { get; }
-
-        /// <summary>
-        /// Fires SolutionManager.ActionsExecuted event so that the UI will get 
-        /// refreshed.
-        /// </summary>
-        void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
 
         IEnumerable<SourceRepository> ActiveSources { get; }
 

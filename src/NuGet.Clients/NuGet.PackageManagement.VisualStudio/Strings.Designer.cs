@@ -97,6 +97,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        public static string AggregateSourceName {
+            get {
+                return ResourceManager.GetString("AggregateSourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Argument cannot be null or empty.
         /// </summary>
         public static string Argument_Cannot_Be_Null_Or_Empty {

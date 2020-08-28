@@ -41,6 +41,11 @@ namespace NuGet.PackageManagement.UI
             string packageId,
             string uniqueProjectName)
         {
+            if (packageManagerProviders == null)
+            {
+                throw new ArgumentNullException(nameof(packageManagerProviders));
+            }
+
             var otherProviders = new List<IVsPackageManagerProvider>();
 
             foreach (var provider in packageManagerProviders)

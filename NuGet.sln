@@ -238,6 +238,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Contract
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Packaging.Extraction", "src\NuGet.Core\NuGet.Packaging.Extraction\NuGet.Packaging.Extraction.csproj", "{C7CE3001-1DCB-4D66-B583-AF54A59BD552}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Internal.Contracts.Test", "test\NuGet.Clients.Tests\NuGet.VisualStudio.Internal.Contracts.Test\NuGet.VisualStudio.Internal.Contracts.Test.csproj", "{C24DD62A-905D-4C48-A17A-B83107F17EA7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -576,6 +578,10 @@ Global
 		{C7CE3001-1DCB-4D66-B583-AF54A59BD552}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7CE3001-1DCB-4D66-B583-AF54A59BD552}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7CE3001-1DCB-4D66-B583-AF54A59BD552}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C24DD62A-905D-4C48-A17A-B83107F17EA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C24DD62A-905D-4C48-A17A-B83107F17EA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C24DD62A-905D-4C48-A17A-B83107F17EA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C24DD62A-905D-4C48-A17A-B83107F17EA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -674,6 +680,7 @@ Global
 		{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
 		{6AF72BEE-70F0-48B2-BD63-0E80D9747342} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
 		{C7CE3001-1DCB-4D66-B583-AF54A59BD552} = {506AF844-92E0-4404-BBFC-0AB073890A72}
+		{C24DD62A-905D-4C48-A17A-B83107F17EA7} = {01BC4531-1E25-48D7-A8FD-A47D6FEC47FB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}

@@ -23,6 +23,7 @@ namespace NuGet.PackageManagement.UI
 {
     public partial class PRMigratorBar : UserControl, INuGetProjectContext
     {
+        // This class does not own this instance, so do not dispose of it in this class.
         private readonly PackageManagerModel _model;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }

@@ -140,6 +140,10 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj">
+      <Project>{deebf1a1-1c21-4e9e-8ce3-1eb21381ff1e}</Project>
+      <Name>NuGet.VisualStudio.Internal.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Xamls\ConsoleContainer.xaml">

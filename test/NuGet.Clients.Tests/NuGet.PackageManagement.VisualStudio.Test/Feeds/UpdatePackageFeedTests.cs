@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var project = Mock.Of<IProjectContextInfo>();
             Mock.Get(project)
                 .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult<IEnumerable<IPackageReferenceContextInfo>>(installedPackages));
+                .Returns(new ValueTask<IEnumerable<IPackageReferenceContextInfo>>(installedPackages));
             return project;
         }
 

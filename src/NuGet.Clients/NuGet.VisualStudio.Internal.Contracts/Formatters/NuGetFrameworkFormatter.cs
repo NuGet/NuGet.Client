@@ -11,7 +11,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class NuGetFrameworkFormatter : IMessagePackFormatter<NuGetFramework?>
     {
-        private const string DotNetFrameworkNamePropertyName = "dotnetframeworkname";
+        private const string FrameworkIdentifierPropertyName = "frameworkidentifier";
+        private const string FrameworkVersionPropertyName = "frameworkversion";
+        private const string FrameworkProfilePropertyName = "frameworkprofile";
+        private const string PlatformIdentifierPropertyName = "platformidentifier";
+        private const string PlatformVersionPropertyName = "platformversion";
 
         internal static readonly IMessagePackFormatter<NuGetFramework?> Instance = new NuGetFrameworkFormatter();
 
@@ -31,23 +35,50 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             try
             {
-                string? dotNetFrameworkName = null;
+                string? frameworkIdentifier = null;
+                string? frameworkProfile = null;
+                string? frameworkVersion = null;
+                string? platformIdentifier = null;
+                string? platformVersion = null;
 
                 int propertyCount = reader.ReadMapHeader();
+
                 for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
                 {
                     switch (reader.ReadString())
                     {
-                        case DotNetFrameworkNamePropertyName:
-                            dotNetFrameworkName = reader.ReadString();
+                        case FrameworkIdentifierPropertyName:
+                            frameworkIdentifier = reader.ReadString();
                             break;
+
+                        case FrameworkProfilePropertyName:
+                            frameworkProfile = reader.ReadString();
+                            break;
+
+                        case FrameworkVersionPropertyName:
+                            frameworkVersion = reader.ReadString();
+                            break;
+
+                        case PlatformIdentifierPropertyName:
+                            platformIdentifier = reader.ReadString();
+                            break;
+
+                        case PlatformVersionPropertyName:
+                            platformVersion = reader.ReadString();
+                            break;
+
                         default:
                             reader.Skip();
                             break;
                     }
                 }
 
-                return NuGetFramework.ParseFrameworkName(dotNetFrameworkName, DefaultFrameworkNameProvider.Instance);
+                return NuGetFramework.ParseComponents(
+                    frameworkIdentifier,
+                    frameworkVersion,
+                    frameworkProfile,
+                    platformIdentifier,
+                    platformVersion);
             }
             finally
             {
@@ -64,9 +95,17 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(count: 1);
-            writer.Write(DotNetFrameworkNamePropertyName);
-            writer.Write(value.DotNetFrameworkName);
+            writer.WriteMapHeader(count: 5);
+            writer.Write(FrameworkIdentifierPropertyName);
+            writer.Write(value.Framework);
+            writer.Write(FrameworkProfilePropertyName);
+            writer.Write(value.Profile);
+            writer.Write(FrameworkVersionPropertyName);
+            writer.Write(value.Version.ToString());
+            writer.Write(PlatformIdentifierPropertyName);
+            writer.Write(value.Platform);
+            writer.Write(PlatformVersionPropertyName);
+            writer.Write(value.PlatformVersion.ToString());
         }
     }
 }

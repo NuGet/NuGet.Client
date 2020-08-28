@@ -281,7 +281,8 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             if (windowFrame == null)
             {
                 IProjectContextInfo projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid.ToString(), CancellationToken.None);
-                INuGetUI uiController = UIFactory.Value.Create(projectContextInfo);
+                INuGetUI uiController = await UIFactory.Value.CreateAsync(projectContextInfo);
+                // This model takes ownership of --- and Dispose() responsibility for --- the INuGetUI instance.
                 var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
                 var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
                 var caption = string.Format(CultureInfo.CurrentCulture, Resx.Label_NuGetWindowCaption, Path.GetFileNameWithoutExtension(workspaceVisualNodeBase.NodeMoniker));
