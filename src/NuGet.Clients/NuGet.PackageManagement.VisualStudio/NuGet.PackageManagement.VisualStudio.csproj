@@ -70,8 +70,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
+    <Compile Include="Services\ISharedServiceState.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
+    <Compile Include="Services\NuGetProjectUpgraderService.cs" />
+    <Compile Include="Services\SharedServiceState.cs" />
+    <Compile Include="Services\NuGetSolutionManagerService.cs" />
     <Compile Include="Services\NuGetSourcesService.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
@@ -179,6 +184,7 @@
     <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\NuGetProjectUpgradeUtility.cs" />
     <Compile Include="Utility\ProjectRetargetingUtility.cs" />
+    <Compile Include="Utility\SolutionUtility.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
     <Compile Include="Utility\RegistrySettingUtility.cs" />
     <Compile Include="Utility\RuntimeHelpers.cs" />

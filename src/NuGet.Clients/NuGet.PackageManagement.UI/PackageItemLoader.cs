@@ -229,13 +229,6 @@ namespace NuGet.PackageManagement.UI
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             await TaskScheduler.Default;
-            // check if there is already a running initialization task for SolutionManager. If yes,
-            // search should wait until this is completed. This would usually happen when opening manager
-            //ui is the first nuget operation under LSL mode where it might take some time to initialize.
-            if (_context.SolutionManager.InitializationTask != null && !_context.SolutionManager.InitializationTask.IsCompleted)
-            {
-                await _context.SolutionManager.InitializationTask;
-            }
 
             if (continuationToken != null)
             {
@@ -259,7 +252,7 @@ namespace NuGet.PackageManagement.UI
             if (_packageReferences == null && !_context.IsSolution)
             {
                 var tasks = _context.Projects
-                    .Select(project => project.GetInstalledPackagesAsync(cancellationToken));
+                    .Select(project => project.GetInstalledPackagesAsync(cancellationToken).AsTask());
                 _packageReferences = (await Task.WhenAll(tasks)).SelectMany(p => p).Where(p => p != null);
             }
 

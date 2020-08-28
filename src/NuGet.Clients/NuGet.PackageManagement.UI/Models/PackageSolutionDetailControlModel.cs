@@ -11,7 +11,6 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -23,7 +22,8 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageSolutionDetailControlModel : DetailControlModel
     {
-        private ISolutionManager _solutionManager;
+        // This class does not own this instance, so do not dispose of it in this class.
+        private INuGetSolutionManagerService _solutionManager;
         private IEnumerable<IVsPackageManagerProvider> _packageManagerProviders;
         private string _installedVersions; // The text describing the installed versions information, such as "not installed", "multiple versions installed" etc.
         private int _installedVersionsCount; // the count of different installed versions
@@ -40,16 +40,16 @@ namespace NuGet.PackageManagement.UI
         }
 
         private async ValueTask InitializeAsync(
-            ISolutionManager solutionManager,
+            INuGetSolutionManagerService solutionManager,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
             _solutionManager = solutionManager;
-            _solutionManager.NuGetProjectAdded += SolutionProjectChanged;
-            _solutionManager.NuGetProjectRemoved += SolutionProjectChanged;
-            _solutionManager.NuGetProjectUpdated += SolutionProjectChanged;
-            _solutionManager.NuGetProjectRenamed += SolutionProjectChanged;
+            _solutionManager.ProjectAdded += SolutionProjectChanged;
+            _solutionManager.ProjectRemoved += SolutionProjectChanged;
+            _solutionManager.ProjectUpdated += SolutionProjectChanged;
+            _solutionManager.ProjectRenamed += SolutionProjectChanged;
 
             // when the SelectedVersion is changed, we need to update CanInstall and CanUninstall.
             PropertyChanged += (_, e) =>
@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public static async ValueTask<PackageSolutionDetailControlModel> CreateAsync(
-            ISolutionManager solutionManager,
+            INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             CancellationToken cancellationToken)
@@ -77,7 +77,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         internal static async ValueTask<PackageSolutionDetailControlModel> CreateAsync(
-            ISolutionManager solutionManager,
+            INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             IServiceBroker serviceBroker,
@@ -256,7 +256,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // The event handler that is called when a project is added, removed or renamed.
-        private void SolutionProjectChanged(object sender, NuGetProjectEventArgs e)
+        private void SolutionProjectChanged(object sender, IProjectContextInfo project)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateProjectListsAsync(serviceBroker: null, CancellationToken.None))
                 .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(SolutionProjectChanged));
@@ -270,11 +270,10 @@ namespace NuGet.PackageManagement.UI
 
         public override void CleanUp()
         {
-            // unhook event handlers
-            _solutionManager.NuGetProjectAdded -= SolutionProjectChanged;
-            _solutionManager.NuGetProjectRemoved -= SolutionProjectChanged;
-            _solutionManager.NuGetProjectRenamed -= SolutionProjectChanged;
-            _solutionManager.NuGetProjectUpdated -= SolutionProjectChanged;
+            _solutionManager.ProjectAdded -= SolutionProjectChanged;
+            _solutionManager.ProjectRemoved -= SolutionProjectChanged;
+            _solutionManager.ProjectRenamed -= SolutionProjectChanged;
+            _solutionManager.ProjectUpdated -= SolutionProjectChanged;
 
             Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
 
@@ -301,7 +300,7 @@ namespace NuGet.PackageManagement.UI
 
             IReadOnlyCollection<IProjectContextInfo> projectContexts;
 
-            if(serviceBroker == null)
+            if (serviceBroker == null)
             {
                 serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             }

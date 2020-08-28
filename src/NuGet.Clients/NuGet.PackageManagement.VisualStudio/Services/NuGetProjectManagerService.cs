@@ -12,8 +12,8 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -23,17 +23,35 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly ServiceActivationOptions _options;
         private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
+        private readonly ISharedServiceState _state;
 
-        public NuGetProjectManagerService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac)
+        public NuGetProjectManagerService(
+            ServiceActivationOptions options,
+            IServiceBroker serviceBroker,
+            AuthorizationServiceClient authorizationServiceClient,
+            ISharedServiceState state)
         {
+            Assumes.NotNull(serviceBroker);
+            Assumes.NotNull(authorizationServiceClient);
+            Assumes.NotNull(state);
+
             _options = options;
-            _serviceBroker = sb;
-            _authorizationServiceClient = ac;
+            _serviceBroker = serviceBroker;
+            _authorizationServiceClient = authorizationServiceClient;
+            _state = state;
+        }
+
+        public void Dispose()
+        {
+            _authorizationServiceClient.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public async ValueTask<IReadOnlyCollection<IProjectContextInfo>> GetProjectsAsync(CancellationToken cancellationToken)
         {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IVsSolutionManager? solutionManager = await _state.SolutionManager.GetValueAsync(cancellationToken);
             Assumes.NotNull(solutionManager);
 
             NuGetProject[] projects = (await solutionManager.GetNuGetProjectsAsync()).ToArray();
@@ -41,29 +59,43 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (NuGetProject nugetProject in projects)
             {
-                var projectContext = await ProjectContextInfo.CreateAsync(nugetProject, cancellationToken);
+                IProjectContextInfo? projectContext = await ProjectContextInfo.CreateAsync(nugetProject, cancellationToken);
+
                 projectContexts.Add(projectContext);
             }
 
             return projectContexts;
         }
 
-        public async ValueTask<IProjectContextInfo> GetProjectAsync(string projectGuid, CancellationToken cancellationToken)
+        public async ValueTask<IProjectContextInfo> GetProjectAsync(string projectId, CancellationToken cancellationToken)
         {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
+            Assumes.NotNullOrEmpty(projectId);
 
-            NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
+                _state.SolutionManager,
+                projectId,
+                cancellationToken);
+
+            Assumes.NotNull(project);
+
             return await ProjectContextInfo.CreateAsync(project, cancellationToken);
         }
 
-        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(IReadOnlyCollection<string> projectGuids, CancellationToken cancellationToken)
+        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
         {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
+            Assumes.NotNullOrEmpty(projectIds);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IVsSolutionManager? solutionManager = await _state.SolutionManager.GetValueAsync(cancellationToken);
             Assumes.NotNull(solutionManager);
 
             NuGetProject[]? projects = (await solutionManager.GetNuGetProjectsAsync())
-                .Where(p => projectGuids.Contains(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)))
+                .Where(p => projectIds.Contains(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)))
                 .ToArray();
 
             // Read package references from all projects.
@@ -73,48 +105,101 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageReferences.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
         }
 
-        public async ValueTask<object> GetMetadataAsync(string projectGuid, string key, CancellationToken cancellationToken)
+        public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
+            string projectId,
+            bool includeUnresolved,
+            CancellationToken cancellationToken)
         {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
+            Assumes.NotNullOrEmpty(projectId);
 
-            NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            NuGetPackageManager? packageManager = await _state.PackageManager.GetValueAsync(cancellationToken);
+            Assumes.NotNull(packageManager);
+
+            NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
+                _state.SolutionManager,
+                projectId,
+                cancellationToken);
+
+            Assumes.NotNull(project);
+
+            IEnumerable<PackageDependencyInfo>? results = await packageManager.GetInstalledPackagesDependencyInfo(
+                project,
+                cancellationToken,
+                includeUnresolved);
+
+            if (results == null)
+            {
+                return Array.Empty<PackageDependencyInfo>();
+            }
+
+            return results.ToArray();
+        }
+
+        public async ValueTask<object> GetMetadataAsync(string projectId, string key, CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectId);
+            Assumes.NotNullOrEmpty(key);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
+                _state.SolutionManager,
+                projectId,
+                cancellationToken);
+
+            Assumes.NotNull(project);
 
             return project.GetMetadata<object>(key);
         }
 
-        public async ValueTask<(bool, object)> TryGetMetadataAsync(string projectGuid, string key, CancellationToken cancellationToken)
+        public async ValueTask<(bool, object)> TryGetMetadataAsync(string projectId, string key, CancellationToken cancellationToken)
         {
-            NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
+            Assumes.NotNullOrEmpty(projectId);
+            Assumes.NotNullOrEmpty(key);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
+                _state.SolutionManager,
+                projectId,
+                cancellationToken);
+
+            Assumes.NotNull(project);
 
             bool success = project.TryGetMetadata(key, out object value);
+
             return (success, value);
         }
 
-        public async ValueTask<bool> IsProjectUpgradeableAsync(string projectGuid, CancellationToken cancellationToken)
+        public async ValueTask<(bool, string?)> TryGetInstalledPackageFilePathAsync(
+            string projectId,
+            PackageIdentity packageIdentity,
+            CancellationToken cancellationToken)
         {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
+            Assumes.NotNullOrEmpty(projectId);
+            Assumes.NotNull(packageIdentity);
 
-            NuGetProject project = await GetNuGetProjectMatchingProjectGuidAsync(projectGuid);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(project);
-        }
+            NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
+                _state.SolutionManager,
+                projectId,
+                cancellationToken);
 
-        public void Dispose()
-        {
-            _authorizationServiceClient.Dispose();
-            GC.SuppressFinalize(this);
-        }
+            Assumes.NotNull(project);
 
-        private async ValueTask<NuGetProject> GetNuGetProjectMatchingProjectGuidAsync(string projectGuid)
-        {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
+            string? packageFilePath = null;
 
-            NuGetProject project = (await solutionManager.GetNuGetProjectsAsync())
-                .First(p => projectGuid.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
-            return project;
+            if (project is MSBuildNuGetProject msBuildProject)
+            {
+                packageFilePath = msBuildProject.FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity);
+            }
+
+            bool success = packageFilePath != null;
+
+            return (success, packageFilePath);
         }
     }
 }

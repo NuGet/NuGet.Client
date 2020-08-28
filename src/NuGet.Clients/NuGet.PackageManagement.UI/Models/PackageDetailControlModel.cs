@@ -5,13 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
-using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
@@ -19,13 +15,16 @@ namespace NuGet.PackageManagement.UI
     // used to manage packages in one project.
     public class PackageDetailControlModel : DetailControlModel
     {
-        private readonly ISolutionManager _solutionManager;
+        // This class does not own this instance, so do not dispose of it in this class.
+        private readonly INuGetSolutionManagerService _solutionManager;
 
-        public PackageDetailControlModel(ISolutionManager solutionManager, IEnumerable<IProjectContextInfo> projects)
+        public PackageDetailControlModel(
+            INuGetSolutionManagerService solutionManager,
+            IEnumerable<IProjectContextInfo> projects)
             : base(projects)
         {
             _solutionManager = solutionManager;
-            _solutionManager.NuGetProjectUpdated += NuGetProjectChanged;
+            _solutionManager.ProjectUpdated += ProjectChanged;
         }
 
         public async override Task SetCurrentPackage(
@@ -54,16 +53,10 @@ namespace NuGet.PackageManagement.UI
             get { return false; }
         }
 
-        private void NuGetProjectChanged(object sender, NuGetProjectEventArgs e)
+        private void ProjectChanged(object sender, IProjectContextInfo project)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => NuGetProjectChangedAsync(e, CancellationToken.None))
-                .PostOnFailure(nameof(PackageDetailControlModel), nameof(NuGetProjectChanged));
-        }
+            _nugetProjects = new List<IProjectContextInfo> { project };
 
-        private async Task NuGetProjectChangedAsync(NuGetProjectEventArgs e, CancellationToken cancellationToken)
-        {
-            var projectContextInfo = await ProjectContextInfo.CreateAsync(e.NuGetProject, cancellationToken);
-            _nugetProjects = new List<IProjectContextInfo> { projectContextInfo };
             UpdateInstalledVersion();
         }
 
@@ -98,8 +91,7 @@ namespace NuGet.PackageManagement.UI
 
         public override void CleanUp()
         {
-            // unhook event handlers
-            _solutionManager.NuGetProjectUpdated -= NuGetProjectChanged;
+            _solutionManager.ProjectUpdated -= ProjectChanged;
 
             Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
         }
