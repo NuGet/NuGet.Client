@@ -664,6 +664,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to TargetFramework &apos;{0}&apos; has a platform &apos;{1}&apos;, but a platform version could not be inferred. Specify the platform version explicitly..
+        /// </summary>
+        internal static string Error_PlatformVersionNotPresent {
+            get {
+                return ResourceManager.GetString("Error_PlatformVersionNotPresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error occurred when processing file &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string Error_ProcessingNuspecFile {

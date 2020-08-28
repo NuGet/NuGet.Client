@@ -181,6 +181,12 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
+                if (!CheckPlatformVersions())
+                {
+                    // the errors will be added to the assets file
+                    _success = false;
+                }
+
                 // evaluate packages.lock.json file
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
                 var isLockFileValid = false;
@@ -401,6 +407,21 @@ namespace NuGet.Commands
                     dependencyGraphSpec: _request.DependencyGraphSpec,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
+            }
+        }
+
+        private bool CheckPlatformVersions()
+        {
+            IEnumerable<NuGetFramework> badPlatforms = _request.Project.TargetFrameworks.Select(tfm => tfm.FrameworkName).Where(fw => !string.IsNullOrEmpty(fw.Platform) && (fw.PlatformVersion == FrameworkConstants.EmptyVersion));
+            if (badPlatforms.Any())
+            {
+                NuGetFramework fw = badPlatforms.First();
+                _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.Error_PlatformVersionNotPresent, fw.Framework, fw.Platform)));
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
