@@ -5,9 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -17,7 +22,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
-
+using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
@@ -28,15 +33,13 @@ namespace NuGet.PackageManagement.UI
 
         private readonly NuGetUIProjectContext _projectContext;
 
-        public NuGetUI(
+        private NuGetUI(
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
-            INuGetUIContext context,
             INuGetUILogger logger)
         {
             CommonOperations = commonOperations;
             _projectContext = projectContext;
-            UIContext = context;
             UILogger = logger;
 
             // set default values of properties
@@ -44,9 +47,65 @@ namespace NuGet.PackageManagement.UI
             DependencyBehavior = DependencyBehavior.Lowest;
             RemoveDependencies = false;
             ForceRemove = false;
-            Projects = Enumerable.Empty<NuGetProject>();
+            Projects = Enumerable.Empty<IProjectContextInfo>();
             DisplayPreviewWindow = true;
             DisplayDeprecatedFrameworkWindow = true;
+        }
+
+        public static async Task<NuGetUI> CreateAsync(
+            ICommonOperations commonOperations,
+            NuGetUIProjectContext projectContext,
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            IVsSolutionManager solutionManager,
+            IPackageRestoreManager packageRestoreManager,
+            IOptionsPageActivator optionsPageActivator,
+            IUserSettingsManager userSettingsManager,
+            IDeleteOnRestartManager deleteOnRestartManager,
+            IReadOnlyList<IVsPackageManagerProvider> packageManagerProviders,
+            SolutionUserOptions solutionUserOptions,
+            INuGetLockService lockService,
+            INuGetUILogger logger,
+            CancellationToken cancellationToken,
+            params IProjectContextInfo[] projects)
+        {
+            Assumes.NotNull(commonOperations);
+            Assumes.NotNull(projectContext);
+            Assumes.NotNull(sourceRepositoryProvider);
+            Assumes.NotNull(settings);
+            Assumes.NotNull(solutionManager);
+            Assumes.NotNull(packageRestoreManager);
+            Assumes.NotNull(optionsPageActivator);
+            Assumes.NotNull(userSettingsManager);
+            Assumes.NotNull(deleteOnRestartManager);
+            Assumes.NotNull(packageManagerProviders);
+            Assumes.NotNull(solutionUserOptions);
+            Assumes.NotNull(lockService);
+            Assumes.NotNull(logger);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var nuGetUi = new NuGetUI(
+                commonOperations,
+                projectContext,
+                logger)
+            {
+                UIContext = await NuGetUIContext.CreateAsync(
+                    sourceRepositoryProvider,
+                    settings,
+                    solutionManager,
+                    packageRestoreManager,
+                    optionsPageActivator,
+                    solutionUserOptions,
+                    deleteOnRestartManager,
+                    packageManagerProviders,
+                    lockService,
+                    cancellationToken)
+            };
+
+            nuGetUi.UIContext.Projects = projects;
+
+            return nuGetUi;
         }
 
         public bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects)
@@ -126,18 +185,34 @@ namespace NuGet.PackageManagement.UI
             return dialogResult ?? false;
         }
 
-        public async Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects)
+        public async Task UpgradeProjectsToPackageReferenceAsync(IEnumerable<IProjectContextInfo> msBuildProjects)
         {
-            var projects = Projects.ToList();
-
-            foreach (var project in msBuildProjects)
+            if (msBuildProjects == null)
             {
-                var newProject = await UIContext.SolutionManager.UpgradeProjectToPackageReferenceAsync(project);
+                throw new ArgumentNullException(nameof(msBuildProjects));
+            }
 
-                if (newProject != null)
+            List<IProjectContextInfo> projects = Projects.ToList();
+
+            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+
+            using (INuGetProjectUpgraderService projectUpgrader = await serviceBroker.GetProxyAsync<INuGetProjectUpgraderService>(
+                NuGetServices.ProjectUpgraderService,
+                cancellationToken: CancellationToken.None))
+            {
+                Assumes.NotNull(projectUpgrader);
+
+                foreach (IProjectContextInfo project in msBuildProjects)
                 {
-                    projects.Remove(project);
-                    projects.Add(newProject);
+                    IProjectContextInfo newProject = await projectUpgrader.UpgradeProjectToPackageReferenceAsync(
+                        project.ProjectId,
+                        CancellationToken.None);
+
+                    if (newProject != null)
+                    {
+                        projects.Remove(project);
+                        projects.Add(newProject);
+                    }
                 }
             }
 
@@ -196,53 +271,25 @@ namespace NuGet.PackageManagement.UI
 
         public ICommonOperations CommonOperations { get; }
 
-        public INuGetUIContext UIContext { get; }
+        public INuGetUIContext UIContext { get; private set; }
 
         public INuGetUILogger UILogger { get; }
 
         public INuGetProjectContext ProjectContext => _projectContext;
 
-        public IEnumerable<NuGetProject> Projects
-        {
-            set;
-            get;
-        }
+        public IEnumerable<IProjectContextInfo> Projects { get; set; }
 
-        public bool DisplayPreviewWindow
-        {
-            set;
-            get;
-        }
+        public bool DisplayPreviewWindow { get; set; }
 
-        public bool DisplayDeprecatedFrameworkWindow
-        {
-            set;
-            get;
-        }
+        public bool DisplayDeprecatedFrameworkWindow { get; set; }
 
-        public FileConflictAction FileConflictAction
-        {
-            set;
-            get;
-        }
+        public FileConflictAction FileConflictAction { get; set; }
 
-        public DependencyBehavior DependencyBehavior
-        {
-            set;
-            get;
-        }
+        public DependencyBehavior DependencyBehavior { get; set; }
 
-        public bool RemoveDependencies
-        {
-            set;
-            get;
-        }
+        public bool RemoveDependencies { get; set; }
 
-        public bool ForceRemove
-        {
-            set;
-            get;
-        }
+        public bool ForceRemove { get; set; }
 
         public PackageIdentity SelectedPackage { get; set; }
 
@@ -253,11 +300,6 @@ namespace NuGet.PackageManagement.UI
         public bool RecommendPackages { get; set; }
 
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
-
-        public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
-        {
-            UIContext.SolutionManager.OnActionsExecuted(actions);
-        }
 
         public IEnumerable<SourceRepository> ActiveSources
         {
@@ -357,6 +399,13 @@ namespace NuGet.PackageManagement.UI
 
                 UILogger.ReportError(new LogMessage(LogLevel.Error, ExceptionUtilities.DisplayMessage(ex, indent: false)));
             }
+        }
+
+        public void Dispose()
+        {
+            UIContext.Dispose();
+
+            GC.SuppressFinalize(this);
         }
 
         private void ProcessSignatureIssues(SignatureException ex)

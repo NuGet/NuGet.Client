@@ -125,10 +125,12 @@
     <Compile Include="Constants.cs" />
     <Compile Include="UserInterfaceService\NuGetSettings.cs" />
     <Compile Include="UserInterfaceService\NuGetSettingsSerializer.cs" />
+    <Compile Include="UserInterfaceService\NuGetSolutionManagerServiceWrapper.cs" />
     <Compile Include="UserInterfaceService\NuGetUIFactory.cs" />
     <Compile Include="UserInterfaceService\SolutionUserOptions.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgress.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgressDialogSession.cs" />
+    <Compile Include="Utility\ProjectUtility.cs" />
     <Compile Include="Utility\VsUtility.cs" />
     <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
@@ -192,7 +194,6 @@
     <Compile Include="LoadingStatusIndicator.cs" />
     <Compile Include="Models\AlternativePackageManagerProviders.cs" />
     <Compile Include="Models\PackageItemListViewModel.cs" />
-    <Compile Include="Models\PackageSourceMoniker.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Converters\NotNullToBooleanConverter.cs" />
     <Compile Include="PackageInstallationInfo.cs" />

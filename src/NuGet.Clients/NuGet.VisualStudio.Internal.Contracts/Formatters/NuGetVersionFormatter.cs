@@ -11,7 +11,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class NuGetVersionFormatter : IMessagePackFormatter<NuGetVersion?>
     {
-        private const string NuGetVersionToStringPropertyName = "tostring";
+        private const string OriginalStringOrToStringPropertyName = "originalstringortostring";
 
         internal static readonly IMessagePackFormatter<NuGetVersion?> Instance = new NuGetVersionFormatter();
 
@@ -33,14 +33,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 int propertyCount = reader.ReadMapHeader();
 
-                string? originalVersion = null;
+                string? version = null;
 
                 for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
                 {
                     switch (reader.ReadString())
                     {
-                        case NuGetVersionToStringPropertyName:
-                            originalVersion = reader.ReadString();
+                        case OriginalStringOrToStringPropertyName:
+                            version = reader.ReadString();
                             break;
                         default:
                             reader.Skip();
@@ -48,7 +48,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
-                return NuGetVersion.Parse(originalVersion);
+                return NuGetVersion.Parse(version);
             }
             finally
             {
@@ -66,8 +66,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             writer.WriteMapHeader(count: 1);
-            writer.Write(NuGetVersionToStringPropertyName);
-            writer.Write(value.ToString());
+            writer.Write(OriginalStringOrToStringPropertyName);
+            writer.Write(value.OriginalVersion ?? value.ToString());
         }
     }
 }

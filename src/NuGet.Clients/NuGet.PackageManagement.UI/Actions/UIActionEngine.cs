@@ -8,6 +8,10 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
@@ -15,8 +19,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 using TelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
 
@@ -98,15 +101,7 @@ namespace NuGet.PackageManagement.UI
                         new GatherCache(),
                         sourceCacheContext);
 
-                    return GetActionsAsync(
-                        uiService,
-                        projects,
-                        userAction,
-                        uiService.RemoveDependencies,
-                        uiService.ForceRemove,
-                        resolutionContext,
-                        projectContext: uiService.ProjectContext,
-                        token: token);
+                    throw new NotImplementedException();
                 },
                 (actions, sourceCacheContext) =>
                 {
@@ -117,11 +112,14 @@ namespace NuGet.PackageManagement.UI
                 token);
         }
 
-        public async Task UpgradeNuGetProjectAsync(INuGetUI uiService, NuGetProject nuGetProject)
+        public async Task UpgradeNuGetProjectAsync(INuGetUI uiService, IProjectContextInfo project)
         {
-            var context = uiService.UIContext;
+            Assumes.NotNull(uiService);
+            Assumes.NotNull(project);
+
+            INuGetUIContext context = uiService.UIContext;
             // Restore the project before proceeding
-            var solutionDirectory = context.SolutionManager.SolutionDirectory;
+            string solutionDirectory = await context.SolutionManagerService.GetSolutionDirectoryAsync(CancellationToken.None);
 
             await context.PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(
                 solutionDirectory,
@@ -129,8 +127,25 @@ namespace NuGet.PackageManagement.UI
                 new LoggerAdapter(uiService.ProjectContext),
                 CancellationToken.None);
 
-            var packagesDependencyInfo = await context.PackageManager.GetInstalledPackagesDependencyInfo(nuGetProject, CancellationToken.None, includeUnresolved: true);
-            var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel((MSBuildNuGetProject)nuGetProject, packagesDependencyInfo.ToList());
+            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            NuGetProjectUpgradeWindowModel upgradeInformationWindowModel;
+
+            using (INuGetProjectManagerService projectManager = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
+                NuGetServices.ProjectManagerService,
+                CancellationToken.None))
+            {
+                Assumes.NotNull(projectManager);
+
+                IReadOnlyCollection<PackageDependencyInfo> packagesDependencyInfo = await projectManager.GetInstalledPackagesDependencyInfoAsync(
+                    project.ProjectId,
+                    includeUnresolved: true,
+                    CancellationToken.None);
+
+                upgradeInformationWindowModel = await NuGetProjectUpgradeWindowModel.CreateAsync(
+                    project,
+                    packagesDependencyInfo.ToList(),
+                    CancellationToken.None);
+            }
 
             var result = uiService.ShowNuGetUpgradeWindow(upgradeInformationWindowModel);
             if (!result)
@@ -139,8 +154,10 @@ namespace NuGet.PackageManagement.UI
                 var packagesCount = upgradeInformationWindowModel.UpgradeDependencyItems.Count;
 
                 var upgradeTelemetryEvent = new UpgradeInformationTelemetryEvent();
+                IEnumerable<string> projectIds = await ProjectUtility.GetProjectIdsAsync(uiService.Projects, CancellationToken.None);
+
                 upgradeTelemetryEvent.SetResult(
-                    uiService.Projects,
+                    projectIds,
                     NuGetOperationStatus.Cancelled,
                     packagesCount);
 
@@ -150,19 +167,20 @@ namespace NuGet.PackageManagement.UI
             }
 
             var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
+            string projectName = await project.GetUniqueNameOrNameAsync(CancellationToken.None);
             string backupPath;
 
             var windowTitle = string.Format(
                 CultureInfo.CurrentCulture,
                 Resources.WindowTitle_NuGetMigrator,
-                NuGetProject.GetUniqueNameOrName(nuGetProject));
+                projectName);
 
-            using (var progressDialogSession = await context.StartModalProgressDialogAsync(windowTitle, progressDialogData, uiService))
+            using (IModalProgressDialogSession progressDialogSession = await context.StartModalProgressDialogAsync(windowTitle, progressDialogData, uiService))
             {
                 backupPath = await PackagesConfigToPackageReferenceMigrator.DoUpgradeAsync(
                     context,
                     uiService,
-                    nuGetProject,
+                    project,
                     upgradeInformationWindowModel.UpgradeDependencyItems,
                     upgradeInformationWindowModel.NotFoundPackages,
                     progressDialogSession.Progress,
@@ -171,7 +189,7 @@ namespace NuGet.PackageManagement.UI
 
             if (!string.IsNullOrEmpty(backupPath))
             {
-                var htmlLogFile = GenerateUpgradeReport(nuGetProject, backupPath, upgradeInformationWindowModel);
+                string htmlLogFile = GenerateUpgradeReport(projectName, backupPath, upgradeInformationWindowModel);
 
                 Process process = null;
                 try
@@ -196,9 +214,8 @@ namespace NuGet.PackageManagement.UI
             webBrowsingService.CreateWebBrowser((uint)CreateWebBrowserFlags, ref createWebBrowserOwnerGuid, null, url, null, out var browser, out var frame);
         }
 
-        private static string GenerateUpgradeReport(NuGetProject nuGetProject, string backupPath, NuGetProjectUpgradeWindowModel upgradeInformationWindowModel)
+        private static string GenerateUpgradeReport(string projectName, string backupPath, NuGetProjectUpgradeWindowModel upgradeInformationWindowModel)
         {
-            var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             using (var upgradeLogger = new UpgradeLogger(projectName, backupPath))
             {
                 var installedAsTopLevel = upgradeInformationWindowModel.UpgradeDependencyItems.Where(t => t.InstallAsTopLevel);
@@ -259,7 +276,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesToUpdate">The list of packages to update.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The list of actions.</returns>
-        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdateAsync(
+        private Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken token)
@@ -284,20 +301,8 @@ namespace NuGet.PackageManagement.UI
 
                 var secondarySources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 
-                var actions = await _packageManager.PreviewUpdatePackagesAsync(
-                    packagesToUpdate,
-                    uiService.Projects,
-                    resolutionContext,
-                    uiService.ProjectContext,
-                    uiService.ActiveSources,
-                    secondarySources,
-                    token);
-
-                resolvedActions.AddRange(actions.Select(action => new ResolvedAction(action.Project, action))
-                    .ToList());
+                throw new NotImplementedException();
             }
-
-            return resolvedActions;
         }
 
         /// <summary>
@@ -341,7 +346,7 @@ namespace NuGet.PackageManagement.UI
                     var result = await project.GetInstalledPackagesAsync(token);
                     foreach (var package in result)
                     {
-                        Tuple<string, string> packageInfo = new Tuple<string, string>(package.PackageIdentity.Id, (package.PackageIdentity.Version == null ? "" : package.PackageIdentity.Version.ToNormalizedString()));
+                        Tuple<string, string> packageInfo = new Tuple<string, string>(package.Identity.Id, (package.Identity.Version == null ? "" : package.Identity.Version.ToNormalizedString()));
                         if (!existingPackages.Contains(packageInfo))
                         {
                             existingPackages.Add(packageInfo);
@@ -361,7 +366,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     uiService.BeginOperation();
 
-                    var acceptedFormat = await CheckPackageManagementFormat(uiService, token);
+                    bool acceptedFormat = await CheckPackageManagementFormatAsync(projectUpgrader: null, uiService, token);
                     if (!acceptedFormat)
                     {
                         return;
@@ -454,11 +459,7 @@ namespace NuGet.PackageManagement.UI
 
                         if (!token.IsCancellationRequested)
                         {
-                            // execute the actions
                             await executeActionsAsync(actions, sourceCacheContext);
-
-                            // fires ActionsExecuted event to update the UI
-                            uiService.OnActionsExecuted(actions);
                         }
                         else
                         {
@@ -506,36 +507,7 @@ namespace NuGet.PackageManagement.UI
                     PackageLoadContext plc = new PackageLoadContext(sourceRepositories: null, isSolution: false, uiService.UIContext);
                     var frameworks = (await plc.GetSupportedFrameworksAsync()).ToList();
 
-                    var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
-                        uiService.ProjectContext.OperationId.ToString(),
-                        uiService.Projects,
-                        operationType,
-                        OperationSource.UI,
-                        startTime,
-                        status,
-                        packageCount,
-                        duration.TotalSeconds);
-
-                    var nuGetUI = uiService as NuGetUI;
-                    AddUiActionEngineTelemetryProperties(
-                        actionTelemetryEvent,
-                        continueAfterPreview,
-                        acceptedLicense,
-                        userAction,
-                        nuGetUI?.SelectedIndex,
-                        nuGetUI?.RecommendedCount,
-                        nuGetUI?.RecommendPackages,
-                        nuGetUI?.RecommenderVersion,
-                        existingPackages,
-                        addedPackages,
-                        removedPackages,
-                        updatedPackagesOld,
-                        updatedPackagesNew,
-                        frameworks);
-
-                    actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
-
-                    TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
+                    throw new NotImplementedException();
                 }
             }, token);
         }
@@ -651,57 +623,52 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<bool> CheckPackageManagementFormat(INuGetUI uiService, CancellationToken token)
+        private async Task<bool> CheckPackageManagementFormatAsync(
+            INuGetProjectUpgraderService projectUpgrader,
+            INuGetUI uiService,
+            CancellationToken cancellationToken)
         {
-            var potentialProjects = new List<NuGetProject>();
+            IReadOnlyCollection<string> projectGuids = uiService.Projects.Select(project => project.ProjectId).ToArray();
+            IReadOnlyCollection<IProjectContextInfo> upgradeableProjects = await projectUpgrader.GetUpgradeableProjectsAsync(
+                projectGuids,
+                cancellationToken);
 
-            // check if project suppports <PackageReference> items.
-            // otherwise don't show format selector dialog for this project
-            var capableProjects = uiService
-                .Projects
-                .Where(project =>
-                    project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig &&
-                    project.ProjectServices.Capabilities.SupportsPackageReferences);
-
-            // get all packages.config based projects with no installed packages
-            foreach (var project in capableProjects)
-            {
-                var installedPackages = await project.GetInstalledPackagesAsync(token);
-
-                if (!installedPackages.Any())
-                {
-                    potentialProjects.Add(project);
-                }
-            }
-            
             // only show this dialog if there are any new project(s) with no installed packages.
-            if (potentialProjects.Count > 0)
+            if (upgradeableProjects.Count > 0)
             {
                 var packageManagementFormat = new PackageManagementFormat(uiService.Settings);
+
                 if (!packageManagementFormat.Enabled)
                 {
                     // user disabled this prompt either through Tools->options or previous interaction of this dialog.
                     // now check for default package format, if its set to PackageReference then update the project.
                     if (packageManagementFormat.SelectedPackageManagementFormat == 1)
                     {
-                        await uiService.UpdateNuGetProjectToPackageRef(potentialProjects);
+                        await uiService.UpgradeProjectsToPackageReferenceAsync(upgradeableProjects);
                     }
 
                     return true;
                 }
 
-                packageManagementFormat.ProjectNames = potentialProjects
-                    .Select(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.Name))
-                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+                Task<string>[] tasks = upgradeableProjects
+                    .Select(project => project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, cancellationToken).AsTask())
+                    .ToArray();
+
+                string[] projectNames = await Task.WhenAll(tasks);
+
+                packageManagementFormat.ProjectNames = projectNames
+                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
 
                 // show dialog for package format selector
-                var result = uiService.PromptForPackageManagementFormat(packageManagementFormat);
+                bool result = uiService.PromptForPackageManagementFormat(packageManagementFormat);
 
                 // update nuget projects if user selected PackageReference option
                 if (result && packageManagementFormat.SelectedPackageManagementFormat == 1)
                 {
-                    await uiService.UpdateNuGetProjectToPackageRef(potentialProjects);
+                    await uiService.UpgradeProjectsToPackageReferenceAsync(upgradeableProjects);
                 }
+
                 return result;
             }
 
@@ -969,8 +936,10 @@ namespace NuGet.PackageManagement.UI
             var results = new List<IPackageSearchMetadata>();
 
             // local sources
-            var localSources = new List<SourceRepository>();
-            localSources.Add(_packageManager.PackagesFolderSourceRepository);
+            var localSources = new List<SourceRepository>
+            {
+                _packageManager.PackagesFolderSourceRepository
+            };
             localSources.AddRange(_packageManager.GlobalPackageFolderRepositories);
 
             var allPackages = packages.ToArray();

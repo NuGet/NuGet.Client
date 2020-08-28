@@ -289,4 +289,7 @@
   <data name="CredentialProviderFailed_PluginCredentialProvider" xml:space="preserve">
     <value>The plugin credential providers could not be loaded.</value>
   </data>
+  <data name="AggregateSourceName" xml:space="preserve">
+    <value>All</value>
+  </data>
 </root>
