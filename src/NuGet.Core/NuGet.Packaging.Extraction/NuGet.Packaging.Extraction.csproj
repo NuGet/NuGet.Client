@@ -30,7 +30,7 @@
   </Target>
 
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
-  <Target Name="GetIlmergeBuildOutput" DependsOnTargets="_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
+  <Target Name="GetIlmergeBuildOutput" DependsOnTargets="ILMergeNPE;_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="@(DllsInOutputDir)" KeepDuplicates="false" />
     </ItemGroup>
