@@ -11,7 +11,7 @@
     <PackProject>true</PackProject>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);ILMergeNPE;CreateNupkgFromILMerge</TargetsForTfmSpecificContentInPackage>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateNupkgFromILMerge</TargetsForTfmSpecificContentInPackage>
     <Shipping>true</Shipping>
     <IncludeInVSIX>false</IncludeInVSIX>
     <XPLATProject>false</XPLATProject>
