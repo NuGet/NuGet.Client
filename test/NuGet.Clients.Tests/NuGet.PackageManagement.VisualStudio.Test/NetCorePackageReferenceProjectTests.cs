@@ -546,7 +546,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         netCorePackageReferenceProjects, // All projects
                         packageB,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
 
@@ -619,7 +619,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         testSolutionManager,
                         deleteOnRestartManager);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var testNuGetProjectContext = new TestNuGetProjectContext(){ EnableLogging = true };
                     var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
                     var prevProj = string.Empty;
                     PackageSpec prevPackageSpec = null;
@@ -690,7 +690,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         netCorePackageReferenceProjects, // All projects
                         packageB_UpgradeVersion,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
                     var actions = results.Select(a => a.Action).ToArray();
@@ -714,6 +714,20 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
                         && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
                     }
+                    var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
+                    var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
+                    // Making sure project0 restored only once, not many.
+                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project0.csproj...")), 1);
+                    Assert.Equal(restoredLogs.Count(l => l.Contains("project0.csproj")), 1);
+                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
+                    Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
+                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project2.csproj...")), 1);
+                    Assert.Equal(restoredLogs.Count(l => l.Contains("project2.csproj")), 1);
+                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project3.csproj...")), 1);
+                    Assert.Equal(restoredLogs.Count(l => l.Contains("project3.csproj")), 1);
+                    var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
+                    // Only 4 write to assets for above 4 projects, never more than that.
+                    Assert.Equal(writingAssetsLogs.Count, 4);
                 }
             }
             finally
@@ -845,7 +859,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         targetProjects,
                         packageB_UpgradeVersion,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
                     var actions = results.Select(a => a.Action).ToArray();
@@ -997,7 +1011,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         targetProjects,
                         packageB_UpgradeVersion,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
                     var actions = results.Select(a => a.Action).ToArray();
@@ -1150,7 +1164,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         targetProjects,
                         packageB_UpgradeVersion,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
                     var actions = results.Select(a => a.Action).ToArray();
@@ -1297,7 +1311,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         netCorePackageReferenceProjects, // All projects
                         packageB_DowngradeVersion,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
 
@@ -1454,7 +1468,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         targetProjects,
                         packageB_DowngradeVersion,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
                     var actions = results.Select(a => a.Action).ToArray();
@@ -1602,7 +1616,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         targetProjects,
                         packageB_DowngradeVersion,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
                     var actions = results.Select(a => a.Action).ToArray();
@@ -1749,7 +1763,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         targetProjects,
                         packageB_DowngradeVersion,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
                     var actions = results.Select(a => a.Action).ToArray();
@@ -1852,7 +1866,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         netCorePackageReferenceProjects,
                         packageA,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         token));
 
@@ -1961,7 +1975,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         netCorePackageReferenceProjects, // All projects
                         packageB,
                         resolutionContext,
-                        new TestNuGetProjectContext(),
+                        testNuGetProjectContext,
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
 
@@ -2034,7 +2048,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         testSolutionManager,
                         deleteOnRestartManager);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
                     var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
                     var prevProj = string.Empty;
                     PackageSpec prevPackageSpec = null;
@@ -2106,11 +2120,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         netCorePackageReferenceProjects[numberOfProjects-2]  // Middle parent project.
                     };
 
-                    var projectContext = new TestNuGetProjectContext()
-                    {
-                        EnableLogging = true
-                    };
-
                     // Act
                     var uninstallationContext = new UninstallationContext(
                         removeDependencies: false,
@@ -2122,7 +2131,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         IEnumerable<NuGetProjectAction> resolvedActions;
 
                         resolvedActions = await nuGetPackageManager.PreviewUninstallPackageAsync(
-                            target, packageB.Id, uninstallationContext, projectContext, CancellationToken.None);
+                            target, packageB.Id, uninstallationContext, testNuGetProjectContext, CancellationToken.None);
 
                         results.AddRange(resolvedActions.Select(a => new ResolvedAction(target, a)));
                     }
@@ -2142,8 +2151,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(actions.Count(), targetProjects .Count());
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    var restoringLogs = projectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
-                    var restoredLogs = projectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
+                    var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
+                    var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
                     // Making sure project0 restored only once, not many.
                     // https://github.com/NuGet/Home/issues/9932
                     Assert.Equal(restoringLogs.Count(l => l.EndsWith("project0.csproj...")), 1);
@@ -2151,7 +2160,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     // Making sure project1 restored only once, not many. 
                     Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
                     Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
-                    var writingAssetsLogs = projectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
+                    var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
                     // Only 2 write to assets for above 2 projects, not more than that.
                     Assert.Equal(writingAssetsLogs.Count, 2);
                     // There should be no warning/error.
@@ -2208,7 +2217,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         testSolutionManager,
                         deleteOnRestartManager);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
                     var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
                     var prevProj = string.Empty;
                     PackageSpec prevPackageSpec = null;
@@ -2280,11 +2289,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         netCorePackageReferenceProjects[numberOfProjects-3]  // Bottom child project.
                     };
 
-                    var projectContext = new TestNuGetProjectContext()
-                    {
-                        EnableLogging = true
-                    };
-
                     // Act
                     var uninstallationContext = new UninstallationContext(
                         removeDependencies: false,
@@ -2296,7 +2300,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         IEnumerable<NuGetProjectAction> resolvedActions;
 
                         resolvedActions = await nuGetPackageManager.PreviewUninstallPackageAsync(
-                            target, packageB.Id, uninstallationContext, projectContext, CancellationToken.None);
+                            target, packageB.Id, uninstallationContext, testNuGetProjectContext, CancellationToken.None);
 
                         results.AddRange(resolvedActions.Select(a => new ResolvedAction(target, a)));
                     }
@@ -2316,8 +2320,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(actions.Count(), targetProjects .Count());
                     Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                     Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    var restoringLogs = projectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
-                    var restoredLogs = projectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
+                    var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
+                    var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
                     // Making sure project1 restored only once, not many.
                     // https://github.com/NuGet/Home/issues/9932
                     Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
@@ -2325,8 +2329,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     // Making sure project2 restored only once, not many. 
                     Assert.Equal(restoringLogs.Count(l => l.EndsWith("project2.csproj...")), 1);
                     Assert.Equal(restoredLogs.Count(l => l.Contains("project2.csproj")), 1);
-                    var writingAssetsLogs = projectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
-                    // Only 2 write to assets for above 2 projects, not more than that.
+                    var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
+                    // Only 2 write to assets for above 2 projects, never more than that.
                     Assert.Equal(writingAssetsLogs.Count, 2);
                     // There should be no warning/error.
                     Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
