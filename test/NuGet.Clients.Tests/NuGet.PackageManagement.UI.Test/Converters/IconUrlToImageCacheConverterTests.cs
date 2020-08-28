@@ -98,15 +98,20 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [LocalOnlyTheory]
-        [InlineData("icon.png", "icon.png", "icon.png", "")]
-        [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder")]
-        [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder")]
-        public void Convert_EmbeddedIcon_HappyPath_LoadsImage(
+        [CIOnlyTheory]
+        [InlineData("icon.png", "icon.png", "icon.png", "", true, true)]
+        [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder", true, true)]
+        [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder", true, true)]
+        [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "", false, false)]
+        [InlineData("icon2.jpg", "icon2.jpg", "icon2.jpg", "", false, false)]
+        [InlineData("icon3.jpg", "icon3.jpg", "icon3.jpg", "", true, true)]
+        public void Convert_EmbeddedIcon_MultiplePaths_LoadsImageOrDefault(
             string iconElement,
             string iconFileLocation,
             string fileSourceElement,
-            string fileTargetElement)
+            string fileTargetElement,
+            bool isRealImage,
+            bool expectedDefaultIcon)
         {
             using (var testDir = TestDirectory.Create())
             {
@@ -117,7 +122,8 @@ namespace NuGet.PackageManagement.UI.Test
                     iconName: iconElement,
                     iconFile: iconFileLocation,
                     iconFileSourceElement: fileSourceElement,
-                    iconFileTargetElement: fileTargetElement);
+                    iconFileTargetElement: fileTargetElement,
+                    isRealImage: isRealImage);
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
@@ -146,15 +152,24 @@ namespace NuGet.PackageManagement.UI.Test
 
                 output.WriteLine($"result {result.ToString()}");
 
-                // Assert
+
                 Assert.NotNull(result);
-                Assert.NotSame(DefaultPackageIcon, result);
                 Assert.Equal(32, image.PixelWidth);
+                // Assert
+                if (expectedDefaultIcon)
+                {
+                    Assert.NotSame(DefaultPackageIcon, result);
+                }
+                else
+                {
+                    Assert.Same(DefaultPackageIcon, result);
+                }
             }
         }
 
         [CIOnlyTheory]
         [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "")]
+        [InlineData("icon2.jpg", "icon2.jpg", "icon2.jpg", "")]
         public void Convert_EmbeddedIcon_NotAnIcon_ReturnsDefault(
             string iconElement,
             string iconFileLocation,
