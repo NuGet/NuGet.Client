@@ -350,7 +350,7 @@ namespace NuGet.PackageManagement
             return (dgSpec, allAdditionalMessages);
         }
 
-        internal static void GetProjectRestoreSpecAndAdditionalMessages(
+        private static void GetProjectRestoreSpecAndAdditionalMessages(
             ProjectRestoreSpec restoreSpecData)
         {
             var dgSpec = restoreSpecData.DgSpec;
@@ -458,14 +458,14 @@ namespace NuGet.PackageManagement
 
             return restoreContext;
         }
-    }
 
-    internal class ProjectRestoreSpec
-    {
-        public DependencyGraphSpec DgSpec { get; set; }
-        public IReadOnlyList<PackageSpec> PackageSpecs { get; set; }
-        public IReadOnlyList<IAssetsLogMessage> ProjectAdditionalMessages { get; set; }
-        public HashSet<string> KnownProjects { get; set; }
-        public List<IAssetsLogMessage> AllAdditionalMessages { get; set; }
+        private class ProjectRestoreSpec
+        {
+            public DependencyGraphSpec DgSpec { get; set; }
+            public IReadOnlyList<PackageSpec> PackageSpecs { get; set; }
+            public IReadOnlyList<IAssetsLogMessage> ProjectAdditionalMessages { get; set; }
+            public HashSet<string> KnownProjects { get; set; }
+            public List<IAssetsLogMessage> AllAdditionalMessages { get; set; }
+        }
     }
 }
