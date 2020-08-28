@@ -142,10 +142,14 @@ namespace NuGet.PackageManagement.UI
 
             IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
 
-            var solutionManagerService = new NuGetSolutionManagerServiceWrapper()
+            var solutionManagerServiceWrapper = new NuGetSolutionManagerServiceWrapper();
+            var solutionManagerService = await GetSolutionManagerServiceAsync(serviceBroker, cancellationToken);
+
+            // The initial Swap(...) should return a null implementation of the interface that does not require disposal.
+            // However, there's no harm in following form.
+            using (solutionManagerServiceWrapper.Swap(solutionManagerService))
             {
-                Service = await GetSolutionManagerServiceAsync(cancellationToken)
-            };
+            }
 
             var packageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -162,7 +166,7 @@ namespace NuGet.PackageManagement.UI
                 sourceRepositoryProvider,
                 serviceBroker,
                 solutionManager,
-                solutionManagerService,
+                solutionManagerServiceWrapper,
                 packageManager,
                 actionEngine,
                 packageRestoreManager,
@@ -175,20 +179,30 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    _solutionManagerService.Service = await GetSolutionManagerServiceAsync(CancellationToken.None);
+                    INuGetSolutionManagerService newService = await GetSolutionManagerServiceAsync(
+                        _serviceBroker,
+                        CancellationToken.None);
+
+                    using (_solutionManagerService.Swap(newService))
+                    {
+                    }
                 })
                 .PostOnFailure(nameof(NuGetUIContext), nameof(OnAvailabilityChanged));
         }
 
-        private static async ValueTask<INuGetSolutionManagerService> GetSolutionManagerServiceAsync(CancellationToken cancellationToken)
+        private static async ValueTask<INuGetSolutionManagerService> GetSolutionManagerServiceAsync(
+            IServiceBroker serviceBroker,
+            CancellationToken cancellationToken)
         {
-            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-
 #pragma warning disable ISB001 // Dispose of proxies
-            return await serviceBroker.GetProxyAsync<INuGetSolutionManagerService>(
+            INuGetSolutionManagerService solutionManagerService = await serviceBroker.GetProxyAsync<INuGetSolutionManagerService>(
                 NuGetServices.SolutionManagerService,
                 cancellationToken);
 #pragma warning restore ISB001 // Dispose of proxies
+
+            Assumes.NotNull(solutionManagerService);
+
+            return solutionManagerService;
         }
     }
 }

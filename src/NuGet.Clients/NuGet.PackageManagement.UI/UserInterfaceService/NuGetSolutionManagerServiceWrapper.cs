@@ -31,27 +31,32 @@ namespace NuGet.PackageManagement.UI
                     return _service;
                 }
             }
-            set
-            {
-                lock (_syncObject)
-                {
-                    UnregisterEventHandlers();
-
-                    _service = value ?? NullNuGetSolutionManagerService.Instance;
-
-                    RegisterEventHandlers();
-                }
-            }
         }
 
         public void Dispose()
         {
-            using (_service)
+            using (INuGetSolutionManagerService? service = _service)
             {
-                Service = NullNuGetSolutionManagerService.Instance;
+                _service = NullNuGetSolutionManagerService.Instance;
             }
 
             GC.SuppressFinalize(this);
+        }
+
+        public INuGetSolutionManagerService Swap(INuGetSolutionManagerService newService)
+        {
+            lock (_syncObject)
+            {
+                UnregisterEventHandlers();
+
+                INuGetSolutionManagerService oldService = _service;
+
+                _service = newService ?? NullNuGetSolutionManagerService.Instance;
+
+                RegisterEventHandlers();
+
+                return oldService;
+            }
         }
 
         public ValueTask<string> GetSolutionDirectoryAsync(CancellationToken cancellationToken)
