@@ -89,8 +89,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        // Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474"
-        [Fact]
+        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
         public void Convert_WithValidImageUrl_DownloadsImage_DefaultImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
@@ -109,12 +108,12 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [CIOnlyTheory]
-        [InlineData("icon.png", "icon.png", "icon.png", "", true, true)]
-        [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder", true, true)]
-        [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder", true, true)]
-        [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "", false, false)]
-        [InlineData("icon2.jpg", "icon2.jpg", "icon2.jpg", "", false, false)]
-        [InlineData("icon3.jpg", "icon3.jpg", "icon3.jpg", "", true, true)]
+        [InlineData("icon.png", "icon.png", "icon.png", "", true, false)]
+        [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder", true, false)]
+        [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder", true, false)]
+        [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "", false, true)]
+        [InlineData("icon2.jpg", "icon2.jpg", "icon2.jpg", "", false, true)]
+        [InlineData("icon3.jpg", "icon3.jpg", "icon3.jpg", "", true, false)]
         public void Convert_EmbeddedIcon_MultiplePaths_LoadsImageOrDefault(
             string iconElement,
             string iconFileLocation,
@@ -164,11 +163,11 @@ namespace NuGet.PackageManagement.UI.Test
                 // Assert
                 if (expectedDefaultIcon)
                 {
-                    Assert.NotSame(DefaultPackageIcon, result);
+                    Assert.Same(DefaultPackageIcon, result);
                 }
                 else
                 {
-                    Assert.Same(DefaultPackageIcon, result);
+                    Assert.NotSame(DefaultPackageIcon, result);
                 }
             }
         }
@@ -426,7 +425,8 @@ namespace NuGet.PackageManagement.UI.Test
 
         private static void VerifyImageResult(object result)
         {
-            Assert.True(result != null && (result is BitmapImage || result is CachedBitmap));
+            Assert.NotNull(result);
+            Assert.True(result is BitmapImage || result is CachedBitmap);
             var image = result as BitmapSource;
             Assert.NotNull(image);
             Assert.Equal(32, image.PixelWidth);
