@@ -1,20 +1,76 @@
 ﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="ilmerge.props" />
 
   <PropertyGroup>
     <Description>NuGet's understanding of packages. Reading nuspec, nupkgs and package signing.</Description>
     <TargetFrameworks>net45</TargetFrameworks>
-    <TargetFramework />
-    <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1572</NoWarn>
+    <TargetFramework></TargetFramework>
+    <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1572;NU5128</NoWarn>
     <PackProject>true</PackProject>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateNupkgFromILMerge</TargetsForTfmSpecificContentInPackage>
     <Shipping>true</Shipping>
     <IncludeInVSIX>false</IncludeInVSIX>
     <XPLATProject>false</XPLATProject>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <DefineConstants>$(DefineConstants);IS_DESKTOP</DefineConstants>
     <IsDesktop>true</IsDesktop>
+    <ILMergeDirectory Condition=" '$(OutputPath)' != '' ">$(OutputPath)$(TargetFramework)\ilmerge\</ILMergeDirectory>
+    <ILMergeDirectory Condition=" '$(OutputPath)' == '' ">$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\ilmerge\</ILMergeDirectory>
   </PropertyGroup>
+
+  <Target
+    Name="PublishAndMergePackNupkg"
+    AfterTargets="AfterBuild"
+    Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish;ILMergeNPE" />
+  </Target>
+
+  <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
+  <Target Name="GetIlmergeBuildOutput" DependsOnTargets="_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
+    <ItemGroup>
+      <DllsToSign Include="@(DllsInOutputDir)" KeepDuplicates="false" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GetDllsInOutputDirectory" Returns="@(DllsInOutputDir)">
+    <ItemGroup>
+      <DllsInOutputDir Include="$(ILMergeDirectory)*.dll" KeepDuplicates="false">
+        <StrongName>MsSharedLib72</StrongName>
+        <Authenticode>Microsoft400</Authenticode>
+      </DllsInOutputDir>
+      <DllsInOutputDir Include="$(ILMergeDirectory)*.xml" KeepDuplicates="false">
+        <Authenticode>MicrosoftXmlSHA2</Authenticode>
+      </DllsInOutputDir>
+    </ItemGroup>
+  </Target>
+
+  <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
+  <Target Name="GetIlmergeSymbolOutput" Returns="@(SymbolsToIndex)">
+    <ItemGroup>
+      <SymbolsToIndex Include="$(ILMergeDirectory)*.pdb" KeepDuplicates="false" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetFinalBuildOutput" Returns="@(DllsToIndex)">
+    <ItemGroup>
+      <DllsToIndex Include="$(ILMergeDirectory)*.dll"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CreateNupkgFromILMerge">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(ILMergeDirectory)NuGet.Packaging.Extraction.dll">
+        <PackagePath>lib/net45/</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(ILMergeDirectory)NuGet.Packaging.Extraction.pdb">
+        <PackagePath>lib/net45/</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -307,6 +363,26 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <Target Name="ILMergeNPE" Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNPE)' != 'true'" >
+    <ItemGroup>
+      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <PathToBuiltNPE>$(OutputPath)NuGet.Packaging.Extraction.dll</PathToBuiltNPE>
+      <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /t:library /out:$(ILMergeDirectory)NuGet.Packaging.Extraction.dll @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
+      <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
+      <IlmergeCommand>$(IlmergeCommand) $(PathToBuiltNPE) @(MergeInclude->'%(fullpath)', ' ')</IlmergeCommand>
+    </PropertyGroup>
+    <MakeDir Directories="$(ILMergeDirectory)" />
+    <Exec Command="$(IlmergeCommand)" ContinueOnError="false" StandardOutputImportance="High" StandardErrorImportance="High" />
+  </Target>
+
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <SignTargetsForRealSigning Condition="'$(IsSymbolsBuild)' != 'true'">GetIlmergeBuildOutput</SignTargetsForRealSigning>
+    <SymbolTargetsToGetPdbs>GetIlmergeSymbolOutput;GetFinalBuildOutput</SymbolTargetsToGetPdbs>
+  </PropertyGroup>
+
 </Project>

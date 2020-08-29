@@ -1781,14 +1781,14 @@ namespace NuGet.Commands.Test
                 // Package Bar does not have a corresponding PackageVersion 
                 var packageRefDependecyBar = new LibraryDependency()
                 {
-                    LibraryRange = new LibraryRange("bar", versionRange: null, typeConstraint: LibraryDependencyTarget.Package) ,
+                    LibraryRange = new LibraryRange("bar", versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
                 };
 
                 var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
 
                 var tfi = CreateTargetFrameworkInformation(
                     new List<LibraryDependency>() { packageRefDependecyBar },
-                    new List<CentralPackageVersion>() { centralVersionFoo});
+                    new List<CentralPackageVersion>() { centralVersionFoo });
 
                 var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
                 packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
