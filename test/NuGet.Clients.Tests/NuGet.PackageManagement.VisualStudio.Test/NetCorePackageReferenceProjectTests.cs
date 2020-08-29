@@ -459,118 +459,131 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_InstallPackageForAllProjects_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version100.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName , projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        netCorePackageReferenceProjects, // All projects
-                        packageB,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-
-                    var actions = results.Select(a => a.Action).ToArray();
-
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
-
-                    // Assert
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
                 }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+
+                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+
+                for (int i = 0; i < numberOfProjects; i++)
                 {
-                    projectDirectory.Dispose();
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
+                    };
+
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    netCorePackageReferenceProjects, // All projects
+                    packageB,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                var actions = results.Select(a => a.Action).ToArray();
+
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 1);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
+                foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
+                {
+                    var finalInstalledPackages = (await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageA.Id
+                    && f.PackageIdentity.Version == packageA.Version));
+                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                    && f.PackageIdentity.Version == packageB.Version));
                 }
             }
         }
@@ -578,772 +591,737 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageForAllProjects_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext(){ EnableLogging = true };
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version100.Identity;
-                        var packageB_UpgradeVersion = packageB_Version200.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100,
-                        packageB_Version200
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext(){ EnableLogging = true };
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
-                    {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        netCorePackageReferenceProjects, // All projects
-                        packageB_UpgradeVersion,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-                    var actions = results.Select(a => a.Action).ToArray();
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
-                    // Make sure all 4 project installed packageB upgraded version.
-                    foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
-                    {
-                        var finalInstalledPackages = await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None);
-                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
-                        && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
-                    }
-                    var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
-                    var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
-                    // Making sure project0 restored only once, not many.
-                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project0.csproj...")), 1);
-                    Assert.Equal(restoredLogs.Count(l => l.Contains("project0.csproj")), 1);
-                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
-                    Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
-                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project2.csproj...")), 1);
-                    Assert.Equal(restoredLogs.Count(l => l.Contains("project2.csproj")), 1);
-                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project3.csproj...")), 1);
-                    Assert.Equal(restoredLogs.Count(l => l.Contains("project3.csproj")), 1);
-                    var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
-                    // Only 4 write to assets for above 4 projects, never more than that.
-                    Assert.Equal(writingAssetsLogs.Count, 4);
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
                 }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+
+                for (int i = 0; i < numberOfProjects; i++)
                 {
-                    projectDirectory.Dispose();
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
+                    };
+
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
+
+                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    netCorePackageReferenceProjects, // All projects
+                    packageB_UpgradeVersion,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+                var actions = results.Select(a => a.Action).ToArray();
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
+                // Make sure all 4 project installed packageB upgraded version.
+                foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
+                {
+                    var finalInstalledPackages = (await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                    && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
+                }
+                var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
+                var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
+                // Making sure project0 restored only once, not many.
+                Assert.Equal(restoringLogs.Count(l => l.EndsWith("project0.csproj...")), 1);
+                Assert.Equal(restoredLogs.Count(l => l.Contains("project0.csproj")), 1);
+                Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
+                Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
+                Assert.Equal(restoringLogs.Count(l => l.EndsWith("project2.csproj...")), 1);
+                Assert.Equal(restoredLogs.Count(l => l.Contains("project2.csproj")), 1);
+                Assert.Equal(restoringLogs.Count(l => l.EndsWith("project3.csproj...")), 1);
+                Assert.Equal(restoredLogs.Count(l => l.Contains("project3.csproj")), 1);
+                var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
+                // Only 4 write to assets for above 4 projects, never more than that.
+                Assert.Equal(writingAssetsLogs.Count, 4);
             }
         }
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_TopParentProject_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version100.Identity;
-                        var packageB_UpgradeVersion = packageB_Version200.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100,
-                        packageB_Version200
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
                     {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    var targetProjects = new List<NetCorePackageReferenceProject>()
-                    {
-                        netCorePackageReferenceProjects[numberOfProjects-1] // Top parent project.
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
                     };
 
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        targetProjects,
-                        packageB_UpgradeVersion,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-                    var actions = results.Select(a => a.Action).ToArray();
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
 
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), targetProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    // Uprade succeed for this top parent project(no parent but with childs).
-                    // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
-                }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+
+                var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
-                    projectDirectory.Dispose();
-                }
+                    netCorePackageReferenceProjects[numberOfProjects-1] // Top parent project.
+                };
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    targetProjects,
+                    packageB_UpgradeVersion,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+                var actions = results.Select(a => a.Action).ToArray();
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                // Uprade succeed for this top parent project(no parent but with childs).
+                // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
+                // Make sure top parent project has packageB upgraded version.
+                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
+                // Make sure middle parent project still have non-upgraded version.
+                finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version));
+                // Make sure bottom project still have non-upgraded version.
+                finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version));
             }
         }
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_MiddleParentProject_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version100.Identity;
-                        var packageB_UpgradeVersion = packageB_Version200.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100,
-                        packageB_Version200
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
                     {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    var targetProjects = new List<NetCorePackageReferenceProject>()
-                    {
-                        netCorePackageReferenceProjects[numberOfProjects-2] // Middle parent project.
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
                     };
 
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        targetProjects,
-                        packageB_UpgradeVersion,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-                    var actions = results.Select(a => a.Action).ToArray();
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
 
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), targetProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    // Upgrade succeed for this middle parent project(with parent and childs).
-                    // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
-                }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
-                    projectDirectory.Dispose();
-                }
+                    netCorePackageReferenceProjects[numberOfProjects-2] // Middle parent project.
+                };
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    targetProjects,
+                    packageB_UpgradeVersion,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+                var actions = results.Select(a => a.Action).ToArray();
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                // Upgrade succeed for this middle parent project(with parent and childs).
+                // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
+                // Make sure top parent project still have non-upgraded version.
+                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version));
+                // Make sure middle parent project have upgraded version.
+                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
+                // Make sure bottom project still have non-upgraded version.
+                finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version));
             }
         }
-
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_BottomProject_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version100.Identity;
-                        var packageB_UpgradeVersion = packageB_Version200.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100,
-                        packageB_Version200
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
                     {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    var targetProjects = new List<NetCorePackageReferenceProject>()
-                    {
-                        netCorePackageReferenceProjects[0] // Bottom child project.
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
                     };
 
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        targetProjects,
-                        packageB_UpgradeVersion,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-                    var actions = results.Select(a => a.Action).ToArray();
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
 
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), targetProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    // Upgrade succeed for this bottom project(with parent but no childs).
-                    // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
-                }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
-                    projectDirectory.Dispose();
-                }
+                    netCorePackageReferenceProjects[0] // Bottom child project.
+                };
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    targetProjects,
+                    packageB_UpgradeVersion,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+                var actions = results.Select(a => a.Action).ToArray();
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                // Upgrade succeed for this bottom project(with parent but no childs).
+                // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
+                // Make sure top parent project still have non-upgraded version.
+                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version));
+                // Make sure middle parent project still have non-upgraded version.
+                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version));
+                // Make sure bottom project have upgraded version.
+                finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
             }
         }
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageForAllProjects_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version200.Identity;
-                        var packageB_DowngradeVersion = packageB_Version100.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100,
-                        packageB_Version200
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
-                    {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        netCorePackageReferenceProjects, // All projects
-                        packageB_DowngradeVersion,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-
-                    var actions = results.Select(a => a.Action).ToArray();
-
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
-                    // Make sure all 4 project installed packageB downgrade version.
-                    foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
-                    {
-                        var finalInstalledPackages = await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None);
-                        Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_DowngradeVersion.Id
-                        && f.PackageIdentity.Version == packageB_DowngradeVersion.Version));
-                    }
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
                 }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+
+                for (int i = 0; i < numberOfProjects; i++)
                 {
-                    projectDirectory.Dispose();
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
+                    };
+
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
+
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    netCorePackageReferenceProjects, // All projects
+                    packageB_DowngradeVersion,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                var actions = results.Select(a => a.Action).ToArray();
+
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
+                // Make sure all 4 project installed packageB downgrade version.
+                foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
+                {
+                    var finalInstalledPackages = await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None);
+                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_DowngradeVersion.Id
+                    && f.PackageIdentity.Version == packageB_DowngradeVersion.Version));
                 }
             }
         }
@@ -1351,447 +1329,421 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_TopParentProject_Fail()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version200.Identity;
-                        var packageB_DowngradeVersion = packageB_Version100.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100,
-                        packageB_Version200
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
                     {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    var targetProjects = new List<NetCorePackageReferenceProject>()
-                    {
-                        netCorePackageReferenceProjects[numberOfProjects-1] // Top parent project.
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
                     };
 
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        targetProjects,
-                        packageB_DowngradeVersion,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-                    var actions = results.Select(a => a.Action).ToArray();
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
 
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), targetProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    // Downgrade fails for this top parent project(no parent but with childs).
-                    // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-                    Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    // Should cause total 1 NU1605 for all childs.
-                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code == NuGetLogCode.NU1605)), 1);
-                    // There should be no warning other than NU1605.
-                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code != NuGetLogCode.NU1605)), 0);
-                }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
-                    projectDirectory.Dispose();
-                }
+                    netCorePackageReferenceProjects[numberOfProjects-1] // Top parent project.
+                };
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    targetProjects,
+                    packageB_DowngradeVersion,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+                var actions = results.Select(a => a.Action).ToArray();
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                // Downgrade fails for this top parent project(no parent but with childs).
+                // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
+                Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                // Should cause total 1 NU1605 for all childs.
+                Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code == NuGetLogCode.NU1605)), 1);
+                // There should be no warning other than NU1605.
+                Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code != NuGetLogCode.NU1605)), 0);
             }
         }
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_MiddleParentProject_Fail()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version200.Identity;
-                        var packageB_DowngradeVersion = packageB_Version100.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100,
-                        packageB_Version200
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache here
+                    var installed = new LibraryDependency
                     {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache here
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    var targetProjects = new List<NetCorePackageReferenceProject>()
-                    {
-                        netCorePackageReferenceProjects[numberOfProjects-2] // Middle parent project.
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
                     };
 
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        targetProjects,
-                        packageB_DowngradeVersion,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-                    var actions = results.Select(a => a.Action).ToArray();
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
 
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), targetProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    // Downgrade fails for this middle parent project(with both parent and child).
-                    // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-                    Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    // Should cause total 1 NU1605 for all childs.
-                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code == NuGetLogCode.NU1605)), 1);
-                    // There should be no warning other than NU1605.
-                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code != NuGetLogCode.NU1605)), 0);
-                }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None);
+
+                var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
-                    projectDirectory.Dispose();
-                }
+                    netCorePackageReferenceProjects[numberOfProjects-2] // Middle parent project.
+                };
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    targetProjects,
+                    packageB_DowngradeVersion,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+                var actions = results.Select(a => a.Action).ToArray();
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                // Downgrade fails for this middle parent project(with both parent and child).
+                // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
+                Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                // Should cause total 1 NU1605 for all childs.
+                Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code == NuGetLogCode.NU1605)), 1);
+                // There should be no warning other than NU1605.
+                Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count(l => l.Code != NuGetLogCode.NU1605)), 0);
             }
         }
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_BottomtProject_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version200.Identity;
+                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version200.Identity;
-                        var packageB_DowngradeVersion = packageB_Version100.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100,
-                        packageB_Version200
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
-
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache here
+                    var installed = new LibraryDependency
                     {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache here
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    var targetProjects = new List<NetCorePackageReferenceProject>()
-                    {
-                        netCorePackageReferenceProjects[0] // Bottom child project.
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
                     };
 
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        targetProjects,
-                        packageB_DowngradeVersion,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-                    var actions = results.Select(a => a.Action).ToArray();
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
 
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), targetProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    // There should be no error/warnings
-                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
-                }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None);
+
+                var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
-                    projectDirectory.Dispose();
-                }
+                    netCorePackageReferenceProjects[0] // Bottom child project.
+                };
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    targetProjects,
+                    packageB_DowngradeVersion,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+                var actions = results.Select(a => a.Action).ToArray();
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                // There should be no error/warnings
+                Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
+                // Make sure top parent project still have non-downgraded version.
+                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version));
+                // Make sure middle parent project still have non-downgraded version.
+                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version));
+                // Make sure bottom project have downgraded version.
+                finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_DowngradeVersion.Id
+                && f.PackageIdentity.Version == packageB_DowngradeVersion.Version));
             }
         }
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_CancellationTokenPassed()
         {
-            var projectDirectories = new List<TestDirectory>();
-
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
             {
@@ -1830,10 +1782,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Create projects
                 for (var i = 1; i >=0; i--)
                 {
-                    var directory = TestDirectory.Create();
-                    projectDirectories.Add(directory);
                     var projectName = $"project{i}";
-                    var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
                     var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
@@ -1879,8 +1829,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_RaiseTelemetryEvents()
         {
-            var projectDirectories = new List<TestDirectory>();
-
             // set up telemetry service
             var telemetrySession = new Mock<ITelemetrySession>();
             var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
@@ -1890,466 +1838,426 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version100.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 4;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    // Act
-                    var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
-                        netCorePackageReferenceProjects, // All projects
-                        packageB,
-                        resolutionContext,
-                        testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-
-                    var actions = results.Select(a => a.Action).ToArray();
-
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.True(telemetryEvents.Count > 1);
-                    var actionTelemetryStepEvents = telemetryEvents.OfType<ActionTelemetryStepEvent>();
-                    Assert.True(actionTelemetryStepEvents.Any(t => t.SubStepName.Contains("Preview build integrated action time")));
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), netCorePackageReferenceProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
                 }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
-                {
-                    projectDirectory.Dispose();
-                }
+
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Act
+                var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                    netCorePackageReferenceProjects, // All projects
+                    packageB,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                var actions = results.Select(a => a.Action).ToArray();
+
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.True(telemetryEvents.Count > 1);
+                var actionTelemetryStepEvents = telemetryEvents.OfType<ActionTelemetryStepEvent>();
+                Assert.True(actionTelemetryStepEvents.Any(t => t.SubStepName.Contains("Preview build integrated action time")));
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), netCorePackageReferenceProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
             }
         }
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UninstallPackageFor_TopAndMidParentProject_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 3;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version100.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 3;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
                     {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    var targetProjects = new List<NetCorePackageReferenceProject>()
-                    {
-                        netCorePackageReferenceProjects[numberOfProjects-1], // Top parent project.
-                        netCorePackageReferenceProjects[numberOfProjects-2]  // Middle parent project.
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
                     };
 
-                    // Act
-                    var uninstallationContext = new UninstallationContext(
-                        removeDependencies: false,
-                        forceRemove: false);
-
-                    var results = new List<ResolvedAction>();
-                    foreach (var target in targetProjects)
-                    {
-                        IEnumerable<NuGetProjectAction> resolvedActions;
-
-                        resolvedActions = await nuGetPackageManager.PreviewUninstallPackageAsync(
-                            target, packageB.Id, uninstallationContext, testNuGetProjectContext, CancellationToken.None);
-
-                        results.AddRange(resolvedActions.Select(a => new ResolvedAction(target, a)));
-                    }
-
-                    var actions = results.Select(a => a.Action).ToArray();
-
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), targetProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
-                    var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
-                    // Making sure project0 restored only once, not many.
-                    // https://github.com/NuGet/Home/issues/9932
-                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project0.csproj...")), 1);
-                    Assert.Equal(restoredLogs.Count(l => l.Contains("project0.csproj")), 1);
-                    // Making sure project1 restored only once, not many. 
-                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
-                    Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
-                    var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
-                    // Only 2 write to assets for above 2 projects, not more than that.
-                    Assert.Equal(writingAssetsLogs.Count, 2);
-                    // There should be no warning/error.
-                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
-                    projectDirectory.Dispose();
+                    netCorePackageReferenceProjects[numberOfProjects-1], // Top parent project.
+                    netCorePackageReferenceProjects[numberOfProjects-2]  // Middle parent project.
+                };
+
+                // Act
+                var uninstallationContext = new UninstallationContext(
+                    removeDependencies: false,
+                    forceRemove: false);
+
+                var results = new List<ResolvedAction>();
+                foreach (var target in targetProjects)
+                {
+                    IEnumerable<NuGetProjectAction> resolvedActions;
+
+                    resolvedActions = await nuGetPackageManager.PreviewUninstallPackageAsync(
+                        target, packageB.Id, uninstallationContext, testNuGetProjectContext, CancellationToken.None);
+
+                    results.AddRange(resolvedActions.Select(a => new ResolvedAction(target, a)));
                 }
+
+                var actions = results.Select(a => a.Action).ToArray();
+
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
+                var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
+                // Making sure project0 restored only once, not many.
+                // https://github.com/NuGet/Home/issues/9932
+                Assert.Equal(restoringLogs.Count(l => l.EndsWith("project0.csproj...")), 1);
+                Assert.Equal(restoredLogs.Count(l => l.Contains("project0.csproj")), 1);
+                // Making sure project1 restored only once, not many. 
+                Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
+                Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
+                var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
+                // Only 2 write to assets for above 2 projects, not more than that.
+                Assert.Equal(writingAssetsLogs.Count, 2);
+                // There should be no warning/error.
+                Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
             }
         }
 
         [Fact]
         public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UninstallPackageFor_MidParentAndBottomProject_Success()
         {
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
             {
-                using (var testDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                    var packageA = packageA_Version100.Identity;
+                    var packageB = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100
+                    );
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 3;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects-1; i >= 0; i--)
                 {
-                    // Set up Package Source
-                    var sources = new List<PackageSource>();
-                        var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                        var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                        var packageA = packageA_Version100.Identity;
-                        var packageB = packageB_Version100.Identity;
-                    var packageSource = Path.Combine(testDirectory, "packageSource");
-                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                        packageSource,
-                        PackageSaveMode.Defaultv3,
-                        packageA_Version100,
-                        packageB_Version100
-                        );
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                    sources.Add(new PackageSource(packageSource));
-                    var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
 
-                    // Project
-                    int numberOfProjects = 3;
-                    var projectCache = new ProjectSystemCache();
-                    IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                    ResolutionContext resolutionContext = (new Mock<ResolutionContext>()).Object;
-                    var packageSpecs = new PackageSpec[numberOfProjects];
-                    var projectFullPaths = new string[numberOfProjects];
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        NullSettings.Instance,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec =  GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-                    var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
-                    var prevProj = string.Empty;
-                    PackageSpec prevPackageSpec = null;
-
-                    // Create projects
-                    for (var i = numberOfProjects-1; i >= 0; i--)
+                    if (prevPackageSpec != null)
                     {
-                        var projectName = $"project{i}";
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
-                        var projectFullPath = Path.Combine(directory.Path, projectName + ".csproj");
-                        var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                        // We need to treat NU1605 warning as error.
-                        project.IsNu1605Error = true;
-                        netCorePackageReferenceProjects.Add(project);
-                        testSolutionManager.NuGetProjects.Add(project);
-
-                        //Let new project pickup my custom package source.
-                        project.ProjectLocalSources.AddRange(sources);
-                        var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                        var packageSpec =  GetPackageSpec(
-                            projectName,
-                            projectFullPath,
-                            packageA_Version100.Version);
-
-                        if (prevPackageSpec != null)
-                        {
-                            packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
-                        }
-
-                        // Restore info
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                        projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-                        prevProj = projectFullPath;
-                        packageSpecs[i] = packageSpec;
-                        prevPackageSpec = packageSpec;
-                        projectFullPaths[i] = projectFullPath;
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
                     }
 
-                    for (int i = 0; i < numberOfProjects; i++)
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
                     {
-                        // Install packageB since packageA is already there.
-                        await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
-                                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                        // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
-                        var installed = new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                name: packageB.Id,
-                                versionRange: new VersionRange(packageB.Version),
-                                typeConstraint: LibraryDependencyTarget.Package),
-                        };
-
-                        var packageSpec = packageSpecs[i];
-                        packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
-                        var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                        var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
-                        projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                    }
-
-                    var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
-
-                    var targetProjects = new List<NetCorePackageReferenceProject>()
-                    {
-                        netCorePackageReferenceProjects[numberOfProjects-2], // Middle parent project.
-                        netCorePackageReferenceProjects[numberOfProjects-3]  // Bottom child project.
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
                     };
 
-                    // Act
-                    var uninstallationContext = new UninstallationContext(
-                        removeDependencies: false,
-                        forceRemove: false);
-
-                    var results = new List<ResolvedAction>();
-                    foreach (var target in targetProjects)
-                    {
-                        IEnumerable<NuGetProjectAction> resolvedActions;
-
-                        resolvedActions = await nuGetPackageManager.PreviewUninstallPackageAsync(
-                            target, packageB.Id, uninstallationContext, testNuGetProjectContext, CancellationToken.None);
-
-                        results.AddRange(resolvedActions.Select(a => new ResolvedAction(target, a)));
-                    }
-
-                    var actions = results.Select(a => a.Action).ToArray();
-
-                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        netCorePackageReferenceProjects,
-                        actions,
-                        testNuGetProjectContext,
-                        new SourceCacheContext(),
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.Equal(initialInstalledPackages.Count(), 2);
-                    var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                    Assert.Equal(actions.Count(), targetProjects .Count());
-                    Assert.Equal(actions.Count(), builtIntegratedActions.Count());
-                    Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
-                    var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
-                    var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
-                    // Making sure project1 restored only once, not many.
-                    // https://github.com/NuGet/Home/issues/9932
-                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
-                    Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
-                    // Making sure project2 restored only once, not many. 
-                    Assert.Equal(restoringLogs.Count(l => l.EndsWith("project2.csproj...")), 1);
-                    Assert.Equal(restoredLogs.Count(l => l.Contains("project2.csproj")), 1);
-                    var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
-                    // Only 2 write to assets for above 2 projects, never more than that.
-                    Assert.Equal(writingAssetsLogs.Count, 2);
-                    // There should be no warning/error.
-                    Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+
+                var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
-                    projectDirectory.Dispose();
+                    netCorePackageReferenceProjects[numberOfProjects-2], // Middle parent project.
+                    netCorePackageReferenceProjects[numberOfProjects-3]  // Bottom child project.
+                };
+
+                // Act
+                var uninstallationContext = new UninstallationContext(
+                    removeDependencies: false,
+                    forceRemove: false);
+
+                var results = new List<ResolvedAction>();
+                foreach (var target in targetProjects)
+                {
+                    IEnumerable<NuGetProjectAction> resolvedActions;
+
+                    resolvedActions = await nuGetPackageManager.PreviewUninstallPackageAsync(
+                        target, packageB.Id, uninstallationContext, testNuGetProjectContext, CancellationToken.None);
+
+                    results.AddRange(resolvedActions.Select(a => new ResolvedAction(target, a)));
                 }
+
+                var actions = results.Select(a => a.Action).ToArray();
+
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    netCorePackageReferenceProjects,
+                    actions,
+                    testNuGetProjectContext,
+                    new SourceCacheContext(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(initialInstalledPackages.Count(), 2);
+                var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
+                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
+                var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
+                var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
+                // Making sure project1 restored only once, not many.
+                // https://github.com/NuGet/Home/issues/9932
+                Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
+                Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
+                // Making sure project2 restored only once, not many. 
+                Assert.Equal(restoringLogs.Count(l => l.EndsWith("project2.csproj...")), 1);
+                Assert.Equal(restoredLogs.Count(l => l.Contains("project2.csproj")), 1);
+                var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
+                // Only 2 write to assets for above 2 projects, never more than that.
+                Assert.Equal(writingAssetsLogs.Count, 2);
+                // There should be no warning/error.
+                Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
             }
         }
 
-        private TestProjectJsonBuildIntegratedNuGetProject CreateTestNetCorePackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
+        private TestNetCorePackageReferenceProject CreateTestNetCorePackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
         {
             projectServices = projectServices == null ? new TestProjectSystemServices() : projectServices;
 
-            return new TestProjectJsonBuildIntegratedNuGetProject(
+            return new TestNetCorePackageReferenceProject(
                     projectName: projectName,
                     projectUniqueName: projectName,
                     projectFullPath: projectFullPath,
@@ -2447,7 +2355,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
         }
 
-        private class TestProjectJsonBuildIntegratedNuGetProject
+        private class TestNetCorePackageReferenceProject
             : NetCorePackageReferenceProject
             , IProjectScriptHostService
             , IProjectSystemReferencesReader
@@ -2464,7 +2372,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             public HashSet<PackageSource> ProjectLocalSources { get; set; } = new HashSet<PackageSource>();
 
-            public TestProjectJsonBuildIntegratedNuGetProject(
+            public TestNetCorePackageReferenceProject(
                 string projectName,
                 string projectUniqueName,
                 string projectFullPath,
