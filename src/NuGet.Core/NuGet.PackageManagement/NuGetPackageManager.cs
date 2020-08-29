@@ -2153,7 +2153,7 @@ namespace NuGet.PackageManagement
             {
                 var logger = new ProjectContextLogger(nuGetProjectContext);
                 var referenceContext = new DependencyGraphCacheContext(logger, Settings);
-                _buildIntegratedProjectsUpdateSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _buildIntegratedProjectsUpdateSet = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
 
                 var projectUniqueNamesForBuildIntToUpdate
                     = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath);
@@ -2581,7 +2581,7 @@ namespace NuGet.PackageManagement
 
             var resolvedAction = await PreviewBuildIntegratedProjectsActionsAsync(
                 new List<BuildIntegratedNuGetProject>(){ buildIntegratedProject },
-                new Dictionary<string, IEnumerable<NuGetProjectAction>>(StringComparer.OrdinalIgnoreCase)
+                new Dictionary<string, IEnumerable<NuGetProjectAction>>(PathUtility.GetStringComparerBasedOnOS())
                 {
                     { buildIntegratedProject.MSBuildProjectPath, nuGetProjectActions}
                 },
@@ -2637,13 +2637,13 @@ namespace NuGet.PackageManagement
             var logger = new ProjectContextLogger(nuGetProjectContext);
             var result = new List<ResolvedAction>();
 
-            var lockFileLookup = new Dictionary<string, LockFile>(StringComparer.OrdinalIgnoreCase);
+            var lockFileLookup = new Dictionary<string, LockFile>(PathUtility.GetStringComparerBasedOnOS());
             var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);           
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
-            var updatedNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(StringComparer.OrdinalIgnoreCase);
-            var originalNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(StringComparer.OrdinalIgnoreCase);
-            var nuGetProjectSourceLookup = new Dictionary<string, HashSet<SourceRepository>>(StringComparer.OrdinalIgnoreCase);
+            var updatedNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
+            var originalNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
+            var nuGetProjectSourceLookup = new Dictionary<string, HashSet<SourceRepository>>(PathUtility.GetStringComparerBasedOnOS());
 
             // For installs only use cache entries newer than the current time.
             // This is needed for scenarios where a new package shows up in search
