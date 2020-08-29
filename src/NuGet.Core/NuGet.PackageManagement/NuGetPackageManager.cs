@@ -2608,7 +2608,7 @@ namespace NuGet.PackageManagement
         {
             if (nugetProjectActionsLookup == null)
             {
-                nugetProjectActionsLookup = new Dictionary<string, IEnumerable<NuGetProjectAction>>(StringComparer.OrdinalIgnoreCase);
+                nugetProjectActionsLookup = new Dictionary<string, IEnumerable<NuGetProjectAction>>(PathUtility.GetStringComparerBasedOnOS());
             }
 
             if (buildIntegratedProjects == null)

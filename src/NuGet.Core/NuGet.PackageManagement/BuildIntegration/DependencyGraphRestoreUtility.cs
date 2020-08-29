@@ -205,9 +205,6 @@ namespace NuGet.PackageManagement
         {
             token.ThrowIfCancellationRequested();
 
-            // Restoring packages
-            var logger = context.Logger;
-
             // Add the new spec to the dg file and fill in the rest.
             var dgFile = await GetSolutionRestoreSpec(solutionManager, context);
 
