@@ -108,19 +108,15 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [CIOnlyTheory]
-        [InlineData("icon.png", "icon.png", "icon.png", "", true, false)]
-        [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder", true, false)]
-        [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder", true, false)]
-        [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "", false, true)]
-        [InlineData("icon2.jpg", "icon2.jpg", "icon2.jpg", "", false, true)]
-        [InlineData("icon3.jpg", "icon3.jpg", "icon3.jpg", "", true, false)]
-        public void Convert_EmbeddedIcon_MultiplePaths_LoadsImageOrDefault(
+        [InlineData("icon.png", "icon.png", "icon.png", "")]
+        [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder")]
+        [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder")]
+        [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "")]
+        public void Convert_EmbeddedIcon_HappyPath_LoadsImage(
             string iconElement,
             string iconFileLocation,
             string fileSourceElement,
-            string fileTargetElement,
-            bool isRealImage,
-            bool expectedDefaultIcon)
+            string fileTargetElement)
         {
             using (var testDir = TestDirectory.Create())
             {
@@ -132,7 +128,7 @@ namespace NuGet.PackageManagement.UI.Test
                     iconFile: iconFileLocation,
                     iconFileSourceElement: fileSourceElement,
                     iconFileTargetElement: fileTargetElement,
-                    isRealImage: isRealImage);
+                    isRealImage: true);
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
@@ -144,7 +140,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 output.WriteLine($"ZipPath {zipPath}");
                 output.WriteLine($"File Exists {File.Exists(zipPath)}");
-                output.WriteLine($"Url {builder.Uri.ToString()}");
+                output.WriteLine($"Url {builder.Uri}");
 
                 // Act
                 var result = converter.Convert(
@@ -157,18 +153,10 @@ namespace NuGet.PackageManagement.UI.Test
                     parameter: DefaultPackageIcon,
                     culture: null);
 
-                VerifyImageResult(result);
-                output.WriteLine($"result {result}");
-
                 // Assert
-                if (expectedDefaultIcon)
-                {
-                    Assert.Same(DefaultPackageIcon, result);
-                }
-                else
-                {
-                    Assert.NotSame(DefaultPackageIcon, result);
-                }
+                output.WriteLine($"result {result}");
+                VerifyImageResult(result);
+                Assert.NotSame(DefaultPackageIcon, result);
             }
         }
 
