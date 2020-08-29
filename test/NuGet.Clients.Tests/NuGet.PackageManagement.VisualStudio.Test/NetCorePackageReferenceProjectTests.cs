@@ -596,12 +596,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version100.Identity;
-                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
+                var packageB_UpgradeVersion = packageB_Version200.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -746,12 +746,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version100.Identity;
-                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
+                var packageB_UpgradeVersion = packageB_Version200.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -896,12 +896,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version100.Identity;
-                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
+                var packageB_UpgradeVersion = packageB_Version200.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -1046,12 +1046,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version100.Identity;
-                    var packageB_UpgradeVersion = packageB_Version200.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
+                var packageB_UpgradeVersion = packageB_Version200.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -1196,12 +1196,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version200.Identity;
-                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version200.Identity;
+                var packageB_DowngradeVersion = packageB_Version100.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -1334,12 +1334,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version200.Identity;
-                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version200.Identity;
+                var packageB_DowngradeVersion = packageB_Version100.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -1468,12 +1468,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version200.Identity;
-                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version200.Identity;
+                var packageB_DowngradeVersion = packageB_Version100.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -1602,12 +1602,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version200.Identity;
-                    var packageB_DowngradeVersion = packageB_Version100.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version200.Identity;
+                var packageB_DowngradeVersion = packageB_Version100.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -1843,10 +1843,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version100.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -1951,10 +1951,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version100.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
@@ -2106,10 +2106,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Set up Package Source
                 var sources = new List<PackageSource>();
-                    var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
-                    var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
-                    var packageA = packageA_Version100.Identity;
-                    var packageB = packageB_Version100.Identity;
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
                 var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource,
