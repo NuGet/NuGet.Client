@@ -21,7 +21,14 @@ namespace NuGet.PackageManagement.UI.Test
 
         static IconUrlToImageCacheConverterTests()
         {
-            DefaultPackageIcon = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgr24, null, new byte[3] { 0, 0, 0 }, 3);
+            // Mimic the default image
+            var width = 32;
+            var height = 32;
+            var format = PixelFormats.Bgr24;
+            var stride = width * format.BitsPerPixel;
+            var data = new byte[width * height * format.BitsPerPixel];
+
+            DefaultPackageIcon = BitmapSource.Create(width, height, 96, 96, format, null, data, stride);
             DefaultPackageIcon.Freeze();
         }
 
@@ -43,6 +50,7 @@ namespace NuGet.PackageManagement.UI.Test
                 parameter: DefaultPackageIcon,
                 culture: null);
 
+            VerifyImageResult(image);
             Assert.Same(DefaultPackageIcon, image);
         }
 
@@ -59,6 +67,7 @@ namespace NuGet.PackageManagement.UI.Test
                 parameter: DefaultPackageIcon,
                 culture: null);
 
+            VerifyImageResult(image);
             Assert.Same(DefaultPackageIcon, image);
         }
 
@@ -75,12 +84,13 @@ namespace NuGet.PackageManagement.UI.Test
                 parameter: DefaultPackageIcon,
                 culture: null) as BitmapImage;
 
-            Assert.NotNull(image);
+            VerifyImageResult(image);
             Assert.NotSame(DefaultPackageIcon, image);
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
+        // Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474"
+        [Fact]
         public void Convert_WithValidImageUrl_DownloadsImage_DefaultImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
@@ -93,7 +103,7 @@ namespace NuGet.PackageManagement.UI.Test
                 parameter: DefaultPackageIcon,
                 culture: null) as BitmapImage;
 
-            Assert.NotNull(image);
+            VerifyImageResult(image);
             Assert.NotSame(DefaultPackageIcon, image);
             Assert.Equal(iconUrl, image.UriSource);
         }
@@ -142,19 +152,15 @@ namespace NuGet.PackageManagement.UI.Test
                     values: new object[]
                     {
                         builder.Uri,
-                        new Func<PackageReaderBase>(() => new Packaging.PackageArchiveReader(zipPath))
+                        new Func<PackageReaderBase>(() => new PackageArchiveReader(zipPath))
                     },
                     targetType: null,
                     parameter: DefaultPackageIcon,
                     culture: null);
 
-                var image = result as BitmapImage;
+                VerifyImageResult(result);
+                output.WriteLine($"result {result}");
 
-                output.WriteLine($"result {result.ToString()}");
-
-
-                Assert.NotNull(result);
-                Assert.Equal(32, image.PixelWidth);
                 // Assert
                 if (expectedDefaultIcon)
                 {
@@ -205,19 +211,19 @@ namespace NuGet.PackageManagement.UI.Test
                     values: new object[]
                     {
                         builder.Uri,
-                        new Func<PackageReaderBase>(() => new Packaging.PackageArchiveReader(zipPath))
+                        new Func<PackageReaderBase>(() => new PackageArchiveReader(zipPath))
                     },
                     targetType: null,
                     parameter: DefaultPackageIcon,
                     culture: null);
 
-                var image = result as BitmapImage;
+                VerifyImageResult(result);
+                var image = result as BitmapSource;
 
                 output.WriteLine($"result {result}");
                 output.WriteLine($"Pixel format: {image.Format}");
 
                 // Assert
-                Assert.NotNull(result);
                 Assert.Same(DefaultPackageIcon, result);
             }
         }
@@ -245,9 +251,8 @@ namespace NuGet.PackageManagement.UI.Test
                 var image = result as BitmapImage;
 
                 // Assert
-                Assert.NotNull(result);
+                VerifyImageResult(result);
                 Assert.NotSame(DefaultPackageIcon, result);
-                Assert.Equal(32, image.PixelWidth);
             }
         }
 
@@ -277,7 +282,7 @@ namespace NuGet.PackageManagement.UI.Test
                     culture: null);
 
                 // Assert
-                Assert.NotNull(result);
+                VerifyImageResult(result);
                 Assert.Same(DefaultPackageIcon, result);
             }
         }
@@ -417,6 +422,15 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 encoder.Save(fs);
             }
+        }
+
+        private static void VerifyImageResult(object result)
+        {
+            Assert.True(result != null && (result is BitmapImage || result is CachedBitmap));
+            var image = result as BitmapSource;
+            Assert.NotNull(image);
+            Assert.Equal(32, image.PixelWidth);
+            Assert.Equal(32, image.PixelHeight);
         }
     }
 }
