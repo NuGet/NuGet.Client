@@ -499,10 +499,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
-                    var projectFullPath = Path.Combine(testDirectory.Path, projectName , projectName + ".csproj");
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
                     var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
@@ -513,7 +513,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -533,7 +533,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectFullPaths[i] = projectFullPath;
                 }
 
-                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
 
                 for (int i = 0; i < numberOfProjects; i++)
                 {
@@ -628,13 +628,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     testSolutionManager,
                     deleteOnRestartManager);
 
-                var testNuGetProjectContext = new TestNuGetProjectContext(){ EnableLogging = true };
+                var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
                 var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
                 var prevProj = string.Empty;
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -648,7 +648,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -690,7 +690,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
 
                 // Act
                 var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
@@ -784,7 +784,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -798,7 +798,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -840,7 +840,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
 
                 var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
@@ -866,7 +866,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), targetProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 // Uprade succeed for this top parent project(no parent but with childs).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
@@ -874,7 +874,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project has packageB upgraded version.
-                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
                 Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
                 && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
                 // Make sure middle parent project still have non-upgraded version.
@@ -934,7 +934,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -948,7 +948,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -990,7 +990,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None);
 
                 var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
@@ -1016,7 +1016,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), targetProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 // Upgrade succeed for this middle parent project(with parent and childs).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
@@ -1024,11 +1024,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project still have non-upgraded version.
-                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
                 Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
                 && f.PackageIdentity.Version == packageB.Version));
                 // Make sure middle parent project have upgraded version.
-                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
                 Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
                 && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
                 // Make sure bottom project still have non-upgraded version.
@@ -1084,7 +1084,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -1098,7 +1098,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -1140,7 +1140,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None);
 
                 var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
@@ -1166,7 +1166,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), targetProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 // Upgrade succeed for this bottom project(with parent but no childs).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
@@ -1174,11 +1174,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project still have non-upgraded version.
-                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
                 Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
                 && f.PackageIdentity.Version == packageB.Version));
                 // Make sure middle parent project still have non-upgraded version.
-                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
                 Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
                 && f.PackageIdentity.Version == packageB.Version));
                 // Make sure bottom project have upgraded version.
@@ -1234,7 +1234,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -1248,7 +1248,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -1290,7 +1290,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None);
 
                 // Act
                 var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
@@ -1372,7 +1372,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -1386,7 +1386,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -1428,7 +1428,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None);
 
                 var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
@@ -1448,7 +1448,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), targetProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 // Downgrade fails for this top parent project(no parent but with childs).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
@@ -1506,7 +1506,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -1520,7 +1520,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -1562,7 +1562,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 2].GetInstalledPackagesAsync(CancellationToken.None);
 
                 var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
@@ -1582,7 +1582,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), targetProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 // Downgrade fails for this middle parent project(with both parent and child).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
@@ -1640,7 +1640,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -1653,7 +1653,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -1695,7 +1695,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 2].GetInstalledPackagesAsync(CancellationToken.None);
 
                 var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
@@ -1721,17 +1721,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), targetProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 // There should be no error/warnings
                 Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
                 // Make sure top parent project still have non-downgraded version.
-                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
                 Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
                 && f.PackageIdentity.Version == packageB.Version));
                 // Make sure middle parent project still have non-downgraded version.
-                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects-2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
                 Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
                 && f.PackageIdentity.Version == packageB.Version));
                 // Make sure bottom project have downgraded version.
@@ -1780,7 +1780,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var source = new CancellationTokenSource();
                 var token = source.Token;
                 // Create projects
-                for (var i = 1; i >=0; i--)
+                for (var i = 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -1793,7 +1793,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(projectName, projectFullPath, packageA_Version100.Version);
+                    var packageSpec = GetPackageSpec(projectName, projectFullPath, packageA_Version100.Version);
 
                     if (prevPackageSpec != null)
                     {
@@ -1807,7 +1807,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     prevProj = projectFullPath;
                     prevPackageSpec = packageSpec;
                 }
- 
+
                 // Act
                 source.Cancel();
 
@@ -1878,7 +1878,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -1892,7 +1892,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -1912,7 +1912,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectFullPaths[i] = projectFullPath;
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None);
 
                 // Act
                 var results = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
@@ -1937,7 +1937,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var actionTelemetryStepEvents = telemetryEvents.OfType<ActionTelemetryStepEvent>();
                 Assert.True(actionTelemetryStepEvents.Any(t => t.SubStepName.Contains("Preview build integrated action time")));
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), netCorePackageReferenceProjects .Count());
+                Assert.Equal(actions.Count(), netCorePackageReferenceProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
             }
@@ -1986,7 +1986,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -2000,7 +2000,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -2042,7 +2042,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None);
 
                 var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
@@ -2078,7 +2078,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), targetProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
@@ -2141,7 +2141,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec prevPackageSpec = null;
 
                 // Create projects
-                for (var i = numberOfProjects-1; i >= 0; i--)
+                for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
@@ -2155,7 +2155,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     //Let new project pickup my custom package source.
                     project.ProjectLocalSources.AddRange(sources);
                     var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                    var packageSpec =  GetPackageSpec(
+                    var packageSpec = GetPackageSpec(
                         projectName,
                         projectFullPath,
                         packageA_Version100.Version);
@@ -2197,7 +2197,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 }
 
-                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects-1].GetInstalledPackagesAsync(CancellationToken.None);
+                var initialInstalledPackages = await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None);
 
                 var targetProjects = new List<NetCorePackageReferenceProject>()
                 {
@@ -2233,7 +2233,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects .Count());
+                Assert.Equal(actions.Count(), targetProjects.Count());
                 Assert.Equal(actions.Count(), builtIntegratedActions.Count());
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
@@ -2397,7 +2397,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     foreach (var packageSpec in packageSpecs)
                     {
-                        if(packageSpec?.RestoreMetadata != null)
+                        if (packageSpec?.RestoreMetadata != null)
                         {
                             var allWarningsAsErrors = false;
                             var noWarn = new HashSet<NuGetLogCode>();

@@ -221,7 +221,7 @@ namespace NuGet.PackageManagement
                 // Update cache context
                 cacheContextModifier(sourceCacheContext);
 
-               // Settings passed here will be used to populate the restore requests.
+                // Settings passed here will be used to populate the restore requests.
                 var restoreContext = GetRestoreContext(
                     context,
                     providerCache,

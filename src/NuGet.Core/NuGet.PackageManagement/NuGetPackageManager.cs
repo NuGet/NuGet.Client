@@ -1595,7 +1595,7 @@ namespace NuGet.PackageManagement
                 // Run build integrated project preview for all projects at the same time
                 var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
                 buildIntegratedProjectsToUpdate,
-                nugetProjectActionsLookup : null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and activeSources
+                nugetProjectActionsLookup: null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and activeSources
                 packageIdentity,
                 activeSources,
                 nuGetProjectContext,
@@ -2580,13 +2580,13 @@ namespace NuGet.PackageManagement
             }
 
             var resolvedAction = await PreviewBuildIntegratedProjectsActionsAsync(
-                new List<BuildIntegratedNuGetProject>(){ buildIntegratedProject },
+                new List<BuildIntegratedNuGetProject>() { buildIntegratedProject },
                 new Dictionary<string, IEnumerable<NuGetProjectAction>>(PathUtility.GetStringComparerBasedOnOS())
                 {
                     { buildIntegratedProject.MSBuildProjectPath, nuGetProjectActions}
                 },
-                packageIdentity : null, // since we have nuGetProjectActions no need packageIdentity
-                primarySources : null, // since we have nuGetProjectActions no need primarySources
+                packageIdentity: null, // since we have nuGetProjectActions no need packageIdentity
+                primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
                 token
                 );
@@ -2638,7 +2638,7 @@ namespace NuGet.PackageManagement
             var result = new List<ResolvedAction>();
 
             var lockFileLookup = new Dictionary<string, LockFile>(PathUtility.GetStringComparerBasedOnOS());
-            var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);           
+            var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
             var updatedNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
@@ -2847,15 +2847,15 @@ namespace NuGet.PackageManagement
                     await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResult.Result.LockFile?.LogMessages, logger);
                 }
 
-            // Build the installation context
-            var originalFrameworks = updatedPackageSpec
-                .TargetFrameworks
-                .ToDictionary(x => x.FrameworkName, x => x.TargetAlias);
+                // Build the installation context
+                var originalFrameworks = updatedPackageSpec
+                    .TargetFrameworks
+                    .ToDictionary(x => x.FrameworkName, x => x.TargetAlias);
 
-            var installationContext = new BuildIntegratedInstallationContext(
-                successfulFrameworks,
-                unsuccessfulFrameworks,
-                originalFrameworks);
+                var installationContext = new BuildIntegratedInstallationContext(
+                    successfulFrameworks,
+                    unsuccessfulFrameworks,
+                    originalFrameworks);
 
                 InstallationCompatibility.EnsurePackageCompatibility(
                     buildIntegratedProject,
