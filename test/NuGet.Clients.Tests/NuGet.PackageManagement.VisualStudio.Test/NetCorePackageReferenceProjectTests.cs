@@ -457,7 +457,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_InstallPackageForAllProjects_Success()
+        public async Task TestPackageManager_InstallPackageForAllProjects_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -589,7 +589,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageForAllProjects_Success()
+        public async Task TestPackageManager_UpgradePackageForAllProjects_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -739,7 +739,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_TopParentProject_Success()
+        public async Task TestPackageManager_UpgradePackageFor_TopParentProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -889,7 +889,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_MiddleParentProject_Success()
+        public async Task TestPackageManager_UpgradePackageFor_MiddleParentProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -1039,7 +1039,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UpgradePackageFor_BottomProject_Success()
+        public async Task TestPackageManager_UpgradePackageFor_BottomProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -1189,7 +1189,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageForAllProjects_Success()
+        public async Task TestPackageManager_DowngradePackageForAllProjects_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -1327,7 +1327,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_TopParentProject_Fail()
+        public async Task TestPackageManager_DowngradePackageFor_TopParentProject_Fail()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -1461,7 +1461,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_MiddleParentProject_Fail()
+        public async Task TestPackageManager_DowngradePackageFor_MiddleParentProject_Fail()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -1595,7 +1595,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_DowngradePackageFor_BottomtProject_Success()
+        public async Task TestPackageManager_DowngradePackageFor_BottomtProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -1742,7 +1742,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_CancellationTokenPassed()
+        public async Task TestPackageManager_CancellationTokenPassed()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -1827,7 +1827,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_RaiseTelemetryEvents()
+        public async Task TestPackageManager_RaiseTelemetryEvents()
         {
             // set up telemetry service
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -1944,7 +1944,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UninstallPackageFor_TopAndMidParentProject_Success()
+        public async Task TestPackageManager_UninstallPackageFor_TopAndMidParentProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -2099,7 +2099,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_PreviewBuildIntegratedProjectsActionsAsync_UninstallPackageFor_MidParentAndBottomProject_Success()
+        public async Task TestPackageManager_UninstallPackageFor_MidParentAndBottomProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
