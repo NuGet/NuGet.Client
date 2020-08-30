@@ -16,6 +16,8 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using System.Collections.Concurrent;
+using NuGet.Packaging;
 
 namespace NuGet.PackageManagement
 {
@@ -322,7 +324,9 @@ namespace NuGet.PackageManagement
             List<IAssetsLogMessage> allAdditionalMessages = null;
 
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
-            var knownProjects = projects.Select(e => e.MSBuildProjectPath).ToHashSet(PathUtility.GetStringComparerBasedOnOS());
+            var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
+            knownProjects.AddRange(projects.Select(e => e.MSBuildProjectPath)
+                .Select(proj => new KeyValuePair<string, bool>(proj, false)));
 
             var options = new ExecutionDataflowBlockOptions()
             {
@@ -392,17 +396,17 @@ namespace NuGet.PackageManagement
                         {
                             for (var projectReferenceCount = 0; projectReferenceCount < packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences.Count; projectReferenceCount++)
                             {
-                                if (!restoreSpecData.KnownProjects.Contains(packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
+                                if (!restoreSpecData.KnownProjects.ContainsKey(packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
                                 {
                                     var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
                                     if (File.Exists(persistedDGSpecPath))
                                     {
                                         var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
-                                        foreach (var dependentPackageSpec in persistedDGSpec.Projects.Where(e => !restoreSpecData.KnownProjects.Contains(e.RestoreMetadata.ProjectPath)))
+                                        foreach (var dependentPackageSpec in persistedDGSpec.Projects.Where(e => !restoreSpecData.KnownProjects.ContainsKey(e.RestoreMetadata.ProjectPath)))
                                         {
                                             // Include all the missing projects from the closure.
                                             // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
-                                            restoreSpecData.KnownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
+                                            restoreSpecData.KnownProjects[dependentPackageSpec.RestoreMetadata.ProjectPath] = false;
 
                                             lock (dgSpec)
                                             {
@@ -464,7 +468,7 @@ namespace NuGet.PackageManagement
             public DependencyGraphSpec DgSpec { get; set; }
             public IReadOnlyList<PackageSpec> PackageSpecs { get; set; }
             public IReadOnlyList<IAssetsLogMessage> ProjectAdditionalMessages { get; set; }
-            public HashSet<string> KnownProjects { get; set; }
+            public ConcurrentDictionary<string, bool> KnownProjects { get; set; }
             public List<IAssetsLogMessage> AllAdditionalMessages { get; set; }
         }
     }
