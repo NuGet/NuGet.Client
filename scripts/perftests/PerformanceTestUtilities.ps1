@@ -92,6 +92,11 @@ function IsClientDotnetExe([string]$nugetClient)
     return $nugetClient.EndsWith("dotnet.exe")
 }
 
+function IsClientMSBuildExe([string]$nugetClient)
+{
+    return $nugetClient.EndsWith("MSBuild.exe", "CurrentCultureIgnoreCase")
+}
+
 # Downloads the repository at the given path.
 Function DownloadRepository([string] $repository, [string] $commitHash, [string] $sourceFolderPath)
 {
@@ -145,12 +150,17 @@ Function SetupGitRepository([string] $repository, [string] $commitHash, [string]
 }
 
 # runs locals clear all with the given client
+# If the client is msbuild.exe, the locals clear all *will* be run with dotnet.exe
 Function LocalsClearAll([string] $nugetClientFilePath)
 {
     $nugetClientFilePath = GetAbsolutePath $nugetClientFilePath
     If ($(IsClientDotnetExe $nugetClientFilePath))
     {
         . $nugetClientFilePath nuget locals -c all *>>$null
+    }
+    Elseif($(IsClientMSBuildExe $nugetClientFilePath))
+    {
+        . dotnet.exe nuget locals -c all *>>$null
     }
     Else
     {
@@ -166,6 +176,13 @@ Function GetClientVersion([string] $nugetClientFilePath)
     If (IsClientDotnetExe $nugetClientFilePath)
     {
         $version = . $nugetClientFilePath --version
+    }
+    ElseIf($(IsClientMSBuildExe $nugetClientFilePath))
+    {
+        $clientDir = Split-Path -Path $nugetClientFilePath
+        $nugetClientPath = Resolve-Path (Join-Path -Path $clientDir -ChildPath "../../../Common7/IDE/CommonExtensions/Microsoft/NuGet/NuGet.Build.Tasks.dll")
+        $versionInfo = Get-ChildItem $nugetClientPath | % versioninfo | Select-Object FileVersion
+        Return $(($versionInfo -split '\n')[0]).TrimStart("@{").TrimEnd('}').Substring("FileVersion=".Length)
     }
     Else
     {
@@ -331,6 +348,7 @@ Function RunRestore(
     [switch] $force)
 {
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
+    $isClientMSBuild = IsClientMSBuildExe $nugetClientFilePath
 
     If ($isClientDotnetExe -And $isPackagesConfig)
     {
@@ -371,6 +389,10 @@ Function RunRestore(
         {
             . $nugetClientFilePath nuget locals -c $localsArguments *>>$null
         }
+        ElseIf($isClientMSBuild)
+        {
+            . dotnet.exe nuget locals -c $localsArguments *>>$null
+        }
         Else
         {
             . $nugetClientFilePath locals -clear $localsArguments -Verbosity quiet
@@ -390,7 +412,14 @@ Function RunRestore(
 
     $arguments = [System.Collections.Generic.List[string]]::new()
 
-    $arguments.Add("restore")
+    If ($isClientMSBuild)
+    {
+        $arguments.Add("/t:restore")
+    }
+    Else 
+    {
+        $arguments.Add("restore")
+    }
     $arguments.Add($solutionFilePath)
 
     If ($isPackagesConfig)
@@ -413,13 +442,17 @@ Function RunRestore(
         {
             $arguments.Add("--force")
         }
+        ElseIf($isClientMSBuild)
+        {
+            $arguments.Add("/p:RestoreForce=true")
+        }
         Else
         {
             $arguments.Add("-Force")
         }
     }
 
-    If (!$isClientDotnetExe)
+    If (!$isClientDotnetExe -and !$isClientMSBuild)
     {
         $arguments.Add("-NonInteractive")
     }
