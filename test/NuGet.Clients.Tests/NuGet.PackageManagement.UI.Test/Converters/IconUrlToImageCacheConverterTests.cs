@@ -107,11 +107,10 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [CIOnlyTheory]
+        [LocalOnlyTheory]
         [InlineData("icon.png", "icon.png", "icon.png", "")]
         [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder")]
         [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder")]
-        [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "")]
         public void Convert_EmbeddedIcon_HappyPath_LoadsImage(
             string iconElement,
             string iconFileLocation,
