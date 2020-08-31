@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Cache;
 using System.Runtime.Caching;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -60,7 +61,8 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            var cachedBitmapImage = BitmapImageCache.Get(iconUrl.ToString()) as BitmapSource;
+            string cacheKey = GenerateKeyFromIconUri(iconUrl);
+            var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != null)
             {
                 return cachedBitmapImage;
@@ -93,42 +95,40 @@ namespace NuGet.PackageManagement.UI
                                     .Substring(1)); // Substring skips the '#' in the URI fragment
                             iconBitmapImage.StreamSource = par.GetEntry(iconEntryNormalized).Open();
 
-                            iconBitmapImage.DecodeFailed += (sender, args) =>
+                            void EmbeddedIcon_DownloadOrDecodeFailed(object sender, ExceptionEventArgs args)
                             {
                                 reader.Dispose();
-                                IconBitmapImage_DownloadOrDecodeFailed(sender, args);
-                                AddToCache(iconUrl, defaultPackageIcon);
-                            };
-                            iconBitmapImage.DownloadFailed += (sender, args) =>
-                            {
-                                reader.Dispose();
-                                IconBitmapImage_DownloadOrDecodeFailed(sender, args);
-                                AddToCache(iconUrl, defaultPackageIcon);
-                            };
-                            iconBitmapImage.DownloadCompleted += (sender, args) =>
+                                CheckForFailedCacheEntry(cacheKey, args);
+                            }
+
+                            void EmbeddedIcon_DownloadCompleted(object sender, EventArgs args)
                             {
                                 reader.Dispose();
                                 IconBitmapImage_DownloadCompleted(sender, args);
-                            };
+                            }
+
+                            iconBitmapImage.DecodeFailed += EmbeddedIcon_DownloadOrDecodeFailed;
+                            iconBitmapImage.DownloadFailed += EmbeddedIcon_DownloadOrDecodeFailed;
+                            iconBitmapImage.DownloadCompleted += EmbeddedIcon_DownloadCompleted;
 
                             imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                         }
                         else // we cannot use the reader object
                         {
                             reader?.Dispose();
-                            AddToCache(iconUrl, defaultPackageIcon);
+                            AddToCache(cacheKey, defaultPackageIcon);
                             imageResult = defaultPackageIcon;
                         }
                     }
                     catch (Exception)
                     {
-                        AddToCache(iconUrl, defaultPackageIcon);
+                        AddToCache(cacheKey, defaultPackageIcon);
                         imageResult = defaultPackageIcon;
                     }
                 }
                 else // Identified an embedded icon URI, but we are unable to process it
                 {
-                    AddToCache(iconUrl, defaultPackageIcon);
+                    AddToCache(cacheKey, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
                 }
             }
@@ -172,7 +172,8 @@ namespace NuGet.PackageManagement.UI
             {
                 // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
                 var cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
-                AddToCache(iconUrl, cachedBitmapImage);
+                string cacheKey = GenerateKeyFromIconUri(iconUrl);
+                AddToCache(cacheKey, cachedBitmapImage);
                 ErrorFloodGate.ReportAttempt();
 
                 image = cachedBitmapImage;
@@ -181,14 +182,19 @@ namespace NuGet.PackageManagement.UI
             return image;
         }
 
-        private static void AddToCache(Uri iconUrl, BitmapSource iconBitmapImage)
+        private static void AddToCache(string cacheKey, BitmapSource iconBitmapImage)
         {
             var policy = new CacheItemPolicy
             {
                 SlidingExpiration = TimeSpan.FromMinutes(10),
                 RemovedCallback = CacheEntryRemoved
             };
-            BitmapImageCache.Set(iconUrl.ToString(), iconBitmapImage, policy);
+            BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
+        }
+
+        private static string GenerateKeyFromIconUri(Uri iconUrl)
+        {
+            return iconUrl == null ? string.Empty : iconUrl.ToString();
         }
 
         private static void CacheEntryRemoved(CacheEntryRemovedArguments arguments)
@@ -204,24 +210,27 @@ namespace NuGet.PackageManagement.UI
         private void IconBitmapImage_DownloadCompleted(object sender, EventArgs e)
         {
             var bitmapImage = sender as BitmapImage;
-            if (!bitmapImage.IsFrozen)
+            if (bitmapImage != null && bitmapImage.CanFreeze && !bitmapImage.IsFrozen)
             {
                 bitmapImage.Freeze();
             }
         }
 
-        private void IconBitmapImage_DownloadOrDecodeFailed(object sender, System.Windows.Media.ExceptionEventArgs e)
+        private void IconBitmapImage_DownloadOrDecodeFailed(object sender, ExceptionEventArgs e)
         {
             var bitmapImage = sender as BitmapImage;
 
-            var uri = bitmapImage.UriSource;
+            string cacheKey = GenerateKeyFromIconUri(bitmapImage?.UriSource);
+            CheckForFailedCacheEntry(cacheKey, e);
+        }
 
-            string cacheKey = uri == null ? string.Empty : uri.ToString();
+        private void CheckForFailedCacheEntry(string cacheKey, ExceptionEventArgs e)
+        {
             // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.            
             var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != Images.DefaultPackageIcon)
             {
-                AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
+                AddToCache(cacheKey, Images.DefaultPackageIcon);
 
                 var webex = e.ErrorException as WebException;
                 if (webex != null && FatalErrors.Any(c => webex.Status == c))
