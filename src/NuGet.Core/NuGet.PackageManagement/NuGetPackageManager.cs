@@ -1575,7 +1575,10 @@ namespace NuGet.PackageManagement
 
             var results = new List<ResolvedAction>();
 
+            // BuildIntegratedNuGetProject type projects are now supports parallel preview action for faster performance.
             var buildIntegratedProjectsToUpdate = new List<BuildIntegratedNuGetProject>();
+            // Currently packages.config projects are not supported are supports parallel previews.
+            // Here is follow up issue to address it https://github.com/NuGet/Home/issues/9906
             var otherTargetProjectsToUpdate = new List<NuGetProject>();
 
             foreach (var proj in nuGetProjects)
