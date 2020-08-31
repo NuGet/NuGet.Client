@@ -318,7 +318,7 @@ namespace NuGet.Commands
                 builder.MinClientVersion = _packArgs.MinClientVersion;
             }
 
-            CheckForUnsupportedFrameworks(builder);
+            CheckForBadFrameworks(builder);
 
             ExcludeFiles(builder.Files);
         }
@@ -843,7 +843,7 @@ namespace NuGet.Commands
             return successful;
         }
 
-        private void CheckForUnsupportedFrameworks(PackageBuilder builder)
+        private void CheckForBadFrameworks(PackageBuilder builder)
         {
             foreach (FrameworkAssemblyReference reference in builder.FrameworkReferences)
             {
@@ -992,7 +992,7 @@ namespace NuGet.Commands
         private bool BuildSymbolsPackage(string path)
         {
             PackageBuilder symbolsBuilder = CreatePackageBuilderFromNuspec(path);
-            if (_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg) // Snupkgs can only have 1 PackageType. 
+            if (_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg) // Snupkgs can only have 1 PackageType.
             {
                 symbolsBuilder.PackageTypes.Clear();
                 symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);
