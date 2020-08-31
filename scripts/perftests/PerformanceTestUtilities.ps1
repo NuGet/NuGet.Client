@@ -347,7 +347,8 @@ Function RunRestore(
     [switch] $cleanHttpCache,
     [switch] $cleanPluginsCache,
     [switch] $killMsBuildAndDotnetExeProcesses,
-    [switch] $force)
+    [switch] $force,
+    [switch] $staticGraphRestore)
 {
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
     $isClientMSBuild = IsClientMSBuildExe $nugetClientFilePath
@@ -454,9 +455,26 @@ Function RunRestore(
         }
     }
 
-    If (!$isClientDotnetExe -and !$isClientMSBuild)
+    If (!$isClientDotnetExe -And !$isClientMSBuild)
     {
         $arguments.Add("-NonInteractive")
+    }
+    
+    If($isClientDotnetExe -Or $isClientMSBuild)
+    {   
+        If ($staticGraphRestore)
+        {
+            $staticGraphOutputValue = "true"
+            $arguments.Add("/p:RestoreUseStaticGraphEvaluation=true")
+        }
+        Else 
+        {
+            $staticGraphOutputValue = "false"
+        }
+    }
+    Else 
+    {
+        $staticGraphOutputValue = "N/A"
     }
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -464,7 +482,7 @@ Function RunRestore(
     $logs = . $nugetClientFilePath $arguments | Out-String
     ### TODO NK - if exit code is bad, print the logs (stop the whole test case maybe?)
     ### Might be a good idea create an issue about this. 
-    
+
     $totalTime = $stopwatch.Elapsed.TotalSeconds
     $restoreCoreTime = ExtractRestoreElapsedTime $logs
 
@@ -494,7 +512,7 @@ Function RunRestore(
 
     If (!(Test-Path $resultsFilePath))
     {
-        $columnHeaders = "Client Name,Client Version,Solution Name,Test Run ID,Scenario Name,Total Time (seconds),Core Restore Time (seconds),Force," + `
+        $columnHeaders = "Client Name,Client Version,Solution Name,Test Run ID,Scenario Name,Total Time (seconds),Core Restore Time (seconds),Force,Static Graph," + `
             "Global Packages Folder .nupkg Count,Global Packages Folder .nupkg Size (MB),Global Packages Folder File Count,Global Packages Folder File Size (MB),Clean Global Packages Folder," + `
             "HTTP Cache File Count,HTTP Cache File Size (MB),Clean HTTP Cache,Plugins Cache File Count,Plugins Cache File Size (MB),Clean Plugins Cache,Kill MSBuild and dotnet Processes," + `
             "Processor Name,Processor Physical Core Count,Processor Logical Core Count"
@@ -502,7 +520,7 @@ Function RunRestore(
         OutFileWithCreateFolders $resultsFilePath $columnHeaders
     }
 
-    $data = "$clientName,$clientVersion,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force," + `
+    $data = "$clientName,$clientVersion,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force,$staticGraphOutputValue" + `
         "$($globalPackagesFolderNupkgFilesInfo.Count),$($globalPackagesFolderNupkgFilesInfo.TotalSizeInMB),$($globalPackagesFolderFilesInfo.Count),$($globalPackagesFolderFilesInfo.TotalSizeInMB),$cleanGlobalPackagesFolder," + `
         "$($httpCacheFilesInfo.Count),$($httpCacheFilesInfo.TotalSizeInMB),$cleanHttpCache,$($pluginsCacheFilesInfo.Count),$($pluginsCacheFilesInfo.TotalSizeInMB),$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses," + `
         "$($processorInfo.Name),$($processorInfo.NumberOfCores),$($processorInfo.NumberOfLogicalProcessors)"
