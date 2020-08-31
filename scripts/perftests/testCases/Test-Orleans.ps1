@@ -26,5 +26,4 @@ RunPerformanceTestsOnGitRepository `
     -resultsFilePath $resultsFilePath `
     -logsFolderPath $logsFolderPath `
     -nugetFoldersPath $nugetFoldersPath `
-    -iterationCount $iterationCount `
-    -staticGraphRestore
+    -iterationCount $iterationCount

@@ -39,4 +39,5 @@ Finally
     -solutionFilePath $solutionFilePath `
     -resultsFilePath $resultsFilePath `
     -logsFolderPath $logsFolderPath `
-    -nugetFoldersPath $nugetFoldersPath
+    -nugetFoldersPath $nugetFoldersPath `
+    -iterationCount $iterationCount
