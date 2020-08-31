@@ -321,7 +321,7 @@ namespace NuGet.PackageManagement
             DependencyGraphCacheContext context)
         {
             var dgSpec = new DependencyGraphSpec();
-            List<IAssetsLogMessage> allAdditionalMessages = null;
+            ConcurrentBag<IAssetsLogMessage> allAdditionalMessages = null;
 
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
             var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
@@ -351,7 +351,7 @@ namespace NuGet.PackageManagement
             await actionBlock.Completion;
 
             // Return dg file
-            return (dgSpec, allAdditionalMessages);
+            return (dgSpec, allAdditionalMessages?.ToList());
         }
 
         private static void GetProjectRestoreSpecAndAdditionalMessages(
@@ -363,10 +363,13 @@ namespace NuGet.PackageManagement
             {
                 if (restoreSpecData.AllAdditionalMessages == null)
                 {
-                    restoreSpecData.AllAdditionalMessages = new List<IAssetsLogMessage>();
+                    restoreSpecData.AllAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>();
                 }
 
-                restoreSpecData.AllAdditionalMessages.AddRange(restoreSpecData.ProjectAdditionalMessages);
+                foreach (var projectAdditionalMessage in restoreSpecData.ProjectAdditionalMessages)
+                {
+                    restoreSpecData.AllAdditionalMessages.Add(projectAdditionalMessage);
+                }
             }
 
             foreach (var packageSpec in restoreSpecData.PackageSpecs)
@@ -469,7 +472,7 @@ namespace NuGet.PackageManagement
             public IReadOnlyList<PackageSpec> PackageSpecs { get; set; }
             public IReadOnlyList<IAssetsLogMessage> ProjectAdditionalMessages { get; set; }
             public ConcurrentDictionary<string, bool> KnownProjects { get; set; }
-            public List<IAssetsLogMessage> AllAdditionalMessages { get; set; }
+            public ConcurrentBag<IAssetsLogMessage> AllAdditionalMessages { get; set; }
         }
     }
 }
