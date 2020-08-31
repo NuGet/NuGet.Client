@@ -248,7 +248,8 @@ Function RunPerformanceTestsOnGitRepository(
     [string] $resultsFilePath,
     [string] $nugetFoldersPath,
     [string] $logsFolderPath,
-    [int] $iterationCount)
+    [int] $iterationCount,
+    [switch] $staticGraphRestore)
 {
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
     SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
@@ -258,7 +259,8 @@ Function RunPerformanceTestsOnGitRepository(
         -resultsFilePath $resultsFilePath `
         -logsFolderPath $logsFolderPath `
         -nugetFoldersPath $nugetFoldersPath `
-        -iterationCount $iterationCount
+        -iterationCount $iterationCount `
+        -staticGraphRestore:$staticGraphRestore
 }
 
 Function GetProcessorInfo()
@@ -520,7 +522,7 @@ Function RunRestore(
         OutFileWithCreateFolders $resultsFilePath $columnHeaders
     }
 
-    $data = "$clientName,$clientVersion,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force,$staticGraphOutputValue" + `
+    $data = "$clientName,$clientVersion,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force,$staticGraphOutputValue," + `
         "$($globalPackagesFolderNupkgFilesInfo.Count),$($globalPackagesFolderNupkgFilesInfo.TotalSizeInMB),$($globalPackagesFolderFilesInfo.Count),$($globalPackagesFolderFilesInfo.TotalSizeInMB),$cleanGlobalPackagesFolder," + `
         "$($httpCacheFilesInfo.Count),$($httpCacheFilesInfo.TotalSizeInMB),$cleanHttpCache,$($pluginsCacheFilesInfo.Count),$($pluginsCacheFilesInfo.TotalSizeInMB),$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses," + `
         "$($processorInfo.Name),$($processorInfo.NumberOfCores),$($processorInfo.NumberOfLogicalProcessors)"

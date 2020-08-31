@@ -40,4 +40,5 @@ Finally
     -resultsFilePath $resultsFilePath `
     -logsFolderPath $logsFolderPath `
     -nugetFoldersPath $nugetFoldersPath `
-    -iterationCount $iterationCount
+    -iterationCount $iterationCount `
+    -staticGraphRestore

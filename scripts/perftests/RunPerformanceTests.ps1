@@ -230,14 +230,26 @@ Try
     If (!$skipForceRestores)
     {
         Log "Running $($iterationCount)x force restores"
-        $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "force" -enabledSwitches @("force")
+        $enabledSwitches = @("force")
+        If ($staticGraphRestore)
+        {
+            $enabledSwitches += "staticGraphRestore"
+        }
+        $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "force" -enabledSwitches $enabledSwitches
         1..$iterationCount | % { RunRestore @arguments }
     }
 
     If (!$skipNoOpRestores)
     {
         Log "Running $($iterationCount)x no-op restores"
-        $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "noop"
+        If ($staticGraphRestore)
+        {
+            $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "noop" -enabledSwitches @("staticGraphRestore")
+        }
+        Else
+        {
+            $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "noop"
+        }
         1..$iterationCount | % { RunRestore @arguments }
     }
 
