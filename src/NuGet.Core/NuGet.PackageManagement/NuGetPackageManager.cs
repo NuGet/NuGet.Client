@@ -2601,7 +2601,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Run project actions for build integrated many projects.
         /// </summary>
-        internal async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
+        private async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
             IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
             Dictionary<string, IEnumerable<NuGetProjectAction>> nugetProjectActionsLookup,
             PackageIdentity packageIdentity,
@@ -2815,9 +2815,9 @@ namespace NuGet.PackageManagement
                 // the target frameworks.
                 if (nuGetProjectActionsList.Count == 1 &&
                     firstAction.NuGetProjectActionType == NuGetProjectActionType.Install &&
+                    !restoreResult.Result.Success &&
                     successfulFrameworks.Any() &&
                     unsuccessfulFrameworks.Any() &&
-                    !restoreResult.Result.Success &&
                     // Exclude upgrades, for now we take the simplest case.
                     !PackageSpecOperations.HasPackage(originalPackageSpec, firstAction.PackageIdentity.Id))
                 {
