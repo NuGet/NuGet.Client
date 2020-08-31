@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0">
   <ItemGroup>
-    <MergeInclude Include="$(OutputPath)Newtonsoft.Json.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.Common.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.Configuration.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.Frameworks.dll"/>
