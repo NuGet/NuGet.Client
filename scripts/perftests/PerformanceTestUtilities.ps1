@@ -482,8 +482,7 @@ Function RunRestore(
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     $logs = . $nugetClientFilePath $arguments | Out-String
-    ### TODO NK - if exit code is bad, print the logs (stop the whole test case maybe?)
-    ### Might be a good idea create an issue about this. 
+    # TODO https://github.com/NuGet/Home/issues/9968
 
     $totalTime = $stopwatch.Elapsed.TotalSeconds
     $restoreCoreTime = ExtractRestoreElapsedTime $logs

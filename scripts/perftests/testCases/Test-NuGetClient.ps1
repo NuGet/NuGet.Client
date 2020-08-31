@@ -39,6 +39,4 @@ Finally
     -solutionFilePath $solutionFilePath `
     -resultsFilePath $resultsFilePath `
     -logsFolderPath $logsFolderPath `
-    -nugetFoldersPath $nugetFoldersPath `
-    -iterationCount $iterationCount `
-    -staticGraphRestore
+    -nugetFoldersPath $nugetFoldersPath
