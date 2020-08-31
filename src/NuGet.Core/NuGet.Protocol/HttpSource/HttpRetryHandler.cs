@@ -81,7 +81,11 @@ namespace NuGet.Protocol
                         headerStopwatch = new Stopwatch();
                         stopwatches.Add(headerStopwatch);
                     }
+#if NET5_0
+                    requestMessage.Options.Set(new HttpRequestOptionsKey<List<Stopwatch>>(StopwatchPropertyName), stopwatches);
+#else
                     requestMessage.Properties[StopwatchPropertyName] = stopwatches;
+#endif
                     var requestUri = requestMessage.RequestUri;
 
                     try
