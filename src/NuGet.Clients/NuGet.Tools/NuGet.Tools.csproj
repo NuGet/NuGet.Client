@@ -132,12 +132,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\nugetAbout.ico" />
-    <Content Include="Resources\nuget_256.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\nuget_96.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Resources\packageicon.png" />
     <Content Include="Resources\Toolbar.png" />
     <VSCTCompile Include="NuGetTools.vsct">
