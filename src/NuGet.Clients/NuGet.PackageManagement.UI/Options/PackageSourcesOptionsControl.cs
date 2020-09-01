@@ -347,7 +347,7 @@ namespace NuGet.Options
             for (int i = 0; ; i++)
             {
                 var newName = i == 0 ? "Package source" : "Package source " + i;
-                var newSource = i == 0 ? "http://packagesource" : "http://packagesource" + i;
+                var newSource = i == 0 ? "https://packagesource" : "https://packagesource" + i;
                 var packageSource = new Configuration.PackageSource(newSource, newName);
                 if (sourcesList.All(ps => !ps.Equals(packageSource)))
                 {
