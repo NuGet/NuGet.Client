@@ -27,7 +27,7 @@ namespace Test.Utility
 
             if (EnableLogging)
             {
-                Logs.Value.Add(args !=null ? message + " " + string.Join(",", args) : message);
+                Logs.Value.Add(args != null ? message + " " + string.Join(",", args) : message);
             }
         }
 
