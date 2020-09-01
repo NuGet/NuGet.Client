@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0">
+  <ItemGroup>
+    <MergeInclude Include="$(OutputPath)NuGet.Common.dll"/>
+    <MergeInclude Include="$(OutputPath)NuGet.Configuration.dll"/>
+    <MergeInclude Include="$(OutputPath)NuGet.Frameworks.dll"/>
+    <MergeInclude Include="$(OutputPath)NuGet.Versioning.dll"/>
+
+    <MergeAllowdup Include="Strings"/>
+    <MergeAllowdup Include="EncodingUtility"/>
+    <MergeAllowdup Include="EqualityUtility"/>
+    <MergeAllowdup Include="HashCodeCombiner"/>
+    <MergeAllowdup Include="Extensions"/>
+  </ItemGroup>
+</Project>

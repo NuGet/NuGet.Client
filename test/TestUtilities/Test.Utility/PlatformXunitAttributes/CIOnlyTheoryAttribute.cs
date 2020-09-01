@@ -5,7 +5,6 @@ using Xunit;
 
 namespace NuGet.Test.Utility
 {
-
     /// <summary>
     /// Skip the test if not on a CI.
     /// </summary>

@@ -21,7 +21,14 @@ namespace NuGet.PackageManagement.UI.Test
 
         static IconUrlToImageCacheConverterTests()
         {
-            DefaultPackageIcon = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgr24, null, new byte[3] { 0, 0, 0 }, 3);
+            // Mimic the default image
+            var width = 32;
+            var height = 32;
+            var format = PixelFormats.Bgr24;
+            var stride = width * format.BitsPerPixel;
+            var data = new byte[width * height * format.BitsPerPixel];
+
+            DefaultPackageIcon = BitmapSource.Create(width, height, 96, 96, format, null, data, stride);
             DefaultPackageIcon.Freeze();
         }
 
@@ -43,6 +50,7 @@ namespace NuGet.PackageManagement.UI.Test
                 parameter: DefaultPackageIcon,
                 culture: null);
 
+            VerifyImageResult(image);
             Assert.Same(DefaultPackageIcon, image);
         }
 
@@ -59,6 +67,7 @@ namespace NuGet.PackageManagement.UI.Test
                 parameter: DefaultPackageIcon,
                 culture: null);
 
+            VerifyImageResult(image);
             Assert.Same(DefaultPackageIcon, image);
         }
 
@@ -75,13 +84,13 @@ namespace NuGet.PackageManagement.UI.Test
                 parameter: DefaultPackageIcon,
                 culture: null) as BitmapImage;
 
-            Assert.NotNull(image);
+            VerifyImageResult(image);
             Assert.NotSame(DefaultPackageIcon, image);
             Assert.Equal(iconUrl, image.UriSource);
         }
 
         [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
-        public void Convert_WithValidImageUrl_DownloadsImage()
+        public void Convert_WithValidImageUrl_DownloadsImage_DefaultImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
 
@@ -93,12 +102,12 @@ namespace NuGet.PackageManagement.UI.Test
                 parameter: DefaultPackageIcon,
                 culture: null) as BitmapImage;
 
-            Assert.NotNull(image);
+            VerifyImageResult(image);
             Assert.NotSame(DefaultPackageIcon, image);
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Theory(Skip = "Runs only on Windows Desktop with WPF support")]
+        [LocalOnlyTheory]
         [InlineData("icon.png", "icon.png", "icon.png", "")]
         [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder")]
         [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder")]
@@ -117,7 +126,8 @@ namespace NuGet.PackageManagement.UI.Test
                     iconName: iconElement,
                     iconFile: iconFileLocation,
                     iconFileSourceElement: fileSourceElement,
-                    iconFileTargetElement: fileTargetElement);
+                    iconFileTargetElement: fileTargetElement,
+                    isRealImage: true);
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
@@ -129,27 +139,78 @@ namespace NuGet.PackageManagement.UI.Test
 
                 output.WriteLine($"ZipPath {zipPath}");
                 output.WriteLine($"File Exists {File.Exists(zipPath)}");
-                output.WriteLine($"Url {builder.Uri.ToString()}");
+                output.WriteLine($"Url {builder.Uri}");
 
                 // Act
                 var result = converter.Convert(
                     values: new object[]
                     {
                         builder.Uri,
-                        new Func<PackageReaderBase>(() => new Packaging.PackageArchiveReader(zipPath))
+                        new Func<PackageReaderBase>(() => new PackageArchiveReader(zipPath))
                     },
                     targetType: null,
                     parameter: DefaultPackageIcon,
                     culture: null);
 
-                var image = result as BitmapImage;
+                // Assert
+                output.WriteLine($"result {result}");
+                VerifyImageResult(result);
+                Assert.NotSame(DefaultPackageIcon, result);
+            }
+        }
 
-                output.WriteLine($"result {result.ToString()}");
+        [CIOnlyTheory]
+        [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "")]
+        [InlineData("icon2.jpg", "icon2.jpg", "icon2.jpg", "")]
+        public void Convert_EmbeddedIcon_NotAnIcon_ReturnsDefault(
+            string iconElement,
+            string iconFileLocation,
+            string fileSourceElement,
+            string fileTargetElement)
+        {
+            using (var testDir = TestDirectory.Create())
+            {
+                // Create decoy nuget package
+                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
+                CreateDummyPackage(
+                    zipPath: zipPath,
+                    iconName: iconElement,
+                    iconFile: iconFileLocation,
+                    iconFileSourceElement: fileSourceElement,
+                    iconFileTargetElement: fileTargetElement,
+                    isRealImage: false);
+
+                // prepare test
+                var converter = new IconUrlToImageCacheConverter();
+
+                UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
+                {
+                    Fragment = iconElement
+                };
+
+                output.WriteLine($"ZipPath {zipPath}");
+                output.WriteLine($"File Exists {File.Exists(zipPath)}");
+                output.WriteLine($"Url {builder.Uri}");
+
+                // Act
+                var result = converter.Convert(
+                    values: new object[]
+                    {
+                        builder.Uri,
+                        new Func<PackageReaderBase>(() => new PackageArchiveReader(zipPath))
+                    },
+                    targetType: null,
+                    parameter: DefaultPackageIcon,
+                    culture: null);
+
+                VerifyImageResult(result);
+                var image = result as BitmapSource;
+
+                output.WriteLine($"result {result}");
+                output.WriteLine($"Pixel format: {image.Format}");
 
                 // Assert
-                Assert.NotNull(result);
-                Assert.NotSame(DefaultPackageIcon, result);
-                Assert.Equal(32, image.PixelWidth);
+                Assert.Same(DefaultPackageIcon, result);
             }
         }
 
@@ -176,9 +237,8 @@ namespace NuGet.PackageManagement.UI.Test
                 var image = result as BitmapImage;
 
                 // Assert
-                Assert.NotNull(result);
+                VerifyImageResult(result);
                 Assert.NotSame(DefaultPackageIcon, result);
-                Assert.Equal(32, image.PixelWidth);
             }
         }
 
@@ -208,7 +268,7 @@ namespace NuGet.PackageManagement.UI.Test
                     culture: null);
 
                 // Assert
-                Assert.NotNull(result);
+                VerifyImageResult(result);
                 Assert.Same(DefaultPackageIcon, result);
             }
         }
@@ -272,7 +332,8 @@ namespace NuGet.PackageManagement.UI.Test
             string iconName = "icon.png",
             string iconFile = "icon.png",
             string iconFileSourceElement = "icon.png",
-            string iconFileTargetElement = "")
+            string iconFileTargetElement = "",
+            bool isRealImage = true)
         {
             var dir = Path.GetDirectoryName(zipPath);
             var holdDir = "pkg";
@@ -290,7 +351,15 @@ namespace NuGet.PackageManagement.UI.Test
             var iconPath = Path.Combine(folderPath, iconFile);
             var iconDir = Path.GetDirectoryName(iconPath);
             Directory.CreateDirectory(iconDir);
-            CreateNoisePngImage(iconPath);
+
+            if (isRealImage)
+            {
+                CreateNoisePngImage(iconPath);
+            }
+            else
+            {
+                File.WriteAllText(iconPath, "I am an image");
+            }
 
             // Create nuget package
             using (var nuspecStream = new MemoryStream())
@@ -339,6 +408,16 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 encoder.Save(fs);
             }
+        }
+
+        private static void VerifyImageResult(object result)
+        {
+            Assert.NotNull(result);
+            Assert.True(result is BitmapImage || result is CachedBitmap);
+            var image = result as BitmapSource;
+            Assert.NotNull(image);
+            Assert.Equal(32, image.PixelWidth);
+            Assert.Equal(32, image.PixelHeight);
         }
     }
 }
