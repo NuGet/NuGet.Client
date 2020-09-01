@@ -25,9 +25,9 @@ namespace Test.Utility
             // Uncomment when you want to debug tests.
             // Console.WriteLine(message, args);
 
-            if (EnableLogging && args != null)
+            if (EnableLogging)
             {
-                Logs.Value.Add(message + " " + string.Join(" ", args));
+                Logs.Value.Add(args !=null ? message + " " + string.Join(",", args) : message);
             }
         }
 
