@@ -559,7 +559,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
 
                 var actions = results.Select(a => a.Action).ToArray();
@@ -698,7 +698,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB_UpgradeVersion,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
                 var actions = results.Select(a => a.Action).ToArray();
                 await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
@@ -853,7 +853,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB_UpgradeVersion,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
                 var actions = results.Select(a => a.Action).ToArray();
                 await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
@@ -1003,7 +1003,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB_UpgradeVersion,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
                 var actions = results.Select(a => a.Action).ToArray();
                 await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
@@ -1153,7 +1153,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB_UpgradeVersion,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
                 var actions = results.Select(a => a.Action).ToArray();
                 await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
@@ -1298,7 +1298,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB_DowngradeVersion,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
 
                 var actions = results.Select(a => a.Action).ToArray();
@@ -1441,7 +1441,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB_DowngradeVersion,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
                 var actions = results.Select(a => a.Action).ToArray();
 
@@ -1575,7 +1575,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB_DowngradeVersion,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
                 var actions = results.Select(a => a.Action).ToArray();
 
@@ -1708,7 +1708,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB_DowngradeVersion,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
                 var actions = results.Select(a => a.Action).ToArray();
                 await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
@@ -1817,7 +1817,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         packageA,
                         resolutionContext,
                         testNuGetProjectContext,
-                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories().ToList(),
                         token));
 
                 // Assert
@@ -1920,7 +1920,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB,
                     resolutionContext,
                     testNuGetProjectContext,
-                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories().ToList(),
                     CancellationToken.None);
 
                 var actions = results.Select(a => a.Action).ToArray();

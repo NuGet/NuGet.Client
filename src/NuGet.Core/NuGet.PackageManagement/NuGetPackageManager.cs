@@ -1531,11 +1531,11 @@ namespace NuGet.PackageManagement
 
         // Preview and return ResolvedActions for many NuGetProjects.
         public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
-            IEnumerable<NuGetProject> nuGetProjects,
+            IReadOnlyCollection<NuGetProject> nuGetProjects,
             PackageIdentity packageIdentity,
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
-            IEnumerable<SourceRepository> activeSources,
+            IReadOnlyCollection<SourceRepository> activeSources,
             CancellationToken token)
         {
             if (nuGetProjects == null)
@@ -1563,7 +1563,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(activeSources));
             }
 
-            if (!activeSources.Any())
+            if (activeSources.Count == 0)
             {
                 throw new ArgumentException("At least 1 item expected for " + nameof(activeSources));
             }
@@ -1593,7 +1593,7 @@ namespace NuGet.PackageManagement
                 }
             }
 
-            if (buildIntegratedProjectsToUpdate.Any())
+            if (buildIntegratedProjectsToUpdate.Count != 0)
             {
                 // Run build integrated project preview for all projects at the same time
                 var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
@@ -1602,8 +1602,7 @@ namespace NuGet.PackageManagement
                 packageIdentity,
                 activeSources,
                 nuGetProjectContext,
-                token
-                );
+                token);
                 results.AddRange(resolvedActions);
             }
 
@@ -2584,9 +2583,9 @@ namespace NuGet.PackageManagement
 
             var resolvedAction = await PreviewBuildIntegratedProjectsActionsAsync(
                 new List<BuildIntegratedNuGetProject>() { buildIntegratedProject },
-                new Dictionary<string, IEnumerable<NuGetProjectAction>>(PathUtility.GetStringComparerBasedOnOS())
+                new Dictionary<string, NuGetProjectAction[]>(PathUtility.GetStringComparerBasedOnOS())
                 {
-                    { buildIntegratedProject.MSBuildProjectPath, nuGetProjectActions}
+                    { buildIntegratedProject.MSBuildProjectPath, nuGetProjectActions.ToArray()}
                 },
                 packageIdentity: null, // since we have nuGetProjectActions no need packageIdentity
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
@@ -2602,16 +2601,16 @@ namespace NuGet.PackageManagement
         /// Run project actions for build integrated many projects.
         /// </summary>
         private async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
-            IEnumerable<BuildIntegratedNuGetProject> buildIntegratedProjects,
-            Dictionary<string, IEnumerable<NuGetProjectAction>> nugetProjectActionsLookup,
+            IReadOnlyCollection<BuildIntegratedNuGetProject> buildIntegratedProjects,
+            Dictionary<string, NuGetProjectAction[]> nugetProjectActionsLookup,
             PackageIdentity packageIdentity,
-            IEnumerable<SourceRepository> primarySources,
+            IReadOnlyCollection<SourceRepository> primarySources,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             if (nugetProjectActionsLookup == null)
             {
-                nugetProjectActionsLookup = new Dictionary<string, IEnumerable<NuGetProjectAction>>(PathUtility.GetStringComparerBasedOnOS());
+                nugetProjectActionsLookup = new Dictionary<string, NuGetProjectAction[]>(PathUtility.GetStringComparerBasedOnOS());
             }
 
             if (buildIntegratedProjects == null)
@@ -2619,7 +2618,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(buildIntegratedProjects));
             }
 
-            if (!buildIntegratedProjects.Any())
+            if (buildIntegratedProjects.Count == 0)
             {
                 // Return empty if there are no buildIntegratedProjects.
                 return Enumerable.Empty<ResolvedAction>();
@@ -2630,7 +2629,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
-            if (!nugetProjectActionsLookup.Any() && packageIdentity == null)
+            if (nugetProjectActionsLookup.Count == 0 && packageIdentity == null)
             {
                 // Return empty if there are neither actions nor packageIdentity.
                 return Enumerable.Empty<ResolvedAction>();
@@ -2666,7 +2665,7 @@ namespace NuGet.PackageManagement
 
                 if (packageIdentity != null)
                 {
-                    if (primarySources == null || !primarySources.Any())
+                    if (primarySources == null || primarySources.Count == 0)
                     {
                         throw new ArgumentNullException($"Should have value in {nameof(primarySources)} if there is value for {nameof(packageIdentity)}");
                     }
@@ -2682,9 +2681,9 @@ namespace NuGet.PackageManagement
                         throw new ArgumentNullException($"Either should have value in {nameof(nugetProjectActionsLookup)} for {buildIntegratedProject.MSBuildProjectPath} or {nameof(packageIdentity)} & {nameof(primarySources)}");
                     }
 
-                    nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath].ToArray();
+                    nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath];
 
-                    if (!nuGetProjectActions.Any())
+                    if (nuGetProjectActions.Length == 0)
                     {
                         // Continue to next project if there are no actions for current project.
                         continue;
@@ -2779,7 +2778,7 @@ namespace NuGet.PackageManagement
             foreach (var buildIntegratedProject in buildIntegratedProjects)
             {
                 var nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath];
-                var nuGetProjectActionsList = nuGetProjectActions.ToList();
+                var nuGetProjectActionsList = nuGetProjectActions;
                 var updatedPackageSpec = updatedNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath];
                 var originalPackageSpec = originalNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath];
                 var originalLockFile = lockFileLookup[buildIntegratedProject.MSBuildProjectPath];
@@ -2813,7 +2812,7 @@ namespace NuGet.PackageManagement
 
                 // If the restore failed and this was a single package install, try to install the package to a subset of
                 // the target frameworks.
-                if (nuGetProjectActionsList.Count == 1 &&
+                if (nuGetProjectActionsList.Length == 1 &&
                     firstAction.NuGetProjectActionType == NuGetProjectActionType.Install &&
                     !restoreResult.Result.Success &&
                     successfulFrameworks.Any() &&

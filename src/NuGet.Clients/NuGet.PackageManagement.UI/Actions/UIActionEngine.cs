@@ -839,11 +839,11 @@ namespace NuGet.PackageManagement.UI
             if (userAction.Action == NuGetProjectActionType.Install)
             {
                 results.AddRange(await _packageManager.PreviewProjectsInstallPackageAsync(
-                    targets,
+                    targets?.ToList(),
                     new PackageIdentity(userAction.PackageId, userAction.Version),
                     resolutionContext,
                     projectContext,
-                    uiService.ActiveSources,
+                    uiService.ActiveSources?.ToList(),
                     token
                 ));
             }
