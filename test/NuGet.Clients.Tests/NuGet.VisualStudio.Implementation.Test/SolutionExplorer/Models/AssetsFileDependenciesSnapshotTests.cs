@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio.SolutionExplorer.Models;
