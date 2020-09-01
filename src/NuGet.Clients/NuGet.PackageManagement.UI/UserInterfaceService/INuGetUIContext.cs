@@ -14,6 +14,8 @@ namespace NuGet.PackageManagement.UI
 {
     public interface INuGetUIContext : IDisposable
     {
+        event EventHandler<IReadOnlyCollection<ProjectAction>> ProjectActionsExecuted;
+
         ISourceRepositoryProvider SourceProvider { get; }
 
         IVsSolutionManager SolutionManager { get; }
@@ -37,5 +39,7 @@ namespace NuGet.PackageManagement.UI
         Task<bool> IsNuGetProjectUpgradeableAsync(IProjectContextInfo project, CancellationToken cancellationToken);
 
         Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
+
+        void FireProjectActionsExecuted(IReadOnlyCollection<ProjectAction> projectActions);
     }
 }

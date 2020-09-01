@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
                 ProjectStyle projectStyle = ProjectStyle.Unknown;
-                string? uniqueId = null;
+                string? projectId = null;
 
                 int propertyCount = reader.ReadMapHeader();
                 for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
@@ -44,7 +44,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     switch (reader.ReadString())
                     {
                         case ProjectIdPropertyName:
-                            uniqueId = reader.ReadString();
+                            projectId = reader.ReadString();
                             break;
                         case ProjectKindPropertyName:
                             projectKind = options.Resolver.GetFormatter<NuGetProjectKind>().Deserialize(ref reader, options);
@@ -58,9 +58,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
-                Assumes.NotNull(uniqueId);
+                Assumes.NotNull(projectId);
 
-                return new ProjectContextInfo(uniqueId, projectStyle, projectKind);
+                return new ProjectContextInfo(projectId, projectStyle, projectKind);
             }
             finally
             {

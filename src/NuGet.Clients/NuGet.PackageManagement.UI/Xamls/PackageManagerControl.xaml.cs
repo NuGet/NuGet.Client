@@ -154,6 +154,8 @@ namespace NuGet.PackageManagement.UI
             solutionManager.ProjectRenamed += OnProjectRenamed;
             solutionManager.AfterNuGetCacheUpdated += OnNuGetCacheUpdated;
 
+            Model.Context.ProjectActionsExecuted += OnProjectActionsExecuted;
+
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
             Unloaded += PackageManagerUnloaded;
@@ -256,16 +258,35 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task RefreshProjectAfterActionAsync(TimeSpan timeSpan, ActionsExecutedEventArgs e)
+        private void OnProjectActionsExecuted(object sender, IReadOnlyCollection<ProjectAction> actions)
+        {
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
+            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
+            if (IsVisible)
+            {
+                if (Model.IsSolution)
+                {
+                    RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
+                }
+                else
+                {
+                    string[] projectIds = actions.Select(action => action.ProjectId).ToArray();
+
+                    RefreshProjectAfterAction(timeSpan, projectIds);
+                }
+            }
+            else
+            {
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.ActionsExecuted, RefreshOperationStatus.NoOp);
+            }
+        }
+
+        private void RefreshProjectAfterAction(TimeSpan timeSpan, IReadOnlyCollection<string> projectIds)
         {
             // this is a project package manager, so there is one and only one project.
             var project = Model.Context.Projects.First();
-            var projectName = await project.GetUniqueNameOrNameAsync(CancellationToken.None);
 
-            // TODO: Action needs to return PackageContextInfo
-            // we need refresh when packages are installed into or uninstalled from the project
-            if (e.Actions.Any(action =>
-                NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
+            if (projectIds.Contains(project.ProjectId, StringComparer.OrdinalIgnoreCase))
             {
                 RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
             }
@@ -1376,6 +1397,8 @@ namespace NuGet.PackageManagement.UI
             solutionManager.ProjectRenamed -= OnProjectRenamed;
             solutionManager.AfterNuGetCacheUpdated -= OnNuGetCacheUpdated;
 
+            Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
+            
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
 
             Model.Dispose();
@@ -1476,7 +1499,7 @@ namespace NuGet.PackageManagement.UI
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
 
-            // nugetUi.Projects = Model.Context.Projects;
+            nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
         }
 

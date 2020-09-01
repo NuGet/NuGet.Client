@@ -73,12 +73,17 @@ namespace NuGet.PackageManagement.UI
 
         public int OnClose(ref uint pgrfSaveOptions)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await _content?.SaveSettingsAsync(CancellationToken.None);
-            });
+            PackageManagerControl content = _content;
 
-            _content?.Model.Context.UserSettingsManager.PersistSettings();
+            if (content != null)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await content.SaveSettingsAsync(CancellationToken.None);
+                });
+
+                content.Model.Context.UserSettingsManager.PersistSettings();
+            }
 
             Closed?.Invoke(this, EventArgs.Empty);
 

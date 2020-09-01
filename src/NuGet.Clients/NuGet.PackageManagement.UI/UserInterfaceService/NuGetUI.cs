@@ -108,11 +108,13 @@ namespace NuGet.PackageManagement.UI
             return nuGetUi;
         }
 
-        public bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects)
+        public async Task<bool> WarnAboutDotnetDeprecationAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
             var result = false;
 
-            InvokeOnUIThread(() => { result = WarnAboutDotnetDeprecationImpl(projects); });
+            DeprecatedFrameworkModel dataContext = await DotnetDeprecatedPrompt.GetDeprecatedFrameworkModelAsync(projects, cancellationToken);
+
+            InvokeOnUIThread(() => { result = WarnAboutDotnetDeprecationImpl(dataContext); });
 
             return result;
         }
@@ -131,11 +133,11 @@ namespace NuGet.PackageManagement.UI
             return result;
         }
 
-        private bool WarnAboutDotnetDeprecationImpl(IEnumerable<NuGetProject> projects)
+        private bool WarnAboutDotnetDeprecationImpl(DeprecatedFrameworkModel dataContext)
         {
             var window = new DeprecatedFrameworkWindow(UIContext)
             {
-                DataContext = DotnetDeprecatedPrompt.GetDeprecatedFrameworkModel(projects)
+                DataContext = dataContext
             };
 
             var dialogResult = window.ShowModal();
