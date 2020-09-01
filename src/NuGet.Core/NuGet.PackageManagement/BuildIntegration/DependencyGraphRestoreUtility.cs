@@ -2,22 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks.Dataflow;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using System.Collections.Concurrent;
-using NuGet.Packaging;
 
 namespace NuGet.PackageManagement
 {
@@ -337,14 +337,13 @@ namespace NuGet.PackageManagement
             foreach (IDependencyGraphProject project in projects)
             {
                 var (packageSpecs, projectAdditionalMessages) = await project.GetPackageSpecsAndAdditionalMessagesAsync(context);
-                await actionBlock.SendAsync(new ProjectRestoreSpec()
-                {
-                    DgSpec =  dgSpec,
-                    PackageSpecs = packageSpecs,
-                    ProjectAdditionalMessages = projectAdditionalMessages,
-                    KnownProjects = knownProjects,
-                    AllAdditionalMessages = allAdditionalMessages
-                });
+                await actionBlock.SendAsync(new ProjectRestoreSpec(
+                                                dgSpec,
+                                                packageSpecs,
+                                                projectAdditionalMessages,
+                                                knownProjects,
+                                                allAdditionalMessages)
+                                            );
             }
 
             actionBlock.Complete();
@@ -392,9 +391,11 @@ namespace NuGet.PackageManagement
                     {
                         for (int frameworkCount = 0; frameworkCount < packageSpec.RestoreMetadata.TargetFrameworks.Count; frameworkCount++)
                         {
-                            for (var projectReferenceCount = 0; projectReferenceCount < packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences.Count; projectReferenceCount++)
+                            IList<ProjectRestoreReference> projectReferences = packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences;
+
+                            for (var projectReferenceCount = 0; projectReferenceCount < projectReferences.Count; projectReferenceCount++)
                             {
-                                if (!restoreSpecData.KnownProjects.ContainsKey(packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
+                                if (!restoreSpecData.KnownProjects.ContainsKey(projectReferences[projectReferenceCount].ProjectPath))
                                 {
                                     var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
                                     if (File.Exists(persistedDGSpecPath))
@@ -404,6 +405,7 @@ namespace NuGet.PackageManagement
                                         {
                                             // Include all the missing projects from the closure.
                                             // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
+                                            // Here below 'false' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
                                             restoreSpecData.KnownProjects[dependentPackageSpec.RestoreMetadata.ProjectPath] = false;
 
                                             lock (dgSpec)
@@ -463,11 +465,26 @@ namespace NuGet.PackageManagement
 
         private class ProjectRestoreSpec
         {
-            public DependencyGraphSpec DgSpec { get; set; }
-            public IReadOnlyList<PackageSpec> PackageSpecs { get; set; }
-            public IReadOnlyList<IAssetsLogMessage> ProjectAdditionalMessages { get; set; }
-            public ConcurrentDictionary<string, bool> KnownProjects { get; set; }
-            public ConcurrentBag<IAssetsLogMessage> AllAdditionalMessages { get; set; }
+            public readonly DependencyGraphSpec DgSpec;
+            public readonly IReadOnlyList<PackageSpec> PackageSpecs;
+            public readonly IReadOnlyList<IAssetsLogMessage> ProjectAdditionalMessages;
+            public readonly ConcurrentDictionary<string, bool> KnownProjects;
+            public readonly ConcurrentBag<IAssetsLogMessage> AllAdditionalMessages;
+
+            public ProjectRestoreSpec(
+                    DependencyGraphSpec dgSpec,
+                    IReadOnlyList<PackageSpec> packageSpecs,
+                    IReadOnlyList<IAssetsLogMessage> projectAdditionalMessages,
+                    ConcurrentDictionary<string, bool> knownProjects,
+                    ConcurrentBag<IAssetsLogMessage> allAdditionalMessages
+            )
+            {
+                DgSpec = dgSpec;
+                PackageSpecs = packageSpecs;
+                ProjectAdditionalMessages = projectAdditionalMessages;
+                KnownProjects = knownProjects;
+                AllAdditionalMessages = allAdditionalMessages;
+            }
         }
     }
 }
