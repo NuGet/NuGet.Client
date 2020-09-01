@@ -321,7 +321,7 @@ namespace NuGet.PackageManagement
             DependencyGraphCacheContext context)
         {
             var dgSpec = new DependencyGraphSpec();
-            var allAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>;
+            var allAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>();
 
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
             var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
