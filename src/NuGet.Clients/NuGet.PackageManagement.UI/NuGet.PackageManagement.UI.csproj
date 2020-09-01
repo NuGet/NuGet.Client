@@ -520,7 +520,7 @@
     <Resource Include="Resources\StatusStop_32x.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Refresh_grey_16x.png" />
+    <Resource Include="Resources\Refresh.16.16.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\StatusInformation_16x.png" />
