@@ -1,5 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 using Xunit;
 
@@ -56,6 +63,57 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
 
             Assert.Equal(1, dependencies.Count);
             Assert.True(dependencies.ContainsKey("system.runtime"));
+        }
+
+        [Fact]
+        public void ParseLibraries_LockFileTargetLibrariesMatchesDependencies_Succeeds()
+        {
+            // Arrange
+            LockFileTarget lockFileTarget = new LockFileTarget();
+            lockFileTarget.Libraries = new List<LockFileTargetLibrary>
+            {
+                new LockFileTargetLibrary()
+                {
+                    Name = "packageA",
+                    Type = "package",
+                    Version = NuGetVersion.Parse("1.0.0")
+                },
+                new LockFileTargetLibrary()
+                {
+                    Name = "packageB",
+                    Type = "package",
+                    Version = NuGetVersion.Parse("1.0.0")
+                },
+                new LockFileTargetLibrary()
+                {
+                    Name = "projectA",
+                    Type = "project",
+                    Version = NuGetVersion.Parse("1.0.0")
+                },
+                new LockFileTargetLibrary()
+                {
+                    Name = "projectB",
+                    Type = "project",
+                    Version = NuGetVersion.Parse("1.0.0")
+                }
+            };
+
+            var dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(lockFileTarget);
+
+            Assert.Equal(lockFileTarget.Libraries.Count, dependencies.Count);
+            Assert.All<LockFileTargetLibrary>(lockFileTarget.Libraries,
+                source =>
+                {
+                    Assert.True(dependencies.ContainsKey(source.Name));
+
+                    var target = dependencies[source.Name];
+                    Assert.Equal(source.Name, target.Name);
+                    Assert.Equal(source.Version.ToNormalizedString(), target.Version);
+
+                    AssetsFileLibraryType sourceType;
+                    Assert.True(Enum.TryParse<AssetsFileLibraryType>(source.Type, ignoreCase: true, out sourceType));
+                    Assert.Equal(sourceType, target.Type);
+                });
         }
     }
 }
