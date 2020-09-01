@@ -112,7 +112,6 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\packageicon.png" />
     <Content Include="Resources\Toolbar.png" />
   </ItemGroup>
   <ItemGroup>

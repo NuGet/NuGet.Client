@@ -131,7 +131,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.Embeddable" ExcludeAssets="build" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\packageicon.png" />
     <Content Include="Resources\Toolbar.png" />
     <VSCTCompile Include="NuGetTools.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
