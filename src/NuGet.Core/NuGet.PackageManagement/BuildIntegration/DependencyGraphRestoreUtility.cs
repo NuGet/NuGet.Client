@@ -325,8 +325,9 @@ namespace NuGet.PackageManagement
 
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
             var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
+            // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
             knownProjects.AddRange(projects.Select(e => e.MSBuildProjectPath)
-                .Select(proj => new KeyValuePair<string, bool>(proj, false)));
+                .Select(proj => new KeyValuePair<string, bool>(proj, true)));
 
             var options = new ExecutionDataflowBlockOptions()
             {
@@ -358,7 +359,7 @@ namespace NuGet.PackageManagement
         {
             var dgSpec = restoreSpecData.DgSpec;
 
-            if (restoreSpecData.ProjectAdditionalMessages?.Any() ?? false)
+            if (restoreSpecData.ProjectAdditionalMessages?.Count > 0)
             {
                 foreach (var projectAdditionalMessage in restoreSpecData.ProjectAdditionalMessages)
                 {
@@ -405,8 +406,8 @@ namespace NuGet.PackageManagement
                                         {
                                             // Include all the missing projects from the closure.
                                             // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
-                                            // Here below 'false' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
-                                            restoreSpecData.KnownProjects[dependentPackageSpec.RestoreMetadata.ProjectPath] = false;
+                                            // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
+                                            restoreSpecData.KnownProjects[dependentPackageSpec.RestoreMetadata.ProjectPath] = true;
 
                                             lock (dgSpec)
                                             {
