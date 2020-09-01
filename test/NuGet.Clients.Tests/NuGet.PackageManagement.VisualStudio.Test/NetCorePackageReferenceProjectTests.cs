@@ -574,7 +574,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 1);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
@@ -711,7 +711,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure all 4 project installed packageB upgraded version.
@@ -866,11 +866,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, targetProjects.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 // Uprade succeed for this top parent project(no parent but with childs).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project has packageB upgraded version.
@@ -1016,11 +1016,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, targetProjects.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 // Upgrade succeed for this middle parent project(with parent and childs).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project still have non-upgraded version.
@@ -1166,11 +1166,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, targetProjects.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 // Upgrade succeed for this bottom project(with parent but no childs).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project still have non-upgraded version.
@@ -1313,7 +1313,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure all 4 project installed packageB downgrade version.
@@ -1448,8 +1448,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, targetProjects.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 // Downgrade fails for this top parent project(no parent but with childs).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
                 Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
@@ -1582,8 +1582,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, targetProjects.Count);
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 // Downgrade fails for this middle parent project(with both parent and child).
                 // Keep existing Upgrade/downgrade of individual project logic and making sure that my change is not breaking it.
                 Assert.False(builtIntegratedActions.All(b => b.RestoreResult.Success));
@@ -1721,8 +1721,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, targetProjects.Count);
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 // There should be no error/warnings
                 Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
@@ -1937,8 +1937,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var actionTelemetryStepEvents = telemetryEvents.OfType<ActionTelemetryStepEvent>();
                 Assert.True(actionTelemetryStepEvents.Any(t => t.SubStepName.Contains("Preview build integrated action time")));
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), netCorePackageReferenceProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, netCorePackageReferenceProjects.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
             }
         }
@@ -2078,8 +2078,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, targetProjects.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
                 var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
@@ -2233,8 +2233,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.Equal(initialInstalledPackages.Count(), 2);
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
-                Assert.Equal(actions.Count(), targetProjects.Count());
-                Assert.Equal(actions.Count(), builtIntegratedActions.Count());
+                Assert.Equal(actions.Length, targetProjects.Count());
+                Assert.Equal(actions.Length, builtIntegratedActions.Count);
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
                 var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();

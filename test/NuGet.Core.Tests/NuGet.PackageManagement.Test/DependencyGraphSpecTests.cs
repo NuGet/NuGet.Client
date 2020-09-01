@@ -10,15 +10,44 @@ namespace NuGet.Test
     public class DependencyGraphSpecTests
     {
         [Fact]
-        public void DependencyGraphSpecTests_WithPackageSpecs()
+        public void WithReplacedSpec()
         {
             // Arrange
             var packageSpecA = new PackageSpec();
             packageSpecA.Title = "A";
             packageSpecA.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = false };
             var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddRestore("a");
-            dgSpec.AddProject(packageSpecA);
+            var packageSpecB = new PackageSpec();
+            packageSpecB.Title = "B";
+            packageSpecB.RestoreMetadata = new ProjectRestoreMetadata()
+            {
+                ProjectUniqueName = "BBB"
+            };
+            var packageSpecC = new PackageSpec();
+            packageSpecC.Title = "C";
+            packageSpecC.RestoreMetadata = new ProjectRestoreMetadata()
+            {
+                ProjectUniqueName = "CCC"
+            };
+
+            // Act
+            dgSpec = dgSpec.WithReplacedSpec(packageSpecA);
+            dgSpec = dgSpec.WithReplacedSpec(packageSpecB);
+            dgSpec = dgSpec.WithReplacedSpec(packageSpecC);
+
+            // Assert
+            Assert.Equal(dgSpec.Projects.Count, 3);
+            Assert.Equal(dgSpec.Restore.Count, 1);
+        }
+
+        [Fact]
+        public void WithPackageSpecs()
+        {
+            // Arrange
+            var packageSpecA = new PackageSpec();
+            packageSpecA.Title = "A";
+            packageSpecA.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = false };
+            var dgSpec = new DependencyGraphSpec();
             var packageSpecB = new PackageSpec();
             packageSpecB.Title = "B";
             packageSpecB.RestoreMetadata = new ProjectRestoreMetadata()
@@ -33,6 +62,7 @@ namespace NuGet.Test
             };
             var newNugetPackageSpecs = new List<PackageSpec>()
             {
+                packageSpecA,
                 packageSpecB,
                 packageSpecC
             };
@@ -42,7 +72,7 @@ namespace NuGet.Test
 
             // Assert
             Assert.Equal(dgSpec.Projects.Count, 3);
-            Assert.Equal(dgSpec.Restore.Count, 2);
+            Assert.Equal(dgSpec.Restore.Count, 3);
         }
     }
 }
