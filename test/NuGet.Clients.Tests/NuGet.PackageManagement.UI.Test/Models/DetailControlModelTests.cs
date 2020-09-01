@@ -98,14 +98,14 @@ namespace NuGet.PackageManagement.UI.Test.Models
         {
             var project = new Mock<IProjectContextInfo>();
 
-            project.Setup(p => p.ProjectKind)
+            project.SetupGet(p => p.ProjectKind)
                 .Returns(projectKind);
 
             var model = new PackageDetailControlModel(
                 solutionManager: Mock.Of<INuGetSolutionManagerService>(),
                 projects: new[] { project.Object });
 
-            Assert.False(_testInstance.Options.ShowClassicOptions);
+            Assert.False(model.Options.ShowClassicOptions);
         }
 
         [Fact]
@@ -113,14 +113,14 @@ namespace NuGet.PackageManagement.UI.Test.Models
         {
             var project = new Mock<IProjectContextInfo>();
 
-            project.Setup(p => p.ProjectKind)
+            project.SetupGet(p => p.ProjectKind)
                 .Returns(NuGetProjectKind.PackagesConfig);
 
             var model = new PackageDetailControlModel(
                 solutionManager: Mock.Of<INuGetSolutionManagerService>(),
                 projects: new[] { project.Object });
 
-            Assert.True(_testInstance.Options.ShowClassicOptions);
+            Assert.True(model.Options.ShowClassicOptions);
         }
     }
 
