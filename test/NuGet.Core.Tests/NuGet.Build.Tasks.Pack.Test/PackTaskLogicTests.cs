@@ -80,6 +80,25 @@ namespace NuGet.Build.Tasks.Pack.Test
         }
 
         [Fact]
+        public void PackTaskLogic_WarnsMissingDot()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir, "net50");
+
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                var logger = (TestLogger)tc.Request.Logger;
+                var messages = logger.WarningMessages.ToArray();
+                Assert.True(messages[0].Contains("net50"));
+                Assert.True(messages[0].Contains("missing dot"));
+            }
+        }
+
+        [Fact]
         public void PackTaskLogic_SplitsTags()
         {
             // Arrange

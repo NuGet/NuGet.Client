@@ -76,8 +76,8 @@ namespace NuGet.Build.Tasks.Pack
                 // This only needs to happen when packing via csproj, not nuspec.
                 packArgs.PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInPackageBuildOutputFolder);
                 packArgs.PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);
-                packArgs.PackTargetArgs.TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage);
-                packArgs.PackTargetArgs.TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols);
+                packArgs.PackTargetArgs.TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage, request);
+                packArgs.PackTargetArgs.TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols, request);
                 packArgs.PackTargetArgs.AssemblyName = request.AssemblyName;
                 packArgs.PackTargetArgs.IncludeBuildOutput = request.IncludeBuildOutput;
                 packArgs.PackTargetArgs.BuildOutputFolder = request.BuildOutputFolders;
@@ -396,7 +396,7 @@ namespace NuGet.Build.Tasks.Pack
             return runner.RunPackageBuild();
         }
 
-        private IEnumerable<OutputLibFile> InitLibFiles(IMSBuildItem[] libFiles)
+        private IEnumerable<OutputLibFile> InitLibFiles(IMSBuildItem[] libFiles, IPackTaskRequest<IMSBuildItem> request)
         {
             var assemblies = new List<OutputLibFile>();
             if (libFiles == null)
@@ -446,6 +446,19 @@ namespace NuGet.Build.Tasks.Pack
                             NuGetLogCode.NU1012,
                             string.Format(CultureInfo.CurrentCulture, Strings.InvalidPlatformVersion, targetFramework)
                         );
+                    }
+                    var isNet5EraTfm = fw.Version.Major >= 5 &&
+                        StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, fw.Framework);
+                    var isNetStandard = StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetStandard, fw.Framework);
+                    if (isNet5EraTfm || isNetStandard)
+                    {
+                        var dotIdx = targetFramework.IndexOf('.');
+                        var dashIdx = targetFramework.IndexOf('-');
+                        var isDottedFwVersion = (dashIdx > -1 && dotIdx > -1 && dotIdx < dashIdx) || dotIdx > -1;
+                        if (!isDottedFwVersion)
+                        {
+                            request.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.MissingRequiredDot, targetFramework));
+                        }
                     }
                 }
 
