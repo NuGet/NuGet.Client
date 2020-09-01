@@ -526,7 +526,6 @@
     <Resource Include="Resources\StatusInformation_16x.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\statuserror.16.16.png" />
     <Resource Include="Resources\statusinformation.16.16.png" />
   </ItemGroup>
   <ItemGroup>
