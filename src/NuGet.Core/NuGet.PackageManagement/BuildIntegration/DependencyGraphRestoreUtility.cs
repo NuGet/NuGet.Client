@@ -321,7 +321,7 @@ namespace NuGet.PackageManagement
             DependencyGraphCacheContext context)
         {
             var dgSpec = new DependencyGraphSpec();
-            ConcurrentBag<IAssetsLogMessage> allAdditionalMessages = null;
+            var allAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>;
 
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
             var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
@@ -351,7 +351,7 @@ namespace NuGet.PackageManagement
             await actionBlock.Completion;
 
             // Return dg file
-            return (dgSpec, allAdditionalMessages?.ToList());
+            return (dgSpec, allAdditionalMessages.ToList());
         }
 
         private static void GetProjectRestoreSpecAndAdditionalMessages(
@@ -361,11 +361,6 @@ namespace NuGet.PackageManagement
 
             if (restoreSpecData.ProjectAdditionalMessages?.Any() ?? false)
             {
-                if (restoreSpecData.AllAdditionalMessages == null)
-                {
-                    restoreSpecData.AllAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>();
-                }
-
                 foreach (var projectAdditionalMessage in restoreSpecData.ProjectAdditionalMessages)
                 {
                     restoreSpecData.AllAdditionalMessages.Add(projectAdditionalMessage);
