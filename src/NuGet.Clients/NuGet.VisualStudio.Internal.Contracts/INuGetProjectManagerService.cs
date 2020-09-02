@@ -52,5 +52,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
             bool removeDependencies,
             bool forceRemove,
             CancellationToken cancellationToken);
+
+        ValueTask<IReadOnlyList<ProjectAction>> GetUpdateActionsAsync(
+            IReadOnlyCollection<string> projectIds,
+            IReadOnlyCollection<PackageIdentity> packageIdentities,
+            VersionConstraints versionConstraints,
+            bool includePrelease,
+            DependencyBehavior dependencyBehavior,
+            IReadOnlyList<string> packageSourceNames,
+            CancellationToken cancellationToken);
     }
 }
