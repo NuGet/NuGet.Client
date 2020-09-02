@@ -1,3 +1,4 @@
 #nullable enable
 NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.Message.get -> string?
 NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.PackageDeprecationMetadataContextInfo(string? message, System.Collections.Generic.IReadOnlyCollection<string!>? reasons, NuGet.VisualStudio.Internal.Contracts.AlternatePackageMetadataContextInfo? alternatePackageContextInfo) -> void
+NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.ReadmeUrl.get -> System.Uri?

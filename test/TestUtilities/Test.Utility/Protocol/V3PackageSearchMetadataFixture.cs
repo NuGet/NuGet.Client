@@ -68,6 +68,8 @@ namespace NuGet.Test.Utility
 
             public PackageIdentity Identity => new PackageIdentity("nuget.psm.test", new NuGetVersion(0, 0, 1));
 
+            public Uri ReadmeUrl => null;
+
             public Uri LicenseUrl => null;
 
             public Uri ProjectUrl => null;
