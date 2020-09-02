@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public void PackageReader_NotNull()
+        public void PackageReader_Always_IsNotNull()
         {
             Assert.NotNull(_testInstance.PackageReader);
 
@@ -88,6 +88,39 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             PackageReaderBase reader = lazyReader();
             Assert.IsType(typeof(PackageArchiveReader), reader);
+        }
+
+        [Theory]
+        [InlineData(NuGetProjectKind.Unknown)]
+        [InlineData(NuGetProjectKind.PackageReference)]
+        [InlineData(NuGetProjectKind.ProjectK)]
+        public void Options_ShowClassicOptions_WhenProjectKindIsNotProjectConfig_ReturnsFalse(NuGetProjectKind projectKind)
+        {
+            var project = new Mock<IProjectContextInfo>();
+
+            project.SetupGet(p => p.ProjectKind)
+                .Returns(projectKind);
+
+            var model = new PackageDetailControlModel(
+                solutionManager: Mock.Of<INuGetSolutionManagerService>(),
+                projects: new[] { project.Object });
+
+            Assert.False(model.Options.ShowClassicOptions);
+        }
+
+        [Fact]
+        public void Options_ShowClassicOptions_WhenProjectKindIsProjectConfig_ReturnsTrue()
+        {
+            var project = new Mock<IProjectContextInfo>();
+
+            project.SetupGet(p => p.ProjectKind)
+                .Returns(NuGetProjectKind.PackagesConfig);
+
+            var model = new PackageDetailControlModel(
+                solutionManager: Mock.Of<INuGetSolutionManagerService>(),
+                projects: new[] { project.Object });
+
+            Assert.True(model.Options.ShowClassicOptions);
         }
     }
 
@@ -125,7 +158,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public void PackageReader_NotNull()
+        public void PackageReader_Always_IsNotNull()
         {
             Assert.NotNull(_testInstance.PackageReader);
 
