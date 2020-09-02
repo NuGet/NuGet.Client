@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -121,6 +123,70 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 projects: new[] { project.Object });
 
             Assert.True(model.Options.ShowClassicOptions);
+        }
+
+        [Fact]
+        public void IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreNull_ReturnsFalse()
+        {
+            var model = new PackageDetailControlModel(
+                Mock.Of<INuGetSolutionManagerService>(),
+                Enumerable.Empty<IProjectContextInfo>());
+
+            Assert.Null(model.SelectedVersion);
+            Assert.Null(model.InstalledVersion);
+            Assert.False(model.IsSelectedVersionInstalled);
+        }
+
+        [Fact]
+        public async Task IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreNotEqual_ReturnsFalse()
+        {
+            var model = new PackageDetailControlModel(
+                Mock.Of<INuGetSolutionManagerService>(),
+                Enumerable.Empty<IProjectContextInfo>());
+
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+
+            await model.SetCurrentPackage(
+                new PackageItemListViewModel()
+                {
+                    InstalledVersion = installedVersion,
+                    Version = installedVersion
+                },
+                ItemFilter.All,
+                () => null);
+
+            NuGetVersion selectedVersion = NuGetVersion.Parse("2.0.0");
+
+            model.SelectedVersion = new DisplayVersion(selectedVersion, additionalInfo: null);
+
+            Assert.NotNull(model.SelectedVersion);
+            Assert.NotNull(model.InstalledVersion);
+            Assert.False(model.IsSelectedVersionInstalled);
+        }
+
+        [Fact]
+        public async Task IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreEqual_ReturnsTrue()
+        {
+            var model = new PackageDetailControlModel(
+                Mock.Of<INuGetSolutionManagerService>(),
+                Enumerable.Empty<IProjectContextInfo>());
+
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+
+            await model.SetCurrentPackage(
+                new PackageItemListViewModel()
+                {
+                    InstalledVersion = installedVersion,
+                    Version = installedVersion
+                },
+                ItemFilter.All,
+                () => null);
+
+            model.SelectedVersion = new DisplayVersion(installedVersion, additionalInfo: null);
+
+            Assert.NotNull(model.SelectedVersion);
+            Assert.NotNull(model.InstalledVersion);
+            Assert.True(model.IsSelectedVersionInstalled);
         }
     }
 
