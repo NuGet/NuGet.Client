@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.UI
             _options = new Options();
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
-            _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.Classic);
+            _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var project in projects)
             {
-                if (project.ProjectKind == NuGetProjectKind.MSBuild)
+                if (project.ProjectKind == NuGetProjectKind.PackagesConfig)
                 {
                     // cache allowed version range for each nuget project for current selected package
                     var packageReference = (await project.GetInstalledPackagesAsync(CancellationToken.None))
@@ -135,7 +135,7 @@ namespace NuGet.PackageManagement.UI
                         _projectVersionConstraints.Add(constraint);
                     }
                 }
-                else if (project.ProjectKind == NuGetProjectKind.BuildIntegrated)
+                else if (project.ProjectKind == NuGetProjectKind.PackageReference)
                 {
                     var packageReferences = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
@@ -274,7 +274,7 @@ namespace NuGet.PackageManagement.UI
             {
                 VersionRange range;
 
-                if (project.ProjectKind == NuGetProjectKind.BuildIntegrated && package.AllowedVersions != null)
+                if (project.ProjectKind == NuGetProjectKind.PackageReference && package.AllowedVersions != null)
                 {
                     // The actual range is passed as the allowed version range for build integrated projects.
                     range = package.AllowedVersions;
@@ -432,6 +432,8 @@ namespace NuGet.PackageManagement.UI
             get { return _versions; }
         }
 
+        public virtual void OnSelectedVersionChanged() { }
+
         private DisplayVersion _selectedVersion;
 
         public DisplayVersion SelectedVersion
@@ -456,6 +458,7 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     OnPropertyChanged(nameof(SelectedVersion));
+                    OnSelectedVersionChanged();
                 }
             }
         }
@@ -667,11 +670,23 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private bool _installedVersionIsAutoReferenced;
+        public bool InstalledVersionIsAutoReferenced
+        {
+            get { return _installedVersionIsAutoReferenced; }
+            set
+            {
+                _installedVersionIsAutoReferenced = value;
+                OnPropertyChanged(nameof(InstalledVersionIsAutoReferenced));
+            }
+        }
+
         protected void SetAutoReferencedCheck(NuGetVersion installedVersion)
         {
             var autoReferenced = installedVersion != null
                     && _projectVersionConstraints.Any(e => e.IsAutoReferenced);
 
+            InstalledVersionIsAutoReferenced = autoReferenced;
             SetAutoReferencedCheck(autoReferenced);
         }
 
