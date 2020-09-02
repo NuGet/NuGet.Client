@@ -32,6 +32,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 PackageReferenceFormatter.Instance,
                 PackageSourceFormatter.Instance,
                 PackageSourceUpdateOptionsFormatter.Instance,
+                ProjectActionFormatter.Instance,
                 VersionRangeFormatter.Instance
             };
             var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };

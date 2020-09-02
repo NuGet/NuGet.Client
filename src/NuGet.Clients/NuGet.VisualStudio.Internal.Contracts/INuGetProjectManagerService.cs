@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
+using NuGet.Resolver;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
@@ -27,6 +29,28 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<(bool, string?)> TryGetInstalledPackageFilePathAsync(
             string projectId,
             PackageIdentity packageIdentity,
+            CancellationToken cancellationToken);
+        ValueTask<IReadOnlyCollection<IProjectContextInfo>> GetProjectsWithDeprecatedDotnetFrameworkAsync(
+            CancellationToken cancellationToken);
+
+        ValueTask BeginOperationAsync(CancellationToken cancellationToken);
+        ValueTask EndOperationAsync(CancellationToken cancellationToken);
+        ValueTask ExecuteActionsAsync(IReadOnlyList<ProjectAction> actions, CancellationToken cancellationToken);
+
+        ValueTask<IReadOnlyList<ProjectAction>> GetInstallActionsAsync(
+            string projectId,
+            PackageIdentity packageIdentity,
+            VersionConstraints versionConstraints,
+            bool includePrelease,
+            DependencyBehavior dependencyBehavior,
+            IReadOnlyList<string> packageSourceNames,
+            CancellationToken cancellationToken);
+
+        ValueTask<IReadOnlyList<ProjectAction>> GetUninstallActionsAsync(
+            string projectId,
+            PackageIdentity packageIdentity,
+            bool removeDependencies,
+            bool forceRemove,
             CancellationToken cancellationToken);
     }
 }

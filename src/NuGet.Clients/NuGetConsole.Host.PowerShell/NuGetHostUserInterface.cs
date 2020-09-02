@@ -22,7 +22,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public const ConsoleColor NoColor = (ConsoleColor)(-1);
         private const int VkCodeReturn = 13;
         private const int VkCodeBackspace = 8;
-        private static Color[] _consoleColors;
+        private static Color[] ConsoleColors;
         private readonly NuGetPSHost _host;
         private readonly object _instanceLock = new object();
         private PSHostRawUserInterface _rawUI;
@@ -60,12 +60,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private static Type GetFieldType(FieldDescription field)
         {
             Type type = null;
-            if (!String.IsNullOrEmpty(field.ParameterAssemblyFullName))
+            if (!string.IsNullOrEmpty(field.ParameterAssemblyFullName))
             {
                 LanguagePrimitives.TryConvertTo(field.ParameterAssemblyFullName, out type);
             }
             if ((type == null)
-                && !String.IsNullOrEmpty(field.ParameterTypeFullName))
+                && !string.IsNullOrEmpty(field.ParameterTypeFullName))
             {
                 LanguagePrimitives.TryConvertTo(field.ParameterTypeFullName, out type);
             }
@@ -77,20 +77,19 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             if (descriptions == null)
             {
-                throw new ArgumentNullException("descriptions");
+                throw new ArgumentNullException(nameof(descriptions));
             }
             if (descriptions.Count == 0)
             {
                 // emulate powershell.exe behavior for empty collection.
-                throw new ArgumentException(
-                    Resources.ZeroLengthCollection, "descriptions");
+                throw new ArgumentException(Resources.ZeroLengthCollection, nameof(descriptions));
             }
 
-            if (!String.IsNullOrEmpty(caption))
+            if (!string.IsNullOrEmpty(caption))
             {
                 WriteLine(caption);
             }
-            if (!String.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(message))
             {
                 WriteLine(message);
             }
@@ -103,9 +102,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             foreach (FieldDescription description in descriptions)
             {
                 // if type is not resolvable, throw (as per powershell.exe)
-                if ((description == null)
-                    ||
-                    String.IsNullOrEmpty(description.ParameterAssemblyFullName))
+                if (description == null
+                    || string.IsNullOrEmpty(description.ParameterAssemblyFullName))
                 {
                     throw new ArgumentException("descriptions[" + index + "]");
                 }
@@ -116,7 +114,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 // as per powershell.exe, if input value cannot be coerced to
                 // parameter type then default to string.
-                Type fieldType = GetFieldType(description) ?? typeof(String);
+                Type fieldType = GetFieldType(description) ?? typeof(string);
 
                 // is parameter a collection type?
                 if (typeof(IList).IsAssignableFrom(fieldType))
@@ -133,7 +131,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 // user hit ESC?
                 if (cancelled)
                 {
-                    WriteLine(String.Empty);
+                    WriteLine(string.Empty);
                     results.Clear();
                     break;
                 }
@@ -159,7 +157,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // if field is a credential type, we prompt with the secure dialog
             else if (fieldType.Equals(typeof(PSCredential)))
             {
-                answer = PromptForCredential(null, null, null, String.Empty);
+                answer = PromptForCredential(null, null, null, string.Empty);
                 cancelled = (answer == null);
             }
             else
@@ -197,7 +195,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             bool cancelled;
             // we default to an object[] array
-            Type elementType = typeof(Object);
+            Type elementType = typeof(object);
 
             if (fieldType.IsArray)
             {
@@ -212,7 +210,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             while (true)
             {
                 // prompt for collection element, suffixed with the current index
-                string prompt = String.Format(
+                string prompt = string.Format(
                     CultureInfo.CurrentCulture,
                     "{0}[{1}]: ", name, valuesToConvert.Count);
 
@@ -232,7 +230,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 // user hit ENTER on an empty line? we treat this as 
                 // terminating the input for the collection prompting.
-                bool inputComplete = String.IsNullOrEmpty(input);
+                bool inputComplete = string.IsNullOrEmpty(input);
 
                 if (cancelled || inputComplete)
                 {
@@ -265,12 +263,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
         {
-            if (!String.IsNullOrEmpty(caption))
+            if (!string.IsNullOrEmpty(caption))
             {
                 WriteLine(caption);
             }
 
-            if (!String.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(message))
             {
                 WriteLine(message);
             }
@@ -286,7 +284,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     ChoiceDescription choice = choices[index];
                     string label = choice.Label;
                     int ampIndex = label.IndexOf('&'); // hotkey marker
-                    accelerators[index] = String.Empty; // default to empty
+                    accelerators[index] = string.Empty; // default to empty
 
                     // accelerator marker found?
                     if (ampIndex != -1
@@ -298,13 +296,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             .ToUpper(CultureInfo.CurrentCulture);
                     }
 
-                    Write(String.Format(CultureInfo.CurrentCulture, "[{0}] {1}  ",
+                    Write(string.Format(CultureInfo.CurrentCulture, "[{0}] {1}  ",
                         accelerators[index],
                         // remove the redundant marker from output
-                        label.Replace("&", String.Empty)));
+                        label.Replace("&", string.Empty)));
                 }
 
-                Write(String.Format(CultureInfo.CurrentCulture, Resources.PromptForChoiceSuffix, accelerators[defaultChoice]));
+                Write(string.Format(CultureInfo.CurrentCulture, Resources.PromptForChoiceSuffix, accelerators[defaultChoice]));
 
                 string input = ReadLine().Trim();
                 switch (input.Length)
@@ -324,7 +322,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             // show help
                             for (int index = 0; index < choices.Count; index++)
                             {
-                                WriteLine(String.Format(
+                                WriteLine(string.Format(
                                     CultureInfo.CurrentCulture, "{0} - {1}.", accelerators[index], choices[index].HelpMessage));
                             }
                         }
@@ -417,7 +415,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
             finally
             {
-                WriteLine(String.Empty);
+                WriteLine(string.Empty);
             }
         }
 
@@ -461,7 +459,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
             finally
             {
-                WriteLine(String.Empty);
+                WriteLine(string.Empty);
             }
         }
 
@@ -470,10 +468,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         /// </summary>
         private static Color? ToColor(ConsoleColor c)
         {
-            if (_consoleColors == null)
+            if (ConsoleColors == null)
             {
                 // colors copied from hkcu:\Console color table
-                _consoleColors = new Color[16]
+                ConsoleColors = new Color[16]
                     {
                         Color.FromRgb(0x00, 0x00, 0x00),
                         Color.FromRgb(0x00, 0x00, 0x80),
@@ -496,9 +494,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             var i = (int)c;
             if (i >= 0
-                && i < _consoleColors.Length)
+                && i < ConsoleColors.Length)
             {
-                return _consoleColors[i];
+                return ConsoleColors[i];
             }
 
             return null; // invalid color

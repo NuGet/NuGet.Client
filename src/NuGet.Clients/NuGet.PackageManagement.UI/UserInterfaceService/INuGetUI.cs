@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -26,7 +27,7 @@ namespace NuGet.PackageManagement.UI
 
         Task UpgradeProjectsToPackageReferenceAsync(IEnumerable<IProjectContextInfo> msBuildProjects);
 
-        bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects);
+        Task<bool> WarnAboutDotnetDeprecationAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken);
 
         bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages);
 

@@ -28,6 +28,8 @@ namespace NuGet.PackageManagement.UI
         private readonly NuGetSolutionManagerServiceWrapper _solutionManagerService;
         private IProjectContextInfo[] _projects;
 
+        public event EventHandler<IReadOnlyCollection<ProjectAction>> ProjectActionsExecuted;
+
         private NuGetUIContext(
             ISourceRepositoryProvider sourceProvider,
             IServiceBroker serviceBroker,
@@ -173,6 +175,13 @@ namespace NuGet.PackageManagement.UI
                 optionsPageActivator,
                 userSettingsManager,
                 packageManagerProviders);
+        }
+
+        public void RaiseProjectActionsExecuted(IReadOnlyCollection<ProjectAction> projectActions)
+        {
+            Assumes.NotNullOrEmpty(projectActions);
+
+            ProjectActionsExecuted?.Invoke(this, projectActions);
         }
 
         private void OnAvailabilityChanged(object sender, BrokeredServicesChangedEventArgs e)
