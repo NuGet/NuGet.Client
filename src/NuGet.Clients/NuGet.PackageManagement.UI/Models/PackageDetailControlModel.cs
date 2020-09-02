@@ -197,7 +197,12 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsSelectedVersionInstalled
         {
-            get { return SelectedVersion.Version == InstalledVersion; }
+            get
+            {
+                return SelectedVersion != null
+                    && InstalledVersion != null
+                    && SelectedVersion.Version == InstalledVersion;
+            }
         }
 
         public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
