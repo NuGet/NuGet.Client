@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -19,46 +20,20 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IEnumerable<PackageCollectionItem> _installedPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
-        private readonly PackageSearchMetadataCache _cachedUpdates;
-        private readonly Common.ILogger _logger;
         private readonly IProjectContextInfo[] _projects;
 
         public UpdatePackageFeed(
             IEnumerable<PackageCollectionItem> installedPackages,
             IPackageMetadataProvider metadataProvider,
-            IProjectContextInfo[] projects,
-            PackageSearchMetadataCache optionalCachedUpdates,
-            Common.ILogger logger)
+            IProjectContextInfo[] projects)
         {
-            if (installedPackages == null)
-            {
-                throw new ArgumentNullException(nameof(installedPackages));
-            }
+            Assumes.NotNull(installedPackages);
+            Assumes.NotNull(metadataProvider);
+            Assumes.NotNull(projects);
 
             _installedPackages = installedPackages;
-
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-
             _metadataProvider = metadataProvider;
-
-            if (projects == null)
-            {
-                throw new ArgumentNullException(nameof(projects));
-            }
-
             _projects = projects;
-
-            _cachedUpdates = optionalCachedUpdates;
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _logger = logger;
         }
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
@@ -69,11 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException("Invalid token");
             }
 
-            var packagesWithUpdates = (_cachedUpdates?.IncludePrerelease == searchToken.SearchFilter.IncludePrerelease)
-                ?
-                    GetPackagesFromCache(searchToken.SearchString)
-                :
-                    await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
+            var packagesWithUpdates = await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
 
             var items = packagesWithUpdates
                 .Skip(searchToken.StartIndex)
@@ -90,11 +61,6 @@ namespace NuGet.PackageManagement.VisualStudio
             };
 
             return result;
-        }
-
-        private IEnumerable<IPackageSearchMetadata> GetPackagesFromCache(string searchText)
-        {
-            return _cachedUpdates.Packages.Where(p => p.Identity.Id.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1);
         }
 
         public async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesWithUpdatesAsync(string searchText, SearchFilter searchFilter, CancellationToken cancellationToken)

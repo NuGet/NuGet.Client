@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.Telemetry
 {

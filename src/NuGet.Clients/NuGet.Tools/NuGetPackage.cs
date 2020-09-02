@@ -75,6 +75,7 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.SolutionManagerServiceName, BrokeredServicesUtilities.SolutionManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectManagerServiceName, BrokeredServicesUtilities.ProjectManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -198,6 +199,9 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(
                 NuGetServices.ProjectUpgraderService,
                 (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectUpgraderService(options, sb, ac, state)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.SearchService,
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetPackageSearchService(options, sb, ac)));
         }
 
         /// <summary>

@@ -7,12 +7,16 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+<<<<<<< HEAD
+=======
+using Microsoft.ServiceHub.Framework;
+using NuGet.Configuration;
+>>>>>>> 810f7b17b... Initial Search for Nexus
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -187,9 +191,9 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Get the list of available versions, ignoring null versions
-            _allPackageVersions = (await Task.WhenAll(versions
+            _allPackageVersions = versions
                 .Where(v => v?.Version != null)
-                .Select(GetVersion)))
+                .Select(GetVersion)
                 .ToList();
 
             // hook event handler for dependency behavior changed
@@ -199,12 +203,12 @@ namespace NuGet.PackageManagement.UI
             OnCurrentPackageChanged();
         }
 
-        private async Task<(NuGetVersion version, bool isDeprecated)> GetVersion(VersionInfo versionInfo)
+        private (NuGetVersion version, bool isDeprecated) GetVersion(VersionInfoContextInfo versionInfo)
         {
             var isDeprecated = false;
             if (versionInfo.PackageSearchMetadata != null)
             {
-                isDeprecated = await versionInfo.PackageSearchMetadata.GetDeprecationMetadataAsync() != null;
+                isDeprecated = versionInfo.PackageDeprecationMetadata != null;
             }
 
             return (versionInfo.Version, isDeprecated);
@@ -444,7 +448,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadata alternatePackageMetadata)
+        private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadataContextInfo alternatePackageMetadata)
         {
             if (alternatePackageMetadata == null)
             {
@@ -524,26 +528,36 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal async Task LoadPackageMetadataAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)
+        internal async Task LoadPackageMetadataAsync(IReadOnlyCollection<PackageSource> packageSources, CancellationToken token)
         {
+<<<<<<< HEAD
             var versions = await GetVersionsWithExtendedMetadataAsync();
+=======
+            var versions = await _searchResultPackage.GetVersionsAsync();
+>>>>>>> 810f7b17b... Initial Search for Nexus
 
             // First try to load the metadata from the version info. This will happen if we already fetched metadata
             // about each version at the same time as fetching the version list (that is, V2). This also acts as a
             // means to cache version metadata.
             _metadataDict = versions
-                .Where(v => v.versionInfo.PackageSearchMetadata != null)
+                .Where(v => v.PackageSearchMetadata != null)
                 .ToDictionary(
+<<<<<<< HEAD
                     v => v.versionInfo.Version,
                     v => new DetailedPackageMetadata(v.versionInfo.PackageSearchMetadata,
                         v.deprecationMetadata,
                         v.versionInfo.DownloadCount));
+=======
+                    v => v.Version,
+                    v => new DetailedPackageMetadata(v.PackageSearchMetadata, v.PackageDeprecationMetadata, v.DownloadCount));
+>>>>>>> 810f7b17b... Initial Search for Nexus
 
             // If we are missing any metadata, go to the metadata provider and fetch all of the data again.
-            if (versions.Select(v => v.versionInfo.Version).Except(_metadataDict.Keys).Any())
+            if (versions.Select(v => v.Version).Except(_metadataDict.Keys).Any())
             {
                 try
                 {
+<<<<<<< HEAD
                     // Load up the full details for each version.
                     var packages = await metadataProvider?.GetPackageMetadataListAsync(
                         Id,
@@ -580,6 +594,45 @@ namespace NuGet.PackageManagement.UI
                                     m.searchMetadata?.DownloadCount ?? versionInfo?.DownloadCount);
                             })
                          .ToDictionary(m => m.Version);
+=======
+                    IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+                    using (var searchService = await serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, token))
+                    {
+                        // Load up the full details for each version.
+                        IReadOnlyCollection<PackageSearchMetadataContextInfo> packages = await searchService.GetPackageMetadataListAsync(Id, packageSources, includePrerelease: true, includeUnlisted: false, cancellationToken: token);
+
+                        (PackageSearchMetadataContextInfo searchMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata)[] packagesWithDeprecationMetadata =
+                            await Task.WhenAll(
+                                packages.Select(async searchMetadata =>
+                                {
+                                    PackageDeprecationMetadataContextInfo deprecationMetadata = await searchService.GetDeprecationMetadataAsync(searchMetadata.Identity, packageSources, includePrerelease: true, cancellationToken: token);
+                                    return (searchMetadata, deprecationMetadata);
+                                }));
+
+                        var uniquePackages = packagesWithDeprecationMetadata
+                            .GroupBy(
+                                m => m.searchMetadata.Identity.Version,
+                                (v, ms) => ms.First());
+
+                        _metadataDict = uniquePackages
+                            .GroupJoin(
+                                versions,
+                                m => m.searchMetadata.Identity.Version,
+                                d => d.Version,
+                                (m, d) =>
+                                {
+                                    VersionInfoContextInfo versionInfo = d
+                                        .OrderByDescending(v => v.DownloadCount)
+                                        .FirstOrDefault();
+
+                                    return new DetailedPackageMetadata(
+                                        m.searchMetadata ?? versionInfo.PackageSearchMetadata,
+                                        m.deprecationMetadata,
+                                        m.searchMetadata?.DownloadCount ?? versionInfo?.DownloadCount);
+                                })
+                             .ToDictionary(m => m.Version);
+                    }
+>>>>>>> 810f7b17b... Initial Search for Nexus
                 }
                 catch (InvalidOperationException)
                 {
@@ -595,6 +648,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+<<<<<<< HEAD
         private async Task<IEnumerable<(VersionInfo versionInfo,
             PackageDeprecationMetadata deprecationMetadata)>> GetVersionsWithExtendedMetadataAsync()
         {
@@ -610,6 +664,8 @@ namespace NuGet.PackageManagement.UI
                 }));
         }
 
+=======
+>>>>>>> 810f7b17b... Initial Search for Nexus
         public abstract bool IsSolution { get; }
 
         private string _optionsBlockedMessage;

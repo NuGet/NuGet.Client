@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -38,11 +39,12 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 repo
             };
-
-            var context = new PackageLoadContext(repositories, false, uiContext);
+            
+            var context = new PackageLoadContext(false, uiContext);
 
             var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-            var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, "EntityFramework", false);
+            // var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
 
             var loaded = new List<PackageItemListViewModel>();
             foreach (var page in Enumerable.Range(0, 5))
@@ -91,16 +93,17 @@ namespace NuGet.PackageManagement.UI.Test
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
             var repo1 = StaticHttpHandler.CreateSource("http://othersource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            var repositories = new List<SourceRepository>
-            {
-                repo,
-                repo1
-            };
+            // var repositories = new List<SourceRepository>
+            // {
+            //    repo,
+            //    repo1
+            // };
 
-            var context = new PackageLoadContext(repositories, false, uiContext);
+            var context = new PackageLoadContext(false, uiContext);
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-            var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
+            // var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource, repo1.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, "EntityFramework", false);
+            // var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
 
             var loaded = new List<PackageItemListViewModel>();
             foreach (var page in Enumerable.Range(0, 5))

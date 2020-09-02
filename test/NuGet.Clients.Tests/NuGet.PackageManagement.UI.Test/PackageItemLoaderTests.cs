@@ -43,10 +43,11 @@ namespace NuGet.PackageManagement.UI.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
             var repositories = sourceRepositoryProvider.GetRepositories();
 
-            var context = new PackageLoadContext(repositories, false, uiContext);
+            var context = new PackageLoadContext(false, uiContext);
 
             var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-            var loader = new PackageItemLoader(context, packageFeed, "nuget");
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { source1, source2 }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, "nuget");
+            //var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
             var loaded = new List<PackageItemListViewModel>();
             foreach (var page in Enumerable.Range(0, 5))
@@ -119,12 +120,13 @@ namespace NuGet.PackageManagement.UI.Test
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source) }, new Lazy<INuGetResourceProvider>[] { new Lazy<INuGetResourceProvider>(() => new TestHttpSourceResourceProvider(injectedHttpSources)) });
                 var repositories = sourceRepositoryProvider.GetRepositories();
 
-                var context = new PackageLoadContext(repositories, false, uiContext);
+                var context = new PackageLoadContext(false, uiContext);
 
                 var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: telemetryService.Object);
 
                 // Act
-                var loader = new PackageItemLoader(context, packageFeed, searchText: "nuget", includePrerelease: true);
+                var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { new PackageSource(source) }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, "nuget", true);
+                // var loader = new PackageItemLoader(context, packageFeed, searchText: "nuget", includePrerelease: true);
                 await loader.LoadNextAsync(null, CancellationToken.None);
                 await loader.LoadNextAsync(null, CancellationToken.None);
 
@@ -180,10 +182,11 @@ namespace NuGet.PackageManagement.UI.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
             var repositories = sourceRepositoryProvider.GetRepositories();
 
-            var context = new PackageLoadContext(repositories, false, uiContext);
+            var context = new PackageLoadContext(false, uiContext);
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-            var loader = new PackageItemLoader(context, packageFeed, "nuget");
+            // var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { source1, source2 }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, "nuget");
+            // var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
             var totalCount = await loader.GetTotalCountAsync(100, CancellationToken.None);
 
@@ -199,9 +202,11 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
-            var context = new PackageLoadContext(null, false, uiContext);
+            var context = new PackageLoadContext(false, uiContext);
             var packageFeed = new TestPackageFeed();
-            var loader = new PackageItemLoader(context, packageFeed, TestSearchTerm, true);
+
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { null }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, TestSearchTerm);
+            // var loader = new PackageItemLoader(context, packageFeed, TestSearchTerm, true);
 
             Assert.Equal(LoadingStatus.Unknown, loader.State.LoadingStatus);
             var initial = loader.GetCurrent();
@@ -254,10 +259,11 @@ namespace NuGet.PackageManagement.UI.Test
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { localSource });
                 var repositories = sourceRepositoryProvider.GetRepositories();
 
-                var context = new PackageLoadContext(repositories, false, uiContext);
+                var context = new PackageLoadContext(false, uiContext);
 
                 var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-                var loader = new PackageItemLoader(context, packageFeed, "nuget");
+                var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { localSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, "nuget");
+                // var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
                 // Act
                 await loader.LoadNextAsync(null, CancellationToken.None);

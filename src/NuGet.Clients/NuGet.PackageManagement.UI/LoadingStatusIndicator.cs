@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {

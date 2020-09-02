@@ -6,3 +6,4 @@ const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkProfile = "T
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkVersion = "TargetFrameworkVersion" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformMoniker = "TargetPlatformMoniker" -> string
 static NuGet.ProjectManagement.MessageLevelExtensions.ToLogLevel(this NuGet.ProjectManagement.MessageLevel messageLevel) -> NuGet.Common.LogLevel
+static NuGet.PackageManagement.NuGetPackageManager.GetGlobalPackageFolderRepositories(NuGet.Protocol.Core.Types.ISourceRepositoryProvider sourceRepositoryProvider, NuGet.Configuration.ISettings settings) -> System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository>

@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         FileConflictAction FileConflictAction { get; }
 
-        IEnumerable<SourceRepository> ActiveSources { get; }
+        PackageSourceMoniker ActiveSources { get; }
 
         bool RemoveDependencies { get; }
 
