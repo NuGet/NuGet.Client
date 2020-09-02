@@ -454,7 +454,7 @@ namespace NuGet.Build.Tasks.Pack
                     {
                         var dotIdx = targetFramework.IndexOf('.');
                         var dashIdx = targetFramework.IndexOf('-');
-                        var isDottedFwVersion = (dashIdx > -1 && dotIdx > -1 && dotIdx < dashIdx) || dotIdx > -1;
+                        var isDottedFwVersion = (dashIdx > -1 && dotIdx > -1 && dotIdx < dashIdx) || (dashIdx == -1 && dotIdx > -1);
                         if (!isDottedFwVersion)
                         {
                             request.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.MissingRequiredDot, targetFramework));
