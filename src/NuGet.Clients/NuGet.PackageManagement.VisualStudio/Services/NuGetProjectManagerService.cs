@@ -392,7 +392,7 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
             IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUninstallPackageAsync(
                 project,
-                packageIdentity,
+                packageIdentity.Id,
                 uninstallationContext,
                 projectContext,
                 cancellationToken);
@@ -403,7 +403,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var projectAction = new ProjectAction(
                     CreateProjectActionId(),
                     projectId,
-                    packageIdentity,
+                    action.PackageIdentity,
                     action.NuGetProjectActionType,
                     implicitActions: null);
 
