@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 
         public static TheoryData IProjectContextInfos => new TheoryData<IProjectContextInfo>
             {
-                { new ProjectContextInfo(ProjectId, ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.BuildIntegrated) }
+                { new ProjectContextInfo(ProjectId, ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.PackageReference) }
             };
     }
 }
