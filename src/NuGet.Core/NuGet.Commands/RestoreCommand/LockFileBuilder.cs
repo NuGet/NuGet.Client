@@ -56,7 +56,7 @@ namespace NuGet.Commands
             }
 
             // Record all libraries used
-            foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct()
+            foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct(GraphItemKeyComparer<RemoteResolveResult>.Instance)
                 .OrderBy(x => x.Data.Match.Library))
             {
                 var library = item.Data.Match.Library;
