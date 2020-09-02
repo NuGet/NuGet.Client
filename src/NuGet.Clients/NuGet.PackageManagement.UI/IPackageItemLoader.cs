@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,10 +16,9 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal interface IPackageItemLoader : IItemLoader<PackageItemListViewModel>
     {
-        Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken,
-            CancellationToken cancellationToken);
+        Task<SearchResultContextInfo> SearchAsync(CancellationToken cancellationToken);
 
-        Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult,
+        Task UpdateStateAndReportAsync(SearchResultContextInfo searchResult,
             IProgress<IItemLoaderState> progress, CancellationToken cancellationToken);
 
     }

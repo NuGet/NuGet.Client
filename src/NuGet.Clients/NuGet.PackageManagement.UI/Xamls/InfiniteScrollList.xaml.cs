@@ -19,6 +19,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
@@ -48,7 +49,7 @@ namespace NuGet.PackageManagement.UI
         private CancellationTokenSource _loadCts;
         private IPackageItemLoader _loader;
         private INuGetUILogger _logger;
-        private Task<SearchResult<IPackageSearchMetadata>> _initialSearchResultTask;
+        private Task<SearchResultContextInfo> _initialSearchResultTask;
         private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
 
         private const string LogEntrySource = "NuGet Package Manager";
@@ -156,7 +157,7 @@ namespace NuGet.PackageManagement.UI
             IPackageItemLoader loader,
             string loadingMessage,
             INuGetUILogger logger,
-            Task<SearchResult<IPackageSearchMetadata>> searchResultTask,
+            Task<SearchResultContextInfo> searchResultTask,
             CancellationToken token)
         {
             if (loader == null)
@@ -420,8 +421,7 @@ namespace NuGet.PackageManagement.UI
                 token.ThrowIfCancellationRequested();
 
                 // update initial progress
-                var cleanState = SearchResult.Empty<IPackageSearchMetadata>();
-                await currentLoader.UpdateStateAndReportAsync(cleanState, progress, token);
+                await currentLoader.UpdateStateAndReportAsync(new SearchResultContextInfo(), progress, token);
 
                 var results = await _initialSearchResultTask;
 

@@ -4,8 +4,8 @@
 using System;
 using Moq;
 using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI
@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.UI
         [InlineData("ftp://www.nuget.org/", "nuget.org")]
         public void RemovesWwwSubdomainFromPackageDetailsText(string url, string expected)
         {
-            var metadata = new Mock<IPackageSearchMetadata>();
+            var metadata = new Mock<PackageSearchMetadataContextInfo>();
             metadata.Setup(x => x.Identity).Returns(new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0")));
             metadata.Setup(x => x.PackageDetailsUrl).Returns(() => new Uri(url));
 

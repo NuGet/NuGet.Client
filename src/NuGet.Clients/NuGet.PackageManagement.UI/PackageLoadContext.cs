@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -18,7 +17,16 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
 
-        public IEnumerable<SourceRepository> SourceRepositories { get; }
+        public PackageLoadContext(bool isSolution, INuGetUIContext uiContext)
+        {
+            IsSolution = isSolution;
+            PackageManager = uiContext.PackageManager;
+            Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
+            PackageManagerProviders = uiContext.PackageManagerProviders;
+            SolutionManager = uiContext.SolutionManagerService;
+
+            _installedPackagesTask = PackageCollection.FromProjectsAsync(Projects, CancellationToken.None);
+        }
 
         public NuGetPackageManager PackageManager { get; }
 
@@ -33,22 +41,7 @@ namespace NuGet.PackageManagement.UI
 
         public INuGetSolutionManagerService SolutionManager { get; }
 
-        public PackageLoadContext(
-            IEnumerable<SourceRepository> sourceRepositories,
-            bool isSolution,
-            INuGetUIContext uiContext)
-        {
-            SourceRepositories = sourceRepositories;
-            IsSolution = isSolution;
-            PackageManager = uiContext.PackageManager;
-            Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
-            PackageManagerProviders = uiContext.PackageManagerProviders;
-            SolutionManager = uiContext.SolutionManagerService;
-
-            _installedPackagesTask = PackageCollection.FromProjectsAsync(Projects, CancellationToken.None);
-        }
-
-        public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
+        public Task<PackageCollection> GetInstalledPackagesAsync() =>_installedPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
         public async Task<IEnumerable<string>> GetSupportedFrameworksAsync()

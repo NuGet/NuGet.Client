@@ -131,35 +131,37 @@ namespace NuGet.PackageManagement
             {
                 if (_globalPackageFolderRepositories == null)
                 {
-                    var sources = new List<SourceRepository>();
-
-                    // Read package folders from settings
-                    var pathContext = NuGetPathContext.Create(Settings);
-
-                    // count = FallbackPackageFolders.Count + 1 for UserPackageFolder
-                    var count = (pathContext.FallbackPackageFolders?.Count() ?? 0) + 1;
-                    var folders = new List<string>(count)
-                    {
-                        pathContext.UserPackageFolder
-                    };
-
-                    folders.AddRange(pathContext.FallbackPackageFolders);
-
-                    foreach (var folder in folders)
-                    {
-                        // Create a repo for each folder
-                        var source = SourceRepositoryProvider.CreateRepository(
-                            new PackageSource(folder),
-                            FeedType.FileSystemV3);
-
-                        sources.Add(source);
-                    }
-
-                    _globalPackageFolderRepositories = sources;
+                    _globalPackageFolderRepositories = GetGlobalPackageFolderRepositories(SourceRepositoryProvider, Settings);
                 }
 
                 return _globalPackageFolderRepositories;
             }
+        }
+
+        public static IReadOnlyList<SourceRepository> GetGlobalPackageFolderRepositories(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings)
+        {
+            var sources = new List<SourceRepository>();
+
+            // Read package folders from settings
+            var pathContext = NuGetPathContext.Create(settings);
+
+            // count = FallbackPackageFolders.Count + 1 for UserPackageFolder
+            var count = (pathContext.FallbackPackageFolders?.Count() ?? 0) + 1;
+            var folders = new List<string>(count)
+            {
+                pathContext.UserPackageFolder
+            };
+
+            folders.AddRange(pathContext.FallbackPackageFolders);
+            foreach(var folder in folders)
+            {
+                // Create a repo for each folder
+                var source = sourceRepositoryProvider.CreateRepository(new PackageSource(folder), FeedType.FileSystemV3);
+
+                sources.Add(source);
+            }
+
+            return sources;
         }
 
         private void InitializePackagesFolderInfo(string packagesFolderPath, bool excludeVersion = false)

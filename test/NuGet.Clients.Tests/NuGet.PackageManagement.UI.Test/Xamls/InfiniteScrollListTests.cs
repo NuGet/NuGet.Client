@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -107,7 +108,7 @@ namespace NuGet.PackageManagement.UI.Test
                         loader: null,
                         loadingMessage: "a",
                         logger: null,
-                        searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
+                        searchResultTask: Task.FromResult<SearchResultContextInfo>(null),
                         token: CancellationToken.None);
                 });
 
@@ -128,7 +129,7 @@ namespace NuGet.PackageManagement.UI.Test
                         Mock.Of<IPackageItemLoader>(),
                         loadingMessage,
                         logger: null,
-                        searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
+                        searchResultTask: Task.FromResult<SearchResultContextInfo>(null),
                         token: CancellationToken.None);
                 });
 
@@ -166,7 +167,7 @@ namespace NuGet.PackageManagement.UI.Test
                         Mock.Of<IPackageItemLoader>(),
                         loadingMessage: "a",
                         logger: null,
-                        searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
+                        searchResultTask: Task.FromResult<SearchResultContextInfo>(null),
                         token: new CancellationToken(canceled: true));
                 });
         }
@@ -183,7 +184,7 @@ namespace NuGet.PackageManagement.UI.Test
             loader.SetupGet(x => x.State)
                 .Returns(state.Object);
             loader.Setup(x => x.UpdateStateAndReportAsync(
-                    It.IsNotNull<SearchResult<IPackageSearchMetadata>>(),
+                    It.IsNotNull<SearchResultContextInfo>(),
                     It.IsNotNull<IProgress<IItemLoaderState>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(0));
@@ -226,7 +227,7 @@ namespace NuGet.PackageManagement.UI.Test
                 .Returns(() => Task.FromResult(0));
 
             var logger = new Mock<INuGetUILogger>();
-            var searchResultTask = Task.FromResult(new SearchResult<IPackageSearchMetadata>());
+            var searchResultTask = Task.FromResult<SearchResultContextInfo>(null);
 
 #pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
             using (var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current))
@@ -276,12 +277,12 @@ namespace NuGet.PackageManagement.UI.Test
         [WpfTheory]
         [MemberData(nameof(TestSearchMetadata))]
         public async Task LoadItemsAsync_LoadingStatusIndicator_InItemsCollectionIfEmptySearch(
-            IPackageSearchMetadata[] searchItems,
+            PackageSearchMetadataContextInfo[] searchItems,
             int expectedItems)
         {
             var loaderMock = new Mock<IPackageItemLoader>(MockBehavior.Strict);
             var stateMock = new Mock<IItemLoaderState>();
-            var searchTask = Task.FromResult(SearchResult.FromItems(searchItems));
+            var searchTask = Task.FromResult(new SearchResultContextInfo(searchItems, new Dictionary<string, LoadingStatus>(), true));
             var testLogger = new TestNuGetUILogger(_output);
             var tcs = new TaskCompletionSource<int>();
             var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => _joinableTaskContext.Factory));
@@ -297,7 +298,7 @@ namespace NuGet.PackageManagement.UI.Test
             loaderMock.SetupGet(x => x.IsMultiSource)
                 .Returns(false);
             loaderMock.Setup(x => x.UpdateStateAndReportAsync(
-                    It.IsNotNull<SearchResult<IPackageSearchMetadata>>(),
+                    It.IsNotNull<SearchResultContextInfo>(),
                     It.IsNotNull<IProgress<IItemLoaderState>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(0))
@@ -338,12 +339,12 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var allData = new List<object[]>
             {
-                new object[]{ new IPackageSearchMetadata[] {
+                new object[]{ new PackageSearchMetadataContextInfo[] {
                 }, 1 }, // only loading indicator
-                new object[]{ new IPackageSearchMetadata[] {
-                    new TestPackageSearchMetadata(),
-                    new TestPackageSearchMetadata(),
-                    new TestPackageSearchMetadata(),
+                new object[]{ new PackageSearchMetadataContextInfo[] {
+                    new PackageSearchMetadataContextInfo(),
+                    new PackageSearchMetadataContextInfo(),
+                    new PackageSearchMetadataContextInfo(),
                 }, 3 }, // only search elements
             };
 

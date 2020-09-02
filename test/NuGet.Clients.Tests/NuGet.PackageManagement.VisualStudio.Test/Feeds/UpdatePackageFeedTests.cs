@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectA = SetupProject("FakePackage", "1.0.0");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
-            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA }, null, new TestLogger());
+            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA });
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectA = SetupProject("FakePackage", "1.0.0", "[1,2)");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
-            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA }, null, new TestLogger());
+            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA });
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectB = SetupProject("FakePackage", "1.0.0", "[1,2)");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
-            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA, projectB }, null, new TestLogger());
+            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA, projectB });
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectB = SetupProject("FakePackage", "1.0.1", "[1,2)");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
-            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA, projectB }, null, new TestLogger());
+            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA, projectB });
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectB = SetupProject("FakePackage", "1.0.0", "[1,2)");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
-            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA, projectB }, null, new TestLogger());
+            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA, projectB });
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
@@ -208,7 +208,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectB = SetupProject("FakePackage", "1.0.1", "[1,2)");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
-            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA, projectB }, null, new TestLogger());
+            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA, projectB });
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
@@ -227,7 +227,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectA = SetupProject("FakePackage", "1.0.0");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.0");
 
-            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA }, null, new TestLogger());
+            var _target = new UpdatePackageFeed(new[] { testPackageIdentity }, _metadataProvider, new[] { projectA });
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
@@ -303,8 +303,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             SetupRemotePackageMetadata("ZFakePackage", "0.0.1", "1.0.0", "4.0.0");
             SetupRemotePackageMetadata("AFakePackage", "1.0.0", "3.0.1");
 
-            var _target = new UpdatePackageFeed(new[] { testPackageIdentity, testPackageIdentity2, testPackageIdentity3 }
-                        , _metadataProvider, new[] { projectA, projectB, projectC }, null, new TestLogger());
+            var _target = new UpdatePackageFeed(
+                new[] { testPackageIdentity, testPackageIdentity2, testPackageIdentity3 },
+                _metadataProvider,
+                new[] { projectA, projectB, projectC });
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
