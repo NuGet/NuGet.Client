@@ -17,7 +17,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
@@ -679,6 +678,8 @@ namespace NuGet.PackageManagement.UI
                         await projectManagerService.ExecuteActionsAsync(
                             actions,
                             cancellationToken);
+
+                        uiService.UIContext.RaiseProjectActionsExecuted(actions);
                     }
                     else
                     {
@@ -906,12 +907,6 @@ namespace NuGet.PackageManagement.UI
                 string[] projectNames = await Task.WhenAll(tasks);
 
                 packageManagementFormat.ProjectNames = projectNames
-                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                await Task.WhenAll(tasks);
-
-                packageManagementFormat.ProjectNames = tasks.Select(task => task.Result)
                     .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                     .ToList();
 

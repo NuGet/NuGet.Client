@@ -40,6 +40,6 @@ namespace NuGet.PackageManagement.UI
 
         Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
 
-        void FireProjectActionsExecuted(IReadOnlyCollection<ProjectAction> projectActions);
+        void RaiseProjectActionsExecuted(IReadOnlyCollection<ProjectAction> projectActions);
     }
 }

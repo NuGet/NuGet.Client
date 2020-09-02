@@ -177,7 +177,7 @@ namespace NuGet.PackageManagement.UI
                 packageManagerProviders);
         }
 
-        public void FireProjectActionsExecuted(IReadOnlyCollection<ProjectAction> projectActions)
+        public void RaiseProjectActionsExecuted(IReadOnlyCollection<ProjectAction> projectActions)
         {
             Assumes.NotNullOrEmpty(projectActions);
 
