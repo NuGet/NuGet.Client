@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -13,6 +13,9 @@
     <XPLATProject>true</XPLATProject>
     <Description>NuGet's implementation for interacting with feeds. Contains functionality for all feed types.</Description>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
+    <!-- Uncomment when fixing https://github.com/NuGet/Home/issues/9981.  Also, try to make it check TFI = netcoreapp and TFV >= 5.0, so this doesn't break when net6 comes around
+    <DefineConstants Condition =" '$(TargetFameworkMoniker)' == '.NETCoreApp,Version=v5.0' ">$(DefineConstants);USE_HTTPREQUESTMESSAGE_OPTIONS</DefineConstants>
+    -->
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
