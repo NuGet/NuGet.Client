@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using NuGet.Common;
 
 namespace NuGet.VisualStudio
 {
@@ -24,12 +22,23 @@ namespace NuGet.VisualStudio
 
         public Guid OperationId => Guid.NewGuid();
 
+        public string OriginalProject { get; }
+
         public SolutionRestoreRequest(
             bool forceRestore,
             RestoreOperationSource restoreSource)
+            : this(forceRestore, restoreSource, null)
+        {
+        }
+
+        internal SolutionRestoreRequest(
+            bool forceRestore,
+            RestoreOperationSource restoreSource,
+            string originalProject)
         {
             ForceRestore = forceRestore;
             RestoreSource = restoreSource;
+            OriginalProject = originalProject;
         }
 
         /// <summary>
@@ -67,6 +76,14 @@ namespace NuGet.VisualStudio
             return new SolutionRestoreRequest(
                 forceRestore: false,
                 restoreSource: RestoreOperationSource.Implicit);
+        }
+
+        public static SolutionRestoreRequest OnUpdate(string project)
+        {
+            return new SolutionRestoreRequest(
+                forceRestore: false,
+                restoreSource: RestoreOperationSource.Implicit,
+                originalProject: project);
         }
     }
 }
