@@ -18,6 +18,7 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -140,9 +141,10 @@ namespace NuGet.PackageManagement.UI
             Debug.Assert(project != null);
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, null);
-            });
+                {
+                    await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, project);
+                })
+                .PostOnFailure(nameof(PRMigratorBar), nameof(OnMigrationLinkClick));
         }
 
         private void OnDoNotShowAgainClick(object sender, RoutedEventArgs e)

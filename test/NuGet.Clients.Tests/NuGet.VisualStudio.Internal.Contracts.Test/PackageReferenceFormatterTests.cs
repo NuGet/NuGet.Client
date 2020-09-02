@@ -11,7 +11,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 {
     public sealed class PackageReferenceFormatterTests : FormatterTests
     {
-        private static readonly PackageIdentity PackageIdentity = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+        private static readonly PackageIdentity PackageIdentity = new PackageIdentity(id: "a", NuGetVersion.Parse("1.0.0"));
         private static readonly NuGetFramework Framework = NuGetFramework.Parse("net50");
         private static readonly VersionRange VersionRange = new VersionRange(NuGetVersion.Parse("2.0.0"));
 

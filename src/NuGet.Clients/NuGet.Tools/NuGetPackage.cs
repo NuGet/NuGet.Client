@@ -136,6 +136,8 @@ namespace NuGetVSExtension
 
         private IDisposable ProjectUpgradeHandler { get; set; }
 
+        private INuGetProjectManagerServiceState _projectManagerServiceState;
+
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -182,11 +184,20 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(ContractsNuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
 
             var state = new SharedServiceState();
+            _projectManagerServiceState = new NuGetProjectManagerServiceState();
 
-            brokeredServiceContainer.Proffer(NuGetServices.SourceProviderService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac)));
-            brokeredServiceContainer.Proffer(NuGetServices.SolutionManagerService, (mk, options, sb, ac, ct) => ToValueTaskOfObject(NuGetSolutionManagerService.CreateAsync(options, sb, ac, ct)));
-            brokeredServiceContainer.Proffer(NuGetServices.ProjectManagerService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac, state)));
-            brokeredServiceContainer.Proffer(NuGetServices.ProjectUpgraderService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectUpgraderService(options, sb, ac, state)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.SourceProviderService,
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.SolutionManagerService,
+                (mk, options, sb, ac, ct) => ToValueTaskOfObject(NuGetSolutionManagerService.CreateAsync(options, sb, ac, ct)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.ProjectManagerService,
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac, _projectManagerServiceState, state)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.ProjectUpgraderService,
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectUpgraderService(options, sb, ac, state)));
         }
 
         /// <summary>
@@ -1100,6 +1111,8 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
+
+            _projectManagerServiceState?.Dispose();
         }
 
         #region IVsPersistSolutionOpts

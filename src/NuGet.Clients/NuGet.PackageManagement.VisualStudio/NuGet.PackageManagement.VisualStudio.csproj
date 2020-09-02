@@ -74,6 +74,7 @@
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
     <Compile Include="Services\ISharedServiceState.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
+    <Compile Include="Services\NuGetProjectManagerServiceState.cs" />
     <Compile Include="Services\NuGetProjectUpgraderService.cs" />
     <Compile Include="Services\SharedServiceState.cs" />
     <Compile Include="Services\NuGetSolutionManagerService.cs" />
@@ -239,6 +240,10 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj">
+      <Project>{51aa27a9-b8b4-458f-9211-e6889b441573}</Project>
+      <Name>NuGet.Resolver</Name>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
