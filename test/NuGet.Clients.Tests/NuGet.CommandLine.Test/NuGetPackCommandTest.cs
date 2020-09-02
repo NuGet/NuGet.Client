@@ -6027,7 +6027,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithNuspec(nuspecBuilder)
                 .WithFile(iconFile, rng.Next(1, 1024));
 
-            TestPackIconFailure(testDirBuilder, NuGetLogCode.NU5045.ToString());
+            TestPackPropertyFailure(testDirBuilder, NuGetLogCode.NU5045.ToString());
         }
 
         [Theory]
@@ -7030,7 +7030,7 @@ namespace Proj1
     <Reference Include='System.Core'/>
     <Reference Include='System.Xml.Linq'/>
     <Reference Include='System.Data.DataSetExtensions'/>
-    <Reference Include='Microsoft.CSharp'/> 
+    <Reference Include='Microsoft.CSharp'/>
     <Reference Include='System.Data'/>
     <Reference Include='System.Net.Http'/>
     <Reference Include='System.Xml'/>
@@ -7145,7 +7145,7 @@ using System.Runtime.InteropServices;
     <Reference Include='System.Core'/>
     <Reference Include='System.Xml.Linq'/>
     <Reference Include='System.Data.DataSetExtensions'/>
-    <Reference Include='Microsoft.CSharp'/> 
+    <Reference Include='Microsoft.CSharp'/>
     <Reference Include='System.Data'/>
     <Reference Include='System.Net.Http'/>
     <Reference Include='System.Xml'/>
