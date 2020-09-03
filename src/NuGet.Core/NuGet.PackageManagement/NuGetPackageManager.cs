@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement
 
         private Configuration.ISettings Settings { get; }
 
-        private IDictionary<string, bool> _buildIntegratedProjectsUpdateDict;
+        private HashSet<string> _buildIntegratedProjectsUpdateSet;
 
         private DependencyGraphSpec _buildIntegratedProjectsCache;
 
@@ -767,8 +767,8 @@ namespace NuGet.PackageManagement
             return packagesToUpdateInProject;
         }
 
-        private async Task<IEnumerable<NuGetProjectAction>> CompleteTaskAsync(
-            List<Task<IEnumerable<NuGetProjectAction>>> updateTasks)
+        private async Task<IEnumerable<T>> CompleteTaskAsync<T>(
+            List<Task<IEnumerable<T>>> updateTasks)
         {
             var doneTask = await Task.WhenAny(updateTasks);
             updateTasks.Remove(doneTask);
@@ -1529,6 +1529,99 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext, primarySources, secondarySources, token);
         }
 
+        // Preview and return ResolvedActions for many NuGetProjects.
+        public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
+            IReadOnlyCollection<NuGetProject> nuGetProjects,
+            PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IReadOnlyCollection<SourceRepository> activeSources,
+            CancellationToken token)
+        {
+            if (nuGetProjects == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjects));
+            }
+
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (resolutionContext == null)
+            {
+                throw new ArgumentNullException(nameof(resolutionContext));
+            }
+
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
+            }
+
+            if (activeSources == null)
+            {
+                throw new ArgumentNullException(nameof(activeSources));
+            }
+
+            if (activeSources.Count == 0)
+            {
+                throw new ArgumentException("At least 1 item expected for " + nameof(activeSources));
+            }
+
+            if (packageIdentity.Version == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            var results = new List<ResolvedAction>();
+
+            // BuildIntegratedNuGetProject type projects are now supports parallel preview action for faster performance.
+            var buildIntegratedProjectsToUpdate = new List<BuildIntegratedNuGetProject>();
+            // Currently packages.config projects are not supported are supports parallel previews.
+            // Here is follow up issue to address it https://github.com/NuGet/Home/issues/9906
+            var otherTargetProjectsToUpdate = new List<NuGetProject>();
+
+            foreach (var proj in nuGetProjects)
+            {
+                if (proj is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
+                {
+                    buildIntegratedProjectsToUpdate.Add(buildIntegratedNuGetProject);
+                }
+                else
+                {
+                    otherTargetProjectsToUpdate.Add(proj);
+                }
+            }
+
+            if (buildIntegratedProjectsToUpdate.Count != 0)
+            {
+                // Run build integrated project preview for all projects at the same time
+                var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
+                buildIntegratedProjectsToUpdate,
+                nugetProjectActionsLookup: null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and activeSources
+                packageIdentity,
+                activeSources,
+                nuGetProjectContext,
+                token);
+                results.AddRange(resolvedActions);
+            }
+
+            foreach (var target in otherTargetProjectsToUpdate)
+            {
+                var actions = await PreviewInstallPackageAsync(
+                    target,
+                    packageIdentity,
+                    resolutionContext,
+                    nuGetProjectContext,
+                    activeSources,
+                    null,
+                    token);
+                results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
+            }
+
+            return results;
+        }
+
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
@@ -2062,7 +2155,7 @@ namespace NuGet.PackageManagement
             {
                 var logger = new ProjectContextLogger(nuGetProjectContext);
                 var referenceContext = new DependencyGraphCacheContext(logger, Settings);
-                _buildIntegratedProjectsUpdateDict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                _buildIntegratedProjectsUpdateSet = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
 
                 var projectUniqueNamesForBuildIntToUpdate
                     = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath);
@@ -2070,6 +2163,10 @@ namespace NuGet.PackageManagement
                 var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
                 _buildIntegratedProjectsCache = dgFile;
                 var allSortedProjects = DependencyGraphSpec.SortPackagesByDependencyOrder(dgFile.Projects);
+
+                // cache these already evaluated(without commit) buildIntegratedProjects project ids which will be used to avoid duplicate restore as part of parent projects
+                _buildIntegratedProjectsUpdateSet.AddRange(
+                    buildIntegratedProjectsToUpdate.Select(child => child.MSBuildProjectPath));
 
                 foreach (var projectUniqueName in allSortedProjects.Select(e => e.RestoreMetadata.ProjectUniqueName))
                 {
@@ -2079,10 +2176,6 @@ namespace NuGet.PackageManagement
                         sortedProjectsToUpdate.Add(project);
                     }
                 }
-
-                // cache these projects which will be used to avoid duplicate restore as part of parent projects
-                _buildIntegratedProjectsUpdateDict.AddRange(
-                    buildIntegratedProjectsToUpdate.Select(child => new KeyValuePair<string, bool>(child.MSBuildProjectPath, false)));
             }
 
             // execute all nuget project actions
@@ -2093,7 +2186,7 @@ namespace NuGet.PackageManagement
             }
 
             // clear cache which could temper with other updates
-            _buildIntegratedProjectsUpdateDict?.Clear();
+            _buildIntegratedProjectsUpdateSet?.Clear();
             _buildIntegratedProjectsCache = null;
             _restoreProviderCache = null;
         }
@@ -2459,7 +2552,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Run project actions for build integrated projects.
+        /// Run project actions for a build integrated project.
         /// </summary>
         public async Task<BuildIntegratedProjectAction> PreviewBuildIntegratedProjectActionsAsync(
             BuildIntegratedNuGetProject buildIntegratedProject,
@@ -2488,41 +2581,71 @@ namespace NuGet.PackageManagement
                 return null;
             }
 
-            var stopWatch = Stopwatch.StartNew();
+            var resolvedAction = await PreviewBuildIntegratedProjectsActionsAsync(
+                new List<BuildIntegratedNuGetProject>() { buildIntegratedProject },
+                new Dictionary<string, NuGetProjectAction[]>(PathUtility.GetStringComparerBasedOnOS())
+                {
+                    { buildIntegratedProject.MSBuildProjectPath, nuGetProjectActions.ToArray()}
+                },
+                packageIdentity: null, // since we have nuGetProjectActions no need packageIdentity
+                primarySources: null, // since we have nuGetProjectActions no need primarySources
+                nuGetProjectContext,
+                token
+                );
 
-            // Find all sources used in the project actions
-            var sources = new HashSet<SourceRepository>(
-                nuGetProjectActions.Where(action => action.SourceRepository != null)
-                    .Select(action => action.SourceRepository),
-                    new SourceRepositoryComparer());
+            return resolvedAction.FirstOrDefault(r => r.Project == buildIntegratedProject)?.Action as BuildIntegratedProjectAction;
+        }
 
-            // Add all enabled sources for the existing packages
-            var enabledSources = SourceRepositoryProvider.GetRepositories();
 
-            sources.UnionWith(enabledSources);
-
-            // Read the current lock file if it exists
-            LockFile originalLockFile = null;
-            var lockFileFormat = new LockFileFormat();
-
-            var lockFilePath = await buildIntegratedProject.GetAssetsFilePathAsync();
-
-            if (File.Exists(lockFilePath))
+        /// <summary>
+        /// Run project actions for build integrated many projects.
+        /// </summary>
+        private async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
+            IReadOnlyCollection<BuildIntegratedNuGetProject> buildIntegratedProjects,
+            Dictionary<string, NuGetProjectAction[]> nugetProjectActionsLookup,
+            PackageIdentity packageIdentity,
+            IReadOnlyCollection<SourceRepository> primarySources,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            if (nugetProjectActionsLookup == null)
             {
-                originalLockFile = lockFileFormat.Read(lockFilePath);
+                nugetProjectActionsLookup = new Dictionary<string, NuGetProjectAction[]>(PathUtility.GetStringComparerBasedOnOS());
             }
 
+            if (buildIntegratedProjects == null)
+            {
+                throw new ArgumentNullException(nameof(buildIntegratedProjects));
+            }
+
+            if (buildIntegratedProjects.Count == 0)
+            {
+                // Return empty if there are no buildIntegratedProjects.
+                return Enumerable.Empty<ResolvedAction>();
+            }
+
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
+            }
+
+            if (nugetProjectActionsLookup.Count == 0 && packageIdentity == null)
+            {
+                // Return empty if there are neither actions nor packageIdentity.
+                return Enumerable.Empty<ResolvedAction>();
+            }
+
+            var stopWatch = Stopwatch.StartNew();
             var logger = new ProjectContextLogger(nuGetProjectContext);
+            var result = new List<ResolvedAction>();
+
+            var lockFileLookup = new Dictionary<string, LockFile>(PathUtility.GetStringComparerBasedOnOS());
             var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
-
-            // Get Package Spec as json object
-            var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
-
-            // Create a copy to avoid modifying the original spec which may be shared.
-            var updatedPackageSpec = originalPackageSpec.Clone();
-
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
+            var updatedNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
+            var originalNugetPackageSpecLookup = new Dictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
+            var nuGetProjectSourceLookup = new Dictionary<string, HashSet<SourceRepository>>(PathUtility.GetStringComparerBasedOnOS());
 
             // For installs only use cache entries newer than the current time.
             // This is needed for scenarios where a new package shows up in search
@@ -2532,160 +2655,246 @@ namespace NuGet.PackageManagement
             var now = DateTimeOffset.UtcNow;
             void cacheModifier(SourceCacheContext cache) => cache.MaxAge = now;
 
-            // If the lock file does not exist, restore before starting the operations
-            if (originalLockFile == null)
-            {
-                var originalRestoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
-                    SolutionManager,
-                    buildIntegratedProject,
-                    originalPackageSpec,
-                    dependencyGraphContext,
-                    providerCache,
-                    cacheModifier,
-                    sources,
-                    nuGetProjectContext.OperationId,
-                    logger,
-                    token);
+            // Add all enabled sources for the existing projects
+            var enabledSources = SourceRepositoryProvider.GetRepositories();
+            var allSources = new HashSet<SourceRepository>(enabledSources, new SourceRepositoryComparer());
 
-                originalLockFile = originalRestoreResult.Result.LockFile;
-            }
-
-            foreach (var action in nuGetProjectActions)
+            foreach (var buildIntegratedProject in buildIntegratedProjects)
             {
-                if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                NuGetProjectAction[] nuGetProjectActions;
+
+                if (packageIdentity != null)
                 {
-                    // Remove the package from all frameworks and dependencies section.
-                    PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
-                }
-                else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
-                {
-                    if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                    if (primarySources == null || primarySources.Count == 0)
                     {
-                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                        throw new ArgumentNullException($"Should have value in {nameof(primarySources)} if there is value for {nameof(packageIdentity)}");
                     }
-                    else
+
+                    var nugetAction = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);
+                    nuGetProjectActions = new[] { nugetAction };
+                    nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath] = nuGetProjectActions;
+                }
+                else
+                {
+                    if (!nugetProjectActionsLookup.ContainsKey(buildIntegratedProject.MSBuildProjectPath))
                     {
-                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
+                        throw new ArgumentNullException($"Either should have value in {nameof(nugetProjectActionsLookup)} for {buildIntegratedProject.MSBuildProjectPath} or {nameof(packageIdentity)} & {nameof(primarySources)}");
+                    }
+
+                    nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath];
+
+                    if (nuGetProjectActions.Length == 0)
+                    {
+                        // Continue to next project if there are no actions for current project.
+                        continue;
                     }
                 }
+
+                // Find all sources used in the project actions
+                var sources = new HashSet<SourceRepository>(
+                    nuGetProjectActions.Where(action => action.SourceRepository != null)
+                        .Select(action => action.SourceRepository),
+                        new SourceRepositoryComparer());
+
+                allSources.UnionWith(sources);
+                sources.UnionWith(enabledSources);
+                nuGetProjectSourceLookup[buildIntegratedProject.MSBuildProjectPath] = sources;
+
+                // Read the current lock file if it exists
+                LockFile originalLockFile = null;
+                var lockFileFormat = new LockFileFormat();
+
+                var lockFilePath = await buildIntegratedProject.GetAssetsFilePathAsync();
+
+                if (File.Exists(lockFilePath))
+                {
+                    originalLockFile = lockFileFormat.Read(lockFilePath);
+                }
+
+                // Get Package Spec as json object
+                var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
+                originalNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath] = originalPackageSpec;
+
+                // Create a copy to avoid modifying the original spec which may be shared.
+                var updatedPackageSpec = originalPackageSpec.Clone();
+
+                // If the lock file does not exist, restore before starting the operations
+                if (originalLockFile == null)
+                {
+                    var originalRestoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                        SolutionManager,
+                        buildIntegratedProject,
+                        originalPackageSpec,
+                        dependencyGraphContext,
+                        providerCache,
+                        cacheModifier,
+                        sources,
+                        nuGetProjectContext.OperationId,
+                        logger,
+                        token);
+
+                    originalLockFile = originalRestoreResult.Result.LockFile;
+                }
+
+                lockFileLookup[buildIntegratedProject.MSBuildProjectPath] = originalLockFile;
+
+                foreach (var action in nuGetProjectActions)
+                {
+                    if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                    {
+                        // Remove the package from all frameworks and dependencies section.
+                        PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
+                    }
+                    else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    {
+                        if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                        {
+                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                        }
+                        else
+                        {
+                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
+                        }
+                    }
+
+                    updatedNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath] = updatedPackageSpec;
+                    dependencyGraphContext.PackageSpecCache[buildIntegratedProject.MSBuildProjectPath] = updatedPackageSpec;
+                }
             }
 
-            // Restore based on the modified package spec. This operation does not write the lock file to disk.
-            var restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+            // Restore based on the modified package specs for many projects. This operation does not write the lock files to disk.
+            var restoreResults = await DependencyGraphRestoreUtility.PreviewRestoreProjectsAsync(
                 SolutionManager,
-                buildIntegratedProject,
-                updatedPackageSpec,
+                buildIntegratedProjects,
+                updatedNugetPackageSpecLookup.Values,
                 dependencyGraphContext,
                 providerCache,
                 cacheModifier,
-                sources,
+                allSources,
                 nuGetProjectContext.OperationId,
                 logger,
                 token);
 
-            var nugetProjectActionsList = nuGetProjectActions.ToList();
-
-            var allFrameworks = updatedPackageSpec
-                .TargetFrameworks
-                .Select(t => t.FrameworkName)
-                .Distinct()
-                .ToList();
-
-            var unsuccessfulFrameworks = restoreResult
-                .Result
-                .CompatibilityCheckResults
-                .Where(t => !t.Success)
-                .Select(t => t.Graph.Framework)
-                .Distinct()
-                .ToList();
-
-            var successfulFrameworks = allFrameworks
-                .Except(unsuccessfulFrameworks)
-                .ToList();
-
-            var firstAction = nugetProjectActionsList[0];
-
-            // If the restore failed and this was a single package install, try to install the package to a subset of
-            // the target frameworks.
-            if (nugetProjectActionsList.Count == 1 &&
-                firstAction.NuGetProjectActionType == NuGetProjectActionType.Install &&
-                successfulFrameworks.Any() &&
-                unsuccessfulFrameworks.Any() &&
-                !restoreResult.Result.Success &&
-                // Exclude upgrades, for now we take the simplest case.
-                !PackageSpecOperations.HasPackage(originalPackageSpec, firstAction.PackageIdentity.Id))
+            foreach (var buildIntegratedProject in buildIntegratedProjects)
             {
-                updatedPackageSpec = originalPackageSpec.Clone();
+                var nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath];
+                var nuGetProjectActionsList = nuGetProjectActions;
+                var updatedPackageSpec = updatedNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath];
+                var originalPackageSpec = originalNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath];
+                var originalLockFile = lockFileLookup[buildIntegratedProject.MSBuildProjectPath];
+                var sources = nuGetProjectSourceLookup[buildIntegratedProject.MSBuildProjectPath];
 
-                PackageSpecOperations.AddOrUpdateDependency(
-                    updatedPackageSpec,
-                    firstAction.PackageIdentity,
-                    successfulFrameworks);
+                var allFrameworks = updatedPackageSpec
+                    .TargetFrameworks
+                    .Select(t => t.FrameworkName)
+                    .Distinct()
+                    .ToList();
 
-                restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
-                    SolutionManager,
+                var restoreResult = restoreResults.Single(r =>
+                    string.Equals(
+                        r.SummaryRequest.Request.Project.RestoreMetadata.ProjectPath,
+                        buildIntegratedProject.MSBuildProjectPath,
+                        StringComparison.OrdinalIgnoreCase));
+
+                var unsuccessfulFrameworks = restoreResult
+                    .Result
+                    .CompatibilityCheckResults
+                    .Where(t => !t.Success)
+                    .Select(t => t.Graph.Framework)
+                    .Distinct()
+                    .ToList();
+
+                var successfulFrameworks = allFrameworks
+                    .Except(unsuccessfulFrameworks)
+                    .ToList();
+
+                var firstAction = nuGetProjectActionsList[0];
+
+                // If the restore failed and this was a single package install, try to install the package to a subset of
+                // the target frameworks.
+                if (nuGetProjectActionsList.Length == 1 &&
+                    firstAction.NuGetProjectActionType == NuGetProjectActionType.Install &&
+                    !restoreResult.Result.Success &&
+                    successfulFrameworks.Any() &&
+                    unsuccessfulFrameworks.Any() &&
+                    // Exclude upgrades, for now we take the simplest case.
+                    !PackageSpecOperations.HasPackage(originalPackageSpec, firstAction.PackageIdentity.Id))
+                {
+                    updatedPackageSpec = originalPackageSpec.Clone();
+
+                    PackageSpecOperations.AddOrUpdateDependency(
+                        updatedPackageSpec,
+                        firstAction.PackageIdentity,
+                        successfulFrameworks);
+
+                    restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                        SolutionManager,
+                        buildIntegratedProject,
+                        updatedPackageSpec,
+                        dependencyGraphContext,
+                        providerCache,
+                        cacheModifier,
+                        sources,
+                        nuGetProjectContext.OperationId,
+                        logger,
+                        token);
+                }
+
+                // If HideWarningsAndErrors is true then restore will not display the warnings and errors.
+                // Further, replay errors and warnings only if restore failed because the assets file will not be committed.
+                // If there were only warnings then those are written to assets file and committed. The design time build will replay them.
+                if (updatedPackageSpec.RestoreSettings.HideWarningsAndErrors &&
+                    !restoreResult.Result.Success)
+                {
+                    await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResult.Result.LockFile?.LogMessages, logger);
+                }
+
+                // Build the installation context
+                var originalFrameworks = updatedPackageSpec
+                    .TargetFrameworks
+                    .ToDictionary(x => x.FrameworkName, x => x.TargetAlias);
+
+                var installationContext = new BuildIntegratedInstallationContext(
+                    successfulFrameworks,
+                    unsuccessfulFrameworks,
+                    originalFrameworks);
+
+                InstallationCompatibility.EnsurePackageCompatibility(
                     buildIntegratedProject,
-                    updatedPackageSpec,
-                    dependencyGraphContext,
-                    providerCache,
-                    cacheModifier,
-                    sources,
-                    nuGetProjectContext.OperationId,
-                    logger,
-                    token);
-            }
+                    pathContext,
+                    nuGetProjectActions,
+                    restoreResult.Result);
 
-            // If HideWarningsAndErrors is true then restore will not display the warnings and errors.
-            // Further, replay errors and warnings only if restore failed because the assets file will not be committed.
-            // If there were only warnings then those are written to assets file and committed. The design time build will replay them.
-            if (updatedPackageSpec.RestoreSettings.HideWarningsAndErrors &&
-                !restoreResult.Result.Success)
-            {
-                await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResult.Result.LockFile?.LogMessages, logger);
-            }
+                // If this build integrated project action represents only uninstalls, mark the entire operation
+                // as an uninstall. Otherwise, mark it as an install. This is important because install operations
+                // are a bit more sensitive to errors (thus resulting in rollbacks).
+                var actionType = NuGetProjectActionType.Install;
+                if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Uninstall))
+                {
+                    actionType = NuGetProjectActionType.Uninstall;
+                }
 
-            // Build the installation context
-            var originalFrameworks = updatedPackageSpec
-                .TargetFrameworks
-                .ToDictionary(x => x.FrameworkName, x => x.TargetAlias);
+                var nugetProjectAction = new BuildIntegratedProjectAction(
+                    buildIntegratedProject,
+                    nuGetProjectActions.First().PackageIdentity,
+                    actionType,
+                    originalLockFile,
+                    restoreResult,
+                    sources.ToList(),
+                    nuGetProjectActionsList,
+                    installationContext);
 
-            var installationContext = new BuildIntegratedInstallationContext(
-                successfulFrameworks,
-                unsuccessfulFrameworks,
-                originalFrameworks);
-
-            InstallationCompatibility.EnsurePackageCompatibility(
-                buildIntegratedProject,
-                pathContext,
-                nuGetProjectActions,
-                restoreResult.Result);
-
-            // If this build integrated project action represents only uninstalls, mark the entire operation
-            // as an uninstall. Otherwise, mark it as an install. This is important because install operations
-            // are a bit more sensitive to errors (thus resulting in rollbacks).
-            var actionType = NuGetProjectActionType.Install;
-            if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Uninstall))
-            {
-                actionType = NuGetProjectActionType.Uninstall;
+                result.Add(new ResolvedAction(buildIntegratedProject, nugetProjectAction));
             }
 
             stopWatch.Stop();
-
             var actionTelemetryEvent = new ActionTelemetryStepEvent(
                 nuGetProjectContext.OperationId.ToString(),
                 TelemetryConstants.PreviewBuildIntegratedStepName, stopWatch.Elapsed.TotalSeconds);
 
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
 
-            return new BuildIntegratedProjectAction(
-                buildIntegratedProject,
-                nuGetProjectActions.First().PackageIdentity,
-                actionType,
-                originalLockFile,
-                restoreResult,
-                sources.ToList(),
-                nugetProjectActionsList,
-                installationContext);
+            return result;
         }
 
         /// <summary>
@@ -2792,30 +3001,9 @@ namespace NuGet.PackageManagement
                 var now = DateTime.UtcNow;
                 void cacheContextModifier(SourceCacheContext c) => c.MaxAge = now;
 
-                // Check if current project is there in update cache and needs revaluation
-                var isProjectUpdated = false;
-                if (_buildIntegratedProjectsUpdateDict != null &&
-                    _buildIntegratedProjectsUpdateDict.TryGetValue(
-                        buildIntegratedProject.MSBuildProjectPath,
-                        out isProjectUpdated) &&
-                    isProjectUpdated)
-                {
-                    await DependencyGraphRestoreUtility.RestoreProjectAsync(
-                            SolutionManager,
-                            buildIntegratedProject,
-                            referenceContext,
-                            GetRestoreProviderCache(),
-                            cacheContextModifier,
-                            projectAction.Sources,
-                            nuGetProjectContext.OperationId,
-                            logger,
-                            token);
-                }
-                else
-                {
-                    // Write out the lock file
-                    await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
-                }
+                // Write out the lock file, now no need bubbling re-evaluating of parent projects when you restore from PM UI.
+                // We already taken account of that concern in PreviewBuildIntegratedProjectsActionsAsync method.
+                await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
 
                 // add packages lock file into project
                 if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(projectAction.RestoreResult.LockFile.PackageSpec))
@@ -2883,16 +3071,13 @@ namespace NuGet.PackageManagement
 
                 foreach (var parent in parents)
                 {
-                    // if this parent exists in update cache, then update it's entry to be re-evaluated
-                    if (_buildIntegratedProjectsUpdateDict != null &&
-                        _buildIntegratedProjectsUpdateDict.ContainsKey(parent.MSBuildProjectPath))
-                    {
-                        _buildIntegratedProjectsUpdateDict[parent.MSBuildProjectPath] = true;
-                    }
-                    else
+                    // We only evaluate unseen parents.
+                    if (_buildIntegratedProjectsUpdateSet == null ||
+                        !_buildIntegratedProjectsUpdateSet.Contains(parent.MSBuildProjectPath))
                     {
                         // Mark project for restore
                         dgSpecForParents.AddRestore(parent.MSBuildProjectPath);
+                        _buildIntegratedProjectsUpdateSet?.Add(parent.MSBuildProjectPath);
                     }
                 }
 

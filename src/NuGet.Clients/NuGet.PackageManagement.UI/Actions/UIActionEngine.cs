@@ -835,20 +835,17 @@ namespace NuGet.PackageManagement.UI
             var results = new List<ResolvedAction>();
 
             Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
+
             if (userAction.Action == NuGetProjectActionType.Install)
             {
-                foreach (var target in targets)
-                {
-                    var actions = await _packageManager.PreviewInstallPackageAsync(
-                        target,
-                        new PackageIdentity(userAction.PackageId, userAction.Version),
-                        resolutionContext,
-                        projectContext,
-                        uiService.ActiveSources,
-                        null,
-                        token);
-                    results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
-                }
+                results.AddRange(await _packageManager.PreviewProjectsInstallPackageAsync(
+                    targets?.ToList(),
+                    new PackageIdentity(userAction.PackageId, userAction.Version),
+                    resolutionContext,
+                    projectContext,
+                    uiService.ActiveSources?.ToList(),
+                    token
+                ));
             }
             else
             {

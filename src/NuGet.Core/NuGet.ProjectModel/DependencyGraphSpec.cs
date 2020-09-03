@@ -484,6 +484,24 @@ namespace NuGet.ProjectModel
             return newSpec;
         }
 
+        public DependencyGraphSpec WithPackageSpecs(IEnumerable<PackageSpec> packageSpecs)
+        {
+            var newSpec = new DependencyGraphSpec();
+
+            foreach (var packageSpec in packageSpecs)
+            {
+                newSpec.AddProject(packageSpec);
+                newSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+            }
+
+            foreach (var child in Projects)
+            {
+                newSpec.AddProject(child);
+            }
+
+            return newSpec;
+        }
+
         public DependencyGraphSpec WithoutTools()
         {
             var newSpec = new DependencyGraphSpec();

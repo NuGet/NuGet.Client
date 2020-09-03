@@ -17,17 +17,29 @@ namespace Test.Utility
     {
         private Guid _operationId;
         public TestExecutionContext TestExecutionContext { get; set; }
+        public Lazy<List<string>> Logs { get; } = new Lazy<List<string>>();
+        public bool EnableLogging { get; set; }
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
             // Uncomment when you want to debug tests.
             // Console.WriteLine(message, args);
+
+            if (EnableLogging)
+            {
+                Logs.Value.Add(args != null ? message + " " + string.Join(",", args) : message);
+            }
         }
 
         public void Log(ILogMessage message)
         {
             // Uncomment when you want to debug tests.
             // Console.WriteLine(message.FormatWithCode());
+
+            if (EnableLogging)
+            {
+                Logs.Value.Add(message.Message);
+            }
         }
 
         public FileConflictAction ResolveFileConflict(string message)
