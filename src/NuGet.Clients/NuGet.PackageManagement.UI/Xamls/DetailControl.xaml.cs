@@ -117,7 +117,7 @@ namespace NuGet.PackageManagement.UI
             Control.ExecuteAction(
                 () =>
                 {
-                    return Control.Model.Context.UIActionEngine.PerformActionAsync(
+                    return Control.Model.Context.UIActionEngine.PerformInstallOrUninstallAsync(
                         Control.Model.UIController,
                         action,
                         CancellationToken.None);

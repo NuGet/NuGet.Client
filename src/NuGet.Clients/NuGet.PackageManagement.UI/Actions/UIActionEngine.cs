@@ -49,10 +49,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Perform a user action.
+        /// Perform an install or uninstall user action.
         /// </summary>
         /// <remarks>This needs to be called from a background thread. It may hang on the UI thread.</remarks>
-        public async Task PerformActionAsync(
+        public async Task PerformInstallOrUninstallAsync(
             INuGetUI uiService,
             UserAction userAction,
             CancellationToken cancellationToken)
@@ -203,52 +203,41 @@ namespace NuGet.PackageManagement.UI
             {
                 Assumes.NotNull(projectManagerService);
 
-                await projectManagerService.BeginOperationAsync(cancellationToken);
-
-                try
-                {
-                }
-                finally
-                {
-                    await projectManagerService.EndOperationAsync(cancellationToken);
-                }
+                await PerformActionAsync(
+                    uiService,
+                    userAction: null,
+                    NuGetOperationType.Update,
+                    (projectManagerService) =>
+                        ResolveActionsForUpdateAsync(projectManagerService, uiService, packagesToUpdate, cancellationToken),
+                    cancellationToken);
             }
         }
 
         /// <summary>
         /// Calculates the list of actions needed to perform packages updates.
         /// </summary>
-        /// <param name="uiService">ui service.</param>
-        /// <param name="packagesToUpdate">The list of packages to update.</param>
-        /// <param name="token">Cancellation token.</param>
-        /// <returns>The list of actions.</returns>
-        private Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdateAsync(
+        private async Task<IReadOnlyList<ProjectAction>> ResolveActionsForUpdateAsync(
+            INuGetProjectManagerService projectManagerService,
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken token)
         {
-            var resolvedActions = new List<ResolvedAction>();
+            bool includePrerelease = packagesToUpdate
+                .Where(package => package.Version.IsPrerelease)
+                .Any();
 
-            // Keep a single gather cache across projects
-            var gatherCache = new GatherCache();
+            string[] projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
 
-            var includePrerelease = packagesToUpdate.Where(
-                package => package.Version.IsPrerelease).Any();
+            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.Select(source => source.PackageSource.Name).ToList();
 
-            using (var sourceCacheContext = new SourceCacheContext())
-            {
-                var resolutionContext = new ResolutionContext(
-                    uiService.DependencyBehavior,
-                    includePrelease: includePrerelease,
-                    includeUnlisted: true,
-                    versionConstraints: VersionConstraints.None,
-                    gatherCache: gatherCache,
-                    sourceCacheContext: sourceCacheContext);
-
-                var secondarySources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-
-                throw new NotImplementedException();
-            }
+            return await projectManagerService.GetUpdateActionsAsync(
+                projectIds,
+                packagesToUpdate,
+                VersionConstraints.None,
+                includePrerelease,
+                uiService.DependencyBehavior,
+                packageSourceNames,
+                token);
         }
 
         /// <summary>

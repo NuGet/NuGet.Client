@@ -415,6 +415,94 @@ namespace NuGet.PackageManagement.VisualStudio
             return projectActions;
         }
 
+        public async ValueTask<IReadOnlyList<ProjectAction>> GetUpdateActionsAsync(
+           IReadOnlyCollection<string> projectIds,
+           IReadOnlyCollection<PackageIdentity> packageIdentities,
+           VersionConstraints versionConstraints,
+           bool includePrelease,
+           DependencyBehavior dependencyBehavior,
+           IReadOnlyList<string> packageSourceNames,
+           CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectIds);
+            Assumes.NotNullOrEmpty(packageIdentities);
+            Assumes.NotNullOrEmpty(packageSourceNames);
+            Assumes.NotNull(_state.SourceCacheContext);
+            Assumes.NotNull(_state.ResolvedActions);
+            Assumes.Null(_state.PackageIdentity);
+
+            var primarySources = new List<SourceRepository>();
+            var secondarySources = new List<SourceRepository>();
+
+            ISourceRepositoryProvider sourceRepositoryProvider = await _sharedState.SourceRepositoryProvider.GetValueAsync(cancellationToken);
+            IEnumerable<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories();
+            var packageSourceNamesSet = new HashSet<string>(packageSourceNames, StringComparer.OrdinalIgnoreCase);
+
+            foreach (SourceRepository sourceRepository in sourceRepositories)
+            {
+                if (packageSourceNamesSet.Contains(sourceRepository.PackageSource.Name))
+                {
+                    primarySources.Add(sourceRepository);
+                }
+
+                if (sourceRepository.PackageSource.IsEnabled)
+                {
+                    secondarySources.Add(sourceRepository);
+                }
+            }
+
+            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+            var projects = new List<NuGetProject>();
+
+            foreach (string projectId in projectIds)
+            {
+                (bool success, NuGetProject? project) = await TryGetNuGetProjectMatchingProjectIdAsync(projectId);
+
+                Assumes.True(success);
+                Assumes.NotNull(project);
+
+                projects.Add(project);
+            }
+
+            var resolutionContext = new ResolutionContext(
+                dependencyBehavior,
+                includePrelease,
+                includeUnlisted: true,
+                versionConstraints,
+                new GatherCache(),
+                _state.SourceCacheContext);
+
+            NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+            IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUpdatePackagesAsync(
+                  packageIdentities.ToList(),
+                  projects,
+                  resolutionContext,
+                  projectContext,
+                  primarySources,
+                  secondarySources,
+                  cancellationToken);
+
+            var projectActions = new List<ProjectAction>();
+
+            foreach (NuGetProjectAction action in actions)
+            {
+                string projectId = action.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                var resolvedAction = new ResolvedAction(action.Project, action);
+                var projectAction = new ProjectAction(
+                    CreateProjectActionId(),
+                    projectId,
+                    action.PackageIdentity,
+                    action.NuGetProjectActionType,
+                    implicitActions: null);
+
+                _state.ResolvedActions[projectAction.Id] = resolvedAction;
+
+                projectActions.Add(projectAction);
+            }
+
+            return projectActions;
+        }
+
         public async ValueTask<IReadOnlyCollection<IProjectContextInfo>> GetProjectsWithDeprecatedDotnetFrameworkAsync(CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(_state.ResolvedActions);
