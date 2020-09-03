@@ -449,7 +449,7 @@ namespace NuGet.Build.Tasks.Pack
                     }
                     var isNet5EraTfm = fw.Version.Major >= 5 &&
                         StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, fw.Framework);
-                    var isNetStandard = StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetStandard, fw.Framework);
+                    var isNetStandard = !isNet5EraTfm && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetStandard, fw.Framework);
                     if (isNet5EraTfm || isNetStandard)
                     {
                         var dotIdx = targetFramework.IndexOf('.');
