@@ -96,11 +96,21 @@ namespace NuGet.Protocol
                 if (response.StatusCode == HttpStatusCode.Unauthorized ||
                     (configuration.PromptOn403 && response.StatusCode == HttpStatusCode.Forbidden))
                 {
-                    IList<Stopwatch> stopwatches = null;
+                    List<Stopwatch> stopwatches = null;
 
+#if USE_HTTPREQUESTMESSAGE_OPTIONS
+                    if (request.Options.TryGetValue(
+                        new HttpRequestOptionsKey<List<Stopwatch>>(HttpRetryHandler.StopwatchPropertyName),
+                        out stopwatches))
+                    {
+#else
+                    // stop ignoring CS0618 when fixing https://github.com/NuGet/Home/issues/9981
+#pragma warning disable CS0618
                     if (request.Properties.TryGetValue(HttpRetryHandler.StopwatchPropertyName, out var value))
                     {
-                        stopwatches = value as IList<Stopwatch>;
+                        stopwatches = value as List<Stopwatch>;
+#pragma warning restore CS0618
+#endif
                         if (stopwatches != null)
                         {
                             foreach (var stopwatch in stopwatches)
