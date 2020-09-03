@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -19,7 +20,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 
         public static TheoryData NuGetFrameworks => new TheoryData<NuGetFramework>
             {
-                { NuGetFramework.Parse("net50") }
+                { new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5), "Profile344") },
+                { new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 8)) },
+                { FrameworkConstants.CommonFrameworks.Net50 }
             };
     }
 }

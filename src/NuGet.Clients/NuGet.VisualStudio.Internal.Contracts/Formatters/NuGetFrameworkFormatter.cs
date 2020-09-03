@@ -11,11 +11,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class NuGetFrameworkFormatter : IMessagePackFormatter<NuGetFramework?>
     {
-        private const string FrameworkIdentifierPropertyName = "frameworkidentifier";
-        private const string FrameworkVersionPropertyName = "frameworkversion";
-        private const string FrameworkProfilePropertyName = "frameworkprofile";
-        private const string PlatformIdentifierPropertyName = "platformidentifier";
-        private const string PlatformVersionPropertyName = "platformversion";
+        private const string DotNetFrameworkNamePropertyName = "dotnetframeworkname";
+        private const string DotNetPlatformNamePropertyName = "dotnetplatformname";
 
         internal static readonly IMessagePackFormatter<NuGetFramework?> Instance = new NuGetFrameworkFormatter();
 
@@ -35,11 +32,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             try
             {
-                string? frameworkIdentifier = null;
-                string? frameworkProfile = null;
-                string? frameworkVersion = null;
-                string? platformIdentifier = null;
-                string? platformVersion = null;
+                string? frameworkName = null;
+                string? platformName = null;
 
                 int propertyCount = reader.ReadMapHeader();
 
@@ -47,24 +41,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 {
                     switch (reader.ReadString())
                     {
-                        case FrameworkIdentifierPropertyName:
-                            frameworkIdentifier = reader.ReadString();
+                        case DotNetFrameworkNamePropertyName:
+                            frameworkName = reader.ReadString();
                             break;
 
-                        case FrameworkProfilePropertyName:
-                            frameworkProfile = reader.ReadString();
-                            break;
-
-                        case FrameworkVersionPropertyName:
-                            frameworkVersion = reader.ReadString();
-                            break;
-
-                        case PlatformIdentifierPropertyName:
-                            platformIdentifier = reader.ReadString();
-                            break;
-
-                        case PlatformVersionPropertyName:
-                            platformVersion = reader.ReadString();
+                        case DotNetPlatformNamePropertyName:
+                            platformName = reader.ReadString();
                             break;
 
                         default:
@@ -73,12 +55,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
-                return NuGetFramework.ParseComponents(
-                    frameworkIdentifier,
-                    frameworkVersion,
-                    frameworkProfile,
-                    platformIdentifier,
-                    platformVersion);
+                return NuGetFramework.ParseComponents(frameworkName, platformName);
             }
             finally
             {
@@ -95,17 +72,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return;
             }
 
-            writer.WriteMapHeader(count: 5);
-            writer.Write(FrameworkIdentifierPropertyName);
-            writer.Write(value.Framework);
-            writer.Write(FrameworkProfilePropertyName);
-            writer.Write(value.Profile);
-            writer.Write(FrameworkVersionPropertyName);
-            writer.Write(value.Version.ToString());
-            writer.Write(PlatformIdentifierPropertyName);
-            writer.Write(value.Platform);
-            writer.Write(PlatformVersionPropertyName);
-            writer.Write(value.PlatformVersion.ToString());
+            writer.WriteMapHeader(count: 2);
+            writer.Write(DotNetFrameworkNamePropertyName);
+            writer.Write(value.DotNetFrameworkName);
+            writer.Write(DotNetPlatformNamePropertyName);
+            writer.Write(value.DotNetPlatformName);
         }
     }
 }
