@@ -78,7 +78,7 @@ namespace NuGet.VisualStudio
                 restoreSource: RestoreOperationSource.Implicit);
         }
 
-        public static SolutionRestoreRequest OnUpdate(string project)
+        public static SolutionRestoreRequest OnUpdate()
         {
             return new SolutionRestoreRequest(
                 forceRestore: false,

@@ -1,13 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if DEBUG
+
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using NuGet.Common;
 
-namespace Test.Utility
+namespace NuGet.SolutionRestoreManager
 {
     internal sealed class NuGetFileLogger : IDisposable
     {
@@ -121,3 +123,4 @@ namespace Test.Utility
         }
     }
 }
+#endif
