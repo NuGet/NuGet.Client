@@ -20,7 +20,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ProjectStyle ProjectStyle { get; }
         NuGetProjectKind ProjectKind { get; }
         ValueTask<bool> IsUpgradeableAsync(CancellationToken cancellationToken);
-        ValueTask<IEnumerable<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken);
+        ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken);
         ValueTask<(bool, T)> TryGetMetadataAsync<T>(string key, CancellationToken cancellationToken);
         ValueTask<T> GetMetadataAsync<T>(string key, CancellationToken cancellationToken);
         ValueTask<string> GetUniqueNameOrNameAsync(CancellationToken cancellationToken);
