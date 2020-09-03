@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var solMgr = new Mock<INuGetSolutionManagerService>();
             _testInstance = new PackageDetailControlModel(
                 solutionManager: solMgr.Object,
-                Enumerable.Empty<IProjectContextInfo>());
+                Array.Empty<IProjectContextInfo>());
             _testInstance.SetCurrentPackage(
                 _testViewModel,
                 ItemFilter.All,

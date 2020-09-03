@@ -48,7 +48,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
-        public async ValueTask<IEnumerable<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken)
+        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken)
         {
             IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();
             using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))

@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<PackageCollection> FromProjectsAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
             // Read package references from all projects.
-            IEnumerable<Task<IEnumerable<IPackageReferenceContextInfo>>>? tasks = projects
+            IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>>? tasks = projects
                 .Select(project => project.GetInstalledPackagesAsync(cancellationToken).AsTask());
             IEnumerable<IPackageReferenceContextInfo>[]? packageReferences = await Task.WhenAll(tasks);
 
