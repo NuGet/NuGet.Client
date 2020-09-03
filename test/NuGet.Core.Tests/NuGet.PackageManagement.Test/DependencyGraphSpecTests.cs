@@ -51,7 +51,8 @@ namespace NuGet.Test
                 Title = "A",
                 RestoreMetadata = new ProjectRestoreMetadata()
                 {
-                    ProjectUniqueName = "a", CentralPackageVersionsEnabled = false
+                    ProjectUniqueName = "a",
+                    CentralPackageVersionsEnabled = false
                 }
             };
             var packageSpecB = new PackageSpec
