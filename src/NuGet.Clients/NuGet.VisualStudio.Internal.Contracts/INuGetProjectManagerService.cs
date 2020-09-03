@@ -38,7 +38,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask ExecuteActionsAsync(IReadOnlyList<ProjectAction> actions, CancellationToken cancellationToken);
 
         ValueTask<IReadOnlyList<ProjectAction>> GetInstallActionsAsync(
-            string projectId,
+            IReadOnlyCollection<string> projectIds,
             PackageIdentity packageIdentity,
             VersionConstraints versionConstraints,
             bool includePrelease,

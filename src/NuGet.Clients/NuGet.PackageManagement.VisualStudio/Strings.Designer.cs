@@ -403,6 +403,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A project with ID &apos;{0}&apos; was not found..
+        /// </summary>
+        public static string ProjectWithIdNotFound {
+            get {
+                return ResourceManager.GetString("ProjectWithIdNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
         /// </summary>
         public static string SolutionIsNotSaved {
