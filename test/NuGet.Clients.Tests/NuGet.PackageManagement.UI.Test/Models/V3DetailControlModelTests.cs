@@ -6,20 +6,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.TeamFoundation.Client.SharePoint;
-using Microsoft.VisualStudio.Services.Commerce;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models
@@ -97,10 +94,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public V3PackageDetailControlModelTests(V3PackageSearchMetadataFixture testData)
             : base(testData)
         {
-            var solMgr = new Mock<ISolutionManager>();
+            var solMgr = new Mock<INuGetSolutionManagerService>();
             _testInstance = new PackageDetailControlModel(
                 solutionManager: solMgr.Object,
-                nugetProjects: new List<NuGetProject>());
+                Enumerable.Empty<IProjectContextInfo>());
             _testInstance.SetCurrentPackage(
                 _testViewModel,
                 ItemFilter.All,
