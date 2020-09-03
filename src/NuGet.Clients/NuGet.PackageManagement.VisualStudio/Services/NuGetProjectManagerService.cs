@@ -536,7 +536,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else
                 {
-                    throw new ArgumentException("Project with ID {} not found.", nameof(projectIds));
+                    throw new ArgumentException(
+                        string.Format(Strings.ProjectWithIdNotFound, CultureInfo.CurrentCulture, projectId),
+                        nameof(projectIds));
                 }
             }
 
