@@ -79,7 +79,7 @@ namespace NuGet.SolutionRestoreManager
 
             // returned task completes when scheduled restore operation completes.
             var restoreTask = _restoreWorker.ScheduleRestoreAsync(
-                SolutionRestoreRequest.OnUpdate(projectUniqueName),
+                SolutionRestoreRequest.OnUpdate(projectUniqueName + " not from nomination"),
                 token);
 
             return restoreTask;
