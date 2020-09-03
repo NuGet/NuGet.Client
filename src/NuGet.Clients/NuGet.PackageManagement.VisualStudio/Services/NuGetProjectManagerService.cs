@@ -101,12 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            IVsSolutionManager? solutionManager = await _sharedState.SolutionManager.GetValueAsync(cancellationToken);
-            Assumes.NotNull(solutionManager);
-
-            NuGetProject[]? projects = (await solutionManager.GetNuGetProjectsAsync())
-                .Where(p => projectIds.Contains(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)))
-                .ToArray();
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             // Read package references from all projects.
             IEnumerable<Task<IEnumerable<PackageReference>>> tasks = projects.Select(project => project.GetInstalledPackagesAsync(cancellationToken));
@@ -278,7 +273,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public async ValueTask<IReadOnlyList<ProjectAction>> GetInstallActionsAsync(
-            string projectId,
+            IReadOnlyCollection<string> projectIds,
             PackageIdentity packageIdentity,
             VersionConstraints versionConstraints,
             bool includePrelease,
@@ -286,7 +281,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNullOrEmpty(projectId);
+            Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
             Assumes.NotNullOrEmpty(packageSourceNames);
             Assumes.Null(_state.PackageIdentity);
@@ -304,10 +299,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNullOrEmpty(sourceRepositories);
 
             INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            (bool success, NuGetProject? project) = await TryGetNuGetProjectMatchingProjectIdAsync(projectId);
-
-            Assumes.True(success);
-            Assumes.NotNull(project);
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             var resolutionContext = new ResolutionContext(
                 dependencyBehavior,
@@ -316,6 +308,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 versionConstraints,
                 new GatherCache(),
                 _state.SourceCacheContext);
+
+            NuGetProject project = projects.Single();
 
             NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
             IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewInstallPackageAsync(
@@ -348,7 +342,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                var resolvedAction = new ResolvedAction(project, action);
+                var resolvedAction = new ResolvedAction(action.Project, action);
+                string projectId = action.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
                 var projectAction = new ProjectAction(
                     CreateProjectActionId(),
                     projectId,
@@ -514,14 +509,38 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<Task<IProjectContextInfo>> tasks = affectedProjects
                 .Select(affectedProject => ProjectContextInfo.CreateAsync(affectedProject, cancellationToken).AsTask());
 
-            await Task.WhenAll(tasks);
-
-            return tasks.Select(task => task.Result).ToArray();
+            return await Task.WhenAll(tasks);
         }
 
         private static string CreateProjectActionId()
         {
             return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        }
+
+        private async Task<IReadOnlyList<NuGetProject>> GetProjectsAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
+        {
+            IVsSolutionManager? solutionManager = await _sharedState.SolutionManager.GetValueAsync(cancellationToken);
+            Assumes.NotNull(solutionManager);
+
+            Dictionary<string, NuGetProject>? projects = (await solutionManager.GetNuGetProjectsAsync())
+                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _);
+            var matchingProjects = new List<NuGetProject>(capacity: projectIds.Count);
+
+            foreach (string projectId in projectIds)
+            {
+                if (projects.TryGetValue(projectId, out NuGetProject project))
+                {
+                    matchingProjects.Add(project);
+                }
+                else
+                {
+                    throw new ArgumentException("Project with ID {} not found.", nameof(projectIds));
+                }
+            }
+
+            return matchingProjects;
         }
 
         private async ValueTask<IReadOnlyList<SourceRepository>> GetSourceRepositoriesAsync(

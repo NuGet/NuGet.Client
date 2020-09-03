@@ -1000,22 +1000,18 @@ namespace NuGet.PackageManagement.UI
             if (userAction.Action == NuGetProjectActionType.Install)
             {
                 var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
+                string[] projectIds = projects.Select(project => project.ProjectId).ToArray();
 
-                foreach (ProjectContextInfo project in projects)
-                {
-                    string projectGuid = await project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.ProjectId, token);
+                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetInstallActionsAsync(
+                    projectIds,
+                    packageIdentity,
+                    VersionConstraints.None,
+                    includePrelease,
+                    uiService.DependencyBehavior,
+                    packageSourceNames,
+                    token);
 
-                    IReadOnlyList<ProjectAction> actions = await projectManagerService.GetInstallActionsAsync(
-                        projectGuid,
-                        packageIdentity,
-                        VersionConstraints.None,
-                        includePrelease,
-                        uiService.DependencyBehavior,
-                        packageSourceNames,
-                        token);
-
-                    results.AddRange(actions);
-                }
+                results.AddRange(actions);
             }
             else
             {
