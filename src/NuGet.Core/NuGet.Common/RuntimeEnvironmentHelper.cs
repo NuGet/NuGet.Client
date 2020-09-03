@@ -59,7 +59,7 @@ namespace NuGet.Common
         {
             get
             {
-                if (IsRunningInVisualStudio)
+                if (IsWindows && IsRunningInVisualStudio)
                 {
                     // skip Mono type check if current process is Devenv
                     return false;
