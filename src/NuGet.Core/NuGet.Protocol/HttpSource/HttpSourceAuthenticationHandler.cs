@@ -105,9 +105,11 @@ namespace NuGet.Protocol
                     {
 #else
                     // stop ignoring CS0618 when fixing https://github.com/NuGet/Home/issues/9981
+#pragma warning disable CS0618
                     if (request.Properties.TryGetValue(HttpRetryHandler.StopwatchPropertyName, out var value))
                     {
                         stopwatches = value as List<Stopwatch>;
+#pragma warning restore CS0618
 #endif
                         if (stopwatches != null)
                         {
