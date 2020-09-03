@@ -1398,7 +1398,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.AfterNuGetCacheUpdated -= OnNuGetCacheUpdated;
 
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
-            
+
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
 
             Model.Dispose();
