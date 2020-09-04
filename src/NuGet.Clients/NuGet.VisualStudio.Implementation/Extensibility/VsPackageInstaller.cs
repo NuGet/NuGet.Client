@@ -394,9 +394,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            var expandedNodes = await VsHierarchy.GetAllExpandedNodesAsync();
-
-            try
+            using (await VsHierarchy.GetSolutionNodesExpansionStateAsync())
             {
                 var depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
 
@@ -442,11 +440,6 @@ namespace NuGet.VisualStudio
                         ignoreDependencies,
                         token);
                 }
-            }
-            finally
-            {
-                // collapse nodes
-                await VsHierarchy.CollapseAllNodesAsync(expandedNodes);
             }
         }
 

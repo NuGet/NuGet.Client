@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio
     internal sealed class VsCommonOperations : ICommonOperations
     {
         private readonly Lazy<EnvDTE.DTE> _dte;
-        private IDictionary<string, ISet<VsHierarchy>> _expandedNodes;
+        private IDisposable _solutionNodesExpansionState;
 
         [ImportingConstructor]
         public VsCommonOperations(
@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _expandedNodes = await VsHierarchy.GetAllExpandedNodesAsync();
+                _solutionNodesExpansionState = await VsHierarchy.GetSolutionNodesExpansionStateAsync();
 
                 return Task.CompletedTask;
             });
@@ -72,19 +72,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public Task CollapseAllNodes(ISolutionManager solutionManager)
         {
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                await VsHierarchy.CollapseAllNodesAsync(_expandedNodes);
-
-                return Task.CompletedTask;
-            });
+            _solutionNodesExpansionState.Dispose();
+            return Task.CompletedTask;
         }
     }
 }

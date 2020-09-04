@@ -12,8 +12,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
-using Task = System.Threading.Tasks.Task;
-
 namespace NuGet.VisualStudio
 {
     /// <summary> Represent a particular tree node in the Solution Explorer window. </summary>
@@ -62,8 +60,8 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary> Get all expanded nodes in the solution. </summary>
-        /// <returns> Dictionary of expanded nodes. </returns>
-        public static async Task<IDictionary<string, ISet<VsHierarchy>>> GetAllExpandedNodesAsync()
+        /// <returns> An opaque object storing state of nodes, can be disposed to restore state. </returns>
+        public static async Task<IDisposable> GetSolutionNodesExpansionStateAsync()
         {
             // this operation needs to execute on UI thread
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -80,28 +78,40 @@ namespace NuGet.VisualStudio
                 results[EnvDTEProjectInfoUtility.GetUniqueName(project)] =
                     new HashSet<VsHierarchy>(expandedNodes);
             }
-            return results;
+
+            return new NodeExpansionState(results);
         }
 
-        /// <summary> Collaps all nodes in the solution. </summary>
-        /// <param name="ignoreNodes"> Dictionary of nodes to ignore. </param>
-        public static async Task CollapseAllNodesAsync(IDictionary<string, ISet<VsHierarchy>> ignoreNodes)
+        private class NodeExpansionState : IDisposable
         {
-            // this operation needs to execute on UI thread
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            private IDictionary<string, ISet<VsHierarchy>> _expandedNodes;
 
-            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
-            var projects = dte.Solution.Projects;
-
-            foreach (var project in projects.Cast<EnvDTE.Project>())
+            internal NodeExpansionState(IDictionary<string, ISet<VsHierarchy>> expandedNodes)
             {
-                ISet<VsHierarchy> expandedNodes;
-                if (ignoreNodes.TryGetValue(EnvDTEProjectInfoUtility.GetUniqueName(project), out expandedNodes)
-                    &&
-                    expandedNodes != null)
+                _expandedNodes = expandedNodes;
+            }
+
+            void IDisposable.Dispose()
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    CollapseProjectHierarchyItems(project, expandedNodes);
-                }
+                    // this operation needs to execute on UI thread
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+                    var projects = dte.Solution.Projects;
+
+                    foreach (var project in projects.Cast<EnvDTE.Project>())
+                    {
+                        ISet<VsHierarchy> expandedNodes;
+                        if (_expandedNodes.TryGetValue(EnvDTEProjectInfoUtility.GetUniqueName(project), out expandedNodes)
+                            &&
+                            expandedNodes != null)
+                        {
+                            CollapseProjectHierarchyItems(project, expandedNodes);
+                        }
+                    }
+                });
             }
         }
 

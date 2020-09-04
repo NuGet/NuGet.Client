@@ -208,9 +208,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            var expandedNodes = await VsHierarchy.GetAllExpandedNodesAsync();
-
-            try
+            using (await VsHierarchy.GetSolutionNodesExpansionStateAsync())
             {
                 foreach (var package in configuration.Packages)
                 {
@@ -299,11 +297,6 @@ namespace NuGet.VisualStudio
 
                     CopyNativeBinariesToBin(project, repositoryPath, configuration.Packages);
                 }
-            }
-            finally
-            {
-                // collapse nodes
-                await VsHierarchy.CollapseAllNodesAsync(expandedNodes);
             }
         }
 
