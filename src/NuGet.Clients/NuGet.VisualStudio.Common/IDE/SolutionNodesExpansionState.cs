@@ -10,6 +10,8 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
+using Task = System.Threading.Tasks.Task;
+
 namespace NuGet.VisualStudio
 {
     /// <summary> Class representing expansion state of solution nodes. </summary>
@@ -24,7 +26,7 @@ namespace NuGet.VisualStudio
             Stop = -1,
         }
 
-        private delegate TraversalAction ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
+        private delegate Task<(TraversalAction action, object newCallerObject)> ProcessItemDelegate(VsHierarchyItem item, object callerObject);
 
         private readonly IDictionary<string, ISet<VsHierarchyItem>> _expandedNodes;
 
@@ -37,7 +39,6 @@ namespace NuGet.VisualStudio
         /// <returns> An opaque object storing state of nodes, can be disposed to restore state. </returns>
         public static async Task<IDisposable> SaveAsync()
         {
-            // this operation needs to execute on UI thread
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
@@ -46,7 +47,7 @@ namespace NuGet.VisualStudio
             var results = new Dictionary<string, ISet<VsHierarchyItem>>(StringComparer.OrdinalIgnoreCase);
             foreach (var project in projects.Cast<EnvDTE.Project>())
             {
-                var expandedNodes = GetExpandedProjectHierarchyItems(project);
+                var expandedNodes = await GetExpandedProjectHierarchyItemsAsync(project);
                 Debug.Assert(!results.ContainsKey(EnvDTEProjectInfoUtility.GetUniqueName(project)));
                 results[EnvDTEProjectInfoUtility.GetUniqueName(project)] = new HashSet<VsHierarchyItem>(expandedNodes);
             }
@@ -59,7 +60,6 @@ namespace NuGet.VisualStudio
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                // this operation needs to execute on UI thread
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
@@ -70,16 +70,14 @@ namespace NuGet.VisualStudio
                     if (_expandedNodes.TryGetValue(EnvDTEProjectInfoUtility.GetUniqueName(project), out var expandedNodes)
                      && expandedNodes != null)
                     {
-                        CollapseProjectHierarchyItems(project, expandedNodes);
+                        await CollapseProjectHierarchyItemsAsync(project, expandedNodes);
                     }
                 }
             });
         }
 
-        private static ICollection<VsHierarchyItem> GetExpandedProjectHierarchyItems(EnvDTE.Project project)
+        private static async Task<ICollection<VsHierarchyItem>> GetExpandedProjectHierarchyItemsAsync(EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             var projectHierarchyItem = new VsHierarchyItem(VsHierarchy.FromDteProject(project).Ptr, VSConstants.VSITEMID_ROOT);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
@@ -90,28 +88,25 @@ namespace NuGet.VisualStudio
             }
 
             var expandedItems = new List<VsHierarchyItem>();
-            projectHierarchyItem.WalkDepthFirst(
+            await projectHierarchyItem.WalkDepthFirstAsync(
                 visible: true,
-                processCallback:
-                (VsHierarchyItem vsItem, object callerObject, out object newCallerObject) =>
+                processCallbackAsync:
+                async (VsHierarchyItem vsItem, object callerObject) =>
                 {
-                    newCallerObject = null;
-                    if (vsItem.IsVsHierarchyItemExpanded(solutionExplorerWindow))
+                    if (await vsItem.IsVsHierarchyItemExpandedAsync(solutionExplorerWindow))
                     {
                         expandedItems.Add(vsItem);
                     }
 
-                    return TraversalAction.Continue;
+                    return (TraversalAction.Continue, null);
                 },
                 callerObject: null);
 
             return expandedItems;
         }
 
-        private static void CollapseProjectHierarchyItems(EnvDTE.Project project, ISet<VsHierarchyItem> ignoredHierarcyItems)
+        private static async Task CollapseProjectHierarchyItemsAsync(EnvDTE.Project project, ISet<VsHierarchyItem> ignoredHierarcyItems)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             var projectHierarchyItem = new VsHierarchyItem(VsHierarchy.FromDteProject(project).Ptr, VSConstants.VSITEMID_ROOT);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
@@ -121,18 +116,17 @@ namespace NuGet.VisualStudio
                 return;
             }
 
-            projectHierarchyItem.WalkDepthFirst(
+            await projectHierarchyItem.WalkDepthFirstAsync(
                 visible: true,
-                processCallback:
-                (VsHierarchyItem currentHierarchyItem, object callerObject, out object newCallerObject) =>
+                processCallbackAsync:
+                async (VsHierarchyItem currentHierarchyItem, object callerObject) =>
                 {
-                    newCallerObject = null;
                     if (!ignoredHierarcyItems.Contains(currentHierarchyItem))
                     {
-                        currentHierarchyItem.Collapse(solutionExplorerWindow);
+                        await currentHierarchyItem.CollapseAsync(solutionExplorerWindow);
                     }
 
-                    return TraversalAction.Continue;
+                    return (TraversalAction.Continue, null);
                 },
                 callerObject: null);
         }
@@ -155,23 +149,20 @@ namespace NuGet.VisualStudio
                 _hierarchy = hierarchy;
             }
 
-            internal TraversalAction WalkDepthFirst(bool visible, ProcessItemDelegate processCallback, object callerObject)
+            internal async Task<TraversalAction> WalkDepthFirstAsync(bool visible, ProcessItemDelegate processCallbackAsync, object callerObject)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
                 // TODO Need to see what to do if this is a sub project
                 //
                 // Get the node type
                 // Guid nodeGuid;
                 // if (hier.GetGuidProperty(_vsitemid, (int)__VSHPROPID.VSHPROPID_TypeGuid, out nodeGuid) != 0)
 
-                if (processCallback == null)
+                if (processCallbackAsync == null)
                 {
                     return TraversalAction.Continue;
                 }
 
-                object newCallerObject;
-                var processReturn = processCallback(this, callerObject, out newCallerObject);
+                (var processReturn, var newCallerObject) = await processCallbackAsync(this, callerObject);
                 if (processReturn != TraversalAction.Continue)
                 {
                     // Callback says to skip (1) or stop (-1)
@@ -186,36 +177,35 @@ namespace NuGet.VisualStudio
                 }
 
                 // Walk children if there are any
-                if (IsExpandable())
+                if (await IsExpandableAsync())
                 {
-                    var child = GetFirstChild(visible);
+                    var child = await GetFirstChildAsync(visible);
                     while (child != null)
                     {
-                        object isNonMemberItemValue = child.GetProperty(__VSHPROPID.VSHPROPID_IsNonMemberItem);
+                        object isNonMemberItemValue = await child.GetPropertyAsync(__VSHPROPID.VSHPROPID_IsNonMemberItem);
+
                         // Some project systems (e.g. F#) don't support querying for the VSHPROPID_IsNonMemberItem property.
                         // In that case, we treat this child as belonging to the project
                         bool isMemberOfProject = isNonMemberItemValue == null || (bool)isNonMemberItemValue == false;
                         if (isMemberOfProject)
                         {
-                            var returnVal = child.WalkDepthFirst(visible, processCallback, newCallerObject);
+                            var returnVal = await child.WalkDepthFirstAsync(visible, processCallbackAsync, newCallerObject);
                             if (returnVal == TraversalAction.Stop)
                             {
                                 return returnVal;
                             }
                         }
 
-                        child = child.GetNextSibling(visible);
+                        child = await child.GetNextSiblingAsync(visible);
                     }
                 }
 
-                return 0;
+                return TraversalAction.Continue;
             }
 
-            internal bool IsVsHierarchyItemExpanded(IVsUIHierarchyWindow uiWindow)
+            internal async Task<bool> IsVsHierarchyItemExpandedAsync(IVsUIHierarchyWindow uiWindow)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
-                if (!IsExpandable())
+                if (!await IsExpandableAsync())
                 {
                     return false;
                 }
@@ -223,20 +213,20 @@ namespace NuGet.VisualStudio
                 const uint expandedStateMask = (uint)__VSHIERARCHYITEMSTATE.HIS_Expanded;
                 uint itemState;
 
-                uiWindow.GetItemState(AsVsUIHierarchy(), _vsitemid, expandedStateMask, out itemState);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                uiWindow.GetItemState(await AsVsUIHierarchyAsync(), _vsitemid, expandedStateMask, out itemState);
                 return ((__VSHIERARCHYITEMSTATE)itemState == __VSHIERARCHYITEMSTATE.HIS_Expanded);
             }
 
-            internal void Collapse(IVsUIHierarchyWindow vsHierarchyWindow)
+            internal async Task CollapseAsync(IVsUIHierarchyWindow vsHierarchyWindow)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
                 if (vsHierarchyWindow == null)
                 {
                     return;
                 }
 
-                vsHierarchyWindow.ExpandItem(AsVsUIHierarchy(), _vsitemid, EXPANDFLAGS.EXPF_CollapseFolder);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                vsHierarchyWindow.ExpandItem(await AsVsUIHierarchyAsync(), _vsitemid, EXPANDFLAGS.EXPF_CollapseFolder);
             }
 
             public bool Equals(VsHierarchyItem other)
@@ -255,22 +245,22 @@ namespace NuGet.VisualStudio
                 return _vsitemid.GetHashCode();
             }
 
-            private bool IsExpandable()
+            private async Task<bool> IsExpandableAsync()
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                var o = GetProperty(__VSHPROPID.VSHPROPID_Expandable);
+                var o = await GetPropertyAsync(__VSHPROPID.VSHPROPID_Expandable);
                 if (o is bool)
                 {
                     return (bool)o;
                 }
+
                 return (o is int) && (int)o != 0;
             }
 
-            private object GetProperty(__VSHPROPID propid)
+            private async Task<object> GetPropertyAsync(__VSHPROPID propid)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
+                (var succeeded, var value) = await TryGetPropertyAsync((int)propid);
 
-                if (TryGetProperty((int)propid, out var value))
+                if (succeeded)
                 {
                     return value;
                 }
@@ -278,30 +268,28 @@ namespace NuGet.VisualStudio
                 return null;
             }
 
-            private bool TryGetProperty(int propid, out object value)
+            private async Task<(bool succeeded, object value)> TryGetPropertyAsync(int propid)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
-                value = null;
+                object value = null;
                 try
                 {
                     if (_hierarchy != null)
                     {
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         _hierarchy.GetProperty(_vsitemid, propid, out value);
                     }
 
-                    return true;
+                    return (true, value);
                 }
                 catch
                 {
-                    return false;
+                    return (false, value);
                 }
             }
 
-            private VsHierarchyItem GetNextSibling(bool visible)
+            private async Task<VsHierarchyItem> GetNextSiblingAsync(bool visible)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                uint childId = GetNextSiblingId(visible);
+                uint childId = await GetNextSiblingIdAsync(visible);
                 if (childId != VSConstants.VSITEMID_NIL)
                 {
                     return new VsHierarchyItem(_hierarchy, childId);
@@ -309,39 +297,9 @@ namespace NuGet.VisualStudio
                 return null;
             }
 
-            private uint GetNextSiblingId(bool visible)
+            private async Task<uint> GetNextSiblingIdAsync(bool visible)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                object o = GetProperty(visible ? __VSHPROPID.VSHPROPID_NextVisibleSibling : __VSHPROPID.VSHPROPID_NextSibling);
-
-                if (o is int)
-                {
-                    return unchecked((uint)((int)o));
-                }
-                if (o is uint)
-                {
-                    return (uint)o;
-                }
-                return VSConstants.VSITEMID_NIL;
-            }
-
-            private VsHierarchyItem GetFirstChild(bool visible)
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
-                uint childId = GetFirstChildId(visible);
-                if (childId != VSConstants.VSITEMID_NIL)
-                {
-                    return new VsHierarchyItem(_hierarchy, childId);
-                }
-
-                return null;
-            }
-
-            private uint GetFirstChildId(bool visible)
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                object o = GetProperty(visible ? __VSHPROPID.VSHPROPID_FirstVisibleChild : __VSHPROPID.VSHPROPID_FirstChild);
+                object o = await GetPropertyAsync(visible ? __VSHPROPID.VSHPROPID_NextVisibleSibling : __VSHPROPID.VSHPROPID_NextSibling);
 
                 if (o is int)
                 {
@@ -356,10 +314,37 @@ namespace NuGet.VisualStudio
                 return VSConstants.VSITEMID_NIL;
             }
 
-            private IVsUIHierarchy AsVsUIHierarchy()
+            private async Task<VsHierarchyItem> GetFirstChildAsync(bool visible)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
+                uint childId = await GetFirstChildIdAsync(visible);
+                if (childId != VSConstants.VSITEMID_NIL)
+                {
+                    return new VsHierarchyItem(_hierarchy, childId);
+                }
 
+                return null;
+            }
+
+            private async Task<uint> GetFirstChildIdAsync(bool visible)
+            {
+                object o = await GetPropertyAsync(visible ? __VSHPROPID.VSHPROPID_FirstVisibleChild : __VSHPROPID.VSHPROPID_FirstChild);
+
+                if (o is int)
+                {
+                    return unchecked((uint)((int)o));
+                }
+
+                if (o is uint)
+                {
+                    return (uint)o;
+                }
+
+                return VSConstants.VSITEMID_NIL;
+            }
+
+            private async Task<IVsUIHierarchy> AsVsUIHierarchyAsync()
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 return _hierarchy as IVsUIHierarchy;
             }
         }
