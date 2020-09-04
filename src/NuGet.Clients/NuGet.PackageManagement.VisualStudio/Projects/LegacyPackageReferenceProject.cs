@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (context != null)
                 {
-                    lock(context.PackageSpecCache)
+                    lock (context.PackageSpecCache)
                     {
                         context.PackageSpecCache.Add(_projectFullPath, packageSpec);
                     }

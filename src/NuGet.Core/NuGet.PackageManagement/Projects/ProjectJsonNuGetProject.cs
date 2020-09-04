@@ -253,7 +253,7 @@ namespace NuGet.ProjectManagement.Projects
 
                 if (context != null)
                 {
-                    lock(context.PackageSpecCache)
+                    lock (context.PackageSpecCache)
                     {
                         context.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
                     }
