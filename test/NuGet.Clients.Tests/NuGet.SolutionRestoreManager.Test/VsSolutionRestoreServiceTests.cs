@@ -126,6 +126,62 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public async Task NominateProjectAsync_ConsoleAppTemplateWithPlatform(bool isV2Nomination)
+        {
+            var consoleAppProjectJson = @"{
+    ""frameworks"": {
+        ""net5.0-windows10.0"": {
+            ""dependencies"": {
+                ""Microsoft.NET.Sdk"": {
+                    ""target"": ""Package"",
+                    ""version"": ""1.0.0-alpha-20161019-1""
+                },
+                ""Microsoft.NETCore.App"": {
+                    ""target"": ""Package"",
+                    ""version"": ""1.0.1""
+                }
+            }
+        }
+    }
+}";
+            var projectName = "ConsoleApp1";
+            var cps = NewCpsProject(consoleAppProjectJson, projectName);
+            var projectFullPath = cps.ProjectFullPath;
+            var expectedBaseIntermediate = cps.ProjectRestoreInfo.BaseIntermediatePath == cps.ProjectRestoreInfo2.BaseIntermediatePath ? cps.ProjectRestoreInfo.BaseIntermediatePath : "The test builder is broken!";
+
+            // Act
+            var actualRestoreSpec = isV2Nomination ?
+                await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("1.0.0", actualProjectSpec.Version.ToString());
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
+            Assert.Equal(projectName, actualMetadata.ProjectName);
+            Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
+            Assert.Equal(expectedBaseIntermediate, actualMetadata.OutputPath);
+
+            Assert.Single(actualProjectSpec.TargetFrameworks);
+            var actualTfi = actualProjectSpec.TargetFrameworks.Single();
+
+            var expectedFramework = NuGetFramework.Parse("net5.0-windows10.0");
+            Assert.Equal(expectedFramework, actualTfi.FrameworkName);
+
+            AssertPackages(actualTfi,
+                "Microsoft.NET.Sdk:1.0.0-alpha-20161019-1",
+                "Microsoft.NETCore.App:1.0.1");
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public async Task NominateProjectAsync_WithCliTool(bool isV2Nomination)
         {
             const string toolProjectJson = @"{
