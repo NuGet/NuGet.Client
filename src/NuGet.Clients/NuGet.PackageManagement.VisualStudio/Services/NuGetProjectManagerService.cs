@@ -309,25 +309,22 @@ namespace NuGet.PackageManagement.VisualStudio
                 new GatherCache(),
                 _state.SourceCacheContext);
 
-            NuGetProject project = projects.Single();
-
             NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewInstallPackageAsync(
-                project,
+            IEnumerable<ResolvedAction> resolvedActions = await packageManager.PreviewProjectsInstallPackageAsync(
+                projects,
                 _state.PackageIdentity,
                 resolutionContext,
                 projectContext,
                 sourceRepositories,
-                secondarySources: null,
                 cancellationToken);
 
             var projectActions = new List<ProjectAction>();
 
-            foreach (NuGetProjectAction action in actions)
+            foreach (ResolvedAction resolvedAction in resolvedActions)
             {
                 List<ImplicitProjectAction>? implicitActions = null;
 
-                if (action is BuildIntegratedProjectAction buildIntegratedAction)
+                if (resolvedAction.Action is BuildIntegratedProjectAction buildIntegratedAction)
                 {
                     implicitActions = new List<ImplicitProjectAction>();
 
@@ -342,13 +339,12 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                var resolvedAction = new ResolvedAction(action.Project, action);
-                string projectId = action.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                string projectId = resolvedAction.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
                 var projectAction = new ProjectAction(
                     CreateProjectActionId(),
                     projectId,
                     packageIdentity,
-                    action.NuGetProjectActionType,
+                    resolvedAction.Action.NuGetProjectActionType,
                     implicitActions);
 
                 _state.ResolvedActions[projectAction.Id] = resolvedAction;
