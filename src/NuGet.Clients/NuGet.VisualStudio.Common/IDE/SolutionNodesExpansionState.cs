@@ -17,7 +17,14 @@ namespace NuGet.VisualStudio
     {
         private static readonly Guid VsWindowKindSolutionExplorer = new Guid("3AE79031-E1BC-11D0-8F78-00A0C9110057");
 
-        private delegate int ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
+        private enum TraversalAction
+        {
+            Continue = 0,
+            DoNotRecurse = 1,
+            Stop = -1,
+        }
+
+        private delegate TraversalAction ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
 
         private readonly IDictionary<string, ISet<VsHierarchyItem>> _expandedNodes;
 
@@ -83,11 +90,6 @@ namespace NuGet.VisualStudio
             }
 
             var expandedItems = new List<VsHierarchyItem>();
-
-            // processCallback return values: 
-            //     0   continue, 
-            //     1   don't recurse into, 
-            //    -1   stop
             projectHierarchyItem.WalkDepthFirst(
                 visible: true,
                 processCallback:
@@ -99,7 +101,7 @@ namespace NuGet.VisualStudio
                         expandedItems.Add(vsItem);
                     }
 
-                    return 0;
+                    return TraversalAction.Continue;
                 },
                 callerObject: null);
 
@@ -119,10 +121,6 @@ namespace NuGet.VisualStudio
                 return;
             }
 
-            // processCallback return values:
-            //     0   continue, 
-            //     1   don't recurse into, 
-            //    -1   stop
             projectHierarchyItem.WalkDepthFirst(
                 visible: true,
                 processCallback:
@@ -134,7 +132,7 @@ namespace NuGet.VisualStudio
                         currentHierarchyItem.Collapse(solutionExplorerWindow);
                     }
 
-                    return 0;
+                    return TraversalAction.Continue;
                 },
                 callerObject: null);
         }
@@ -151,15 +149,13 @@ namespace NuGet.VisualStudio
             private readonly uint _vsitemid;
             private readonly IVsHierarchy _hierarchy;
 
-            internal delegate int ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
-
             internal VsHierarchyItem(IVsHierarchy hierarchy, uint id)
             {
                 _vsitemid = id;
                 _hierarchy = hierarchy;
             }
 
-            internal int WalkDepthFirst(bool visible, ProcessItemDelegate processCallback, object callerObject)
+            internal TraversalAction WalkDepthFirst(bool visible, ProcessItemDelegate processCallback, object callerObject)
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -171,12 +167,12 @@ namespace NuGet.VisualStudio
 
                 if (processCallback == null)
                 {
-                    return 0;
+                    return TraversalAction.Continue;
                 }
 
                 object newCallerObject;
-                int processReturn = processCallback(this, callerObject, out newCallerObject);
-                if (processReturn != 0)
+                var processReturn = processCallback(this, callerObject, out newCallerObject);
+                if (processReturn != TraversalAction.Continue)
                 {
                     // Callback says to skip (1) or stop (-1)
                     return processReturn;
@@ -201,8 +197,8 @@ namespace NuGet.VisualStudio
                         bool isMemberOfProject = isNonMemberItemValue == null || (bool)isNonMemberItemValue == false;
                         if (isMemberOfProject)
                         {
-                            int returnVal = child.WalkDepthFirst(visible, processCallback, newCallerObject);
-                            if (returnVal == -1)
+                            var returnVal = child.WalkDepthFirst(visible, processCallback, newCallerObject);
+                            if (returnVal == TraversalAction.Stop)
                             {
                                 return returnVal;
                             }
