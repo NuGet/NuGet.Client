@@ -440,7 +440,7 @@ namespace NuGet.Build.Tasks.Pack
                 if (!string.IsNullOrEmpty(targetFramework))
                 {
                     var fw = NuGetFramework.Parse(targetFramework);
-                    if (!string.IsNullOrEmpty(fw.Platform) && fw.PlatformVersion == FrameworkConstants.EmptyVersion)
+                    if (fw.HasPlatform && fw.PlatformVersion == FrameworkConstants.EmptyVersion)
                     {
                         throw new PackagingException(
                             NuGetLogCode.NU1012,
