@@ -1605,7 +1605,7 @@ namespace NuGet.SolutionRestoreManager.Test
             ""frameworkReferences"": {
                 ""Microsoft.WindowsDesktop.App|WPF"" : {
                     ""privateAssets"" : ""none""
-                }, 
+                },
                 ""Microsoft.WindowsDesktop.App|WinForms"" : {
                     ""privateAssets"" : ""none""
                 }
@@ -1928,7 +1928,7 @@ namespace NuGet.SolutionRestoreManager.Test
                             {
                                 new VsReferenceProperty("Version", "2.0.0")
                             })),
-                            // the second centralPackageVersion with the same version name will be ignored 
+                            // the second centralPackageVersion with the same version name will be ignored
                             new VsReferenceItem("foo", new VsReferenceProperties(new []
                             {
                                 new VsReferenceProperty("Version", "3.0.0")
