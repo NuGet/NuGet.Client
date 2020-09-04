@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -16,9 +17,11 @@ namespace NuGet.VisualStudio
     {
         private static readonly Guid VsWindowKindSolutionExplorer = new Guid("3AE79031-E1BC-11D0-8F78-00A0C9110057");
 
-        private IDictionary<string, ISet<VsHierarchy>> _expandedNodes;
+        private delegate int ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
 
-        private SolutionNodesExpansionState(IDictionary<string, ISet<VsHierarchy>> expandedNodes)
+        private readonly IDictionary<string, ISet<VsHierarchyItem>> _expandedNodes;
+
+        private SolutionNodesExpansionState(IDictionary<string, ISet<VsHierarchyItem>> expandedNodes)
         {
             _expandedNodes = expandedNodes;
         }
@@ -33,14 +36,12 @@ namespace NuGet.VisualStudio
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
             var projects = dte.Solution.Projects;
 
-            var results = new Dictionary<string, ISet<VsHierarchy>>(StringComparer.OrdinalIgnoreCase);
+            var results = new Dictionary<string, ISet<VsHierarchyItem>>(StringComparer.OrdinalIgnoreCase);
             foreach (var project in projects.Cast<EnvDTE.Project>())
             {
-                var expandedNodes =
-                    GetExpandedProjectHierarchyItems(project);
+                var expandedNodes = GetExpandedProjectHierarchyItems(project);
                 Debug.Assert(!results.ContainsKey(EnvDTEProjectInfoUtility.GetUniqueName(project)));
-                results[EnvDTEProjectInfoUtility.GetUniqueName(project)] =
-                    new HashSet<VsHierarchy>(expandedNodes);
+                results[EnvDTEProjectInfoUtility.GetUniqueName(project)] = new HashSet<VsHierarchyItem>(expandedNodes);
             }
 
             return new SolutionNodesExpansionState(results);
@@ -59,10 +60,8 @@ namespace NuGet.VisualStudio
 
                 foreach (var project in projects.Cast<EnvDTE.Project>())
                 {
-                    ISet<VsHierarchy> expandedNodes;
-                    if (_expandedNodes.TryGetValue(EnvDTEProjectInfoUtility.GetUniqueName(project), out expandedNodes)
-                        &&
-                        expandedNodes != null)
+                    if (_expandedNodes.TryGetValue(EnvDTEProjectInfoUtility.GetUniqueName(project), out var expandedNodes)
+                     && expandedNodes != null)
                     {
                         CollapseProjectHierarchyItems(project, expandedNodes);
                     }
@@ -70,48 +69,48 @@ namespace NuGet.VisualStudio
             });
         }
 
-
-        private static ICollection<VsHierarchy> GetExpandedProjectHierarchyItems(EnvDTE.Project project)
+        private static ICollection<VsHierarchyItem> GetExpandedProjectHierarchyItems(EnvDTE.Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectHierarchyItem = VisualStudio.VsHierarchy.FromDteProject(project);
+            var projectHierarchyItem = new VsHierarchyItem(VsHierarchy.FromDteProject(project).Ptr, VSConstants.VSITEMID_ROOT);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
             {
                 // If the solution explorer is collapsed since opening VS, this value is null. In such a case, simply exit early.
-                return new VsHierarchy[0];
+                return new VsHierarchyItem[0];
             }
 
-            var expandedItems = new List<VsHierarchy>();
+            var expandedItems = new List<VsHierarchyItem>();
 
             // processCallback return values: 
             //     0   continue, 
             //     1   don't recurse into, 
             //    -1   stop
             projectHierarchyItem.WalkDepthFirst(
-                fVisible: true,
+                visible: true,
                 processCallback:
-                    (VsHierarchy vsItem, object callerObject, out object newCallerObject) =>
+                (VsHierarchyItem vsItem, object callerObject, out object newCallerObject) =>
+                {
+                    newCallerObject = null;
+                    if (vsItem.IsVsHierarchyItemExpanded(solutionExplorerWindow))
                     {
-                        newCallerObject = null;
-                        if (vsItem.IsVsHierarchyItemExpanded(solutionExplorerWindow))
-                        {
-                            expandedItems.Add(vsItem);
-                        }
-                        return 0;
-                    },
+                        expandedItems.Add(vsItem);
+                    }
+
+                    return 0;
+                },
                 callerObject: null);
 
             return expandedItems;
         }
 
-        private static void CollapseProjectHierarchyItems(EnvDTE.Project project, ISet<VsHierarchy> ignoredHierarcyItems)
+        private static void CollapseProjectHierarchyItems(EnvDTE.Project project, ISet<VsHierarchyItem> ignoredHierarcyItems)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectHierarchyItem = VisualStudio.VsHierarchy.FromDteProject(project);
+            var projectHierarchyItem = new VsHierarchyItem(VsHierarchy.FromDteProject(project).Ptr, VSConstants.VSITEMID_ROOT);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
@@ -125,17 +124,18 @@ namespace NuGet.VisualStudio
             //     1   don't recurse into, 
             //    -1   stop
             projectHierarchyItem.WalkDepthFirst(
-                fVisible: true,
+                visible: true,
                 processCallback:
-                    (VsHierarchy currentHierarchyItem, object callerObject, out object newCallerObject) =>
+                (VsHierarchyItem currentHierarchyItem, object callerObject, out object newCallerObject) =>
+                {
+                    newCallerObject = null;
+                    if (!ignoredHierarcyItems.Contains(currentHierarchyItem))
                     {
-                        newCallerObject = null;
-                        if (!ignoredHierarcyItems.Contains(currentHierarchyItem))
-                        {
-                            currentHierarchyItem.Collapse(solutionExplorerWindow);
-                        }
-                        return 0;
-                    },
+                        currentHierarchyItem.Collapse(solutionExplorerWindow);
+                    }
+
+                    return 0;
+                },
                 callerObject: null);
         }
 
@@ -144,6 +144,228 @@ namespace NuGet.VisualStudio
             return VsShellUtilities.GetUIHierarchyWindow(
                 ServiceLocator.GetInstance<IServiceProvider>(),
                 VsWindowKindSolutionExplorer);
+        }
+
+        private class VsHierarchyItem : IEquatable<VsHierarchyItem>
+        {
+            private readonly uint _vsitemid;
+            private readonly IVsHierarchy _hierarchy;
+
+            internal delegate int ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
+
+            internal VsHierarchyItem(IVsHierarchy hierarchy, uint id)
+            {
+                _vsitemid = id;
+                _hierarchy = hierarchy;
+            }
+
+            internal int WalkDepthFirst(bool visible, ProcessItemDelegate processCallback, object callerObject)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                // TODO Need to see what to do if this is a sub project
+                //
+                // Get the node type
+                // Guid nodeGuid;
+                // if (hier.GetGuidProperty(_vsitemid, (int)__VSHPROPID.VSHPROPID_TypeGuid, out nodeGuid) != 0)
+
+                if (processCallback == null)
+                {
+                    return 0;
+                }
+
+                object newCallerObject;
+                int processReturn = processCallback(this, callerObject, out newCallerObject);
+                if (processReturn != 0)
+                {
+                    // Callback says to skip (1) or stop (-1)
+                    return processReturn;
+                }
+
+                // The process callback can change the caller object. If not we just use the one originally
+                // passed in.
+                if (newCallerObject == null)
+                {
+                    newCallerObject = callerObject;
+                }
+
+                // Walk children if there are any
+                if (IsExpandable())
+                {
+                    var child = GetFirstChild(visible);
+                    while (child != null)
+                    {
+                        object isNonMemberItemValue = child.GetProperty(__VSHPROPID.VSHPROPID_IsNonMemberItem);
+                        // Some project systems (e.g. F#) don't support querying for the VSHPROPID_IsNonMemberItem property.
+                        // In that case, we treat this child as belonging to the project
+                        bool isMemberOfProject = isNonMemberItemValue == null || (bool)isNonMemberItemValue == false;
+                        if (isMemberOfProject)
+                        {
+                            int returnVal = child.WalkDepthFirst(visible, processCallback, newCallerObject);
+                            if (returnVal == -1)
+                            {
+                                return returnVal;
+                            }
+                        }
+
+                        child = child.GetNextSibling(visible);
+                    }
+                }
+
+                return 0;
+            }
+
+            internal bool IsVsHierarchyItemExpanded(IVsUIHierarchyWindow uiWindow)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                if (!IsExpandable())
+                {
+                    return false;
+                }
+
+                const uint expandedStateMask = (uint)__VSHIERARCHYITEMSTATE.HIS_Expanded;
+                uint itemState;
+
+                uiWindow.GetItemState(AsVsUIHierarchy(), _vsitemid, expandedStateMask, out itemState);
+                return ((__VSHIERARCHYITEMSTATE)itemState == __VSHIERARCHYITEMSTATE.HIS_Expanded);
+            }
+
+            internal void Collapse(IVsUIHierarchyWindow vsHierarchyWindow)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                if (vsHierarchyWindow == null)
+                {
+                    return;
+                }
+
+                vsHierarchyWindow.ExpandItem(AsVsUIHierarchy(), _vsitemid, EXPANDFLAGS.EXPF_CollapseFolder);
+            }
+
+            public bool Equals(VsHierarchyItem other)
+            {
+                return _vsitemid == other._vsitemid;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as VsHierarchyItem;
+                return other != null && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return _vsitemid.GetHashCode();
+            }
+
+            private bool IsExpandable()
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                var o = GetProperty(__VSHPROPID.VSHPROPID_Expandable);
+                if (o is bool)
+                {
+                    return (bool)o;
+                }
+                return (o is int) && (int)o != 0;
+            }
+
+            private object GetProperty(__VSHPROPID propid)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                if (TryGetProperty((int)propid, out var value))
+                {
+                    return value;
+                }
+
+                return null;
+            }
+
+            private bool TryGetProperty(int propid, out object value)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                value = null;
+                try
+                {
+                    if (_hierarchy != null)
+                    {
+                        _hierarchy.GetProperty(_vsitemid, propid, out value);
+                    }
+
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            private VsHierarchyItem GetNextSibling(bool visible)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                uint childId = GetNextSiblingId(visible);
+                if (childId != VSConstants.VSITEMID_NIL)
+                {
+                    return new VsHierarchyItem(_hierarchy, childId);
+                }
+                return null;
+            }
+
+            private uint GetNextSiblingId(bool visible)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                object o = GetProperty(visible ? __VSHPROPID.VSHPROPID_NextVisibleSibling : __VSHPROPID.VSHPROPID_NextSibling);
+
+                if (o is int)
+                {
+                    return unchecked((uint)((int)o));
+                }
+                if (o is uint)
+                {
+                    return (uint)o;
+                }
+                return VSConstants.VSITEMID_NIL;
+            }
+
+            private VsHierarchyItem GetFirstChild(bool visible)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                uint childId = GetFirstChildId(visible);
+                if (childId != VSConstants.VSITEMID_NIL)
+                {
+                    return new VsHierarchyItem(_hierarchy, childId);
+                }
+
+                return null;
+            }
+
+            private uint GetFirstChildId(bool visible)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                object o = GetProperty(visible ? __VSHPROPID.VSHPROPID_FirstVisibleChild : __VSHPROPID.VSHPROPID_FirstChild);
+
+                if (o is int)
+                {
+                    return unchecked((uint)((int)o));
+                }
+
+                if (o is uint)
+                {
+                    return (uint)o;
+                }
+
+                return VSConstants.VSITEMID_NIL;
+            }
+
+            private IVsUIHierarchy AsVsUIHierarchy()
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                return _hierarchy as IVsUIHierarchy;
+            }
         }
     }
 }
