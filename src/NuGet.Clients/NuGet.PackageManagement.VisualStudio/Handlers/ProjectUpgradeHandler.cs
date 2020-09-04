@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 Debug.Assert(pHierarchy != null);
 
-                var upgradedProject = VsHierarchyUtility.GetProjectFromHierarchy(pHierarchy);
+                var upgradedProject = VsHierarchyItem.FromVsHierarchy(pHierarchy).GetDteProject();
                 var upgradedNuGetProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(upgradedProject, _solutionManager);
 
                 if (ProjectRetargetingUtility.IsProjectRetargetable(upgradedNuGetProject))

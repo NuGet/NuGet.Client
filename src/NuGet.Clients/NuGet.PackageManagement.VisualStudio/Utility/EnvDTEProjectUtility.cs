@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var item = await GetProjectItemAsync(envDTEProject, path);
                 return item != null;
             }
-            var vsProject = (IVsProject)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var vsProject = (IVsProject)VsHierarchyItem.FromDteProject(envDTEProject).VsHierarchy;
             if (vsProject == null)
             {
                 return false;
@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Execute command to include the existing folder into project. Must do this on UI thread.
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var projectHierarchy = (IVsUIHierarchy)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var projectHierarchy = (IVsUIHierarchy)VsHierarchyItem.FromDteProject(envDTEProject).VsHierarchy;
 
             uint itemId;
             var hr = projectHierarchy.ParseCanonicalName(folderRelativePath, out itemId);
@@ -398,9 +398,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             Debug.Assert(envDTEProject != null);
 
-            var hierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var hierarchy = VsHierarchyItem.FromDteProject(envDTEProject);
 
-            return VsHierarchyUtility.IsProjectCapabilityCompliant(hierarchy);
+            return hierarchy.IsProjectCapabilityCompliant();
         }
 
         public async static Task<NuGetProject> GetNuGetProjectAsync(EnvDTE.Project project, ISolutionManager solutionManager)
@@ -724,9 +724,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static bool HasUnsupportedProjectCapability(EnvDTE.Project envDTEProject)
         {
-            var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var hier = VsHierarchyItem.FromDteProject(envDTEProject);
 
-            return VsHierarchyUtility.HasUnsupportedProjectCapability(hier);
+            return hier.HasUnsupportedProjectCapability();
         }
 
         #endregion // Check Project Types

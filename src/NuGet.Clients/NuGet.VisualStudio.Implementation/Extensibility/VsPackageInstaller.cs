@@ -69,9 +69,9 @@ namespace NuGet.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var vsHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                    var vsHierarchy = VsHierarchyItem.FromDteProject(project);
                     if (vsHierarchy != null &&
-                        VsHierarchyUtility.IsCPSCapabilityComplaint(vsHierarchy))
+                        vsHierarchy.IsCPSCapabilityComplaint())
                     {
                         // Lazy load the CPS enabled JoinableTaskFactory for the UI.
                         NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
@@ -394,7 +394,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            var expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
+            var expandedNodes = await VsHierarchyItem.GetAllExpandedNodesAsync();
 
             try
             {
@@ -446,7 +446,7 @@ namespace NuGet.VisualStudio
             finally
             {
                 // collapse nodes
-                await VsHierarchyUtility.CollapseAllNodesAsync(_solutionManager, expandedNodes);
+                await VsHierarchyItem.CollapseAllNodesAsync(expandedNodes);
             }
         }
 

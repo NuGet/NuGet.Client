@@ -398,7 +398,7 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var vsProject = VsHierarchyUtility.ToVsHierarchy(project);
+            var vsProject = VsHierarchyItem.FromDteProject(project);
             var documentName = project.FullName;
 
             // Find existing hierarchy and item id of the document window if it's
@@ -424,7 +424,7 @@ namespace NuGetVSExtension
                 {
                     // the docuemnt window is not registered yet. So use the project as the
                     // hierarchy.
-                    hier = vsProject;
+                    hier = vsProject.VsHierarchy;
                     itemId = (uint)VSConstants.VSITEMID.Root;
                 }
             }

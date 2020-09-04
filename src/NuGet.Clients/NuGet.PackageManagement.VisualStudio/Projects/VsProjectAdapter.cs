@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return EnvDTEProjectUtility.IsSupported(Project);
                 }
 
-                return VsHierarchyUtility.IsSupported(VsHierarchy, _projectTypeGuid);
+                return VsHierarchyItem.FromVsHierarchy(VsHierarchy).IsSupported(_projectTypeGuid);
             }
         }
 
@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (!IsDeferred)
             {
-                return VsHierarchyUtility.GetProjectTypeGuids(Project);
+                return VsHierarchyItem.FromDteProject(Project).GetProjectTypeGuids();
             }
             else
             {
