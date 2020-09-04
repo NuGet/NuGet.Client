@@ -696,7 +696,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task AddVsProjectAdapterToCacheAsync(IVsProjectAdapter vsProjectAdapter)
         {
-            if (!vsProjectAdapter.IsSupported)
+            if (!await vsProjectAdapter.IsSupportedAsync())
             {
                 return;
             }

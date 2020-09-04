@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        _projectFullPath = VsProjectAdapter.ProjectDirectory;
+                        _projectFullPath = await VsProjectAdapter.GetProjectDirectoryAsync();
                     });
                 }
 

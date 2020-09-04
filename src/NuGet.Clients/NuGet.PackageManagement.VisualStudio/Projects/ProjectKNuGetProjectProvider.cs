@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectK,
                 project.ProjectName,
                 project.CustomUniqueName,
-                project.ProjectId);
+                await project.GetProjectIdAsync());
         }
     }
 }

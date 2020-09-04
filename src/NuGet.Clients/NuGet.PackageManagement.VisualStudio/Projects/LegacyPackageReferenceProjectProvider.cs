@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return new LegacyPackageReferenceProject(
                 vsProjectAdapter,
-                vsProjectAdapter.ProjectId,
+                await vsProjectAdapter.GetProjectIdAsync(),
                 projectServices,
                 _threadingService);
         }

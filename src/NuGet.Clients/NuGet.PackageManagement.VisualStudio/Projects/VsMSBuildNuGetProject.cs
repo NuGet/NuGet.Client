@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(msbuildNuGetProjectSystem);
             Assumes.Present(projectServices);
 
-            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectAdapter.ProjectId);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, NuGetUIThreadHelper.JoinableTaskFactory.Run(() => projectAdapter.GetProjectIdAsync()));
 
             ProjectServices = projectServices;
         }

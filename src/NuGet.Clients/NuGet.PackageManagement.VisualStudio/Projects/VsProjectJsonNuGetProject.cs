@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _vsProjectAdapter = vsProjectAdapter;
 
-            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, _vsProjectAdapter.ProjectId);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, NuGetUIThreadHelper.JoinableTaskFactory.Run(() => _vsProjectAdapter.GetProjectIdAsync()));
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _vsProjectAdapter.CustomUniqueName);
 
             ProjectServices = projectServices;

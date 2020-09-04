@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<string> GetCacheFilePathAsync()
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-            return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: GetMSBuildProjectExtensionsPath());
+            return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: await GetMSBuildProjectExtensionsPathAsync());
         }
 
         public override async Task<string> GetAssetsFilePathOrNullAsync()
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var msbuildProjectExtensionsPath = GetMSBuildProjectExtensionsPath(shouldThrow);
+            var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync(shouldThrow);
 
             if (msbuildProjectExtensionsPath == null)
             {
@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            EnvDTEProjectUtility.EnsureCheckedOutIfExists(_vsProjectAdapter.Project, _vsProjectAdapter.ProjectDirectory, filePath);
+            EnvDTEProjectUtility.EnsureCheckedOutIfExists(_vsProjectAdapter.Project, await _vsProjectAdapter.GetProjectDirectoryAsync(), filePath);
 
             var isFileExistsInProject = await EnvDTEProjectUtility.ContainsFile(_vsProjectAdapter.Project, filePath);
 
@@ -221,18 +221,18 @@ namespace NuGet.PackageManagement.VisualStudio
             var folderPath = Path.GetDirectoryName(filePath);
             var fullPath = filePath;
 
-            if (filePath.Contains(_vsProjectAdapter.ProjectDirectory))
+            if (filePath.Contains(await _vsProjectAdapter.GetProjectDirectoryAsync()))
             {
                 // folderPath should always be relative to ProjectDirectory so if filePath already contains
                 // ProjectDirectory then get a relative path and construct folderPath to get the appropriate
                 // ProjectItems from dte where you have to add this file.
-                var relativeLockFilePath = FileSystemUtility.GetRelativePath(_vsProjectAdapter.ProjectDirectory, filePath);
+                var relativeLockFilePath = FileSystemUtility.GetRelativePath(await _vsProjectAdapter.GetProjectDirectoryAsync(), filePath);
                 folderPath = Path.GetDirectoryName(relativeLockFilePath);
             }
             else
             {
                 // get the fullPath wrt ProjectDirectory
-                fullPath = FileSystemUtility.GetFullPath(_vsProjectAdapter.ProjectDirectory, filePath);
+                fullPath = FileSystemUtility.GetFullPath(await _vsProjectAdapter.GetProjectDirectoryAsync(), filePath);
             }
 
             var container = await EnvDTEProjectUtility.GetProjectItemsAsync(_vsProjectAdapter.Project, folderPath, createIfNotExists: true);
@@ -250,11 +250,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion
 
-        private string GetMSBuildProjectExtensionsPath(bool shouldThrow = true)
+        private async Task<string> GetMSBuildProjectExtensionsPathAsync(bool shouldThrow = true)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var msbuildProjectExtensionsPath = _vsProjectAdapter.MSBuildProjectExtensionsPath;
+            var msbuildProjectExtensionsPath = await _vsProjectAdapter.GetMSBuildProjectExtensionsPathAsync();
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {
@@ -263,7 +263,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     throw new InvalidDataException(string.Format(
                         Strings.MSBuildPropertyNotFound,
                         ProjectBuildProperties.MSBuildProjectExtensionsPath,
-                        _vsProjectAdapter.ProjectDirectory));
+                        await _vsProjectAdapter.GetProjectDirectoryAsync()));
                 }
 
                 return null;
@@ -435,7 +435,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     ProjectStyle = ProjectStyle.PackageReference,
-                    OutputPath = GetMSBuildProjectExtensionsPath(),
+                    OutputPath = await GetMSBuildProjectExtensionsPathAsync(),
                     ProjectPath = _projectFullPath,
                     ProjectName = projectName,
                     ProjectUniqueName = _projectFullPath,
