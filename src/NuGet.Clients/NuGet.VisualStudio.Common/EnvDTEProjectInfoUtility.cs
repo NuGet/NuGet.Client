@@ -437,7 +437,7 @@ namespace NuGet.VisualStudio
         private static bool IsWebProject(EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var hierarchy = VsHierarchyItem.FromDteProject(envDTEProject);
+            var hierarchy = VsHierarchy.FromDteProject(envDTEProject);
             string[] types = hierarchy.GetProjectTypeGuids();
             return types.Contains(VsProjectTypes.WebSiteProjectTypeGuid, StringComparer.OrdinalIgnoreCase) ||
                    types.Contains(VsProjectTypes.WebApplicationProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
@@ -453,7 +453,7 @@ namespace NuGet.VisualStudio
         public static bool IsWindowsStoreApp(EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var hierarchy = VsHierarchyItem.FromDteProject(envDTEProject);
+            var hierarchy = VsHierarchy.FromDteProject(envDTEProject);
             string[] types = hierarchy.GetProjectTypeGuids();
             return types.Contains(VsProjectTypes.WindowsStoreProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }

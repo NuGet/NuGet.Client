@@ -208,7 +208,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            var expandedNodes = await VsHierarchyItem.GetAllExpandedNodesAsync();
+            var expandedNodes = await VsHierarchy.GetAllExpandedNodesAsync();
 
             try
             {
@@ -303,7 +303,7 @@ namespace NuGet.VisualStudio
             finally
             {
                 // collapse nodes
-                await VsHierarchyItem.CollapseAllNodesAsync(expandedNodes);
+                await VsHierarchy.CollapseAllNodesAsync(expandedNodes);
             }
         }
 

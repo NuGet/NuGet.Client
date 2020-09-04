@@ -17,7 +17,7 @@ using Task = System.Threading.Tasks.Task;
 namespace NuGet.VisualStudio
 {
     /// <summary> Represent a particular tree node in the Solution Explorer window. </summary>
-    public sealed class VsHierarchyItem : IEquatable<VsHierarchyItem>
+    public sealed class VsHierarchy : IEquatable<VsHierarchy>
     {
         private const string VsWindowKindSolutionExplorer = "3AE79031-E1BC-11D0-8F78-00A0C9110057";
 
@@ -29,43 +29,43 @@ namespace NuGet.VisualStudio
         private readonly uint _vsitemid;
         private readonly IVsHierarchy _hierarchy;
 
-        private delegate int ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
+        private delegate int ProcessItemDelegate(VsHierarchy item, object callerObject, out object newCallerObject);
 
-        public IVsHierarchy VsHierarchy => _hierarchy;
+        public IVsHierarchy Ptr => _hierarchy;
 
-        private VsHierarchyItem(IVsHierarchy hierarchy, uint id)
+        private VsHierarchy(IVsHierarchy hierarchy, uint id)
         {
             _vsitemid = id;
             _hierarchy = hierarchy;
         }
 
-        private VsHierarchyItem(IVsHierarchy hierarchy)
+        private VsHierarchy(IVsHierarchy hierarchy)
             : this(hierarchy, VSConstants.VSITEMID_ROOT)
         {
         }
 
-        /// <summary> Create a new instance of <see cref="VsHierarchyItem"/> from a DTE project object. </summary>
+        /// <summary> Create a new instance of <see cref="VisualStudio.VsHierarchy"/> from a DTE project object. </summary>
         /// <param name="project"> A DTE project. </param>
-        /// <returns> Instance of <see cref="VsHierarchyItem"/> wrapping <paramref name="project"/>. </returns>
-        public static VsHierarchyItem FromDteProject(EnvDTE.Project project)
+        /// <returns> Instance of <see cref="VisualStudio.VsHierarchy"/> wrapping <paramref name="project"/>. </returns>
+        public static VsHierarchy FromDteProject(EnvDTE.Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.Present(project);
-            return new VsHierarchyItem(ToVsHierarchy(project));
+            return new VsHierarchy(ToVsHierarchy(project));
         }
 
-        /// <summary> Create a new instance of <see cref="VsHierarchyItem"/> from a <see cref="IVsHierarchy"/> object. </summary>
+        /// <summary> Create a new instance of <see cref="VisualStudio.VsHierarchy"/> from a <see cref="IVsHierarchy"/> object. </summary>
         /// <param name="project"> A <see cref="IVsHierarchy"/> project. </param>
-        /// <returns> Instance of <see cref="VsHierarchyItem"/> wrapping <paramref name="project"/>. </returns>
-        public static VsHierarchyItem FromVsHierarchy(IVsHierarchy project)
+        /// <returns> Instance of <see cref="VisualStudio.VsHierarchy"/> wrapping <paramref name="project"/>. </returns>
+        public static VsHierarchy FromVsHierarchy(IVsHierarchy project)
         {
             Assumes.Present(project);
-            return new VsHierarchyItem(project);
+            return new VsHierarchy(project);
         }
 
         /// <summary> Get all expanded nodes in the solution. </summary>
         /// <returns> Dictionary of expanded nodes. </returns>
-        public static async Task<IDictionary<string, ISet<VsHierarchyItem>>> GetAllExpandedNodesAsync()
+        public static async Task<IDictionary<string, ISet<VsHierarchy>>> GetAllExpandedNodesAsync()
         {
             // this operation needs to execute on UI thread
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -73,21 +73,21 @@ namespace NuGet.VisualStudio
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
             var projects = dte.Solution.Projects;
 
-            var results = new Dictionary<string, ISet<VsHierarchyItem>>(StringComparer.OrdinalIgnoreCase);
+            var results = new Dictionary<string, ISet<VsHierarchy>>(StringComparer.OrdinalIgnoreCase);
             foreach (var project in projects.Cast<EnvDTE.Project>())
             {
                 var expandedNodes =
                     GetExpandedProjectHierarchyItems(project);
                 Debug.Assert(!results.ContainsKey(EnvDTEProjectInfoUtility.GetUniqueName(project)));
                 results[EnvDTEProjectInfoUtility.GetUniqueName(project)] =
-                    new HashSet<VsHierarchyItem>(expandedNodes);
+                    new HashSet<VsHierarchy>(expandedNodes);
             }
             return results;
         }
 
         /// <summary> Collaps all nodes in the solution. </summary>
         /// <param name="ignoreNodes"> Dictionary of nodes to ignore. </param>
-        public static async Task CollapseAllNodesAsync(IDictionary<string, ISet<VsHierarchyItem>> ignoreNodes)
+        public static async Task CollapseAllNodesAsync(IDictionary<string, ISet<VsHierarchy>> ignoreNodes)
         {
             // this operation needs to execute on UI thread
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -97,7 +97,7 @@ namespace NuGet.VisualStudio
 
             foreach (var project in projects.Cast<EnvDTE.Project>())
             {
-                ISet<VsHierarchyItem> expandedNodes;
+                ISet<VsHierarchy> expandedNodes;
                 if (ignoreNodes.TryGetValue(EnvDTEProjectInfoUtility.GetUniqueName(project), out expandedNodes)
                     &&
                     expandedNodes != null)
@@ -210,17 +210,17 @@ namespace NuGet.VisualStudio
         /// <summary> Compares two hierarchy items. </summary>
         /// <param name="other"> Other hierarchy item. </param>
         /// <returns> True if they point to same node. </returns>
-        public bool Equals(VsHierarchyItem other)
+        public bool Equals(VsHierarchy other)
         {
             return _vsitemid == other._vsitemid;
         }
 
         /// <summary> Compares it to another object. </summary>
         /// <param name="other"> Other object. </param>
-        /// <returns> True if other object is a <see cref="VsHierarchyItem"/> and they point to same node. </returns>
+        /// <returns> True if other object is a <see cref="VisualStudio.VsHierarchy"/> and they point to same node. </returns>
         public override bool Equals(object obj)
         {
-            var other = obj as VsHierarchyItem;
+            var other = obj as VsHierarchy;
             return other != null && Equals(other);
         }
 
@@ -249,20 +249,20 @@ namespace NuGet.VisualStudio
             return hierarchy;
         }
 
-        private static ICollection<VsHierarchyItem> GetExpandedProjectHierarchyItems(EnvDTE.Project project)
+        private static ICollection<VsHierarchy> GetExpandedProjectHierarchyItems(EnvDTE.Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectHierarchyItem = VsHierarchyItem.FromDteProject(project);
+            var projectHierarchyItem = VisualStudio.VsHierarchy.FromDteProject(project);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
             {
                 // If the solution explorer is collapsed since opening VS, this value is null. In such a case, simply exit early.
-                return new VsHierarchyItem[0];
+                return new VsHierarchy[0];
             }
 
-            var expandedItems = new List<VsHierarchyItem>();
+            var expandedItems = new List<VsHierarchy>();
 
             // processCallback return values: 
             //     0   continue, 
@@ -271,7 +271,7 @@ namespace NuGet.VisualStudio
             projectHierarchyItem.WalkDepthFirst(
                 fVisible: true,
                 processCallback:
-                    (VsHierarchyItem vsItem, object callerObject, out object newCallerObject) =>
+                    (VsHierarchy vsItem, object callerObject, out object newCallerObject) =>
                     {
                         newCallerObject = null;
                         if (vsItem.IsVsHierarchyItemExpanded(solutionExplorerWindow))
@@ -285,11 +285,11 @@ namespace NuGet.VisualStudio
             return expandedItems;
         }
 
-        private static void CollapseProjectHierarchyItems(EnvDTE.Project project, ISet<VsHierarchyItem> ignoredHierarcyItems)
+        private static void CollapseProjectHierarchyItems(EnvDTE.Project project, ISet<VsHierarchy> ignoredHierarcyItems)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectHierarchyItem = VsHierarchyItem.FromDteProject(project);
+            var projectHierarchyItem = VisualStudio.VsHierarchy.FromDteProject(project);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
@@ -305,7 +305,7 @@ namespace NuGet.VisualStudio
             projectHierarchyItem.WalkDepthFirst(
                 fVisible: true,
                 processCallback:
-                    (VsHierarchyItem currentHierarchyItem, object callerObject, out object newCallerObject) =>
+                    (VsHierarchy currentHierarchyItem, object callerObject, out object newCallerObject) =>
                     {
                         newCallerObject = null;
                         if (!ignoredHierarcyItems.Contains(currentHierarchyItem))
@@ -393,7 +393,7 @@ namespace NuGet.VisualStudio
             // Walk children if there are any
             if (IsExpandable())
             {
-                VsHierarchyItem child = GetFirstChild(fVisible);
+                VsHierarchy child = GetFirstChild(fVisible);
                 while (child != null)
                 {
                     object isNonMemberItemValue = child.GetProperty(__VSHPROPID.VSHPROPID_IsNonMemberItem);
@@ -414,13 +414,13 @@ namespace NuGet.VisualStudio
             return 0;
         }
 
-        private VsHierarchyItem GetNextSibling(bool fVisible)
+        private VsHierarchy GetNextSibling(bool fVisible)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             uint childId = GetNextSiblingId(fVisible);
             if (childId != VSConstants.VSITEMID_NIL)
             {
-                return new VsHierarchyItem(_hierarchy, childId);
+                return new VsHierarchy(_hierarchy, childId);
             }
             return null;
         }
@@ -441,13 +441,13 @@ namespace NuGet.VisualStudio
             return VSConstants.VSITEMID_NIL;
         }
 
-        private VsHierarchyItem GetFirstChild(bool fVisible)
+        private VsHierarchy GetFirstChild(bool fVisible)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             uint childId = GetFirstChildId(fVisible);
             if (childId != VSConstants.VSITEMID_NIL)
             {
-                return new VsHierarchyItem(_hierarchy, childId);
+                return new VsHierarchy(_hierarchy, childId);
             }
             return null;
         }

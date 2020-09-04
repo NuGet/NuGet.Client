@@ -69,7 +69,7 @@ namespace NuGet.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var vsHierarchy = VsHierarchyItem.FromDteProject(project);
+                    var vsHierarchy = VsHierarchy.FromDteProject(project);
                     if (vsHierarchy != null &&
                         vsHierarchy.IsCPSCapabilityComplaint())
                     {
@@ -394,7 +394,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            var expandedNodes = await VsHierarchyItem.GetAllExpandedNodesAsync();
+            var expandedNodes = await VsHierarchy.GetAllExpandedNodesAsync();
 
             try
             {
@@ -446,7 +446,7 @@ namespace NuGet.VisualStudio
             finally
             {
                 // collapse nodes
-                await VsHierarchyItem.CollapseAllNodesAsync(expandedNodes);
+                await VsHierarchy.CollapseAllNodesAsync(expandedNodes);
             }
         }
 

@@ -68,10 +68,10 @@ namespace NuGet.PackageManagement.VisualStudio
             // switch to main thread and use services we know must be done on main thread.
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var vsHierarchyItem = VsHierarchyItem.FromDteProject(dteProject);
+            var vsHierarchy = VsHierarchy.FromDteProject(dteProject);
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject = _ => dteProject;
 
-            var buildStorageProperty = vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage;
+            var buildStorageProperty = vsHierarchy.Ptr as IVsBuildPropertyStorage;
             var vsBuildProperties = new VsProjectBuildProperties(
                 dteProject, buildStorageProperty, _threadingService);
 
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(dteProject);
 
             return new VsProjectAdapter(
-                vsHierarchyItem,
+                vsHierarchy,
                 projectNames,
                 fullProjectPath,
                 dteProject.Kind,

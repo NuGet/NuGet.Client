@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         #region Private members
 
-        private readonly VsHierarchyItem _vsHierarchyItem;
+        private readonly VsHierarchy _vsHierarchy;
         private readonly Lazy<EnvDTE.Project> _dteProject;
         private readonly IDeferredProjectWorkspaceService _workspaceService;
         private readonly IVsProjectThreadingService _threadingService;
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return EnvDTEProjectUtility.IsSupported(Project);
                 }
 
-                return VsHierarchyItem.FromVsHierarchy(VsHierarchy).IsSupported(_projectTypeGuid);
+                return NuGet.VisualStudio.VsHierarchy.FromVsHierarchy(VsHierarchy).IsSupported(_projectTypeGuid);
             }
         }
 
@@ -161,7 +161,7 @@ namespace NuGet.PackageManagement.VisualStudio
             get
             {
                 Guid id;
-                if (!_vsHierarchyItem.TryGetProjectId(out id))
+                if (!_vsHierarchy.TryGetProjectId(out id))
                 {
                     id = Guid.Empty;
                 }
@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public IVsHierarchy VsHierarchy => _vsHierarchyItem.VsHierarchy;
+        public IVsHierarchy VsHierarchy => _vsHierarchy.Ptr;
 
         public string RestoreAdditionalProjectSources => BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreAdditionalProjectSources);
 
@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.VisualStudio
         #region Constructors
 
         public VsProjectAdapter(
-            VsHierarchyItem vsHierarchyItem,
+            VsHierarchy vsHierarchyItem,
             ProjectNames projectNames,
             string fullProjectPath,
             string projectTypeGuid,
@@ -226,8 +226,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(vsHierarchyItem);
 
-            _vsHierarchyItem = vsHierarchyItem;
-            _dteProject = new Lazy<EnvDTE.Project>(() => loadDteProject(_vsHierarchyItem.VsHierarchy));
+            _vsHierarchy = vsHierarchyItem;
+            _dteProject = new Lazy<EnvDTE.Project>(() => loadDteProject(_vsHierarchy.Ptr));
             _workspaceService = workspaceService;
             _threadingService = threadingService;
             _projectTypeGuid = projectTypeGuid;
@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (!IsDeferred)
             {
-                return VsHierarchyItem.FromDteProject(Project).GetProjectTypeGuids();
+                return NuGet.VisualStudio.VsHierarchy.FromDteProject(Project).GetProjectTypeGuids();
             }
             else
             {
