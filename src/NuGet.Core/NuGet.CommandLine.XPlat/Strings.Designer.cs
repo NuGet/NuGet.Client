@@ -1725,6 +1725,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies that all verifications possible should be performed to the package(s)..
+        /// </summary>
+        internal static string VerifyCommandAllDescription {
+            get {
+                return ResourceManager.GetString("VerifyCommandAllDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verify that the signer certificate matches with one of the specified SHA256 fingerprints. A certificate SHA256 fingerprint is a SHA256 hash of the certificate used to identify the certificate. Multiple inputs should be separated by space..
+        /// </summary>
+        internal static string VerifyCommandCertificateFingerprintDescription {
+            get {
+                return ResourceManager.GetString("VerifyCommandCertificateFingerprintDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verifies a signed NuGet package..
+        /// </summary>
+        internal static string VerifyCommandDescription {
+            get {
+                return ResourceManager.GetString("VerifyCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Overrides the version number from the nuspec file..
         /// </summary>
         internal static string Version_Description {

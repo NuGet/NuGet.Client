@@ -731,4 +731,13 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</value>
     <comment>{0} - Package Version</comment>
   </data>
+  <data name="VerifyCommandAllDescription" xml:space="preserve">
+    <value>Specifies that all verifications possible should be performed to the package(s).</value>
+  </data>
+  <data name="VerifyCommandCertificateFingerprintDescription" xml:space="preserve">
+    <value>Verify that the signer certificate matches with one of the specified SHA256 fingerprints. A certificate SHA256 fingerprint is a SHA256 hash of the certificate used to identify the certificate. Multiple inputs should be separated by space.</value>
+  </data>
+  <data name="VerifyCommandDescription" xml:space="preserve">
+    <value>Verifies a signed NuGet package.</value>
+  </data>
 </root>

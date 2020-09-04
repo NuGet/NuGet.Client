@@ -195,6 +195,7 @@ namespace NuGet.CommandLine.XPlat
                 DeleteCommand.Register(app, getHidePrefixLogger);
                 PushCommand.Register(app, getHidePrefixLogger);
                 LocalsCommand.Register(app, getHidePrefixLogger);
+                VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel);
             }
 
             app.FullName = Strings.App_FullName;
