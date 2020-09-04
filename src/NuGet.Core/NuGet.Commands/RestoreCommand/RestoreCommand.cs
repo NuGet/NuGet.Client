@@ -415,8 +415,10 @@ namespace NuGet.Commands
             IEnumerable<NuGetFramework> badPlatforms = _request.Project.TargetFrameworks.Select(tfm => tfm.FrameworkName).Where(fw => !string.IsNullOrEmpty(fw.Platform) && (fw.PlatformVersion == FrameworkConstants.EmptyVersion));
             if (badPlatforms.Any())
             {
-                NuGetFramework fw = badPlatforms.First();
-                _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.Error_PlatformVersionNotPresent, fw.Framework, fw.Platform)));
+                foreach (NuGetFramework fw in badPlatforms)
+                {
+                    _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.Error_PlatformVersionNotPresent, fw.Framework, fw.Platform)));
+                }
                 return false;
             }
             else
