@@ -394,7 +394,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            using (await VsHierarchy.GetSolutionNodesExpansionStateAsync())
+            using (await SolutionNodesExpansionState.SaveAsync())
             {
                 var depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
 

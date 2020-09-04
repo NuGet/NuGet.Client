@@ -208,7 +208,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            using (await VsHierarchy.GetSolutionNodesExpansionStateAsync())
+            using (await SolutionNodesExpansionState.SaveAsync())
             {
                 foreach (var package in configuration.Packages)
                 {

@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -17,8 +14,6 @@ namespace NuGet.VisualStudio
     /// <summary> Represent a particular tree node in the Solution Explorer window. </summary>
     public sealed class VsHierarchy : IEquatable<VsHierarchy>
     {
-        private static readonly Guid VsWindowKindSolutionExplorer = new Guid("3AE79031-E1BC-11D0-8F78-00A0C9110057");
-
         private static readonly string[] UnsupportedProjectCapabilities = new string[]
         {
             "SharedAssetsProject", // This is true for shared projects in universal apps
@@ -27,7 +22,7 @@ namespace NuGet.VisualStudio
         private readonly uint _vsitemid;
         private readonly IVsHierarchy _hierarchy;
 
-        private delegate int ProcessItemDelegate(VsHierarchy item, object callerObject, out object newCallerObject);
+        public delegate int ProcessItemDelegate(VsHierarchy item, object callerObject, out object newCallerObject);
 
         private VsHierarchy(IVsHierarchy hierarchy, uint id)
         {
@@ -57,62 +52,6 @@ namespace NuGet.VisualStudio
         {
             Assumes.Present(project);
             return new VsHierarchy(project);
-        }
-
-        /// <summary> Get all expanded nodes in the solution. </summary>
-        /// <returns> An opaque object storing state of nodes, can be disposed to restore state. </returns>
-        public static async Task<IDisposable> GetSolutionNodesExpansionStateAsync()
-        {
-            // this operation needs to execute on UI thread
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
-            var projects = dte.Solution.Projects;
-
-            var results = new Dictionary<string, ISet<VsHierarchy>>(StringComparer.OrdinalIgnoreCase);
-            foreach (var project in projects.Cast<EnvDTE.Project>())
-            {
-                var expandedNodes =
-                    GetExpandedProjectHierarchyItems(project);
-                Debug.Assert(!results.ContainsKey(EnvDTEProjectInfoUtility.GetUniqueName(project)));
-                results[EnvDTEProjectInfoUtility.GetUniqueName(project)] =
-                    new HashSet<VsHierarchy>(expandedNodes);
-            }
-
-            return new NodeExpansionState(results);
-        }
-
-        private class NodeExpansionState : IDisposable
-        {
-            private IDictionary<string, ISet<VsHierarchy>> _expandedNodes;
-
-            internal NodeExpansionState(IDictionary<string, ISet<VsHierarchy>> expandedNodes)
-            {
-                _expandedNodes = expandedNodes;
-            }
-
-            void IDisposable.Dispose()
-            {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    // this operation needs to execute on UI thread
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
-                    var projects = dte.Solution.Projects;
-
-                    foreach (var project in projects.Cast<EnvDTE.Project>())
-                    {
-                        ISet<VsHierarchy> expandedNodes;
-                        if (_expandedNodes.TryGetValue(EnvDTEProjectInfoUtility.GetUniqueName(project), out expandedNodes)
-                            &&
-                            expandedNodes != null)
-                        {
-                            CollapseProjectHierarchyItems(project, expandedNodes);
-                        }
-                    }
-                });
-            }
         }
 
         /// <summary> Underlying <see cref="IVsHierarchy"/> object. </summary>
@@ -218,160 +157,12 @@ namespace NuGet.VisualStudio
             return project;
         }
 
-        /// <summary> Compares two hierarchy items. </summary>
-        /// <param name="other"> Other hierarchy item. </param>
-        /// <returns> True if they point to same node. </returns>
-        public bool Equals(VsHierarchy other)
-        {
-            return _vsitemid == other._vsitemid;
-        }
-
-        /// <summary> Compares it to another object. </summary>
-        /// <param name="other"> Other object. </param>
-        /// <returns> True if other object is a <see cref="VisualStudio.VsHierarchy"/> and they point to same node. </returns>
-        public override bool Equals(object obj)
-        {
-            var other = obj as VsHierarchy;
-            return other != null && Equals(other);
-        }
-
-        /// <summary> Gets hash code. </summary>
-        /// <returns> Hash code of hierarchy item ID. </returns>
-        public override int GetHashCode()
-        {
-            return _vsitemid.GetHashCode();
-        }
-
-        private static IVsHierarchy ToVsHierarchy(EnvDTE.Project project)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            IVsHierarchy hierarchy;
-
-            // Get the vs solution
-            var solution = ServiceLocator.GetInstance<IVsSolution>();
-            var hr = solution.GetProjectOfUniqueName(EnvDTEProjectInfoUtility.GetUniqueName(project), out hierarchy);
-
-            if (hr != VSConstants.S_OK)
-            {
-                Marshal.ThrowExceptionForHR(hr);
-            }
-
-            return hierarchy;
-        }
-
-        private static ICollection<VsHierarchy> GetExpandedProjectHierarchyItems(EnvDTE.Project project)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var projectHierarchyItem = VisualStudio.VsHierarchy.FromDteProject(project);
-            var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
-
-            if (solutionExplorerWindow == null)
-            {
-                // If the solution explorer is collapsed since opening VS, this value is null. In such a case, simply exit early.
-                return new VsHierarchy[0];
-            }
-
-            var expandedItems = new List<VsHierarchy>();
-
-            // processCallback return values: 
-            //     0   continue, 
-            //     1   don't recurse into, 
-            //    -1   stop
-            projectHierarchyItem.WalkDepthFirst(
-                fVisible: true,
-                processCallback:
-                    (VsHierarchy vsItem, object callerObject, out object newCallerObject) =>
-                    {
-                        newCallerObject = null;
-                        if (vsItem.IsVsHierarchyItemExpanded(solutionExplorerWindow))
-                        {
-                            expandedItems.Add(vsItem);
-                        }
-                        return 0;
-                    },
-                callerObject: null);
-
-            return expandedItems;
-        }
-
-        private static void CollapseProjectHierarchyItems(EnvDTE.Project project, ISet<VsHierarchy> ignoredHierarcyItems)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var projectHierarchyItem = VisualStudio.VsHierarchy.FromDteProject(project);
-            var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
-
-            if (solutionExplorerWindow == null)
-            {
-                // If the solution explorer is collapsed since opening VS, this value is null. In such a case, simply exit early.
-                return;
-            }
-
-            // processCallback return values:
-            //     0   continue, 
-            //     1   don't recurse into, 
-            //    -1   stop
-            projectHierarchyItem.WalkDepthFirst(
-                fVisible: true,
-                processCallback:
-                    (VsHierarchy currentHierarchyItem, object callerObject, out object newCallerObject) =>
-                    {
-                        newCallerObject = null;
-                        if (!ignoredHierarcyItems.Contains(currentHierarchyItem))
-                        {
-                            currentHierarchyItem.Collapse(solutionExplorerWindow);
-                        }
-                        return 0;
-                    },
-                callerObject: null);
-        }
-
-        private bool IsExpandable()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var o = GetProperty(__VSHPROPID.VSHPROPID_Expandable);
-            if (o is bool)
-            {
-                return (bool)o;
-            }
-            return (o is int) && (int)o != 0;
-        }
-
-        private object GetProperty(__VSHPROPID propid)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            object value = null;
-            if (TryGetProperty((int)propid, out value))
-            {
-                return value;
-            }
-
-            return null;
-        }
-
-        private bool TryGetProperty(int propid, out object value)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            value = null;
-            try
-            {
-                if (_hierarchy != null)
-                {
-                    _hierarchy.GetProperty(_vsitemid, propid, out value);
-                }
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private int WalkDepthFirst(bool fVisible, ProcessItemDelegate processCallback, object callerObject)
+        /// <summary> Walk the solution node tree, depth first. </summary>
+        /// <param name="fVisible"> Is node visible. </param>
+        /// <param name="processCallback"> Processing callback. </param>
+        /// <param name="callerObject"> Caller object. </param>
+        /// <returns> Return code. </returns>
+        public int WalkDepthFirst(bool fVisible, ProcessItemDelegate processCallback, object callerObject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             //
@@ -423,6 +214,124 @@ namespace NuGet.VisualStudio
                 }
             }
             return 0;
+        }
+
+        /// <summary> Checks if hierarchy item is expanded. </summary>
+        /// <param name="uiWindow"> UI window. </param>
+        /// <returns> True if item is expanded. </returns>
+        public bool IsVsHierarchyItemExpanded(IVsUIHierarchyWindow uiWindow)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (!IsExpandable())
+            {
+                return false;
+            }
+
+            const uint expandedStateMask = (uint)__VSHIERARCHYITEMSTATE.HIS_Expanded;
+            uint itemState;
+
+            uiWindow.GetItemState(AsVsUIHierarchy(), _vsitemid, expandedStateMask, out itemState);
+            return ((__VSHIERARCHYITEMSTATE)itemState == __VSHIERARCHYITEMSTATE.HIS_Expanded);
+        }
+
+        /// <summary> Collapse the solution node item. </summary>
+        /// <param name="vsHierarchyWindow"> UI window. </param>
+        public void Collapse(IVsUIHierarchyWindow vsHierarchyWindow)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (vsHierarchyWindow == null)
+            {
+                return;
+            }
+
+            vsHierarchyWindow.ExpandItem(AsVsUIHierarchy(), _vsitemid, EXPANDFLAGS.EXPF_CollapseFolder);
+        }
+
+        /// <summary> Compares two hierarchy items. </summary>
+        /// <param name="other"> Other hierarchy item. </param>
+        /// <returns> True if they point to same node. </returns>
+        public bool Equals(VsHierarchy other)
+        {
+            return _vsitemid == other._vsitemid;
+        }
+
+        /// <summary> Compares it to another object. </summary>
+        /// <param name="other"> Other object. </param>
+        /// <returns> True if other object is a <see cref="VisualStudio.VsHierarchy"/> and they point to same node. </returns>
+        public override bool Equals(object obj)
+        {
+            var other = obj as VsHierarchy;
+            return other != null && Equals(other);
+        }
+
+        /// <summary> Gets hash code. </summary>
+        /// <returns> Hash code of hierarchy item ID. </returns>
+        public override int GetHashCode()
+        {
+            return _vsitemid.GetHashCode();
+        }
+
+        private static IVsHierarchy ToVsHierarchy(EnvDTE.Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IVsHierarchy hierarchy;
+
+            // Get the vs solution
+            var solution = ServiceLocator.GetInstance<IVsSolution>();
+            var hr = solution.GetProjectOfUniqueName(EnvDTEProjectInfoUtility.GetUniqueName(project), out hierarchy);
+
+            if (hr != VSConstants.S_OK)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return hierarchy;
+        }
+
+        private bool IsExpandable()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var o = GetProperty(__VSHPROPID.VSHPROPID_Expandable);
+            if (o is bool)
+            {
+                return (bool)o;
+            }
+            return (o is int) && (int)o != 0;
+        }
+
+        private object GetProperty(__VSHPROPID propid)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            object value = null;
+            if (TryGetProperty((int)propid, out value))
+            {
+                return value;
+            }
+
+            return null;
+        }
+
+        private bool TryGetProperty(int propid, out object value)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            value = null;
+            try
+            {
+                if (_hierarchy != null)
+                {
+                    _hierarchy.GetProperty(_vsitemid, propid, out value);
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private VsHierarchy GetNextSibling(bool fVisible)
@@ -479,46 +388,11 @@ namespace NuGet.VisualStudio
             return VSConstants.VSITEMID_NIL;
         }
 
-        private void Collapse(IVsUIHierarchyWindow vsHierarchyWindow)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (vsHierarchyWindow == null)
-            {
-                return;
-            }
-
-            vsHierarchyWindow.ExpandItem(AsVsUIHierarchy(), _vsitemid, EXPANDFLAGS.EXPF_CollapseFolder);
-        }
-
-        private bool IsVsHierarchyItemExpanded(IVsUIHierarchyWindow uiWindow)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (!IsExpandable())
-            {
-                return false;
-            }
-
-            const uint expandedStateMask = (uint)__VSHIERARCHYITEMSTATE.HIS_Expanded;
-            uint itemState;
-
-            uiWindow.GetItemState(AsVsUIHierarchy(), _vsitemid, expandedStateMask, out itemState);
-            return ((__VSHIERARCHYITEMSTATE)itemState == __VSHIERARCHYITEMSTATE.HIS_Expanded);
-        }
-
         private IVsUIHierarchy AsVsUIHierarchy()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             return _hierarchy as IVsUIHierarchy;
-        }
-
-        private static IVsUIHierarchyWindow GetSolutionExplorerHierarchyWindow()
-        {
-            return VsShellUtilities.GetUIHierarchyWindow(
-                ServiceLocator.GetInstance<IServiceProvider>(),
-                VsWindowKindSolutionExplorer);
         }
     }
 }

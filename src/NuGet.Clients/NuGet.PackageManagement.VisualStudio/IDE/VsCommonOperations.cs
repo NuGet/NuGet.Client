@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _solutionNodesExpansionState = await VsHierarchy.GetSolutionNodesExpansionStateAsync();
+                _solutionNodesExpansionState = await SolutionNodesExpansionState.SaveAsync();
 
                 return Task.CompletedTask;
             });
