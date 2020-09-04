@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    IEnumerable<string> projectIds = await ProjectUtility.GetProjectIdsAsync(uiService.Projects, token);
+                    IEnumerable<string> projectIds = await ProjectUtility.GetSortedProjectIdsAsync(uiService.Projects, token);
 
                     upgradeInformationTelemetryEvent.SetResult(projectIds, status, packagesCount);
                 }

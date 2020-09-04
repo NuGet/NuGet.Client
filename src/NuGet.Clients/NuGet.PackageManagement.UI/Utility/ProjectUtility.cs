@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.UI
 {
     internal static class ProjectUtility
     {
-        internal static async ValueTask<IEnumerable<string>> GetProjectIdsAsync(
+        internal static async ValueTask<IEnumerable<string>> GetSortedProjectIdsAsync(
             IEnumerable<IProjectContextInfo> projects,
             CancellationToken cancellationToken)
         {
