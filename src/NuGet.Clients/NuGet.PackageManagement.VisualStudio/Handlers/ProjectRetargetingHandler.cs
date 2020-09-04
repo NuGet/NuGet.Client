@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -13,7 +12,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -151,13 +149,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         Debug.Assert(await ProjectRetargetingUtility.IsNuGetInUseAsync(project));
                         var projectHierarchy = await VsHierarchy.FromDteProjectAsync(project);
-                        ShowRetargetingErrorTask(packageReferencesToBeReinstalled.Select(p => p.PackageIdentity.Id), projectHierarchy.Ptr, TaskErrorCategory.Warning, TaskPriority.Normal);
+                        ShowRetargetingErrorTask(packageReferencesToBeReinstalled.Select(p => p.PackageIdentity.Id), projectHierarchy, TaskErrorCategory.Warning, TaskPriority.Normal);
                     }
                 }
             }
         }
 
-        private void ShowRetargetingErrorTask(IEnumerable<string> packagesToBeReinstalled, IVsHierarchy projectHierarchy, TaskErrorCategory errorCategory, TaskPriority priority)
+        private void ShowRetargetingErrorTask(IEnumerable<string> packagesToBeReinstalled, VsHierarchy projectHierarchy, TaskErrorCategory errorCategory, TaskPriority priority)
         {
             Debug.Assert(packagesToBeReinstalled != null && packagesToBeReinstalled.Any());
 
@@ -169,13 +167,15 @@ namespace NuGet.PackageManagement.VisualStudio
         #region IVsTrackProjectRetargetingEvents
         int IVsTrackProjectRetargetingEvents.OnRetargetingAfterChange(string projRef, IVsHierarchy pAfterChangeHier, string fromTargetFramework, string toTargetFramework)
         {
+            var vsHierarchy = VsHierarchy.FromVsHierarchy(pAfterChangeHier);
+
             NuGetProject retargetedProject = null;
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _errorListProvider.Tasks.Clear();
-                var project = await VsHierarchy.FromVsHierarchy(pAfterChangeHier).GetDteProjectAsync();
+                var project = await vsHierarchy.GetDteProjectAsync();
                 retargetedProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(project, _solutionManager);
 
                 if (ProjectRetargetingUtility.IsProjectRetargetable(retargetedProject))
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     var packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(retargetedProject);
                     if (packagesToBeReinstalled.Any())
                     {
-                        ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), pAfterChangeHier, TaskErrorCategory.Error, TaskPriority.High);
+                        ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), vsHierarchy, TaskErrorCategory.Error, TaskPriority.High);
                     }
                     // NuGet/Home#4833 Baseline
                     // Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
@@ -278,7 +278,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                         // Hence, it is okay to call project.ToVsHierarchy()
                                         Debug.Assert(await ProjectRetargetingUtility.IsNuGetInUseAsync(project));
                                         var projectHierarchy = await VsHierarchy.FromDteProjectAsync(project);
-                                        ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy.Ptr, TaskErrorCategory.Error, TaskPriority.High);
+                                        ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
                                     }
                                     // NuGet/Home#4833 Baseline
                                     // Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.

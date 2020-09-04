@@ -8,7 +8,6 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using EnvDTE;
-using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using NuGet.Frameworks;
@@ -155,7 +154,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        public IVsHierarchy VsHierarchy { get; } = Mock.Of<IVsHierarchy>();
+        public VsHierarchy VsHierarchy { get; } = VsHierarchy.FromVsHierarchy(Mock.Of<IVsHierarchy>());
 
         public string WarningsAsErrors
         {

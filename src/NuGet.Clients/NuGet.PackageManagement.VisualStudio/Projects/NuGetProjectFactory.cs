@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (vsProjectAdapter.VsHierarchy != null &&
-                await VsHierarchy.FromVsHierarchy(vsProjectAdapter.VsHierarchy).IsCPSCapabilityComplaintAsync())
+                await vsProjectAdapter.VsHierarchy.IsCPSCapabilityComplaintAsync())
             {
                 // Lazy load the CPS enabled JoinableTaskFactory for the UI.
                 NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
@@ -130,7 +130,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             if (vsProjectAdapter.VsHierarchy != null &&
-                await VsHierarchy.FromVsHierarchy(vsProjectAdapter.VsHierarchy).IsCPSCapabilityComplaintAsync())
+                await vsProjectAdapter.VsHierarchy.IsCPSCapabilityComplaintAsync())
             {
                 // Lazy load the CPS enabled JoinableTaskFactory for the UI.
                 NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);

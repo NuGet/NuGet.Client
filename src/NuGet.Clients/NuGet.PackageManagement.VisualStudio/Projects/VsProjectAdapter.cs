@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return EnvDTEProjectUtility.IsSupported(Project);
             }
 
-            return await NuGet.VisualStudio.VsHierarchy.FromVsHierarchy(VsHierarchy).IsSupportedAsync(_projectTypeGuid);
+            return await VsHierarchy.IsSupportedAsync(_projectTypeGuid);
         }
 
         public string PackageTargetFallback
@@ -180,7 +180,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public IVsHierarchy VsHierarchy => _vsHierarchy.Ptr;
+        public VsHierarchy VsHierarchy => _vsHierarchy;
 
         public string RestoreAdditionalProjectSources => BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreAdditionalProjectSources);
 
@@ -386,7 +386,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var itemStorage = VsHierarchy as IVsBuildItemStorage;
+            var itemStorage = VsHierarchy.Ptr as IVsBuildItemStorage;
             if (itemStorage != null)
             {
                 var callback = new VisualStudioBuildItemStorageCallback();

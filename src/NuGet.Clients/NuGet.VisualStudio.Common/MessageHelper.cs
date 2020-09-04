@@ -68,14 +68,14 @@ namespace NuGet.VisualStudio
             return (result == NativeMethods.IDYES);
         }
 
-        public static void ShowError(ErrorListProvider errorListProvider, TaskErrorCategory errorCategory, TaskPriority priority, string errorText, IVsHierarchy hierarchyItem)
+        public static void ShowError(ErrorListProvider errorListProvider, TaskErrorCategory errorCategory, TaskPriority priority, string errorText, VsHierarchy hierarchyItem)
         {
             ErrorTask errorTask = new ErrorTask();
             errorTask.Text = errorText;
             errorTask.ErrorCategory = errorCategory;
             errorTask.Category = TaskCategory.BuildCompile;
             errorTask.Priority = priority;
-            errorTask.HierarchyItem = hierarchyItem;
+            errorTask.HierarchyItem = hierarchyItem.Ptr;
             errorListProvider.Tasks.Add(errorTask);
             errorListProvider.BringToFront();
             errorListProvider.ForceShowErrors();

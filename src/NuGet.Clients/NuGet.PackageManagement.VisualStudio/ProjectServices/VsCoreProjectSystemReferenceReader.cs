@@ -155,12 +155,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Get all items in the hierarchy, this includes project references, files, and everything else.
             IEnumHierarchyItems items;
             if (ErrorHandler.Succeeded(itemsFactory.EnumHierarchyItems(
-                hierarchy,
+                hierarchy.Ptr,
                 (uint)__VSEHI.VSEHI_Leaf,
                 (uint)VSConstants.VSITEMID.Root,
                 out items)))
             {
-                var buildPropertyStorage = (IVsBuildPropertyStorage)hierarchy;
+                var buildPropertyStorage = (IVsBuildPropertyStorage)hierarchy.Ptr;
 
                 // Loop through all items
                 uint fetched;
@@ -182,7 +182,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             // Get the DTE Project reference for the item id. This checks for nulls incase this is
                             // somehow not a project reference that had the ReferenceOutputAssembly flag.
                             object childObject;
-                            if (ErrorHandler.Succeeded(hierarchy.GetProperty(
+                            if (ErrorHandler.Succeeded(hierarchy.Ptr.GetProperty(
                                 item[0].itemid,
                                 (int)__VSHPROPID.VSHPROPID_ExtObject,
                                 out childObject)))

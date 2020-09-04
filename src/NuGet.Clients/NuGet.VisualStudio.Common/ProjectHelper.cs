@@ -15,11 +15,11 @@ namespace NuGet.VisualStudio
 {
     public static class ProjectHelper
     {
-        public static async Task DoWorkInWriterLockAsync(Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
+        public static async Task DoWorkInWriterLockAsync(Project project, VsHierarchy hierarchy, Action<MsBuildProject> action)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var vsProject = (IVsProject)hierarchy;
+            var vsProject = (IVsProject)hierarchy.Ptr;
             UnconfiguredProject unconfiguredProject = GetUnconfiguredProject(vsProject);
             if (unconfiguredProject != null)
             {

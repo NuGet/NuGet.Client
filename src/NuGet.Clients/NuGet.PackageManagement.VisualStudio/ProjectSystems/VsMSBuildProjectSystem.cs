@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        _buildSystem = VsProjectAdapter.VsHierarchy as IVsProjectBuildSystem;
+                        _buildSystem = VsProjectAdapter.VsHierarchy.Ptr as IVsProjectBuildSystem;
                     });
                 }
 
@@ -502,7 +502,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var propStore = vsProjectAdapter.VsHierarchy as IVsBuildPropertyStorage;
+            var propStore = vsProjectAdapter.VsHierarchy.Ptr as IVsBuildPropertyStorage;
             if (propStore != null)
             {
                 // <NuGetPackageImportStamp>af617720</NuGetPackageImportStamp>

@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using NuGet.RuntimeModel;
@@ -101,7 +100,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         string Version { get; }
 
-        IVsHierarchy VsHierarchy { get; }
+        VsHierarchy VsHierarchy { get; }
 
         /// <summary>
         /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
