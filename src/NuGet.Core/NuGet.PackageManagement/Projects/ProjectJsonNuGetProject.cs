@@ -251,7 +251,13 @@ namespace NuGet.ProjectManagement.Projects
                 packageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).AsList();
                 packageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
 
-                context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
+                if (context != null)
+                {
+                    lock(context.PackageSpecCache)
+                    {
+                        context.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
+                    }
+                }
             }
 
             return (new[] { packageSpec }, null);

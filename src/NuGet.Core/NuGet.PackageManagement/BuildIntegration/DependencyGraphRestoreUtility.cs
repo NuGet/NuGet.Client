@@ -337,11 +337,10 @@ namespace NuGet.PackageManagement
 
             foreach (IDependencyGraphProject project in projects)
             {
-                var (packageSpecs, projectAdditionalMessages) = await project.GetPackageSpecsAndAdditionalMessagesAsync(context);
                 await actionBlock.SendAsync(new ProjectRestoreSpec(
+                                                project,
                                                 dgSpec,
-                                                packageSpecs,
-                                                projectAdditionalMessages,
+                                                context,
                                                 knownProjects,
                                                 allAdditionalMessages)
                                             );
@@ -354,20 +353,21 @@ namespace NuGet.PackageManagement
             return (dgSpec, allAdditionalMessages.ToList());
         }
 
-        private static void GetProjectRestoreSpecAndAdditionalMessages(
+        private async static Task GetProjectRestoreSpecAndAdditionalMessages(
             ProjectRestoreSpec restoreSpecData)
         {
+            var (packageSpecs, projectAdditionalMessages) = await restoreSpecData.Project.GetPackageSpecsAndAdditionalMessagesAsync(restoreSpecData.Context);
             var dgSpec = restoreSpecData.DgSpec;
 
-            if (restoreSpecData.ProjectAdditionalMessages?.Count > 0)
+            if (projectAdditionalMessages?.Count > 0)
             {
-                foreach (var projectAdditionalMessage in restoreSpecData.ProjectAdditionalMessages)
+                foreach (var projectAdditionalMessage in projectAdditionalMessages)
                 {
                     restoreSpecData.AllAdditionalMessages.Add(projectAdditionalMessage);
                 }
             }
 
-            foreach (var packageSpec in restoreSpecData.PackageSpecs)
+            foreach (var packageSpec in packageSpecs)
             {
                 lock (dgSpec)
                 {
@@ -466,23 +466,23 @@ namespace NuGet.PackageManagement
 
         private class ProjectRestoreSpec
         {
+            public readonly IDependencyGraphProject Project;
             public readonly DependencyGraphSpec DgSpec;
-            public readonly IReadOnlyList<PackageSpec> PackageSpecs;
-            public readonly IReadOnlyList<IAssetsLogMessage> ProjectAdditionalMessages;
+            public readonly DependencyGraphCacheContext Context;
             public readonly ConcurrentDictionary<string, bool> KnownProjects;
             public readonly ConcurrentBag<IAssetsLogMessage> AllAdditionalMessages;
 
             public ProjectRestoreSpec(
+                    IDependencyGraphProject project,
                     DependencyGraphSpec dgSpec,
-                    IReadOnlyList<PackageSpec> packageSpecs,
-                    IReadOnlyList<IAssetsLogMessage> projectAdditionalMessages,
+                    DependencyGraphCacheContext context,
                     ConcurrentDictionary<string, bool> knownProjects,
                     ConcurrentBag<IAssetsLogMessage> allAdditionalMessages
             )
             {
+                Project = project;
                 DgSpec = dgSpec;
-                PackageSpecs = packageSpecs;
-                ProjectAdditionalMessages = projectAdditionalMessages;
+                Context = context;
                 KnownProjects = knownProjects;
                 AllAdditionalMessages = allAdditionalMessages;
             }
