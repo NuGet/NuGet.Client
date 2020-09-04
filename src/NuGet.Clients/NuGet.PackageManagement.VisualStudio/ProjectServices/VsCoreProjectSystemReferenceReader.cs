@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             continue;
                         }
 
-                        if (EnvDTEProjectUtility.HasUnsupportedProjectCapability(reference3.SourceProject))
+                        if (await EnvDTEProjectUtility.HasUnsupportedProjectCapabilityAsync(reference3.SourceProject))
                         {
                             // Skip this shared project
                             continue;

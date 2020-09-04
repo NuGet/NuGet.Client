@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return false;
             }
 
-            return IsProjectPackageReferenceCompatible(envDTEProject);
+            return await IsProjectPackageReferenceCompatibleAsync(envDTEProject);
         }
 
         private static async Task<NuGetProject> GetNuGetProject(Project envDTEProject)
@@ -92,9 +92,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return nuGetProject;
         }
 
-        private static bool IsProjectPackageReferenceCompatible(Project project)
+        private static async Task<bool> IsProjectPackageReferenceCompatibleAsync(Project project)
         {
-            var projectGuids = VsHierarchy.FromDteProject(project).GetProjectTypeGuids();
+            var projectGuids = await (await VsHierarchy.FromDteProjectAsync(project)).GetProjectTypeGuidsAsync();
 
             if (projectGuids.Any(t => UnupgradeableProjectTypes.Contains(t)))
             {

@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (!IsDeferred)
                 {
-                    return EnvDTEProjectInfoUtility.GetFullPath(Project);
+                    return NuGetUIThreadHelper.JoinableTaskFactory.Run(() => EnvDTEProjectInfoUtility.GetFullPathAsync(Project));
                 }
                 else
                 {
@@ -134,7 +134,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     return EnvDTEProjectUtility.IsSupported(Project);
                 }
 
-                return NuGet.VisualStudio.VsHierarchy.FromVsHierarchy(VsHierarchy).IsSupported(_projectTypeGuid);
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    return await NuGet.VisualStudio.VsHierarchy.FromVsHierarchy(VsHierarchy).IsSupportedAsync(_projectTypeGuid);
+                });
             }
         }
 
@@ -160,13 +163,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                Guid id;
-                if (!_vsHierarchy.TryGetProjectId(out id))
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    id = Guid.Empty;
-                }
-
-                return id.ToString();
+                    return (await _vsHierarchy.GetProjectIdAsync()).ToString();
+                });
             }
         }
 
@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (!IsDeferred)
             {
-                return NuGet.VisualStudio.VsHierarchy.FromDteProject(Project).GetProjectTypeGuids();
+                return await (await NuGet.VisualStudio.VsHierarchy.FromDteProjectAsync(Project)).GetProjectTypeGuidsAsync();
             }
             else
             {

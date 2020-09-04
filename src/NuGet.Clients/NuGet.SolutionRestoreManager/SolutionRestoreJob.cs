@@ -670,10 +670,17 @@ namespace NuGet.SolutionRestoreManager
 
                 var dte = await _asyncServiceProvider.GetDTEAsync();
                 var projects = dte.Solution.Projects;
-                return projects
-                    .OfType<EnvDTE.Project>()
-                    .Select(p => new ProjectInfo(EnvDTEProjectInfoUtility.GetFullPath(p), p.Name))
-                    .Any(p => p.CheckPackagesConfig());
+
+                foreach (var project in projects.OfType<EnvDTE.Project>())
+                {
+                    var projectInfo = new ProjectInfo(await EnvDTEProjectInfoUtility.GetFullPathAsync(project), project.Name);
+                    if (projectInfo.CheckPackagesConfig())
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             });
         }
 

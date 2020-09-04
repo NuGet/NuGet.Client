@@ -18,11 +18,11 @@ namespace API.Test
 {
     public static class VSSolutionHelper
     {
-        private static UpdateSolutionEventHandler _solutionEventHandler = new UpdateSolutionEventHandler();
+        private static UpdateSolutionEventHandler SolutionEventHandler = new UpdateSolutionEventHandler();
 
-        private static uint _updateSolutionEventsCookie;
+        private static uint UpdateSolutionEventsCookie;
 
-        private static IVsSolutionBuildManager _solutionBuildManager;
+        private static IVsSolutionBuildManager SolutionBuildManager;
 
         internal static async Task<EnvDTE80.Solution2> GetDTESolutionAsync()
         {
@@ -266,11 +266,11 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            Assumes.Present(_solutionBuildManager);
+            Assumes.Present(SolutionBuildManager);
 
             var buildFlags = (uint)(VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD | VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_CLEAN);
 
-            _solutionBuildManager.StartSimpleUpdateSolutionConfiguration(buildFlags, (uint)VSSOLNBUILDQUERYRESULTS.VSSBQR_CONTDEPLOYONERROR_QUERY_NO, 1);
+            SolutionBuildManager.StartSimpleUpdateSolutionConfiguration(buildFlags, (uint)VSSOLNBUILDQUERYRESULTS.VSSBQR_CONTDEPLOYONERROR_QUERY_NO, 1);
         }
 
         public static void AdviseSolutionEvents()
@@ -285,10 +285,10 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            _solutionBuildManager = ServiceLocator.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager>();
-            Assumes.Present(_solutionBuildManager);
+            SolutionBuildManager = ServiceLocator.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager>();
+            Assumes.Present(SolutionBuildManager);
 
-            _solutionBuildManager.AdviseUpdateSolutionEvents(_solutionEventHandler, out _updateSolutionEventsCookie);
+            SolutionBuildManager.AdviseUpdateSolutionEvents(SolutionEventHandler, out UpdateSolutionEventsCookie);
         }
 
         public static void UnadviseSolutionEvents()
@@ -303,16 +303,16 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (_updateSolutionEventsCookie != 0)
+            if (UpdateSolutionEventsCookie != 0)
             {
-                _solutionBuildManager?.UnadviseUpdateSolutionEvents(_updateSolutionEventsCookie);
-                _updateSolutionEventsCookie = 0;
+                SolutionBuildManager?.UnadviseUpdateSolutionEvents(UpdateSolutionEventsCookie);
+                UpdateSolutionEventsCookie = 0;
             }
         }
 
         public static void WaitUntilRebuildCompleted()
         {
-            while (!_solutionEventHandler.isOperationCompleted)
+            while (!SolutionEventHandler.isOperationCompleted)
             {
                 Thread.Sleep(100);
             }

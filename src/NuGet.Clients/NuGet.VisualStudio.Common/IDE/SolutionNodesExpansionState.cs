@@ -78,7 +78,7 @@ namespace NuGet.VisualStudio
 
         private static async Task<ICollection<VsHierarchyItem>> GetExpandedProjectHierarchyItemsAsync(EnvDTE.Project project)
         {
-            var projectHierarchyItem = new VsHierarchyItem(VsHierarchy.FromDteProject(project).Ptr, VSConstants.VSITEMID_ROOT);
+            var projectHierarchyItem = new VsHierarchyItem((await VsHierarchy.FromDteProjectAsync(project)).Ptr, VSConstants.VSITEMID_ROOT);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
@@ -107,7 +107,7 @@ namespace NuGet.VisualStudio
 
         private static async Task CollapseProjectHierarchyItemsAsync(EnvDTE.Project project, ISet<VsHierarchyItem> ignoredHierarcyItems)
         {
-            var projectHierarchyItem = new VsHierarchyItem(VsHierarchy.FromDteProject(project).Ptr, VSConstants.VSITEMID_ROOT);
+            var projectHierarchyItem = new VsHierarchyItem((await VsHierarchy.FromDteProjectAsync(project)).Ptr, VSConstants.VSITEMID_ROOT);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)

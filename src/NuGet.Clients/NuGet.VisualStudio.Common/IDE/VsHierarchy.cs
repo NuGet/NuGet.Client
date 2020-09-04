@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -29,11 +30,10 @@ namespace NuGet.VisualStudio
         /// <summary> Create a new instance of <see cref="VisualStudio.VsHierarchy"/> from a DTE project object. </summary>
         /// <param name="project"> A DTE project. </param>
         /// <returns> Instance of <see cref="VisualStudio.VsHierarchy"/> wrapping <paramref name="project"/>. </returns>
-        public static VsHierarchy FromDteProject(EnvDTE.Project project)
+        public static async Task<VsHierarchy> FromDteProjectAsync(EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.Present(project);
-            return new VsHierarchy(ToVsHierarchy(project));
+            return new VsHierarchy(await ToVsHierarchyAsync(project));
         }
 
         /// <summary> Create a new instance of <see cref="VisualStudio.VsHierarchy"/> from a <see cref="IVsHierarchy"/> object. </summary>
@@ -49,58 +49,61 @@ namespace NuGet.VisualStudio
         public IVsHierarchy Ptr => _hierarchy;
 
         /// <summary> Try getting a project ID. </summary>
-        /// <param name="projectId"> Found Project ID. </param>
-        /// <returns> True if project ID is found. </returns>
-        public bool TryGetProjectId(out Guid projectId)
+        /// <returns> Found project ID, or Guid.Empty if not found. </returns>
+        public async Task<Guid> GetProjectIdAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var result = _hierarchy.GetGuidProperty(
                 VSConstants.VSITEMID_ROOT,
                 (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
-                out projectId);
+                out var projectId);
 
-            return result == VSConstants.S_OK;
+            if (result != VSConstants.S_OK)
+            {
+                projectId = Guid.Empty;
+            }
+
+            return projectId;
         }
 
         /// <summary> Find whether project type is supported. </summary>
         /// <param name="projectTypeGuid"> Project type ID. </param>
         /// <returns> True if project type is supported. </returns>
-        public bool IsSupported(string projectTypeGuid)
+        public async Task<bool> IsSupportedAsync(string projectTypeGuid)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (IsProjectCapabilityCompliant())
+            if (await IsProjectCapabilityCompliantAsync())
             {
                 return true;
             }
 
-            return !string.IsNullOrEmpty(projectTypeGuid) && SupportedProjectTypes.IsSupported(projectTypeGuid) && !HasUnsupportedProjectCapability();
+            return !string.IsNullOrEmpty(projectTypeGuid)
+                && SupportedProjectTypes.IsSupported(projectTypeGuid)
+                && !await HasUnsupportedProjectCapabilityAsync();
         }
 
         /// <summary> Finds whether project capability matching. </summary>
         /// <returns> True if project matches required capabilities. </returns>
-        public bool IsProjectCapabilityCompliant()
+        public async Task<bool> IsProjectCapabilityCompliantAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             return _hierarchy.IsCapabilityMatch("AssemblyReferences + DeclaredSourceItems + UserSourceItems");
         }
 
         /// <summary> Finds whether project has unsupported project capability. </summary>
         /// <returns> True if project has unsupported project capability. </returns>
-        public bool HasUnsupportedProjectCapability()
+        public async Task<bool> HasUnsupportedProjectCapabilityAsync()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             return UnsupportedProjectCapabilities.Any(c => _hierarchy.IsCapabilityMatch(c));
         }
 
         /// <summary> Get project type GUIDs. </summary>
         /// <param name="defaultType"> Default project type. </param>
         /// <returns> Array of project type GUIDs. </returns>
-        public string[] GetProjectTypeGuids(string defaultType = "")
+        public async Task<string[]> GetProjectTypeGuidsAsync(string defaultType = "")
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var aggregatableProject = _hierarchy as IVsAggregatableProject;
             if (aggregatableProject != null)
             {
@@ -122,23 +125,21 @@ namespace NuGet.VisualStudio
         /// <summary> Check for CPS capability in IVsHierarchy. </summary>
         /// <returns> True if project is CPS-based. </returns>
         /// <remarks> All CPS projects will have CPS capability except VisualC projects. So checking for VisualC explicitly with a OR flag. </remarks>
-        public bool IsCPSCapabilityComplaint()
+        public async Task<bool> IsCPSCapabilityComplaintAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             return _hierarchy.IsCapabilityMatch("CPS | VisualC");
         }
 
         /// <summary> Gets <see cref="EnvDTE.Project"/> instance for this hierarchy. </summary>
         /// <returns> A <see cref="EnvDTE.Project"/> instance. </returns>
-        public EnvDTE.Project GetDteProject()
+        public async Task<EnvDTE.Project> GetDteProjectAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             // Set it to null to avoid unassigned local variable warning
             EnvDTE.Project project = null;
             object projectObject;
 
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             if (_hierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out projectObject) >= 0)
             {
                 project = (EnvDTE.Project)projectObject;
@@ -147,15 +148,12 @@ namespace NuGet.VisualStudio
             return project;
         }
 
-        private static IVsHierarchy ToVsHierarchy(EnvDTE.Project project)
+        private static async Task<IVsHierarchy> ToVsHierarchyAsync(EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            var solution = await ServiceLocator.GetInstanceAsync<IVsSolution>();
 
-            IVsHierarchy hierarchy;
-
-            // Get the vs solution
-            var solution = ServiceLocator.GetInstance<IVsSolution>();
-            var hr = solution.GetProjectOfUniqueName(EnvDTEProjectInfoUtility.GetUniqueName(project), out hierarchy);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var hr = solution.GetProjectOfUniqueName(EnvDTEProjectInfoUtility.GetUniqueName(project), out var hierarchy);
 
             if (hr != VSConstants.S_OK)
             {

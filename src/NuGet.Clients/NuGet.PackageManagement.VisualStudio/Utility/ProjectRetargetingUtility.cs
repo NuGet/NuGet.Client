@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 var projectFullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
-                var packagesConfigFullPath = Path.Combine(projectFullPath ?? String.Empty, ProjectManagement.Constants.PackageReferenceFile);
+                var packagesConfigFullPath = Path.Combine(projectFullPath ?? string.Empty, ProjectManagement.Constants.PackageReferenceFile);
 
                 // Create new file or overwrite existing file
                 if (File.Exists(packagesConfigFullPath))
@@ -228,7 +228,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var projectFullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
-            var packagesConfigFullPath = Path.Combine(projectFullPath ?? String.Empty, NuGet.ProjectManagement.Constants.PackageReferenceFile);
+            var packagesConfigFullPath = Path.Combine(projectFullPath ?? string.Empty, NuGet.ProjectManagement.Constants.PackageReferenceFile);
 
             if (File.Exists(packagesConfigFullPath))
             {
@@ -256,9 +256,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Determines if NuGet is used in the project. Currently, it is determined by checking if packages.config is part of the project
         /// </summary>
         /// <param name="project">The project which is checked to see if NuGet is used in it</param>
-        public static bool IsNuGetInUse(Project project)
+        public static async Task<bool> IsNuGetInUseAsync(Project project)
         {
-            return EnvDTEProjectUtility.IsSupported(project) && File.Exists(EnvDTEProjectInfoUtility.GetPackagesConfigFullPath(project));
+            return EnvDTEProjectUtility.IsSupported(project)
+                && File.Exists(await EnvDTEProjectInfoUtility.GetPackagesConfigFullPathAsync(project));
         }
     }
 }
