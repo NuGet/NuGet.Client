@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio
     /// <summary> Represent a particular tree node in the Solution Explorer window. </summary>
     public sealed class VsHierarchy : IEquatable<VsHierarchy>
     {
-        private const string VsWindowKindSolutionExplorer = "3AE79031-E1BC-11D0-8F78-00A0C9110057";
+        private static readonly Guid VsWindowKindSolutionExplorer = new Guid("3AE79031-E1BC-11D0-8F78-00A0C9110057");
 
         private static readonly string[] UnsupportedProjectCapabilities = new string[]
         {
@@ -30,8 +30,6 @@ namespace NuGet.VisualStudio
         private readonly IVsHierarchy _hierarchy;
 
         private delegate int ProcessItemDelegate(VsHierarchy item, object callerObject, out object newCallerObject);
-
-        public IVsHierarchy Ptr => _hierarchy;
 
         private VsHierarchy(IVsHierarchy hierarchy, uint id)
         {
@@ -106,6 +104,9 @@ namespace NuGet.VisualStudio
                 }
             }
         }
+
+        /// <summary> Underlying <see cref="IVsHierarchy"/> object. </summary>
+        public IVsHierarchy Ptr => _hierarchy;
 
         /// <summary> Try getting a project ID. </summary>
         /// <param name="projectId"> Found Project ID. </param>
@@ -507,7 +508,7 @@ namespace NuGet.VisualStudio
         {
             return VsShellUtilities.GetUIHierarchyWindow(
                 ServiceLocator.GetInstance<IServiceProvider>(),
-                new Guid(VsWindowKindSolutionExplorer));
+                VsWindowKindSolutionExplorer);
         }
     }
 }
