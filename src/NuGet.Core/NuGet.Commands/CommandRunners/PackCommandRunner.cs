@@ -318,7 +318,7 @@ namespace NuGet.Commands
                 builder.MinClientVersion = _packArgs.MinClientVersion;
             }
 
-            CheckForBadFrameworks(builder);
+            CheckForUnsupportedFrameworks(builder);
 
             ExcludeFiles(builder.Files);
         }
@@ -843,7 +843,7 @@ namespace NuGet.Commands
             return successful;
         }
 
-        private void CheckForBadFrameworks(PackageBuilder builder)
+        private void CheckForUnsupportedFrameworks(PackageBuilder builder)
         {
             foreach (FrameworkAssemblyReference reference in builder.FrameworkReferences)
             {

@@ -181,11 +181,7 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
-                if (!CheckPlatformVersions())
-                {
-                    // the errors will be added to the assets file
-                    _success = false;
-                }
+                _success &= HasValidPlatformVersions();
 
                 // evaluate packages.lock.json file
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
@@ -410,7 +406,7 @@ namespace NuGet.Commands
             }
         }
 
-        private bool CheckPlatformVersions()
+        private bool HasValidPlatformVersions()
         {
             IEnumerable<NuGetFramework> badPlatforms = _request.Project.TargetFrameworks.Select(tfm => tfm.FrameworkName).Where(fw => !string.IsNullOrEmpty(fw.Platform) && (fw.PlatformVersion == FrameworkConstants.EmptyVersion));
             if (badPlatforms.Any())
