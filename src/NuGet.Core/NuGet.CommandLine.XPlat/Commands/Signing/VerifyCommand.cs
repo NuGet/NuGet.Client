@@ -59,8 +59,8 @@ namespace NuGet.CommandLine.XPlat
                         new List<Verification>() { Verification.Signatures };
                     args.CertificateFingerprint = fingerPrint.Values;
                     args.Logger = getLogger();
-                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));                     
-                    
+                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
+
                     VerifyCommandRunner runner = new VerifyCommandRunner();
                     await runner.ExecuteCommandAsync(args);
 
