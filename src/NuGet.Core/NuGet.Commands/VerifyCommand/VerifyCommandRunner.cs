@@ -37,9 +37,17 @@ namespace NuGet.Commands
 
             if (ShouldExecuteVerification(verifyArgs, Verification.Signatures))
             {
+#if NETFRAMEWORK
                 var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
-
+#else
+                var packagesToVerify = verifyArgs.PackagesPath.SelectMany(packagePath =>
+                {
+                    var packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
+                    LocalFolderUtility.EnsurePackageFileExists(packagePath, packages);
+                    return packages;
+                });
+#endif
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
                     new CertificateHashAllowListEntry(
                         VerificationTarget.Author | VerificationTarget.Repository,

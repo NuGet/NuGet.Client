@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
+using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -20,9 +21,9 @@ namespace NuGet.CommandLine.XPlat
         {
             app.Command("verify", verifyCmd =>
             {
-                CommandArgument packagePath = verifyCmd.Argument(
-                    "PackagePath",
-                    Strings.VerifyCommandDescription,
+                CommandArgument packagesPath = verifyCmd.Argument(
+                    "<packages-path>",
+                    Strings.VerifyCommandPackagePathDescription,
                     multipleValues: true);
 
                 CommandOption all = verifyCmd.Option(
@@ -35,16 +36,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.VerifyCommandCertificateFingerprintDescription,
                     CommandOptionType.MultipleValue);
 
-                CommandOption interactive = verifyCmd.Option(
-                    "--interactive",
-                    Strings.NuGetXplatCommand_Interactive,
-                    CommandOptionType.NoValue);
-
-                CommandOption configFile = verifyCmd.Option(
-                    "--configfile",
-                    Strings.Option_ConfigFile,
-                CommandOptionType.SingleValue);
-
                 CommandOption verbosity = verifyCmd.Option(
                     "-v|--verbosity",
                     Strings.Verbosity_Description,
@@ -55,21 +46,35 @@ namespace NuGet.CommandLine.XPlat
 
                 verifyCmd.OnExecute(async () =>
                 {
+                    ValidatePackagesPath(packagesPath);
+
                     VerifyArgs args = new VerifyArgs();
-                    args.PackagePath = packagePath.Value;
-                    args.CertificateFingerprint = fingerPrint.Values;
+#if NETFRAMEWORK
+                    args.PackagePath = packagesPath.Value;
+#else
+                    args.PackagesPath = packagesPath.Values;
+#endif
                     args.Verifications = all.HasValue() ?
-                        new List<VerifyArgs.Verification>() { VerifyArgs.Verification.All } :
-                        new List<VerifyArgs.Verification>() { VerifyArgs.Verification.Signatures };
+                        new List<Verification>() { Verification.All } :
+                        new List<Verification>() { Verification.Signatures };
+                    args.CertificateFingerprint = fingerPrint.Values;
                     args.Logger = getLogger();
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));                     
-
+                    
                     VerifyCommandRunner runner = new VerifyCommandRunner();
                     await runner.ExecuteCommandAsync(args);
 
                     return 0;
                 });
             });
+        }
+        private static void ValidatePackagesPath(CommandArgument argument)
+        {
+            if (argument.Values.Count == 0 ||
+                argument.Values.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
+            {
+                throw new ArgumentNullException(nameof(argument));
+            }
         }
     }
 }

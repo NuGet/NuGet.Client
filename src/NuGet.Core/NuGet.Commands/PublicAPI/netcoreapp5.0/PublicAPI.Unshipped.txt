@@ -1,1 +1,3 @@
+NuGet.Commands.VerifyArgs.PackagesPath.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.Commands.VerifyArgs.PackagesPath.set -> void
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion) -> NuGet.Frameworks.NuGetFramework

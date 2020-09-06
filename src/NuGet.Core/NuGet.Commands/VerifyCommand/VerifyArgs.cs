@@ -25,10 +25,17 @@ namespace NuGet.Commands
         /// </summary>
         public IList<Verification> Verifications { get; set; }
 
+#if NETFRAMEWORK
         /// <summary>
-        /// Path to the package that has to be signed.
+        /// Path to the package that has to be verified.
         /// </summary>
         public string PackagePath { get; set; }
+#else
+        /// <summary>
+        /// Paths to the packages that has to be verified.
+        /// </summary>
+        public IReadOnlyList<string> PackagesPath { get; set; }
+#endif
 
         /// <summary>
         /// Logger to be used to display the logs during the execution of sign command.

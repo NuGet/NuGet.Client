@@ -1752,6 +1752,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specify the path to the package.
+        /// </summary>
+        internal static string VerifyCommandPackagePathDescription {
+            get {
+                return ResourceManager.GetString("VerifyCommandPackagePathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Overrides the version number from the nuspec file..
         /// </summary>
         internal static string Version_Description {

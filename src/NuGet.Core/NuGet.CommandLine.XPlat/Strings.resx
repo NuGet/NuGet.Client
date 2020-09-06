@@ -740,4 +740,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="VerifyCommandDescription" xml:space="preserve">
     <value>Verifies a signed NuGet package.</value>
   </data>
+  <data name="VerifyCommandPackagePathDescription" xml:space="preserve">
+    <value>Specify the path to the package</value>
+  </data>
 </root>
