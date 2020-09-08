@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI
     // PackageSolutionDetailControlModel or PackageDetailControlModel.
     public partial class DetailControl : UserControl
     {
-        private PackageManagerControl _control;
+        public PackageManagerControl Control { get; set; }
 
         public DetailControl()
         {
@@ -69,8 +69,8 @@ namespace NuGet.PackageManagement.UI
             if (model != null && model.SelectedVersion != null)
             {
                 var userAction = UserAction.CreateInstallAction(
-                model.Id,
-                model.SelectedVersion.Version);
+                    model.Id,
+                    model.SelectedVersion.Version);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -140,26 +140,6 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.RecommendPackages = model.RecommendPackages;
                     nugetUi.RecommenderVersion = model.RecommenderVersion;
                 });
-        }
-
-        public PackageManagerControl Control
-        {
-            get => _control;
-
-            set
-            {
-                if (_control == null)
-                {
-                    // register with the UI controller the first time we get the control model
-                    var controller = value.Model.UIController as NuGetUI;
-                    if (controller != null)
-                    {
-                        controller.DetailControl = this;
-                    }
-                }
-
-                _control = value;
-            }
         }
     }
 }

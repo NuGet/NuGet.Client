@@ -335,16 +335,6 @@ namespace NuGet.PackageManagement.UI
 
         internal PackageManagerControl PackageManagerControl { get; set; }
 
-        private DetailControl _detailControl;
-
-        internal DetailControl DetailControl
-        {
-            set
-            {
-                _detailControl = value;
-            }
-        }
-
         private void InvokeOnUIThread(Action action)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
