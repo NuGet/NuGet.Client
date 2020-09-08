@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Check if the project is not CPS capable or if it is CPS capable then it does not have TargetFramework(s), if so then return false
-            if (!hierarchy.IsCapabilityMatch("CPS"))
+            if (!VsHierarchyUtility.IsCPSCapabilityComplaint(hierarchy))
             {
                 return null;
             }
