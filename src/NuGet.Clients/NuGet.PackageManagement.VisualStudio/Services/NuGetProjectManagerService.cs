@@ -343,7 +343,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var projectAction = new ProjectAction(
                     CreateProjectActionId(),
                     projectId,
-                    packageIdentity,
+                    resolvedAction.Action.PackageIdentity,
                     resolvedAction.Action.NuGetProjectActionType,
                     implicitActions);
 
@@ -533,7 +533,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 else
                 {
                     throw new ArgumentException(
-                        string.Format(Strings.ProjectWithIdNotFound, CultureInfo.CurrentCulture, projectId),
+                        string.Format(CultureInfo.CurrentCulture, Strings.ProjectWithIdNotFound, projectId),
                         nameof(projectIds));
                 }
             }
