@@ -25,7 +25,7 @@
 
     <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
-    <VsTargetBranch>main</VsTargetBranch>
+    <VsTargetBranch>d16.8</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
 
     <!-- This branches are used for creating insertion PRs -->
