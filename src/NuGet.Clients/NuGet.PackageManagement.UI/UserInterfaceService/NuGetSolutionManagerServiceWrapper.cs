@@ -66,22 +66,52 @@ namespace NuGet.PackageManagement.UI
 
         private void RegisterEventHandlers()
         {
-            _service.AfterNuGetCacheUpdated += AfterNuGetCacheUpdated;
-            _service.AfterProjectRenamed += AfterProjectRenamed;
-            _service.ProjectAdded += ProjectAdded;
-            _service.ProjectRemoved += ProjectRemoved;
-            _service.ProjectRenamed += ProjectRenamed;
-            _service.ProjectUpdated += ProjectUpdated;
+            _service.AfterNuGetCacheUpdated += OnAfterNuGetCacheUpdated;
+            _service.AfterProjectRenamed += OnAfterProjectRenamed;
+            _service.ProjectAdded += OnProjectAdded;
+            _service.ProjectRemoved += OnProjectRemoved;
+            _service.ProjectRenamed += OnProjectRenamed;
+            _service.ProjectUpdated += OnProjectUpdated;
         }
 
         private void UnregisterEventHandlers()
         {
-            _service.AfterNuGetCacheUpdated -= AfterNuGetCacheUpdated;
-            _service.AfterProjectRenamed -= AfterProjectRenamed;
-            _service.ProjectAdded -= ProjectAdded;
-            _service.ProjectRemoved -= ProjectRemoved;
-            _service.ProjectRenamed -= ProjectRenamed;
-            _service.ProjectUpdated -= ProjectUpdated;
+            _service.AfterNuGetCacheUpdated -= OnAfterNuGetCacheUpdated;
+            _service.AfterProjectRenamed -= OnAfterProjectRenamed;
+            _service.ProjectAdded -= OnProjectAdded;
+            _service.ProjectRemoved -= OnProjectRemoved;
+            _service.ProjectRenamed -= OnProjectRenamed;
+            _service.ProjectUpdated -= OnProjectUpdated;
+        }
+
+        private void OnAfterNuGetCacheUpdated(object sender, string e)
+        {
+            AfterNuGetCacheUpdated?.Invoke(this, e);
+        }
+
+        private void OnAfterProjectRenamed(object sender, IProjectContextInfo e)
+        {
+            AfterProjectRenamed?.Invoke(this, e);
+        }
+
+        private void OnProjectAdded(object sender, IProjectContextInfo e)
+        {
+            ProjectAdded?.Invoke(this, e);
+        }
+
+        private void OnProjectRemoved(object sender, IProjectContextInfo e)
+        {
+            ProjectRemoved?.Invoke(this, e);
+        }
+
+        private void OnProjectRenamed(object sender, IProjectContextInfo e)
+        {
+            ProjectRenamed?.Invoke(this, e);
+        }
+
+        private void OnProjectUpdated(object sender, IProjectContextInfo e)
+        {
+            ProjectUpdated?.Invoke(this, e);
         }
 
         private sealed class NullNuGetSolutionManagerService : INuGetSolutionManagerService

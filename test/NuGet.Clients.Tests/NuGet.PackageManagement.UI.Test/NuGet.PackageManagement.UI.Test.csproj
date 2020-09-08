@@ -44,6 +44,7 @@
     <Compile Include="Models\PreviewWindowModelTests.cs" />
     <Compile Include="Models\DetailedPackageMetadataTests.cs" />
     <Compile Include="NuGetSettingsSerializerTests.cs" />
+    <Compile Include="NuGetSolutionManagerServiceWrapperTests.cs" />
     <Compile Include="PackageItemLoaderTests.cs" />
     <Compile Include="PackageLicenseUtilitiesTests.cs" />
     <Compile Include="PackageManagerListItemsTest.cs" />
