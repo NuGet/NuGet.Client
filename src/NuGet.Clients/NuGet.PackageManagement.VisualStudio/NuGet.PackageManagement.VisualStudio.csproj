@@ -124,13 +124,13 @@
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
-    <Compile Include="Projects\NetCorePackageReferenceProject.cs" />
+    <Compile Include="Projects\CpsPackageReferenceProject.cs" />
     <Compile Include="Projects\INuGetProjectProvider.cs" />
     <Compile Include="Projects\MSBuildNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectJsonProjectProvider.cs" />
     <Compile Include="Projects\ProjectKNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectSystemCache.cs" />
-    <Compile Include="Projects\NetCorePackageReferenceProjectProvider.cs" />
+    <Compile Include="Projects\CpsPackageReferenceProjectProvider.cs" />
     <Compile Include="Projects\ProjectProviderContext.cs" />
     <Compile Include="ProjectServices\VsProjectScriptHostService.cs" />
     <Compile Include="Prompts\DeprecatedFrameworkModel.cs" />

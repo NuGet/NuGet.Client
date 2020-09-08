@@ -19,12 +19,12 @@ using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Provides a method of creating <see cref="NetCorePackageReferenceProject"/> instance.
+    /// Provides a method of creating <see cref="CpsPackageReferenceProject"/> instance.
     /// </summary>
     [Export(typeof(INuGetProjectProvider))]
-    [Name(nameof(NetCorePackageReferenceProjectProvider))]
+    [Name(nameof(CpsPackageReferenceProjectProvider))]
     [Microsoft.VisualStudio.Utilities.Order(After = nameof(ProjectKNuGetProjectProvider))]
-    public class NetCorePackageReferenceProjectProvider : INuGetProjectProvider
+    public class CpsPackageReferenceProjectProvider : INuGetProjectProvider
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
 
@@ -32,14 +32,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
-        public RuntimeTypeHandle ProjectType => typeof(NetCorePackageReferenceProject).TypeHandle;
+        public RuntimeTypeHandle ProjectType => typeof(CpsPackageReferenceProject).TypeHandle;
 
         [ImportingConstructor]
-        public NetCorePackageReferenceProjectProvider(IProjectSystemCache projectSystemCache)
+        public CpsPackageReferenceProjectProvider(IProjectSystemCache projectSystemCache)
             : this(AsyncServiceProvider.GlobalProvider, projectSystemCache)
         { }
 
-        public NetCorePackageReferenceProjectProvider(
+        public CpsPackageReferenceProjectProvider(
             IAsyncServiceProvider vsServiceProvider,
             IProjectSystemCache projectSystemCache)
         {
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectServices = new NetCoreProjectSystemServices(vsProject, await _componentModel.GetValueAsync());
 
-            return new NetCorePackageReferenceProject(
+            return new CpsPackageReferenceProject(
                 vsProject.ProjectName,
                 vsProject.CustomUniqueName,
                 fullProjectPath,

@@ -230,7 +230,7 @@ namespace NuGet.SolutionRestoreManager
                     // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
                     // project in the solution. Extending this behavior to all solutions is tracked here:
                     // NuGet/Home#4478
-                    if (projects.OfType<NetCorePackageReferenceProject>().Any())
+                    if (projects.OfType<CpsPackageReferenceProject>().Any())
                     {
                         _restoreEventsPublisher.OnSolutionRestoreCompleted(
                             new SolutionRestoredEventArgs(_status, solutionDirectory));
