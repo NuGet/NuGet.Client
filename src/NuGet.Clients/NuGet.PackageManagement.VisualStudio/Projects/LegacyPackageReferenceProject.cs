@@ -338,6 +338,33 @@ namespace NuGet.PackageManagement.VisualStudio
             return settings.GetConfigFilePaths();
         }
 
+        // NOTES: Original
+        //private async Task<IEnumerable<PackageReference>> GetPackageReferencesAsync(PackageSpec packageSpec)
+        //{
+        //    var frameworkSorter = new NuGetFrameworkSorter();
+
+        //    var assetsFilePath = await GetAssetsFilePathAsync();
+        //    var fileInfo = new FileInfo(assetsFilePath);
+        //    PackageSpec assetsPackageSpec = default;
+        //    IList<LockFileTarget> targets = default;
+
+        //    if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified)
+        //    {
+        //        await TaskScheduler.Default;
+        //        var lockFile = new LockFileFormat().Read(assetsFilePath);
+        //        assetsPackageSpec = lockFile.PackageSpec;
+        //        targets = lockFile.Targets;
+
+        //        _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
+        //    }
+
+        //    return packageSpec
+        //       .TargetFrameworks
+        //       .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, assetsPackageSpec, targets))
+        //       .GroupBy(p => p.PackageIdentity)
+        //       .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
+        //}
+
         private async Task<IEnumerable<PackageReference>> GetPackageReferencesAsync(PackageSpec packageSpec)
         {
             var frameworkSorter = new NuGetFrameworkSorter();
@@ -357,18 +384,67 @@ namespace NuGet.PackageManagement.VisualStudio
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
             }
 
-            return packageSpec
+            var tfs = packageSpec.TargetFrameworks;
+
+            var returnStuff =  packageSpec
                .TargetFrameworks
                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, assetsPackageSpec, targets))
                .GroupBy(p => p.PackageIdentity)
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
+
+            return returnStuff;
         }
+
+        //private IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
+        //{
+        //    return libraries
+        //        .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
+        //        .Select(library => new BuildIntegratedPackageReference(library, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(library, targetFramework, assetsPackageSpec?.TargetFrameworks.FirstOrDefault(), targets, installedPackages)));
+        //}
 
         private IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
         {
-            return libraries
+            System.Diagnostics.Debug.Print("-- in GetPackageReferences --");
+
+            //Dictionary<string, VersionRange> dependentPackages = new Dictionary<string, VersionRange>();
+            //if (targets != null)
+            //{
+            //    foreach (LockFileTarget target in targets)
+            //    {
+            //        foreach (LockFileTargetLibrary lib in target.Libraries)
+            //        {
+            //            foreach (PackageDependency dep in lib.Dependencies)
+            //            {
+            //                dependentPackages[dep.Id] = dep.VersionRange;
+            //            }
+            //        }
+            //    }
+            //}
+
+            Dictionary<string, ProjectInstalledPackage> transitivePackages = new Dictionary<string, ProjectInstalledPackage>();
+            if (targets != null)
+            {
+                System.Diagnostics.Debug.Print("-- in targets --");
+                var transitive = targets
+                .SelectMany(t => t.Libraries)
+                .Where(l => l.Type == LibraryType.Package)
+                .SelectMany(l => l.Dependencies)
+                .Distinct()
+                .Select(library => GetPackageReferenceUtility.UpdateResolvedVersionTransitive(library, targetFramework, assetsPackageSpec?.TargetFrameworks.FirstOrDefault(), targets, transitivePackages))
+                .Select(pkgid => new PackageReference(pkgid, targetFramework));
+
+                //.Select(library => new PackageReference(GetPackageReferenceUtility.UpdateResolvedVersionTransitive(library, targetFramework, assetsPackageSpec?.TargetFrameworks.FirstOrDefault(), targets, transitivePackages), targetFramework));
+            }
+
+            //                .Where(l => l.Type == LibraryType.Package);
+
+            //                .Select(library => new BuildIntegratedPackageReference(library, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(library, targetFramework, assetsPackageSpec?.TargetFrameworks.FirstOrDefault(), targets, transitivedPackages)));
+
+            var libs = libraries
                 .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
                 .Select(library => new BuildIntegratedPackageReference(library, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(library, targetFramework, assetsPackageSpec?.TargetFrameworks.FirstOrDefault(), targets, installedPackages)));
+
+            return libs;
         }
 
         /// <summary>

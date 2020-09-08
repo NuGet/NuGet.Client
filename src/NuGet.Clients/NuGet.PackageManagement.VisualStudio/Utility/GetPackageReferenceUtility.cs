@@ -28,6 +28,8 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         {
             NuGetVersion resolvedVersion = default;
 
+            System.Diagnostics.Debug.Print("-- lib" + projectLibrary.Name + " --");
+
             // Returns the installed version if the package:
             // 1. Already exists in the installedPackages
             // 2. The range is the same as the installed one
@@ -58,9 +60,70 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             return new PackageIdentity(projectLibrary.Name, resolvedVersion);
         }
 
+        /// <summary>
+        /// Compares the project and the assets files returning the transitive package.
+        /// Assets information can be null and returns the package from the project files.
+        /// Checks if package already exists in the project and return it, otherwise update the project installed packages.
+        /// </summary>
+        /// <param name="projectLibrary">Library from the project file.</param>
+        /// <param name="targetFramework">Target framework from the project file.</param>
+        /// <param name="assetsTargetFrameworkInformation">Target framework information from the assets file.</param>
+        /// <param name="targets">Target assets file with the package information.</param>
+        /// <param name="installedPackages">Installed packages information from the project.</param>
+        internal static PackageIdentity UpdateResolvedVersionTransitive(PackageDependency dependencyLibrary, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IEnumerable<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> transitivePackages)
+        {
+            NuGetVersion resolvedVersion = default;
+
+            System.Diagnostics.Debug.Print("-- tr" + dependencyLibrary.Id + " --");
+
+            // Returns the installed version if the package:
+            // 1. Already exists in the installedPackages
+            // 2. The range is the same as the installed one
+            // 3. There are no changes in the assets file
+            if (transitivePackages.TryGetValue(dependencyLibrary.Id, out ProjectInstalledPackage installedVersion) && installedVersion.AllowedVersions.Equals(dependencyLibrary.VersionRange) && targets == null)
+            {
+                return installedVersion.InstalledPackage;
+            }
+
+            resolvedVersion = GetInstalledVersionTransitive(dependencyLibrary, targetFramework, assetsTargetFrameworkInformation, targets);
+
+            if (resolvedVersion == null)
+            {
+                resolvedVersion = dependencyLibrary.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
+            }
+
+            // Add or update the the version of the package in the project
+            if (transitivePackages.TryGetValue(dependencyLibrary.Id, out ProjectInstalledPackage installedPackage))
+            {
+                transitivePackages[dependencyLibrary.Id] = new ProjectInstalledPackage(dependencyLibrary.VersionRange, new PackageIdentity(dependencyLibrary.Id, resolvedVersion));
+            }
+            else
+            {
+                ProjectInstalledPackage newInstalledPackage = new ProjectInstalledPackage(dependencyLibrary.VersionRange, new PackageIdentity(dependencyLibrary.Id, resolvedVersion));
+                transitivePackages.Add(dependencyLibrary.Id, newInstalledPackage);
+            }
+
+            return new PackageIdentity(dependencyLibrary.Id, resolvedVersion);
+        }
+
         private static NuGetVersion GetInstalledVersion(LibraryDependency libraryProjectFile, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IEnumerable<LockFileTarget> targets)
         {
             LibraryDependency libraryAsset = assetsTargetFrameworkInformation?.Dependencies.FirstOrDefault(e => e.Name.Equals(libraryProjectFile.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (libraryAsset == null)
+            {
+                return null;
+            }
+
+            return targets
+                .FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
+                ?.Libraries
+                .FirstOrDefault(a => a.Name.Equals(libraryAsset.Name, StringComparison.OrdinalIgnoreCase))?.Version;
+        }
+
+        private static NuGetVersion GetInstalledVersionTransitive(PackageDependency dependencyLibrary, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IEnumerable<LockFileTarget> targets)
+        {
+            LibraryDependency libraryAsset = assetsTargetFrameworkInformation?.Dependencies.FirstOrDefault(e => e.Name.Equals(dependencyLibrary.Id, StringComparison.OrdinalIgnoreCase));
 
             if (libraryAsset == null)
             {
