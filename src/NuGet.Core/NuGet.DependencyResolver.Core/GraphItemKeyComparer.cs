@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace NuGet.DependencyResolver
 {
+    /// <summary>
+    /// A <see cref="GraphItem{T}"/> Key based comparer. Two instances are equal only if the Keys are equal.
+    /// </summary>
     public sealed class GraphItemKeyComparer<T> : IEqualityComparer<GraphItem<T>>
     {
 #pragma warning disable IDE1006 // Naming Styles
