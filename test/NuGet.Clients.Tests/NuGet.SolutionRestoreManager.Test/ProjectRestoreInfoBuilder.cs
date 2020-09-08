@@ -214,7 +214,7 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             if (framework.HasPlatform)
             {
-                return $"{framework.Platform} Version=v{GetDisplayVersion(framework.PlatformVersion)}";
+                return framework.DotNetPlatformName;
             }
             return null;
         }
