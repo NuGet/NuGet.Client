@@ -113,7 +113,7 @@ namespace NuGet.VisualStudio
         /// Check for CPS capability in IVsHierarchy. All CPS projects will have CPS capability except VisualC projects.
         /// So checking for VisualC explicitly with a OR flag.
         /// </summary>
-        public static bool IsCPSCapabilityComplaint(IVsHierarchy hierarchy)
+        public static bool IsCPSCapabilityCompliant(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Check if the project is not CPS capable or if it is CPS capable that its opt'd in PackageReferences
-            if (!VsHierarchyUtility.IsCPSCapabilityComplaint(hierarchy) &&
+            if (!VsHierarchyUtility.IsCPSCapabilityCompliant(hierarchy) ||
                 !VsHierarchyUtility.IsProjectCapabilityCompliant(hierarchy))
             {
                 return null;
@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var buildProperties = vsProject.BuildProperties;
 
-            // read MSBuild property RestoreProjectStyle, TargetFramework, and TargetFrameworks
+            // read MSBuild property RestoreProjectStyle
             var restoreProjectStyle = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestoreProjectStyle);
 
             // check for RestoreProjectStyle property is set and if not set to PackageReference then return false

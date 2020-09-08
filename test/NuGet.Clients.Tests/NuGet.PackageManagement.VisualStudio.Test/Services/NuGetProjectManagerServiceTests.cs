@@ -144,7 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 nuGetProjectServices.SetupGet(x => x.ScriptService)
                     .Returns(Mock.Of<IProjectScriptHostService>());
 
-                var project = new NetCorePackageReferenceProject(
+                var project = new CpsPackageReferenceProject(
                     projectName: projectName,
                     projectUniqueName: projectFullPath,
                     projectFullPath: projectFullPath,
