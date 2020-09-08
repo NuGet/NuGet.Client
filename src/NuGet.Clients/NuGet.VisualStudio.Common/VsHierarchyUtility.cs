@@ -77,7 +77,9 @@ namespace NuGet.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            return hierarchy.IsCapabilityMatch("AssemblyReferences + DeclaredSourceItems + UserSourceItems");
+            // NOTE: (AssemblyReferences + DeclaredSourceItems + UserSourceItems) exists solely for compatibility reasons
+            // with existing custom CPS-based projects that existed before "PackageReferences" capability was introduced.
+            return hierarchy.IsCapabilityMatch("(AssemblyReferences + DeclaredSourceItems + UserSourceItems) | PackageReferences");
         }
 
         public static bool HasUnsupportedProjectCapability(IVsHierarchy hierarchy)
