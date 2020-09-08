@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.SolutionManager)
                 .Returns(solutionManager);
 
-            var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
+            var source1 = new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json", "NuGetBuild");
             var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.SolutionManager)
                 .Returns(solutionManager);
 
-            var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
+            var source1 = new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json", "NuGetBuild");
             var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
