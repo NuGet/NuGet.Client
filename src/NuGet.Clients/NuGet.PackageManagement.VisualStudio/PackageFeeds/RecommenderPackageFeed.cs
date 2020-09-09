@@ -90,7 +90,14 @@ namespace NuGet.PackageManagement.VisualStudio
             // get recommender service and version info
             if (NuGetRecommender == null)
             {
-                NuGetRecommender = await _nuGetRecommender.GetValueAsync();
+                try
+                {
+                    NuGetRecommender = await _nuGetRecommender.GetValueAsync();
+                }
+                catch(ServiceUnavailableException)
+                {
+                    // if the recommender service is not available, NuGetRecommender remains null and we show only the default package list
+                }
                 if (NuGetRecommender != null)
                 {
                     var VersionDict = NuGetRecommender.GetVersionInfo();
