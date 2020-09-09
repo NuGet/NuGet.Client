@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -2986,6 +2987,71 @@ namespace NuGet.Commands.FuncTest
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue(because: logger.ShowMessages());
                 result.Should().BeAssignableTo<NoOpRestoreResult>(because: "This should be a no-op restore.");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WhenPlatformVersionIsEmpty_ThrowsError()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            using (var context = new SourceCacheContext())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""frameworks"": {
+                        ""net5.0-windows"": {
+                            ""dependencies"": {
+                                ""A"": {
+                                    ""version"" : ""1.0.0"",
+                                }
+                            }
+                        }
+                    }
+                }");
+
+                // Arrange
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+                packageA.Files.Clear();
+                packageA.AddFile("lib/net5.0-windows/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+                var logger = new TestLogger();
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
+                var dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(spec);
+                dgSpec.AddRestore(spec.Name);
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    DependencyGraphSpec = dgSpec,
+                    AllowNoOp = true,
+                };
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.False(result.Success);
+                Assert.Equal(1, logger.ErrorMessages.Count);
+                logger.ErrorMessages.TryDequeue(out var errorMessage);
+                Assert.True(errorMessage.Contains("platform version"));
+                var messagesForNU1012 = result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1012);
+                Assert.Equal(1, messagesForNU1012.Count());
             }
         }
 

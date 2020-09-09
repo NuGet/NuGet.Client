@@ -992,7 +992,7 @@ namespace NuGet.Commands
         private bool BuildSymbolsPackage(string path)
         {
             PackageBuilder symbolsBuilder = CreatePackageBuilderFromNuspec(path);
-            if (_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg) // Snupkgs can only have 1 PackageType. 
+            if (_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg) // Snupkgs can only have 1 PackageType.
             {
                 symbolsBuilder.PackageTypes.Clear();
                 symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);

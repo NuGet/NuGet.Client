@@ -181,6 +181,8 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
+                _success &= HasValidPlatformVersions();
+
                 // evaluate packages.lock.json file
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
                 var isLockFileValid = false;
@@ -401,6 +403,23 @@ namespace NuGet.Commands
                     dependencyGraphSpec: _request.DependencyGraphSpec,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
+            }
+        }
+
+        private bool HasValidPlatformVersions()
+        {
+            IEnumerable<NuGetFramework> badPlatforms = _request.Project.TargetFrameworks.Select(tfm => tfm.FrameworkName).Where(fw => !string.IsNullOrEmpty(fw.Platform) && (fw.PlatformVersion == FrameworkConstants.EmptyVersion));
+            if (badPlatforms.Any())
+            {
+                foreach (NuGetFramework fw in badPlatforms)
+                {
+                    _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.Error_PlatformVersionNotPresent, fw.Framework, fw.Platform)));
+                }
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -627,7 +646,7 @@ namespace NuGet.Commands
             {
                 if (!noOp)
                 {
-                    // Clean up to preserve the pre no-op behavior. This should not be used, but we want to be cautious. 
+                    // Clean up to preserve the pre no-op behavior. This should not be used, but we want to be cautious.
                     _request.LockFilePath = null;
                     _request.Project.RestoreMetadata.CacheFilePath = null;
                 }
@@ -727,7 +746,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Check if the given graphs are valid and log errors/warnings.
         /// If fatal errors are encountered the rest of the errors/warnings
-        /// are not logged. This is to avoid flooding the log with long 
+        /// are not logged. This is to avoid flooding the log with long
         /// dependency chains for every package.
         /// </summary>
         private async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
@@ -1108,7 +1127,7 @@ namespace NuGet.Commands
             else
             {
                 // External references were passed, but the top level project wasn't found.
-                // This is always due to an internal issue and typically caused by errors 
+                // This is always due to an internal issue and typically caused by errors
                 // building the project closure.
                 Debug.Fail("RestoreRequest.ExternalProjects contains references, but does not contain the top level references. Add the project we are restoring for.");
                 throw new InvalidOperationException($"Missing external reference metadata for {_request.Project.Name}");
