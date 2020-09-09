@@ -410,7 +410,7 @@ namespace NuGet.Build.Tasks.Pack
                 var finalOutputPath = assembly.GetProperty("FinalOutputPath");
 
                 // Fallback to using Identity if FinalOutputPath is not set.
-                // See bug https://github.com/NuGet/Home/issues/5408
+                // See bug https://github.com/NuGet/Home/issues/5408 
                 if (string.IsNullOrEmpty(finalOutputPath))
                 {
                     finalOutputPath = assembly.GetProperty(IdentityProperty);
@@ -435,18 +435,6 @@ namespace NuGet.Build.Tasks.Pack
                 if (string.IsNullOrEmpty(targetFramework) || NuGetFramework.Parse(targetFramework).IsSpecificFramework == false)
                 {
                     throw new PackagingException(NuGetLogCode.NU5027, string.Format(CultureInfo.CurrentCulture, Strings.InvalidTargetFramework, finalOutputPath));
-                }
-
-                if (!string.IsNullOrEmpty(targetFramework))
-                {
-                    var fw = NuGetFramework.Parse(targetFramework);
-                    if (fw.HasPlatform && fw.PlatformVersion == FrameworkConstants.EmptyVersion)
-                    {
-                        throw new PackagingException(
-                            NuGetLogCode.NU1012,
-                            string.Format(CultureInfo.CurrentCulture, Strings.InvalidPlatformVersion, targetFramework)
-                        );
-                    }
                 }
 
                 assemblies.Add(new OutputLibFile()
@@ -667,7 +655,7 @@ namespace NuGet.Build.Tasks.Pack
                     var newTargetPath = Path.Combine(targetPath, identity);
                     // We need to do this because evaluated identity in the above line of code can be an empty string
                     // in the case when the original identity string was the absolute path to a file in project directory, and is in
-                    // the same directory as the csproj file.
+                    // the same directory as the csproj file. 
                     newTargetPath = PathUtility.EnsureTrailingSlash(newTargetPath);
                     newTargetPaths.Add(newTargetPath);
                 }
@@ -825,7 +813,7 @@ namespace NuGet.Build.Tasks.Pack
 
                     var versionToUse = new VersionRange(targetLibrary.Version);
 
-                    // Use the project reference version obtained at build time if it exists, otherwise fallback to the one in assets file.
+                    // Use the project reference version obtained at build time if it exists, otherwise fallback to the one in assets file. 
                     if (projectRefToVersionMap.TryGetValue(projectReference.ProjectPath, out var projectRefVersion))
                     {
                         versionToUse = VersionRange.Parse(projectRefVersion, allowFloating: false);
@@ -884,7 +872,7 @@ namespace NuGet.Build.Tasks.Pack
                 // Add each package dependency.
                 foreach (var packageDependency in packageDependencies)
                 {
-                    // If we have a floating package dependency like 1.2.3-xyz-*, we
+                    // If we have a floating package dependency like 1.2.3-xyz-*, we 
                     // use the version of the package that restore resolved it to.
                     if (packageDependency.LibraryRange.VersionRange.IsFloating)
                     {
