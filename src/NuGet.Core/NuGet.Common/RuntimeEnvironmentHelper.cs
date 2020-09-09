@@ -23,6 +23,11 @@ namespace NuGet.Common
 
         private static Lazy<bool> _isRunningInVisualStudio = new Lazy<bool>(() =>
         {
+            if (!IsWindows)
+            {
+                return false;
+            }
+
             var currentProcessName = Path.GetFileNameWithoutExtension(GetCurrentProcessFilePath());
 
             return VisualStudioProcesses.Any(
