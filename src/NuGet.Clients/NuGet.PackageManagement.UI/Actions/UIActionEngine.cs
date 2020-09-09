@@ -802,7 +802,8 @@ namespace NuGet.PackageManagement.UI
             return results;
         }
 
-        private static async ValueTask<IReadOnlyList<PreviewResult>> GetPreviewResultsAsync(
+        // Non-private only to facilitate testing.
+        internal static async ValueTask<IReadOnlyList<PreviewResult>> GetPreviewResultsAsync(
             INuGetProjectManagerService projectManagerService,
             IReadOnlyList<ProjectAction> projectActions,
             CancellationToken cancellationToken)
@@ -845,11 +846,11 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (ProjectAction action in actions)
                 {
-                    PackageIdentity packageIdentity = action.PackageIdentity;
+                    // Create new identities without the dependency graph
+                    var packageIdentity = new PackageIdentity(action.PackageIdentity.Id, action.PackageIdentity.Version);
 
                     packageIds.Add(packageIdentity.Id);
 
-                    // Create new identities without the dependency graph
                     if (action.ProjectActionType == NuGetProjectActionType.Install)
                     {
                         installed[packageIdentity.Id] = packageIdentity;
