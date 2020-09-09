@@ -90,11 +90,10 @@ namespace NuGet.Commands
                 targetPlatformVersion,
                 targetPlatformMinVersion,
                 isXnaWindowsPhoneProject,
-                isManagementPackProject)
-                .Select(e => e.DotNetFrameworkName);
+                isManagementPackProject);
         }
 
-        internal static IEnumerable<NuGetFramework> GetProjectFrameworks(
+        internal static IEnumerable<string> GetProjectFrameworks(
             string projectFilePath,
             string targetFrameworks,
             string targetFramework,
@@ -113,7 +112,7 @@ namespace NuGet.Commands
 
             if (frameworks.Count > 0)
             {
-                return frameworks.Select(e => NuGetFramework.Parse(e));
+                return frameworks;
             }
 
             // TargetFramework property
@@ -123,10 +122,10 @@ namespace NuGet.Commands
             {
                 frameworks.Add(currentFrameworkString);
 
-                return frameworks.Select(e => NuGetFramework.Parse(e));
+                return frameworks;
             }
 
-            return new NuGetFramework[] { GetProjectFramework(
+            return new string[] { GetProjectFramework(
                 projectFilePath,
                 targetFrameworkMoniker,
                 targetPlatformMoniker,
@@ -134,7 +133,7 @@ namespace NuGet.Commands
                 targetPlatformVersion,
                 targetPlatformMinVersion,
                 isXnaWindowsPhoneProject,
-                isManagementPackProject) };
+                isManagementPackProject).DotNetFrameworkName };
         }
 
         internal static NuGetFramework GetProjectFramework(
