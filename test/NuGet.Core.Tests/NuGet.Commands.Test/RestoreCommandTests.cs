@@ -1825,6 +1825,87 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public async Task RestoreCommand_CentralVersion_Multitargeting_NoFailureSamePackageInTwoFrameworsDirectAndTransitive()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var projectName = "TestProject";
+                var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+
+                // net472 will have packageA as direct dependency that has packageB as transitive
+                // netstandard1.1 will have packageB as direct dependency 
+                var project1Json = @"
+                {
+                  ""version"": ""1.0.0"",
+                    ""restore"": {
+                                    ""projectUniqueName"": ""TestProject"",
+                                    ""centralPackageVersionsManagementEnabled"": true
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""packageA"": {
+                                    ""version"": ""[2.0.0)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""packageA"": ""[2.0.0)"",
+                            ""packageB"": ""[2.0.0)""
+                        }
+                    },
+                    ""netstandard1.1"": {
+                        ""dependencies"": {
+                                ""packageB"": {
+                                    ""version"": ""[2.0.0)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""packageA"": ""[2.0.0)"",
+                            ""packageB"": ""[2.0.0)""
+                        }
+                    }
+                  }
+                }";
+
+                var packageA_Version200 = new SimpleTestPackageContext("packageA", "2.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                packageA_Version200.Dependencies.Add(packageB_Version200);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version200,
+                    packageB_Version200
+                    );
+
+                // set up the project
+                var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, Path.Combine(projectPath, $"{projectName}.json")).WithTestRestoreMetadata();
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.True(result.Success);
+            }
+        }
+
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
