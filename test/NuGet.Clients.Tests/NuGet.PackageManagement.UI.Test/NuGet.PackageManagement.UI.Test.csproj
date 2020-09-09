@@ -30,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\AccessiblePackageIdentityTests.cs" />
+    <Compile Include="Actions\UIActionEngineTests.cs" />
     <Compile Include="Actions\UpdatePreviewResultTests.cs" />
     <Compile Include="Converters\IconUrlToImageCacheConverterTests.cs" />
     <Compile Include="Converters\DateTimeConverterTests.cs" />
