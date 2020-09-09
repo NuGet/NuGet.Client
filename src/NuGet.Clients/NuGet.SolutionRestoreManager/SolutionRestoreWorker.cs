@@ -30,31 +30,11 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.Shared)]
     internal sealed class SolutionRestoreWorker : SolutionEventsListener, ISolutionRestoreWorker, IDisposable
     {
-        private int _idleTimeoutMs = IdleTimeoutCalculator.Value;
+        private const int IdleTimeoutMs = 400;
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
-        private int _delayAutoRestoreRetries = DelayAutoRestoreRetriesCalculator.Value;
+        private const int DelayAutoRestoreRetries = 50;	        
         private const int DelaySolutionLoadRetry = 100;
-
-        private static readonly Lazy<int> IdleTimeoutCalculator = new Lazy<int>(() =>
-        {
-            var idleTimeoutValue = Common.EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_IDLE_TIMEOUT");
-            if (int.TryParse(idleTimeoutValue, out int idleTimeout))
-            {
-                return idleTimeout;
-            }
-            return 400;
-        });
-
-        private static readonly Lazy<int> DelayAutoRestoreRetriesCalculator = new Lazy<int>(() =>
-        {
-            var idleTimeoutValue = Common.EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_SOLUTION_LOAD_RETRY_COUNT");
-            if (int.TryParse(idleTimeoutValue, out int idleTimeout))
-            {
-                return idleTimeout;
-            }
-            return 50;
-        });
 
         private readonly object _lockPendingRequestsObj = new object();
 
