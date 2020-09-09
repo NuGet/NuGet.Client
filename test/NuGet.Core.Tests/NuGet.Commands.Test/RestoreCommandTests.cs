@@ -1743,7 +1743,7 @@ namespace NuGet.Commands.Test
                 packageSpec.FilePath = projectPath;
 
                 var dgspec = new DependencyGraphSpec();
-                dgspec.AddProject(packageSpec);
+                dgspec.AddProject(packageSpec.WithCentralVersionInformation());
 
                 var sources = new List<PackageSource>();
                 var logger = new TestLogger();
@@ -1800,7 +1800,7 @@ namespace NuGet.Commands.Test
                 packageSpec.FilePath = projectPath;
 
                 var dgspec = new DependencyGraphSpec();
-                dgspec.AddProject(packageSpec);
+                dgspec.AddProject(packageSpec.WithCentralVersionInformation());
 
                 var sources = new List<PackageSource>();
                 var logger = new TestLogger();

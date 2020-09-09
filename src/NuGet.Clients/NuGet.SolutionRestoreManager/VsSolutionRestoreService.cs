@@ -200,7 +200,7 @@ namespace NuGet.SolutionRestoreManager
                 ToPackageSpec(projectNames, projectRestoreInfo2.TargetFrameworks, projectRestoreInfo2.OriginalTargetFrameworks, projectRestoreInfo2.BaseIntermediatePath);
 
             dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-            dgSpec.AddProject(packageSpec);
+            dgSpec.AddProject(packageSpec.WithCentralVersionInformation());
 
             if (projectRestoreInfo != null && projectRestoreInfo.ToolReferences != null)
             {

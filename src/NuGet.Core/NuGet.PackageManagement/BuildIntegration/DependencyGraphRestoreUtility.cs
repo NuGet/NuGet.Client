@@ -339,7 +339,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var packageSpec in packageSpecs)
                 {
-                    dgSpec.AddProject(packageSpec);
+                    dgSpec.AddProject(packageSpec.WithCentralVersionInformation());
 
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
                         packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
@@ -369,7 +369,7 @@ namespace NuGet.PackageManagement
                                                 // Include all the missing projects from the closure.
                                                 // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
                                                 knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
-                                                dgSpec.AddProject(dependentPackageSpec);
+                                                dgSpec.AddProject(dependentPackageSpec.WithCentralVersionInformation());
                                             }
                                         }
                                     }

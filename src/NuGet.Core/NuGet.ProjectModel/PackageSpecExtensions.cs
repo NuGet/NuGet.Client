@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 
 namespace NuGet.ProjectModel
 {
@@ -42,6 +43,32 @@ namespace NuGet.ProjectModel
             }
 
             return frameworkInfo ?? new ProjectRestoreMetadataFrameworkInfo();
+        }
+
+        /// <summary>
+        /// Merge the CentralVersion information to the package reference information.
+        /// </summary>
+        /// <param name="project">The package spec to update.</param>
+        /// <returns>The updated package spec.</returns>
+        public static PackageSpec WithCentralVersionInformation(this PackageSpec project)
+        {
+            if (project.RestoreMetadata != null && project.RestoreMetadata.CentralPackageVersionsEnabled)
+            {
+                foreach (var tfm in project.TargetFrameworks)
+                {
+                    foreach (LibraryDependency d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
+                    {
+                        if (tfm.CentralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
+                        {
+                            d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
+                        }
+
+                        d.VersionCentrallyManaged = true;
+                    }
+                }
+            }
+
+            return project;
         }
     }
 }

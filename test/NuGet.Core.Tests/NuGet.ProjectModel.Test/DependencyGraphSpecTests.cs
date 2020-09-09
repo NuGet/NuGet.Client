@@ -634,6 +634,44 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddProject_DoesNotClone(bool cpvmEnabled)
+        {
+            // Arrange
+            var dependencyFoo = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("foo", versionRange: cpvmEnabled ? null : VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+            };
+
+            var centralVersions = cpvmEnabled
+                ? new List<CentralPackageVersion>() { new CentralPackageVersion("foo", VersionRange.Parse("1.0.0")) }
+                : new List<CentralPackageVersion>();
+
+            var tfi = CreateTargetFrameworkInformation(
+                new List<LibraryDependency>() { dependencyFoo },
+                centralVersions);
+
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi }).WithCentralVersionInformation();
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
+            {
+                ProjectUniqueName = "a",
+                CentralPackageVersionsEnabled = cpvmEnabled
+            };
+
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore("a");
+            dgSpec.AddProject(packageSpec);
+
+            // Act 
+            var packageSpecFromDGSpec = dgSpec.GetProjectSpec("a");
+            bool result = packageSpec.Equals(packageSpecFromDGSpec);
+
+            // Assert
+             Assert.True(result);
+        }
+
+        [Theory]
         [InlineData(null)]
         [InlineData("")]
         public void CreateFromClosure_WhenProjectUniqueNameIsNullOrEmpty_Throws(string projectUniqueName)
@@ -731,7 +769,7 @@ namespace NuGet.ProjectModel.Test
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");
-            dgSpec.AddProject(packageSpec);
+            dgSpec.AddProject(packageSpec.WithCentralVersionInformation());
             return dgSpec;
         }
 

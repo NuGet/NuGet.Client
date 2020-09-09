@@ -100,7 +100,7 @@ namespace NuGet.Commands
                     validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
                 }
 
-                graphSpec.AddProject(spec);
+                graphSpec.AddProject(spec.WithCentralVersionInformation());
             }
 
             // Fix project reference casings to match the original project on case insensitive file systems.

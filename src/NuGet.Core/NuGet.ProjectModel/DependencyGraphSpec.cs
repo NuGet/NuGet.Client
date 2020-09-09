@@ -246,34 +246,8 @@ namespace NuGet.ProjectModel
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
-                PackageSpec projectToRestore = projectSpec;
-
-                if (projectSpec.RestoreMetadata != null && projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
-                {
-                    projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
-                }
-
-                _projects.Add(projectUniqueName, projectToRestore);
+                _projects.Add(projectUniqueName, projectSpec);
             }
-        }
-
-        private PackageSpec ToPackageSpecWithCentralVersionInformation(PackageSpec spec)
-        {
-            var newSpec = spec.Clone();
-            foreach (var tfm in newSpec.TargetFrameworks)
-            {
-                foreach (LibraryDependency d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
-                {
-                    if (tfm.CentralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
-                    {
-                        d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
-                    }
-
-                    d.VersionCentrallyManaged = true;
-                }
-            }
-
-            return newSpec;
         }
 
         public static DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs)
