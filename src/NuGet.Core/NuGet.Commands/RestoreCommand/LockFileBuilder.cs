@@ -59,7 +59,7 @@ namespace NuGet.Commands
             var libraryItems = targetGraphs
                 .SelectMany(g => g.Flattened) // All GraphItem<RemoteResolveResult> resolved in the graph.
                 .Distinct(GraphItemKeyComparer<RemoteResolveResult>.Instance) // Distinct list of GraphItems. Two items are equal only if the itmes' Keys are equal.
-                .OrderBy(x => x.Data.Match.Library); 
+                .OrderBy(x => x.Data.Match.Library);
             foreach (var item in libraryItems)
             {
                 var library = item.Data.Match.Library;

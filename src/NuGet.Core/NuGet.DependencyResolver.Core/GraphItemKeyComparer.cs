@@ -11,9 +11,7 @@ namespace NuGet.DependencyResolver
     /// </summary>
     public sealed class GraphItemKeyComparer<T> : IEqualityComparer<GraphItem<T>>
     {
-#pragma warning disable IDE1006 // Naming Styles
-        private static readonly Lazy<GraphItemKeyComparer<T>> _defaultComparer = new Lazy<GraphItemKeyComparer<T>>(() => new GraphItemKeyComparer<T>());
-#pragma warning restore IDE1006 // Naming Styles
+        private static readonly Lazy<GraphItemKeyComparer<T>> DefaultComparer = new Lazy<GraphItemKeyComparer<T>>(() => new GraphItemKeyComparer<T>());
 
         /// <summary>
         /// Returns a singleton instance for the <see cref="GraphItemKeyComparer"/>.
@@ -22,7 +20,7 @@ namespace NuGet.DependencyResolver
         {
             get
             {
-                return _defaultComparer.Value;
+                return DefaultComparer.Value;
             }
         }
 

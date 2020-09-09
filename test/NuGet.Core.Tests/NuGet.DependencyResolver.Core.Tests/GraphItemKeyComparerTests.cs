@@ -16,7 +16,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         public void Equals_GraphItemsAreEqualOnlyIfKeysAreEqual(GraphItem<string> item1, GraphItem<string> item2, bool expectedResult)
         {
             // Assert
-            if(expectedResult)
+            if (expectedResult)
             {
                 Assert.True(GraphItemKeyComparer<string>.Instance.Equals(item1, item2));
                 Assert.Equal(GraphItemKeyComparer<string>.Instance.GetHashCode(item1), GraphItemKeyComparer<string>.Instance.GetHashCode(item2));
