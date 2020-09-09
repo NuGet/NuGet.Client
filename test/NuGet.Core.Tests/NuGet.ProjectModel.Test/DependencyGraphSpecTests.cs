@@ -665,10 +665,9 @@ namespace NuGet.ProjectModel.Test
 
             // Act 
             var packageSpecFromDGSpec = dgSpec.GetProjectSpec("a");
-            bool result = packageSpec.Equals(packageSpecFromDGSpec);
 
             // Assert
-             Assert.True(result);
+            Assert.True(packageSpec.Equals(packageSpecFromDGSpec));
         }
 
         [Theory]
