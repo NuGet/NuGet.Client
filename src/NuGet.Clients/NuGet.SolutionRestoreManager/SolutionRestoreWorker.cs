@@ -17,6 +17,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
+using Test.Utility;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -29,11 +30,31 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.Shared)]
     internal sealed class SolutionRestoreWorker : SolutionEventsListener, ISolutionRestoreWorker, IDisposable
     {
-        private const int IdleTimeoutMs = 400;
+        private int _idleTimeoutMs = IdleTimeoutCalculator.Value;
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
-        private const int DelayAutoRestoreRetries = 50;
+        private int _delayAutoRestoreRetries = DelayAutoRestoreRetriesCalculator.Value;
         private const int DelaySolutionLoadRetry = 100;
+
+        private static readonly Lazy<int> IdleTimeoutCalculator = new Lazy<int>(() =>
+        {
+            var idleTimeoutValue = Common.EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_IDLE_TIMEOUT");
+            if (int.TryParse(idleTimeoutValue, out int idleTimeout))
+            {
+                return idleTimeout;
+            }
+            return 400;
+        });
+
+        private static readonly Lazy<int> DelayAutoRestoreRetriesCalculator = new Lazy<int>(() =>
+        {
+            var idleTimeoutValue = Common.EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_SOLUTION_LOAD_RETRY_COUNT");
+            if (int.TryParse(idleTimeoutValue, out int idleTimeout))
+            {
+                return idleTimeout;
+            }
+            return 50;
+        });
 
         private readonly object _lockPendingRequestsObj = new object();
 
@@ -288,6 +309,8 @@ namespace NuGet.SolutionRestoreManager
         public async Task<bool> ScheduleRestoreAsync(
             SolutionRestoreRequest request, CancellationToken token)
         {
+            NuGetFileLogger.DefaultInstance.Write($"A solution restore request was received for Source: {request.RestoreSource}, Project: {request.OriginalProject}");
+
             if (token.IsCancellationRequested)
             {
                 return false;
@@ -422,16 +445,19 @@ namespace NuGet.SolutionRestoreManager
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
         }
 
+
         private async Task<bool> StartBackgroundJobRunnerAsync(CancellationToken token)
         {
             // Hops onto a background pool thread
             await TaskScheduler.Default;
+            NuGetFileLogger.DefaultInstance.Write("StartBackgroundJobRunnerAsync - On a background thread.");
 
             var status = false;
 
             // Check if the solution is fully loaded
             while (!_solutionLoadedEvent.IsSet)
             {
+                NuGetFileLogger.DefaultInstance.Write("StartBackgroundJobRunnerAsync - Waiting for the solution loaded event to be set!");
                 // Needed when OnAfterBackgroundSolutionLoadComplete fires before
                 // Advise has been called.
                 if (await IsSolutionFullyLoadedAsync())
@@ -467,7 +493,9 @@ namespace NuGet.SolutionRestoreManager
                     {
                         // Blocks the execution until first request is scheduled
                         // Monitors the cancelllation token as well.
+                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Take queue count: {_pendingRequests.Value.Count}");
                         var request = _pendingRequests.Value.Take(token);
+                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Done with Take! Project:{request.OriginalProject}");
 
                         token.ThrowIfCancellationRequested();
 
@@ -478,6 +506,7 @@ namespace NuGet.SolutionRestoreManager
                         token.ThrowIfCancellationRequested();
 
                         var retries = 0;
+                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - About to start draining the queue retries: {retries}, queue count: {_pendingRequests.Value.Count}");
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
@@ -487,11 +516,13 @@ namespace NuGet.SolutionRestoreManager
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
+                            NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - TryTake, AllProjectsNominated{isAllProjectsNominated}, queue count: {_pendingRequests.Value.Count}");
                             // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
                             if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
                             {
                                 if (isAllProjectsNominated)
                                 {
+                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - AllProjectsNominated, queue count: {_pendingRequests.Value.Count}");
                                     // if we've got all the nominations then continue with the auto restore
                                     break;
                                 }
@@ -499,10 +530,12 @@ namespace NuGet.SolutionRestoreManager
                                 {
                                     if (retries >= DelayAutoRestoreRetries)
                                     {
+                                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Break, done waiting {retries} >= {_delayAutoRestoreRetries}");
                                         // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
                                         // we wait until 20 secs for all the projects to be nominated at solution load.
                                         break;
                                     }
+                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - we're still expecting nominations. Bumping retries {retries} >= {_delayAutoRestoreRetries}");
                                     // if we're still expecting some nominations and also haven't reached our max timeout
                                     // then increase the retries count.
                                     retries++;
@@ -511,9 +544,11 @@ namespace NuGet.SolutionRestoreManager
                             }
                             else
                             {
+                                NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Pulled a request for {next.OriginalProject}, queue count: {_pendingRequests.Value.Count}");
                                 // Upgrade request if necessary
                                 if (next != null && next.RestoreSource != request.RestoreSource)
                                 {
+                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Upgrading request");
                                     // there could be requests of two types: Auto-Restore or Explicit
                                     // Explicit is always preferred.
                                     request = new SolutionRestoreRequest(
@@ -535,6 +570,7 @@ namespace NuGet.SolutionRestoreManager
 
                         token.ThrowIfCancellationRequested();
 
+                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Starting processing of restore request");
                         // Runs restore job with scheduled request params
                         status = await ProcessRestoreRequestAsync(restoreOperation, request, token);
 
