@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                    NuGetRecommender = await _nuGetRecommender.GetValueAsync();
+                    NuGetRecommender = await _nuGetRecommender.GetValueAsync(cancellationToken);
                 }
                 catch(ServiceUnavailableException)
                 {
