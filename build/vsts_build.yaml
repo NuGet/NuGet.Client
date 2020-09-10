@@ -266,7 +266,7 @@ jobs:
 
   - task: MSBuild@1
     displayName: "Run unit tests"
-    continueOnError: "$(IsOfficialBuild)"
+    continueOnError: $(IsOfficialBuild)
     inputs:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
@@ -667,7 +667,7 @@ jobs:
 
   - task: MSBuild@1
     displayName: "Run Functional Tests"
-    continueOnError: "$(IsOfficialBuild)"
+    continueOnError: $(IsOfficialBuild)
     inputs:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
@@ -676,7 +676,7 @@ jobs:
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
-    continueOnError: "$(IsOfficialBuild)"
+    continueOnError: $(IsOfficialBuild)
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
@@ -736,7 +736,7 @@ jobs:
 
   - task: ShellScript@2
     displayName: "Run Tests"
-    continueOnError: "$(IsOfficialBuild)"
+    continueOnError: $(IsOfficialBuild)
     inputs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
@@ -808,7 +808,7 @@ jobs:
 
   - task: ShellScript@2
     displayName: "Run Tests"
-    continueOnError: "$(IsOfficialBuild)"
+    continueOnError: $(IsOfficialBuild)
     inputs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
@@ -913,7 +913,7 @@ jobs:
   - task: PowerShell@1
     displayName: "RunFunctionalTests.ps1"
     timeoutInMinutes: 75
-    continueOnError: "$(IsOfficialBuild)"
+    continueOnError: $(IsOfficialBuild)
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
       arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
@@ -1057,7 +1057,7 @@ jobs:
   - task: MSBuild@1
     displayName: "Run Apex Tests"
     timeoutInMinutes: 45
-    continueOnError: "$(IsOfficialBuild)"
+    continueOnError: $(IsOfficialBuild)
     inputs:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
