@@ -21,7 +21,6 @@ using NuGet.ProjectModel;
 using NuGet.Shared;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using Test.Utility;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.SolutionRestoreManager

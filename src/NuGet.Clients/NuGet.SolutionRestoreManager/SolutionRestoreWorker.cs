@@ -17,7 +17,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
-using Test.Utility;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -510,12 +509,12 @@ namespace NuGet.SolutionRestoreManager
                                 {
                                     if (retries >= DelayAutoRestoreRetries)
                                     {
-                                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Break, done waiting {retries} >= {_delayAutoRestoreRetries}");
+                                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Break, done waiting {retries} >= {DelayAutoRestoreRetries}");
                                         // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
                                         // we wait until 20 secs for all the projects to be nominated at solution load.
                                         break;
                                     }
-                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - we're still expecting nominations. Bumping retries {retries} >= {_delayAutoRestoreRetries}");
+                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - we're still expecting nominations. Bumping retries {retries} >= {DelayAutoRestoreRetries}");
                                     // if we're still expecting some nominations and also haven't reached our max timeout
                                     // then increase the retries count.
                                     retries++;
