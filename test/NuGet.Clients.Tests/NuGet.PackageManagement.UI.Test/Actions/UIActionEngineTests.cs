@@ -33,6 +33,10 @@ namespace NuGet.PackageManagement.UI.Test
                 {
                     new ImplicitProjectAction(
                         id: Guid.NewGuid().ToString(),
+                        packageIdentityA1,
+                        NuGetProjectActionType.Uninstall),
+                    new ImplicitProjectAction(
+                        id: Guid.NewGuid().ToString(),
                         packageIdentityB1,
                         NuGetProjectActionType.Uninstall)
                 });
@@ -43,6 +47,10 @@ namespace NuGet.PackageManagement.UI.Test
                 NuGetProjectActionType.Install,
                 implicitActions: new[]
                 {
+                    new ImplicitProjectAction(
+                        id: Guid.NewGuid().ToString(),
+                        packageIdentityA2,
+                        NuGetProjectActionType.Install),
                     new ImplicitProjectAction(
                         id: Guid.NewGuid().ToString(),
                         packageIdentityB2,
@@ -69,6 +77,48 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.False(updatedResult.Old.GetType().IsSubclassOf(typeof(PackageIdentity)));
             Assert.False(updatedResult.New.GetType().IsSubclassOf(typeof(PackageIdentity)));
             Assert.Equal("b.3.0.0 -> b.4.0.0", updatedResult.ToString());
+        }
+
+        [Fact]
+        public async Task GetPreviewResultsAsync_WithMultipleActions_SortsPackageIdentities()
+        {
+            string projectId = Guid.NewGuid().ToString();
+            var packageIdentityA = new PackageIdentitySubclass(id: "a", NuGetVersion.Parse("1.0.0"));
+            var packageIdentityB = new PackageIdentitySubclass(id: "b", NuGetVersion.Parse("2.0.0"));
+            var packageIdentityC = new PackageIdentitySubclass(id: "c", NuGetVersion.Parse("3.0.0"));
+            var installAction = new ProjectAction(
+                id: Guid.NewGuid().ToString(),
+                projectId,
+                packageIdentityB,
+                NuGetProjectActionType.Install,
+                implicitActions: new[]
+                {
+                    new ImplicitProjectAction(
+                        id: Guid.NewGuid().ToString(),
+                        packageIdentityA,
+                        NuGetProjectActionType.Install),
+                    new ImplicitProjectAction(
+                        id: Guid.NewGuid().ToString(),
+                        packageIdentityB,
+                        NuGetProjectActionType.Install),
+                    new ImplicitProjectAction(
+                        id: Guid.NewGuid().ToString(),
+                        packageIdentityC,
+                        NuGetProjectActionType.Install)
+                });
+            IReadOnlyList<PreviewResult> previewResults = await UIActionEngine.GetPreviewResultsAsync(
+                Mock.Of<INuGetProjectManagerService>(),
+                new[] { installAction },
+                CancellationToken.None);
+
+            Assert.Equal(1, previewResults.Count);
+            AccessiblePackageIdentity[] addedResults = previewResults[0].Added.ToArray();
+
+            Assert.Equal(3, addedResults.Length);
+
+            Assert.Equal(packageIdentityA.Id, addedResults[0].Id);
+            Assert.Equal(packageIdentityB.Id, addedResults[1].Id);
+            Assert.Equal(packageIdentityC.Id, addedResults[2].Id);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity

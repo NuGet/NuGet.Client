@@ -814,12 +814,16 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken)
         {
             var results = new List<PreviewResult>();
-
-            var expandedActions = new List<ProjectAction>(projectActions);
+            var expandedActions = new List<ProjectAction>();
 
             foreach (ProjectAction projectAction in projectActions)
             {
-                if (projectAction.ImplicitActions.Any())
+                if (projectAction.ImplicitActions.Count == 0)
+                {
+                    // leave the action as is
+                    expandedActions.Add(projectAction);
+                }
+                else
                 {
                     foreach (ImplicitProjectAction implicitAction in projectAction.ImplicitActions)
                     {
@@ -831,11 +835,6 @@ namespace NuGet.PackageManagement.UI
                                 implicitAction.ProjectActionType,
                                 implicitActions: null));
                     }
-                }
-                else
-                {
-                    // leave the action as is
-                    expandedActions.Add(projectAction);
                 }
             }
 
