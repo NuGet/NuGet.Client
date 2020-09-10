@@ -434,7 +434,12 @@ namespace NuGet.PackageManagement.UI
                             actions,
                             cancellationToken);
 
-                        uiService.UIContext.RaiseProjectActionsExecuted(actions);
+                        string[] projectIds = actions
+                            .Select(action => action.ProjectId)
+                            .Distinct()
+                            .ToArray();
+
+                        uiService.UIContext.RaiseProjectActionsExecuted(projectIds);
                     }
                     else
                     {

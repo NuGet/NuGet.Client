@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -28,9 +29,10 @@ namespace NuGet.PackageManagement.UI
         private readonly NuGetSolutionManagerServiceWrapper _solutionManagerService;
         private IProjectContextInfo[] _projects;
 
-        public event EventHandler<IReadOnlyCollection<ProjectAction>> ProjectActionsExecuted;
+        public event EventHandler<IReadOnlyCollection<string>> ProjectActionsExecuted;
 
-        private NuGetUIContext(
+        // Non-private only to facilitate testing.
+        internal NuGetUIContext(
             ISourceRepositoryProvider sourceProvider,
             IServiceBroker serviceBroker,
             IVsSolutionManager solutionManager,
@@ -55,6 +57,7 @@ namespace NuGet.PackageManagement.UI
             PackageManagerProviders = packageManagerProviders;
 
             _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
+            SolutionManager.ActionsExecuted += OnActionsExecuted;
         }
 
         public ISourceRepositoryProvider SourceProvider { get; }
@@ -92,6 +95,8 @@ namespace NuGet.PackageManagement.UI
         public void Dispose()
         {
             _serviceBroker.AvailabilityChanged -= OnAvailabilityChanged;
+            SolutionManager.ActionsExecuted -= OnActionsExecuted;
+
             _solutionManagerService.Dispose();
 
             GC.SuppressFinalize(this);
@@ -177,11 +182,31 @@ namespace NuGet.PackageManagement.UI
                 packageManagerProviders);
         }
 
-        public void RaiseProjectActionsExecuted(IReadOnlyCollection<ProjectAction> projectActions)
+        public void RaiseProjectActionsExecuted(IReadOnlyCollection<string> projectIds)
         {
-            Assumes.NotNullOrEmpty(projectActions);
+            Assumes.NotNullOrEmpty(projectIds);
 
-            ProjectActionsExecuted?.Invoke(this, projectActions);
+            ProjectActionsExecuted?.Invoke(this, projectIds);
+        }
+
+        private void OnActionsExecuted(object sender, ActionsExecutedEventArgs e)
+        {
+            Assumes.NotNull(e);
+
+            if (e.Actions == null)
+            {
+                return;
+            }
+
+            string[] projectIds = e.Actions
+                .Select(action => action.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId))
+                .Distinct()
+                .ToArray();
+
+            if (projectIds.Length > 0)
+            {
+                RaiseProjectActionsExecuted(projectIds);
+            }
         }
 
         private void OnAvailabilityChanged(object sender, BrokeredServicesChangedEventArgs e)

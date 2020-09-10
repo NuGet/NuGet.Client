@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.UI
 {
     public interface INuGetUIContext : IDisposable
     {
-        event EventHandler<IReadOnlyCollection<ProjectAction>> ProjectActionsExecuted;
+        event EventHandler<IReadOnlyCollection<string>> ProjectActionsExecuted;
 
         ISourceRepositoryProvider SourceProvider { get; }
 
@@ -40,6 +40,6 @@ namespace NuGet.PackageManagement.UI
 
         Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
 
-        void RaiseProjectActionsExecuted(IReadOnlyCollection<ProjectAction> projectActions);
+        void RaiseProjectActionsExecuted(IReadOnlyCollection<string> projectIds);
     }
 }
