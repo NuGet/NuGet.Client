@@ -48,7 +48,8 @@ namespace NuGetVSExtension
     [ProvideToolWindow(typeof(PowerConsoleToolWindow),
         Style = VsDockStyle.Tabbed,
         Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}", // this is the guid of the Output tool window, which is present in both VS and VWD
-        Orientation = ToolWindowOrientation.Right)]
+        Orientation = ToolWindowOrientation.Right,
+        Transient=true)]
     [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
