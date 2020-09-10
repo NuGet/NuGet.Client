@@ -750,6 +750,7 @@ jobs:
       testRunTitle: "NuGet.Client Tests On Linux"
       searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
       mergeTestResults: "true"
+    condition: "succeededOrFailed()"
 
   - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
