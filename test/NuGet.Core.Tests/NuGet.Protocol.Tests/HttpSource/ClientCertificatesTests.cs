@@ -14,7 +14,7 @@ namespace NuGet.Protocol.Tests
 {
     public class ClientCertificatesTests
     {
-        [PlatformFact(Platform.Windows, Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public void IntentiallyFail()
         {
             Assert.True(false);

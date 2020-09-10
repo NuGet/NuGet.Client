@@ -36,7 +36,7 @@ namespace NuGet.Protocol.FuncTest
             PluginFile = new FileInfo(filePath);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public void IntentionallyFail()
         {
             Assert.True(false);
