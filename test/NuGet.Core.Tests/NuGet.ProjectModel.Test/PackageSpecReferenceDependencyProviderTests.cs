@@ -97,7 +97,7 @@ namespace NuGet.ProjectModel.Test
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = cpvmEnabled };
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");
-            dgSpec.AddProject(packageSpec);
+            dgSpec.AddProject(packageSpec.WithCentralVersionInformation());
             return dgSpec;
         }
     }
