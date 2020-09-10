@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void OnProjectActionsExecuted(object sender, IReadOnlyCollection<ProjectAction> actions)
+        private void OnProjectActionsExecuted(object sender, IReadOnlyCollection<string> projectIds)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
@@ -270,8 +270,6 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    string[] projectIds = actions.Select(action => action.ProjectId).ToArray();
-
                     RefreshProjectAfterAction(timeSpan, projectIds);
                 }
             }
