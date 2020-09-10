@@ -88,15 +88,6 @@ function Test-PackageRestore-Website {
     Assert-Package $p JQuery
 }
 
-# Tests that package restore works for website project
-function Test-IntentionallyFail {
-    param($context)
-
-    # Assert
-    Assert-True ($false)
-}
-
-
 # Tests that package restore works for JavaScript Metro project
 function Test-PackageRestore-JavaScriptMetroProject {
     param($context)
