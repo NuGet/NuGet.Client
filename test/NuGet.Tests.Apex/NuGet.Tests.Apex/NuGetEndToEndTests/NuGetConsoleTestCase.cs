@@ -19,6 +19,12 @@ namespace NuGet.Tests.Apex
         {
         }
 
+        [Fact]
+        public void IntentionallyFail()
+        {
+            Assert.True(false);
+        }
+
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
         public async Task InstallPackageFromPMCWithNoAutoRestoreVerifyAssetsFileAsync(ProjectTemplate projectTemplate)

@@ -36,6 +36,12 @@ namespace NuGet.Protocol.FuncTest
             PluginFile = new FileInfo(filePath);
         }
 
+        [PlatformFact(Platform.Windows, Platform.Linux, Platform.Darwin)]
+        public void IntentionallyFail()
+        {
+            Assert.True(false);
+        }
+
         public PluginTests(ITestOutputHelper logger)
         {
             logger.WriteLine($"Plugin file path:  {PluginFile.FullName}");
