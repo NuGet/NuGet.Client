@@ -62,7 +62,7 @@ namespace NuGet.CommandLine.XPlat
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
                     VerifyCommandRunner runner = new VerifyCommandRunner();
-                    var verifyTask =  runner.ExecuteCommandAsync(args);
+                    var verifyTask = runner.ExecuteCommandAsync(args);
                     await verifyTask;
 
                     return verifyTask.Result;

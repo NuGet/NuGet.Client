@@ -44,7 +44,7 @@ namespace NuGet.XPlat.FuncTest
             using (var pathContext = new SimpleTestPathContext())
             {
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: "netcoreapp3.1");
-                
+
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,

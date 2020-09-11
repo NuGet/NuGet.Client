@@ -55,7 +55,7 @@ namespace Dotnet.Integration.Test
             // Arrange
             using (var testDirectory1 = TestDirectory.Create())
             {
-                using(var testDirectory2 = TestDirectory.Create())
+                using (var testDirectory2 = TestDirectory.Create())
                 {
                     string packageX = "TestPackage.AuthorSigned.1.0.0.nupkg";
                     string packageY = "Test.Reposigned.1.0.0.nupkg";
@@ -80,9 +80,9 @@ namespace Dotnet.Integration.Test
 
         private static void CopyPackageFromResources(string packageId, string destination)
         {
-            var packageFile = new FileInfo(Path.Combine(destination,packageId));
+            var packageFile = new FileInfo(Path.Combine(destination, packageId));
             var package = GetResource(packageId);
-            File.WriteAllBytes(packageFile.FullName, package);            
+            File.WriteAllBytes(packageFile.FullName, package);
         }
 
         private static byte[] GetResource(string name)

@@ -15,7 +15,7 @@ namespace NuGet.CommandLine.XPlat
     internal class CommandOutputLogger : LoggerBase, ILogger
     {
         private static readonly bool _useConsoleColor = true;
-        
+
 
         public CommandOutputLogger(LogLevel logLevel)
         {
@@ -62,7 +62,7 @@ namespace NuGet.CommandLine.XPlat
         internal bool HidePrefixForInfoAndMinimal { get; set; }
 
         protected virtual void LogInternal(LogLevel logLevel, string message)
-        {            
+        {
             if (!DisplayMessage(logLevel))
             {
                 return;
@@ -127,7 +127,7 @@ namespace NuGet.CommandLine.XPlat
 
         public override void Log(ILogMessage message)
         {
-            LogInternal(message.Level, message.FormatWithCode());            
+            LogInternal(message.Level, message.FormatWithCode());
         }
 
         public override Task LogAsync(ILogMessage message)
