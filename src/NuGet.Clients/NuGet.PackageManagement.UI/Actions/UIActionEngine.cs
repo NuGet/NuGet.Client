@@ -228,7 +228,7 @@ namespace NuGet.PackageManagement.UI
 
             string[] projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
 
-            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.Select(source => source.PackageSource.Name).ToList();
+            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.PackageSourceNames.ToList();
 
             return await projectManagerService.GetUpdateActionsAsync(
                 projectIds,

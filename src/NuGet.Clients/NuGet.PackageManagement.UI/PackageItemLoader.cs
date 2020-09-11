@@ -74,7 +74,22 @@ namespace NuGet.PackageManagement.UI
             return itemLoader;
         }
 
-        private async ValueTask InitializeAsync()
+        // For unit testing purposes
+        internal static async ValueTask<PackageItemLoader> CreateAsync(
+            PackageLoadContext context,
+            IReadOnlyCollection<PackageSource> packageSources,
+            ContractItemFilter itemFilter,
+            INuGetSearchService searchService,
+            string searchText = null,
+            bool includePrerelease = true,
+            bool useRecommender = true)
+        {
+            var itemLoader = new PackageItemLoader(context, packageSources, itemFilter, searchText, includePrerelease, useRecommender);
+            await itemLoader.InitializeAsync(searchService);
+            return itemLoader;
+        }
+
+        private async ValueTask InitializeAsync(INuGetSearchService searchService = null)
         {
             _searchFilter = new SearchFilter(includePrerelease: _includePrerelease)
             {
@@ -83,7 +98,7 @@ namespace NuGet.PackageManagement.UI
 
             _serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
             _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
-            _searchService = await GetSearchServiceAsync(CancellationToken.None);
+            _searchService = searchService ?? await GetSearchServiceAsync(CancellationToken.None);
         }
 
         private void OnAvailabilityChanged(object sender, BrokeredServicesChangedEventArgs e)
@@ -127,7 +142,7 @@ namespace NuGet.PackageManagement.UI
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 
-            await UpdateStateAndReportAsync(new SearchResultContextInfo() { HasMoreItems = _state.Results.HasMoreItems }, progress, cancellationToken);
+            await UpdateStateAndReportAsync(new SearchResultContextInfo() { HasMoreItems = _state.Results?.HasMoreItems ?? false }, progress, cancellationToken);
 
             var searchResult = await SearchAsync(cancellationToken);
 
