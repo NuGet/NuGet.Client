@@ -14,12 +14,6 @@ namespace NuGet.Protocol.Tests
 {
     public class ClientCertificatesTests
     {
-        [PlatformFact(Platform.Linux)]
-        public void IntentiallyFail()
-        {
-            Assert.True(false);
-        }
-
         // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, Platform.Linux)]
         public void EnsurePackageSourceClientCertificatesForwardedToV3HttpClientHandler()
