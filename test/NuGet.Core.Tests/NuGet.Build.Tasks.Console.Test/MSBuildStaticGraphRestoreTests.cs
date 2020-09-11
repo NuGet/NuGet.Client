@@ -535,6 +535,7 @@ namespace NuGet.Build.Tasks.Console.Test
         [InlineData(@"custom\", null, @"custom\")]
         [InlineData(null, @"obj2\", @"obj2\")]
         [InlineData(null, @"obj3", "obj3")]
+        [InlineData(null, null, null)]
         public void GetRestoreOutputPath_WhenOutputPathOrMSBuildProjectExtensionsPathSpecified_CorrectPathDetected(string restoreOutputPath, string msbuildProjectExtensionsPath, string expected)
         {
             using (var testDirectory = TestDirectory.Create())
@@ -545,11 +546,20 @@ namespace NuGet.Build.Tasks.Console.Test
                     ["MSBuildProjectExtensionsPath"] = msbuildProjectExtensionsPath
                 });
 
-                var actual = MSBuildStaticGraphRestore.GetRestoreOutputPath(project);
+                MSBuildStaticGraphRestore msBuildStaticGraphRestore = new MSBuildStaticGraphRestore();
 
-                expected = Path.Combine(testDirectory, expected);
+                var actual = msBuildStaticGraphRestore.GetRestoreOutputPath(project);
 
-                actual.Should().Be(expected);
+                if (expected == null)
+                {
+                    actual.Should().BeNull();
+                }
+                else
+                {
+                    expected = Path.Combine(testDirectory, expected);
+
+                    actual.Should().Be(expected);
+                }
             }
         }
 
