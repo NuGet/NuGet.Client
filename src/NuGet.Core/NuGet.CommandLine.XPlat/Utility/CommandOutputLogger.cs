@@ -12,20 +12,14 @@ namespace NuGet.CommandLine.XPlat
     /// <summary>
     /// Logger to print formatted command output.
     /// </summary>
-    internal class CommandOutputLogger : LegacyLoggerAdapter, ILogger
+    internal class CommandOutputLogger : LoggerBase, ILogger
     {
         private static readonly bool _useConsoleColor = true;
-        private LogLevel _logLevel;
+        
 
         public CommandOutputLogger(LogLevel logLevel)
         {
-            _logLevel = logLevel;
-        }
-
-        public LogLevel LogLevel
-        {
-            get { return _logLevel; }
-            set { _logLevel = value; }
+            VerbosityLevel = logLevel;
         }
 
         public override void LogDebug(string data)
@@ -59,7 +53,7 @@ namespace NuGet.CommandLine.XPlat
 
         public override void LogInformationSummary(string data)
         {
-            if (_logLevel <= LogLevel.Information)
+            if (DisplayMessage(LogLevel.Information))
             {
                 Console.WriteLine(data);
             }
@@ -68,8 +62,8 @@ namespace NuGet.CommandLine.XPlat
         internal bool HidePrefixForInfoAndMinimal { get; set; }
 
         protected virtual void LogInternal(LogLevel logLevel, string message)
-        {
-            if (logLevel < _logLevel)
+        {            
+            if (!DisplayMessage(logLevel))
             {
                 return;
             }
@@ -129,6 +123,18 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return builder.ToString();
+        }
+
+        public override void Log(ILogMessage message)
+        {
+            LogInternal(message.Level, message.FormatWithCode());            
+        }
+
+        public override Task LogAsync(ILogMessage message)
+        {
+            Log(message);
+
+            return Task.FromResult(0);
         }
     }
 }

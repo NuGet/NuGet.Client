@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -18,7 +19,7 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
         [Fact]
-        public void Verify_MissingPackagePath_ThrowsAsync()
+        public void Verify_MissingPackagePath_Throws()
         {
             Assert.NotNull(DotnetCli);
             Assert.NotNull(XplatDll);
@@ -34,6 +35,35 @@ namespace NuGet.XPlat.FuncTest
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, "Value cannot be null. (Parameter 'argument')");
+        }
+
+
+        [Fact]
+        public async Task Verify_UnSignedPackage_Fails()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var packageX = XPlatTestUtils.CreatePackage(frameworkString: "netcoreapp3.1");
+                
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var log = new TestCommandOutputLogger();
+                string[] args =
+                    {
+                        "verify",
+                        Path.Combine(pathContext.PackageSource,"packageX", packageX.Version, "*.nupkg")
+                    };
+
+                // Act
+                int result = Program.MainInternal(args, log);
+
+                Assert.Equal(1, result);
+                Assert.Contains(log.ErrorMessages, msg => msg.Contains("The package is not signed."));
+            }
         }
     }
 }

@@ -37,7 +37,7 @@ namespace NuGet.Commands
 
             if (ShouldExecuteVerification(verifyArgs, Verification.Signatures))
             {
-#if NETFRAMEWORK
+#if IS_DESKTOP
                 var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 #else

@@ -25,7 +25,7 @@ namespace NuGet.Commands
         /// </summary>
         public IList<Verification> Verifications { get; set; }
 
-#if NETFRAMEWORK
+#if IS_DESKTOP
         /// <summary>
         /// Path to the package that has to be verified.
         /// </summary>

@@ -65,7 +65,7 @@ namespace NuGet.CommandLine.XPlat
                 CultureUtility.DisableLocalization();
             }
 
-            log.LogLevel = LogLevel.Information;
+            log.VerbosityLevel = LogLevel.Information;
 
             var app = InitializeApp(args, log);
 
@@ -175,7 +175,7 @@ namespace NuGet.CommandLine.XPlat
             };
 
             // Allow commands to set the NuGet log level
-            Action<LogLevel> setLogLevel = (logLevel) => log.LogLevel = logLevel;
+            Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;
 
             var app = new CommandLineApplication();
 

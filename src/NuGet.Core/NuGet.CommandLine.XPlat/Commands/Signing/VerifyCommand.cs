@@ -49,7 +49,7 @@ namespace NuGet.CommandLine.XPlat
                     ValidatePackagesPath(packagesPath);
 
                     VerifyArgs args = new VerifyArgs();
-#if NETFRAMEWORK
+#if IS_DESKTOP
                     args.PackagePath = packagesPath.Value;
 #else
                     args.PackagesPath = packagesPath.Values;
@@ -62,9 +62,10 @@ namespace NuGet.CommandLine.XPlat
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
                     VerifyCommandRunner runner = new VerifyCommandRunner();
-                    await runner.ExecuteCommandAsync(args);
+                    var verifyTask =  runner.ExecuteCommandAsync(args);
+                    await verifyTask;
 
-                    return 0;
+                    return verifyTask.Result;
                 });
             });
         }
