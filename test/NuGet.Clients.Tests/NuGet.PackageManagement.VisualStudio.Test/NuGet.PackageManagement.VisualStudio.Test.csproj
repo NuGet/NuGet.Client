@@ -26,6 +26,7 @@
     <Compile Include="Feeds\SourceRepositoryCreator.cs" />
     <Compile Include="Feeds\SourceRepositoryExtensionsTests.cs" />
     <Compile Include="NetCorePackageReferenceProjectTests.cs" />
+    <Compile Include="MockedVS.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
     <Compile Include="DispatcherThreadCollection.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
@@ -39,6 +40,7 @@
     <Compile Include="Services\NuGetLockServiceTests.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceTests.cs" />
     <Compile Include="Services\TestSharedServiceState.cs" />
+    <Compile Include="Services\NuGetPackageSearchServiceTests.cs" />
     <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\IntervalTrackerTests.cs" />
     <Compile Include="Telemetry\NuGetTelemetryServiceTests.cs" />
@@ -51,6 +53,12 @@
     <Compile Include="VSRestoreSettingsUtilityTests.cs" />
     <Compile Include="Telemetry\VsTelemetrySessionTest.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="compiler\resources\EntityFrameworkSearch.json" />
+    <EmbeddedResource Include="compiler\resources\index.json" />
+    <EmbeddedResource Include="compiler\resources\nugetSearchPage1.json" />
+    <EmbeddedResource Include="compiler\resources\nugetSearchPage2.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
@@ -60,6 +68,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 

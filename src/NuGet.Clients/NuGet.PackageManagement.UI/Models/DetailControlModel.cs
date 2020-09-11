@@ -7,16 +7,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-<<<<<<< HEAD
-=======
 using Microsoft.ServiceHub.Framework;
 using NuGet.Configuration;
->>>>>>> 810f7b17b... Initial Search for Nexus
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.Protocol;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -530,11 +526,7 @@ namespace NuGet.PackageManagement.UI
 
         internal async Task LoadPackageMetadataAsync(IReadOnlyCollection<PackageSource> packageSources, CancellationToken token)
         {
-<<<<<<< HEAD
-            var versions = await GetVersionsWithExtendedMetadataAsync();
-=======
             var versions = await _searchResultPackage.GetVersionsAsync();
->>>>>>> 810f7b17b... Initial Search for Nexus
 
             // First try to load the metadata from the version info. This will happen if we already fetched metadata
             // about each version at the same time as fetching the version list (that is, V2). This also acts as a
@@ -542,59 +534,14 @@ namespace NuGet.PackageManagement.UI
             _metadataDict = versions
                 .Where(v => v.PackageSearchMetadata != null)
                 .ToDictionary(
-<<<<<<< HEAD
-                    v => v.versionInfo.Version,
-                    v => new DetailedPackageMetadata(v.versionInfo.PackageSearchMetadata,
-                        v.deprecationMetadata,
-                        v.versionInfo.DownloadCount));
-=======
                     v => v.Version,
                     v => new DetailedPackageMetadata(v.PackageSearchMetadata, v.PackageDeprecationMetadata, v.DownloadCount));
->>>>>>> 810f7b17b... Initial Search for Nexus
 
             // If we are missing any metadata, go to the metadata provider and fetch all of the data again.
             if (versions.Select(v => v.Version).Except(_metadataDict.Keys).Any())
             {
                 try
                 {
-<<<<<<< HEAD
-                    // Load up the full details for each version.
-                    var packages = await metadataProvider?.GetPackageMetadataListAsync(
-                        Id,
-                        includePrerelease: true,
-                        includeUnlisted: false,
-                        cancellationToken: token);
-
-                    var packagesWithExtendedMetadata = await Task.WhenAll(
-                        packages.Select(async searchMetadata =>
-                        {
-                            var deprecationMetadata = await searchMetadata.GetDeprecationMetadataAsync();
-                            return (searchMetadata, deprecationMetadata);
-                        }));
-
-                    var uniquePackages = packagesWithExtendedMetadata
-                        .GroupBy(
-                            m => m.searchMetadata.Identity.Version,
-                            (v, ms) => ms.First());
-
-                    _metadataDict = uniquePackages
-                        .GroupJoin(
-                            versions,
-                            m => m.searchMetadata.Identity.Version,
-                            d => d.versionInfo.Version,
-                            (m, d) =>
-                            {
-                                var (versionInfo, deprecationMetadata) = d
-                                    .OrderByDescending(v => v.versionInfo.DownloadCount ?? 0)
-                                    .FirstOrDefault();
-
-                                return new DetailedPackageMetadata(
-                                    m.searchMetadata ?? versionInfo.PackageSearchMetadata,
-                                    m.deprecationMetadata,
-                                    m.searchMetadata?.DownloadCount ?? versionInfo?.DownloadCount);
-                            })
-                         .ToDictionary(m => m.Version);
-=======
                     IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
                     using (var searchService = await serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, token))
                     {
@@ -632,7 +579,6 @@ namespace NuGet.PackageManagement.UI
                                 })
                              .ToDictionary(m => m.Version);
                     }
->>>>>>> 810f7b17b... Initial Search for Nexus
                 }
                 catch (InvalidOperationException)
                 {
@@ -648,24 +594,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-<<<<<<< HEAD
-        private async Task<IEnumerable<(VersionInfo versionInfo,
-            PackageDeprecationMetadata deprecationMetadata)>> GetVersionsWithExtendedMetadataAsync()
-        {
-            var versions = await _searchResultPackage.GetVersionsAsync();
-            return await Task.WhenAll(
-                versions.Select(async version =>
-                {
-                    var deprecationMetadata = version?.PackageSearchMetadata != null
-                        ? await version.PackageSearchMetadata.GetDeprecationMetadataAsync()
-                        : null;
-
-                    return (version, deprecationMetadata);
-                }));
-        }
-
-=======
->>>>>>> 810f7b17b... Initial Search for Nexus
         public abstract bool IsSolution { get; }
 
         private string _optionsBlockedMessage;

@@ -201,7 +201,7 @@ namespace NuGetVSExtension
                 (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectUpgraderService(options, sb, ac, state)));
             brokeredServiceContainer.Proffer(
                 NuGetServices.SearchService,
-                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetPackageSearchService(options, sb, ac)));
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetPackageSearchService(options, sb, ac, state)));
         }
 
         /// <summary>

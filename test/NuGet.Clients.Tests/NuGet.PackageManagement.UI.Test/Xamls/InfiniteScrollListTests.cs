@@ -10,7 +10,6 @@ using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
@@ -19,25 +18,13 @@ using Xunit.Abstractions;
 namespace NuGet.PackageManagement.UI.Test
 {
     [Collection(MockedVS.Collection)]
-    public class InfiniteScrollListTests : IDisposable
+    public class InfiniteScrollListTests
     {
-        private JoinableTaskContext _joinableTaskContext;
         private readonly ITestOutputHelper _output;
 
         public InfiniteScrollListTests(ITestOutputHelper output)
         {
-#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-            _joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
-#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_joinableTaskContext.Factory);
-
             _output = output;
-        }
-
-        public void Dispose()
-        {
-            _joinableTaskContext?.Dispose();
         }
 
         [WpfFact]
@@ -227,7 +214,7 @@ namespace NuGet.PackageManagement.UI.Test
                 .Returns(() => Task.FromResult(0));
 
             var logger = new Mock<INuGetUILogger>();
-            var searchResultTask = Task.FromResult<SearchResultContextInfo>(null);
+            var searchResultTask = Task.FromResult(new SearchResultContextInfo());
 
 #pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
             using (var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current))
@@ -285,7 +272,7 @@ namespace NuGet.PackageManagement.UI.Test
             var searchTask = Task.FromResult(new SearchResultContextInfo(searchItems, new Dictionary<string, LoadingStatus>(), true));
             var testLogger = new TestNuGetUILogger(_output);
             var tcs = new TaskCompletionSource<int>();
-            var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => _joinableTaskContext.Factory));
+            var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => NuGetUIThreadHelper.JoinableTaskFactory));
 
             var currentStatus = LoadingStatus.Loading;
 

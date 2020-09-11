@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
@@ -115,6 +115,14 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.NotNull(_lastMainFeedSearchResult);
 
+            if(_lastMainFeedSearchResult.NextToken == null)
+            {
+                return new SearchResultContextInfo()
+                {
+                    OperationId = _lastMainFeedSearchResult.OperationId,
+                };
+            }
+
             var continueSearchResult = await _mainFeed.ContinueSearchAsync(_lastMainFeedSearchResult.NextToken, cancellationToken);
             _lastMainFeedSearchResult = continueSearchResult;
 
@@ -143,7 +151,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 totalCount += searchResult.Items?.Count() ?? 0;
                 nextToken = searchResult.NextToken;
-            } while (nextToken != null && totalCount <= maxCount);
+            } while (nextToken != null && totalCount < maxCount);
 
             return totalCount;
         }

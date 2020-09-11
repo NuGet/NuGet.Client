@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using MessagePack;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio.Internal.Contracts
@@ -39,6 +40,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public LicenseMetadata? LicenseMetadata { get; set; }
         [IgnoreMember]
         public PackageReaderBase? PackageReader { get; set; }
+        [IgnoreMember]
+        public IEnumerable<PackageVulnerabilityMetadata>? Vulnerabilities { get; set; }
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
@@ -62,6 +65,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 IsListed = packageSearchMetadata.IsListed,
                 DependencySets = packageSearchMetadata.DependencySets,
                 DownloadCount = packageSearchMetadata.DownloadCount,
+                Vulnerabilities = packageSearchMetadata.Vulnerabilities
             };
         }
     }

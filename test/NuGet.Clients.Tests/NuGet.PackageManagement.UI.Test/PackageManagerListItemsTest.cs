@@ -1,18 +1,20 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
+    [Collection(MockedVS.Collection)]
     public class PackageManagerListItemsTest
     {
         [Fact]
@@ -20,6 +22,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
+            var searchService = Mock.Of<INuGetSearchService>();
             Mock.Get(uiContext)
                 .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
@@ -35,38 +38,27 @@ namespace NuGet.PackageManagement.UI.Test
             };
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
-            var repositories = new List<SourceRepository>
-            {
-                repo
-            };
             
             var context = new PackageLoadContext(false, uiContext);
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, "EntityFramework", false);
-            // var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService, "EntityFramework", false);
 
-            var loaded = new List<PackageItemListViewModel>();
-            foreach (var page in Enumerable.Range(0, 5))
+            var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
             {
-                await loader.LoadNextAsync(null, CancellationToken.None);
-                while (loader.State.LoadingStatus == LoadingStatus.Loading)
+                new PackageSearchMetadataContextInfo()
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                    await loader.UpdateStateAsync(null, CancellationToken.None);
+                    Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
+                    PrefixReserved = true
                 }
+            };
 
-                var items = loader.GetCurrent();
-                loaded.AddRange(items);
+            var searchResult = new SearchResultContextInfo(packageSearchMetadata, new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } }, false);
 
-                if (loader.State.LoadingStatus != LoadingStatus.Ready)
-                {
-                    break;
-                }
-            }
+            await loader.UpdateStateAndReportAsync(searchResult, null, CancellationToken.None);
+            var items = loader.GetCurrent();
 
             // Resource only has one item
-            var item = loaded.First();
+            var item = items.First();
             Assert.True(item.PrefixReserved);
         }
 
@@ -75,6 +67,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
+            var searchService = Mock.Of<INuGetSearchService>();
             Mock.Get(uiContext)
                 .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
@@ -93,39 +86,27 @@ namespace NuGet.PackageManagement.UI.Test
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
             var repo1 = StaticHttpHandler.CreateSource("http://othersource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            // var repositories = new List<SourceRepository>
-            // {
-            //    repo,
-            //    repo1
-            // };
-
             var context = new PackageLoadContext(false, uiContext);
 
-            // var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource, repo1.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, "EntityFramework", false);
-            // var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource, repo1.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService, "EntityFramework", false);
 
-            var loaded = new List<PackageItemListViewModel>();
-            foreach (var page in Enumerable.Range(0, 5))
+            var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
             {
-                await loader.LoadNextAsync(null, CancellationToken.None);
-                while (loader.State.LoadingStatus == LoadingStatus.Loading)
+                new PackageSearchMetadataContextInfo()
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                    await loader.UpdateStateAsync(null, CancellationToken.None);
+                    Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
+                    PrefixReserved = true
                 }
+            };
 
-                var items = loader.GetCurrent();
-                loaded.AddRange(items);
+            var searchResult = new SearchResultContextInfo(packageSearchMetadata, new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } }, false);
 
-                if (loader.State.LoadingStatus != LoadingStatus.Ready)
-                {
-                    break;
-                }
-            }
+            await loader.UpdateStateAndReportAsync(searchResult, null, CancellationToken.None);
+            var items = loader.GetCurrent();
 
             // Resource only has one item
-            var item = loaded.First();
+            var item = items.First();
+            // Assert that a multisource always has prefixreserved set to false
             Assert.False(item.PrefixReserved);
         }
     }
