@@ -369,7 +369,7 @@ namespace NuGet.PackageManagement
                                                 // Include all the missing projects from the closure.
                                                 // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
                                                 knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
-                                                dgSpec.AddProject(dependentPackageSpec.WithCentralVersionInformation());
+                                                dgSpec.AddProject(dependentPackageSpec);
                                             }
                                         }
                                     }
