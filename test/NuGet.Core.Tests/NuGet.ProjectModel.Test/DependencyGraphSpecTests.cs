@@ -714,7 +714,7 @@ namespace NuGet.ProjectModel.Test
             // Act
             string notCompressedHash = dependencyGraphSpec.GetHash();
             string compressedHash = dependencyGraphSpec.GetHash(compressed: true);
-          
+
             // Assert
             Assert.NotEqual(compressedHash, notCompressedHash);
         }
