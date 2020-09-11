@@ -65,7 +65,6 @@ NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec() -> void
 NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec(Newtonsoft.Json.Linq.JObject json) -> void
 NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec(bool isReadOnly) -> void
 NuGet.ProjectModel.DependencyGraphSpec.GetClosure(string rootUniqueName) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
-NuGet.ProjectModel.DependencyGraphSpec.GetHash() -> string
 NuGet.ProjectModel.DependencyGraphSpec.GetParents(string rootUniqueName) -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.ProjectModel.DependencyGraphSpec.GetProjectSpec(string projectUniqueName) -> NuGet.ProjectModel.PackageSpec
 NuGet.ProjectModel.DependencyGraphSpec.Json.get -> Newtonsoft.Json.Linq.JObject

@@ -611,7 +611,7 @@ namespace NuGet.Commands
                 NoOpRestoreUtilities.UpdateRequestBestMatchingToolPathsIfAvailable(_request);
             }
 
-            var newDgSpecHash = noOpDgSpec.GetHash();
+            var newDgSpecHash = noOpDgSpec.GetHash(compressed: true);
 
             // if --force-evaluate flag is passed then restore noop check will also be skipped.
             // this will also help us to get rid of -force flag in near future.
