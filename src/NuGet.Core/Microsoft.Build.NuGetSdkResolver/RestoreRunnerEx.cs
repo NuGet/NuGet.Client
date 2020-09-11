@@ -93,7 +93,7 @@ namespace NuGet.Commands
 
                 var dependencyGraphSpec = new DependencyGraphSpec();
 
-                dependencyGraphSpec.AddProject(packageSpec.WithCentralVersionInformation());
+                dependencyGraphSpec.AddProject(packageSpec);
 
                 dependencyGraphSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
 

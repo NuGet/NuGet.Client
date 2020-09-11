@@ -200,7 +200,7 @@ namespace NuGet.SolutionRestoreManager
                 ToPackageSpec(projectNames, projectRestoreInfo2.TargetFrameworks, projectRestoreInfo2.OriginalTargetFrameworks, projectRestoreInfo2.BaseIntermediatePath);
 
             dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-            dgSpec.AddProject(packageSpec.WithCentralVersionInformation());
+            dgSpec.AddProject(packageSpec);
 
             if (projectRestoreInfo != null && projectRestoreInfo.ToolReferences != null)
             {
@@ -280,7 +280,7 @@ namespace NuGet.SolutionRestoreManager
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
             };
 
-            return packageSpec;
+            return packageSpec.WithCentralVersionInformation();
         }
 
         private static string GetProjectOutputPath(string projectDirectory, string msbuildProjectExtensionsPath)

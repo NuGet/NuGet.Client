@@ -339,7 +339,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var packageSpec in packageSpecs)
                 {
-                    dgSpec.AddProject(packageSpec.WithCentralVersionInformation());
+                    dgSpec.AddProject(packageSpec);
 
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
                         packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||

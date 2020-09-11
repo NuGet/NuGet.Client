@@ -465,7 +465,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         await _vsProjectAdapter.IsRestoreLockedAsync()),
                     CentralPackageVersionsEnabled = isCpvmEnabled
                 }
-            };
+            }.WithCentralVersionInformation();
         }
     }
 }

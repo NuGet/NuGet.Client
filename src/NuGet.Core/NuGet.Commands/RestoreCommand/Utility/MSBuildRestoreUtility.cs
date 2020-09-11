@@ -100,7 +100,7 @@ namespace NuGet.Commands
                     validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
                 }
 
-                graphSpec.AddProject(spec.WithCentralVersionInformation());
+                graphSpec.AddProject(spec);
             }
 
             // Fix project reference casings to match the original project on case insensitive file systems.
@@ -293,7 +293,7 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageVersionsEnabled = isCpvmEnabled;
             }
 
-            return result;
+            return result.WithCentralVersionInformation();
         }
 
         /// <summary>
