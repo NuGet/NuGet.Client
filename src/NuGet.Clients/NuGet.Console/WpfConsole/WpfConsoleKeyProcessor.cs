@@ -29,6 +29,7 @@ namespace NuGetConsole.Implementation.Console
         private const string TabExpansionTimeoutKey = @"TabExpansionTimeout"; // in seconds
         private const int DefaultTabExpansionTimeout = 3; // in seconds
         private readonly Lazy<IntPtr> _pKeybLayout = new Lazy<IntPtr>(() => NativeMethods.GetKeyboardLayout(0));
+        private bool _firstInput;
         private WpfConsole WpfConsole { get; }
         private IWpfTextView WpfTextView { get; }
 
@@ -203,6 +204,12 @@ namespace NuGetConsole.Implementation.Console
                 //Debug.Print("Exec: VSStd2K: {0}", (VSConstants.VSStd2KCmdID)nCmdID);
 
                 var commandID = (VSConstants.VSStd2KCmdID)nCmdID;
+
+                if (commandID != VSConstants.VSStd2KCmdID.SolutionPlatform && !_firstInput)
+                {
+                    _firstInput = true;
+                    WpfConsole.EndInputLine();
+                }
 
                 if (WpfConsole.Dispatcher.IsExecutingReadKey)
                 {

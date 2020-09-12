@@ -66,11 +66,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private uint _solutionExistsCookie;
 
         private IConsole _activeConsole;
-        private NuGetPSHost _nugetHost;
+#pragma warning disable IDE1006 // Naming Styles
+        protected NuGetPSHost _nugetHost { get; private set; }
+#pragma warning restore IDE1006 // Naming Styles
         // indicates whether this host has been initialized.
         // null = not initilized, true = initialized successfully, false = initialized unsuccessfully
         private bool? _initialized;
         public bool IsInitializedSuccessfully => _initialized.HasValue && _initialized.Value;
+        private bool _firstRun;
 
         // store the current (non-truncated) project names displayed in the project name combobox
         private string[] _projectSafeNames;
@@ -255,6 +258,17 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 try
                 {
+                    if (Runspace == null)
+                    {
+                        if (!_firstRun)
+                        {
+                            _firstRun = true;
+                            return prompt;
+                        }
+
+                        return "";
+                    }
+
                     // Execute the prompt function from a worker thread, so that the UI thread is not blocked waiting
                     // on it. Note that a default prompt function as defined in Profile.ps1 will simply return
                     // a string "PM>". This will always work. However, a custom "prompt" function might call
@@ -300,51 +314,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     try
                     {
-                        var result = _runspaceManager.GetRunspace(console, _name);
-                        Runspace = result.Item1;
-                        _nugetHost = result.Item2;
-
+                        await TaskScheduler.Default;
                         _initialized = true;
 
                         if (console.ShowDisclaimerHeader)
                         {
                             DisplayDisclaimerAndHelpText();
                         }
-
-                        UpdateWorkingDirectory();
-                        await ExecuteInitScriptsAsync();
-
-                        // check if PMC console is actually opened, then only hook to solution load/close events.
-                        if (console is IWpfConsole)
-                        {
-                            // Hook up solution events
-                            _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
-                            _solutionManager.Value.SolutionClosed += (o, e) =>
-                            {
-                                UpdateWorkingDirectory();
-
-                                DefaultProject = null;
-
-                                NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
-                            };
-                        }
-                        _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
-                        _solutionManager.Value.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
-                        _solutionManager.Value.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
-                        _solutionManager.Value.NuGetProjectRemoved += (o, e) =>
-                        {
-                            UpdateWorkingDirectoryAndAvailableProjects();
-                            // When the previous default project has been removed, _solutionManager.DefaultNuGetProjectName becomes null
-                            if (_solutionManager.Value.DefaultNuGetProjectName == null)
-                            {
-                                // Change default project to the first one in the collection
-                                SetDefaultProjectIndex(0);
-                            }
-                        };
-                        // Set available private data on Host
-                        SetPrivateDataOnHost(false);
-
-                        StartAsyncDefaultProjectUpdate();
                     }
                     catch (Exception ex)
                     {
@@ -357,6 +333,49 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     }
                 }
             });
+        }
+
+        private async Task GetRunspaceAsync(IConsole console)
+        {
+            //await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var result = _runspaceManager.GetRunspace(console, _name);
+            Runspace = result.Item1;
+            _nugetHost = result.Item2;
+
+            UpdateWorkingDirectory();
+            await ExecuteInitScriptsAsync();
+
+            // check if PMC console is actually opened, then only hook to solution load/close events.
+            if (console is IWpfConsole)
+            {
+                // Hook up solution events
+                _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
+                _solutionManager.Value.SolutionClosed += (o, e) =>
+                {
+                    UpdateWorkingDirectory();
+
+                    DefaultProject = null;
+
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
+                };
+            }
+            _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+            _solutionManager.Value.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+            _solutionManager.Value.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+            _solutionManager.Value.NuGetProjectRemoved += (o, e) =>
+            {
+                UpdateWorkingDirectoryAndAvailableProjects();
+                // When the previous default project has been removed, _solutionManager.DefaultNuGetProjectName becomes null
+                if (_solutionManager.Value.DefaultNuGetProjectName == null)
+                {
+                    // Change default project to the first one in the collection
+                    SetDefaultProjectIndex(0);
+                }
+            };
+            // Set available private data on Host
+            SetPrivateDataOnHost(false);
+
+            StartAsyncDefaultProjectUpdate();
         }
 
         private void HandleSolutionOpened()
@@ -396,9 +415,19 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void UpdateWorkingDirectory()
         {
+            if (Runspace == null)
+            {
+                return;
+            }
+
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await TaskScheduler.Default;
+
+                if (Runspace == null)
+                {
+                    return;
+                }
 
                 if (Runspace.RunspaceAvailability == RunspaceAvailability.Available)
                 {
@@ -528,24 +557,31 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException(nameof(command));
             }
 
-            // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
-            // to run it once for each solution
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            if (Runspace == null)
             {
-                await ExecuteInitScriptsAsync();
-            });
-
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
-            ActiveConsole = console;
-
-            string fullCommand;
-            if (ComplexCommand.AddLine(command, out fullCommand)
-                && !string.IsNullOrEmpty(fullCommand))
+                var result = Task.Run(async () => await GetRunspaceAsync(console));
+            }
+            else
             {
-                // create a new token source with each command since CTS aren't usable once cancelled.
-                _tokenSource = new CancellationTokenSource();
-                _token = _tokenSource.Token;
-                return ExecuteHost(fullCommand, command, inputs);
+                // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
+                // to run it once for each solution
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await ExecuteInitScriptsAsync();
+                });
+
+                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
+                ActiveConsole = console;
+
+                string fullCommand;
+                if (ComplexCommand.AddLine(command, out fullCommand)
+                    && !string.IsNullOrEmpty(fullCommand))
+                {
+                    // create a new token source with each command since CTS aren't usable once cancelled.
+                    _tokenSource = new CancellationTokenSource();
+                    _token = _tokenSource.Token;
+                    return ExecuteHost(fullCommand, command, inputs);
+                }
             }
 
             return false; // constructing multi-line command
@@ -613,8 +649,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             WriteLine(Resources.Console_DisclaimerText);
             WriteLine();
 
-            WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetHost.Version));
-            WriteLine();
+            if (_nugetHost != null)
+            {
+                WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetHost.Version));
+                WriteLine();
+            }
 
             WriteLine(Resources.Console_HelpText);
             WriteLine();
@@ -910,7 +949,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
-            Runspace?.Dispose();
+            Runspace.Dispose();
         }
 
         #endregion
