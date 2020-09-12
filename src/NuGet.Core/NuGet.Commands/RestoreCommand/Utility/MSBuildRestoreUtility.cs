@@ -293,7 +293,7 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageVersionsEnabled = isCpvmEnabled;
             }
 
-            return result.WithCentralVersionInformation();
+            return result?.WithCentralVersionInformation();
         }
 
         /// <summary>
