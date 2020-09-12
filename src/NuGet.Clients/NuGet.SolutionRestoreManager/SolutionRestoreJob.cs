@@ -368,8 +368,10 @@ namespace NuGet.SolutionRestoreManager
                             dgSpec.AddRestore(uniqueProjectId);
                         }
                         // recorded the number of up to date projects
+                        NuGetFileLogger.DefaultInstance.Write($"Original DG Spec: ProjectCount: {originalDgSpec.Projects.Count}, RestoreCount = {originalDgSpec.Restore.Count}, ProjectsNeedingRestoreCount = {projectsNeedingRestore}");
                         _upToDateProjectCount = originalDgSpec.Restore.Count - projectsNeedingRestore.Count;
                         _noOpProjectsCount = _upToDateProjectCount;
+                        NuGetFileLogger.DefaultInstance.Write($"_noOpProjectsCount:{_noOpProjectsCount}, _upToDateProjectCount:{_upToDateProjectCount}");
                     }
                 }
 
