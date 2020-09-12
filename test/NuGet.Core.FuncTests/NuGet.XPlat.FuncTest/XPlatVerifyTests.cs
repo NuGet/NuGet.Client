@@ -34,33 +34,5 @@ namespace NuGet.XPlat.FuncTest
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, "Value cannot be null. (Parameter 'argument')");
         }
-
-        [Fact]
-        public async Task Verify_UnSignedPackage_Fails()
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var packageX = XPlatTestUtils.CreatePackage(frameworkString: "netcoreapp3.1");
-
-                // Generate Package
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    testDirectory,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
-
-                var log = new TestCommandOutputLogger();
-                string[] args =
-                    {
-                        "verify",
-                        Path.Combine(testDirectory,"packagex", packageX.Version, "*.nupkg")
-                    };
-
-                // Act
-                int result = Program.MainInternal(args, log);
-
-                Assert.Equal(1, result);
-                Assert.Contains(log.ErrorMessages, msg => msg.Contains("NU3004: The package is not signed."));
-            }
-        }
     }
 }

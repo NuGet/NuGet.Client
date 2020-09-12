@@ -1,11 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
@@ -17,16 +13,36 @@ namespace Dotnet.Integration.Test
     [Collection("Dotnet Integration Tests")]
     public class DotnetVerifyTests
     {
-
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3027.ToString();
         private readonly string _primarySignatureInvalidErrorCode = NuGetLogCode.NU3018.ToString();
         private readonly string _noMatchingCertErrorCode = NuGetLogCode.NU3034.ToString();
+        private readonly string _notSignedErrorCode = NuGetLogCode.NU3004.ToString();
 
         private MsbuildIntegrationTestFixture _msbuildFixture;
 
         public DotnetVerifyTests(MsbuildIntegrationTestFixture fixture)
         {
             _msbuildFixture = fixture;
+        }
+
+        [CIOnlyFact]
+        public async Task Verify_UnSignedPackage_Fails()
+        {
+            using (var packageDir = TestDirectory.Create())
+            {
+                var packageId = "Unsigned.PackageX";
+                var packageVersion = "1.0.0";
+                var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
+
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                    packageDir,
+                    $"nuget verify {packageFile.FullName}",
+                    ignoreExitCode: true);
+
+                result.Success.Should().BeFalse(because: result.AllOutput);
+                result.Output.Should().Contain(_notSignedErrorCode);
+            }
         }
 
         [CIOnlyTheory]
@@ -55,7 +71,7 @@ namespace Dotnet.Integration.Test
         [CIOnlyTheory]
         [InlineData("--certificate-fingerprint 775AAB607AA76028A7CC7A873A9513FF0C3B40DF09B7B83D21689A3675B34D9A")]
         [InlineData("--certificate-fingerprint ABC --certificate-fingerprint DEF")]
-        public void Verify_AuthorSignedPackageWithoutAllowedCertificate_Fails(string fingerprints)
+        public void Verify_SignedPackageWithoutAllowedCertificate_Fails(string fingerprints)
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -71,6 +87,26 @@ namespace Dotnet.Integration.Test
 
                 result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noMatchingCertErrorCode);
+            }
+        }
+
+        [CIOnlyFact]
+        public void Verify_SignedPackageWithAllowedCertificate_Success()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                string packageX = "TestPackage.AuthorSigned.1.0.0.nupkg";
+                CopyPackageFromResources(packageX, testDirectory);
+
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                    testDirectory,
+                    $"nuget verify {Path.Combine(testDirectory, packageX)} " +
+                        $"--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE",
+                    ignoreExitCode: true);
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
             }
         }
 
