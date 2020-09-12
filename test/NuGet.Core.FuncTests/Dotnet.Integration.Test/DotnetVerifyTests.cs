@@ -20,7 +20,6 @@ namespace Dotnet.Integration.Test
 
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3027.ToString();
         private readonly string _primarySignatureInvalidErrorCode = NuGetLogCode.NU3018.ToString();
-        private readonly string _signingDefaultErrorCode = NuGetLogCode.NU3000.ToString();
         private readonly string _noMatchingCertErrorCode = NuGetLogCode.NU3034.ToString();
 
         private MsbuildIntegrationTestFixture _msbuildFixture;
@@ -30,8 +29,10 @@ namespace Dotnet.Integration.Test
             _msbuildFixture = fixture;
         }
 
-        [CIOnlyFact]
-        public void Verify_AuthorSignedPackage_Succceeds()
+        [CIOnlyTheory]
+        [InlineData("--all")]
+        [InlineData("")]
+        public void Verify_AuthorSignedAndTimestampedPackage_Succceeds(string optionAll)
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -42,15 +43,39 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
-                    $"nuget verify {Path.Combine(testDirectory, packageX)}",
+                    $"nuget verify {Path.Combine(testDirectory, packageX)} {optionAll}",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
+                result.Output.Should().NotContain(_noTimestamperWarningCode);
+                result.Output.Should().NotContain(_primarySignatureInvalidErrorCode);
+            }
+        }
+
+        [CIOnlyTheory]
+        [InlineData("--certificate-fingerprint 775AAB607AA76028A7CC7A873A9513FF0C3B40DF09B7B83D21689A3675B34D9A")]
+        [InlineData("--certificate-fingerprint ABC --certificate-fingerprint DEF")]
+        public void Verify_AuthorSignedPackageWithoutAllowedCertificate_Fails(string fingerprints)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                string packageX = "TestPackage.AuthorSigned.1.0.0.nupkg";
+                CopyPackageFromResources(packageX, testDirectory);
+
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                    testDirectory,
+                    $"nuget verify {Path.Combine(testDirectory, packageX)} {fingerprints}",
+                    ignoreExitCode: true);
+
+                result.Success.Should().BeFalse(because: result.AllOutput);
+                result.AllOutput.Should().Contain(_noMatchingCertErrorCode);
             }
         }
 
         [CIOnlyFact]
-        public void Verify_MultipleSignedPackagesWithWildCard_Succceeds()
+        public void Verify_MultipleSignedPackagesWithWildCardAndDetailedVerbosity_MixedResults()
         {
             // Arrange
             using (var testDirectory1 = TestDirectory.Create())
@@ -59,21 +84,21 @@ namespace Dotnet.Integration.Test
                 {
                     string packageX = "TestPackage.AuthorSigned.1.0.0.nupkg";
                     string packageY = "Test.Reposigned.1.0.0.nupkg";
-                    string packageZ = "Test.RepoCountersigned.1.0.0.nupkg";
 
                     CopyPackageFromResources(packageX, testDirectory1);
                     CopyPackageFromResources(packageY, testDirectory2);
-                    CopyPackageFromResources(packageZ, testDirectory2);
 
                     //Act
                     var result = _msbuildFixture.RunDotnet(
                         testDirectory1,
-                        $"nuget verify {Path.Combine(testDirectory1, packageX)} {Path.Combine(testDirectory2, "*.nupkg")}",
+                        $"nuget verify {Path.Combine(testDirectory1, packageX)} {Path.Combine(testDirectory2, "*.nupkg")} -v d",
                         ignoreExitCode: true);
 
                     result.Success.Should().BeFalse(because: result.AllOutput);
-                    result.AllOutput.Contains(_primarySignatureInvalidErrorCode);
-                    result.AllOutput.Contains(_noTimestamperWarningCode);
+                    result.AllOutput.Should().Contain("Successfully verified package 'TestPackage.AuthorSigned.1.0.0'.");
+                    result.AllOutput.Should().Contain($"Verifying Test.Reposigned.1.0.0");
+                    result.AllOutput.Should().Contain(_primarySignatureInvalidErrorCode);
+                    result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 }
             }
         }
