@@ -16,9 +16,6 @@ namespace NuGet.XPlat.FuncTest
     [Collection("NuGet XPlat Test Collection")]
     public class XPlatVerifyTests
     {
-        private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli();
-        private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
-
         [Fact]
         public void VerifyCommandArgsParsing_MissingPackagePath_Throws()
         {
@@ -33,7 +30,8 @@ namespace NuGet.XPlat.FuncTest
 
                     // Assert
                     Assert.IsType<ArgumentNullException>(ex.InnerException);
-                    Assert.Equal("Value cannot be null. (Parameter '<packages-path>')", ex.InnerException.Message);
+                    Assert.Contains("Value cannot be null.", ex.InnerException.Message);
+                    Assert.Contains("Parameter name: <packages-path>", ex.InnerException.Message);
                 });
         }
 
