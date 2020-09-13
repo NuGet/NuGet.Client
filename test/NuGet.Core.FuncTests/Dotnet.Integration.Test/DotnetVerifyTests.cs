@@ -91,7 +91,7 @@ namespace Dotnet.Integration.Test
         }
 
         [CIOnlyFact]
-        public void Verify_SignedPackageWithAllowedCertificate_Success()
+        public void Verify_SignedPackageWithAllowedCertificate_Succceeds()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
