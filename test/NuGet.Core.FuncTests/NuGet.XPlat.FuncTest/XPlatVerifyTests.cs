@@ -1,11 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.CommandLineUtils;
+using Moq;
 using NuGet.CommandLine.XPlat;
-using NuGet.Packaging;
-using NuGet.Test.Utility;
+using NuGet.Commands;
+using NuGet.Common;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -17,22 +20,90 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
         [Fact]
-        public void Verify_MissingPackagePath_Throws()
+        public void VerifyCommandArgsParsing_MissingPackagePath_Throws()
         {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            VerifyCommandArgs(
+                (mockCommandRunner, testApp, getLogLevel) =>
+                {
+                    // Arrange
+                    var argList = new List<string>() { "verify" };
 
-            string args = "verify";
+                    // Act
+                    var ex = Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
 
-            // Act
-            var result = CommandRunner.Run(
-              DotnetCli,
-              Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+                    // Assert
+                    Assert.IsType<ArgumentNullException>(ex.InnerException);
+                    Assert.Equal(string.Concat("Value cannot be null.",
+                        Environment.NewLine, "Parameter name: <packages-path>"), ex.InnerException.Message);
+                });
+        }
 
-            // Assert
-            DotnetCliUtil.VerifyResultFailure(result, "Value cannot be null. (Parameter 'argument')");
+        [Theory]
+        [InlineData("-all")]
+        [InlineData("-Signatures")]
+        [InlineData("-certificate-fingerprint")]
+        [InlineData("--h")]
+        public void VerifyCommandArgsParsing_UnrcognizedOption_Throws(string unrecognizedOption)
+        {
+            VerifyCommandArgs(
+                (mockCommandRunner, testApp, getLogLevel) =>
+                {
+                    //Arrange
+                    string[] args = new string[] { "verify", unrecognizedOption };
+
+                    // Act & Assert
+                    Assert.Throws<CommandParsingException>(() => testApp.Execute(args));
+                });
+        }
+
+        [Theory]
+        [InlineData("--verbosity", "q", LogLevel.Warning)]
+        [InlineData("-v", "quiet", LogLevel.Warning)]
+        [InlineData("--verbosity", "m", LogLevel.Minimal)]
+        [InlineData("-v", "minimal", LogLevel.Minimal)]
+        [InlineData("--verbosity", "something-else", LogLevel.Minimal)]
+        [InlineData("-v", "n", LogLevel.Information)]
+        [InlineData("--verbosity", "normal", LogLevel.Information)]
+        [InlineData("-v", "d", LogLevel.Debug)]
+        [InlineData("-v", "detailed", LogLevel.Debug)]
+        [InlineData("--verbosity", "diag", LogLevel.Debug)]
+        [InlineData("-v", "diagnostic", LogLevel.Debug)]
+        public void VerifyCommandArgsParsing_VerbosityOption(string option, string verbosity, LogLevel logLevel)
+        {
+            VerifyCommandArgs(
+                (mockCommandRunner, testApp, getLogLevel) =>
+                {
+                    // Arrange                   
+                    var argList = new List<string> { "verify", "packageX.nupkg", option, verbosity };
+
+                    // Act
+                    var result = testApp.Execute(argList.ToArray());
+
+                    // Assert
+                    Assert.Equal(logLevel, getLogLevel());
+                    Assert.Equal(0, result);
+                });
+        }
+
+        private void VerifyCommandArgs(Action<Mock<IVerifyCommandRunner>, CommandLineApplication, Func<LogLevel>> verify)
+        {
+            // Arrange
+            var logLevel = LogLevel.Information;
+            var logger = new TestCommandOutputLogger();
+            var testApp = new CommandLineApplication();
+            var mockCommandRunner = new Mock<IVerifyCommandRunner>();
+            mockCommandRunner
+                .Setup(m => m.ExecuteCommandAsync(It.IsAny<VerifyArgs>()))
+                .Returns(Task.FromResult(0));
+
+            testApp.Name = "dotnet nuget_test";
+            VerifyCommand.Register(testApp,
+                () => logger,
+                ll => logLevel = ll,
+                () => mockCommandRunner.Object);
+
+            // Act & Assert
+            verify(mockCommandRunner, testApp, () => logLevel);
         }
     }
 }

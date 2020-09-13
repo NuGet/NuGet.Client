@@ -17,7 +17,8 @@ namespace NuGet.CommandLine.XPlat
     {
         internal static void Register(CommandLineApplication app,
                               Func<ILogger> getLogger,
-                              Action<LogLevel> setLogLevel)
+                              Action<LogLevel> setLogLevel,
+                              Func<IVerifyCommandRunner> getCommandRunner)
         {
             app.Command("verify", verifyCmd =>
             {
@@ -61,7 +62,7 @@ namespace NuGet.CommandLine.XPlat
                     args.Logger = getLogger();
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
-                    VerifyCommandRunner runner = new VerifyCommandRunner();
+                    var runner = getCommandRunner();
                     var verifyTask = runner.ExecuteCommandAsync(args);
                     await verifyTask;
 
@@ -74,7 +75,7 @@ namespace NuGet.CommandLine.XPlat
             if (argument.Values.Count == 0 ||
                 argument.Values.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
             {
-                throw new ArgumentNullException(nameof(argument));
+                throw new ArgumentNullException(argument.Name);
             }
         }
     }
