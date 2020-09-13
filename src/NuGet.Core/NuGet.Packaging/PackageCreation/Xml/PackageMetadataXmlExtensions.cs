@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Xml
             }
             if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
-                if (!metadata.SuppressRequireLicenseAcceptance)
+                if (metadata.EmitRequireLicenseAcceptance)
                 {
                     elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
                 }

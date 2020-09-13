@@ -179,11 +179,11 @@ namespace NuGet.Packaging
             set;
         }
 
-        public bool SuppressRequireLicenseAcceptance
+        public bool EmitRequireLicenseAcceptance
         {
             get;
             set;
-        }
+        } = true;
 
         public bool Serviceable
         {

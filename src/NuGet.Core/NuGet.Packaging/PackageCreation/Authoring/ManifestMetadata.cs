@@ -46,7 +46,7 @@ namespace NuGet.Packaging
             _projectUrl = copy.ProjectUrl?.OriginalString;
             _iconUrl = copy.IconUrl?.OriginalString;
             RequireLicenseAcceptance = copy.RequireLicenseAcceptance;
-            SuppressRequireLicenseAcceptance = (copy as PackageBuilder)?.SuppressRequireLicenseAcceptance ?? false;
+            EmitRequireLicenseAcceptance = (copy as PackageBuilder)?.EmitRequireLicenseAcceptance ?? true;
             Description = copy.Description?.Trim();
             Copyright = copy.Copyright?.Trim();
             Summary = copy.Summary?.Trim();
@@ -162,7 +162,7 @@ namespace NuGet.Packaging
 
         public bool RequireLicenseAcceptance { get; set; }
 
-        public bool SuppressRequireLicenseAcceptance { get; set; }
+        public bool EmitRequireLicenseAcceptance { get; set; } = true;
 
         public bool DevelopmentDependency { get; set; }
 

@@ -1,9 +1,9 @@
-NuGet.Packaging.ManifestMetadata.SuppressRequireLicenseAcceptance.get -> bool
-NuGet.Packaging.ManifestMetadata.SuppressRequireLicenseAcceptance.set -> void
+NuGet.Packaging.ManifestMetadata.EmitRequireLicenseAcceptance.get -> bool
+NuGet.Packaging.ManifestMetadata.EmitRequireLicenseAcceptance.set -> void
 NuGet.Packaging.NupkgMetadataFile.Source.get -> string
 NuGet.Packaging.NupkgMetadataFile.Source.set -> void
-NuGet.Packaging.PackageBuilder.SuppressRequireLicenseAcceptance.get -> bool
-NuGet.Packaging.PackageBuilder.SuppressRequireLicenseAcceptance.set -> void
+NuGet.Packaging.PackageBuilder.EmitRequireLicenseAcceptance.get -> bool
+NuGet.Packaging.PackageBuilder.EmitRequireLicenseAcceptance.set -> void
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInDependencyGroupsWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFilesWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning.get -> string

@@ -782,7 +782,7 @@ namespace NuGet.Commands
 
             InitCommonPackageBuilderProperties(mainPackageBuilder);
 
-            mainPackageBuilder.SuppressRequireLicenseAcceptance = !mainPackageBuilder.RequireLicenseAcceptance;
+            mainPackageBuilder.EmitRequireLicenseAcceptance = mainPackageBuilder.RequireLicenseAcceptance;
 
             bool successful = true;
             // Build the main package
