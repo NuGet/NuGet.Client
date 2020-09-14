@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
@@ -47,10 +47,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             message = reader.ReadString();
                             break;
                         case ReasonsPropertyName:
-                            reasons = options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Deserialize(ref reader, options); ;
+                            reasons = reader.TryReadNil() ? null : options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Deserialize(ref reader, options); ;
                             break;
                         case AlternatePackageMetadataPropertyName:
-                            alternatePackageMetadataContextInfo = options.Resolver.GetFormatter<AlternatePackageMetadataContextInfo>().Deserialize(ref reader, options);
+                            alternatePackageMetadataContextInfo = reader.TryReadNil() ? null : options.Resolver.GetFormatter<AlternatePackageMetadataContextInfo>().Deserialize(ref reader, options);
                             break;
                         default:
                             reader.Skip();
@@ -59,8 +59,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 }
 
                 Assumes.NotNullOrEmpty(message);
-                Assumes.NotNull(reasons);
-                Assumes.NotNull(alternatePackageMetadataContextInfo);
 
                 return new PackageDeprecationMetadataContextInfo(message, reasons, alternatePackageMetadataContextInfo);
             }
@@ -83,9 +81,24 @@ namespace NuGet.VisualStudio.Internal.Contracts
             writer.Write(MessagePropertyName);
             writer.Write(value.Message);
             writer.Write(ReasonsPropertyName);
-            options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Serialize(ref writer, value.Reasons, options);
+            if(value.Reasons == null)
+            {
+                writer.WriteNil();
+            }
+            else
+            {
+                options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Serialize(ref writer, value.Reasons, options);
+
+            }
             writer.Write(AlternatePackageMetadataPropertyName);
-            options.Resolver.GetFormatter<AlternatePackageMetadataContextInfo>().Serialize(ref writer, value.AlternatePackage, options);
+            if(value.AlternatePackage == null)
+            {
+                writer.WriteNil();
+            }
+            else
+            {
+                options.Resolver.GetFormatter<AlternatePackageMetadataContextInfo>().Serialize(ref writer, value.AlternatePackage, options);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
@@ -12,13 +12,13 @@ namespace NuGet.VisualStudio.Internal.Contracts
     public sealed class PackageDeprecationMetadataContextInfo
     {
         public string Message { get; }
-        public IReadOnlyCollection<string> Reasons { get; }
-        public AlternatePackageMetadataContextInfo AlternatePackage { get; }
+        public IReadOnlyCollection<string>? Reasons { get; }
+        public AlternatePackageMetadataContextInfo? AlternatePackage { get; }
 
         public PackageDeprecationMetadataContextInfo(
             string message,
-            IReadOnlyCollection<string> reasons,
-            AlternatePackageMetadataContextInfo alternatePackageContextInfo)
+            IReadOnlyCollection<string>? reasons,
+            AlternatePackageMetadataContextInfo? alternatePackageContextInfo)
         {
             Message = message;
             Reasons = reasons;
@@ -29,8 +29,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
             return new PackageDeprecationMetadataContextInfo(
                 packageDeprecationMetadata.Message,
-                packageDeprecationMetadata.Reasons.ToList(),
-                AlternatePackageMetadataContextInfo.Create(packageDeprecationMetadata.AlternatePackage));
+                packageDeprecationMetadata.Reasons?.ToList(),
+                packageDeprecationMetadata.AlternatePackage != null ? AlternatePackageMetadataContextInfo.Create(packageDeprecationMetadata.AlternatePackage) : null);
         }
     }
 }
