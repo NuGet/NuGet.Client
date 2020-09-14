@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
@@ -75,7 +75,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
                 return new SearchFilter(includePrerelease, filterType)
                 {
-                    SupportedFrameworks = supportedFrameworks
+                    SupportedFrameworks = supportedFrameworks,
+                    OrderBy = searchOrderBy,
+                    PackageTypes = packageTypes,
+                    IncludeDelisted = includeDelisted,
                 };
             }
             finally
