@@ -9,7 +9,6 @@ using System.Reflection;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -62,20 +61,6 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.NotNull(centralTransitiveDependentPackage);
                     Assert.Equal(new List<string> { "Analyzers", "Build", "Runtime" }, centralTransitiveDependentPackage.Exclude);
                 }
-            }
-        }
-
-        [Fact]
-        public void PackTaskLogic_ErrorsOnBadFrameworkPlatform()
-        {
-            // This test uses the ...\NuGet.Build.Tasks.Pack.Test\compiler\resources\project.assets.json assets file.
-            // Arrange
-            using (var testDir = TestDirectory.Create())
-            {
-                var tc = new TestContext(testDir, "net5.0-windows");
-
-                // Act & Assert
-                Assert.Throws<PackagingException>(() => tc.BuildPackage());
             }
         }
 
@@ -640,16 +625,11 @@ namespace NuGet.Build.Tasks.Pack.Test
 
         private class TestContext
         {
-            public TestContext(TestDirectory testdir)
-                : this(testdir, "net45")
-            {
-            }
-
-            public TestContext(TestDirectory testDir, string tfm)
+            public TestContext(TestDirectory testDir)
             {
                 var fullPath = Path.Combine(testDir, "project.csproj");
                 var rootDir = Path.GetPathRoot(testDir);
-                var dllDir = Path.Combine(testDir, "bin", "Debug", tfm);
+                var dllDir = Path.Combine(testDir, "bin", "Debug", "net45");
                 var dllPath = Path.Combine(dllDir, "a.dll");
 
                 Directory.CreateDirectory(dllDir);
@@ -684,11 +664,11 @@ namespace NuGet.Build.Tasks.Pack.Test
                     IncludeBuildOutput = true,
                     RestoreOutputPath = Path.Combine(testDir, "obj"),
                     ContinuePackingAfterGeneratingNuspec = true,
-                    TargetFrameworks = new[] { tfm },
+                    TargetFrameworks = new[] { "net45" },
                     BuildOutputInPackage = new[] { new MSBuildItem(dllPath, new Dictionary<string, string>
                     {
                         {"FinalOutputPath", dllPath },
-                        {"TargetFramework", tfm }
+                        {"TargetFramework", "net45" }
                     })},
                     Logger = new TestLogger(),
                     SymbolPackageFormat = "symbols.nupkg",

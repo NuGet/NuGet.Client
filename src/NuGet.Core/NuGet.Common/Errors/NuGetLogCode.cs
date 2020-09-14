@@ -103,11 +103,6 @@ namespace NuGet.Common
         NU1011 = 1011,
 
         /// <summary>
-        /// Target Framework has a platform component, but the platform version could not be inferred.
-        /// </summary>
-        NU1012 = 1012,
-
-        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
