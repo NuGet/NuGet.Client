@@ -417,7 +417,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Use .Properties.Item("Path") instead of .FullName because .FullName might not be
             // available if the solution is just being created
-            string solutionFilePath = null;
+            string solutionFilePath;
 
             var dte = await _asyncServiceProvider.GetDTEAsync();
             var property = dte.Solution.Properties.Item("Path");
@@ -491,18 +491,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnAfterClosing()
         {
-            SolutionClosed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnBeforeClosing()
-        {
             DefaultNuGetProjectName = null;
             _projectSystemCache.Clear();
             _cacheInitialized = false;
 
-            SolutionClosing?.Invoke(this, EventArgs.Empty);
+            SolutionClosed?.Invoke(this, EventArgs.Empty);
 
             _solutionOpenedRaised = false;
+        }
+
+        private void OnBeforeClosing()
+        {
+            SolutionClosing?.Invoke(this, EventArgs.Empty);
         }
 
         private void SolutionSaveAs_BeforeExecute(
@@ -586,9 +586,10 @@ namespace NuGet.PackageManagement.VisualStudio
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            RemoveVsProjectAdapterFromCache(envDTEProject.FullName);
             NuGetProject nuGetProject;
             _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+
+            RemoveVsProjectAdapterFromCache(envDTEProject.FullName);
 
             NuGetProjectRemoved?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
         }
@@ -909,10 +910,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
         {
-            if (ActionsExecuted != null)
-            {
-                ActionsExecuted(this, new ActionsExecutedEventArgs(actions));
-            }
+            ActionsExecuted?.Invoke(this, new ActionsExecutedEventArgs(actions));
         }
 
         #endregion IVsSelectionEvents

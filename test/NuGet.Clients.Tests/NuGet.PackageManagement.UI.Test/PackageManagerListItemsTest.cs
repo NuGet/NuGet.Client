@@ -5,8 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
 
@@ -14,14 +14,13 @@ namespace NuGet.PackageManagement.UI.Test
 {
     public class PackageManagerListItemsTest
     {
-
         [Fact]
         public async Task PackagePrefixReservation_FromOneSource()
         {
-            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
             Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+                .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
             // Arrange
@@ -72,10 +71,10 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task PackagePrefixReservation_FromMultiSource()
         {
-            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
             Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+                .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
             // Arrange

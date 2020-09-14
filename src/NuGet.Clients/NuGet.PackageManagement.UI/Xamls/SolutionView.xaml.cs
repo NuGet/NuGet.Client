@@ -5,10 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -154,19 +159,25 @@ namespace NuGet.PackageManagement.UI
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            var model = DataContext as PackageSolutionDetailControlModel;
-            model?.SelectAllProjects();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CheckBoxSelectProjectsAsync(select: true))
+                .PostOnFailure(nameof(SolutionView), nameof(CheckBox_Checked));
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CheckBoxSelectProjectsAsync(select: false))
+                  .PostOnFailure(nameof(SolutionView), nameof(CheckBox_Unchecked));
+        }
+
+        private async Task CheckBoxSelectProjectsAsync(bool select)
+        {
             var model = DataContext as PackageSolutionDetailControlModel;
-            model?.UnselectAllProjects();
+            await model.SelectAllProjectsAsync(select, CancellationToken.None);
         }
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // adjust the width of the "project" column so that it takes 
+            // adjust the width of the "project" column so that it takes
             // up all remaining width.
             var gridView = (GridView)_projectList.View;
             var width = _projectList.ActualWidth - 2 * SystemParameters.VerticalScrollBarWidth;

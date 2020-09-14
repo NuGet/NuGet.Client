@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (packageVersion == null)
             {
-                throw new ArgumentNullException(nameof(Version));
+                throw new ArgumentNullException(nameof(packageVersion));
             }
 
             return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion);
@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.UI
 
         public static UserAction CreateUnInstallAction(string packageId)
         {
-            return new UserAction(NuGetProjectActionType.Uninstall, packageId, null);
+            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null);
         }
     }
 }
