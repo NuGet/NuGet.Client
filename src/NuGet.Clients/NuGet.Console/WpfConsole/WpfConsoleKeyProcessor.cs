@@ -184,6 +184,11 @@ namespace NuGetConsole.Implementation.Console
             if (pguidCmdGroup == VSConstants.GUID_VSStandardCommandSet97)
             {
                 //Debug.Print("Exec: GUID_VSStandardCommandSet97: {0}", (VSConstants.VSStd97CmdID)nCmdID);
+                if (!_firstInput)
+                {
+                    _firstInput = true;
+                    WpfConsole.EndInputLine();
+                }
 
                 switch ((VSConstants.VSStd97CmdID)nCmdID)
                 {

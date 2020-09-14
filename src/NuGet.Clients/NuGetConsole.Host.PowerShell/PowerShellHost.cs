@@ -66,9 +66,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private uint _solutionExistsCookie;
 
         private IConsole _activeConsole;
-#pragma warning disable IDE1006 // Naming Styles
-        protected NuGetPSHost _nugetHost { get; private set; }
-#pragma warning restore IDE1006 // Naming Styles
+        private NuGetPSHost _nugetHost;
         // indicates whether this host has been initialized.
         // null = not initilized, true = initialized successfully, false = initialized unsuccessfully
         private bool? _initialized;
@@ -266,7 +264,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             return prompt;
                         }
 
-                        return "";
+                        return string.Empty;
                     }
 
                     // Execute the prompt function from a worker thread, so that the UI thread is not blocked waiting
@@ -337,7 +335,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private async Task GetRunspaceAsync(IConsole console)
         {
-            //await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var result = _runspaceManager.GetRunspace(console, _name);
             Runspace = result.Item1;
             _nugetHost = result.Item2;
@@ -560,6 +557,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             if (Runspace == null)
             {
                 var result = Task.Run(async () => await GetRunspaceAsync(console));
+                System.Threading.Thread.Sleep(50);
             }
             else
             {
