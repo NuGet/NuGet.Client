@@ -50,7 +50,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             reasons = reader.TryReadNil() ? null : options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Deserialize(ref reader, options); ;
                             break;
                         case AlternatePackageMetadataPropertyName:
-                            alternatePackageMetadataContextInfo = reader.TryReadNil() ? null : options.Resolver.GetFormatter<AlternatePackageMetadataContextInfo>().Deserialize(ref reader, options);
+                            alternatePackageMetadataContextInfo = reader.TryReadNil() ? null : AlternatePackageMetadataContextInfoFormatter.Instance.Deserialize(ref reader, options);
                             break;
                         default:
                             reader.Skip();
@@ -97,7 +97,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
             else
             {
-                options.Resolver.GetFormatter<AlternatePackageMetadataContextInfo>().Serialize(ref writer, value.AlternatePackage, options);
+                AlternatePackageMetadataContextInfoFormatter.Instance.Serialize(ref writer, value.AlternatePackage, options);
             }
         }
     }
