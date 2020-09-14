@@ -986,6 +986,7 @@ namespace NuGet.PackageManagement.UI
             using (INuGetSearchService searchService = await serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(searchService);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 return await searchService.GetDeprecationMetadataAsync(package, SelectedSource.PackageSources, true, cancellationToken);
             }
         }
