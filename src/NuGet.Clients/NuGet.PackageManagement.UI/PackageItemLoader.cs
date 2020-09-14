@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -24,12 +25,7 @@ namespace NuGet.PackageManagement.UI
         private readonly IPackageFeed _recommenderPackageFeed;
         private PackageCollection _installedPackages;
         private int _recommendedCount;
-        private IEnumerable<Packaging.PackageReference> _packageReferences;
-
-        private SearchFilter SearchFilter => new SearchFilter(includePrerelease: _includePrerelease)
-        {
-            SupportedFrameworks = _context.GetSupportedFrameworks()
-        };
+        private IEnumerable<IPackageReferenceContextInfo> _packageReferences;
 
         // Never null
         private PackageFeedSearchState _state = new PackageFeedSearchState();
@@ -196,19 +192,23 @@ namespace NuGet.PackageManagement.UI
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
-        private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(
-            CancellationToken cancellationToken)
+        private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var searchFilter = new SearchFilter(includePrerelease: _includePrerelease)
+            {
+                SupportedFrameworks = await _context.GetSupportedFrameworksAsync()
+            };
+
             // get the browse/search results
-            SearchResult<IPackageSearchMetadata> browseResult = await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+            SearchResult<IPackageSearchMetadata> browseResult = await _packageFeed.SearchAsync(_searchText, searchFilter, cancellationToken);
 
             // get the recommender results
             SearchResult<IPackageSearchMetadata> recommenderResult = null;
             if (_recommenderPackageFeed != null)
             {
-                recommenderResult = await _recommenderPackageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+                recommenderResult = await _recommenderPackageFeed.SearchAsync(_searchText, searchFilter, cancellationToken);
                 _recommendedCount = recommenderResult.Count();
             }
 
@@ -229,13 +229,6 @@ namespace NuGet.PackageManagement.UI
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             await TaskScheduler.Default;
-            // check if there is already a running initialization task for SolutionManager. If yes,
-            // search should wait until this is completed. This would usually happen when opening manager
-            //ui is the first nuget operation under LSL mode where it might take some time to initialize.
-            if (_context.SolutionManager.InitializationTask != null && !_context.SolutionManager.InitializationTask.IsCompleted)
-            {
-                await _context.SolutionManager.InitializationTask;
-            }
 
             if (continuationToken != null)
             {
@@ -259,7 +252,7 @@ namespace NuGet.PackageManagement.UI
             if (_packageReferences == null && !_context.IsSolution)
             {
                 var tasks = _context.Projects
-                    .Select(project => project.GetInstalledPackagesAsync(cancellationToken));
+                    .Select(project => project.GetInstalledPackagesAsync(cancellationToken).AsTask());
                 _packageReferences = (await Task.WhenAll(tasks)).SelectMany(p => p).Where(p => p != null);
             }
 
@@ -288,7 +281,7 @@ namespace NuGet.PackageManagement.UI
                     // get the allowed version range and pass it to package item view model to choose the latest version based on that
                     if (_packageReferences != null)
                     {
-                        var matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, metadata.Identity.Id));
+                        var matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, metadata.Identity.Id));
                         var allowedVersionsRange = matchedPackageReferences.Select(r => r.AllowedVersions).Where(v => v != null).ToArray();
 
                         if (allowedVersionsRange.Length > 0)
@@ -319,10 +312,11 @@ namespace NuGet.PackageManagement.UI
                     if (!_context.IsSolution && _context.PackageManagerProviders.Any())
                     {
                         listItem.ProvidersLoader = AsyncLazy.New(
-                            () => AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
-                                _context.PackageManagerProviders,
-                                listItem.Id,
-                                _context.Projects[0]));
+                            async () =>
+                            {
+                                string uniqueProjectName = await _context.Projects[0].GetUniqueNameOrNameAsync(CancellationToken.None);
+                                return await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(_context.PackageManagerProviders, listItem.Id, uniqueProjectName);
+                            });
                     }
 
                     return listItem;

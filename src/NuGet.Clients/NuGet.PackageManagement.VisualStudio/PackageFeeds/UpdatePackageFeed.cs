@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -21,12 +21,12 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly PackageSearchMetadataCache _cachedUpdates;
         private readonly Common.ILogger _logger;
-        private readonly NuGetProject[] _projects;
+        private readonly IProjectContextInfo[] _projects;
 
         public UpdatePackageFeed(
             IEnumerable<PackageCollectionItem> installedPackages,
             IPackageMetadataProvider metadataProvider,
-            NuGetProject[] projects,
+            IProjectContextInfo[] projects,
             PackageSearchMetadataCache optionalCachedUpdates,
             Common.ILogger logger)
         {
@@ -123,14 +123,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 var installed = await project.GetInstalledPackagesAsync(cancellationToken);
                 foreach (var installedPackage in installed)
                 {
-                    var installedVersion = installedPackage.PackageIdentity.Version;
+                    var installedVersion = installedPackage.Identity.Version;
                     var allowedVersions = installedPackage.AllowedVersions ?? VersionRange.All;
 
                     // filter packages based on current package identity
                     var allPackages = prefetchedPackages
                         .Where(p => StringComparer.OrdinalIgnoreCase.Equals(
                             p.Identity.Id,
-                            installedPackage.PackageIdentity.Id))
+                            installedPackage.Identity.Id))
                         .ToArray();
 
                     // and allowed versions

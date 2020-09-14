@@ -2,9 +2,11 @@ using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.Models;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -71,7 +73,7 @@ namespace NuGet.PackageManagement.UI.TestContract
                         }
 
                         var existingProject = projects.First();
-                        var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                        var projectName = await existingProject.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None);
                         if (string.Equals(projectName, projectUniqueName, StringComparison.OrdinalIgnoreCase))
                         {
                             var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);

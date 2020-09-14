@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.OnlineEnvironment.Client
@@ -26,6 +27,10 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [Guid(PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
+    [ProvideToolWindow(typeof(PackageManagerToolWindowPane),
+        Style = VsDockStyle.MDI,
+        MultiInstances = true,
+        DocumentLikeTool = true)]
     public sealed class NuGetClientPackage : AsyncPackage
     {
         /// <summary>

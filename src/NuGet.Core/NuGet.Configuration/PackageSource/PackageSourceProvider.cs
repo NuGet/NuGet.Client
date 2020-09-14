@@ -9,7 +9,7 @@ using NuGet.Common;
 
 namespace NuGet.Configuration
 {
-    public class PackageSourceProvider : IPackageSourceProvider
+    public class PackageSourceProvider : IPackageSourceProvider, IPackageSourceProvider2
     {
         public ISettings Settings { get; private set; }
 
@@ -652,7 +652,7 @@ namespace NuGet.Configuration
             }
         }
 
-        public void SavePackageSources(IEnumerable<PackageSource> sources)
+        public void SavePackageSources(IEnumerable<PackageSource> sources, PackageSourceUpdateOptions sourceUpdateSettings)
         {
             if (sources == null)
             {
@@ -691,8 +691,8 @@ namespace NuGet.Configuration
                         oldPackageSource,
                         existingDisabledSourceItem,
                         existingCredentialsItem,
-                        updateEnabled: true,
-                        updateCredentials: true,
+                        updateEnabled: sourceUpdateSettings.UpdateEnabled,
+                        updateCredentials: sourceUpdateSettings.UpdateCredentials,
                         shouldSkipSave: true,
                         isDirty: ref isDirty);
                 }
@@ -733,13 +733,22 @@ namespace NuGet.Configuration
                 }
             }
 
-
             if (isDirty)
             {
                 Settings.SaveToDisk();
                 OnPackageSourcesChanged();
                 isDirty = false;
             }
+        }
+
+        public void SavePackageSources(IEnumerable<PackageSource> sources)
+        {
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            SavePackageSources(sources, PackageSourceUpdateOptions.Default);
         }
 
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()

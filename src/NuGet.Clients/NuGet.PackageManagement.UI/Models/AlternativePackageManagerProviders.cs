@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
@@ -31,35 +30,27 @@ namespace NuGet.PackageManagement.UI
             ProjectName = projectName;
         }
 
-        public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders
-        {
-            get;
-        }
+        public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
-        public string PackageId
-        {
-            get;
-        }
+        public string PackageId { get; }
 
-        public string ProjectName
-        {
-            get;
-        }
+        public string ProjectName { get; }
 
         public static async Task<AlternativePackageManagerProviders> CalculateAlternativePackageManagersAsync(
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             string packageId,
-            NuGetProject project)
+            string uniqueProjectName)
         {
+            if (packageManagerProviders == null)
+            {
+                throw new ArgumentNullException(nameof(packageManagerProviders));
+            }
+
             var otherProviders = new List<IVsPackageManagerProvider>();
-            var projectName = NuGetProject.GetUniqueNameOrName(project);
 
             foreach (var provider in packageManagerProviders)
             {
-                bool applicable = await provider.CheckForPackageAsync(
-                    packageId,
-                    projectName,
-                    CancellationToken.None);
+                bool applicable = await provider.CheckForPackageAsync(packageId, uniqueProjectName, CancellationToken.None);
 
                 if (applicable)
                 {
@@ -67,17 +58,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            if (otherProviders.Count == 0)
-            {
-                return null;
-            }
-            else
-            {
-                return new AlternativePackageManagerProviders(
-                    otherProviders,
-                    packageId,
-                    projectName);
-            }
+            return otherProviders.Count == 0 ? null : new AlternativePackageManagerProviders(otherProviders, packageId, uniqueProjectName);
         }
     }
 }

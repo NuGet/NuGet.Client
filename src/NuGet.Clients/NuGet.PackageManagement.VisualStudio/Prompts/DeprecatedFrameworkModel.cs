@@ -3,15 +3,13 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using NuGet.Frameworks;
-using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public class DeprecatedFrameworkModel
     {
-        public DeprecatedFrameworkModel(NuGetFramework deprecated, string migrationUrl, IEnumerable<NuGetProject> projects)
+        public DeprecatedFrameworkModel(NuGetFramework deprecated, string migrationUrl, IReadOnlyList<string> projects)
         {
             TextBeforeLink = string.Format(
                 CultureInfo.CurrentCulture,
@@ -23,11 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectListText = Strings.Text_DeprecatedFramework_ProjectList;
 
             MigrationUrl = migrationUrl;
-
-            Projects = projects
-                .Select(project => NuGetProject.GetUniqueNameOrName(project))
-                .OrderBy(name => name)
-                .ToList();
+            Projects = projects;
         }
 
         public string TextBeforeLink { get; }
