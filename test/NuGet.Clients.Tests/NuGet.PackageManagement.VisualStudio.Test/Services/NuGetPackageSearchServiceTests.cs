@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -53,8 +54,31 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
     public class NuGetPackageSearchServiceTests : BaseMockedVSCollectionTest
     {
+        SourceRepository _sourceRepository;
+        IEnumerable<IPackageReferenceContextInfo> _installedPackages;
+        IReadOnlyCollection<IProjectContextInfo> _projects;
+
+        public NuGetPackageSearchServiceTests()
+        {
+            _installedPackages = new List<IPackageReferenceContextInfo>();
+            _projects = new List<IProjectContextInfo> { new ProjectContextInfo(Guid.NewGuid().ToString(), ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.PackageReference) };
+
+            var query = "https://api-v2v3search-0.nuget.org/query";
+            var responses = new Dictionary<string, string>
+            {
+
+                { NuGetConstants.V3FeedUrl, ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.index.json", GetType()) },
+                { query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType()) },
+                { query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType()) },
+                { query + "?q=&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.blankSearchPage.json", GetType()) },
+                { "https://api.nuget.org/v3/registration3-gz-semver2/" + "nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) }
+            };
+
+            _sourceRepository = StaticHttpHandler.CreateSource(NuGetConstants.V3FeedUrl, Repository.Provider.GetCoreV3(), responses);
+        }
+
         [Fact]
-        public async Task GetTotalCountAsync_Works()
+        public async Task GetTotalCountAsync_MaxCount()
         {
             var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
             var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
@@ -92,37 +116,55 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetTotalCountAsync_Works()
+        {
+            var searchService = SetupSearchService();
+            var totalCount = await searchService.GetTotalCountAsync(100, _projects, new List<PackageSource> { _sourceRepository.PackageSource }, new SearchFilter(true), ItemFilter.All, CancellationToken.None);
+
+            Assert.Equal(22, totalCount);
+        }
+
+        [Fact]
+        public async Task GetAllPackagesAsync_Works()
+        {
+            var searchService = SetupSearchService();
+            var allPackages = await searchService.GetAllPackagesAsync(_projects, new List<PackageSource> { _sourceRepository.PackageSource }, new SearchFilter(true), ItemFilter.All, CancellationToken.None);
+
+            Assert.Equal(22, allPackages.Count);
+        }
+
+        [Fact]
+        public async Task GetPackageMetadataListAsync_Works()
+        {
+            var searchService = SetupSearchService();
+            var packageMetadataList = await searchService.GetPackageMetadataListAsync("NuGet.Core", new List<PackageSource> { _sourceRepository.PackageSource }, true, true, CancellationToken.None);
+
+            Assert.Equal(57, packageMetadataList.Count);
+        }
+
+        [Fact]
+        public async Task GetDeprecationMetadataAsync_Works()
+        {
+            var searchService = SetupSearchService();
+            var deprecationMetadata = await searchService.GetDeprecationMetadataAsync(new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")), new List<PackageSource> { _sourceRepository.PackageSource }, true, CancellationToken.None);
+
+            Assert.NotNull(deprecationMetadata);
+            Assert.Equal("NuGet.Core is part of NuGet client v2 APIs. They have been replaced by NuGet client v3 and later APIs.", deprecationMetadata.Message);
+            Assert.Equal("Legacy", deprecationMetadata.Reasons.First());
+        }
+
+        [Fact]
+        public async Task GetPackageVersionsAsync_Works()
+        {
+            NuGetPackageSearchService searchService = SetupSearchService();
+            var result = await searchService.GetPackageVersionsAsync(new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")), new List<PackageSource> { _sourceRepository.PackageSource }, true, CancellationToken.None);
+            Assert.Equal(51, result.Count);
+            Assert.True(result.Last().Version.Version.Equals(new Version("1.0.1120.104")));
+        }
+
+        [Fact]
         public async Task SearchAndContinueSearch_Works()
         {
-            var query = "https://api-v2v3search-0.nuget.org/query";
-            var responses = new Dictionary<string, string>
-            {
-                {
-                    NuGetConstants.V3FeedUrl,
-                    ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.index.json", GetType())
-                },
-                {
-                    query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0",
-                    ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType())
-                },
-                {
-                    query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0",
-                    ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType())
-                },
-            };
-
-            var sourceRepository = StaticHttpHandler.CreateSource(NuGetConstants.V3FeedUrl, Repository.Provider.GetCoreV3(), responses);
-
-            var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
-            sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>())).Returns(sourceRepository);
-            var solutionManager = new Mock<IVsSolutionManager>();
-            solutionManager.SetupGet(x => x.SolutionDirectory).Returns("z:\\SomeRandomPath");
-            var settings = new Mock<ISettings>();
-
-            AddService<IVsSolutionManager>(Task.FromResult<object>(solutionManager.Object));
-            AddService<ISourceRepositoryProvider>(Task.FromResult<object>(sourceRepositoryProvider.Object));
-            AddService<ISettings>(Task.FromResult<object>(settings.Object));
-
             var telemetryService = new Mock<INuGetTelemetryService>();
             var eventsQueue = new ConcurrentQueue<TelemetryEvent>();
             telemetryService
@@ -131,29 +173,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
 
-            var serviceActivationOptions = default(ServiceActivationOptions);
-            var serviceBroker = new Mock<IServiceBroker>();
-            var authorizationService = new AuthorizationServiceClient(Mock.Of<IAuthorizationService>());
-
-            var sharedState = new SharedServiceState();
-
-            var projectManagerService = new Mock<INuGetProjectManagerService>();
-
-            var installedPackages = new List<IPackageReferenceContextInfo>();
-            var projects = new List<IProjectContextInfo> { new ProjectContextInfo(Guid.NewGuid().ToString(), ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.PackageReference) };
-
-            projectManagerService.Setup(x =>
-                x.GetInstalledPackagesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
-                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
-
-#pragma warning disable ISB001 // Dispose of proxies
-            serviceBroker.Setup(x =>
-                x.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
-                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
-#pragma warning restore ISB001 // Dispose of proxies
-
-            NuGetPackageSearchService searchService = new NuGetPackageSearchService(serviceActivationOptions, serviceBroker.Object, authorizationService, sharedState);
-            var searchResult = await searchService.SearchAsync(projects, new List<PackageSource> { sourceRepository.PackageSource }, "nuget", new SearchFilter(true), ItemFilter.All, true, CancellationToken.None);
+            var searchService = SetupSearchService();
+            var searchResult = await searchService.SearchAsync(_projects, new List<PackageSource> { _sourceRepository.PackageSource }, "nuget", new SearchFilter(true), ItemFilter.All, true, CancellationToken.None);
             var continueSearchResult = await searchService.ContinueSearchAsync(CancellationToken.None);
 
             Assert.True(searchResult.PackageSearchItems.First().Title.Equals("NuGet.Core1", StringComparison.OrdinalIgnoreCase));
@@ -190,6 +211,39 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.IsType<double>(page1["ResultsAggregationDuration"]);
             Assert.IsType<string>(page1["IndividualSourceDurations"]);
             Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
+        }
+
+        private NuGetPackageSearchService SetupSearchService()
+        {
+            var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
+            sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>())).Returns(_sourceRepository);
+            var solutionManager = new Mock<IVsSolutionManager>();
+            solutionManager.SetupGet(x => x.SolutionDirectory).Returns("z:\\SomeRandomPath");
+            var settings = new Mock<ISettings>();
+
+            AddService<IVsSolutionManager>(Task.FromResult<object>(solutionManager.Object));
+            AddService<ISourceRepositoryProvider>(Task.FromResult<object>(sourceRepositoryProvider.Object));
+            AddService<ISettings>(Task.FromResult<object>(settings.Object));
+
+            var serviceActivationOptions = default(ServiceActivationOptions);
+            var serviceBroker = new Mock<IServiceBroker>();
+            var authorizationService = new AuthorizationServiceClient(Mock.Of<IAuthorizationService>());
+
+            var sharedState = new SharedServiceState();
+
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+
+            projectManagerService.Setup(x =>
+                x.GetInstalledPackagesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(_installedPackages.ToList()));
+
+#pragma warning disable ISB001 // Dispose of proxies
+            serviceBroker.Setup(x =>
+                x.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
+#pragma warning restore ISB001 // Dispose of proxies
+
+            return new NuGetPackageSearchService(serviceActivationOptions, serviceBroker.Object, authorizationService, sharedState);
         }
     }
 }

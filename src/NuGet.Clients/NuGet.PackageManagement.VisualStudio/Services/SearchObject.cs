@@ -99,7 +99,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var packages = new List<PackageSearchMetadataContextInfo>();
             do
             {
-                var searchResult = await SearchAsync(string.Empty, searchFilter, false, cancellationToken);
+                var searchResult = _lastMainFeedSearchResult?.NextToken != null
+                    ? await ContinueSearchAsync(cancellationToken)
+                    : await SearchAsync(string.Empty, searchFilter, false, cancellationToken);
+
                 if (_lastMainFeedSearchResult?.RefreshToken != null)
                 {
                     searchResult = await RefreshSearchAsync(cancellationToken);
@@ -141,10 +144,13 @@ namespace NuGet.PackageManagement.VisualStudio
             ActivityCorrelationId.StartNew();
 
             int totalCount = 0;
-            ContinuationToken? nextToken;
+            ContinuationToken? nextToken = null;
             do
             {
-                var searchResult = await _mainFeed.SearchAsync(string.Empty, filter, cancellationToken);
+                SearchResult<IPackageSearchMetadata> searchResult = nextToken == null
+                        ? await _mainFeed.SearchAsync(string.Empty, filter, cancellationToken)
+                        : await _mainFeed.ContinueSearchAsync(nextToken, cancellationToken);
+
                 while (searchResult.RefreshToken != null)
                 {
                     searchResult = await _mainFeed.RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
