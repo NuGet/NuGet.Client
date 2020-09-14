@@ -13,9 +13,6 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources/>
       </ResourceDictionary.MergedDictionaries>
-      <BitmapImage
-        x:Key="BitmapImage_Refresh"
-        UriSource="/NuGet.PackageManagement.UI;component/Resources/Refresh.16.16.png" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -202,8 +199,8 @@
           AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Refresh}"
           Style="{StaticResource ToolBarButtonStyle}"
           Command="{x:Static nuget:Commands.RestartSearchCommand}">
-          <Image
-            Source="{StaticResource BitmapImage_Refresh}"
+          <imaging:CrispImage
+            Moniker="{x:Static catalog:KnownMonikers.Refresh}"
             Margin="2"
             Height="16"
             Width="16" />
