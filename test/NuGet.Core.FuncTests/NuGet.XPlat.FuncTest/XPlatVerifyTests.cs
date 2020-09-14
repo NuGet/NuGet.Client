@@ -30,7 +30,7 @@ namespace NuGet.XPlat.FuncTest
 
                     // Assert
                     Assert.IsType<ArgumentNullException>(ex.InnerException);
-                    Assert.Matches("Value cannot be null.*Parameter*<packages-path>*", ex.InnerException.Message);
+                    Assert.Equal("<packages-path>", (ex.InnerException as ArgumentNullException).ParamName);
                 });
         }
 
