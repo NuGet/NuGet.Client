@@ -699,7 +699,7 @@ namespace NuGet.Build.Tasks.Console
 
             (ProjectRestoreMetadata restoreMetadata, List<TargetFrameworkInformation> targetFrameworkInfos) = GetProjectRestoreMetadataAndTargetFrameworkInformation(project, projectsByTargetFramework, settings);
 
-            if(restoreMetadata == null || targetFrameworkInfos == null)
+            if (restoreMetadata == null || targetFrameworkInfos == null)
             {
                 return null;
             }
@@ -739,7 +739,7 @@ namespace NuGet.Build.Tasks.Console
 
             var outputPath = GetRestoreOutputPath(project);
 
-            if(outputPath == null)
+            if (outputPath == null)
             {
                 return (null, null);
             }
