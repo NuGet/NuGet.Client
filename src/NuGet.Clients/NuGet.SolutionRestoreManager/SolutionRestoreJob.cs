@@ -287,9 +287,9 @@ namespace NuGet.SolutionRestoreManager
                 source,
                 startTime,
                 _status,
-                _packageCount,
-                _upToDateProjectCount,
-                _noOpProjectsCount,
+                packageCount: _packageCount,
+                noOpProjectsCount: _noOpProjectsCount,
+                upToDateProjectsCount: _upToDateProjectCount,
                 DateTimeOffset.Now,
                 duration,
                 intervalTimingTracker);
