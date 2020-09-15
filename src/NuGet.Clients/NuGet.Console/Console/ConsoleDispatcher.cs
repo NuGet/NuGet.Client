@@ -320,6 +320,9 @@ namespace NuGetConsole.Implementation.Console
             protected void PromptNewLine()
             {
                 var input = WpfConsole.Host.Prompt;
+
+                // 1st run shows PM> ready to to enter command.
+                // Then this 2nd run(0 based index) is fake only to kick start actual Powershell when user start typing.
                 if (_runCount == 1)
                 {
                     input = "";
@@ -328,6 +331,7 @@ namespace NuGetConsole.Implementation.Console
                 {
                     input += ' ';
                 }
+
                 _runCount++;
 
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteAsync(input));
