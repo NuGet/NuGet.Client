@@ -38,7 +38,7 @@ namespace NuGet.Commands
 #endif
 
         /// <summary>
-        /// Logger to be used to display the logs during the execution of sign command.
+        /// Logger to be used to display the logs during the execution of verify command.
         /// </summary>
         public ILogger Logger { get; set; }
 

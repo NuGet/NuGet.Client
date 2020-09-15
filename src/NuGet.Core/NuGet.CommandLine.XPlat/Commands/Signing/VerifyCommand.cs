@@ -13,7 +13,7 @@ using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal partial class VerifyCommand
+    internal static class VerifyCommand
     {
         internal static void Register(CommandLineApplication app,
                               Func<ILogger> getLogger,
@@ -42,7 +42,7 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Verbosity_Description,
                     CommandOptionType.SingleValue);
 
-                verifyCmd.HelpOption("-h|--help");
+                verifyCmd.HelpOption(XPlatUtility.HelpOption);
                 verifyCmd.Description = Strings.VerifyCommandDescription;
 
                 verifyCmd.OnExecute(async () =>

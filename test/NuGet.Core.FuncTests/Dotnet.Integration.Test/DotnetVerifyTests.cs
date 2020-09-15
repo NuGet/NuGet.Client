@@ -90,8 +90,11 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
-        public void Verify_SignedPackageWithAllowedCertificate_Succceeds()
+        [CIOnlyTheory]
+        [InlineData("--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE")]
+        [InlineData("--certificate-fingerprint ABC --certificate-fingerprint DEF " +
+            "--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE")]
+        public void Verify_SignedPackageWithAllowedCertificate_Succceeds(string fingerprints)
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -102,8 +105,7 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
-                    $"nuget verify {Path.Combine(testDirectory, packageX)} " +
-                        $"--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE",
+                    $"nuget verify {Path.Combine(testDirectory, packageX)} {fingerprints}",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
