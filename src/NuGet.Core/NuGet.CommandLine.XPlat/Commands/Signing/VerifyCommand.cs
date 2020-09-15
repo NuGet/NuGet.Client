@@ -22,8 +22,8 @@ namespace NuGet.CommandLine.XPlat
         {
             app.Command("verify", verifyCmd =>
             {
-                CommandArgument packagesPath = verifyCmd.Argument(
-                    "<packages-path>",
+                CommandArgument packagePaths = verifyCmd.Argument(
+                    "<package-paths>",
                     Strings.VerifyCommandPackagePathDescription,
                     multipleValues: true);
 
@@ -47,13 +47,13 @@ namespace NuGet.CommandLine.XPlat
 
                 verifyCmd.OnExecute(async () =>
                 {
-                    ValidatePackagesPath(packagesPath);
+                    ValidatePackagesPath(packagePaths);
 
                     VerifyArgs args = new VerifyArgs();
 #if IS_DESKTOP
-                    args.PackagePath = packagesPath.Value;
+                    args.PackagePath = packagePaths.Value;
 #else
-                    args.PackagesPath = packagesPath.Values;
+                    args.PackagePaths = packagesPath.Values;
 #endif
                     args.Verifications = all.HasValue() ?
                         new List<Verification>() { Verification.All } :

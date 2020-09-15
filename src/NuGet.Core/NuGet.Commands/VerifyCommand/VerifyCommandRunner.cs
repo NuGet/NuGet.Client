@@ -41,7 +41,7 @@ namespace NuGet.Commands
                 var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 #else
-                var packagesToVerify = verifyArgs.PackagesPath.SelectMany(packagePath =>
+                var packagesToVerify = verifyArgs.PackagePaths.SelectMany(packagePath =>
                 {
                     var packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
                     LocalFolderUtility.EnsurePackageFileExists(packagePath, packages);

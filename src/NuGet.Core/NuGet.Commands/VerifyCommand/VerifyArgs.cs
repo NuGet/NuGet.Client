@@ -34,7 +34,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Paths to the packages that has to be verified.
         /// </summary>
-        public IReadOnlyList<string> PackagesPath { get; set; }
+        public IReadOnlyList<string> PackagePaths { get; set; }
 #endif
 
         /// <summary>
