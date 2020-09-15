@@ -32,7 +32,7 @@ namespace NuGet.SolutionRestoreManager
         private const int IdleTimeoutMs = 400;
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
-        private const int DelayAutoRestoreRetries = 50;	        
+        //private const int DelayAutoRestoreRetries = 50;	        
         private const int DelaySolutionLoadRetry = 100;
 
         private readonly object _lockPendingRequestsObj = new object();
@@ -484,8 +484,8 @@ namespace NuGet.SolutionRestoreManager
 
                         token.ThrowIfCancellationRequested();
 
-                        var retries = 0;
-                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - About to start draining the queue retries: {retries}, queue count: {_pendingRequests.Value.Count}");
+                        DateTime lastNominationReceived = DateTime.UtcNow;
+                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - About to start draining the queue count: {_pendingRequests.Value.Count}, last nomination time: {lastNominationReceived.ToString("s")}");
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
@@ -507,22 +507,23 @@ namespace NuGet.SolutionRestoreManager
                                 }
                                 else
                                 {
-                                    if (retries >= DelayAutoRestoreRetries)
+                                    // Break if we've waited for more than 10s without an actual nomination.
+                                    if (lastNominationReceived.AddSeconds(10.0) < DateTime.UtcNow)
                                     {
-                                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Break, done waiting {retries} >= {DelayAutoRestoreRetries}");
+                                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Break, done waiting, current time {DateTime.UtcNow.ToString("s")}last nomination time: {lastNominationReceived.ToString("s")}");
                                         // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
                                         // we wait until 20 secs for all the projects to be nominated at solution load.
                                         break;
                                     }
-                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - we're still expecting nominations. Bumping retries {retries} >= {DelayAutoRestoreRetries}");
+                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - we're still expecting nominations. Sleeping for a bit.");
                                     // if we're still expecting some nominations and also haven't reached our max timeout
                                     // then increase the retries count.
-                                    retries++;
                                     await Task.Delay(IdleTimeoutMs, token);
                                 }
                             }
                             else
                             {
+                                lastNominationReceived = DateTime.UtcNow;
                                 NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Pulled a request for {next.OriginalProject}, queue count: {_pendingRequests.Value.Count}");
                                 // Upgrade request if necessary
                                 if (next != null && next.RestoreSource != request.RestoreSource)
