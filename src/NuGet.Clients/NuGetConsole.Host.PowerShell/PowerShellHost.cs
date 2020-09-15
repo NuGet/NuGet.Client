@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -53,6 +54,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ICommonOperations> _commonOperations;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
+        private readonly Lazy<Version> _nugetVersion;
         private const string ActivePackageSourceKey = "activePackageSource";
         private const string SyncModeKey = "IsSyncMode";
         private const string PackageManagementContextKey = "PackageManagementContext";
@@ -139,6 +141,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     return vsMonitorSelection;
                 },
                 ThreadHelper.JoinableTaskFactory);
+            _nugetVersion = new Lazy<Version>(() => Assembly.GetExecutingAssembly().GetName().Version);
         }
 
         private void InitializeSources()
@@ -301,8 +304,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Initialize(IConsole console)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
+            { 
                 ActiveConsole = console;
                 if (_initialized.HasValue)
                 {
@@ -316,7 +319,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     try
                     {
-                        await TaskScheduler.Default;
                         _initialized = true;
 
                         if (console.ShowDisclaimerHeader)
@@ -334,7 +336,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         ExceptionHelper.WriteErrorToActivityLog(ex);
                     }
                 }
-            });
+
+                return Task.CompletedTask;
+            }
+            );
         }
 
         private async Task GetRunspaceAsync(IConsole console)
@@ -562,17 +567,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 }
                 else
                 {
-                    if (_nugetHost != null)
-                    {
-                        WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetHost.Version));
-                        WriteLine();
-                    }
-                    else
-                    {
-                        WriteLine("Not loaded");
-                        WriteLine();
-                    }
-
                     // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
                     // to run it once for each solution
                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -661,11 +655,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             WriteLine(Resources.Console_DisclaimerText);
             WriteLine();
 
-            if (_nugetHost != null)
-            {
-                WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetHost.Version));
-                WriteLine();
-            }
+            WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetVersion.Value));
+            WriteLine();
 
             WriteLine(Resources.Console_HelpText);
             WriteLine();
