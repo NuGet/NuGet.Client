@@ -261,11 +261,11 @@ namespace NuGet.Test.Utility
             if (isUsingTempStream)
             {
                 using (tempStream)
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
 #endif
                 {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
                     using (var request = GetPrimarySignRequest(packageContext))
                     {
                         await AddSignatureToPackageAsync(packageContext, signPackage, request, testLogger);
@@ -290,7 +290,7 @@ namespace NuGet.Test.Utility
             stream.Position = 0;
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private static SignPackageRequest GetPrimarySignRequest(SimpleTestPackageContext packageContext)
         {
             if (packageContext.V3ServiceIndexUrl != null)
