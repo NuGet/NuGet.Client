@@ -424,21 +424,12 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the restore output path for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
-        /// <returns>The full path to the restore output directory for the specified project.</returns>
-        internal string GetRestoreOutputPath(IMSBuildProject project)
+        /// <returns>The full path to the restore output directory for the specified project if a value is specified, otherwise <code>null</code>.</returns>
+        internal static string GetRestoreOutputPath(IMSBuildProject project)
         {
             string outputPath = project.GetProperty("RestoreOutputPath") ?? project.GetProperty("MSBuildProjectExtensionsPath");
 
-            if (string.IsNullOrWhiteSpace(outputPath))
-            {
-                // If the project doesn't supply a restore output path, it doesn't support restore.  The properties above are defined in the .NET SDK and if a project does not have them set then the project
-                // author isn't importing something from the SDK which is not supported.
-                MSBuildLogger.LogVerbose($"The project '{project.FullPath}' does not specify a value for the properties 'RestoreOutputPath' or 'MSBuildProjectExtensionsPath' and will not be restored.");
-
-                return null;
-            }
-
-            return Path.GetFullPath(Path.Combine(project.Directory, outputPath));
+            return outputPath == null ? null : Path.GetFullPath(Path.Combine(project.Directory, outputPath));
         }
 
         /// <summary>
@@ -738,11 +729,6 @@ namespace NuGet.Build.Tasks.Console
             var projectName = GetProjectName(project);
 
             var outputPath = GetRestoreOutputPath(project);
-
-            if (outputPath == null)
-            {
-                return (null, null);
-            }
 
             var projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
             var isCpvmEnabled = IsCentralVersionsManagementEnabled(project, projectStyleOrNull);

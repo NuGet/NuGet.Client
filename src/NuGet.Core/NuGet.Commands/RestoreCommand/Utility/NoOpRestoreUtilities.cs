@@ -53,7 +53,7 @@ namespace NuGet.Commands
 
         public static string GetProjectCacheFilePath(string cacheRoot)
         {
-            return Path.Combine(cacheRoot, NoOpCacheFileName);
+            return cacheRoot == null ? null : Path.Combine(cacheRoot, NoOpCacheFileName);
         }
 
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)

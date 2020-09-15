@@ -546,9 +546,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     ["MSBuildProjectExtensionsPath"] = msbuildProjectExtensionsPath
                 });
 
-                MSBuildStaticGraphRestore msBuildStaticGraphRestore = new MSBuildStaticGraphRestore();
-
-                var actual = msBuildStaticGraphRestore.GetRestoreOutputPath(project);
+                var actual = MSBuildStaticGraphRestore.GetRestoreOutputPath(project);
 
                 if (expected == null)
                 {
