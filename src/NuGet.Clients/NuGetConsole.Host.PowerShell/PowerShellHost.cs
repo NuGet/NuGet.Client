@@ -62,7 +62,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
-
+        private readonly object _lockObj = new object();
         private uint _solutionExistsCookie;
 
         private IConsole _activeConsole;
@@ -549,58 +549,62 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public bool Execute(IConsole console, string command, params object[] inputs)
         {
-            if (console == null)
+            lock(_lockObj)
             {
-                throw new ArgumentNullException(nameof(console));
-            }
+                if (console == null)
+                {
+                    throw new ArgumentNullException(nameof(console));
+                }
 
-            if (command == null)
-            {
-                throw new ArgumentNullException(nameof(command));
-            }
+                if (command == null)
+                {
+                    throw new ArgumentNullException(nameof(command));
+                }
 
-            if (Runspace == null)
-            {
+                if (Runspace == null)
+                {
 #pragma warning disable VSTHRD110 // Observe result of async calls
-                Task.Run(() => GetRunspaceAsync(console));
+                    Task.Run(() => GetRunspaceAsync(console));
 #pragma warning restore VSTHRD110 // Observe result of async calls
 
-            }
-            else
-            {
-                if (_nugetHost != null)
-                {
-                    WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetHost.Version));
-                    WriteLine();
                 }
                 else
                 {
-                    WriteLine("aaaaaaaaaaa");
-                    WriteLine();
+                    if (_nugetHost != null)
+                    {
+                        WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetHost.Version));
+                        WriteLine();
+                    }
+                    else
+                    {
+                        WriteLine("Not loaded");
+                        WriteLine();
+                    }
+
+                    // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
+                    // to run it once for each solution
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                    {
+                        await ExecuteInitScriptsAsync();
+                    });
+
+                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
+                    ActiveConsole = console;
+
+                    string fullCommand;
+                    if (ComplexCommand.AddLine(command, out fullCommand)
+                        && !string.IsNullOrEmpty(fullCommand))
+                    {
+                        // create a new token source with each command since CTS aren't usable once cancelled.
+                        _tokenSource = new CancellationTokenSource();
+                        _token = _tokenSource.Token;
+                        return ExecuteHost(fullCommand, command, inputs);
+                    }
                 }
 
-                // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
-                // to run it once for each solution
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await ExecuteInitScriptsAsync();
-                });
-
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
-                ActiveConsole = console;
-
-                string fullCommand;
-                if (ComplexCommand.AddLine(command, out fullCommand)
-                    && !string.IsNullOrEmpty(fullCommand))
-                {
-                    // create a new token source with each command since CTS aren't usable once cancelled.
-                    _tokenSource = new CancellationTokenSource();
-                    _token = _tokenSource.Token;
-                    return ExecuteHost(fullCommand, command, inputs);
-                }
+                return false; // constructing multi-line command
             }
 
-            return false; // constructing multi-line command
         }
 
         protected void OnExecuteCommandEnd()
