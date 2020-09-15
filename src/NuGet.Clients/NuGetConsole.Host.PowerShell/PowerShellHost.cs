@@ -264,7 +264,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             return prompt;
                         }
 
-                        return string.Empty;
+                        //var retries = 0;
+                        //while (Runspace == null)
+                        //{
+                        //    retries ++;
+                        //    await Task.Delay(100);
+                        //}
+                        return "";
                     }
 
                     // Execute the prompt function from a worker thread, so that the UI thread is not blocked waiting
@@ -333,14 +339,18 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             });
         }
 
-        private async Task GetRunspaceAsync(IConsole console)
+        private void GetRunspaceAsync(IConsole console)
         {
             var result = _runspaceManager.GetRunspace(console, _name);
             Runspace = result.Item1;
             _nugetHost = result.Item2;
 
             UpdateWorkingDirectory();
-            await ExecuteInitScriptsAsync();
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate 
+            {
+                await ExecuteInitScriptsAsync();
+            });
 
             // check if PMC console is actually opened, then only hook to solution load/close events.
             if (console is IWpfConsole)
@@ -412,11 +422,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void UpdateWorkingDirectory()
         {
-            if (Runspace == null)
-            {
-                return;
-            }
-
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await TaskScheduler.Default;
@@ -556,11 +561,24 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             if (Runspace == null)
             {
-                var result = Task.Run(async () => await GetRunspaceAsync(console));
-                System.Threading.Thread.Sleep(50);
+#pragma warning disable VSTHRD110 // Observe result of async calls
+                Task.Run(() => GetRunspaceAsync(console));
+#pragma warning restore VSTHRD110 // Observe result of async calls
+
             }
             else
             {
+                if (_nugetHost != null)
+                {
+                    WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetHost.Version));
+                    WriteLine();
+                }
+                else
+                {
+                    WriteLine("aaaaaaaaaaa");
+                    WriteLine();
+                }
+
                 // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
                 // to run it once for each solution
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -947,7 +965,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
-            Runspace.Dispose();
+            Runspace?.Dispose();
         }
 
         #endregion
