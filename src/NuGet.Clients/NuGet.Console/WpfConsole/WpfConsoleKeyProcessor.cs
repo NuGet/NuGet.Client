@@ -29,7 +29,7 @@ namespace NuGetConsole.Implementation.Console
         private const string TabExpansionTimeoutKey = @"TabExpansionTimeout"; // in seconds
         private const int DefaultTabExpansionTimeout = 3; // in seconds
         private readonly Lazy<IntPtr> _pKeybLayout = new Lazy<IntPtr>(() => NativeMethods.GetKeyboardLayout(0));
-        private bool _firstInput;
+        private bool _notFirstInput;
         private WpfConsole WpfConsole { get; }
         private IWpfTextView WpfTextView { get; }
 
@@ -184,9 +184,9 @@ namespace NuGetConsole.Implementation.Console
             if (pguidCmdGroup == VSConstants.GUID_VSStandardCommandSet97)
             {
                 //Debug.Print("Exec: GUID_VSStandardCommandSet97: {0}", (VSConstants.VSStd97CmdID)nCmdID);
-                if (!_firstInput)
+                if (!_notFirstInput)
                 {
-                    _firstInput = true;
+                    _notFirstInput = true;
                     WpfConsole.EndInputLine();
                 }
 
@@ -210,9 +210,9 @@ namespace NuGetConsole.Implementation.Console
 
                 var commandID = (VSConstants.VSStd2KCmdID)nCmdID;
 
-                if (commandID != VSConstants.VSStd2KCmdID.SolutionPlatform && !_firstInput)
+                if (commandID != VSConstants.VSStd2KCmdID.SolutionPlatform && !_notFirstInput)
                 {
-                    _firstInput = true;
+                    _notFirstInput = true;
                     WpfConsole.EndInputLine();
                 }
 

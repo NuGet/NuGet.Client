@@ -264,6 +264,8 @@ namespace NuGetConsole.Implementation.Console
 
             private bool _isExecuting;
 
+            private int _runCount;
+
             public bool IsExecuting
             {
                 get { return _isExecuting; }
@@ -317,7 +319,18 @@ namespace NuGetConsole.Implementation.Console
             [SuppressMessage("Microsoft.Globalization", "CA1303")]
             protected void PromptNewLine()
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteAsync(WpfConsole.Host.Prompt + ' '));
+                var input = WpfConsole.Host.Prompt;
+                if (_runCount == 1)
+                {
+                    input = "";
+                }
+                else
+                {
+                    input += ' ';
+                }
+                _runCount++;
+
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteAsync(input));
                 WpfConsole.BeginInputLine();
             }
 

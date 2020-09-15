@@ -73,7 +73,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // null = not initilized, true = initialized successfully, false = initialized unsuccessfully
         private bool? _initialized;
         public bool IsInitializedSuccessfully => _initialized.HasValue && _initialized.Value;
-        private bool _notFirstRun;
 
         // store the current (non-truncated) project names displayed in the project name combobox
         private string[] _projectSafeNames;
@@ -259,7 +258,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 try
                 {
-                    lock(_lockObj)
+                    lock (_lockObj)
                     {
                         if (Runspace == null)
                         {
@@ -280,15 +279,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         if (!string.IsNullOrEmpty(result))
                         {
                             prompt = result;
-
-                            if (!_notFirstRun && result == "PM>")
-                            {
-                                prompt = string.Empty;
-                            }
                         }
                     }
-
-                    _notFirstRun = true;
                 }
                 catch (Exception ex)
                 {
@@ -305,7 +297,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public void Initialize(IConsole console)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
-            { 
+            {
                 ActiveConsole = console;
                 if (_initialized.HasValue)
                 {
@@ -549,7 +541,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public bool Execute(IConsole console, string command, params object[] inputs)
         {
-            lock(_lockObj)
+            lock (_lockObj)
             {
                 if (console == null)
                 {

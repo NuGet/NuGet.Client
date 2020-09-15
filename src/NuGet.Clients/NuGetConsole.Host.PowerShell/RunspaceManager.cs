@@ -37,7 +37,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Justification = "We can't dispose it if we want to return it.")]
         private static Tuple<RunspaceDispatcher, NuGetPSHost> CreateAndSetupRunspace(IConsole console, string hostName)
         {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => {
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
                 Tuple<RunspaceDispatcher, NuGetPSHost> runspace = CreateRunspace(console, hostName);
                 await TaskScheduler.Default;
                 SetupExecutionPolicy(runspace.Item1);
