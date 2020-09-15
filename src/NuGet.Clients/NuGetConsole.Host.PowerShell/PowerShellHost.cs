@@ -339,7 +339,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             });
         }
 
-        private void GetRunspaceAsync(IConsole console)
+        private async Task GetRunspaceAsync(IConsole console)
         {
             var result = _runspaceManager.GetRunspace(console, _name);
             Runspace = result.Item1;
@@ -347,10 +347,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             UpdateWorkingDirectory();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate 
-            {
-                await ExecuteInitScriptsAsync();
-            });
+            await ExecuteInitScriptsAsync();
 
             // check if PMC console is actually opened, then only hook to solution load/close events.
             if (console is IWpfConsole)
@@ -563,10 +560,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 if (Runspace == null)
                 {
-#pragma warning disable VSTHRD110 // Observe result of async calls
-                    Task.Run(() => GetRunspaceAsync(console));
-#pragma warning restore VSTHRD110 // Observe result of async calls
-
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetRunspaceAsync(console));
                 }
                 else
                 {

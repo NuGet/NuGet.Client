@@ -8,9 +8,11 @@ using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
+using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.PowerShell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -35,12 +37,16 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Justification = "We can't dispose it if we want to return it.")]
         private static Tuple<RunspaceDispatcher, NuGetPSHost> CreateAndSetupRunspace(IConsole console, string hostName)
         {
-            Tuple<RunspaceDispatcher, NuGetPSHost> runspace = CreateRunspace(console, hostName);
-            SetupExecutionPolicy(runspace.Item1);
-            LoadModules(runspace.Item1);
-            LoadProfilesIntoRunspace(runspace.Item1);
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => {
+                Tuple<RunspaceDispatcher, NuGetPSHost> runspace = CreateRunspace(console, hostName);
+                await TaskScheduler.Default;
+                SetupExecutionPolicy(runspace.Item1);
+                LoadModules(runspace.Item1);
+                LoadProfilesIntoRunspace(runspace.Item1);
 
-            return Tuple.Create(runspace.Item1, runspace.Item2);
+                return Tuple.Create(runspace.Item1, runspace.Item2);
+            });
+
         }
 
         [SuppressMessage(
