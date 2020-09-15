@@ -71,7 +71,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // null = not initilized, true = initialized successfully, false = initialized unsuccessfully
         private bool? _initialized;
         public bool IsInitializedSuccessfully => _initialized.HasValue && _initialized.Value;
-        private bool _firstRun;
+        private bool _notFirstRun;
 
         // store the current (non-truncated) project names displayed in the project name combobox
         private string[] _projectSafeNames;
@@ -256,21 +256,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 try
                 {
-                    if (Runspace == null)
+                    lock(_lockObj)
                     {
-                        if (!_firstRun)
+                        if (Runspace == null)
                         {
-                            _firstRun = true;
                             return prompt;
                         }
-
-                        //var retries = 0;
-                        //while (Runspace == null)
-                        //{
-                        //    retries ++;
-                        //    await Task.Delay(100);
-                        //}
-                        return "";
                     }
 
                     // Execute the prompt function from a worker thread, so that the UI thread is not blocked waiting
@@ -286,8 +277,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         if (!string.IsNullOrEmpty(result))
                         {
                             prompt = result;
+
+                            if (!_notFirstRun && result == "PM>")
+                            {
+                                prompt = string.Empty;
+                            }
                         }
                     }
+
+                    _notFirstRun = true;
                 }
                 catch (Exception ex)
                 {
