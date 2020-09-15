@@ -53,7 +53,7 @@ namespace NuGet.CommandLine.XPlat
 #if IS_DESKTOP
                     args.PackagePath = packagePaths.Value;
 #else
-                    args.PackagePaths = packagesPath.Values;
+                    args.PackagePaths = packagePaths.Values;
 #endif
                     args.Verifications = all.HasValue() ?
                         new List<Verification>() { Verification.All } :
