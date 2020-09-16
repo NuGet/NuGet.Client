@@ -403,7 +403,12 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public string GetHash(bool compressed = false)
+        public string GetHash()
+        {
+            return GetHash(compressed: false);
+        }
+
+        public string GetHash(bool compressed)
         {
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
