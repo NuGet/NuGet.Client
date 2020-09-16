@@ -295,7 +295,7 @@ namespace NuGet.SolutionRestoreManager
                 upToDateProjectsCount: _upToDateProjectCount,
                 DateTimeOffset.Now,
                 duration,
-                isPotentialSolutionLoadRestore: _isPotentialSolutionLoadRestore
+                isPotentialSolutionLoadRestore: _isPotentialSolutionLoadRestore,
                 intervalTimingTracker);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
