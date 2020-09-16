@@ -280,7 +280,7 @@ namespace NuGet.SolutionRestoreManager
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
             };
 
-            return packageSpec.WithCentralVersionInformation();
+            return packageSpec.ApplyCentralVersionInformation();
         }
 
         private static string GetProjectOutputPath(string projectDirectory, string msbuildProjectExtensionsPath)

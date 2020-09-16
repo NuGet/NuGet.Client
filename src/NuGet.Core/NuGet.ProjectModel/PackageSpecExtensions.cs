@@ -50,7 +50,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="project">The package spec to update.</param>
         /// <returns>The updated package spec.</returns>
-        public static PackageSpec WithCentralVersionInformation(this PackageSpec project)
+        public static PackageSpec ApplyCentralVersionInformation(this PackageSpec project)
         {
             if (project.RestoreMetadata != null && project.RestoreMetadata.CentralPackageVersionsEnabled)
             {

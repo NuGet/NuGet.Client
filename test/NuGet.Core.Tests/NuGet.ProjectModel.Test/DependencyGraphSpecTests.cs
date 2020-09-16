@@ -652,7 +652,7 @@ namespace NuGet.ProjectModel.Test
                 new List<LibraryDependency>() { dependencyFoo },
                 centralVersions);
 
-            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi }).WithCentralVersionInformation();
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi }).ApplyCentralVersionInformation();
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
             {
                 ProjectUniqueName = "a",
@@ -768,7 +768,7 @@ namespace NuGet.ProjectModel.Test
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");
-            dgSpec.AddProject(packageSpec.WithCentralVersionInformation());
+            dgSpec.AddProject(packageSpec.ApplyCentralVersionInformation());
             return dgSpec;
         }
 

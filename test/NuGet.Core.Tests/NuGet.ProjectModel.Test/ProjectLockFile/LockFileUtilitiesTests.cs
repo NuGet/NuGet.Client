@@ -183,7 +183,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.WithCentralVersionInformation());
+            dgSpec.AddProject(project.ApplyCentralVersionInformation());
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -238,7 +238,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.WithCentralVersionInformation());
+            dgSpec.AddProject(project.ApplyCentralVersionInformation());
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -289,7 +289,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.WithCentralVersionInformation());
+            dgSpec.AddProject(project.ApplyCentralVersionInformation());
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -340,7 +340,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.WithCentralVersionInformation());
+            dgSpec.AddProject(project.ApplyCentralVersionInformation());
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -391,7 +391,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.WithCentralVersionInformation());
+            dgSpec.AddProject(project.ApplyCentralVersionInformation());
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -446,7 +446,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.WithCentralVersionInformation());
+            dgSpec.AddProject(project.ApplyCentralVersionInformation());
 
             var lockFile1 = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -509,7 +509,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.WithCentralVersionInformation());
+            dgSpec.AddProject(project.ApplyCentralVersionInformation());
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
