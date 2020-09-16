@@ -64,7 +64,7 @@ namespace NuGet.CommandLine.XPlat
             if (args.Any(arg => string.Equals(arg, CommandConstants.ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
             {
                 CultureUtility.DisableLocalization();
-            }            
+            }
 
             var app = InitializeApp(args, log);
 
