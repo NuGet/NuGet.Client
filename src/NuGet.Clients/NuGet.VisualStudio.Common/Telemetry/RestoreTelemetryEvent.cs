@@ -17,8 +17,6 @@ namespace NuGet.VisualStudio
         public const string SolutionDependencyGraphSpecCreation = nameof(SolutionDependencyGraphSpecCreation);
         public const string PackageReferenceRestoreDuration = nameof(PackageReferenceRestoreDuration);
         public const string SolutionUpToDateCheck = nameof(SolutionUpToDateCheck);
-        private const string UpToDateProjectCount = nameof(UpToDateProjectCount);
-        private const string IsSolutionLoadRestore = nameof(IsSolutionLoadRestore);
 
         public RestoreTelemetryEvent(
             string operationId,
@@ -37,9 +35,9 @@ namespace NuGet.VisualStudio
         {
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
-            base[UpToDateProjectCount] = upToDateProjectsCount;
+            base[nameof(UpToDateProjectCount)] = upToDateProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
-            base[IsSolutionLoadRestore] = isSolutionLoadRestore;
+            base[nameof(IsSolutionLoadRestore)] = isSolutionLoadRestore;
 
             foreach (var (intervalName, intervalDuration) in intervalTimingTracker.GetIntervals())
             {
@@ -54,5 +52,9 @@ namespace NuGet.VisualStudio
         public int NoOpProjectsCount => (int)base[nameof(NoOpProjectsCount)];
 
         public bool ForceRestore => (bool)base[nameof(ForceRestore)];
+
+        public bool IsSolutionLoadRestore => (bool)base[nameof(IsSolutionLoadRestore)];
+
+        public int UpToDateProjectCount => (int)base[nameof(UpToDateProjectCount)];
     }
 }

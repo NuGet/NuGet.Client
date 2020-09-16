@@ -33,6 +33,7 @@ namespace NuGet.SolutionRestoreManager
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
         private const int DelaySolutionLoadRetry = 100;
+        private const int MaxIdleWaitTimeMs = 10000;
 
         private readonly object _lockPendingRequestsObj = new object();
 
@@ -422,7 +423,6 @@ namespace NuGet.SolutionRestoreManager
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
         }
 
-
         private async Task<bool> StartBackgroundJobRunnerAsync(CancellationToken token)
         {
             // Hops onto a background pool thread
@@ -486,6 +486,7 @@ namespace NuGet.SolutionRestoreManager
 
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
+
                             // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
                             if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
                             {
@@ -497,7 +498,7 @@ namespace NuGet.SolutionRestoreManager
                                 else
                                 {
                                     // Break if we've waited for more than 10s without an actual nomination.
-                                    if (lastNominationReceived.AddSeconds(10.0) < DateTime.UtcNow)
+                                    if (lastNominationReceived.AddMilliseconds(MaxIdleWaitTimeMs) < DateTime.UtcNow)
                                     {
                                         break;
                                     }
