@@ -557,31 +557,35 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException(nameof(command));
             }
 
+            
             if (Runspace == null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetRunspaceAsync(console));
-            }
-            else
-            {
-                // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
-                // to run it once for each solution
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await ExecuteInitScriptsAsync();
-                });
 
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
-                ActiveConsole = console;
-
-                string fullCommand;
-                if (ComplexCommand.AddLine(command, out fullCommand)
-                    && !string.IsNullOrEmpty(fullCommand))
+                if (string.IsNullOrEmpty(command))
                 {
-                    // create a new token source with each command since CTS aren't usable once cancelled.
-                    _tokenSource = new CancellationTokenSource();
-                    _token = _tokenSource.Token;
-                    return ExecuteHost(fullCommand, command, inputs);
+                    return false; // empty command means it was just requesting to initialize Powershell, nothing to execute
                 }
+            }
+
+            // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
+            // to run it once for each solution
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ExecuteInitScriptsAsync();
+            });
+
+            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
+            ActiveConsole = console;
+
+            string fullCommand;
+            if (ComplexCommand.AddLine(command, out fullCommand)
+                && !string.IsNullOrEmpty(fullCommand))
+            {
+                // create a new token source with each command since CTS aren't usable once cancelled.
+                _tokenSource = new CancellationTokenSource();
+                _token = _tokenSource.Token;
+                return ExecuteHost(fullCommand, command, inputs);
             }
 
             return false; // constructing multi-line command
