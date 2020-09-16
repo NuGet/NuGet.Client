@@ -29,8 +29,8 @@ namespace NuGet.XPlat.FuncTest
                     var ex = Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
 
                     // Assert
-                    Assert.IsType<ArgumentNullException>(ex.InnerException);
-                    Assert.Equal("<package-paths>", (ex.InnerException as ArgumentNullException).ParamName);
+                    Assert.IsType<ArgumentException>(ex.InnerException);
+                    Assert.Equal("Unable to verify package. Argument '<package-paths>' not provided.", ex.InnerException.Message);
                 });
         }
 

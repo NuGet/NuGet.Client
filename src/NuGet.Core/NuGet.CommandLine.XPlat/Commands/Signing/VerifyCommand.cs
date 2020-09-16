@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
@@ -47,7 +46,7 @@ namespace NuGet.CommandLine.XPlat
 
                 verifyCmd.OnExecute(async () =>
                 {
-                    ValidatePackagesPath(packagePaths);
+                    ValidatePackagePaths(packagePaths);
 
                     VerifyArgs args = new VerifyArgs();
                     args.PackagePaths = packagePaths.Values;
@@ -67,12 +66,14 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
-        private static void ValidatePackagesPath(CommandArgument argument)
+        private static void ValidatePackagePaths(CommandArgument argument)
         {
             if (argument.Values.Count == 0 ||
                 argument.Values.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
             {
-                throw new ArgumentNullException(argument.Name);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PkgMissingArgument,
+                    "verify",
+                    argument.Name));
             }
         }
     }
