@@ -557,7 +557,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException(nameof(command));
             }
 
-            
+
             if (Runspace == null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetRunspaceAsync(console));
