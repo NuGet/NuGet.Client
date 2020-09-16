@@ -183,7 +183,6 @@ namespace NuGetConsole.Implementation.Console
 
             if (pguidCmdGroup == VSConstants.GUID_VSStandardCommandSet97)
             {
-                //Debug.Print("Exec: GUID_VSStandardCommandSet97: {0}", (VSConstants.VSStd97CmdID)nCmdID);
                 var commandID = (VSConstants.VSStd97CmdID)nCmdID;
                 // User pasted command here, kick off loading Powershell.
                 if (commandID == VSConstants.VSStd97CmdID.Paste && !_isFirstCommand)
@@ -208,8 +207,6 @@ namespace NuGetConsole.Implementation.Console
             }
             else if (pguidCmdGroup == VSConstants.VSStd2K)
             {
-                //Debug.Print("Exec: VSStd2K: {0}", (VSConstants.VSStd2KCmdID)nCmdID);
-
                 var commandID = (VSConstants.VSStd2KCmdID)nCmdID;
 
                 // User start typing command here, kick off loading Powershell.
