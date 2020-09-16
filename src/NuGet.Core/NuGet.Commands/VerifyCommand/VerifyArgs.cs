@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using NuGet.Common;
 
@@ -28,6 +29,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Path to the package that has to be verified.
         /// </summary>      
+        [Obsolete("Use PackagePaths instead")]
         public string PackagePath
         {
             get
@@ -41,7 +43,9 @@ namespace NuGet.Commands
                         return PackagePaths[0];
 
                     default:
-                        throw new NotSupportedException(nameof(PackagePaths) + " contains more than one path");
+                        throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture,
+                            Strings.Error_MultiplePackagePaths,
+                            nameof(PackagePaths)));
                 }
             }
             set => PackagePaths = new[] { value };
