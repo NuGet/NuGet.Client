@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace Dotnet.Integration.Test
@@ -53,13 +54,14 @@ namespace Dotnet.Integration.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                string packageX = "TestPackage.AuthorSigned.1.0.0.nupkg";
-                CopyPackageFromResources(packageX, testDirectory);
+                var packageFile = new FileInfo(Path.Combine(testDirectory, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                var package = SigningTestUtility.GetResourceBytes(packageFile.Name);
+                File.WriteAllBytes(packageFile.FullName, package);
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
-                    $"nuget verify {Path.Combine(testDirectory, packageX)} {optionAll}",
+                    $"nuget verify {packageFile.FullName} {optionAll}",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -76,13 +78,14 @@ namespace Dotnet.Integration.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                string packageX = "TestPackage.AuthorSigned.1.0.0.nupkg";
-                CopyPackageFromResources(packageX, testDirectory);
+                var packageFile = new FileInfo(Path.Combine(testDirectory, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                var package = SigningTestUtility.GetResourceBytes(packageFile.Name);
+                File.WriteAllBytes(packageFile.FullName, package);
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
-                    $"nuget verify {Path.Combine(testDirectory, packageX)} {fingerprints}",
+                    $"nuget verify {packageFile.FullName} {fingerprints}",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeFalse(because: result.AllOutput);
@@ -99,13 +102,14 @@ namespace Dotnet.Integration.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                string packageX = "TestPackage.AuthorSigned.1.0.0.nupkg";
-                CopyPackageFromResources(packageX, testDirectory);
+                var packageFile = new FileInfo(Path.Combine(testDirectory, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                var package = SigningTestUtility.GetResourceBytes(packageFile.Name);
+                File.WriteAllBytes(packageFile.FullName, package);
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
-                    $"nuget verify {Path.Combine(testDirectory, packageX)} {fingerprints}",
+                    $"nuget verify {packageFile.FullName} {fingerprints}",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -120,16 +124,18 @@ namespace Dotnet.Integration.Test
             {
                 using (var testDirectory2 = TestDirectory.Create())
                 {
-                    string packageX = "TestPackage.AuthorSigned.1.0.0.nupkg";
-                    string packageY = "Test.Reposigned.1.0.0.nupkg";
+                    var packagX = new FileInfo(Path.Combine(testDirectory1, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                    var bPackageX = SigningTestUtility.GetResourceBytes(packagX.Name);
+                    File.WriteAllBytes(packagX.FullName, bPackageX);
 
-                    CopyPackageFromResources(packageX, testDirectory1);
-                    CopyPackageFromResources(packageY, testDirectory2);
+                    var packageY = new FileInfo(Path.Combine(testDirectory2, "Test.Reposigned.1.0.0.nupkg"));
+                    var bpackageY = SigningTestUtility.GetResourceBytes(packageY.Name);
+                    File.WriteAllBytes(packageY.FullName, bpackageY);
 
                     //Act
                     var result = _msbuildFixture.RunDotnet(
                         testDirectory1,
-                        $"nuget verify {Path.Combine(testDirectory1, packageX)} {Path.Combine(testDirectory2, "*.nupkg")} -v d",
+                        $"nuget verify {packagX.FullName} {Path.Combine(testDirectory2, "*.nupkg")} -v d",
                         ignoreExitCode: true);
 
                     result.Success.Should().BeFalse(because: result.AllOutput);
@@ -139,20 +145,6 @@ namespace Dotnet.Integration.Test
                     result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 }
             }
-        }
-
-        private static void CopyPackageFromResources(string packageId, string destination)
-        {
-            var packageFile = new FileInfo(Path.Combine(destination, packageId));
-            var package = GetResource(packageId);
-            File.WriteAllBytes(packageFile.FullName, package);
-        }
-
-        private static byte[] GetResource(string name)
-        {
-            return ResourceTestUtility.GetResourceBytes(
-                $"Dotnet.Integration.Test.compiler.resources.{name}",
-                typeof(DotnetRestoreTests));
         }
     }
 }

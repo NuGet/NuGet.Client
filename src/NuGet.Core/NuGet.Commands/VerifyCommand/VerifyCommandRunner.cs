@@ -37,17 +37,13 @@ namespace NuGet.Commands
 
             if (ShouldExecuteVerification(verifyArgs, Verification.Signatures))
             {
-#if IS_DESKTOP
-                var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
-                LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
-#else
                 var packagesToVerify = verifyArgs.PackagePaths.SelectMany(packagePath =>
                 {
                     var packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
                     LocalFolderUtility.EnsurePackageFileExists(packagePath, packages);
                     return packages;
                 });
-#endif
+
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
                     new CertificateHashAllowListEntry(
                         VerificationTarget.Author | VerificationTarget.Repository,

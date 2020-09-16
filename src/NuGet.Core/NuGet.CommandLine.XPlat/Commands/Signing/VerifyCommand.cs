@@ -50,11 +50,7 @@ namespace NuGet.CommandLine.XPlat
                     ValidatePackagesPath(packagePaths);
 
                     VerifyArgs args = new VerifyArgs();
-#if IS_DESKTOP
-                    args.PackagePath = packagePaths.Value;
-#else
                     args.PackagePaths = packagePaths.Values;
-#endif
                     args.Verifications = all.HasValue() ?
                         new List<Verification>() { Verification.All } :
                         new List<Verification>() { Verification.Signatures };
@@ -70,6 +66,7 @@ namespace NuGet.CommandLine.XPlat
                 });
             });
         }
+
         private static void ValidatePackagesPath(CommandArgument argument)
         {
             if (argument.Values.Count == 0 ||

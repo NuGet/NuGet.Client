@@ -25,17 +25,32 @@ namespace NuGet.Commands
         /// </summary>
         public IList<Verification> Verifications { get; set; }
 
-#if IS_DESKTOP
         /// <summary>
         /// Path to the package that has to be verified.
-        /// </summary>
-        public string PackagePath { get; set; }
-#else
+        /// </summary>      
+        public string PackagePath
+        {
+            get
+            {
+                switch (PackagePaths.Count)
+                {
+                    case 0:
+                        return null;
+
+                    case 1:
+                        return PackagePaths[0];
+
+                    default:
+                        throw new NotSupportedException(nameof(PackagePaths) + " contains more than one path");
+                }
+            }
+            set => PackagePaths = new[] { value };
+        }
+
         /// <summary>
         /// Paths to the packages that has to be verified.
         /// </summary>
         public IReadOnlyList<string> PackagePaths { get; set; }
-#endif
 
         /// <summary>
         /// Logger to be used to display the logs during the execution of verify command.

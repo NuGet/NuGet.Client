@@ -9,11 +9,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <Compile Remove="compiler\resources\*" />
-    <EmbeddedResource Include="compiler\resources\*" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <ProjectReference Include="..\NuGet.XPlat.FuncTest\NuGet.XPlat.FuncTest.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj" />
