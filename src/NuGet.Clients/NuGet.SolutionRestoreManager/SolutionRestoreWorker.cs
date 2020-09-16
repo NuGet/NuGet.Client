@@ -32,7 +32,6 @@ namespace NuGet.SolutionRestoreManager
         private const int IdleTimeoutMs = 400;
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
-        //private const int DelayAutoRestoreRetries = 50;	        
         private const int DelaySolutionLoadRetry = 100;
 
         private readonly object _lockPendingRequestsObj = new object();
@@ -288,7 +287,7 @@ namespace NuGet.SolutionRestoreManager
         public async Task<bool> ScheduleRestoreAsync(
             SolutionRestoreRequest request, CancellationToken token)
         {
-            NuGetFileLogger.DefaultInstance.Write($"A solution restore request was received for Source: {request.RestoreSource}, Project: {request.OriginalProject}");
+            NuGetFileLogger.DefaultInstance.Write($"A solution restore request was received for Source: {request.RestoreSource}");
 
             if (token.IsCancellationRequested)
             {
@@ -401,7 +400,7 @@ namespace NuGet.SolutionRestoreManager
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, token);
 
-                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, token);
+                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, isPotentialSolutionLoadRestore: false, token);
 
                         return result;
                     }
@@ -432,11 +431,12 @@ namespace NuGet.SolutionRestoreManager
             NuGetFileLogger.DefaultInstance.Write("StartBackgroundJobRunnerAsync - On a background thread.");
 
             var status = false;
-
+            var isPotentialSolutionLoadRestore = false;
             // Check if the solution is fully loaded
             while (!_solutionLoadedEvent.IsSet)
             {
                 NuGetFileLogger.DefaultInstance.Write("StartBackgroundJobRunnerAsync - Waiting for the solution loaded event to be set!");
+                isPotentialSolutionLoadRestore = true;
                 // Needed when OnAfterBackgroundSolutionLoadComplete fires before
                 // Advise has been called.
                 if (await IsSolutionFullyLoadedAsync())
@@ -474,7 +474,7 @@ namespace NuGet.SolutionRestoreManager
                         // Monitors the cancelllation token as well.
                         NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Take queue count: {_pendingRequests.Value.Count}");
                         var request = _pendingRequests.Value.Take(token);
-                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Done with Take! Project:{request.OriginalProject}");
+                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Done with Take!");
 
                         token.ThrowIfCancellationRequested();
 
@@ -494,7 +494,9 @@ namespace NuGet.SolutionRestoreManager
 
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
-
+                            // If *at any* point during the restore operation wait, we are waiting for project nominations,
+                            // we are likely during a solution load/branch switch event.
+                            isPotentialSolutionLoadRestore |= !isAllProjectsNominated;
                             NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - TryTake, AllProjectsNominated{isAllProjectsNominated}, queue count: {_pendingRequests.Value.Count}");
                             // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
                             if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
@@ -524,7 +526,7 @@ namespace NuGet.SolutionRestoreManager
                             else
                             {
                                 lastNominationReceived = DateTime.UtcNow;
-                                NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Pulled a request for {next.OriginalProject}, queue count: {_pendingRequests.Value.Count}");
+                                NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Pulled a request, queue count: {_pendingRequests.Value.Count}");
                                 // Upgrade request if necessary
                                 if (next != null && next.RestoreSource != request.RestoreSource)
                                 {
@@ -552,7 +554,7 @@ namespace NuGet.SolutionRestoreManager
 
                         NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Starting processing of restore request");
                         // Runs restore job with scheduled request params
-                        status = await ProcessRestoreRequestAsync(restoreOperation, request, token);
+                        status = await ProcessRestoreRequestAsync(restoreOperation, request, isPotentialSolutionLoadRestore, token);
 
                         // Repeats...
                     }
@@ -575,12 +577,13 @@ namespace NuGet.SolutionRestoreManager
         private async Task<bool> ProcessRestoreRequestAsync(
             BackgroundRestoreOperation restoreOperation,
             SolutionRestoreRequest request,
+            bool isPotentialSolutionLoadRestore,
             CancellationToken token)
         {
             // Start the restore job in a separate task on a background thread
             // it will switch into main thread when necessary.
             var joinableTask = JoinableTaskFactory.RunAsync(
-                () => StartRestoreJobAsync(request, token));
+                () => StartRestoreJobAsync(request, isPotentialSolutionLoadRestore, token));
 
             var continuation = joinableTask
                 .Task
@@ -621,7 +624,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private async Task<bool> StartRestoreJobAsync(
-            SolutionRestoreRequest request, CancellationToken token)
+            SolutionRestoreRequest request, bool isPotentialSolutionLoadRestore, CancellationToken token)
         {
             await TaskScheduler.Default;
 
@@ -643,7 +646,7 @@ namespace NuGet.SolutionRestoreManager
 
                             // Run restore
                             var job = componentModel.GetService<ISolutionRestoreJob>();
-                            return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, isPotentialSolutionLoadRestore, jobCts.Token);
                         }
                         finally
                         {

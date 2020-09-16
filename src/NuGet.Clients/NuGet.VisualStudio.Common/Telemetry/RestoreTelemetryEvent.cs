@@ -18,6 +18,7 @@ namespace NuGet.VisualStudio
         public const string PackageReferenceRestoreDuration = nameof(PackageReferenceRestoreDuration);
         public const string SolutionUpToDateCheck = nameof(SolutionUpToDateCheck);
         private const string UpToDateProjectCount = nameof(UpToDateProjectCount);
+        private const string PotentialSolutionLoadRestore = nameof(PotentialSolutionLoadRestore);
 
         public RestoreTelemetryEvent(
             string operationId,
@@ -31,12 +32,14 @@ namespace NuGet.VisualStudio
             int upToDateProjectsCount,
             DateTimeOffset endTime,
             double duration,
+            bool isPotentialSolutionLoadRestore,
             IntervalTracker intervalTimingTracker) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
             base[UpToDateProjectCount] = upToDateProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
+            base[PotentialSolutionLoadRestore] = isPotentialSolutionLoadRestore;
 
             foreach (var (intervalName, intervalDuration) in intervalTimingTracker.GetIntervals())
             {

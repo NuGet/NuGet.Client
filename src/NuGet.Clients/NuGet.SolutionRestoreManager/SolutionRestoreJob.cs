@@ -57,6 +57,7 @@ namespace NuGet.SolutionRestoreManager
         private int _packageCount;
         private int _noOpProjectsCount;
         private int _upToDateProjectCount;
+        private bool _isPotentialSolutionLoadRestore;
 
         // relevant to packages.config restore only
         private int _missingPackagesCount;
@@ -114,6 +115,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreRequest request,
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
+            bool isPotentialSolutionLoadRestore,
             CancellationToken token)
         {
             if (request == null)
@@ -136,6 +138,7 @@ namespace NuGet.SolutionRestoreManager
             // update instance attributes with the shared context values
             _nuGetProjectContext = jobContext.NuGetProjectContext;
             _nuGetProjectContext.OperationId = request.OperationId;
+            _isPotentialSolutionLoadRestore = isPotentialSolutionLoadRestore;
 
             using (var ctr1 = token.Register(() => _status = NuGetOperationStatus.Cancelled))
             {
@@ -292,6 +295,7 @@ namespace NuGet.SolutionRestoreManager
                 upToDateProjectsCount: _upToDateProjectCount,
                 DateTimeOffset.Now,
                 duration,
+                isPotentialSolutionLoadRestore: _isPotentialSolutionLoadRestore
                 intervalTimingTracker);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
@@ -368,10 +372,8 @@ namespace NuGet.SolutionRestoreManager
                             dgSpec.AddRestore(uniqueProjectId);
                         }
                         // recorded the number of up to date projects
-                        NuGetFileLogger.DefaultInstance.Write($"Original DG Spec: ProjectCount: {originalDgSpec.Projects.Count}, RestoreCount = {originalDgSpec.Restore.Count}, ProjectsNeedingRestoreCount = {projectsNeedingRestore}");
                         _upToDateProjectCount = originalDgSpec.Restore.Count - projectsNeedingRestore.Count;
                         _noOpProjectsCount = _upToDateProjectCount;
-                        NuGetFileLogger.DefaultInstance.Write($"_noOpProjectsCount:{_noOpProjectsCount}, _upToDateProjectCount:{_upToDateProjectCount}");
                     }
                 }
 
