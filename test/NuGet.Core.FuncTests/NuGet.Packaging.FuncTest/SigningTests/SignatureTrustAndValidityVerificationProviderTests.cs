@@ -1422,6 +1422,92 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            [PlatformFact(Platform.Windows)]
+            public async Task GetTrustResultAsync_WithTimestampFirstRevokeNextOnPrimaryCertificate_Windows_ReturnsStatusValidAsync()
+            {
+                var settings = new SignedPackageVerifierSettings(
+                    allowUnsigned: false,
+                    allowIllegal: false,
+                    allowUntrusted: false,
+                    allowIgnoreTimestamp: false,
+                    allowMultipleTimestamps: false,
+                    allowNoTimestamp: false,
+                    allowUnknownRevocation: true,
+                    reportUnknownRevocation: true,
+                    verificationTarget: VerificationTarget.Author,
+                    signaturePlacement: SignaturePlacement.PrimarySignature,
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
+                var testServer = await _fixture.GetSigningTestServerAsync();
+                var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
+                var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
+                var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
+                var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+                using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
+                using (var test = await Test.CreateAuthorSignedPackageAsync(
+                    certificate,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
+
+                    certificateAuthority.Revoke(
+                        bcCertificate,
+                        RevocationReason.KeyCompromise,
+                        DateTimeOffset.UtcNow.AddMilliseconds(-1));
+
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                }
+            }
+
+            [PlatformFact(Platform.Linux, Platform.Darwin)]  //https://github.com/NuGet/Home/issues/9941
+            public async Task GetTrustResultAsync_WithTimestampFirstRevokeNextOnPrimaryCertificate_NonWindows_ReturnsDisallowedAsync()
+            {
+                var settings = new SignedPackageVerifierSettings(
+                    allowUnsigned: false,
+                    allowIllegal: false,
+                    allowUntrusted: false,
+                    allowIgnoreTimestamp: false,
+                    allowMultipleTimestamps: false,
+                    allowNoTimestamp: false,
+                    allowUnknownRevocation: true,
+                    reportUnknownRevocation: true,
+                    verificationTarget: VerificationTarget.Author,
+                    signaturePlacement: SignaturePlacement.PrimarySignature,
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
+                var testServer = await _fixture.GetSigningTestServerAsync();
+                var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
+                var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
+                var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
+                var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+                using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
+                using (var test = await Test.CreateAuthorSignedPackageAsync(
+                    certificate,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
+
+                    certificateAuthority.Revoke(
+                        bcCertificate,
+                        RevocationReason.KeyCompromise,
+                        DateTimeOffset.UtcNow.AddMilliseconds(-1));
+
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
+                }
+            }
+
             [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
