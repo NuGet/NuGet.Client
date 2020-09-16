@@ -1926,10 +1926,7 @@ namespace NuGet.ProjectModel.Test
                 ""Newtonsoft.Json"": {
                             ""include"": ""Compile, Native, BuildTransitive"",
                             ""suppressParent"": ""All"",
-                            ""target"": ""Package"",
-                            ""version"": ""[12.0.3, )"",
-                            ""autoReferenced"": true,
-                            ""versionCentrallyManaged"": true              
+                            ""version"": ""[12.0.3, )""           
                         }
                     }
                 }

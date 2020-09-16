@@ -102,7 +102,7 @@ namespace NuGet.ProjectModel
             try
             {
                 var json = JsonUtility.LoadJson(reader);
-                var lockFile = ReadLockFile(json);
+                var lockFile = ReadLockFile(json, path);
                 lockFile.Path = path;
                 return lockFile;
             }
@@ -161,7 +161,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static LockFile ReadLockFile(JObject cursor)
+        private static LockFile ReadLockFile(JObject cursor, string path)
         {
             var lockFile = new LockFile()
             {
@@ -171,7 +171,7 @@ namespace NuGet.ProjectModel
                 ProjectFileDependencyGroups = JsonUtility.ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup),
                 PackageFolders = JsonUtility.ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem),
                 PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject),
-                CentralTransitiveDependencyGroups = ReadProjectFileTransitiveDependencyGroup(cursor[CentralTransitiveDependencyGroupsProperty] as JObject)
+                CentralTransitiveDependencyGroups = ReadProjectFileTransitiveDependencyGroup(cursor[CentralTransitiveDependencyGroupsProperty] as JObject, path)
             };
 
             lockFile.LogMessages = ReadLogMessageArray(cursor[LogsProperty] as JArray,
@@ -819,7 +819,7 @@ namespace NuGet.ProjectModel
 
                 foreach (var centralTransitiveDepGroup in centralTransitiveDependencyGroups.OrderBy(ptdg => ptdg.FrameworkName))
                 {
-                    PackageSpecWriter.SetDependencies(writer, centralTransitiveDepGroup.FrameworkName, centralTransitiveDepGroup.TransitiveDependencies);
+                    PackageSpecWriter.SetCentralTransitveDependencyGroup(writer, centralTransitiveDepGroup.FrameworkName, centralTransitiveDepGroup.TransitiveDependencies);
                 }
 
                 writer.WriteObjectEnd();
@@ -827,7 +827,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static List<CentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json)
+        private static List<CentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json, string path)
         {
             var results = new List<CentralTransitiveDependencyGroup>();
 
@@ -844,15 +844,13 @@ namespace NuGet.ProjectModel
                     NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
                     var dependencies = new List<LibraryDependency>();
 
-                    JsonPackageSpecReader.ReadDependencies(
+                    JsonPackageSpecReader.ReadCentralTransitveDependencyGroup(
                         jsonReader: jsonReader,
                         results: dependencies,
-                        packageSpecPath: "",
-                        isGacOrFrameworkReference: false);
+                        packageSpecPath: path);
                     results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
                 });
             }
-
             return results;
         }
     }

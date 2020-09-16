@@ -453,6 +453,45 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
+        /// <summary>
+        /// The central transitive dependecy groups are used for pack operation.
+        /// The metadata needed for pack is composed from:
+        ///     Name, IncludeType, SuppressParent and Version 
+        /// </summary>
+        internal static void SetCentralTransitveDependencyGroup(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
+        {
+            if (!libraryDependencies.Any())
+            {
+                return;
+            }
+
+            writer.WriteObjectStart(name);
+
+            foreach (var dependency in libraryDependencies)
+            {
+                var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
+                var versionString = versionRange.ToNormalizedString();
+
+                writer.WriteObjectStart(dependency.Name);
+
+                if (dependency.IncludeType != LibraryIncludeFlags.All)
+                {
+                    SetValue(writer, "include", dependency.IncludeType.ToString());
+                }
+
+                if (dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
+                {
+                    SetValue(writer, "suppressParent", dependency.SuppressParent.ToString());
+                }
+
+                SetValue(writer, "version", versionString);
+
+                writer.WriteObjectEnd();
+            }
+
+            writer.WriteObjectEnd();
+        }
+
         private static void SetImports(IObjectWriter writer, IList<NuGetFramework> frameworks)
         {
             if (frameworks?.Any() == true)
