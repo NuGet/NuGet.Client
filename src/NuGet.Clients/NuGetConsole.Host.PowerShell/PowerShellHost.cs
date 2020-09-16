@@ -63,7 +63,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
-        private readonly object _lockObj = new object();
         private uint _solutionExistsCookie;
 
         private IConsole _activeConsole;
@@ -256,12 +255,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 try
                 {
-                    lock (_lockObj)
+                    if (Runspace == null)
                     {
-                        if (Runspace == null)
-                        {
-                            return prompt;
-                        }
+                        return prompt;
                     }
 
                     // Execute the prompt function from a worker thread, so that the UI thread is not blocked waiting
@@ -551,48 +547,44 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public bool Execute(IConsole console, string command, params object[] inputs)
         {
-            lock (_lockObj)
+            if (console == null)
             {
-                if (console == null)
-                {
-                    throw new ArgumentNullException(nameof(console));
-                }
-
-                if (command == null)
-                {
-                    throw new ArgumentNullException(nameof(command));
-                }
-
-                if (Runspace == null)
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetRunspaceAsync(console));
-                }
-                else
-                {
-                    // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
-                    // to run it once for each solution
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                    {
-                        await ExecuteInitScriptsAsync();
-                    });
-
-                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
-                    ActiveConsole = console;
-
-                    string fullCommand;
-                    if (ComplexCommand.AddLine(command, out fullCommand)
-                        && !string.IsNullOrEmpty(fullCommand))
-                    {
-                        // create a new token source with each command since CTS aren't usable once cancelled.
-                        _tokenSource = new CancellationTokenSource();
-                        _token = _tokenSource.Token;
-                        return ExecuteHost(fullCommand, command, inputs);
-                    }
-                }
-
-                return false; // constructing multi-line command
+                throw new ArgumentNullException(nameof(console));
             }
 
+            if (command == null)
+            {
+                throw new ArgumentNullException(nameof(command));
+            }
+
+            if (Runspace == null)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetRunspaceAsync(console));
+            }
+            else
+            {
+                // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
+                // to run it once for each solution
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await ExecuteInitScriptsAsync();
+                });
+
+                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
+                ActiveConsole = console;
+
+                string fullCommand;
+                if (ComplexCommand.AddLine(command, out fullCommand)
+                    && !string.IsNullOrEmpty(fullCommand))
+                {
+                    // create a new token source with each command since CTS aren't usable once cancelled.
+                    _tokenSource = new CancellationTokenSource();
+                    _token = _tokenSource.Token;
+                    return ExecuteHost(fullCommand, command, inputs);
+                }
+            }
+
+            return false; // constructing multi-line command
         }
 
         protected void OnExecuteCommandEnd()
