@@ -491,7 +491,7 @@ namespace NuGet.ProjectModel
             writer.WriteArrayEnd();
         }
 
-        private static void SetFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks, bool compressed = false)
+        private static void SetFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks, bool compressed)
         {
             if (frameworks.Any())
             {
@@ -539,14 +539,13 @@ namespace NuGet.ProjectModel
                 return;
             }
 
-            var cpvmElementName = "centralPackageVersions";
             if (compressed)
             {
-                SetValue(writer, cpvmElementName, GetHash(centralPackageVersions).ToString());
+                SetValue(writer, "centralPackageVersionsHash", GetHash(centralPackageVersions).ToString());
                 return;
             }
 
-            writer.WriteObjectStart(cpvmElementName);
+            writer.WriteObjectStart("centralPackageVersions");
             foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name))
             {
                 writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.ToNormalizedString());
