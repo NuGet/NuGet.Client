@@ -54,7 +54,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ICommonOperations> _commonOperations;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
-        private readonly Lazy<Version> _nugetVersion;
         private const string ActivePackageSourceKey = "activePackageSource";
         private const string SyncModeKey = "IsSyncMode";
         private const string PackageManagementContextKey = "PackageManagementContext";
@@ -140,7 +139,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     return vsMonitorSelection;
                 },
                 ThreadHelper.JoinableTaskFactory);
-            _nugetVersion = new Lazy<Version>(() => Assembly.GetExecutingAssembly().GetName().Version);
         }
 
         private void InitializeSources()
@@ -311,8 +309,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     try
                     {
-                        _initialized = true;
-
                         if (console.ShowDisclaimerHeader)
                         {
                             DisplayDisclaimerAndHelpText();
@@ -336,45 +332,59 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private async Task GetRunspaceAsync(IConsole console)
         {
-            var result = _runspaceManager.GetRunspace(console, _name);
-            Runspace = result.Item1;
-            _nugetHost = result.Item2;
-
-            UpdateWorkingDirectory();
-
-            await ExecuteInitScriptsAsync();
-
-            // check if PMC console is actually opened, then only hook to solution load/close events.
-            if (console is IWpfConsole)
+            try
             {
-                // Hook up solution events
-                _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
-                _solutionManager.Value.SolutionClosed += (o, e) =>
-                {
-                    UpdateWorkingDirectory();
+                var result = _runspaceManager.GetRunspace(console, _name);
+                Runspace = result.Item1;
+                _nugetHost = result.Item2;
 
-                    DefaultProject = null;
+                _initialized = true;
 
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
-                };
-            }
-            _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
-            _solutionManager.Value.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
-            _solutionManager.Value.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
-            _solutionManager.Value.NuGetProjectRemoved += (o, e) =>
-            {
-                UpdateWorkingDirectoryAndAvailableProjects();
-                // When the previous default project has been removed, _solutionManager.DefaultNuGetProjectName becomes null
-                if (_solutionManager.Value.DefaultNuGetProjectName == null)
+                UpdateWorkingDirectory();
+
+                await ExecuteInitScriptsAsync();
+
+                // check if PMC console is actually opened, then only hook to solution load/close events.
+                if (console is IWpfConsole)
                 {
-                    // Change default project to the first one in the collection
-                    SetDefaultProjectIndex(0);
+                    // Hook up solution events
+                    _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
+                    _solutionManager.Value.SolutionClosed += (o, e) =>
+                    {
+                        UpdateWorkingDirectory();
+
+                        DefaultProject = null;
+
+                        NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
+                    };
                 }
-            };
-            // Set available private data on Host
-            SetPrivateDataOnHost(false);
+                _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+                _solutionManager.Value.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+                _solutionManager.Value.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+                _solutionManager.Value.NuGetProjectRemoved += (o, e) =>
+                {
+                    UpdateWorkingDirectoryAndAvailableProjects();
+                    // When the previous default project has been removed, _solutionManager.DefaultNuGetProjectName becomes null
+                    if (_solutionManager.Value.DefaultNuGetProjectName == null)
+                    {
+                        // Change default project to the first one in the collection
+                        SetDefaultProjectIndex(0);
+                    }
+                };
+                // Set available private data on Host
+                SetPrivateDataOnHost(false);
 
-            StartAsyncDefaultProjectUpdate();
+                StartAsyncDefaultProjectUpdate();
+            }
+            catch (Exception ex)
+            {
+                // catch all exception as we don't want it to crash VS
+                _initialized = false;
+                IsCommandEnabled = false;
+                ReportError(ex);
+
+                ExceptionHelper.WriteErrorToActivityLog(ex);
+            }
         }
 
         private void HandleSolutionOpened()
@@ -647,7 +657,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             WriteLine(Resources.Console_DisclaimerText);
             WriteLine();
 
-            WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetVersion.Value));
+            WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, Assembly.GetExecutingAssembly().GetName().Version));
             WriteLine();
 
             WriteLine(Resources.Console_HelpText);

@@ -29,7 +29,7 @@ namespace NuGetConsole.Implementation.Console
         private const string TabExpansionTimeoutKey = @"TabExpansionTimeout"; // in seconds
         private const int DefaultTabExpansionTimeout = 3; // in seconds
         private readonly Lazy<IntPtr> _pKeybLayout = new Lazy<IntPtr>(() => NativeMethods.GetKeyboardLayout(0));
-        private bool _notFirstInput;
+        private bool _isFirstCommand;
         private WpfConsole WpfConsole { get; }
         private IWpfTextView WpfTextView { get; }
 
@@ -186,9 +186,9 @@ namespace NuGetConsole.Implementation.Console
                 //Debug.Print("Exec: GUID_VSStandardCommandSet97: {0}", (VSConstants.VSStd97CmdID)nCmdID);
                 var commandID = (VSConstants.VSStd97CmdID)nCmdID;
                 // User pasted command here, kick off loading Powershell.
-                if (commandID == VSConstants.VSStd97CmdID.Paste && !_notFirstInput)
+                if (commandID == VSConstants.VSStd97CmdID.Paste && !_isFirstCommand)
                 {
-                    _notFirstInput = true;
+                    _isFirstCommand = true;
                     WpfConsole.EndInputLine();
                 }
 
@@ -213,9 +213,9 @@ namespace NuGetConsole.Implementation.Console
                 var commandID = (VSConstants.VSStd2KCmdID)nCmdID;
 
                 // User start typing command here, kick off loading Powershell.
-                if (commandID != VSConstants.VSStd2KCmdID.SolutionPlatform && !_notFirstInput)
+                if (commandID != VSConstants.VSStd2KCmdID.SolutionPlatform && !_isFirstCommand)
                 {
-                    _notFirstInput = true;
+                    _isFirstCommand = true;
                     WpfConsole.EndInputLine();
                 }
 
