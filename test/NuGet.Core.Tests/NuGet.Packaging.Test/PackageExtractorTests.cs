@@ -2721,7 +2721,7 @@ namespace NuGet.Packaging.Test
             packageDownloader.Verify();
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task InstallFromSourceAsyncByPackageDownloader_TrustedSignPackageAsync()
         {
