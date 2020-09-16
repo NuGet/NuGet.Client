@@ -553,7 +553,6 @@ namespace NuGet.ProjectModel
                     var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
-
                     string dependencyVersionValue = null;
 
                     if (jsonReader.TokenType == JsonToken.String)
@@ -588,7 +587,6 @@ namespace NuGet.ProjectModel
                                     {
                                         versionLine = jsonReader.LineNumber;
                                         versionColumn = jsonReader.LinePosition;
-
                                         dependencyVersionValue = (string)jsonReader.Value;
                                     }
                                     break;
