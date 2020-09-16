@@ -64,8 +64,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _autoReferenced;
-
         public bool AutoReferenced
         {
             get => _autoReferenced;
