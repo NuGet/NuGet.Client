@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     NuGetRecommender = await _nuGetRecommender.GetValueAsync(cancellationToken);
                 }
-                catch(ServiceUnavailableException)
+                catch (ServiceUnavailableException)
                 {
                     // if the recommender service is not available, NuGetRecommender remains null and we show only the default package list
                 }
