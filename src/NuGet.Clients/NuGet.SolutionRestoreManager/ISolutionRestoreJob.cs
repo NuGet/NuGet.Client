@@ -20,7 +20,7 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         /// <param name="request">Solution restore request.</param>
         /// <param name="jobContext">Job context shared between different jobs.</param>
-        /// <param name="isPotentialSolutionLoadRestore">Specifies whether the caller thinks this restore is happening due to a solution load.
+        /// <param name="isSolutionLoadRestore">Specifies whether the caller thinks this restore is happening due to a solution load.
         /// There is not functional impact here, rather it's about telemetry reporting.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="token">Cancellation token.</param>
@@ -29,7 +29,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreRequest request,
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
-            bool isPotentialSolutionLoadRestore,
+            bool isSolutionLoadRestore,
             CancellationToken token);
     }
 }

@@ -288,8 +288,6 @@ namespace NuGet.SolutionRestoreManager
         public async Task<bool> ScheduleRestoreAsync(
             SolutionRestoreRequest request, CancellationToken token)
         {
-            NuGetFileLogger.DefaultInstance.Write($"A solution restore request was received for Source: {request.RestoreSource}");
-
             if (token.IsCancellationRequested)
             {
                 return false;
@@ -429,13 +427,11 @@ namespace NuGet.SolutionRestoreManager
         {
             // Hops onto a background pool thread
             await TaskScheduler.Default;
-            NuGetFileLogger.DefaultInstance.Write("StartBackgroundJobRunnerAsync - On a background thread.");
 
             var status = false;
             // Check if the solution is fully loaded
             while (!_solutionLoadedEvent.IsSet)
             {
-                NuGetFileLogger.DefaultInstance.Write("StartBackgroundJobRunnerAsync - Waiting for the solution loaded event to be set!");
                 // Needed when OnAfterBackgroundSolutionLoadComplete fires before
                 // Advise has been called.
                 if (await IsSolutionFullyLoadedAsync())
@@ -471,9 +467,7 @@ namespace NuGet.SolutionRestoreManager
                     {
                         // Blocks the execution until first request is scheduled
                         // Monitors the cancelllation token as well.
-                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Take queue count: {_pendingRequests.Value.Count}");
                         var request = _pendingRequests.Value.Take(token);
-                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Done with Take!");
 
                         token.ThrowIfCancellationRequested();
 
@@ -482,9 +476,8 @@ namespace NuGet.SolutionRestoreManager
                         await PromoteTaskToActiveAsync(restoreOperation, token);
 
                         token.ThrowIfCancellationRequested();
-
                         DateTime lastNominationReceived = DateTime.UtcNow;
-                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - About to start draining the queue count: {_pendingRequests.Value.Count}, last nomination time: {lastNominationReceived.ToString("s")}");
+
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
@@ -493,13 +486,11 @@ namespace NuGet.SolutionRestoreManager
 
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
-                            NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - TryTake, AllProjectsNominated{isAllProjectsNominated}, queue count: {_pendingRequests.Value.Count}");
                             // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
                             if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
                             {
                                 if (isAllProjectsNominated)
                                 {
-                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - AllProjectsNominated, queue count: {_pendingRequests.Value.Count}");
                                     // if we've got all the nominations then continue with the auto restore
                                     break;
                                 }
@@ -508,25 +499,17 @@ namespace NuGet.SolutionRestoreManager
                                     // Break if we've waited for more than 10s without an actual nomination.
                                     if (lastNominationReceived.AddSeconds(10.0) < DateTime.UtcNow)
                                     {
-                                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Break, done waiting, current time {DateTime.UtcNow.ToString("s")}last nomination time: {lastNominationReceived.ToString("s")}");
-                                        // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
-                                        // we wait until 20 secs for all the projects to be nominated at solution load.
                                         break;
                                     }
-                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - we're still expecting nominations. Sleeping for a bit.");
-                                    // if we're still expecting some nominations and also haven't reached our max timeout
-                                    // then increase the retries count.
                                     await Task.Delay(IdleTimeoutMs, token);
                                 }
                             }
                             else
                             {
                                 lastNominationReceived = DateTime.UtcNow;
-                                NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Pulled a request, queue count: {_pendingRequests.Value.Count}");
                                 // Upgrade request if necessary
                                 if (next != null && next.RestoreSource != request.RestoreSource)
                                 {
-                                    NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Upgrading request");
                                     // there could be requests of two types: Auto-Restore or Explicit
                                     // Explicit is always preferred.
                                     request = new SolutionRestoreRequest(
@@ -548,7 +531,6 @@ namespace NuGet.SolutionRestoreManager
 
                         token.ThrowIfCancellationRequested();
 
-                        NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Starting processing of restore request");
                         // Runs restore job with scheduled request params
                         status = await ProcessRestoreRequestAsync(restoreOperation, request, token);
 
@@ -576,13 +558,13 @@ namespace NuGet.SolutionRestoreManager
             CancellationToken token)
         {
             // if the request is implicit & this is the first restore, assume we are restoring due to a solution load.
-            var isPotentialSolutionLoadRestore = Interlocked.CompareExchange(ref _solutionLoad, 1, 0) == 0 &&
+            var isSolutionLoadRestore = Interlocked.CompareExchange(ref _solutionLoad, 1, 0) == 0 &&
                 request.RestoreSource == RestoreOperationSource.Implicit;
 
             // Start the restore job in a separate task on a background thread
             // it will switch into main thread when necessary.
             var joinableTask = JoinableTaskFactory.RunAsync(
-            () => StartRestoreJobAsync(request, isPotentialSolutionLoadRestore, token));
+            () => StartRestoreJobAsync(request, isSolutionLoadRestore, token));
 
             var continuation = joinableTask
                 .Task
@@ -623,7 +605,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private async Task<bool> StartRestoreJobAsync(
-            SolutionRestoreRequest request, bool isPotentialSolutionLoadRestore, CancellationToken token)
+            SolutionRestoreRequest request, bool isSolutionLoadRestore, CancellationToken token)
         {
             await TaskScheduler.Default;
 
@@ -645,7 +627,7 @@ namespace NuGet.SolutionRestoreManager
 
                             // Run restore
                             var job = componentModel.GetService<ISolutionRestoreJob>();
-                            return await job.ExecuteAsync(request, _restoreJobContext, logger, isPotentialSolutionLoadRestore, jobCts.Token);
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, isSolutionLoadRestore, jobCts.Token);
                         }
                         finally
                         {
