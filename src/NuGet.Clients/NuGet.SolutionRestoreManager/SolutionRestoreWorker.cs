@@ -49,6 +49,7 @@ namespace NuGet.SolutionRestoreManager
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
         private int _initialized;
+        private int _solutionLoad;
 
         private IVsSolution _vsSolution;
 
@@ -400,7 +401,7 @@ namespace NuGet.SolutionRestoreManager
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, token);
 
-                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, isPotentialSolutionLoadRestore: false, token);
+                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, token);
 
                         return result;
                     }
@@ -431,12 +432,10 @@ namespace NuGet.SolutionRestoreManager
             NuGetFileLogger.DefaultInstance.Write("StartBackgroundJobRunnerAsync - On a background thread.");
 
             var status = false;
-            var isPotentialSolutionLoadRestore = false;
             // Check if the solution is fully loaded
             while (!_solutionLoadedEvent.IsSet)
             {
                 NuGetFileLogger.DefaultInstance.Write("StartBackgroundJobRunnerAsync - Waiting for the solution loaded event to be set!");
-                isPotentialSolutionLoadRestore = true;
                 // Needed when OnAfterBackgroundSolutionLoadComplete fires before
                 // Advise has been called.
                 if (await IsSolutionFullyLoadedAsync())
@@ -494,9 +493,6 @@ namespace NuGet.SolutionRestoreManager
 
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
-                            // If *at any* point during the restore operation wait, we are waiting for project nominations,
-                            // we are likely during a solution load/branch switch event.
-                            isPotentialSolutionLoadRestore |= !isAllProjectsNominated;
                             NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - TryTake, AllProjectsNominated{isAllProjectsNominated}, queue count: {_pendingRequests.Value.Count}");
                             // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
                             if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
@@ -554,7 +550,7 @@ namespace NuGet.SolutionRestoreManager
 
                         NuGetFileLogger.DefaultInstance.Write($"StartBackgroundJobRunnerAsync - Starting processing of restore request");
                         // Runs restore job with scheduled request params
-                        status = await ProcessRestoreRequestAsync(restoreOperation, request, isPotentialSolutionLoadRestore, token);
+                        status = await ProcessRestoreRequestAsync(restoreOperation, request, token);
 
                         // Repeats...
                     }
@@ -577,13 +573,16 @@ namespace NuGet.SolutionRestoreManager
         private async Task<bool> ProcessRestoreRequestAsync(
             BackgroundRestoreOperation restoreOperation,
             SolutionRestoreRequest request,
-            bool isPotentialSolutionLoadRestore,
             CancellationToken token)
         {
+            // if the request is implicit & this is the first restore, assume we are restoring due to a solution load.
+            var isPotentialSolutionLoadRestore = Interlocked.CompareExchange(ref _solutionLoad, 1, 0) == 0 &&
+                request.RestoreSource == RestoreOperationSource.Implicit;
+
             // Start the restore job in a separate task on a background thread
             // it will switch into main thread when necessary.
             var joinableTask = JoinableTaskFactory.RunAsync(
-                () => StartRestoreJobAsync(request, isPotentialSolutionLoadRestore, token));
+            () => StartRestoreJobAsync(request, isPotentialSolutionLoadRestore, token));
 
             var continuation = joinableTask
                 .Task
