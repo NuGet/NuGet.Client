@@ -52,6 +52,17 @@ namespace NuGet.PackageManagement.UI
             DisplayDeprecatedFrameworkWindow = true;
         }
 
+        // For testing purposes only.
+        internal NuGetUI(
+            ICommonOperations commonOperations,
+            NuGetUIProjectContext projectContext,
+            INuGetUILogger logger,
+            NuGetUIContext uiContext)
+            : this(commonOperations, projectContext, logger)
+        {
+            UIContext = uiContext;
+        }
+
         public static async Task<NuGetUI> CreateAsync(
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
@@ -406,6 +417,11 @@ namespace NuGet.PackageManagement.UI
             {
                 UILogger.ReportError(ex.AsLogMessage());
                 ProjectContext.Log(ex.AsLogMessage());
+            }
+
+            if (ex.Results is null)
+            {
+                return;
             }
 
             foreach (var result in ex.Results)

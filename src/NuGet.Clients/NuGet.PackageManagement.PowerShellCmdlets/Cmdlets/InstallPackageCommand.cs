@@ -13,7 +13,6 @@ using System.Text;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -136,9 +135,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(ex.AsLogMessage());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
+                if (ex.Results != null)
+                {
+                    var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(ex.AsLogMessage()));
+                    logMessages.ForEach(p => Log(ex.AsLogMessage()));
+                }
             }
             catch (Exception ex)
             {
@@ -194,9 +196,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(ex.AsLogMessage());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
+                if (ex.Results != null)
+                {
+                    var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(p));
+                    logMessages.ForEach(p => Log(p));
+                }
             }
             catch (Exception ex)
             {

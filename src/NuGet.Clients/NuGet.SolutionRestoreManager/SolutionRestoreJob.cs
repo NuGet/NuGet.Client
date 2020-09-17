@@ -472,18 +472,19 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            if (args.Exception is SignatureException)
+            if (args.Exception is SignatureException ex)
             {
                 _status = NuGetOperationStatus.Failed;
-
-                var ex = args.Exception as SignatureException;
 
                 if (!string.IsNullOrEmpty(ex.Message))
                 {
                     _logger.Log(ex.AsLogMessage());
                 }
 
-                ex.Results.SelectMany(p => p.Issues).ToList().ForEach(p => _logger.Log(p));
+                if (ex.Results != null)
+                {
+                    ex.Results.SelectMany(p => p.Issues).ToList().ForEach(p => _logger.Log(p));
+                }
 
                 return;
             }
