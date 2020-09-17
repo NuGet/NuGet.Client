@@ -422,7 +422,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectName = _projectName ?? _projectUniqueName;
 
-            return new PackageSpec(tfis)
+            var packageSpec = new PackageSpec(tfis)
             {
                 Name = projectName,
                 Version = new NuGetVersion(_vsProjectAdapter.Version),
@@ -465,7 +465,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         await _vsProjectAdapter.IsRestoreLockedAsync()),
                     CentralPackageVersionsEnabled = isCpvmEnabled
                 }
-            }.ApplyCentralVersionInformation();
+            };
+
+            packageSpec.CompleteInitialization();
+
+            return packageSpec;
         }
     }
 }

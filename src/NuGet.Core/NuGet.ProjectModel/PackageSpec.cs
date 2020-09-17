@@ -236,5 +236,37 @@ namespace NuGet.ProjectModel
             }
             return null;
         }
+
+        /// <summary>
+        /// Merge the CentralVersion information to the package reference information.
+        /// </summary>
+        private void ApplyCentralVersionInformation()
+        {
+            if (RestoreMetadata != null && RestoreMetadata.CentralPackageVersionsEnabled)
+            {
+                foreach (var tfm in TargetFrameworks)
+                {
+                    foreach (LibraryDependency d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
+                    {
+                        if (tfm.CentralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
+                        {
+                            d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
+                        }
+
+                        d.VersionCentrallyManaged = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Invoke this method after all the <see cref="PackageSpec"/> properties data was initialized.
+        /// The method will apply necessary data merging and validation.
+        /// After calling this method it is expected that none of the currnt <see cref="PackageSpec"/> data will be updated. 
+        /// </summary>
+        public void CompleteInitialization()
+        {
+            ApplyCentralVersionInformation();
+        }
     }
 }

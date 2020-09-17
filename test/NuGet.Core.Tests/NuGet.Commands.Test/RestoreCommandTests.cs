@@ -1741,9 +1741,10 @@ namespace NuGet.Commands.Test
                     ProjectStyle = ProjectStyle.PackageReference,
                 };
                 packageSpec.FilePath = projectPath;
+                packageSpec.CompleteInitialization();
 
                 var dgspec = new DependencyGraphSpec();
-                dgspec.AddProject(packageSpec.ApplyCentralVersionInformation());
+                dgspec.AddProject(packageSpec);
 
                 var sources = new List<PackageSource>();
                 var logger = new TestLogger();
@@ -1798,9 +1799,10 @@ namespace NuGet.Commands.Test
                     ProjectStyle = ProjectStyle.PackageReference,
                 };
                 packageSpec.FilePath = projectPath;
+                packageSpec.CompleteInitialization();
 
                 var dgspec = new DependencyGraphSpec();
-                dgspec.AddProject(packageSpec.ApplyCentralVersionInformation());
+                dgspec.AddProject(packageSpec);
 
                 var sources = new List<PackageSource>();
                 var logger = new TestLogger();

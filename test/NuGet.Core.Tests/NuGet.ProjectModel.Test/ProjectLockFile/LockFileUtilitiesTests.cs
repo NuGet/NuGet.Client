@@ -180,10 +180,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.ApplyCentralVersionInformation());
+            dgSpec.AddProject(project);
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -235,10 +236,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.ApplyCentralVersionInformation());
+            dgSpec.AddProject(project);
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -286,10 +288,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.ApplyCentralVersionInformation());
+            dgSpec.AddProject(project);
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -337,10 +340,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.ApplyCentralVersionInformation());
+            dgSpec.AddProject(project);
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -388,10 +392,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.ApplyCentralVersionInformation());
+            dgSpec.AddProject(project);
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -443,10 +448,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.ApplyCentralVersionInformation());
+            dgSpec.AddProject(project);
 
             var lockFile1 = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -506,10 +512,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = false };
+            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
-            dgSpec.AddProject(project.ApplyCentralVersionInformation());
+            dgSpec.AddProject(project);
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target

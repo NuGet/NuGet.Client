@@ -605,7 +605,7 @@ namespace NuGet.Build.Tasks.Console
                     // Get the PackageSpecs in parallel because creating each one is relatively expensive so parallelism speeds things up
                     Parallel.ForEach(projects, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, project =>
                     {
-                        var packageSpec = GetPackageSpec(project.OuterProject, project).ApplyCentralVersionInformation();
+                        var packageSpec = GetPackageSpec(project.OuterProject, project);
 
                         if (packageSpec != null)
                         {
@@ -708,6 +708,7 @@ namespace NuGet.Build.Tasks.Console
                     ),
                 Version = GetProjectVersion(project)
             };
+            packageSpec.CompleteInitialization();
 
             return packageSpec;
         }
