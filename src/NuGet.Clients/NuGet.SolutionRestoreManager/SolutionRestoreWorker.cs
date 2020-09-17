@@ -50,7 +50,7 @@ namespace NuGet.SolutionRestoreManager
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
         private int _initialized;
-        private int _solutionLoad;
+        private bool _isFirstRestore = true;
 
         private IVsSolution _vsSolution;
 
@@ -559,8 +559,9 @@ namespace NuGet.SolutionRestoreManager
             CancellationToken token)
         {
             // if the request is implicit & this is the first restore, assume we are restoring due to a solution load.
-            var isSolutionLoadRestore = Interlocked.CompareExchange(ref _solutionLoad, 1, 0) == 0 &&
+            var isSolutionLoadRestore = _isFirstRestore &&
                 request.RestoreSource == RestoreOperationSource.Implicit;
+            _isFirstRestore = false;
 
             // Start the restore job in a separate task on a background thread
             // it will switch into main thread when necessary.
