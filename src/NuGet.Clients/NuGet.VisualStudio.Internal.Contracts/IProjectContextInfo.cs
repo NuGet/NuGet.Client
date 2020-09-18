@@ -21,6 +21,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         NuGetProjectKind ProjectKind { get; }
         ValueTask<bool> IsUpgradeableAsync(CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken);
+        ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetTransitivePackagesAsync(CancellationToken cancellationToken);
         ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(CancellationToken cancellationToken);
         ValueTask<string?> GetUniqueNameOrNameAsync(CancellationToken cancellationToken);
         ValueTask<(bool, string?)> TryGetInstalledPackageFilePathAsync(

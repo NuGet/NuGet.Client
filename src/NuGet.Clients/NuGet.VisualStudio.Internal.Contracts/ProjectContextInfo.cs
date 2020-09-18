@@ -56,6 +56,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
+        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetTransitivePackagesAsync(CancellationToken cancellationToken)
+        {
+            using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(cancellationToken))
+            {
+                return await projectManager.GetTransitivePackagesAsync(new string[] { ProjectId }, cancellationToken);
+            }
+        }
+
         public async ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
