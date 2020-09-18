@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Both types have the ProjectItems property that we want to access.
             object cursor = envDTEProject;
 
-            var fullPath = EnvDTEProjectInfoUtility.GetFullPath(envDTEProject);
+            var fullPath = EnvDteProjectInfoUtility.GetFullPath(envDTEProject);
             var folderRelativePath = string.Empty;
 
             foreach (var part in pathParts)
@@ -158,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // The JS Metro project system has a bug whereby calling AddFolder() to an existing folder that
                 // does not belong to the project will throw. To work around that, we have to manually include 
                 // it into our project.
-                if (EnvDTEProjectInfoUtility.IsJavaScriptProject(envDTEProject)
+                if (EnvDteProjectInfoUtility.IsJavaScriptProject(envDTEProject)
                     && Directory.Exists(fullPath))
                 {
                     var succeeded = await IncludeExistingFolderToProjectAsync(envDTEProject, folderRelativePath);
@@ -493,7 +493,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static HashSet<string> GetLocalProjectAssemblies(EnvDTE.Project envDTEProject)
         {
-            if (EnvDTEProjectInfoUtility.IsWebSite(envDTEProject))
+            if (EnvDteProjectInfoUtility.IsWebSite(envDTEProject))
             {
                 var websiteLocalAssemblies = GetWebsiteLocalAssemblies(envDTEProject);
                 return websiteLocalAssemblies;
@@ -550,7 +550,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // For website projects, we always add .refresh files that point to the corresponding binaries in packages. In the event of bin deployed assemblies that are also GACed,
             // the ReferenceKind is not AssemblyReferenceBin. Consequently, we work around this by looking for any additional assembly declarations specified via .refresh files.
-            var envDTEProjectPath = EnvDTEProjectInfoUtility.GetFullPath(envDTEProject);
+            var envDTEProjectPath = EnvDteProjectInfoUtility.GetFullPath(envDTEProject);
             CollectionsUtility.AddRange(assemblies, RefreshFileUtility.ResolveRefreshPaths(envDTEProjectPath));
 
             return assemblies;
@@ -575,7 +575,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (EnvDTEProjectInfoUtility.IsWebSite(envDTEProject))
+            if (EnvDteProjectInfoUtility.IsWebSite(envDTEProject))
             {
                 return GetWebsiteReferencedProjects(envDTEProject);
             }

@@ -480,7 +480,7 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var uniqueName = EnvDTEProjectInfoUtility.GetUniqueName(project);
+            var uniqueName = EnvDteProjectInfoUtility.GetUniqueName(project);
             var nugetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
 
             // If we failed to generate a cache entry in the solution manager something went wrong.
@@ -580,7 +580,7 @@ namespace NuGetVSExtension
                 await InitializeMEFAsync();
             }
 
-            var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+            var project = EnvDteProjectInfoUtility.GetActiveProject(VsMonitorSelection);
 
             if (!await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null, project))
             {
@@ -588,7 +588,7 @@ namespace NuGetVSExtension
                 return;
             }
 
-            string uniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            string uniqueName = await EnvDteProjectInfoUtility.GetCustomUniqueNameAsync(project);
             // Close NuGet Package Manager if it is open for this project
             IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project);
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
@@ -624,11 +624,11 @@ namespace NuGetVSExtension
                 var searchText = GetSearchText(parameterString);
 
                 // *** temp code
-                var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+                var project = EnvDteProjectInfoUtility.GetActiveProject(VsMonitorSelection);
 
                 if (project != null
                     &&
-                    !EnvDTEProjectInfoUtility.IsUnloaded(project)
+                    !EnvDteProjectInfoUtility.IsUnloaded(project)
                     &&
                     EnvDTEProjectUtility.IsSupported(project))
                 {
@@ -929,9 +929,9 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dteProject = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+            var dteProject = EnvDteProjectInfoUtility.GetActiveProject(VsMonitorSelection);
 
-            var uniqueName = EnvDTEProjectInfoUtility.GetUniqueName(dteProject);
+            var uniqueName = EnvDteProjectInfoUtility.GetUniqueName(dteProject);
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
 
             if (nuGetProject == null)
@@ -1074,8 +1074,8 @@ namespace NuGetVSExtension
         {
             get
             {
-                var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
-                return project != null && !EnvDTEProjectInfoUtility.IsUnloaded(project)
+                var project = EnvDteProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+                return project != null && !EnvDteProjectInfoUtility.IsUnloaded(project)
                        && EnvDTEProjectUtility.IsSupported(project);
             }
         }

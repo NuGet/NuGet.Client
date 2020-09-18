@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
 
-            var projectSafeName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(envDTEProject);
+            var projectSafeName = await EnvDteProjectInfoUtility.GetCustomUniqueNameAsync(envDTEProject);
             var nuGetProject = await solutionManager.GetNuGetProjectAsync(projectSafeName);
             return nuGetProject;
         }

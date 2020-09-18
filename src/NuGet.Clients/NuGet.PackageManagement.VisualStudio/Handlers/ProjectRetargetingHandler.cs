@@ -231,12 +231,12 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var project = EnvDTEProjectInfoUtility.GetActiveProject(_vsMonitorSelection);
+                var project = EnvDteProjectInfoUtility.GetActiveProject(_vsMonitorSelection);
 
                 if (project != null)
                 {
                     _platformRetargetingProject = null;
-                    var frameworkName = EnvDTEProjectInfoUtility.GetTargetFrameworkString(project);
+                    var frameworkName = EnvDteProjectInfoUtility.GetTargetFrameworkString(project);
                     if (NETCore45.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows80.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
                     {
                         _platformRetargetingProject = project.UniqueName;
@@ -268,7 +268,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                             if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                             {
-                                var frameworkName = EnvDTEProjectInfoUtility.GetTargetFrameworkString(project);
+                                var frameworkName = EnvDteProjectInfoUtility.GetTargetFrameworkString(project);
                                 if (NETCore451.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows81.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     var packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(nuGetProject);

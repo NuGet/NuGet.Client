@@ -21,7 +21,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    return await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(
+                    return await EnvDteProjectInfoUtility.GetCustomUniqueNameAsync(
                         (EnvDTE.Project)psObject.BaseObject);
                 });
         }

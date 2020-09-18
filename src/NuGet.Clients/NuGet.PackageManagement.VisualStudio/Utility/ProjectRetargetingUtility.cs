@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="project">The project which is checked to see if NuGet is used in it</param>
         public static bool IsNuGetInUse(Project project)
         {
-            return EnvDTEProjectUtility.IsSupported(project) && File.Exists(EnvDTEProjectInfoUtility.GetPackagesConfigFullPath(project));
+            return EnvDTEProjectUtility.IsSupported(project) && File.Exists(EnvDteProjectInfoUtility.GetPackagesConfigFullPath(project));
         }
     }
 }

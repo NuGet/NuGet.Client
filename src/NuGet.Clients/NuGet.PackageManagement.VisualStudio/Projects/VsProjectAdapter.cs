@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (!IsDeferred)
                 {
-                    return EnvDTEProjectInfoUtility.GetFullPath(Project);
+                    return EnvDteProjectInfoUtility.GetFullPath(Project);
                 }
                 else
                 {

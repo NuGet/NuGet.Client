@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio
 
             // Get the vs solution
             var solution = ServiceLocator.GetInstance<IVsSolution>();
-            var hr = solution.GetProjectOfUniqueName(EnvDTEProjectInfoUtility.GetUniqueName(project), out hierarchy);
+            var hr = solution.GetProjectOfUniqueName(EnvDteProjectInfoUtility.GetUniqueName(project), out hierarchy);
 
             if (hr != VSConstants.S_OK)
             {

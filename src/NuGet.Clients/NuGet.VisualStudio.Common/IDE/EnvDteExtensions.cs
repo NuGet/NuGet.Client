@@ -3,13 +3,16 @@
 
 using System;
 using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio.Common;
 
 namespace NuGet.VisualStudio
 {
-    public static class EnvDTEExtensions
+    public static class EnvDteExtensions
     {
         public static string GetSKU(this EnvDTE.DTE dte)
         {
+            Verify.ArgumentIsNotNull(dte, nameof(dte));
+
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var sku = dte.Edition;
@@ -27,6 +30,8 @@ namespace NuGet.VisualStudio
 
         public static string GetFullVsVersionString(this EnvDTE.DTE dte)
         {
+            Verify.ArgumentIsNotNull(dte, nameof(dte));
+
             ThreadHelper.ThrowIfNotOnUIThread();
 
             return dte.Edition + "/" + dte.Version;

@@ -17,7 +17,7 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {
-    public static class EnvDTEProjectInfoUtility
+    public static class EnvDteProjectInfoUtility
     {
         #region Constants
 

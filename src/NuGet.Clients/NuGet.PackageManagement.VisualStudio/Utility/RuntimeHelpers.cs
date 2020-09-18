@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static bool SupportsBindingRedirects(EnvDTE.Project Project)
         {
             return (Project.Kind != null && SupportedProjectTypes.IsSupportedForBindingRedirects(Project.Kind))
-                && !EnvDTEProjectInfoUtility.IsWindowsStoreApp(Project);
+                && !EnvDteProjectInfoUtility.IsWindowsStoreApp(Project);
         }
 
         private static Task AddBindingRedirectsAsync(
@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Create a binding redirect manager over the configuration
-            var manager = new BindingRedirectManager(EnvDTEProjectInfoUtility.GetConfigurationFile(vsProjectAdapter.Project), msBuildNuGetProjectSystem);
+            var manager = new BindingRedirectManager(EnvDteProjectInfoUtility.GetConfigurationFile(vsProjectAdapter.Project), msBuildNuGetProjectSystem);
 
             // Add the redirects
             manager.AddBindingRedirects(redirects);

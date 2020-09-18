@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             continue;
                         }
 
-                        var childProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(reference3.SourceProject);
+                        var childProjectPath = EnvDteProjectInfoUtility.GetFullProjectPath(reference3.SourceProject);
 
                         // Skip projects which have ReferenceOutputAssembly=false
                         if (!string.IsNullOrEmpty(childProjectPath)
@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                                 if (IsProjectReference(reference, logger) && IsReferenceResolved(reference, logger))
                                 {
-                                    var childPath = EnvDTEProjectInfoUtility
+                                    var childPath = EnvDteProjectInfoUtility
                                         .GetFullProjectPath(reference.SourceProject);
 
                                     excludedReferences.Add(childPath);
