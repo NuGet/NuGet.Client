@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement;
+using NuGet.VisualStudio.Common;
 using Task = System.Threading.Tasks.Task;
 using TaskExpandedNodes = System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<NuGet.VisualStudio.VsHierarchyItem>>>;
 
@@ -20,27 +19,9 @@ namespace NuGet.VisualStudio
         private const string VsWindowKindSolutionExplorer = "3AE79031-E1BC-11D0-8F78-00A0C9110057";
 
         private static readonly string[] UnsupportedProjectCapabilities = new string[]
-            {
-                "SharedAssetsProject", // This is true for shared projects in universal apps
-            };
-
-        public static IVsHierarchy ToVsHierarchy(EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            IVsHierarchy hierarchy;
-
-            // Get the vs solution
-            var solution = ServiceLocator.GetInstance<IVsSolution>();
-            var hr = solution.GetProjectOfUniqueName(EnvDTEProjectInfoUtility.GetUniqueName(project), out hierarchy);
-
-            if (hr != VSConstants.S_OK)
-            {
-                Marshal.ThrowExceptionForHR(hr);
-            }
-
-            return hierarchy;
-        }
+            "SharedAssetsProject", // This is true for shared projects in universal apps
+        };
 
         public static string GetProjectPath(IVsHierarchy project)
         {
@@ -48,17 +29,6 @@ namespace NuGet.VisualStudio
 
             project.GetCanonicalName(VSConstants.VSITEMID_ROOT, out string projectPath);
             return projectPath;
-        }
-
-        public static string[] GetProjectTypeGuids(EnvDTE.Project project)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
-            var hierarchy = ToVsHierarchy(project);
-            var projectTypeGuids = GetProjectTypeGuids(hierarchy, project.Kind);
-
-            return projectTypeGuids;
         }
 
         public static bool IsSupported(IVsHierarchy hierarchy, string projectTypeGuid)
@@ -140,8 +110,7 @@ namespace NuGet.VisualStudio
             return project;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "solutionManager")]
-        public static async TaskExpandedNodes GetAllExpandedNodesAsync(ISolutionManager solutionManager)
+        public static async TaskExpandedNodes GetAllExpandedNodesAsync()
         {
             // this operation needs to execute on UI thread
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -161,10 +130,10 @@ namespace NuGet.VisualStudio
             return results;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "solutionManager")]
-        public static async Task CollapseAllNodesAsync(ISolutionManager solutionManager, IDictionary<string, ISet<VsHierarchyItem>> ignoreNodes)
+        public static async Task CollapseAllNodesAsync(IDictionary<string, ISet<VsHierarchyItem>> ignoreNodes)
         {
-            // this operation needs to execute on UI thread
+            Verify.ArgumentIsNotNull(ignoreNodes, nameof(ignoreNodes));
+
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();

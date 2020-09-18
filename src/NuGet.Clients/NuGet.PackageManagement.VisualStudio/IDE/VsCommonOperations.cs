@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(solutionManager);
+                _expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync();
 
                 return Task.CompletedTask;
             });
@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                await VsHierarchyUtility.CollapseAllNodesAsync(solutionManager, _expandedNodes);
+                await VsHierarchyUtility.CollapseAllNodesAsync(_expandedNodes);
 
                 return Task.CompletedTask;
             });

@@ -7,14 +7,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Security;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
-using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
@@ -195,7 +193,7 @@ namespace NuGet.VisualStudio
             if (envDTEProject.Properties == null)
             {
                 // this happens in unit tests
-                return default(T);
+                return default;
             }
 
             try
@@ -212,7 +210,7 @@ namespace NuGet.VisualStudio
             catch (InvalidCastException)
             {
             }
-            return default(T);
+            return default;
         }
 
         /// <summary>
@@ -427,17 +425,10 @@ namespace NuGet.VisualStudio
                    "Windows Phone OS 7.1".Equals(GetPropertyValue<string>(envDTEProject, xnaPropertyValue), StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsNativeProject(EnvDTE.Project envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            return envDTEProject != null
-                && VsProjectTypes.CppProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
-        }
-
         private static bool IsWebProject(EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string[] types = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
+            string[] types = envDTEProject.GetProjectTypeGuids();
             return types.Contains(VsProjectTypes.WebSiteProjectTypeGuid, StringComparer.OrdinalIgnoreCase) ||
                    types.Contains(VsProjectTypes.WebApplicationProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
@@ -452,7 +443,7 @@ namespace NuGet.VisualStudio
         public static bool IsWindowsStoreApp(EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string[] types = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
+            string[] types = envDTEProject.GetProjectTypeGuids();
             return types.Contains(VsProjectTypes.WindowsStoreProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
 

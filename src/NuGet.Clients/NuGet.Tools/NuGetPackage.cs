@@ -420,7 +420,7 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var vsProject = VsHierarchyUtility.ToVsHierarchy(project);
+            var vsProject = project.ToVsHierarchy();
             var documentName = project.FullName;
 
             // Find existing hierarchy and item id of the document window if it's

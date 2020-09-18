@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (packageReferencesToBeReinstalled.Count > 0)
                     {
                         Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                        var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                        var projectHierarchy = project.ToVsHierarchy();
                         ShowRetargetingErrorTask(packageReferencesToBeReinstalled.Select(p => p.PackageIdentity.Id), projectHierarchy, TaskErrorCategory.Warning, TaskPriority.Normal);
                     }
                 }
@@ -277,7 +277,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                         // By asserting that NuGet is in use, we are also asserting that NuGet.VisualStudio.dll is already loaded
                                         // Hence, it is okay to call project.ToVsHierarchy()
                                         Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                                        var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                                        var projectHierarchy = project.ToVsHierarchy();
                                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
                                     }
                                     // NuGet/Home#4833 Baseline
