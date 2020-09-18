@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI
                         hash.Add(installedVersion.Identity.Version);
                         project.AutoReferenced = installedVersion.IsAutoReferenced;
                         
-                        if (project.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference))
+                        if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
                         {
                             project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
                             anyRequested = true;
