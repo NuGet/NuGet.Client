@@ -70,10 +70,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("--certificate-fingerprint 775AAB607AA76028A7CC7A873A9513FF0C3B40DF09B7B83D21689A3675B34D9A")]
-        [InlineData("--certificate-fingerprint ABC --certificate-fingerprint DEF")]
-        public void Verify_SignedPackageWithoutAllowedCertificate_Fails(string fingerprints)
+        [CIOnlyFact]
+        public void Verify_SignedPackageWithoutAllowedCertificate_Fails()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -85,7 +83,8 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
-                    $"nuget verify {packageFile.FullName} {fingerprints}",
+                    $"nuget verify {packageFile.FullName} " +
+                    $"--certificate-fingerprint 775AAB607AA76028A7CC7A873A9513FF0C3B40DF09B7B83D21689A3675B34D9A --certificate-fingerprint DEF",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeFalse(because: result.AllOutput);
@@ -93,11 +92,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE")]
-        [InlineData("--certificate-fingerprint ABC --certificate-fingerprint DEF " +
-            "--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE")]
-        public void Verify_SignedPackageWithAllowedCertificate_Succceeds(string fingerprints)
+        [CIOnlyFact]
+        public void Verify_SignedPackageWithAllowedCertificate_Succceeds()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -109,7 +105,8 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
-                    $"nuget verify {packageFile.FullName} {fingerprints}",
+                    $"nuget verify {packageFile.FullName} " +
+                    $"--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE  --certificate-fingerprint DEF",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
