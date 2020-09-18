@@ -55,24 +55,18 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageCollection(packages);
         }
 
-        public static async Task<PackageCollection> FromProjectsTransitiveAsync(IEnumerable<NuGetProject> projects, CancellationToken cancellationToken)
+        public static async Task<PackageCollection> FromProjectsTransitiveAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
-            // Read transitive package references from all pachage reference style projects.
-            var transitiveTasks = projects
-                .Where(project => project is LegacyPackageReferenceProject)
-                .Select(project => (LegacyPackageReferenceProject)project)
-                .Select(project => project.GetTransitivePackagesAsync(cancellationToken))
-                .Concat(projects
-                    .Where(project => project is NetCorePackageReferenceProject)
-                    .Select(project => (NetCorePackageReferenceProject)project)
-                    .Select(project => project.GetTransitivePackagesAsync(cancellationToken)));
-            var transitivePackageReferences = await Task.WhenAll(transitiveTasks);
+            // Read transitive package references from all package reference style projects.
+            IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>>? tasks = projects
+                .Select(project => project.GetTransitivePackagesAsync(cancellationToken).AsTask());
+            IEnumerable<IPackageReferenceContextInfo>[]? transitivePackageReferences = await Task.WhenAll(tasks);
 
             // Group all package references for an id/version into a single item.
-            var packages = transitivePackageReferences
-                    .SelectMany(e => e)
-                    .GroupBy(e => e.PackageIdentity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
-                    .ToArray();
+            PackageCollectionItem[]? packages = transitivePackageReferences
+                .SelectMany(e => e)
+                .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
+                .ToArray();
 
             return new PackageCollection(packages);
         }

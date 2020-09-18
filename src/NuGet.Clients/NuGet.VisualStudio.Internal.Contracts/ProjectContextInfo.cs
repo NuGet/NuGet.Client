@@ -59,6 +59,17 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
+        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetTransitivePackagesAsync(CancellationToken cancellationToken)
+        {
+            IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();
+            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
+            {
+                Assumes.NotNull(nugetProjectManagerService);
+
+                return await nugetProjectManagerService.GetTransitivePackagesAsync(new string[] { ProjectId }, cancellationToken);
+            }
+        }
+
         public async ValueTask<(bool, T)> TryGetMetadataAsync<T>(string key, CancellationToken cancellationToken)
         {
             IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();

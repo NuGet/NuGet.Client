@@ -110,6 +110,30 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageReferences.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
         }
 
+        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetTransitivePackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectIds);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+            // Read transitive package references from package reference style projects.
+            IEnumerable<Task<IEnumerable<PackageReference>>> tasks = projects
+                .Where(project => project is LegacyPackageReferenceProject)
+                .Select(project => (LegacyPackageReferenceProject)project)
+                .Select(project => project.GetTransitivePackagesAsync(cancellationToken))
+                .Concat(projects
+                    .Where(project => project is NetCorePackageReferenceProject)
+                    .Select(project => (NetCorePackageReferenceProject)project)
+                    .Select(project => project.GetTransitivePackagesAsync(cancellationToken)));
+            IEnumerable<PackageReference>[] transitivePackageReferences = await Task.WhenAll(tasks);
+
+            return transitivePackageReferences.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+        }
+
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
             string projectId,
             bool includeUnresolved,
