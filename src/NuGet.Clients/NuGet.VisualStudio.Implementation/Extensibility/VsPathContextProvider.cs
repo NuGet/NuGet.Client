@@ -184,7 +184,7 @@ namespace NuGet.VisualStudio
 
             foreach (Project solutionProject in supportedProjects)
             {
-                var solutionProjectPath = EnvDteProjectInfoUtility.GetFullProjectPath(solutionProject);
+                var solutionProjectPath = solutionProject.GetFullProjectPath();
 
                 if (!string.IsNullOrEmpty(solutionProjectPath) &&
                     PathUtility.GetStringComparerBasedOnOS().Equals(solutionProjectPath, projectUniqueName))

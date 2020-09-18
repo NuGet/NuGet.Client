@@ -677,7 +677,7 @@ namespace NuGet.SolutionRestoreManager
                 var projects = dte.Solution.Projects;
                 return projects
                     .OfType<EnvDTE.Project>()
-                    .Select(p => new ProjectInfo(EnvDteProjectInfoUtility.GetFullPath(p), p.Name))
+                    .Select(p => new ProjectInfo(p.GetFullPath(), p.Name))
                     .Any(p => p.CheckPackagesConfig());
             });
         }

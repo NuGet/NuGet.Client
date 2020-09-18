@@ -90,9 +90,9 @@ namespace NuGet.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var fullname = dteProject.FullName;
-            var uniqueName = EnvDteProjectInfoUtility.GetUniqueName(dteProject);
-            var shortName = EnvDteProjectInfoUtility.GetName(dteProject);
-            var customUniqueName = await EnvDteProjectInfoUtility.GetCustomUniqueNameAsync(dteProject);
+            var uniqueName = dteProject.GetUniqueName();
+            var shortName = dteProject.GetName();
+            var customUniqueName = await dteProject.GetCustomUniqueNameAsync();
             var projectId = GetProjectGuid(fullname, vsSolution5);
 
             return new ProjectNames(

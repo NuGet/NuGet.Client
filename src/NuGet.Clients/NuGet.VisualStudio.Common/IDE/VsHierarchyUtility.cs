@@ -123,8 +123,8 @@ namespace NuGet.VisualStudio
             {
                 var expandedNodes =
                     GetExpandedProjectHierarchyItems(project);
-                Debug.Assert(!results.ContainsKey(EnvDteProjectInfoUtility.GetUniqueName(project)));
-                results[EnvDteProjectInfoUtility.GetUniqueName(project)] =
+                Debug.Assert(!results.ContainsKey(project.GetUniqueName()));
+                results[project.GetUniqueName()] =
                     new HashSet<VsHierarchyItem>(expandedNodes);
             }
             return results;
@@ -142,7 +142,7 @@ namespace NuGet.VisualStudio
             foreach (var project in projects.Cast<EnvDTE.Project>())
             {
                 ISet<VsHierarchyItem> expandedNodes;
-                if (ignoreNodes.TryGetValue(EnvDteProjectInfoUtility.GetUniqueName(project), out expandedNodes)
+                if (ignoreNodes.TryGetValue(project.GetUniqueName(), out expandedNodes)
                     &&
                     expandedNodes != null)
                 {
