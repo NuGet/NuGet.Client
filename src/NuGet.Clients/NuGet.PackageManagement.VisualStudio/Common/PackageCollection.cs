@@ -54,5 +54,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return new PackageCollection(packages);
         }
+
+        public static async Task<PackageCollection> FromProjectsTransitiveAsync(IEnumerable<NuGetProject> projects, CancellationToken cancellationToken)
+        {
+            // Read transitive package references from all pachage reference style projects.
+            var transitiveTasks = projects
+                .Where(project => project is LegacyPackageReferenceProject)
+                .Select(project => (LegacyPackageReferenceProject)project)
+                .Select(project => project.GetTransitivePackagesAsync(cancellationToken))
+                .Concat(projects
+                    .Where(project => project is NetCorePackageReferenceProject)
+                    .Select(project => (NetCorePackageReferenceProject)project)
+                    .Select(project => project.GetTransitivePackagesAsync(cancellationToken)));
+            var transitivePackageReferences = await Task.WhenAll(transitiveTasks);
+
+            // Group all package references for an id/version into a single item.
+            var packages = transitivePackageReferences
+                    .SelectMany(e => e)
+                    .GroupBy(e => e.PackageIdentity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
+                    .ToArray();
+
+            return new PackageCollection(packages);
+        }
     }
 }

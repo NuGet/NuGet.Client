@@ -111,7 +111,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 _projectSystemCache,
                 unconfiguredProject,
                 projectServices,
-                vsProject.ProjectId);
+                vsProject.ProjectId,
+                targetFramework);
         }
 
         private static UnconfiguredProject GetUnconfiguredProject(EnvDTE.Project project)

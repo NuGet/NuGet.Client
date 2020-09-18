@@ -18,6 +18,7 @@ namespace NuGet.PackageManagement.UI
     internal class PackageLoadContext
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
+        private readonly Task<PackageCollection> _transitivePackagesTask;
 
         public IEnumerable<SourceRepository> SourceRepositories { get; }
 
@@ -47,9 +48,12 @@ namespace NuGet.PackageManagement.UI
             SolutionManager = uiContext.SolutionManagerService;
 
             _installedPackagesTask = PackageCollection.FromProjectsAsync(Projects, CancellationToken.None);
+            _transitivePackagesTask = PackageCollection.FromProjectsTransitiveAsync(Projects, CancellationToken.None);
         }
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
+
+        public Task<PackageCollection> GetTransitivePackagesAsync() => _transitivePackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
         public async Task<IEnumerable<string>> GetSupportedFrameworksAsync()

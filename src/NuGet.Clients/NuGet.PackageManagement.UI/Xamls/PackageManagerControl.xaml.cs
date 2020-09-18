@@ -788,8 +788,6 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
         {
-            var project = Model.Context.Projects.First();
-
             // only make recommendations when
             //   one of the source repositories is nuget.org,
             //   the package manager was opened for a project, not a solution,
@@ -799,9 +797,6 @@ namespace NuGet.PackageManagement.UI
             if (loadContext.IsSolution == false
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
-                // also check if this is a PC-style project. We will not provide recommendations for PR-style
-                // projects until we have a way to get dependent packages without negatively impacting perf.
-                && project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
                 && loadContext.SourceRepositories.Any(item => TelemetryUtility.IsNuGetOrg(item.PackageSource)))
             {
                 _recommendPackages = true;
@@ -1093,10 +1088,7 @@ namespace NuGet.PackageManagement.UI
             if (filter == ItemFilter.All)
             {
                 // if we get here, recommendPackages == true
-                // for now, we are only making recommendations for PC-style projects, and for these the dependent packages are
-                // already included in the installedPackages list. When we implement PR-style projects, we'll need to also pass
-                // the dependent packages to RecommenderPackageFeed.
-                var targetFrameworks = await context.GetSupportedFrameworksAsync();
+                var transitivePackages = await context.GetTransitivePackagesAsync();
 
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(
                     context.SourceRepositories,
@@ -1105,7 +1097,7 @@ namespace NuGet.PackageManagement.UI
                 packageFeeds.recommenderFeed = new RecommenderPackageFeed(
                     context.SourceRepositories.First(),
                     installedPackages,
-                    targetFrameworks,
+                    transitivePackages,
                     metadataProvider,
                     logger);
                 return packageFeeds;
