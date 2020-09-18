@@ -528,6 +528,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException(nameof(command));
             }
 
+            // Command can come here from both PMC and PM UI.
+            var telemetryEvent = new TelemetryEvent("NugetPowerShellHostExecuteCommand");
+            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
             // to run it once for each solution
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>

@@ -305,6 +305,9 @@ namespace NuGetConsole.Implementation.Console
 
                 if (inputLine.Flags.HasFlag(InputLineFlag.Execute))
                 {
+                    var telemetryEvent = new TelemetryEvent("NugetPMCExecuteCommand");
+                    TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+
                     string command = inputLine.Text;
                     bool isExecuted = WpfConsole.Host.Execute(WpfConsole, command, null);
                     WpfConsole.InputHistory.Add(command);
