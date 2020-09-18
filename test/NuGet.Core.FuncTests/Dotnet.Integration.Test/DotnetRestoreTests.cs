@@ -13,6 +13,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
 
@@ -89,8 +90,7 @@ EndGlobal";
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 var packageFile = new FileInfo(Path.Combine(pathContext.PackageSource, "TestPackage.AuthorSigned.1.0.0.nupkg"));
-                var package = GetResource(packageFile.Name);
-
+                var package = SigningTestUtility.GetResourceBytes(packageFile.Name);
                 File.WriteAllBytes(packageFile.FullName, package);
 
                 var projectName = "ClassLibrary1";
@@ -199,8 +199,7 @@ EndGlobal";
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 var packageFile = new FileInfo(Path.Combine(pathContext.PackageSource, "TestPackage.AuthorSigned.1.0.0.nupkg"));
-                var package = GetResource(packageFile.Name);
-
+                var package = SigningTestUtility.GetResourceBytes(packageFile.Name);
                 File.WriteAllBytes(packageFile.FullName, package);
 
                 var projectName = "ClassLibrary1";
@@ -1096,13 +1095,6 @@ EndGlobal";
             pkgX.Files.Clear();
             pkgX.AddFile($"lib/netstandard2.0/x.dll");
             return pkgX;
-        }
-
-        private static byte[] GetResource(string name)
-        {
-            return ResourceTestUtility.GetResourceBytes(
-                $"Dotnet.Integration.Test.compiler.resources.{name}",
-                typeof(DotnetRestoreTests));
         }
     }
 }

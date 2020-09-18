@@ -8,8 +8,9 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Common;
 using NuGet.CommandLine.XPlat.Utility;
+using NuGet.Common;
+using NuGet.Commands;
 
 #if DEBUG
 using Microsoft.Build.Locator;
@@ -64,8 +65,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 CultureUtility.DisableLocalization();
             }
-
-            log.LogLevel = LogLevel.Information;
 
             var app = InitializeApp(args, log);
 
@@ -175,7 +174,7 @@ namespace NuGet.CommandLine.XPlat
             };
 
             // Allow commands to set the NuGet log level
-            Action<LogLevel> setLogLevel = (logLevel) => log.LogLevel = logLevel;
+            Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;
 
             var app = new CommandLineApplication();
 
@@ -195,6 +194,7 @@ namespace NuGet.CommandLine.XPlat
                 DeleteCommand.Register(app, getHidePrefixLogger);
                 PushCommand.Register(app, getHidePrefixLogger);
                 LocalsCommand.Register(app, getHidePrefixLogger);
+                VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
             }
 
             app.FullName = Strings.App_FullName;
