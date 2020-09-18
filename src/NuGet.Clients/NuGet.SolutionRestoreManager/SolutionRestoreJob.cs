@@ -57,6 +57,7 @@ namespace NuGet.SolutionRestoreManager
         private int _packageCount;
         private int _noOpProjectsCount;
         private int _upToDateProjectCount;
+        private bool _isSolutionLoadRestore;
 
         // relevant to packages.config restore only
         private int _missingPackagesCount;
@@ -114,6 +115,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreRequest request,
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
+            bool isSolutionLoadRestore,
             CancellationToken token)
         {
             if (request == null)
@@ -136,6 +138,7 @@ namespace NuGet.SolutionRestoreManager
             // update instance attributes with the shared context values
             _nuGetProjectContext = jobContext.NuGetProjectContext;
             _nuGetProjectContext.OperationId = request.OperationId;
+            _isSolutionLoadRestore = isSolutionLoadRestore;
 
             using (var ctr1 = token.Register(() => _status = NuGetOperationStatus.Cancelled))
             {
@@ -292,6 +295,7 @@ namespace NuGet.SolutionRestoreManager
                 upToDateProjectsCount: _upToDateProjectCount,
                 DateTimeOffset.Now,
                 duration,
+                isSolutionLoadRestore: _isSolutionLoadRestore,
                 intervalTimingTracker);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);

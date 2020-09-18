@@ -195,3 +195,12 @@ Function Add-NuGetToCLI {
     Write-Host "Moving to - $($msbuildSdkResolverTasksDest)"
     Copy-Item $msbuildSdkResolverTasks $msbuildSdkResolverTasksDest
 }
+
+<#
+Downgrades the NuGet extension in all Visual Studio instances on the machine.
+Assumes the VSIXInstaller.exe is on the path.
+#>
+Function DowngradeNuGetVsix()
+{
+    & VSIXInstaller.exe /d:NuGet.72c5d240-f742-48d4-a0f1-7016671e405b
+}
