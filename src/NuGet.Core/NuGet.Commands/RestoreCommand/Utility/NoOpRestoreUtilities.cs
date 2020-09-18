@@ -163,29 +163,6 @@ namespace NuGet.Commands
             return true;
         }
 
-        private static bool IsPackageOnDisk(ISet<PackageIdentity> packagesChecked, IEnumerable<VersionFolderPathResolver> pathResolvers, LocalPackageFileCache packageFileCache, PackageIdentity identity)
-        {
-            // Each id/version only needs to be checked once
-            if (packagesChecked.Add(identity))
-            {
-                //  Check each package folder. These need to match the order used for restore.
-                foreach (var resolver in pathResolvers)
-                {
-                    // Verify the SHA for each package
-                    var hashPath = resolver.GetHashPath(identity.Id, identity.Version);
-                    var nupkgMetadataPath = resolver.GetNupkgMetadataPath(identity.Id, identity.Version);
-
-                    if (packageFileCache.Sha512Exists(hashPath) ||
-                        packageFileCache.Sha512Exists(nupkgMetadataPath))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            return true;
-        }
-
         /// <summary>
         /// Generates the dgspec to be used for the no-op optimization
         /// This methods handles the deduping of tools
