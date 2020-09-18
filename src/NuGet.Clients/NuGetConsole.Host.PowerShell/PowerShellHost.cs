@@ -539,7 +539,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // Command can come here from both PMC and PM UI.
             if (console is IWpfConsole)
             {
-                _pmcExecutedCount ++;
+                _pmcExecutedCount++;
             }
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
@@ -922,11 +922,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public void Dispose()
         {
-            var telemetryEvent = new TelemetryEvent("NugetPowerShellHostExecuteCommand" , new Dictionary<string, object>
-            {
-                { "count", _pmcExecutedCount}
-            });
-            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
