@@ -188,40 +188,28 @@ namespace NuGet.Commands
 
         /// <summary>
         /// Generates the dgspec to be used for the no-op optimization
-        /// This methods handles the deduping of tools and the ignoring of RestoreSettings
+        /// This methods handles the deduping of tools
         /// </summary>
         /// <param name="request">The restore request</param>
         /// <returns>The noop happy dg spec</returns>
         /// <remarks> Could be the same instance if no changes were made to the original dgspec</remarks>
         internal static DependencyGraphSpec GetNoOpDgSpec(RestoreRequest request)
         {
-            var dgSpec = request.DependencyGraphSpec;
-
-            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool || request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
-                var uniqueName = request.DependencyGraphSpec.Restore.First();
-                dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
-
+                var dgSpec = request.DependencyGraphSpec.WithProjectClosure(request.DependencyGraphSpec.Restore.First());
                 foreach (var projectSpec in dgSpec.Projects)
                 {
                     // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
-                    if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
-                    {
-                        projectSpec.RestoreMetadata.ProjectPath = null;
-                        projectSpec.FilePath = null;
-                    }
-
-                    //Ignore the restore settings for package ref projects.
-                    //This is set by default for net core projects in VS while it's not set in commandline.
-                    //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
-                    else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
-                    {
-                        projectSpec.RestoreSettings = null;
-                    }
+                    projectSpec.RestoreMetadata.ProjectPath = null;
+                    projectSpec.FilePath = null;
                 }
+                return dgSpec;
             }
-
-            return dgSpec;
+            else
+            {
+                return request.DependencyGraphSpec;
+            }
         }
 
         /// <summary>
