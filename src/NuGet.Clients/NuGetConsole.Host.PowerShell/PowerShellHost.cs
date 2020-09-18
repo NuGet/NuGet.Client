@@ -62,6 +62,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
+        private int _pmcExecutedCount;
 
         private uint _solutionExistsCookie;
 
@@ -325,6 +326,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                                 DefaultProject = null;
 
+                                var telemetryEvent = new TelemetryEvent("PMCExecuteCommand", new Dictionary<string, object>
+                                {
+                                    { "NugetPMCExecuteCommandCount", _pmcExecutedCount}
+                                });
+                                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+                                _pmcExecutedCount = 0;
+
                                 NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
                             };
                         }
@@ -529,8 +537,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
 
             // Command can come here from both PMC and PM UI.
-            var telemetryEvent = new TelemetryEvent("NugetPowerShellHostExecuteCommand");
-            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+            if (console is IWpfConsole)
+            {
+                _pmcExecutedCount ++;
+            }
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
             // to run it once for each solution
@@ -912,6 +922,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public void Dispose()
         {
+            var telemetryEvent = new TelemetryEvent("NugetPowerShellHostExecuteCommand" , new Dictionary<string, object>
+            {
+                { "count", _pmcExecutedCount}
+            });
+            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
