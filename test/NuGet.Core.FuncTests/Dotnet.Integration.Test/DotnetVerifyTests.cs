@@ -46,10 +46,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("--all")]
-        [InlineData("")]
-        public void Verify_AuthorSignedAndTimestampedPackage_Succceeds(string optionAll)
+        [CIOnlyFact]
+        public void Verify_AuthorSignedAndTimestampedPackageWithOptionAll_Succceeds()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -61,7 +59,7 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
-                    $"nuget verify {packageFile.FullName} {optionAll}",
+                    $"nuget verify {packageFile.FullName} --all",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
