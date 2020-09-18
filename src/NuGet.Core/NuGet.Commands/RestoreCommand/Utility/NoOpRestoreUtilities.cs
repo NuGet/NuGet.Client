@@ -236,7 +236,7 @@ namespace NuGet.Commands
 
         /// <summary>
         /// This method will resolve the cache/lock file paths for the tool if available in the cache
-        /// This method will set the CacheFilePath and the LockFilePath in the RestoreMetadat if a matching tool is available
+        /// This method will set the CacheFilePath and the LockFilePath in the RestoreMetadata if a matching tool is available
         /// </summary>
         internal static void UpdateRequestBestMatchingToolPathsIfAvailable(RestoreRequest request)
         {
