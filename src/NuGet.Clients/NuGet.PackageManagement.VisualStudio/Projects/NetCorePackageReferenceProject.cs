@@ -290,14 +290,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             TargetFrameworkInformation assetsTargetFrameworkInformation = assetsPackageSpec?.TargetFrameworks.First(t => t.FrameworkName.Equals(targetFramework));
 
-            // NOTES: installedPackages is a list of tuples <target framework, installed packages>
-            // Here we get the first tuple where the target framework matches what we are looking for.
             var targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
 
-            // NOTES: check that we have packages for this target framework. If not...
             if (targetFrameworkPackages.Item2 == null)
             {
-                // NOTES: add the target framework with an empty list of installedPackages 
                 targetFrameworkPackages.Item1 = targetFramework;
                 targetFrameworkPackages.Item2 = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
                 installedPackages.Add(targetFrameworkPackages);
