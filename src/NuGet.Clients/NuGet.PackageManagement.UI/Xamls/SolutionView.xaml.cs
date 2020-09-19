@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.UI
             // adjust the width of the "project" column so that it takes
             // up all remaining width.
             var gridView = (GridView)_projectList.View;
-            var width = _projectList.ActualWidth - 2 * SystemParameters.VerticalScrollBarWidth;
+            var width = _projectList.ActualWidth - 3 * SystemParameters.VerticalScrollBarWidth;
             foreach (var column in gridView.Columns)
             {
                 var header = (GridViewColumnHeader)column.Header;
