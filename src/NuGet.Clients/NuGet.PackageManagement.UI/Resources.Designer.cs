@@ -592,20 +592,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Version.
+        /// </summary>
+        public static string ColumnHeader_Requested {
+            get {
+                return ResourceManager.GetString("ColumnHeader_Requested", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Selected.
         /// </summary>
         public static string ColumnHeader_Selected {
             get {
                 return ResourceManager.GetString("ColumnHeader_Selected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Version.
-        /// </summary>
-        public static string ColumnHeader_Version {
-            get {
-                return ResourceManager.GetString("ColumnHeader_Version", resourceCulture);
             }
         }
         

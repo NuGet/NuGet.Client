@@ -503,7 +503,7 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ColumnHeader_Project" xml:space="preserve">
     <value>Project</value>
   </data>
-  <data name="ColumnHeader_Version" xml:space="preserve">
+  <data name="ColumnHeader_Requested" xml:space="preserve">
     <value>Version</value>
   </data>
   <data name="Text_MultipleVersionsInstalled" xml:space="preserve">

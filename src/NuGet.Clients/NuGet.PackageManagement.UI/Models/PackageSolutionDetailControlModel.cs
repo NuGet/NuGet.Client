@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.UI
         private PackageSolutionDetailControlModel(IEnumerable<IProjectContextInfo> projects)
             : base(projects)
         {
+            IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }
 
         private async ValueTask InitializeAsync(
@@ -116,32 +117,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool _isRequestedVisible;
-
-        public bool IsRequestedVisible
-        {
-            get
-            {
-                return _isRequestedVisible;
-            }
-            set
-            {
-                _isRequestedVisible = value;
-                OnPropertyChanged(nameof(IsRequestedVisible));
-            }
-        }
+        public bool IsRequestedVisible { get; private set; }
 
         private async Task UpdateInstalledVersionsAsync(CancellationToken cancellationToken)
         {
             var hash = new HashSet<NuGetVersion>();
 
-            bool anyRequested = false;
             foreach (var project in _projects)
             {
-                if (!anyRequested && project.NuGetProject.ProjectStyle.Equals(NuGet.ProjectModel.ProjectStyle.PackageReference))
-                {
-                    anyRequested = true;
-                }
                 try
                 {
                     IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
@@ -154,7 +137,6 @@ namespace NuGet.PackageManagement.UI
                         if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
                         {
                             project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
-                            anyRequested = true;
                         }
                     }
                     else
@@ -176,7 +158,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             InstalledVersionsCount = hash.Count;
-            IsRequestedVisible = anyRequested;
 
             if (hash.Count == 0)
             {

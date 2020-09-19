@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d"
+             DataContextChanged="SolutionView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="500">
   <UserControl.Resources>
     <ResourceDictionary>
@@ -245,7 +246,7 @@
       </ListView.ItemContainerStyle>
 
       <ListView.View>
-        <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+        <GridView x:Name="_gridProjects" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
           <!-- checkbox column -->
           <GridViewColumn>
             <GridViewColumn.Header>
@@ -305,29 +306,7 @@
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
 
-          <!-- the version column -->
-          <GridViewColumn
-            DisplayMemberBinding="{Binding RequestedVersion}"
-            x:Name="_versionColumn"
-            Width="{Binding IsRequestedVisible, Converter={StaticResource BooleanToWidthConverter}}">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader
-                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Version}"
-                x:Name="_versionColumnHeader"
-                Click="ColumnHeader_Clicked"
-                Content="{x:Static local:Resources.ColumnHeader_Version}"
-                local:SortableColumnHeaderAttachedProperties.SortPropertyName="VersionColumn"
-                HorizontalContentAlignment="Left"
-                SizeChanged="SortableColumnHeader_SizeChanged"
-                PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
-                Focusable="True"
-                IsTabStop="True"
-                Unloaded="RequestedVersionColumnHeader_Loaded"
-                Loaded="RequestedVersionColumnHeader_Loaded"
-                Visibility="{Binding IsRequestedVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
-            </GridViewColumn.Header>
-          </GridViewColumn>
+          <!-- the version column may be inserted here dynamically from code -->
 
           <!-- the installed column -->
           <GridViewColumn
