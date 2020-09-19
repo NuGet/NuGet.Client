@@ -30,6 +30,7 @@ namespace NuGet.PackageManagement.UI
 
         // the list of columns that are sortable.
         private List<GridViewColumnHeader> _sortableColumns;
+        private GridViewColumnHeader _requestedVersionColumn;
 
         public SolutionView()
         {
@@ -51,10 +52,16 @@ namespace NuGet.PackageManagement.UI
 
             _projectList.SizeChanged += ListView_SizeChanged;
 
+            //Requested Version column may not be needed, but since saved Sorting Settings are being restored at initialization time,
+            //we should go ahead and create the Header column for it here with its Sort property name.
+            _requestedVersionColumn = new GridViewColumnHeader();
+            SortableColumnHeaderAttachedProperties.SetSortPropertyName(_requestedVersionColumn, "RequestedVersion");
+
             _sortableColumns = new List<GridViewColumnHeader>
             {
                 _projectColumnHeader,
-                _installedVersionColumnHeader
+                _installedVersionColumnHeader,
+                _requestedVersionColumn
             };
 
             SortByColumn(_projectColumnHeader);
@@ -70,9 +77,7 @@ namespace NuGet.PackageManagement.UI
                 if (model.IsRequestedVisible)
                 {
                     GridViewColumn _versionColumn = CreateRequestedVersionColumn();
-
                     _gridProjects.Columns.Insert(2, _versionColumn);
-                    _sortableColumns.Add(_versionColumn.Header as GridViewColumnHeader);
                 }
             }
         }
@@ -248,23 +253,23 @@ namespace NuGet.PackageManagement.UI
 
         private GridViewColumn CreateRequestedVersionColumn()
         {
-            GridViewColumnHeader requestedHeader = new GridViewColumnHeader();
+            //The header for this column is always created so that saved sorting settings can be restored at initialization time.
+            //Now we really need this column, so add necessary properties.
+            _requestedVersionColumn.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Resources.ColumnHeader_Requested);
+            _requestedVersionColumn.Name = "_versionColumnHeader";
+            _requestedVersionColumn.Click += ColumnHeader_Clicked;
+            _requestedVersionColumn.Content = Resx.Resources.ColumnHeader_Requested;
+            _requestedVersionColumn.HorizontalContentAlignment = HorizontalAlignment.Left;
+            _requestedVersionColumn.SizeChanged += SortableColumnHeader_SizeChanged;
+            _requestedVersionColumn.PreviewKeyUp += SortableColumnHeader_PreviewKeyUp;
+            _requestedVersionColumn.Focusable = true;
+            _requestedVersionColumn.IsTabStop = true;
+            _requestedVersionColumn.SetResourceReference(FocusVisualStyleProperty, "ControlsFocusVisualStyle");
 
-            requestedHeader.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Resources.ColumnHeader_Requested);
-            requestedHeader.Name = "_versionColumnHeader";
-            requestedHeader.Click += ColumnHeader_Clicked;
-            requestedHeader.Content = Resx.Resources.ColumnHeader_Requested;
-            SortableColumnHeaderAttachedProperties.SetSortPropertyName(requestedHeader, "VersionColumn");
-            requestedHeader.HorizontalContentAlignment = HorizontalAlignment.Left;
-            requestedHeader.SizeChanged += SortableColumnHeader_SizeChanged;
-            requestedHeader.PreviewKeyUp += SortableColumnHeader_PreviewKeyUp;
-            requestedHeader.Focusable = true;
-            requestedHeader.IsTabStop = true;
-            requestedHeader.SetResourceReference(FocusVisualStyleProperty, "ControlsFocusVisualStyle");
             var versionColumn = new GridViewColumn()
             {
                 DisplayMemberBinding = new Binding("RequestedVersion"),
-                Header = requestedHeader
+                Header = _requestedVersionColumn
             };
 
             return versionColumn;
