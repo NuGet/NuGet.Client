@@ -124,11 +124,12 @@ namespace NuGet.PackageManagement.UI
 
                     if (range != null && !VersionRange.All.Equals(range))
                     {
+                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
                         var constraint = new ProjectVersionConstraint()
                         {
-                            ProjectName = await project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None),
+                            ProjectName = projectMetadata.Name,
                             VersionRange = range,
-                            IsPackagesConfig = true,
+                            IsPackagesConfig = true
                         };
 
                         _projectVersionConstraints.Add(constraint);
@@ -147,17 +148,19 @@ namespace NuGet.PackageManagement.UI
 
                     if (autoReferenced != null)
                     {
+                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+
                         // Add constraint for auto referenced package.
                         var constraint = new ProjectVersionConstraint()
                         {
-                            ProjectName = await project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None),
+                            ProjectName = projectMetadata.Name,
                             VersionRange = new VersionRange(
                                 minVersion: autoReferenced.Identity.Version,
                                 includeMinVersion: true,
                                 maxVersion: autoReferenced.Identity.Version,
                                 includeMaxVersion: true),
 
-                            IsAutoReferenced = true,
+                            IsAutoReferenced = true
                         };
 
                         _projectVersionConstraints.Add(constraint);

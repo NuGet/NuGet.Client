@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
@@ -16,28 +16,21 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<IProjectContextInfo> projects,
             CancellationToken cancellationToken)
         {
-            var projectsWithTasks = projects.Select(project =>
-                new
-                {
-                    Project = project,
-                    UniqueNameTask = project.GetMetadataAsync<string>(
-                            NuGetProjectMetadataKeys.UniqueName,
-                            cancellationToken)
-                        .AsTask(),
-                    ProjectIdTask = project.GetMetadataAsync<string>(
-                            NuGetProjectMetadataKeys.ProjectId,
-                            cancellationToken)
-                        .AsTask()
-                });
+            if (projects is null)
+            {
+                throw new ArgumentNullException(nameof(projects));
+            }
 
-            IEnumerable<Task<string>> tasks = projectsWithTasks.Select(projectWithTasks => projectWithTasks.UniqueNameTask)
-                .Concat(projectsWithTasks.Select(projectWithTasks => projectWithTasks.ProjectIdTask));
+            cancellationToken.ThrowIfCancellationRequested();
 
-            await Task.WhenAll(tasks);
+            IEnumerable<Task<IProjectMetadataContextInfo>> tasks = projects.Select(
+                project => project.GetMetadataAsync(cancellationToken).AsTask());
 
-            return projectsWithTasks
-                .OrderBy(projectWithTasks => projectWithTasks.UniqueNameTask.Result)
-                .Select(projectWithTasks => projectWithTasks.ProjectIdTask.Result);
+            IProjectMetadataContextInfo[] projectMetadatas = await Task.WhenAll(tasks);
+
+            return projectMetadatas
+                .OrderBy(projectMetadata => projectMetadata.UniqueName)
+                .Select(projectMetadata => projectMetadata.ProjectId);
         }
     }
 }

@@ -22,8 +22,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             string projectId,
             bool includeUnresolved,
             CancellationToken cancellationToken);
-        ValueTask<object> GetMetadataAsync(string projectId, string key, CancellationToken cancellationToken);
-        ValueTask<(bool, object)> TryGetMetadataAsync(string projectId, string key, CancellationToken cancellationToken);
+        ValueTask<ProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken);
         ValueTask<IProjectContextInfo> GetProjectAsync(string projectId, CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<IProjectContextInfo>> GetProjectsAsync(CancellationToken cancellationToken);
         ValueTask<(bool, string?)> TryGetInstalledPackageFilePathAsync(

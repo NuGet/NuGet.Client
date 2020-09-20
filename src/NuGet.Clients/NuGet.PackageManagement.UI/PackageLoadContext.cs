@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -58,19 +57,19 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var project in Projects)
             {
-                (bool targetFrameworkSuccess, NuGetFramework framework) = await project.TryGetMetadataAsync<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, CancellationToken.None);
-                if (targetFrameworkSuccess)
+                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+                NuGetFramework framework = projectMetadata.TargetFramework;
+
+                if (framework != null)
                 {
-                    if (framework != null
-                        && framework.IsAny)
+                    if (framework.IsAny)
                     {
                         // One of the project's target framework is AnyFramework. In this case,
                         // we don't need to pass the framework filter to the server.
                         return Enumerable.Empty<string>();
                     }
 
-                    if (framework != null
-                        && framework.IsSpecificFramework)
+                    if (framework.IsSpecificFramework)
                     {
                         frameworks.Add(framework.DotNetFrameworkName);
                     }
@@ -78,10 +77,10 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     // we also need to process SupportedFrameworks
-                    (bool supportedFrameworksSuccess, IEnumerable<NuGetFramework> supportedFrameworksValue) = await project.TryGetMetadataAsync<IEnumerable<NuGetFramework>>(NuGetProjectMetadataKeys.SupportedFrameworks, CancellationToken.None);
-                    if (supportedFrameworksSuccess)
+                    IReadOnlyCollection<NuGetFramework> supportedFrameworks = projectMetadata.SupportedFrameworks;
+
+                    if (supportedFrameworks != null && supportedFrameworks.Count > 0)
                     {
-                        var supportedFrameworks = supportedFrameworksValue;
                         foreach (var f in supportedFrameworks)
                         {
                             if (f.IsAny)
