@@ -63,6 +63,17 @@ namespace NuGet.SolutionRestoreManager
         private int _missingPackagesCount;
         private int _currentCount;
 
+        /// <summary>
+        /// Restore end status. For testing purposes
+        /// </summary>
+        internal NuGetOperationStatus Status
+        {
+            get
+            {
+                return _status;
+            }
+        }
+
         [ImportingConstructor]
         public SolutionRestoreJob(
             IPackageRestoreManager packageRestoreManager,
@@ -236,6 +247,11 @@ namespace NuGet.SolutionRestoreManager
                             new SolutionRestoredEventArgs(_status, solutionDirectory));
                     }
                 }
+                catch
+                {
+                    _status = NuGetOperationStatus.Failed;
+                    throw;
+                }
                 finally
                 {
                     _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
@@ -399,32 +415,44 @@ namespace NuGet.SolutionRestoreManager
                                 Action<SourceCacheContext> cacheModifier = (cache) => { };
 
                                 var isRestoreOriginalAction = true;
-                                var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                                    _solutionManager,
-                                    dgSpec,
-                                    cacheContext,
-                                    providerCache,
-                                    cacheModifier,
-                                    sources,
-                                    _nuGetProjectContext.OperationId,
-                                    forceRestore,
-                                    isRestoreOriginalAction,
-                                    additionalMessages,
-                                    l,
-                                    t);
-
-                                _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
-                                var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
-                                _noOpProjectsCount += restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
-                                _solutionUpToDateChecker.SaveRestoreStatus(restoreSummaries);
-
-                                if (isRestoreFailed)
+                                var isRestoreFailed = false;
+                                IReadOnlyList<RestoreSummary> restoreSummaries = null;
+                                try
                                 {
-                                    _status = NuGetOperationStatus.Failed;
+                                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                                        _solutionManager,
+                                        dgSpec,
+                                        cacheContext,
+                                        providerCache,
+                                        cacheModifier,
+                                        sources,
+                                        _nuGetProjectContext.OperationId,
+                                        forceRestore,
+                                        isRestoreOriginalAction,
+                                        additionalMessages,
+                                        l,
+                                        t);
+
+                                    _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
+                                    isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
+                                    _noOpProjectsCount += restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
+                                    _solutionUpToDateChecker.SaveRestoreStatus(restoreSummaries);
                                 }
-                                else if (_noOpProjectsCount < restoreSummaries.Count)
+                                catch
                                 {
-                                    _status = NuGetOperationStatus.Succeeded;
+                                    isRestoreFailed = true;
+                                    throw;
+                                }
+                                finally
+                                {
+                                    if (isRestoreFailed || restoreSummaries == null)
+                                    {
+                                        _status = NuGetOperationStatus.Failed;
+                                    }
+                                    else if (_noOpProjectsCount < restoreSummaries.Count)
+                                    {
+                                        _status = NuGetOperationStatus.Succeeded;
+                                    }
                                 }
                             },
                             token);
@@ -568,7 +596,10 @@ namespace NuGet.SolutionRestoreManager
                         token);
 
                     // Mark that work is being done during this restore
-                    _status = NuGetOperationStatus.Succeeded;
+                    if (_status == NuGetOperationStatus.NoOp) // if there's any error, _status != NoOp
+                    {
+                        _status = NuGetOperationStatus.Succeeded;
+                    }
                 }
 
                 ValidatePackagesConfigLockFiles(allProjects, token);
