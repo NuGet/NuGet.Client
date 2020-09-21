@@ -177,10 +177,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             tfm.FrameworkName = framework;
             tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
             tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
-            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
@@ -233,10 +233,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
             tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
             tfm.Dependencies.Add(dependency1);
+            LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
-            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
@@ -285,10 +285,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
             tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
             tfm.Dependencies.Add(dependency1);
+            LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
-            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
@@ -337,10 +337,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
             tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
             tfm.Dependencies.Add(dependency1);
+            LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
-            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
@@ -389,10 +389,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
             tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
             tfm.Dependencies.Add(dependency1);
+            LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
-            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
@@ -445,10 +445,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
             tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
             tfm.Dependencies.Add(dependency1);
+            LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
-            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);
@@ -512,7 +512,6 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
             project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = false };
-            project.CompleteInitialization();
 
             DependencyGraphSpec dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore(projectName);

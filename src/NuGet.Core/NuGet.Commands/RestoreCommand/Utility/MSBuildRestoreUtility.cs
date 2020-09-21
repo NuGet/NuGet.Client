@@ -291,7 +291,6 @@ namespace NuGet.Commands
                 }
 
                 result.RestoreMetadata.CentralPackageVersionsEnabled = isCpvmEnabled;
-                result.CompleteInitialization();
             }
 
             return result;
@@ -1026,6 +1025,7 @@ namespace NuGet.Commands
             {
                 var frameworkInfo = spec.TargetFrameworks.FirstOrDefault(f => targetAlias.Equals(f.TargetAlias, StringComparison.OrdinalIgnoreCase));
                 frameworkInfo.CentralPackageVersions.AddRange(centralVersionsDependencies[targetAlias]);
+                LibraryDependency.ApplyCentralVersionInformation(frameworkInfo.Dependencies, frameworkInfo.CentralPackageVersions);
             }
         }
     }

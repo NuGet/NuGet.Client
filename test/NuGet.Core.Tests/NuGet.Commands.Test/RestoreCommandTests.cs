@@ -1741,7 +1741,6 @@ namespace NuGet.Commands.Test
                     ProjectStyle = ProjectStyle.PackageReference,
                 };
                 packageSpec.FilePath = projectPath;
-                packageSpec.CompleteInitialization();
 
                 var dgspec = new DependencyGraphSpec();
                 dgspec.AddProject(packageSpec);
@@ -1799,7 +1798,6 @@ namespace NuGet.Commands.Test
                     ProjectStyle = ProjectStyle.PackageReference,
                 };
                 packageSpec.FilePath = projectPath;
-                packageSpec.CompleteInitialization();
 
                 var dgspec = new DependencyGraphSpec();
                 dgspec.AddProject(packageSpec);
@@ -1923,6 +1921,7 @@ namespace NuGet.Commands.Test
             {
                 tfi.CentralPackageVersions.Add(cvd.Name, cvd);
             }
+            LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             return tfi;
         }

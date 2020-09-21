@@ -280,8 +280,6 @@ namespace NuGet.SolutionRestoreManager
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
             };
 
-            packageSpec.CompleteInitialization();
-
             return packageSpec;
         }
 

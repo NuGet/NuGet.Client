@@ -658,7 +658,6 @@ namespace NuGet.ProjectModel.Test
                 ProjectUniqueName = "a",
                 CentralPackageVersionsEnabled = cpvmEnabled
             };
-            packageSpec.CompleteInitialization();
 
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");
@@ -767,7 +766,6 @@ namespace NuGet.ProjectModel.Test
         {
             var packageSpec = new PackageSpec(tfis);
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
-            packageSpec.CompleteInitialization();
 
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");
@@ -808,6 +806,8 @@ namespace NuGet.ProjectModel.Test
             tfi.CentralPackageVersions.Add(centralVersionFoo.Name, centralVersionFoo);
             tfi.CentralPackageVersions.Add(centralVersionBar.Name, centralVersionBar);
 
+            LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
+
             return tfi;
         }
 
@@ -827,6 +827,7 @@ namespace NuGet.ProjectModel.Test
             {
                 tfi.CentralPackageVersions.Add(cvd.Name, cvd);
             }
+            LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             return tfi;
         }
