@@ -817,15 +817,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Prevents online resources to be queried for information about newer package versions, deprecation metadata, or known vulnerabilities. Cannot be combined with `--outdated`, `--deprecated`, or `--vulnerable` options..
-        /// </summary>
-        internal static string ListPkg_OfflineDescription {
-            get {
-                return ResourceManager.GetString("ListPkg_OfflineDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Displays only the packages that need updates with the latest version from the sources..
         /// </summary>
         internal static string ListPkg_OutdatedDescription {

@@ -116,7 +116,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return ToPaddedStringTable(stringTable);
         }
 
-        internal static IEnumerable<FormattedCell> ToPaddedStringTable(IEnumerable<IEnumerable<FormattedCell>> values)
+        internal static IEnumerable<FormattedCell> ToPaddedStringTable(IEnumerable<ICollection<FormattedCell>> values)
         {
             var maxColumnsWidth = GetMaxColumnsWidth(values);
             var stringTable = new List<FormattedCell>();
@@ -137,7 +137,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return stringTable;
         }
 
-        private static int[] GetMaxColumnsWidth(IEnumerable<IEnumerable<FormattedCell>> values)
+        private static int[] GetMaxColumnsWidth(IEnumerable<ICollection<FormattedCell>> values)
         {
             int[] maxColumnsWidth = null;
             foreach (var row in values)
@@ -145,7 +145,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 // use the first row to get dimension
                 if (maxColumnsWidth == null)
                 {
-                    maxColumnsWidth = new int[row.Count()];
+                    maxColumnsWidth = new int[row.Count];
                 }
 
                 var colIndex = 0;

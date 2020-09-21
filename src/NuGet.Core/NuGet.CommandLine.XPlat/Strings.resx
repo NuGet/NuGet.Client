@@ -480,9 +480,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="ListPkg_VulnerableDescription" xml:space="preserve">
     <value>Displays only the packages flagged as vulnerable.</value>
   </data>
-  <data name="ListPkg_OfflineDescription" xml:space="preserve">
-    <value>Prevents online resources to be queried for information about newer package versions, deprecation metadata, or known vulnerabilities. Cannot be combined with `--outdated`, `--deprecated`, or `--vulnerable` options.</value>
-  </data>
   <data name="ListPkg_Description" xml:space="preserve">
     <value>Lists all the packages used by the current project(s).</value>
   </data>

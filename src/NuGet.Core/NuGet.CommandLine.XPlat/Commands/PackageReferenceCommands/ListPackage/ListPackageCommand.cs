@@ -43,24 +43,19 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_FrameworkDescription,
                     CommandOptionType.MultipleValue);
 
-                var outdatedReport = listpkg.Option(
-                    "--outdated",
-                    Strings.ListPkg_OutdatedDescription,
-                    CommandOptionType.NoValue);
-
                 var deprecatedReport = listpkg.Option(
                     "--deprecated",
                     Strings.ListPkg_DeprecatedDescription,
                     CommandOptionType.NoValue);
 
+                var outdatedReport = listpkg.Option(
+                    "--outdated",
+                    Strings.ListPkg_OutdatedDescription,
+                    CommandOptionType.NoValue);
+
                 var vulnerableReport = listpkg.Option(
                     "--vulnerable",
                     Strings.ListPkg_VulnerableDescription,
-                    CommandOptionType.NoValue);
-
-                var isOffline = listpkg.Option(
-                    "--offline",
-                    Strings.ListPkg_OfflineDescription,
                     CommandOptionType.NoValue);
 
                 var includeTransitive = listpkg.Option(
@@ -116,14 +111,16 @@ namespace NuGet.CommandLine.XPlat
 
                     VerifyValidFrameworks(framework);
 
+                    var reportType = GetReportType(
+                        isOutdated: outdatedReport.HasValue(),
+                        isDeprecated: deprecatedReport.HasValue(),
+                        isVulnerable: vulnerableReport.HasValue());
+
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
                         framework.Values,
-                        outdatedReport.HasValue(),
-                        deprecatedReport.HasValue(),
-                        vulnerableReport.HasValue(),
-                        isOffline.HasValue(),
+                        reportType,
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
@@ -131,7 +128,7 @@ namespace NuGet.CommandLine.XPlat
                         logger,
                         CancellationToken.None);
 
-                    ProcessOptionRules(packageRefArgs);
+                    DisplayMessages(packageRefArgs);
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
@@ -142,43 +139,45 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
-        private static void ProcessOptionRules(ListPackageArgs packageRefArgs)
+        private static ReportType GetReportType(bool isDeprecated, bool isOutdated, bool isVulnerable)
         {
-            // Critical rule breaks
+            var mutexCount = 0;
+            mutexCount += isDeprecated ? 1 : 0;
+            mutexCount += isOutdated ? 1 : 0;
+            mutexCount += isVulnerable ? 1 : 0;
+            if (mutexCount == 0)
+            {
+                return ReportType.GenericList;
+            }
+            else if (mutexCount == 1)
+            {
+                return isDeprecated ? ReportType.Deprecated : isOutdated ? ReportType.Outdated : ReportType.Vulnerable;
+            }
+
+            // We have a conflict - throw with appropriate message
             var firstOption = string.Empty;
             var incompatibleOption = string.Empty;
-            if (packageRefArgs.DeprecatedReport)
-            {
-                firstOption = "--deprecated";
-                incompatibleOption = packageRefArgs.OutdatedReport ? "--outdated" : incompatibleOption;
-                incompatibleOption = packageRefArgs.VulnerableReport ? "--vulnerable" : incompatibleOption;
-                incompatibleOption = packageRefArgs.IsOffline ? "--offline" : incompatibleOption;
-            }
-            else if (packageRefArgs.VulnerableReport)
-            {
-                firstOption = "--vulnerable";
-                incompatibleOption = packageRefArgs.OutdatedReport ? "--outdated" : incompatibleOption;
-                incompatibleOption = packageRefArgs.IsOffline ? "--offline" : incompatibleOption;
-            }
-            else if (packageRefArgs.OutdatedReport)
+            System.Diagnostics.Debugger.Launch();
+            if (isOutdated)
             {
                 firstOption = "--outdated";
-                incompatibleOption = packageRefArgs.IsOffline ? "--offline" : incompatibleOption;
+                incompatibleOption = isDeprecated ? "--deprecated" : "--vulnerable";
             }
-
-            if (incompatibleOption != string.Empty)
+            else if (isDeprecated)
             {
-                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions, firstOption, incompatibleOption));
+                firstOption = "--deprecated";
+                incompatibleOption = "--vulnerable";
             }
 
-            // Informationals/adjustments
-            if (packageRefArgs.VulnerableReport &&
+            throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions, firstOption, incompatibleOption));
+        }
+
+        private static void DisplayMessages(ListPackageArgs packageRefArgs)
+        {
+            if (packageRefArgs.ReportType != ReportType.Outdated &&
                 (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
             {
                 Console.WriteLine(Strings.ListPkg_VulnerableIgnoredOptions);
-                packageRefArgs.Prerelease = false;
-                packageRefArgs.HighestPatch = false;
-                packageRefArgs.HighestMinor = false;
             }
         }
 

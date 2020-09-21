@@ -39,14 +39,10 @@ namespace NuGet.CommandLine.XPlat
                            new List<string>(new string[] { listPackageArgs.Path });
 
             var autoReferenceFound = false;
-            var outdatedFound = false;
-            var deprecatedFound = false;
-            var vulnerableFound = false;
-
             var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
 
-            //Print sources
-            if (listPackageArgs.OutdatedReport || listPackageArgs.DeprecatedReport || listPackageArgs.VulnerableReport)
+            //Print sources, but not for generic list (which is offline)
+            if (listPackageArgs.ReportType != ReportType.GenericList)
             {
                 Console.WriteLine();
                 Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
@@ -106,7 +102,7 @@ namespace NuGet.CommandLine.XPlat
                             }
                             else
                             {
-                                if (!listPackageArgs.IsOffline)  // --offline -- no server lookups
+                                if (listPackageArgs.ReportType != ReportType.GenericList)  // generic list package is offline -- no server lookups
                                 {
                                     await GetRegistrationMetadataAsync(packages, listPackageArgs);
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
@@ -114,41 +110,41 @@ namespace NuGet.CommandLine.XPlat
 
                                 // Filter packages for dedicated reports, inform user if none
                                 var printPackages = true;
-                                if (listPackageArgs.OutdatedReport)  // --outdated report
+                                switch (listPackageArgs.ReportType)
                                 {
-                                    printPackages = FilterOutdatedPackages(packages);
-                                    if (!printPackages)
-                                    {
-                                        Console.WriteLine(string.Format(Strings.ListPkg_NoUpdatesForProject, projectName));
-                                    }
-                                }
-                                else if (listPackageArgs.DeprecatedReport)  // --deprecated report
-                                {
-                                    printPackages = FilterDeprecatedPackages(packages);
-                                    if (!printPackages)
-                                    {
-                                        Console.WriteLine(string.Format(Strings.ListPkg_NoDeprecatedPackagesForProject, projectName));
-                                    }
-                                }
-                                else if (listPackageArgs.VulnerableReport)  // --vulnerable report
-                                {
-                                    printPackages = FilterVulnerablePackages(packages);
-                                    if (!printPackages)
-                                    {
-                                        Console.WriteLine(string.Format(Strings.ListPkg_NoVulnerablePackagesForProject, projectName));
-                                    }
+                                    case ReportType.Outdated:
+                                        printPackages = FilterOutdatedPackages(packages);
+                                        if (!printPackages)
+                                        {
+                                            Console.WriteLine(string.Format(Strings.ListPkg_NoUpdatesForProject, projectName));
+                                        }
+
+                                        break;
+                                    case ReportType.Deprecated:
+                                        printPackages = FilterDeprecatedPackages(packages);
+                                        if (!printPackages)
+                                        {
+                                            Console.WriteLine(string.Format(Strings.ListPkg_NoDeprecatedPackagesForProject, projectName));
+                                        }
+
+                                        break;
+                                    case ReportType.Vulnerable:
+                                        printPackages = FilterVulnerablePackages(packages);
+                                        if (!printPackages)
+                                        {
+                                            Console.WriteLine(string.Format(Strings.ListPkg_NoVulnerablePackagesForProject, projectName));
+                                        }
+
+                                        break;
                                 }
 
                                 // Make sure print is still needed, which may be changed in case
                                 // outdated filtered all packages out
                                 if (printPackages)
                                 {
-                                    var printPackagesResult = ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs);
-
-                                    autoReferenceFound = autoReferenceFound || printPackagesResult.AutoReferenceFound;
-                                    outdatedFound = outdatedFound || printPackagesResult.OutdatedFound;
-                                    deprecatedFound = deprecatedFound || printPackagesResult.DeprecatedFound;
-                                    vulnerableFound = vulnerableFound || printPackagesResult.VulnerableFound;
+                                    var hasAutoReference = false;
+                                    ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs, ref hasAutoReference);
+                                    autoReferenceFound = autoReferenceFound || hasAutoReference;
                                 }
                             }
                         }
@@ -163,25 +159,10 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
-            // Print a legend for any markers used
+            // Print a legend message for auto-reference markers used
             if (autoReferenceFound)
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
-            }
-
-            if (outdatedFound)
-            {
-                Console.WriteLine(Strings.ListPkg_OutdatedPkgDescription);
-            }
-
-            if (deprecatedFound)
-            {
-                Console.WriteLine(Strings.ListPkg_DeprecatedPkgDescription);
-            }
-
-            if (vulnerableFound)
-            {
-                Console.WriteLine(Strings.ListPkg_VulnerablePkgDescription);
             }
         }
 
@@ -457,8 +438,8 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
 
-                    // Get latest metadata if this is an outdated report or a general list
-                    if (!listPackageArgs.DeprecatedReport && !listPackageArgs.VulnerableReport && matchingPackage.Value.Count > 0)
+                    // Get latest metadata *only* if this is a report requiring "outdated" metadata
+                    if (listPackageArgs.ReportType == ReportType.Outdated && matchingPackage.Value.Count > 0)
                     {
                         var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max(i => i.Identity.Version);
 
@@ -485,8 +466,8 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).First();
 
-                    // Get latest metadata if this is an outdated report or a general list
-                    if (!listPackageArgs.DeprecatedReport && !listPackageArgs.VulnerableReport && matchingPackage.Value.Count > 0)
+                    // Get latest metadata *only* if this is a report requiring "outdated" metadata
+                    if (listPackageArgs.ReportType == ReportType.Outdated && matchingPackage.Value.Count > 0)
                     {
                         var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs)).Max(i => i.Identity.Version);
 
