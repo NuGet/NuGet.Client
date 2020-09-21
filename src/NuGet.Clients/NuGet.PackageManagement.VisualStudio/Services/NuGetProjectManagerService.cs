@@ -142,10 +142,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return results.ToArray();
         }
 
-        public async ValueTask<object> GetMetadataAsync(string projectId, string key, CancellationToken cancellationToken)
+        public async ValueTask<ProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(projectId);
-            Assumes.NotNullOrEmpty(key);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -156,26 +155,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             Assumes.NotNull(project);
 
-            return project.GetMetadata<object>(key);
-        }
-
-        public async ValueTask<(bool, object)> TryGetMetadataAsync(string projectId, string key, CancellationToken cancellationToken)
-        {
-            Assumes.NotNullOrEmpty(projectId);
-            Assumes.NotNullOrEmpty(key);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
-                _sharedState.SolutionManager,
-                projectId,
-                cancellationToken);
-
-            Assumes.NotNull(project);
-
-            bool success = project.TryGetMetadata(key, out object value);
-
-            return (success, value);
+            return ProjectMetadataContextInfo.Create(project.Metadata);
         }
 
         public async ValueTask<(bool, string?)> TryGetInstalledPackageFilePathAsync(
