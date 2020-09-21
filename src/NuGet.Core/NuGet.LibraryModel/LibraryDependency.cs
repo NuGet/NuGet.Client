@@ -176,6 +176,14 @@ namespace NuGet.LibraryModel
         /// </summary>
         public static void ApplyCentralVersionInformation(IList<LibraryDependency> packageReferences, IDictionary<string, CentralPackageVersion> centralPackageVersions)
         {
+            if (packageReferences == null)
+            {
+                throw new ArgumentNullException(nameof(packageReferences));
+            }
+            if (centralPackageVersions == null)
+            {
+                throw new ArgumentNullException(nameof(centralPackageVersions));
+            }
             if (centralPackageVersions.Any())
             {
                 foreach (LibraryDependency d in packageReferences.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
