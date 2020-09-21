@@ -12,10 +12,8 @@ using System.Windows.Data;
 using System.Windows.Input;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using Task = System.Threading.Tasks.Task;
 using Resx = NuGet.PackageManagement.UI;
-using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.Text.Utilities.Automation;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {

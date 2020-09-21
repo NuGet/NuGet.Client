@@ -12,8 +12,8 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.Versioning;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.UI
                         project.InstalledVersion = installedVersion.Identity.Version;
                         hash.Add(installedVersion.Identity.Version);
                         project.AutoReferenced = installedVersion.IsAutoReferenced;
-                        
+
                         if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
                         {
                             project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
