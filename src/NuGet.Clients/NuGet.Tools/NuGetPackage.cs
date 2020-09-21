@@ -403,9 +403,10 @@ namespace NuGetVSExtension
                         continue;
                     }
 
-                    var existingProject = projects.First();
-                    var projectName = await existingProject.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None);
-                    if (string.Equals(projectName, project.Name, StringComparison.OrdinalIgnoreCase))
+                    IProjectContextInfo existingProject = projects.First();
+                    IProjectMetadataContextInfo projectMetadata = await existingProject.GetMetadataAsync(CancellationToken.None);
+
+                    if (string.Equals(projectMetadata.Name, project.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         return windowFrame;
                     }

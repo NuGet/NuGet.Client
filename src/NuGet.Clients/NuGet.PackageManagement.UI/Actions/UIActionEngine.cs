@@ -354,29 +354,29 @@ namespace NuGet.PackageManagement.UI
                     {
                         // removed packages don't have version info
                         removedPackages = results.SelectMany(result => result.Deleted)
-                                                    .Select(package => package.Id)
-                                                    .Distinct()
-                                                    .ToList();
+                            .Select(package => package.Id)
+                            .Distinct()
+                            .ToList();
                         packageCount = removedPackages.Count;
                     }
                     else
                     {
                         // log rich info about added packages
                         addedPackages = results.SelectMany(result => result.Added)
-                                                .Select(package => new Tuple<string, string>(package.Id, (package.Version == null ? "" : package.Version.ToNormalizedString())))
-                                                .Distinct()
-                                                .ToList();
+                            .Select(package => new Tuple<string, string>(package.Id, (package.Version == null ? "" : package.Version.ToNormalizedString())))
+                            .Distinct()
+                            .ToList();
                         var addCount = addedPackages.Count;
 
                         //updated packages can have an old and a new id.
                         updatedPackagesOld = results.SelectMany(result => result.Updated)
-                                                    .Select(package => new Tuple<string, string>(package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString())))
-                                                    .Distinct()
-                                                    .ToList();
+                            .Select(package => new Tuple<string, string>(package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString())))
+                            .Distinct()
+                            .ToList();
                         updatedPackagesNew = results.SelectMany(result => result.Updated)
-                                                    .Select(package => new Tuple<string, string>(package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString())))
-                                                    .Distinct()
-                                                    .ToList();
+                            .Select(package => new Tuple<string, string>(package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString())))
+                            .Distinct()
+                            .ToList();
                         var updateCount = updatedPackagesNew.Count;
 
                         // update packages count
@@ -660,13 +660,14 @@ namespace NuGet.PackageManagement.UI
                     return true;
                 }
 
-                Task<string>[] tasks = upgradeableProjects
-                    .Select(project => project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, cancellationToken).AsTask())
+                Task<IProjectMetadataContextInfo>[] tasks = upgradeableProjects
+                    .Select(project => project.GetMetadataAsync(cancellationToken).AsTask())
                     .ToArray();
 
-                string[] projectNames = await Task.WhenAll(tasks);
+                IProjectMetadataContextInfo[] projectMetadatas = await Task.WhenAll(tasks);
 
-                packageManagementFormat.ProjectNames = projectNames
+                packageManagementFormat.ProjectNames = projectMetadatas
+                    .Select(metadata => metadata.Name)
                     .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
@@ -789,13 +790,13 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                var packageIdentity = new PackageIdentity(userAction.PackageId, version: null);
+
                 foreach (ProjectContextInfo project in projects)
                 {
-                    string projectGuid = await project.GetMetadataAsync<string>(NuGetProjectMetadataKeys.ProjectId, token);
-
                     IEnumerable<ProjectAction> actions = await projectManagerService.GetUninstallActionsAsync(
-                        projectGuid,
-                        new PackageIdentity(userAction.PackageId, version: null),
+                        project.ProjectId,
+                        packageIdentity,
                         removeDependencies,
                         forceRemove,
                         token);
@@ -894,15 +895,15 @@ namespace NuGet.PackageManagement.UI
 
                 string projectName;
 
-                (bool success, object value) = await projectManagerService.TryGetMetadataAsync(actions.Key, NuGetProjectMetadataKeys.UniqueName, cancellationToken);
+                IProjectMetadataContextInfo projectMetadata = await projectManagerService.GetMetadataAsync(actions.Key, cancellationToken);
 
-                if (success)
+                if (projectMetadata is null || string.IsNullOrEmpty(projectMetadata.UniqueName))
                 {
-                    projectName = value as string;
+                    projectName = Resources.Preview_UnknownProject;
                 }
                 else
                 {
-                    projectName = Resources.Preview_UnknownProject;
+                    projectName = projectMetadata.UniqueName;
                 }
 
                 var result = new PreviewResult(projectName, added, deleted, updated);

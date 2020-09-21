@@ -50,48 +50,27 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(CancellationToken cancellationToken)
         {
-            IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();
-            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
+            using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(cancellationToken))
             {
-                Assumes.NotNull(nugetProjectManagerService);
-
-                return await nugetProjectManagerService.GetInstalledPackagesAsync(new string[] { ProjectId }, cancellationToken);
+                return await projectManager.GetInstalledPackagesAsync(new string[] { ProjectId }, cancellationToken);
             }
         }
 
-        public async ValueTask<(bool, T)> TryGetMetadataAsync<T>(string key, CancellationToken cancellationToken)
+        public async ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(CancellationToken cancellationToken)
         {
-            IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();
-            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
-            {
-                Assumes.NotNull(nugetProjectManagerService);
+            cancellationToken.ThrowIfCancellationRequested();
 
-                (bool success, object value) = await nugetProjectManagerService.TryGetMetadataAsync(ProjectId, key, cancellationToken);
-                return (success, (T)value);
+            using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(cancellationToken))
+            {
+                return await projectManager.GetMetadataAsync(ProjectId, cancellationToken);
             }
         }
 
-        public async ValueTask<T> GetMetadataAsync<T>(string key, CancellationToken cancellationToken)
+        public async ValueTask<string?> GetUniqueNameOrNameAsync(CancellationToken cancellationToken)
         {
-            IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();
-            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
-            {
-                Assumes.NotNull(nugetProjectManagerService);
+            IProjectMetadataContextInfo metadata = await GetMetadataAsync(cancellationToken);
 
-                return (T)await nugetProjectManagerService.GetMetadataAsync(ProjectId, key, cancellationToken);
-            }
-        }
-
-        public async ValueTask<string> GetUniqueNameOrNameAsync(CancellationToken cancellationToken)
-        {
-            (bool success, string value) = await TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.UniqueName, cancellationToken);
-            if (success)
-            {
-                return value;
-            }
-
-            // Unique name is not set, simply return the name
-            return await GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, cancellationToken);
+            return metadata.UniqueName ?? metadata.Name;
         }
 
         public async ValueTask<(bool, string?)> TryGetInstalledPackageFilePathAsync(
@@ -102,14 +81,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            IServiceBroker serviceBroker = await GetRemoteServiceBrokerAsync();
-
-            using (INuGetProjectManagerService? projectManager = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
-                NuGetServices.ProjectManagerService,
-                cancellationToken: cancellationToken))
+            using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(cancellationToken))
             {
-                Assumes.NotNull(projectManager);
-
                 return await projectManager.TryGetInstalledPackageFilePathAsync(ProjectId, packageIdentity, cancellationToken);
             }
         }
@@ -117,6 +90,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public static ValueTask<IProjectContextInfo> CreateAsync(NuGetProject nugetProject, CancellationToken cancellationToken)
         {
             Assumes.NotNull(nugetProject);
+
             if (!nugetProject.TryGetMetadata(NuGetProjectMetadataKeys.ProjectId, out string projectId))
             {
                 throw new InvalidOperationException();
@@ -124,23 +98,19 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             NuGetProjectKind projectKind = GetProjectKind(nugetProject);
             ProjectStyle projectStyle = nugetProject.ProjectStyle;
+
             return new ValueTask<IProjectContextInfo>(new ProjectContextInfo(projectId, projectStyle, projectKind));
         }
 
         public static async ValueTask<IProjectContextInfo> CreateAsync(string projectId, CancellationToken cancellationToken)
         {
-            IProjectContextInfo projectContextInfo;
-            IServiceBroker remoteBroker = await GetRemoteServiceBrokerAsync();
-            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, cancellationToken: cancellationToken))
+            using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(cancellationToken))
             {
-                Assumes.NotNull(nugetProjectManagerService);
-                projectContextInfo = await nugetProjectManagerService.GetProjectAsync(projectId, cancellationToken);
+                return await projectManager.GetProjectAsync(projectId, cancellationToken);
             }
-
-            return projectContextInfo;
         }
 
-        internal static NuGetProjectKind GetProjectKind(NuGetProject nugetProject)
+        private static NuGetProjectKind GetProjectKind(NuGetProject nugetProject)
         {
             // Order matters
             NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
@@ -203,6 +173,21 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             return result;
+        }
+
+        private static async ValueTask<INuGetProjectManagerService> GetProjectManagerAsync(CancellationToken cancellationToken)
+        {
+            IServiceBroker serviceBroker = await GetRemoteServiceBrokerAsync();
+
+#pragma warning disable ISB001 // Dispose of proxies
+            INuGetProjectManagerService? projectManager = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
+                 NuGetServices.ProjectManagerService,
+                 cancellationToken: cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            Assumes.NotNull(projectManager);
+
+            return projectManager;
         }
 
         private static async ValueTask<IServiceBroker> GetRemoteServiceBrokerAsync()
