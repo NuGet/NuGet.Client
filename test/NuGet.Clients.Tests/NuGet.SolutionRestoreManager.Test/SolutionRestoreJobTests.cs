@@ -76,7 +76,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 isSolutionLoadRestore: true,
                 token: CancellationToken.None);
 
-            Assert.Equal(NuGetOperationStatus.Succeeded, job.Status);
+            Assert.Equal(NuGetOperationStatus.NoOp, job.Status);
         }
     }
 }
