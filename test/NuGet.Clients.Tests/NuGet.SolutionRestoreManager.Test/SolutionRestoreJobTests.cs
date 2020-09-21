@@ -5,20 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
-using Moq;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
+using Moq;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using NuGet.Configuration;
-using System.Threading;
-using NuGet.Common;
-using Task = System.Threading.Tasks.Task;
-using Microsoft.VisualStudio.Sdk.TestFramework;
 using Test.Utility;
+using Xunit;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
@@ -53,7 +53,7 @@ namespace NuGet.SolutionRestoreManager.Test
                     new AddItem("automatic", bool.TrueString)));
 
             var consoleProvider = Mock.Of<IOutputConsoleProvider>();
-            var logger = new RestoreOperationLogger(new Lazy<IOutputConsoleProvider>( () => consoleProvider));
+            var logger = new RestoreOperationLogger(new Lazy<IOutputConsoleProvider>(() => consoleProvider));
 
             var job = new SolutionRestoreJob(
                 asyncServiceProvider: AsyncServiceProvider.GlobalProvider,

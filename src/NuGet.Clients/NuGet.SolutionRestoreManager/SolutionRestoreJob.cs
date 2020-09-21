@@ -419,19 +419,19 @@ namespace NuGet.SolutionRestoreManager
                                 IReadOnlyList<RestoreSummary> restoreSummaries = null;
                                 try
                                 {
-                                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                                        _solutionManager,
-                                        dgSpec,
-                                        cacheContext,
-                                        providerCache,
-                                        cacheModifier,
-                                        sources,
-                                        _nuGetProjectContext.OperationId,
-                                        forceRestore,
-                                        isRestoreOriginalAction,
-                                        additionalMessages,
-                                        l,
-                                        t);
+                                    restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                                       _solutionManager,
+                                       dgSpec,
+                                       cacheContext,
+                                       providerCache,
+                                       cacheModifier,
+                                       sources,
+                                       _nuGetProjectContext.OperationId,
+                                       forceRestore,
+                                       isRestoreOriginalAction,
+                                       additionalMessages,
+                                       l,
+                                       t);
 
                                     _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
                                     isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
