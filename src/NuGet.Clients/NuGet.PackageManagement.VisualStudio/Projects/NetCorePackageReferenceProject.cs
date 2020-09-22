@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
             }
 
-            var installedPackages =  packageSpec
+            var installedPackages = packageSpec
                .TargetFrameworks
                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, assetsPackageSpec, targets))
                .GroupBy(p => p.PackageIdentity)
