@@ -25,7 +25,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly SourceRepository _sourceRepository;
         private readonly IEnumerable<PackageCollectionItem> _installedPackages;
+        private readonly IEnumerable<PackageCollectionItem> _transitivePackages;
         private readonly IPackageMetadataProvider _metadataProvider;
+        private readonly Common.ILogger _logger;
 
         public (string modelVersion, string vsixVersion) VersionInfo { get; set; } = (modelVersion: (string)null, vsixVersion: (string)null);
 
@@ -38,11 +40,15 @@ namespace NuGet.PackageManagement.VisualStudio
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
             IEnumerable<PackageCollectionItem> installedPackages,
-            IPackageMetadataProvider metadataProvider)
+            IEnumerable<PackageCollectionItem> transitivePackages,
+            IPackageMetadataProvider metadataProvider,
+            Common.ILogger logger)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
             _installedPackages = installedPackages ?? throw new ArgumentNullException(nameof(installedPackages));
+            _transitivePackages = transitivePackages ?? throw new ArgumentNullException(nameof(transitivePackages));
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
                 async () =>
@@ -106,11 +112,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // get lists of only the package ids to send to the recommender
                 List<string> topPackages = _installedPackages.Select(item => item.Id).ToList();
-                // set the dependent packages to an empty list for now. We'll need to update this to the actual dependent packages
-                // when we implement PR-style projects.
-                List<string> depPackages = new List<string>();
+                List<string> depPackages = _transitivePackages.Select(item => item.Id).ToList();
+                // get target frameworks
+                var targetFrameworks = searchToken.SearchFilter.SupportedFrameworks;
                 // call the recommender to get package recommendations
-                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(searchToken.SearchFilter.SupportedFrameworks, topPackages, depPackages, cancellationToken);
+                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(targetFrameworks, topPackages, depPackages, cancellationToken);
             }
 
             if (recommendIds == null || !recommendIds.Any())

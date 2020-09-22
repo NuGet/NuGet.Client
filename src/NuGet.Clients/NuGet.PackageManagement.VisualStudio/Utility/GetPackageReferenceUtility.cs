@@ -58,6 +58,27 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             return new PackageIdentity(projectLibrary.Name, resolvedVersion);
         }
 
+        /// <summary>
+        /// Gets the version for the transitive package and target framework.
+        /// </summary>
+        /// <param name="dependencyLibrary">Library from the assets file.</param>
+        /// <param name="targetFramework">Target framework from the project file.</param>
+        /// <param name="targets">Target assets file with the package information.</param>
+        internal static PackageIdentity GetResolvedVersionTransitive(PackageDependency dependencyLibrary, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets)
+        {
+            NuGetVersion resolvedVersion = targets
+                .FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
+                ?.Libraries
+                .FirstOrDefault(a => a.Name.Equals(dependencyLibrary.Id, StringComparison.OrdinalIgnoreCase))?.Version;
+
+            if (resolvedVersion == null)
+            {
+                resolvedVersion = dependencyLibrary.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
+            }
+
+            return new PackageIdentity(dependencyLibrary.Id, resolvedVersion);
+        }
+
         private static NuGetVersion GetInstalledVersion(LibraryDependency libraryProjectFile, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IEnumerable<LockFileTarget> targets)
         {
             LibraryDependency libraryAsset = assetsTargetFrameworkInformation?.Dependencies.FirstOrDefault(e => e.Name.Equals(libraryProjectFile.Name, StringComparison.OrdinalIgnoreCase));

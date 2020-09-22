@@ -74,11 +74,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
+            var targetFramework = await vsProjectAdapter.GetTargetFrameworkAsync();
+
             return new LegacyPackageReferenceProject(
                 vsProjectAdapter,
                 vsProjectAdapter.ProjectId,
                 projectServices,
-                _threadingService);
+                _threadingService,
+                targetFramework);
         }
 
         /// <summary>
