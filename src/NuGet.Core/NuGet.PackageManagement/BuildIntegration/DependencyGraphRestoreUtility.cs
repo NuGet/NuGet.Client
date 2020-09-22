@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -28,6 +29,8 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class DependencyGraphRestoreUtility
     {
+        private static int threadCount;
+
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
@@ -320,10 +323,16 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
+            var stopWatch = Stopwatch.StartNew();
+
             var dgSpec = new DependencyGraphSpec();
             var allAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>();
 
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
+
+            var solPaths = solutionManager.SolutionDirectory.Split('\\');
+            NuGetFileLogger.DefaultInstance.Write($"Starts: {solPaths[solPaths.Length - 1]}: {projects.Count}: GetSolutionRestoreSpecAndAdditionalMessages.");
+
             var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
             // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
             knownProjects.AddRange(projects.Select(e => e.MSBuildProjectPath)
@@ -349,6 +358,10 @@ namespace NuGet.PackageManagement
             actionBlock.Complete();
             await actionBlock.Completion;
 
+            stopWatch.Stop();
+            NuGetFileLogger.DefaultInstance.Write($"End: {stopWatch.Elapsed.TotalSeconds} ");
+            NuGetFileLogger.DefaultInstance.Write($"-------------------------------------");
+
             // Return dg file
             return (dgSpec, allAdditionalMessages.ToList());
         }
@@ -356,6 +369,11 @@ namespace NuGet.PackageManagement
         private async static Task GetProjectRestoreSpecAndAdditionalMessages(
             ProjectRestoreSpec restoreSpecData)
         {
+            var stopWatch = Stopwatch.StartNew();
+            Interlocked.Increment(ref threadCount);
+            var projPaths = restoreSpecData.Project.MSBuildProjectPath.Split('\\');
+            NuGetFileLogger.DefaultInstance.Write($"{projPaths[projPaths.Length - 1]} starts.");
+
             var (packageSpecs, projectAdditionalMessages) = await restoreSpecData.Project.GetPackageSpecsAndAdditionalMessagesAsync(restoreSpecData.Context);
             var dgSpec = restoreSpecData.DgSpec;
 
@@ -421,6 +439,11 @@ namespace NuGet.PackageManagement
                     }
                 }
             }
+
+            stopWatch.Stop();
+            Interlocked.Decrement(ref threadCount);
+            NuGetFileLogger.DefaultInstance.Write($"Parellel threads: {threadCount}");
+            NuGetFileLogger.DefaultInstance.Write($"{projPaths[projPaths.Length - 1]} ends.: {stopWatch.Elapsed.TotalSeconds} ");
         }
 
         /// <summary>
