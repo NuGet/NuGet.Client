@@ -219,10 +219,18 @@ namespace NuGet.PackageManagement.UI
         private void SortableColumnHeader_SizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
         {
             // GridViewColumnHeader doesn't handle setting minwidth very well so we prevent it here.
-            if (sizeChangedEventArgs.NewSize.Width <= 67)
+            byte columnMinWidth = 60;
+            string columnName = (sizeChangedEventArgs.Source as GridViewColumnHeader)?.Name;
+
+            //"Installed" is a bit wider and can clip when the sorting indicator is applied.
+            if (columnName == "_installedVersionColumnHeader")
+            {
+                columnMinWidth = 64;
+            }
+            if (sizeChangedEventArgs.NewSize.Width <= columnMinWidth)
             {
                 sizeChangedEventArgs.Handled = true;
-                ((GridViewColumnHeader)sender).Column.Width = 67;
+                ((GridViewColumnHeader)sender).Column.Width = columnMinWidth;
             }
         }
 
