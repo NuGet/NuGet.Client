@@ -36,7 +36,6 @@ namespace NuGet.ProjectModel.Test
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
             var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar }, cpvmEnabled);
-            
             var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, tfi);
             var packSpec = dependencyGraphSpec.Projects[0];
 
