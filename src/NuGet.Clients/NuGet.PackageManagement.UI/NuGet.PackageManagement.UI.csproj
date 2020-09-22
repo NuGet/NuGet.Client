@@ -164,7 +164,6 @@
     </Compile>
     <Compile Include="Common\TriggerEventMethod.cs" />
     <Compile Include="Converters\MessageLevelToBrushConverter.cs" />
-    <Compile Include="Converters\LoadingStatusToIconConverter.cs" />
     <Compile Include="Converters\NotEqualConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
