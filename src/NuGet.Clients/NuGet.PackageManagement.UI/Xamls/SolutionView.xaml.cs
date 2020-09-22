@@ -69,9 +69,9 @@ namespace NuGet.PackageManagement.UI
         {
             //Since this event will fire when closing PMUI, when the model is set to Project PMUI,
             //and when other WPF controls in the tree set their DataContext, this cast is more important than it may seem.
-            var model = e.NewValue as PackageSolutionDetailControlModel;
-            if (model != null)
+            if (e.NewValue is PackageSolutionDetailControlModel)
             {
+                var model = e.NewValue as PackageSolutionDetailControlModel;
                 if (model.IsRequestedVisible)
                 {
                     GridViewColumn _versionColumn = CreateRequestedVersionColumn();
