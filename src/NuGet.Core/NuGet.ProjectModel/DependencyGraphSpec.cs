@@ -405,15 +405,10 @@ namespace NuGet.ProjectModel
 
         public string GetHash()
         {
-            return GetHash(compressed: false);
-        }
-
-        public string GetHash(bool compressed)
-        {
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, compressed, PackageSpecWriter.Write);
+                Write(writer, compressed: true, PackageSpecWriter.Write);
                 return writer.GetHash();
             }
         }
