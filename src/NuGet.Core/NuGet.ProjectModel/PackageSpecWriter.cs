@@ -467,7 +467,7 @@ namespace NuGet.ProjectModel
 
             writer.WriteObjectStart(name);
 
-            foreach (var dependency in libraryDependencies)
+            foreach (var dependency in libraryDependencies.OrderBy(e => e.Name, StringComparer.Ordinal))
             {
                 var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
                 var versionString = versionRange.ToNormalizedString();
