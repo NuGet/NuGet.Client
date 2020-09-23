@@ -14,6 +14,7 @@ using NuGet.VisualStudio.SolutionExplorer.Models;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
+    [AppliesToProject(ProjectCapability.DependenciesTree)]
     [Export(typeof(IAttachedCollectionSourceProvider))]
     [Name(nameof(PackageReferenceAttachedCollectionSourceProvider))]
     [Order(Before = HierarchyItemsProviderNames.Contains)]
