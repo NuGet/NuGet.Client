@@ -725,6 +725,7 @@ namespace NuGet.Build.Tasks.Console.Test
             // Arrange
             string netstandard22 = "netstandard2.2";
             string netstandard20 = "netstandard2.0";
+            string netstandard23 = "netstandard2.3";
 
             var innerNodes = new Dictionary<string, IMSBuildProject>
             {
@@ -734,7 +735,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     {
                         ["PackageReference"] = new List<IMSBuildItem>
                         {
-                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.TrueString }),
                         },
                         ["PackageVersion"] = new List<IMSBuildItem>
                         {
@@ -756,14 +757,29 @@ namespace NuGet.Build.Tasks.Console.Test
                             new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.2.0" }),
                         },
                     }),
+                [netstandard23] = new MockMSBuildProject("Project-netstandard2.3",
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
+                        },
+                        ["PackageVersion"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
+                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
+                        },
+                    }),
             };
 
             var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: true);
 
             // Assert
-            Assert.Equal(2, targetFrameworkInfos.Count);
+            Assert.Equal(3, targetFrameworkInfos.Count);
             var framework20 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard20);
             var framework22 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard22);
+            var framework23 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard23);
 
             Assert.Equal(1, framework20.Dependencies.Count);
             Assert.Equal("PackageA", framework20.Dependencies.First().Name);
@@ -780,6 +796,10 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal(2, framework22.CentralPackageVersions.Count);
             Assert.Equal("2.2.2", framework22.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
             Assert.Equal("3.2.0", framework22.CentralPackageVersions["PackageB"].VersionRange.OriginalString);
+
+            Assert.Equal(1, framework23.Dependencies.Count);
+            Assert.Equal("PackageA", framework23.Dependencies.First().Name);
+            Assert.Equal("2.0.0", framework23.Dependencies.First().LibraryRange.VersionRange.OriginalString);
         }
 
         [Fact]
