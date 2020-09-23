@@ -263,7 +263,7 @@ namespace NuGet.ProjectModel.Test
         public void Write_SerializesMembersAsJsonWithoutRestoreSettings()
         {
             // Arrange && Act
-            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.PackageSpecWriter_Write_SerializesMembersAsJsonWithoutRestoreSettings.json", typeof(PackageSpecWriterTests));
+            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.PackageSpecWriter_Write_SerializesMembersAsJson.json", typeof(PackageSpecWriterTests));
             var packageSpec = CreatePackageSpec(withRestoreSettings: false);
             var actualJson = GetJsonString(packageSpec);
 

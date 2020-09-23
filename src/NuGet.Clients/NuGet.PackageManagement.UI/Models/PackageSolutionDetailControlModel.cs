@@ -431,8 +431,9 @@ namespace NuGet.PackageManagement.UI
             var selectedProjectsNames = new List<string>();
             foreach (PackageInstallationInfo project in Projects.Where(p => p.IsSelected).ToList())
             {
-                string projectName = await project.NuGetProject.GetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, cancellationToken);
-                selectedProjectsNames.Add(projectName);
+                IProjectMetadataContextInfo projectMetadata = await project.NuGetProject.GetMetadataAsync(cancellationToken);
+
+                selectedProjectsNames.Add(projectMetadata.Name);
             }
 
             return _projectVersionConstraints.Where(e => selectedProjectsNames.Contains(e.ProjectName, StringComparer.OrdinalIgnoreCase));
@@ -441,7 +442,7 @@ namespace NuGet.PackageManagement.UI
         private async ValueTask<VersionRange> GetAllowedVersionsAsync(CancellationToken cancellationToken)
         {
             // allowed version ranges for selected list of projects
-            var allowedVersionsRange = (await GetConstraintsForSelectedProjectsAsync(cancellationToken))
+            IEnumerable<VersionRange> allowedVersionsRange = (await GetConstraintsForSelectedProjectsAsync(cancellationToken))
                 .Select(e => e.VersionRange)
                 .Where(v => v != null);
 

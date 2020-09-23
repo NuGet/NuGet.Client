@@ -218,18 +218,14 @@ namespace NuGet.PackageManagement.UI
         {
             Model.Context.Projects = new[] { project };
 
-            var currentNugetProject = Model.Context.Projects.First();
+            IProjectContextInfo currentNugetProject = Model.Context.Projects.First();
 
-            (bool currentSuccess, string currentFullPath) = await currentNugetProject.TryGetMetadataAsync<string>(
-                NuGetProjectMetadataKeys.FullPath,
-                CancellationToken.None);
-            (bool newSuccess, string newFullPath) = await project.TryGetMetadataAsync<string>(
-                NuGetProjectMetadataKeys.FullPath,
-                CancellationToken.None);
+            IProjectMetadataContextInfo currentProjectMetadata = await currentNugetProject.GetMetadataAsync(CancellationToken.None);
+            IProjectMetadataContextInfo renamedProjectMetadata = await project.GetMetadataAsync(CancellationToken.None);
 
-            if (currentSuccess && newSuccess && currentFullPath == newFullPath)
+            if (currentProjectMetadata.FullPath == renamedProjectMetadata.FullPath)
             {
-                await SetTitleAsync();
+                await SetTitleAsync(currentProjectMetadata);
             }
         }
 
@@ -320,13 +316,12 @@ namespace NuGet.PackageManagement.UI
         private async Task SolutionManager_CacheUpdatedAsync(TimeSpan timeSpan, string eventProjectFullName)
         {
             // This is a project package manager, so there is one and only one project.
-            var project = Model.Context.Projects.First();
-
-            (bool success, string projectFullName) = await project.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.FullPath, CancellationToken.None);
+            IProjectContextInfo project = Model.Context.Projects.First();
+            IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
 
             // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
             // We also refresh the UI if projectFullPath is not present.
-            if (!success || projectFullName == eventProjectFullName)
+            if (projectMetadata.FullPath == eventProjectFullName)
             {
                 RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated, timeSpan);
             }
@@ -354,14 +349,14 @@ namespace NuGet.PackageManagement.UI
         private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false)
         {
             TelemetryActivity.EmitTelemetryEvent(
-                                new PackageManagerUIRefreshEvent(
-                                    _sessionGuid,
-                                    Model.IsSolution,
-                                    refreshOperationSource,
-                                    status,
-                                    _topPanel.Filter.ToString(),
-                                    isUIFiltering,
-                                    timeSpan));
+                new PackageManagerUIRefreshEvent(
+                    _sessionGuid,
+                    Model.IsSolution,
+                    refreshOperationSource,
+                    status,
+                    _topPanel.Filter.ToString(),
+                    isUIFiltering,
+                    timeSpan));
         }
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
@@ -522,14 +517,22 @@ namespace NuGet.PackageManagement.UI
         private async Task<string> GetSettingsKeyAsync(CancellationToken cancellationToken)
         {
             string key;
+
             if (!Model.IsSolution)
             {
-                var project = Model.Context.Projects.First();
-                (bool success, string projectName) = await project.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, cancellationToken);
-                if (!success)
+                IProjectContextInfo project = Model.Context.Projects.First();
+                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(cancellationToken);
+                string projectName;
+
+                if (string.IsNullOrEmpty(projectMetadata.Name))
                 {
                     projectName = "unknown";
                 }
+                else
+                {
+                    projectName = projectMetadata.Name;
+                }
+
                 key = "project:" + projectName;
             }
             else
@@ -672,7 +675,7 @@ namespace NuGet.PackageManagement.UI
             _packageDetail.Refresh();
         }
 
-        private async Task SetTitleAsync()
+        private async Task SetTitleAsync(IProjectMetadataContextInfo projectMetadata = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -682,14 +685,18 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                var project = Model.Context.Projects.First();
-                string projectName = null;
+                string projectName;
 
-                (bool success, string value) = await project.TryGetMetadataAsync<string>(NuGetProjectMetadataKeys.Name, CancellationToken.None);
-
-                if (success)
+                if (projectMetadata is null)
                 {
-                    projectName = value;
+                    IProjectContextInfo project = Model.Context.Projects.First();
+                    IProjectMetadataContextInfo metadata = await project.GetMetadataAsync(CancellationToken.None);
+
+                    projectName = metadata.Name;
+                }
+                else
+                {
+                    projectName = projectMetadata.Name;
                 }
 
                 if (string.IsNullOrWhiteSpace(projectName))
@@ -1575,7 +1582,7 @@ namespace NuGet.PackageManagement.UI
                         packages,
                         CancellationToken.None);
                 },
-               nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
         }
 
         private void UpgradeButton_Click(object sender, RoutedEventArgs e)
@@ -1584,7 +1591,7 @@ namespace NuGet.PackageManagement.UI
             {
                 IProjectContextInfo project = Model.Context.Projects.FirstOrDefault();
                 Debug.Assert(project != null);
-                await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, null);
+                await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project: null);
             })
             .PostOnFailure(nameof(PackageManagerControl), nameof(UpgradeButton_Click));
         }
