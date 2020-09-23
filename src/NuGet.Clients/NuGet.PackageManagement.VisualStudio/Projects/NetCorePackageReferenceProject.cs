@@ -242,13 +242,15 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSpec lastPackageSpec = default;
             _lastPackageSpec?.TryGetTarget(out lastPackageSpec);
 
-            if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified && !ReferenceEquals(lastPackageSpec, packageSpec))
+            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !ReferenceEquals(lastPackageSpec, packageSpec))
             {
                 await TaskScheduler.Default;
-                var lockFile = new LockFileFormat().Read(assetsFilePath);
-                assetsPackageSpec = lockFile.PackageSpec;
-                targets = lockFile.Targets;
-
+                if (fileInfo.Exists)
+                {
+                    var lockFile = new LockFileFormat().Read(assetsFilePath);
+                    assetsPackageSpec = lockFile.PackageSpec;
+                    targets = lockFile.Targets;
+                }
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
                 _lastPackageSpec = new WeakReference<PackageSpec>(packageSpec);
             }
