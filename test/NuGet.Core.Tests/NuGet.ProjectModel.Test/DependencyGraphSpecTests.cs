@@ -705,20 +705,6 @@ namespace NuGet.ProjectModel.Test
                 });
         }
 
-        [Fact]
-        public void GetHash_CompresedHashIsDifferentFromNotCompressedHash()
-        {
-            // Arrange
-            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(2000);
-
-            // Act
-            string notCompressedHash = dependencyGraphSpec.GetHash();
-            string compressedHash = dependencyGraphSpec.GetHash();
-
-            // Assert
-            Assert.NotEqual(compressedHash, notCompressedHash);
-        }
-
         private static DependencyGraphSpec CreateDependencyGraphSpec()
         {
             var dgSpec = new DependencyGraphSpec();
