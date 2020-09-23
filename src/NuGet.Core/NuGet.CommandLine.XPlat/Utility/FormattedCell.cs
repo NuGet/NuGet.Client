@@ -15,11 +15,11 @@ namespace NuGet.CommandLine.XPlat.Utility
 
         public FormattedCell(string value, ConsoleColor? foregroundColor = null)
         {
-            Value = value;
+            Value = value ?? string.Empty;
             ForegroundColor = foregroundColor;
         }
 
-        public bool Equals(FormattedCell other) => Value == other.Value && ForegroundColor == other.ForegroundColor;
+        public bool Equals(FormattedCell other) => Value == other?.Value && ForegroundColor == other?.ForegroundColor;
 
         public override bool Equals(object obj) => Equals(obj as FormattedCell);
 

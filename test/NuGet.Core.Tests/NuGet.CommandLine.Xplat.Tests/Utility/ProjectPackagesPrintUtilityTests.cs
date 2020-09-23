@@ -144,7 +144,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
         private static ListPackageArgs StandardListReportArgs => StandardListReportArgsCache ?? (StandardListReportArgsCache =
             new ListPackageArgs(
                         path: string.Empty, packageSources: Enumerable.Empty<PackageSource>(), frameworks: Enumerable.Empty<string>(),
-                        ReportType.GenericList, includeTransitive: false,
+                        ReportType.Default, includeTransitive: false,
                         prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None));
 
         private static ListPackageArgs OutdatedReportArgsCache;

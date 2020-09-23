@@ -42,7 +42,7 @@ namespace NuGet.CommandLine.XPlat
             var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
 
             //Print sources, but not for generic list (which is offline)
-            if (listPackageArgs.ReportType != ReportType.GenericList)
+            if (listPackageArgs.ReportType != ReportType.Default)
             {
                 Console.WriteLine();
                 Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.XPlat
                             }
                             else
                             {
-                                if (listPackageArgs.ReportType != ReportType.GenericList)  // generic list package is offline -- no server lookups
+                                if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                                 {
                                     await GetRegistrationMetadataAsync(packages, listPackageArgs);
                                     await AddLatestVersionsAsync(packages, listPackageArgs);

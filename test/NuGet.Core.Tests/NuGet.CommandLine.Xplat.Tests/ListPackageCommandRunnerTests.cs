@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Utility;
 using Xunit;
 
@@ -14,11 +16,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void FiltersAutoReferencedPackages()
             {
                 // Arrange
-                var filter = ListPackageHelper.TopLevelPackagesFilterForOutdated;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.TopLevelPackagesFilterForOutdated;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference(autoReference: true);
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.False(result);
@@ -28,12 +30,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void DoesNotFilterPackagesWithLatestMetadataNull()
             {
                 // Arrange
-                var filter = ListPackageHelper.TopLevelPackagesFilterForOutdated;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.TopLevelPackagesFilterForOutdated;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference();
                 installedPackageReference.LatestPackageMetadata = null;
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -43,12 +45,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void DoesNotFilterPackagesWithNewerVersionAvailable()
             {
                 // Arrange
-                var filter = ListPackageHelper.TopLevelPackagesFilterForOutdated;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.TopLevelPackagesFilterForOutdated;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference(
                     latestPackageVersionString: "2.0.0");
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -61,12 +63,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void DoesNotFilterPackagesWithLatestMetadataNull()
             {
                 // Arrange
-                var filter = ListPackageHelper.TransitivePackagesFilterForOutdated;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.TransitivePackagesFilterForOutdated;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference();
                 installedPackageReference.LatestPackageMetadata = null;
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -76,12 +78,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void DoesNotFilterPackagesWithNewerVersionAvailable()
             {
                 // Arrange
-                var filter = ListPackageHelper.TransitivePackagesFilterForOutdated;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.TransitivePackagesFilterForOutdated;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference(
                     latestPackageVersionString: "2.0.0");
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -94,11 +96,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void FiltersPackagesWithoutDeprecationMetadata()
             {
                 // Arrange
-                var filter = ListPackageHelper.PackagesFilterForDeprecated;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.PackagesFilterForDeprecated;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference();
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.False(result);
@@ -108,11 +110,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void DoesNotFilterPackagesWithDeprecationMetadata()
             {
                 // Arrange
-                var filter = ListPackageHelper.PackagesFilterForDeprecated;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.PackagesFilterForDeprecated;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference(isDeprecated: true);
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -125,11 +127,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void FiltersPackagesWithoutVulnerableMetadata()
             {
                 // Arrange
-                var filter = ListPackageHelper.PackagesFilterForVulnerable;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.PackagesFilterForVulnerable;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference();
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.False(result);
@@ -139,11 +141,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             public void DoesNotFilterPackagesWithVulnerableMetadata()
             {
                 // Arrange
-                var filter = ListPackageHelper.PackagesFilterForVulnerable;
+                Func<InstalledPackageReference, bool> filter = ListPackageHelper.PackagesFilterForVulnerable;
                 var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference(vulnerabilityCount: 1);
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                bool result = filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);

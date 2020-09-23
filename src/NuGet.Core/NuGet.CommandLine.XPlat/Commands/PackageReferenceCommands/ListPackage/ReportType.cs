@@ -5,7 +5,7 @@ namespace NuGet.CommandLine.XPlat
 {
     internal enum ReportType
     {
-        GenericList,
+        Default,
         Deprecated,
         Outdated,
         Vulnerable

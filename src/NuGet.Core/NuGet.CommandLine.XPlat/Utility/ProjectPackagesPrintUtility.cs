@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 case ReportType.Vulnerable:
                     Console.WriteLine(string.Format(Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName));
                     break;
-                case ReportType.GenericList:
+                case ReportType.Default:
                     Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
                     break;
             }
@@ -65,7 +65,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                         case ReportType.Vulnerable:
                             Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoVulnerabilitiesForFramework, frameworkPackages.Framework));
                             break;
-                        case ReportType.GenericList:
+                        case ReportType.Default:
                             Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
                             break;
                     }

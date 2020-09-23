@@ -147,7 +147,7 @@ namespace NuGet.CommandLine.XPlat
             mutexCount += isVulnerable ? 1 : 0;
             if (mutexCount == 0)
             {
-                return ReportType.GenericList;
+                return ReportType.Default;
             }
             else if (mutexCount == 1)
             {
@@ -157,7 +157,6 @@ namespace NuGet.CommandLine.XPlat
             // We have a conflict - throw with appropriate message
             var firstOption = string.Empty;
             var incompatibleOption = string.Empty;
-            System.Diagnostics.Debugger.Launch();
             if (isOutdated)
             {
                 firstOption = "--outdated";
