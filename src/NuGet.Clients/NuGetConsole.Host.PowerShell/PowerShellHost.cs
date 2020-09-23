@@ -63,6 +63,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
         private int _pmcExecutedCount;
+        private int _nonPmcExecutedCount;
 
         private uint _solutionExistsCookie;
 
@@ -326,12 +327,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                                 DefaultProject = null;
 
-                                var telemetryEvent = new TelemetryEvent("PMCExecuteCommand", new Dictionary<string, object>
+                                var telemetryEvent = new TelemetryEvent("PowerShellExecuteCommand", new Dictionary<string, object>
                                 {
-                                    { "NugetPMCExecuteCommandCount", _pmcExecutedCount}
+                                    { "NugetPMCExecuteCommandCount", _pmcExecutedCount},
+                                    { "NugetNonPMCExecuteCommandCount", _nonPmcExecutedCount},
+                                    { "NugetTotalExecuteCommandCount", _pmcExecutedCount + _nonPmcExecutedCount}
                                 });
                                 TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                                 _pmcExecutedCount = 0;
+                                _nonPmcExecutedCount = 0;
 
                                 NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
                             };
@@ -370,6 +374,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private void HandleSolutionOpened()
         {
             _scriptExecutor.Value.Reset();
+
+            _pmcExecutedCount = 0;
+            _nonPmcExecutedCount = 0;
 
             // Solution opened event is raised on the UI thread
             // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
@@ -492,6 +499,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             request.BuildInput(),
                             outputResults: true);
 
+                        var telemetryEvent = new TelemetryEvent(eventName: "PowershellScriptExecuted");
+                        telemetryEvent.AddPiiData("id", identity.Id?.ToLowerInvariant() ?? "(empty package id)");
+                        telemetryEvent["version"] = identity.Version;
+                        TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+
                         return;
                     }
                 }
@@ -540,6 +552,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             if (console is IWpfConsole)
             {
                 _pmcExecutedCount++;
+            }
+            else
+            {
+                _nonPmcExecutedCount++;
             }
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure

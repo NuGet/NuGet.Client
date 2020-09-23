@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +10,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio;
@@ -23,10 +25,13 @@ namespace NuGetConsole
     public sealed partial class ConsoleContainer : UserControl, IDisposable
     {
         private INuGetSolutionManagerService _solutionManager;
+        private int _windowLoadCount;
+        private bool _isTelemetryEmitted;
 
         public ConsoleContainer()
         {
             InitializeComponent();
+            Loaded += ConsoleContainer_Loaded;
 
             ThreadHelper.JoinableTaskFactory.StartOnIdle(
                 async () =>
@@ -76,6 +81,25 @@ namespace NuGetConsole
 
         public void Dispose()
         {
+            if (!_isTelemetryEmitted)
+            {
+                var telemetryEvent = new TelemetryEvent("PackageManagerConsoleLoadCount", new Dictionary<string, object>
+                                {
+                                    { "NugetPMCLoadCount", _windowLoadCount}
+                                });
+                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+
+                if (IsLoaded)
+                {
+                    telemetryEvent = new TelemetryEvent("PackageManagerConsoleDefaultOpen");
+                    TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+                }
+
+                _isTelemetryEmitted = true;
+            }
+
+            Loaded -= ConsoleContainer_Loaded;
+
             // Use more verbose null-checking syntax to avoid ISB001 misfiring.
             if (_solutionManager != null)
             {
@@ -83,6 +107,11 @@ namespace NuGetConsole
             }
 
             GC.SuppressFinalize(this);
+        }
+
+        void ConsoleContainer_Loaded(object sender, RoutedEventArgs e)
+        {
+            _windowLoadCount++;
         }
     }
 }
