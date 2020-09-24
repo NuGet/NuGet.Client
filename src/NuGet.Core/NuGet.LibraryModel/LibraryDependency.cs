@@ -184,7 +184,7 @@ namespace NuGet.LibraryModel
             {
                 throw new ArgumentNullException(nameof(centralPackageVersions));
             }
-            if (centralPackageVersions.Any())
+            if (centralPackageVersions.Count > 0)
             {
                 foreach (LibraryDependency d in packageReferences.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
                 {
