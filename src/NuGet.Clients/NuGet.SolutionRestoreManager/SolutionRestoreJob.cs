@@ -138,11 +138,6 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
             _logger = logger;
 
             // update instance attributes with the shared context values
