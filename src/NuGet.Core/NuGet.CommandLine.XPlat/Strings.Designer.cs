@@ -718,11 +718,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Option &apos;--outdated&apos; and &apos;--deprecated&apos; cannot be combined..
+        ///   Looks up a localized string similar to Option &apos;{0}&apos; and &apos;{1}&apos; cannot be combined..
         /// </summary>
-        internal static string ListPkg_InvalidOptionsOutdatedAndDeprecated {
+        internal static string ListPkg_InvalidOptions {
             get {
-                return ResourceManager.GetString("ListPkg_InvalidOptionsOutdatedAndDeprecated", resourceCulture);
+                return ResourceManager.GetString("ListPkg_InvalidOptions", resourceCulture);
             }
         }
         
@@ -799,11 +799,38 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No vulnerable packages for this framework..
+        /// </summary>
+        internal static string ListPkg_NoVulnerabilitiesForFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_NoVulnerabilitiesForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The given project `{0}` has no vulnerable packages given the current sources..
+        /// </summary>
+        internal static string ListPkg_NoVulnerablePackagesForProject {
+            get {
+                return ResourceManager.GetString("ListPkg_NoVulnerablePackagesForProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Displays only the packages that need updates with the latest version from the sources..
         /// </summary>
         internal static string ListPkg_OutdatedDescription {
             get {
                 return ResourceManager.GetString("ListPkg_OutdatedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (O): Outdated package(s). Use &apos;dotnet list package --outdated&apos; for more info..
+        /// </summary>
+        internal static string ListPkg_OutdatedPkgDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_OutdatedPkgDescription", resourceCulture);
             }
         }
         
@@ -849,6 +876,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_ProjectUpdatesHeaderLog {
             get {
                 return ResourceManager.GetString("ListPkg_ProjectUpdatesHeaderLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project `{0}` has the following vulnerable packages.
+        /// </summary>
+        internal static string ListPkg_ProjectVulnerabilitiesHeaderLog {
+            get {
+                return ResourceManager.GetString("ListPkg_ProjectVulnerabilitiesHeaderLog", resourceCulture);
             }
         }
         
@@ -912,6 +948,51 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_TransitiveHeader {
             get {
                 return ResourceManager.GetString("ListPkg_TransitiveHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Advisory URL.
+        /// </summary>
+        internal static string ListPkg_VulnerabilityAdvisoryUrl {
+            get {
+                return ResourceManager.GetString("ListPkg_VulnerabilityAdvisoryUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Severity.
+        /// </summary>
+        internal static string ListPkg_VulnerabilitySeverity {
+            get {
+                return ResourceManager.GetString("ListPkg_VulnerabilitySeverity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Displays only the packages flagged as vulnerable..
+        /// </summary>
+        internal static string ListPkg_VulnerableDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_VulnerableDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The command option(s) &apos;--include-prerelease&apos;, &apos;--highest-minor&apos;, and &apos;--highest-patch&apos; are ignored by this command..
+        /// </summary>
+        internal static string ListPkg_VulnerableIgnoredOptions {
+            get {
+                return ResourceManager.GetString("ListPkg_VulnerableIgnoredOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (V): Vulnerable package(s). Use &apos;dotnet list package --vulnerable&apos; for more info..
+        /// </summary>
+        internal static string ListPkg_VulnerablePkgDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_VulnerablePkgDescription", resourceCulture);
             }
         }
         

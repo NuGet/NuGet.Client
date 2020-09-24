@@ -9,9 +9,9 @@ namespace NuGet.Protocol
     public class AlternatePackageMetadata
     {
         [JsonProperty(PropertyName = JsonProperties.PackageId)]
-        public string PackageId { get; private set; }
+        public string PackageId { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.Range, ItemConverterType = typeof(VersionRangeConverter))]
-        public VersionRange Range { get; private set; }
+        public VersionRange Range { get; internal set; }
     }
 }
