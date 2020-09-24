@@ -2,6 +2,8 @@
 <CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <Extern href="stdidcmd.h"/>
   <Extern href="vsshlids.h"/>
+  <!--  Include the definitions for images included in the VS image catalog -->
+  <Include href="KnownImageIds.vsct"/>
 
   <Commands package="guidNuGetPackage">
 
@@ -73,7 +75,8 @@
 
       <Button guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0x0100" type="Button">
         <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
-        <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />
+        <Icon guid="ImageCatalogGuid" id="NuGet"/>
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>AllowParams</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -107,7 +110,8 @@
 
       <Button guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" priority="0x0200" type="Button">
         <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
-        <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />
+        <Icon guid="ImageCatalogGuid" id="NuGet"/>
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <Strings>
           <CommandName>cmdidAddPackagesForSolution</CommandName>
@@ -244,7 +248,6 @@
       <IDSymbol name="bmpSourceSettings" value="3" />
       <IDSymbol name="bmpStopHost" value="4" />
       <IDSymbol name="bmpVisualizer" value="5" />
-      <IDSymbol name="bmpAddNuGetPackage" value="6" />
       <IDSymbol name="bmpPackageRestore" value="7" />
       <IDSymbol name="bmpUpgradeNuGetProject" value="8" />
     </GuidSymbol>
