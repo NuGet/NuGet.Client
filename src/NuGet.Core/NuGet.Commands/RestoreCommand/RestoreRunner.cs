@@ -19,6 +19,15 @@ namespace NuGet.Commands
     /// </summary>
     public static class RestoreRunner
     {
+        // names for telemetry events and intervals
+        private const string ProjectExecuteAndCommitAsyncInformation = "ProjectExecuteAndCommitAsyncInformation";
+        private const string ExecuteAsyncDuration = "ExecuteAsyncDuration";
+        private const string CommitAsyncDuration = "CommitAsyncDuration";
+        private const string RestoreSuccess = "RestoreSuccess";
+        private const string NoopRestore = "NoopRestore";
+        private const string ResultLibrariesCount = "ResultLibrariesCount";
+        private const string ResultTargetsCount = "ResultTargetsCount";
+
         /// <summary>
         /// Create requests, execute requests, and commit restore results.
         /// </summary>
@@ -177,6 +186,7 @@ namespace NuGet.Commands
                 if (request.Request.LockFilePath == null
                     || uniqueRequest.Add(request.Request.LockFilePath))
                 {
+                    AddParentIdToRequest(request);
                     requests.Add(request);
                 }
             }
@@ -201,12 +211,26 @@ namespace NuGet.Commands
                     // De-dupe requests
                     if (uniqueRequest.Add(request.Request.LockFilePath))
                     {
+                        AddParentIdToRequest(request);
                         requests.Add(request);
                     }
                 }
             }
 
             return requests;
+        }
+
+        /// <summary>
+        /// If the request does not have a ParentId add one.
+        /// This will enable event telemetry correlation.
+        /// </summary>
+        /// <param name="request">The request</param>
+        private static void AddParentIdToRequest(RestoreSummaryRequest request)
+        {
+            if (request.Request.ParentId == default(Guid))
+            {
+                request.Request.ParentId = Guid.NewGuid();
+            }
         }
 
         private static int GetMaxTaskCount(RestoreArgs restoreContext)
@@ -228,9 +252,23 @@ namespace NuGet.Commands
 
         private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
         {
-            var result = await ExecuteAsync(summaryRequest, token);
+            using (var telemetry = TelemetryActivity.Create(parentId: summaryRequest.Request.ParentId, eventName: ProjectExecuteAndCommitAsyncInformation))
+            {
+                telemetry.StartIntervalMeasure();
+                var result = await ExecuteAsync(summaryRequest, token);
+                telemetry.EndIntervalMeasure(ExecuteAsyncDuration);
 
-            return await CommitAsync(result, token);
+                telemetry.TelemetryEvent[RestoreSuccess] = result.Result.Success;
+                telemetry.TelemetryEvent[NoopRestore] = result.Result is NoOpRestoreResult;
+                telemetry.TelemetryEvent[ResultLibrariesCount] = result.Result.LockFile.Libraries.Count;
+                telemetry.TelemetryEvent[ResultTargetsCount] = result.Result.LockFile.Targets.Count;
+
+                telemetry.StartIntervalMeasure();
+                var commitResult = await CommitAsync(result, token);
+                telemetry.EndIntervalMeasure(CommitAsyncDuration);
+
+                return commitResult;
+            }
         }
 
         private static async Task<RestoreResultPair> ExecuteAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)

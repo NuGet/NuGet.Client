@@ -80,6 +80,22 @@ namespace NuGet.Common
             _intervalList.Add(new Tuple<string, TimeSpan>(propertyName, _intervalWatch.Elapsed));
         }
 
+        /// <summary> Start interval measure. </summary>
+        /// <param name="stopWatch"> Stopwatch used to measure the time interval. </param>
+        public void StartIntervalMeasure(Stopwatch stopWatch)
+        {
+            stopWatch.Restart();
+        }
+
+        /// <summary> End interval measure. </summary>
+        /// <param name="propertyName"> Property name to represents the interval. </param>
+        /// <param name="stopWatch"> Stopwatch used to measure the time interval. </param>
+        public void EndIntervalMeasure(string propertyName, Stopwatch stopWatch)
+        {
+            stopWatch.Stop();
+            _intervalList.Add(new Tuple<string, TimeSpan>(propertyName, stopWatch.Elapsed));
+        }
+
         /// <summary> Stops tracking the activity and emits a telemetry event. </summary>
         public void Dispose()
         {

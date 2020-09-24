@@ -98,6 +98,7 @@ namespace NuGet.Commands.Test
                 var result = await command.ExecuteAsync();
 
                 // Verify a is in the output assets file
+                request.Request.ParentId.Should().NotBe(default(Guid));
                 result.Success.Should().BeTrue();
                 result.LockFile.GetLibrary("a", new NuGetVersion(1, 0, 0)).Should().NotBeNull();
             }
