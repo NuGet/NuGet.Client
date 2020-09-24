@@ -15,7 +15,8 @@ namespace NuGet.CommandLine.XPlat
         public string Path { get; }
         public IEnumerable<PackageSource> PackageSources { get; }
         public IEnumerable<string> Frameworks { get; }
-        public ReportType ReportType { get; }
+        public bool IncludeOutdated { get; }
+        public bool IncludeDeprecated { get; }
         public bool IncludeTransitive { get; }
         public bool Prerelease { get; }
         public bool HighestPatch { get; }
@@ -30,7 +31,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="path"> The path to the solution or project file </param>
         /// <param name="packageSources"> The sources for the packages to check in the case of --outdated </param>
         /// <param name="frameworks"> The user inputed frameworks to look up for their packages </param>
-        /// <param name="reportType"> Which report we're producing (e.g. --outdated) </param>
+        /// <param name="includeOutdated"> Bool for --outdated present </param>
+        /// <param name="includeDeprecated"> Bool for --deprecated present </param>
         /// <param name="includeTransitive"> Bool for --include-transitive present </param>
         /// <param name="prerelease"> Bool for --include-prerelease present </param>
         /// <param name="highestPatch"> Bool for --highest-patch present </param>
@@ -41,7 +43,8 @@ namespace NuGet.CommandLine.XPlat
             string path,
             IEnumerable<PackageSource> packageSources,
             IEnumerable<string> frameworks,
-            ReportType reportType,
+            bool includeOutdated,
+            bool includeDeprecated,
             bool includeTransitive,
             bool prerelease,
             bool highestPatch,
@@ -52,7 +55,8 @@ namespace NuGet.CommandLine.XPlat
             Path = path ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
-            ReportType = reportType;
+            IncludeOutdated = includeOutdated;
+            IncludeDeprecated = includeDeprecated;
             IncludeTransitive = includeTransitive;
             Prerelease = prerelease;
             HighestPatch = highestPatch;

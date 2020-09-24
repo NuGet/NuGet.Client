@@ -9,12 +9,12 @@ namespace NuGet.Protocol
     public class PackageDeprecationMetadata
     {
         [JsonProperty(PropertyName = JsonProperties.DeprecationMessage)]
-        public string Message { get; internal set; }
+        public string Message { get; private set; }
 
         [JsonProperty(PropertyName = JsonProperties.DeprecationReasons)]
-        public IEnumerable<string> Reasons { get; internal set; }
+        public IEnumerable<string> Reasons { get; private set; }
 
         [JsonProperty(PropertyName = JsonProperties.AlternatePackage)]
-        public AlternatePackageMetadata AlternatePackage { get; internal set; }
+        public AlternatePackageMetadata AlternatePackage { get; private set; }
     }
 }

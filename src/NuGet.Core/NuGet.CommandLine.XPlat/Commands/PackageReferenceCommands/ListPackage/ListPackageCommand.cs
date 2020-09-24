@@ -43,19 +43,14 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_FrameworkDescription,
                     CommandOptionType.MultipleValue);
 
-                var deprecatedReport = listpkg.Option(
-                    "--deprecated",
-                    Strings.ListPkg_DeprecatedDescription,
-                    CommandOptionType.NoValue);
-
-                var outdatedReport = listpkg.Option(
+                var includeOutdated = listpkg.Option(
                     "--outdated",
                     Strings.ListPkg_OutdatedDescription,
                     CommandOptionType.NoValue);
 
-                var vulnerableReport = listpkg.Option(
-                    "--vulnerable",
-                    Strings.ListPkg_VulnerableDescription,
+                var includeDeprecated = listpkg.Option(
+                    "--deprecated",
+                    Strings.ListPkg_DeprecatedDescription,
                     CommandOptionType.NoValue);
 
                 var includeTransitive = listpkg.Option(
@@ -111,16 +106,12 @@ namespace NuGet.CommandLine.XPlat
 
                     VerifyValidFrameworks(framework);
 
-                    var reportType = GetReportType(
-                        isOutdated: outdatedReport.HasValue(),
-                        isDeprecated: deprecatedReport.HasValue(),
-                        isVulnerable: vulnerableReport.HasValue());
-
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
                         framework.Values,
-                        reportType,
+                        includeOutdated.HasValue(),
+                        includeDeprecated.HasValue(),
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
@@ -128,7 +119,10 @@ namespace NuGet.CommandLine.XPlat
                         logger,
                         CancellationToken.None);
 
-                    DisplayMessages(packageRefArgs);
+                    if (includeOutdated.HasValue() && includeDeprecated.HasValue())
+                    {
+                        throw new ArgumentException(Strings.ListPkg_InvalidOptionsOutdatedAndDeprecated);
+                    }
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
@@ -137,47 +131,6 @@ namespace NuGet.CommandLine.XPlat
                     return 0;
                 });
             });
-        }
-
-        private static ReportType GetReportType(bool isDeprecated, bool isOutdated, bool isVulnerable)
-        {
-            var mutexCount = 0;
-            mutexCount += isDeprecated ? 1 : 0;
-            mutexCount += isOutdated ? 1 : 0;
-            mutexCount += isVulnerable ? 1 : 0;
-            if (mutexCount == 0)
-            {
-                return ReportType.Default;
-            }
-            else if (mutexCount == 1)
-            {
-                return isDeprecated ? ReportType.Deprecated : isOutdated ? ReportType.Outdated : ReportType.Vulnerable;
-            }
-
-            // We have a conflict - throw with appropriate message
-            var firstOption = string.Empty;
-            var incompatibleOption = string.Empty;
-            if (isOutdated)
-            {
-                firstOption = "--outdated";
-                incompatibleOption = isDeprecated ? "--deprecated" : "--vulnerable";
-            }
-            else if (isDeprecated)
-            {
-                firstOption = "--deprecated";
-                incompatibleOption = "--vulnerable";
-            }
-
-            throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions, firstOption, incompatibleOption));
-        }
-
-        private static void DisplayMessages(ListPackageArgs packageRefArgs)
-        {
-            if (packageRefArgs.ReportType != ReportType.Outdated &&
-                (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
-            {
-                Console.WriteLine(Strings.ListPkg_VulnerableIgnoredOptions);
-            }
         }
 
         private static void VerifyValidFrameworks(CommandOption framework)
