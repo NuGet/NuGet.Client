@@ -88,6 +88,7 @@ namespace NuGetConsole
                                 });
                 TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
 
+                // Work around to detect if PMC loaded automatically because it was last focused window.
                 if (IsLoaded)
                 {
                     telemetryEvent = new TelemetryEvent("PackageManagerConsoleDefaultOpen");
