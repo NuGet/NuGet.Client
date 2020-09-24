@@ -66,13 +66,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Restore end status. For testing purposes
         /// </summary>
-        internal NuGetOperationStatus Status
-        {
-            get
-            {
-                return _status;
-            }
-        }
+        internal NuGetOperationStatus Status => _status;
 
         [ImportingConstructor]
         public SolutionRestoreJob(
@@ -144,6 +138,11 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
             _logger = logger;
 
             // update instance attributes with the shared context values
@@ -151,20 +150,14 @@ namespace NuGet.SolutionRestoreManager
             _nuGetProjectContext.OperationId = request.OperationId;
             _isSolutionLoadRestore = isSolutionLoadRestore;
 
-            using (var ctr1 = token.Register(() => _status = NuGetOperationStatus.Cancelled))
+            try
             {
-                try
-                {
-                    await RestoreAsync(request.ForceRestore, request.RestoreSource, token);
-                }
-                catch (OperationCanceledException) when (token.IsCancellationRequested)
-                {
-                }
-                catch (Exception e)
-                {
-                    // Log the exception to the console and activity log
-                    await _logger.LogExceptionAsync(e);
-                }
+                await RestoreAsync(request.ForceRestore, request.RestoreSource, token);
+            }
+            catch (Exception e)
+            {
+                // Log the exception to the console and activity log
+                await _logger.LogExceptionAsync(e);
             }
 
             return _status == NuGetOperationStatus.NoOp || _status == NuGetOperationStatus.Succeeded;
@@ -188,6 +181,8 @@ namespace NuGet.SolutionRestoreManager
             {
                 try
                 {
+                    token.ThrowIfCancellationRequested();
+
                     string solutionDirectory;
                     bool isSolutionAvailable;
 
@@ -246,6 +241,11 @@ namespace NuGet.SolutionRestoreManager
                         _restoreEventsPublisher.OnSolutionRestoreCompleted(
                             new SolutionRestoredEventArgs(_status, solutionDirectory));
                     }
+                }
+                catch when (token.IsCancellationRequested)
+                {
+                    _status = NuGetOperationStatus.Cancelled;
+                    throw;
                 }
                 catch
                 {
