@@ -151,8 +151,11 @@ namespace NuGet.SolutionRestoreManager
             }
             catch (Exception e)
             {
-                // Log the exception to the console and activity log
-                await _logger.LogExceptionAsync(e);
+                if (!token.IsCancellationRequested)
+                {
+                    // Log the exception to the console and activity log
+                    await _logger.LogExceptionAsync(e);
+                }
             }
 
             return _status == NuGetOperationStatus.NoOp || _status == NuGetOperationStatus.Succeeded;
@@ -410,7 +413,7 @@ namespace NuGet.SolutionRestoreManager
                                 Action<SourceCacheContext> cacheModifier = (cache) => { };
 
                                 var isRestoreOriginalAction = true;
-                                var isRestoreFailed = false;
+                                var isRestoreSucceeded = true;
                                 IReadOnlyList<RestoreSummary> restoreSummaries = null;
                                 try
                                 {
@@ -429,24 +432,31 @@ namespace NuGet.SolutionRestoreManager
                                        t);
 
                                     _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
-                                    isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
+                                    isRestoreSucceeded = restoreSummaries.All(summary => summary.Success == true);
                                     _noOpProjectsCount += restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
                                     _solutionUpToDateChecker.SaveRestoreStatus(restoreSummaries);
                                 }
                                 catch
                                 {
-                                    isRestoreFailed = true;
+                                    isRestoreSucceeded = false;
                                     throw;
                                 }
                                 finally
                                 {
-                                    if (isRestoreFailed || restoreSummaries == null)
+                                    if (isRestoreSucceeded)
+                                    {
+                                        if (_noOpProjectsCount < restoreSummaries.Count)
+                                        {
+                                            _status = NuGetOperationStatus.Succeeded;
+                                        }
+                                        else
+                                        {
+                                            _status = NuGetOperationStatus.NoOp;
+                                        }
+                                    }
+                                    else
                                     {
                                         _status = NuGetOperationStatus.Failed;
-                                    }
-                                    else if (_noOpProjectsCount < restoreSummaries.Count)
-                                    {
-                                        _status = NuGetOperationStatus.Succeeded;
                                     }
                                 }
                             },
