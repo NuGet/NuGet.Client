@@ -3,15 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Loaded="UserControl_Loaded"
              xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI">
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <BitmapImage
-        x:Key="BitmapImageInformation"
-        UriSource="/NuGet.PackageManagement.UI;component/Resources/statusinformation.16.16.png" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Border x:Name="MigratorBar" VerticalAlignment="Center" Visibility="Collapsed">
@@ -21,11 +20,9 @@
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
       <StackPanel Margin="0,4,0,6" Grid.Column="0" Orientation="Horizontal">
-        <Image
+        <imaging:CrispImage
           Margin="3,0,0,0"
-          Source="{StaticResource BitmapImageInformation}"
-          Height="16"
-          Width="16"
+          Moniker="{x:Static catalog:KnownMonikers.StatusInformation}"
           VerticalAlignment="Center"/>
         <TextBlock
         x:Name="UpgradeMessage"

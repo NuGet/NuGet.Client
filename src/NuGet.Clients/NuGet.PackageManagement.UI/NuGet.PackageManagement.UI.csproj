@@ -515,9 +515,6 @@
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\statusinformation.16.16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resources\UpgradeReport.xslt">
       <SubType>Designer</SubType>
     </EmbeddedResource>
