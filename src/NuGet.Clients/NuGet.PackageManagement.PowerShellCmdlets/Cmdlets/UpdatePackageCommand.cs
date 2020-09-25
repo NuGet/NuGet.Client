@@ -9,12 +9,10 @@ using System.Management.Automation;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -215,9 +213,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(ex.AsLogMessage());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
+                if (ex.Results != null)
+                {
+                    var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(ex.AsLogMessage()));
+                    logMessages.ForEach(p => Log(ex.AsLogMessage()));
+                }
             }
             catch (Exception ex)
             {
@@ -262,9 +263,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(ex.AsLogMessage());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
+                if (ex.Results != null)
+                {
+                    var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(p));
+                    logMessages.ForEach(p => Log(p));
+                }
             }
             catch (Exception ex)
             {

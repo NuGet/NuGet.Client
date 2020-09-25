@@ -5,8 +5,10 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
   Background="{DynamicResource {x:Static nuget:Brushes.HeaderBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+  imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
   x:Name="_self"
   mc:Ignorable="d"
   d:DesignHeight="523"
@@ -66,7 +68,7 @@
     <Border
       DockPanel.Dock="Top"
       BorderThickness="0,1,0,0"
-      BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" 
+      BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
       VerticalAlignment="Stretch">
         <Grid
           Width="{Binding ActualWidth, ElementName=_root}">

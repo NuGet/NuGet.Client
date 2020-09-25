@@ -23,7 +23,7 @@ namespace NuGet.XPlat.FuncTest
 
         protected override void LogInternal(LogLevel logLevel, string message)
         {
-            if (_observeLogLevel && logLevel < LogLevel)
+            if (_observeLogLevel && logLevel < VerbosityLevel)
             {
                 return;
             }

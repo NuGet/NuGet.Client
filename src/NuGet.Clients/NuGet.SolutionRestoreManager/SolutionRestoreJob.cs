@@ -57,6 +57,7 @@ namespace NuGet.SolutionRestoreManager
         private int _packageCount;
         private int _noOpProjectsCount;
         private int _upToDateProjectCount;
+        private bool _isSolutionLoadRestore;
 
         // relevant to packages.config restore only
         private int _missingPackagesCount;
@@ -114,6 +115,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreRequest request,
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
+            bool isSolutionLoadRestore,
             CancellationToken token)
         {
             if (request == null)
@@ -136,6 +138,7 @@ namespace NuGet.SolutionRestoreManager
             // update instance attributes with the shared context values
             _nuGetProjectContext = jobContext.NuGetProjectContext;
             _nuGetProjectContext.OperationId = request.OperationId;
+            _isSolutionLoadRestore = isSolutionLoadRestore;
 
             using (var ctr1 = token.Register(() => _status = NuGetOperationStatus.Cancelled))
             {
@@ -287,11 +290,12 @@ namespace NuGet.SolutionRestoreManager
                 source,
                 startTime,
                 _status,
-                _packageCount,
-                _upToDateProjectCount,
-                _noOpProjectsCount,
+                packageCount: _packageCount,
+                noOpProjectsCount: _noOpProjectsCount,
+                upToDateProjectsCount: _upToDateProjectCount,
                 DateTimeOffset.Now,
                 duration,
+                isSolutionLoadRestore: _isSolutionLoadRestore,
                 intervalTimingTracker);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
@@ -472,18 +476,19 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            if (args.Exception is SignatureException)
+            if (args.Exception is SignatureException ex)
             {
                 _status = NuGetOperationStatus.Failed;
-
-                var ex = args.Exception as SignatureException;
 
                 if (!string.IsNullOrEmpty(ex.Message))
                 {
                     _logger.Log(ex.AsLogMessage());
                 }
 
-                ex.Results.SelectMany(p => p.Issues).ToList().ForEach(p => _logger.Log(p));
+                if (ex.Results != null)
+                {
+                    ex.Results.SelectMany(p => p.Issues).ToList().ForEach(p => _logger.Log(p));
+                }
 
                 return;
             }

@@ -1736,7 +1736,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_ErrorAsync()
         {
@@ -2721,7 +2721,7 @@ namespace NuGet.Packaging.Test
             packageDownloader.Verify();
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task InstallFromSourceAsyncByPackageDownloader_TrustedSignPackageAsync()
         {
@@ -3946,7 +3946,7 @@ namespace NuGet.Packaging.Test
             yield return new object[] { SignatureValidationMode.Require };
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private static RepositorySignatureInfo CreateTestRepositorySignatureInfo(List<X509Certificate2> certificates, bool allSigned)
         {
             var repoCertificateInfo = new List<IRepositoryCertificateInfo>();

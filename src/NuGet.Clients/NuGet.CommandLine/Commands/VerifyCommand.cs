@@ -42,7 +42,7 @@ namespace NuGet.CommandLine
             var verifyArgs = new VerifyArgs()
             {
                 Verifications = GetVerificationTypes(),
-                PackagePath = PackagePath,
+                PackagePaths = new[] { PackagePath },
                 CertificateFingerprint = CertificateFingerprint,
                 Logger = Console
             };

@@ -502,33 +502,6 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void PackageSpecReader_ReadsWithRestoreSettings()
-        {
-            // Arrange
-            var json = @"{
-                          ""dependencies"": {
-                                ""packageA"": {
-                                    ""target"": ""package"",
-                                    ""version"": ""1.0.0""
-                                }
-                            },
-                            ""frameworks"": {
-                                ""net46"": {}
-                            },
-                            ""restoreSettings"": {
-                            ""hideWarningsAndErrors"": true
-                            },
-                        }";
-
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            Assert.NotNull(actual);
-            Assert.NotNull(actual.RestoreSettings);
-            Assert.True(actual.RestoreSettings.HideWarningsAndErrors);
-        }
-
-        [Fact]
         public void PackageSpecReader_ReadsWithoutRestoreSettings()
         {
             // Arrange
@@ -3301,21 +3274,6 @@ namespace NuGet.ProjectModel.Test
         {
             var expectedResult = new ProjectRestoreSettings();
             const string json = "{\"restoreSettings\":{}}";
-            PackageSpec packageSpec = GetPackageSpec(json);
-
-            Assert.Equal(expectedResult, packageSpec.RestoreSettings);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
-        public void GetPackageSpec_WhenRestoreSettingsValueIsValid_ReturnsRestoreSettings(
-            bool? value,
-            bool expectedHide)
-        {
-            var expectedResult = new ProjectRestoreSettings() { HideWarningsAndErrors = expectedHide };
-            var json = $"{{\"restoreSettings\":{{\"hideWarningsAndErrors\":{(value == null ? "null" : value.ToString().ToLowerInvariant())}}}}}";
             PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RestoreSettings);

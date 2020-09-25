@@ -159,10 +159,6 @@
     <value>PackageVersion string specified '{0}' is invalid.</value>
     <comment>{0} is the version.</comment>
   </data>
-  <data name="InvalidPlatformVersion" xml:space="preserve">
-    <value>Platform version is missing from '{0}'</value>
-    <comment>{0} is the target framework string.</comment>
-  </data>
   <data name="InvalidTargetFramework" xml:space="preserve">
     <value>Invalid target framework for the file '{0}'.</value>
   </data>

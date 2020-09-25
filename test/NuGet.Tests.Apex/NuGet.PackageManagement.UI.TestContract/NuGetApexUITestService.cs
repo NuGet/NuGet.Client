@@ -1,12 +1,18 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.Models;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.TestContract
 {
@@ -70,9 +76,10 @@ namespace NuGet.PackageManagement.UI.TestContract
                             continue;
                         }
 
-                        var existingProject = projects.First();
-                        var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-                        if (string.Equals(projectName, projectUniqueName, StringComparison.OrdinalIgnoreCase))
+                        IProjectContextInfo existingProject = projects.First();
+                        IProjectMetadataContextInfo projectMetadata = await existingProject.GetMetadataAsync(CancellationToken.None);
+
+                        if (string.Equals(projectMetadata.Name, projectUniqueName, StringComparison.OrdinalIgnoreCase))
                         {
                             var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                             if (packageManagerControl != null)

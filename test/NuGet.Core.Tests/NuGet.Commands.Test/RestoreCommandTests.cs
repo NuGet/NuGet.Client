@@ -1906,9 +1906,85 @@ namespace NuGet.Commands.Test
             }
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
+        [Fact]
+        public async Task RestoreCommand_CentralVersion_AssetsFile_VerifyProjectsReferencesInTargets()
         {
-            NuGetFramework nugetFramework = new NuGetFramework("net40");
+            // Arrange
+            var framework = new NuGetFramework("net46");
+            var projectName1 = "TestProject1";
+            var projectName2 = "TestProject2";
+            var packageName = "foo";
+            var dummyPackageName = "dummy";
+            var packageVersion = "1.0.0";
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectPath1 = Path.Combine(pathContext.SolutionRoot, projectName1, $"{projectName1}.csproj");
+                var projectPath2 = Path.Combine(pathContext.SolutionRoot, projectName2, $"{projectName2}.csproj");
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(pathContext.PackageSource));
+                var logger = new TestLogger();
+
+                var dependencyFoo = new LibraryDependency()
+                {
+                    LibraryRange = new LibraryRange() { Name = packageName }
+                };
+                var centralVersionFoo = new CentralPackageVersion(packageName, VersionRange.Parse(packageVersion));
+                var centralVersionDummy = new CentralPackageVersion(dummyPackageName, VersionRange.Parse(packageVersion));
+
+                var packageFooContext = new SimpleTestPackageContext(packageName, packageVersion);
+                packageFooContext.AddFile("runtimes/win7-x64/lib/net46/foo.dll");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageFooContext);
+
+                var packageDummyontext = new SimpleTestPackageContext(dummyPackageName, packageVersion);
+                packageDummyontext.AddFile("runtimes/win7-x64/lib/net46/dummy.dll");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageDummyontext);
+
+                var tfi = CreateTargetFrameworkInformation(
+                    new List<LibraryDependency>() { dependencyFoo },
+                    new List<CentralPackageVersion>() { centralVersionFoo, centralVersionDummy },
+                    framework);
+
+                PackageSpec packageSpec2 = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfi }, framework, projectName2, projectPath2, cpvmEnabled: true);
+                PackageSpec packageSpec1 = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfi }, framework, projectName1, projectPath1, cpvmEnabled: true);
+                packageSpec1 = packageSpec1.WithTestProjectReference(packageSpec2);
+
+                var dgspec = new DependencyGraphSpec();
+                dgspec.AddProject(packageSpec1);
+
+                var request = new TestRestoreRequest(dgspec.GetProjectSpec(projectName1), sources, pathContext.PackagesV2, logger)
+                {
+                    LockFilePath = Path.Combine(projectPath1, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+                request.ExternalProjects.Add(new ExternalProjectReference(
+                   projectName1,
+                   packageSpec1,
+                   projectPath1,
+                   new string[] { projectName2 }));
+
+                request.ExternalProjects.Add(new ExternalProjectReference(
+                   projectName2,
+                   packageSpec2,
+                   projectPath2,
+                   new string[] { }));
+
+                var restoreCommand = new RestoreCommand(request);
+                var result = await restoreCommand.ExecuteAsync();
+                var lockFile = result.LockFile;
+
+                var targetLib = lockFile.Targets.First().Libraries.Where(l => l.Name == projectName2).FirstOrDefault();
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.NotNull(targetLib);
+                Assert.Equal(1, targetLib.Dependencies.Count);
+                Assert.True(targetLib.Dependencies.Where(d => d.Id == packageName).Any());
+            }
+        }
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)
+        {
+            NuGetFramework nugetFramework = framework ?? new NuGetFramework("net40");
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = true,
@@ -1924,6 +2000,24 @@ namespace NuGet.Commands.Test
             LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             return tfi;
+        }
+
+        private static PackageSpec CreatePackageSpec(List<TargetFrameworkInformation> tfis, NuGetFramework framework, string projectName, string projectPath, bool cpvmEnabled)
+        {
+            var packageSpec = new PackageSpec(tfis);
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
+            {
+                ProjectUniqueName = projectName,
+                CentralPackageVersionsEnabled = cpvmEnabled,
+                ProjectStyle = ProjectStyle.PackageReference,
+                TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>() { new ProjectRestoreMetadataFrameworkInfo(framework) },
+                OutputPath = Path.Combine(projectPath, "obj"),
+                ProjectPath = projectPath,
+            };
+            packageSpec.Name = projectName;
+            packageSpec.FilePath = projectPath;
+
+            return packageSpec;
         }
 
         private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name, NuGetFramework framework)

@@ -10,10 +10,10 @@ using Moq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -253,25 +253,26 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 actualVersions.Select(v => v.Version.ToString()).ToArray());
         }
 
-        private NuGetProject SetupProject(string packageId, string packageVersion, string allowedVersions = null)
+        private IProjectContextInfo SetupProject(string packageId, string packageVersion, string allowedVersions = null)
         {
             var packageIdentity = new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion));
 
             var installedPackages = new[]
             {
-                new PackageReference(
-                    packageIdentity,
-                    NuGetFramework.Parse("net45"),
-                    userInstalled: true,
-                    developmentDependency: false,
-                    requireReinstallation: false,
-                    allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null)
+                PackageReferenceContextInfo.Create(
+                    new PackageReference(
+                        packageIdentity,
+                        NuGetFramework.Parse("net45"),
+                        userInstalled: true,
+                        developmentDependency: false,
+                        requireReinstallation: false,
+                        allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null))
             };
 
-            var project = Mock.Of<NuGetProject>();
+            var project = Mock.Of<IProjectContextInfo>();
             Mock.Get(project)
                 .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult<IEnumerable<PackageReference>>(installedPackages));
+                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
             return project;
         }
 

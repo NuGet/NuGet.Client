@@ -528,9 +528,9 @@ namespace NuGet.Commands
                 // as a target so the node depth does not matter.
                 Dependencies = graphItem.Data.Dependencies
                     .Where(
-                        d => (d.LibraryRange.TypeConstraintAllowsAnyOf(
-                            LibraryDependencyTarget.PackageProjectExternal))
-                             && d.SuppressParent != LibraryIncludeFlags.All)
+                        d => (d.LibraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.PackageProjectExternal))
+                             && d.SuppressParent != LibraryIncludeFlags.All
+                             && d.ReferenceType == LibraryDependencyReferenceType.Direct)
                     .Select(d => GetDependencyVersionRange(d))
                     .ToList()
             };

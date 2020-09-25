@@ -8,4 +8,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.Internal.Contracts.NuGetServices.NuGetSolutionService")]
+[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.Internal.Contracts.NuGetServices.SolutionService")]

@@ -1386,6 +1386,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Getting Package Sources....
+        /// </summary>
+        public static string PackageSourceOptions_OnActivated {
+            get {
+                return ResourceManager.GetString("PackageSourceOptions_OnActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applying changes....
+        /// </summary>
+        public static string PackageSourceOptions_OnApply {
+            get {
+                return ResourceManager.GetString("PackageSourceOptions_OnApply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} version {1} to {2} version {3}.
         /// </summary>
         public static string Preview_PackageUpdate {

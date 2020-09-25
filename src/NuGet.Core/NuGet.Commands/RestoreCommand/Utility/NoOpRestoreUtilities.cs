@@ -53,7 +53,7 @@ namespace NuGet.Commands
 
         public static string GetProjectCacheFilePath(string cacheRoot)
         {
-            return Path.Combine(cacheRoot, NoOpCacheFileName);
+            return cacheRoot == null ? null : Path.Combine(cacheRoot, NoOpCacheFileName);
         }
 
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)
@@ -163,65 +163,30 @@ namespace NuGet.Commands
             return true;
         }
 
-        private static bool IsPackageOnDisk(ISet<PackageIdentity> packagesChecked, IEnumerable<VersionFolderPathResolver> pathResolvers, LocalPackageFileCache packageFileCache, PackageIdentity identity)
-        {
-            // Each id/version only needs to be checked once
-            if (packagesChecked.Add(identity))
-            {
-                //  Check each package folder. These need to match the order used for restore.
-                foreach (var resolver in pathResolvers)
-                {
-                    // Verify the SHA for each package
-                    var hashPath = resolver.GetHashPath(identity.Id, identity.Version);
-                    var nupkgMetadataPath = resolver.GetNupkgMetadataPath(identity.Id, identity.Version);
-
-                    if (packageFileCache.Sha512Exists(hashPath) ||
-                        packageFileCache.Sha512Exists(nupkgMetadataPath))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            return true;
-        }
-
         /// <summary>
         /// Generates the dgspec to be used for the no-op optimization
-        /// This methods handles the deduping of tools and the ignoring of RestoreSettings
+        /// This methods handles the deduping of tools
         /// </summary>
         /// <param name="request">The restore request</param>
         /// <returns>The noop happy dg spec</returns>
         /// <remarks> Could be the same instance if no changes were made to the original dgspec</remarks>
         internal static DependencyGraphSpec GetNoOpDgSpec(RestoreRequest request)
         {
-            var dgSpec = request.DependencyGraphSpec;
-
-            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool || request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
-                var uniqueName = request.DependencyGraphSpec.Restore.First();
-                dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
-
+                var dgSpec = request.DependencyGraphSpec.WithProjectClosure(request.DependencyGraphSpec.Restore.First());
                 foreach (var projectSpec in dgSpec.Projects)
                 {
                     // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
-                    if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
-                    {
-                        projectSpec.RestoreMetadata.ProjectPath = null;
-                        projectSpec.FilePath = null;
-                    }
-
-                    //Ignore the restore settings for package ref projects.
-                    //This is set by default for net core projects in VS while it's not set in commandline.
-                    //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
-                    else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
-                    {
-                        projectSpec.RestoreSettings = null;
-                    }
+                    projectSpec.RestoreMetadata.ProjectPath = null;
+                    projectSpec.FilePath = null;
                 }
+                return dgSpec;
             }
-
-            return dgSpec;
+            else
+            {
+                return request.DependencyGraphSpec;
+            }
         }
 
         /// <summary>
@@ -248,7 +213,7 @@ namespace NuGet.Commands
 
         /// <summary>
         /// This method will resolve the cache/lock file paths for the tool if available in the cache
-        /// This method will set the CacheFilePath and the LockFilePath in the RestoreMetadat if a matching tool is available
+        /// This method will set the CacheFilePath and the LockFilePath in the RestoreMetadata if a matching tool is available
         /// </summary>
         internal static void UpdateRequestBestMatchingToolPathsIfAvailable(RestoreRequest request)
         {

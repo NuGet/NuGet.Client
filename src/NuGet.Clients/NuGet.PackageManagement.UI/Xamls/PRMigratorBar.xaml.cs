@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,11 +17,14 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
     public partial class PRMigratorBar : UserControl, INuGetProjectContext
     {
+        // This class does not own this instance, so do not dispose of it in this class.
         private readonly PackageManagerModel _model;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
@@ -117,9 +121,8 @@ namespace NuGet.PackageManagement.UI
                 return false;
             }
 
-            // We only support a single project
             var projects = _model.Context.Projects.ToList();
-            return (projects.Count == 1) && await _model.Context.IsNuGetProjectUpgradeable(projects[0]);
+            return (projects.Count == 1) && await _model.Context.IsNuGetProjectUpgradeableAsync(projects[0], CancellationToken.None);
         }
 
         private void HideMigratorBar()
@@ -134,13 +137,14 @@ namespace NuGet.PackageManagement.UI
 
         private void OnMigrationLinkClick(object sender, RoutedEventArgs e)
         {
-            var project = _model.Context.Projects.FirstOrDefault();
+            IProjectContextInfo project = _model.Context.Projects.FirstOrDefault();
             Debug.Assert(project != null);
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, project);
-            });
+                {
+                    await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, project);
+                })
+                .PostOnFailure(nameof(PRMigratorBar), nameof(OnMigrationLinkClick));
         }
 
         private void OnDoNotShowAgainClick(object sender, RoutedEventArgs e)
