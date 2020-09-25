@@ -515,9 +515,6 @@
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\StatusInformation_16x.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\statusinformation.16.16.png" />
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              mc:Ignorable="d"
              d:DesignHeight="350" d:DesignWidth="350">
   <UserControl.Resources>
@@ -11,9 +13,6 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <BitmapImage
-        x:Key="BitmapImage_StatusInformation"
-        UriSource="/NuGet.PackageManagement.UI;component/Resources/StatusInformation_16x.png" />
     </ResourceDictionary>
   </UserControl.Resources>
   <UserControl.CommandBindings>
@@ -52,8 +51,8 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <Image Grid.Row="0" Grid.Column = "0" Height="16" Width="16" Source="{StaticResource BitmapImage_StatusInformation}"/>
-          <TextBlock Grid.Row="0" Grid.Column = "1" TextWrapping="Wrap" TextTrimming="WordEllipsis" Text="{x:Static nuget:Resources.Warning_ProjectJson}" Margin="3,0"/>
+          <imaging:CrispImage Grid.Row="0" Grid.Column="0" Moniker="{x:Static catalog:KnownMonikers.StatusInformation}"/>
+          <TextBlock Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" TextTrimming="WordEllipsis" Text="{x:Static nuget:Resources.Warning_ProjectJson}" Margin="3,0"/>
         </Grid>
 
         <!-- install and update options -->
