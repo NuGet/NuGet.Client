@@ -3578,8 +3578,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var results = new List<CentralTransitiveDependencyGroup>();
-           
+            var results = new List<CentralTransitiveDependencyGroup>();          
             using (var stringReader = new StringReader(json.ToString()))
             using (var jsonReader = new JsonTextReader(stringReader))
             {
@@ -3599,8 +3598,7 @@ namespace NuGet.ProjectModel.Test
             }
 
             // Assert
-            Assert.Equal(2, results.Count);
-            
+            Assert.Equal(2, results.Count);          
             Assert.Equal(".NETCoreApp,Version=v3.1", results.ElementAt(0).FrameworkName);
             var firstGroup = results.ElementAt(0);
             Assert.Equal(1, firstGroup.TransitiveDependencies.Count());
