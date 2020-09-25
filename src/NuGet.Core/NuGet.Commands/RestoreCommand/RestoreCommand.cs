@@ -73,6 +73,7 @@ namespace NuGet.Commands
 
         // names for central package management version information
         private const string IsCentralVersionManagementEnabled = "IsCentralVersionManagementEnabled";
+        private const string CentralPackageVersionsCount = "CentralPackageVersionsCount";
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -113,6 +114,7 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
                 if (isCpvmEnabled)
                 {
+                    telemetry.TelemetryEvent[CentralPackageVersionsCount] = _request.Project.TargetFrameworks.Select(f => f.CentralPackageVersions.Count).Sum() / _request.Project.TargetFrameworks.Count;
                     _logger.LogInformation(string.Format(
                           CultureInfo.CurrentCulture,
                           Strings.CentralPackageVersionManagementInPreview,
