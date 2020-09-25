@@ -25,8 +25,6 @@ namespace NuGet.Commands
         private const string CommitAsyncDuration = "CommitAsyncDuration";
         private const string RestoreSuccess = "RestoreSuccess";
         private const string NoopRestore = "NoopRestore";
-        private const string ResultLibrariesCount = "ResultLibrariesCount";
-        private const string ResultTargetsCount = "ResultTargetsCount";
 
         /// <summary>
         /// Create requests, execute requests, and commit restore results.
@@ -260,8 +258,6 @@ namespace NuGet.Commands
 
                 telemetry.TelemetryEvent[RestoreSuccess] = result.Result.Success;
                 telemetry.TelemetryEvent[NoopRestore] = result.Result is NoOpRestoreResult;
-                telemetry.TelemetryEvent[ResultLibrariesCount] = result.Result.LockFile.Libraries.Count;
-                telemetry.TelemetryEvent[ResultTargetsCount] = result.Result.LockFile.Targets.Count;
 
                 telemetry.StartIntervalMeasure();
                 var commitResult = await CommitAsync(result, token);
