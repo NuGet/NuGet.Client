@@ -6,9 +6,12 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+  xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
   mc:Ignorable="d"
   x:Name="_self"
   Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
+  imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   ShowInTaskbar="False"
   WindowStartupLocation="CenterOwner"
@@ -361,9 +364,7 @@
       <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="12,12">
         <imaging:CrispImage
           Margin="0,0,2,0"
-          Width="16"
-          Height="16"
-          Moniker="{x:Static nuget:PackageIconMonikers.MigratorHelpIcon}"
+          Moniker="{x:Static catalog:KnownMonikers.StatusInformation}"
           AutomationProperties.Name="{x:Static nuget:Resources.ImageCaption_HelpIcon}"/>
         <TextBlock Margin="4,0,0,0">
           <Hyperlink
