@@ -8,25 +8,23 @@
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
              xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+             xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
              mc:Ignorable="d"
              d:DesignHeight="30" d:DesignWidth="800">
   <UserControl.DataContext>
     <nuget:LoadingStatusViewModel/>
   </UserControl.DataContext>
   <UserControl.Resources>
-    <ResourceDictionary>
-      <ResourceDictionary.MergedDictionaries>
-        <nuget:SharedResources/>
-      </ResourceDictionary.MergedDictionaries>
-      <nuget:BooleanToVisibilityConverter
-        x:Key="BooleanToVisibilityConverter" />
-      <nuget:EnumDescriptionValueConverter
-        x:Key="EnumDescriptionValueConverter"/>
-      <nuget:CollectionToStringConverter
-        x:Key="CollectionToStringConverter"/>
-      <nuget:EnumerableToVisibilityConverter
-        x:Key="EnumerableToVisibilityConverter" />
-      <Style
+    <nuget:BooleanToVisibilityConverter
+      x:Key="BooleanToVisibilityConverter" />
+    <nuget:EnumDescriptionValueConverter
+      x:Key="EnumDescriptionValueConverter"/>
+    <nuget:CollectionToStringConverter
+      x:Key="CollectionToStringConverter"/>
+    <nuget:EnumerableToVisibilityConverter
+      x:Key="EnumerableToVisibilityConverter" />
+    <ui:BrushToColorConverter x:Key="BrushToColorConverter" />
+    <Style
         x:Key="LinkButtonStyle"
         TargetType="{x:Type Button}">
         <Setter Property="Template">
@@ -60,27 +58,26 @@
           </Trigger>
         </Style.Triggers>
       </Style>
-      <Style
+    <Style
       x:Key="StatusMessageTextBlockStyle"
       TargetType="TextBlock">
-        <Setter Property="TextTrimming" 
+      <Setter Property="TextTrimming" 
               Value="WordEllipsis"/>
-        <Setter Property="TextOptions.TextFormattingMode" 
+      <Setter Property="TextOptions.TextFormattingMode" 
               Value="Display"/>
-        <Setter Property="VerticalAlignment" 
+      <Setter Property="VerticalAlignment" 
               Value="Center"/>
-        <Setter Property="Margin" 
+      <Setter Property="Margin" 
               Value="3,0"/>
-        <Setter Property="FontFamily" 
+      <Setter Property="FontFamily" 
               Value="SegoeUI"/>
-        <Setter Property="FontSize" 
+      <Setter Property="FontSize" 
               Value="12" />
-        <Setter Property="HorizontalAlignment" 
+      <Setter Property="HorizontalAlignment" 
               Value="Left"/>
-        <Setter Property="Foreground" 
+      <Setter Property="Foreground" 
               Value="{DynamicResource {x:Static nuget:Brushes.InfoTextKey}}" />
-      </Style>
-    </ResourceDictionary>
+    </Style>
   </UserControl.Resources>
   <Grid
       d:DataContext="{d:DesignData Source=/Design/LoadingStatusViewModelSampleData.xaml,IsDesignTimeCreatable=True}"
