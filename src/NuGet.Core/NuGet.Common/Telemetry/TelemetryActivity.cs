@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -14,7 +15,7 @@ namespace NuGet.Common
         private readonly DateTime _startTime;
         private readonly Stopwatch _stopwatch;
         private readonly Stopwatch _intervalWatch = new Stopwatch();
-        private readonly List<Tuple<string, TimeSpan>> _intervalList;
+        private readonly ConcurrentBag<Tuple<string, TimeSpan>> _intervalList;
         private readonly IDisposable _telemetryActivity;
 
         /// <summary> Telemetry event which represents end of telemetry activity. </summary>
@@ -63,7 +64,7 @@ namespace NuGet.Common
 
             _startTime = DateTime.UtcNow;
             _stopwatch = Stopwatch.StartNew();
-            _intervalList = new List<Tuple<string, TimeSpan>>();
+            _intervalList = new ConcurrentBag<Tuple<string, TimeSpan>>();
         }
 
         /// <summary> Start interval measure. </summary>
