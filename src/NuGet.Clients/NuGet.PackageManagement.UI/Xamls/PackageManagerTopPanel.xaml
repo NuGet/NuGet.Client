@@ -113,8 +113,6 @@
               <imaging:CrispImage
                 Name="_warningIcon"
                 Margin="3,0"
-                Width="13"
-                Height="13"
                 Visibility="Collapsed"
                 Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
             </StackPanel>

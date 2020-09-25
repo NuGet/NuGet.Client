@@ -247,8 +247,6 @@
           <imaging:CrispImage
                         x:Name="_deprecationIndicator"
                         Grid.Column="0"
-                        Width="12"
-                        Height="12"
                         Visibility="{Binding IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
                         VerticalAlignment="Center"
                         ToolTip="{x:Static nuget:Resources.Label_Deprecated}"

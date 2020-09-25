@@ -47,8 +47,6 @@
         <imaging:CrispImage
                         x:Name="_licenseWarning"
                         Margin="0,0,4,0"
-                        Width="13"
-                        Height="13"
                         Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}"
                         ToolTip="{Binding Text}"
                         AutomationProperties.Name="{Binding Text}"
