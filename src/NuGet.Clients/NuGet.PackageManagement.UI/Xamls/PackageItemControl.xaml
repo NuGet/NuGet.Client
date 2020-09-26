@@ -106,17 +106,15 @@
                       VerticalAlignment="Top"
                       Margin="0,0,16,0" />
         <imaging:CrispImage
-                      x:Name="_checkMark"
+                      x:Name="_latestInstalledMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"
-                      Width="16"
-                      Height="16"
                       VerticalAlignment="Top"
                       Visibility="{Binding IsLatestInstalled, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
                       AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
                       Tag="{Binding Status}"
-                      Moniker="{x:Static nuget:PackageIconMonikers.InstalledIndicator}" />
+                      Moniker="{x:Static catalog:KnownMonikers.StatusOK}" />
         <imaging:CrispImage
                       x:Name="_updateMark"
                       Grid.Row="0"

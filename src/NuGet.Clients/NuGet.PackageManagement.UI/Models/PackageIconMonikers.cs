@@ -9,11 +9,9 @@ namespace NuGet.PackageManagement.UI
         private const int _prefixReservedIndicator = 1;
         private const int _updateAvailableIndicator = 2;
         private const int _downloadIndicator = 4;
-        private const int _installedIndicator = 5;
 
         public static ImageMoniker PrefixReservedIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _prefixReservedIndicator };
         public static ImageMoniker UpdateAvailableIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _updateAvailableIndicator };
         public static ImageMoniker DownloadIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _downloadIndicator };
-        public static ImageMoniker InstalledIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _installedIndicator };
     }
 }
