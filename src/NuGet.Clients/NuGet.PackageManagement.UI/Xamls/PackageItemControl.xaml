@@ -4,7 +4,8 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
+  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
   x:Name="_self"
   mc:Ignorable="d"
@@ -296,6 +297,7 @@
                       Grid.Column="1"
                       Command="{x:Static nuget:Commands.UninstallPackageCommand}"
                       CommandParameter="{Binding}"
+                      imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Uninstall}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_UninstallButton}"
                       FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
@@ -330,9 +332,7 @@
             </Style>
           </Button.Style>
           <imaging:CrispImage
-                        Width="16"
-                        Height="16"
-                        Moniker="{x:Static nuget:PackageIconMonikers.UninstallIndicator}"/>
+                        Moniker="{x:Static catalog:KnownMonikers.Cancel}"/>
         </Button>
 
         <!-- install button. It occupies the same position of the install button -->
@@ -340,6 +340,7 @@
                       x:Name="_installButton"
                       Grid.Row="0"
                       Grid.Column="1"
+                      imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
                       Command="{x:Static nuget:Commands.InstallPackageCommand}"
                       CommandParameter="{Binding}"
                       ToolTip="{Binding InstalledVersionToolTip}"
@@ -398,6 +399,7 @@
                       Grid.Row="1"
                       Grid.Column="2"
                       Margin="0,5,0,0"
+                      imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
                       Command="{x:Static nuget:Commands.InstallPackageCommand}"
                       CommandParameter="{Binding}"
                       FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
