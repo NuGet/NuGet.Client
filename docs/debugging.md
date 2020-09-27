@@ -91,7 +91,7 @@ The naive approach here is to install the package to the project and just run `m
 
 Alternatively, if you are testing on SDK based projects, the NuGet.Build.Tasks.Pack.targets are just wired into the build in a certain way and that can be replicated without a complete installation of the extension through the PowerShell helper functions as shown in the [PowerShell helper scripts](..\scripts\nuget-debug-helpers.ps1). Examples can be found in the linked scripts.
 
-If you are testing a debug build, to debug just set the environment variable defined in [RestoreTask](..\src\NuGet.Core\NuGet.Build.Tasks.Pack\PackTask.cs), currently `DEBUG_PACK_TASK`.
+If you are testing a debug build, to debug just set the environment variable defined in [PackTask](..\src\NuGet.Core\NuGet.Build.Tasks.Pack\PackTask.cs), currently `DEBUG_PACK_TASK`.
 
 ## Debugging and testing the NuGet functionality in dotnet.exe
 
