@@ -488,7 +488,8 @@ namespace NuGet.Build.Tasks.Pack
             var nugetFrameworks = new HashSet<NuGetFramework>();
             if (request.TargetFrameworks != null)
             {
-                nugetFrameworks = new HashSet<NuGetFramework>(request.TargetFrameworks.Select(targetFramework => {
+                nugetFrameworks = new HashSet<NuGetFramework>(request.TargetFrameworks.Select(targetFramework =>
+                {
                     string translated = null;
                     var succeeded = aliases.TryGetValue(targetFramework, out translated);
                     if (succeeded)
