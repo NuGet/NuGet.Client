@@ -329,8 +329,7 @@
               </Style.Triggers>
             </Style>
           </Button.Style>
-          <imaging:CrispImage
-                        Moniker="{x:Static catalog:KnownMonikers.Cancel}"/>
+          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static catalog:KnownMonikers.Cancel}"/>
         </Button>
 
         <!-- install button. It occupies the same position of the install button -->
@@ -370,11 +369,7 @@
               </Style.Triggers>
             </Style>
           </Button.Style>
-          <imaging:CrispImage
-                        Width="16"
-                        Height="16"
-                        Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}"
-                        />
+          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}" />
         </Button>
 
         <!-- row 1: latest version and the update button-->
@@ -441,10 +436,7 @@
               <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
             </MultiBinding>
           </AutomationProperties.Name>
-          <imaging:CrispImage
-                        Width="16"
-                        Height="16"
-                        Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
+          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
         </Button>
       </Grid>
     </Grid>
