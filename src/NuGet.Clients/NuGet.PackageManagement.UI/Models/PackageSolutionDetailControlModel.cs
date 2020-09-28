@@ -11,6 +11,8 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -36,6 +38,7 @@ namespace NuGet.PackageManagement.UI
         private PackageSolutionDetailControlModel(IEnumerable<IProjectContextInfo> projects)
             : base(projects)
         {
+            IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }
 
         private async ValueTask InitializeAsync(
@@ -114,6 +117,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool IsRequestedVisible { get; private set; }
+
         private async Task UpdateInstalledVersionsAsync(CancellationToken cancellationToken)
         {
             var hash = new HashSet<NuGetVersion>();
@@ -128,9 +133,15 @@ namespace NuGet.PackageManagement.UI
                         project.InstalledVersion = installedVersion.Identity.Version;
                         hash.Add(installedVersion.Identity.Version);
                         project.AutoReferenced = installedVersion.IsAutoReferenced;
+
+                        if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
+                        {
+                            project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
+                        }
                     }
                     else
                     {
+                        project.RequestedVersion = null;
                         project.InstalledVersion = null;
                         project.AutoReferenced = false;
                     }
