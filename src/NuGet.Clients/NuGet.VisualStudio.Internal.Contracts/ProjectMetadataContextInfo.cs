@@ -20,7 +20,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public NuGetFramework? TargetFramework { get; }
         public string? UniqueName { get; }
 
-        private ProjectMetadataContextInfo(
+        internal ProjectMetadataContextInfo(
             string? fullPath,
             string? name,
             string? projectId,

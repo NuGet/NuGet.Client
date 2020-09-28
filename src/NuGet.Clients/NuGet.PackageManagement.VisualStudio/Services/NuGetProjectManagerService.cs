@@ -142,7 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return results.ToArray();
         }
 
-        public async ValueTask<ProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken)
+        public async ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(projectId);
 
