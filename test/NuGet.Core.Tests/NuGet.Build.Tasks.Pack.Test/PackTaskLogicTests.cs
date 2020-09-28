@@ -740,11 +740,9 @@ namespace NuGet.Build.Tasks.Pack.Test
 
         private class TestContext
         {
-
             public TestContext(TestDirectory testDir)
                 : this(testDir, "net45")
             {
-
             }
 
             public TestContext(TestDirectory testDir, string tfm)

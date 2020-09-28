@@ -24,6 +24,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 FloatRangeFormatter.Instance,
                 IPackageReferenceContextInfoFormatter.Instance,
                 IProjectContextInfoFormatter.Instance,
+                IProjectMetadataContextInfoFormatter.Instance,
                 NuGetFrameworkFormatter.Instance,
                 NuGetVersionFormatter.Instance,
                 PackageDependencyFormatter.Instance,
