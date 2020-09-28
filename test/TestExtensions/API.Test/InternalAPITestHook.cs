@@ -173,7 +173,7 @@ namespace API.Test
 
                     foreach (EnvDTE.Project project in dte.Solution.Projects)
                     {
-                        var solutionProjectPath = project.GetFullProjectPath();
+                        string solutionProjectPath = project.GetFullProjectPath();
 
                         if (!string.IsNullOrEmpty(solutionProjectPath) &&
                             PathUtility.GetStringComparerBasedOnOS().Equals(solutionProjectPath, projectUniqueName))

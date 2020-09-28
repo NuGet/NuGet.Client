@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -69,7 +70,7 @@ namespace NuGet.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var vsHierarchy = project.ToVsHierarchy();
+                    IVsHierarchy vsHierarchy = project.ToVsHierarchy();
                     if (vsHierarchy != null &&
                         VsHierarchyUtility.IsCPSCapabilityComplaint(vsHierarchy))
                     {

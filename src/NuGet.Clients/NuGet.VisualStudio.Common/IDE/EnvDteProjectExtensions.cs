@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio
 
             // Get the vs solution
             var solution = ServiceLocator.GetInstance<IVsSolution>();
-            var hr = solution.GetProjectOfUniqueName(project.GetUniqueName(), out hierarchy);
+            int hr = solution.GetProjectOfUniqueName(project.GetUniqueName(), out hierarchy);
 
             if (hr != VSConstants.S_OK)
             {
@@ -48,8 +48,8 @@ namespace NuGet.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
-            var hierarchy = ToVsHierarchy(project);
-            var projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuids(hierarchy, project.Kind);
+            IVsHierarchy hierarchy = ToVsHierarchy(project);
+            string[] projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuids(hierarchy, project.Kind);
 
             return projectTypeGuids;
         }
