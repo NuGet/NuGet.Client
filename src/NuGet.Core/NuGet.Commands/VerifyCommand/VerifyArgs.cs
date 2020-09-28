@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using NuGet.Common;
 
@@ -26,12 +27,37 @@ namespace NuGet.Commands
         public IList<Verification> Verifications { get; set; }
 
         /// <summary>
-        /// Path to the package that has to be signed.
-        /// </summary>
-        public string PackagePath { get; set; }
+        /// Path to the package that has to be verified.
+        /// </summary>      
+        [Obsolete("Use PackagePaths instead")]
+        public string PackagePath
+        {
+            get
+            {
+                switch (PackagePaths.Count)
+                {
+                    case 0:
+                        return null;
+
+                    case 1:
+                        return PackagePaths[0];
+
+                    default:
+                        throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture,
+                            Strings.Error_MultiplePackagePaths,
+                            nameof(PackagePaths)));
+                }
+            }
+            set => PackagePaths = new[] { value };
+        }
 
         /// <summary>
-        /// Logger to be used to display the logs during the execution of sign command.
+        /// Paths to the packages that has to be verified.
+        /// </summary>
+        public IReadOnlyList<string> PackagePaths { get; set; }
+
+        /// <summary>
+        /// Logger to be used to display the logs during the execution of verify command.
         /// </summary>
         public ILogger Logger { get; set; }
 

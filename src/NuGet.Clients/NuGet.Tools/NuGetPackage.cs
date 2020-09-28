@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Globalization;
@@ -11,12 +12,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Options;
 using NuGet.PackageManagement;
@@ -24,13 +25,15 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Contracts;
 using NuGet.VisualStudio.Implementation.Extensibility;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
 using NuGetConsole.Implementation;
+using ContractsNuGetServices = NuGet.VisualStudio.Contracts.NuGetServices;
 using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 using ISettings = NuGet.Configuration.ISettings;
+using ProvideBrokeredServiceAttribute = Microsoft.VisualStudio.Shell.ServiceBroker.ProvideBrokeredServiceAttribute;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudience;
 using SVsBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.SVsBrokeredServiceContainer;
@@ -66,11 +69,12 @@ namespace NuGetVSExtension
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string, PackageAutoLoadFlags.BackgroundLoad)]
-    [ProvideBrokeredService(NuGetServices.NuGetProjectServiceName, NuGetServices.Version1, Audience = ServiceAudience.AllClientsIncludingGuests)]
-    [FontAndColorsRegistration(
-        "Package Manager Console",
-        NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
-        "{" + GuidList.guidNuGetPkgString + "}")]
+    [FontAndColorsRegistration("Package Manager Console", NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString, "{" + GuidList.guidNuGetPkgString + "}")]
+    [ProvideBrokeredService(ContractsNuGetServices.NuGetProjectServiceName, ContractsNuGetServices.Version1, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SolutionManagerServiceName, BrokeredServicesUtilities.SolutionManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.ProjectManagerServiceName, BrokeredServicesUtilities.ProjectManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -132,6 +136,8 @@ namespace NuGetVSExtension
 
         private IDisposable ProjectUpgradeHandler { get; set; }
 
+        private INuGetProjectManagerServiceState _projectManagerServiceState;
+
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -171,11 +177,27 @@ namespace NuGetVSExtension
                 },
                 ThreadHelper.JoinableTaskFactory);
 
-            IBrokeredServiceContainer brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
+            var brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
             var lazySolutionManager = new AsyncLazy<IVsSolutionManager>(() => ServiceLocator.GetInstanceAsync<IVsSolutionManager>(), ThreadHelper.JoinableTaskFactory);
             var lazySettings = new AsyncLazy<ISettings>(() => ServiceLocator.GetInstanceAsync<ISettings>(), ThreadHelper.JoinableTaskFactory);
             var nuGetBrokeredServiceFactory = new NuGetBrokeredServiceFactory(lazySolutionManager, lazySettings);
-            brokeredServiceContainer.Proffer(NuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
+            brokeredServiceContainer.Proffer(ContractsNuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
+
+            var state = new SharedServiceState();
+            _projectManagerServiceState = new NuGetProjectManagerServiceState();
+
+            brokeredServiceContainer.Proffer(
+                NuGetServices.SourceProviderService,
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.SolutionManagerService,
+                (mk, options, sb, ac, ct) => ToValueTaskOfObject(NuGetSolutionManagerService.CreateAsync(options, sb, ac, ct)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.ProjectManagerService,
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac, _projectManagerServiceState, state)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.ProjectUpgraderService,
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectUpgraderService(options, sb, ac, state)));
         }
 
         /// <summary>
@@ -228,7 +250,7 @@ namespace NuGetVSExtension
 
                 var project = await SolutionManager.Value.GetVsProjectAdapterAsync(
                     await SolutionManager.Value.GetNuGetProjectSafeNameAsync(e.NuGetProject));
-                var windowFrame = FindExistingWindowFrame(project.Project);
+                var windowFrame = await FindExistingWindowFrameAsync(project.Project);
                 if (windowFrame != null)
                 {
                     windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, string.Format(
@@ -354,10 +376,9 @@ namespace NuGetVSExtension
             _powerConsoleCommandExecuting = false;
         }
 
-        private IVsWindowFrame FindExistingWindowFrame(
-            Project project)
+        private async Task<IVsWindowFrame> FindExistingWindowFrameAsync(Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
@@ -382,9 +403,10 @@ namespace NuGetVSExtension
                         continue;
                     }
 
-                    var existingProject = projects.First();
-                    var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-                    if (string.Equals(projectName, project.Name, StringComparison.OrdinalIgnoreCase))
+                    IProjectContextInfo existingProject = projects.First();
+                    IProjectMetadataContextInfo projectMetadata = await existingProject.GetMetadataAsync(CancellationToken.None);
+
+                    if (string.Equals(projectMetadata.Name, project.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         return windowFrame;
                     }
@@ -473,17 +495,16 @@ namespace NuGetVSExtension
             // is thrown, an error dialog will pop up and this doc window will not be created.
             _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-            var uiController = UIFactory.Value.Create(nugetProject);
+            IProjectContextInfo contextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
+            INuGetUI uiController = await UIFactory.Value.CreateAsync(contextInfo);
 
+            // This model takes ownership of --- and Dispose() responsibility for --- the INuGetUI instance.
             var model = new PackageManagerModel(
                 uiController,
                 isSolution: false,
                 editorFactoryGuid: GuidList.guidNuGetEditorType);
 
-            var vsWindowSearchHostfactory = await GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
-            var vsShell = await GetServiceAsync(typeof(SVsShell)) as IVsShell4;
-            var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger.Value);
-
+            PackageManagerControl control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
@@ -567,27 +588,20 @@ namespace NuGetVSExtension
                 return;
             }
 
-            var uniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            string uniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
             // Close NuGet Package Manager if it is open for this project
-            var windowFrame = FindExistingWindowFrame(project);
+            IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project);
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
 
-            var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-            var uiController = UIFactory.Value.Create(nuGetProject);
-            var settings = uiController.UIContext.UserSettingsManager.GetSettings(GetProjectSettingsKey(nuGetProject));
+            NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+            IProjectContextInfo projectContextInfo = await ProjectContextInfo.CreateAsync(nuGetProject, CancellationToken.None);
 
-            await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
-            uiController.UIContext.UserSettingsManager.PersistSettings();
-        }
-
-        private static string GetProjectSettingsKey(NuGetProject nuGetProject)
-        {
-            string projectName;
-            if (!nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out projectName))
+            using (INuGetUI uiController = await UIFactory.Value.CreateAsync(projectContextInfo))
             {
-                projectName = "unknown";
+                await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, projectContextInfo);
+
+                uiController.UIContext.UserSettingsManager.PersistSettings();
             }
-            return "project:" + projectName;
         }
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
@@ -618,7 +632,7 @@ namespace NuGetVSExtension
                     &&
                     EnvDTEProjectUtility.IsSupported(project))
                 {
-                    var windowFrame = FindExistingWindowFrame(project);
+                    var windowFrame = await FindExistingWindowFrameAsync(project);
                     if (windowFrame == null)
                     {
                         windowFrame = await CreateNewWindowFrameAsync(project);
@@ -707,18 +721,24 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var projects = (await SolutionManager.Value.GetNuGetProjectsAsync()).ToArray();
-            if (projects.Length == 0)
+            IReadOnlyCollection<IProjectContextInfo> projectContexts;
+            IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
             {
-                MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
-                return null;
+                Assumes.NotNull(nugetProjectManagerService);
+                projectContexts = await nugetProjectManagerService.GetProjectsAsync(CancellationToken.None);
+
+                if (projectContexts.Count == 0)
+                {
+                    MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
+                    return null;
+                }
             }
 
-            // pass empty array of NuGetProject
-            var uiController = UIFactory.Value.Create(projects);
-
+            INuGetUI uiController = await UIFactory.Value.CreateAsync(projectContexts.ToArray());
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 
+            // This model takes ownership of --- and Dispose() responsibility for --- the INuGetUI instance.
             var model = new PackageManagerModel(
                 uiController,
                 isSolution: true,
@@ -727,9 +747,7 @@ namespace NuGetVSExtension
                 SolutionName = solutionName
             };
 
-            var vsWindowSearchHostfactory = await GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
-            var vsShell = await GetServiceAsync(typeof(SVsShell)) as IVsShell4;
-            var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger.Value);
+            PackageManagerControl control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
@@ -1094,6 +1112,8 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
+
+            _projectManagerServiceState?.Dispose();
         }
 
         #region IVsPersistSolutionOpts
@@ -1137,5 +1157,12 @@ namespace NuGetVSExtension
         }
 
         #endregion IVsPersistSolutionOpts
+
+        private static async ValueTask<object> ToValueTaskOfObject<T>(ValueTask<T> valueTask)
+        {
+            T value = await valueTask;
+
+            return (object)value;
+        }
     }
 }

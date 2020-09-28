@@ -38,6 +38,9 @@
     <None Remove="compiler\resources\SignatureFileWithFakeContent.zip" />
     <None Remove="compiler\resources\SignatureFileWithUppercaseFileName.zip" />
     <None Remove="compiler\resources\SignedPackage.1.0.0.nupkg" />
+    <None Remove="compiler\resources\Test.RepoCountersigned.1.0.0.nupkg" />
+    <None Remove="compiler\resources\Test.Reposigned.1.0.0.nupkg" />
+    <None Remove="compiler\resources\TestPackage.AuthorSigned.1.0.0.nupkg" />
   </ItemGroup>
 
   <ItemGroup>

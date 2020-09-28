@@ -583,5 +583,57 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_WithStaticGraphAndRegularRestore_ErrorLoggedWhenOutputPathNotSpecified()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var project = new SimpleTestProjectContext("a", ProjectStyle.PackageReference, pathContext.SolutionRoot)
+                {
+                    OutputPath = string.Empty,
+                    Properties =
+                    {
+                        // When these two properties are not defined, restore should fail with a clear error and not crash
+                        ["MSBuildProjectExtensionsPath"] = string.Empty,
+                        ["RestoreOutputPath"] = string.Empty
+                    },
+                    SetMSBuildProjectExtensionsPath = false,
+                    SingleTargetFramework = true
+                };
+
+                project.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+
+                var packageX = new SimpleTestPackageContext
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.Files.Clear();
+                project.AddPackageToAllFrameworks(packageX);
+                packageX.AddFile("lib/net461/a.dll");
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                // Restore the project with a PackageReference which generates assets
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreUseStaticGraphEvaluation=true {project.ProjectPath}", ignoreExitCode: true);
+
+                result.Success.Should().BeFalse(because: result.AllOutput);
+
+                result.AllOutput.Should().Contain($"error : Invalid restore input. Missing required property 'OutputPath' for project type 'PackageReference'. Input files: {project.ProjectPath}.");
+            }
+        }
     }
 }

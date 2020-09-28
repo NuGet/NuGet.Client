@@ -46,6 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly UnconfiguredProject _unconfiguredProject;
         private List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> _installedPackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
         private DateTime _lastTimeAssetsModified;
+        private WeakReference<PackageSpec> _lastPackageSpec;
 
         public NetCorePackageReferenceProject(
             string projectName,
@@ -238,15 +239,20 @@ namespace NuGet.PackageManagement.VisualStudio
             var fileInfo = new FileInfo(assetsFilePath);
             PackageSpec assetsPackageSpec = default;
             IList<LockFileTarget> targets = default;
+            PackageSpec lastPackageSpec = default;
+            _lastPackageSpec?.TryGetTarget(out lastPackageSpec);
 
-            if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified)
+            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !ReferenceEquals(lastPackageSpec, packageSpec))
             {
                 await TaskScheduler.Default;
-                var lockFile = new LockFileFormat().Read(assetsFilePath);
-                assetsPackageSpec = lockFile.PackageSpec;
-                targets = lockFile.Targets;
-
+                if (fileInfo.Exists)
+                {
+                    var lockFile = new LockFileFormat().Read(assetsFilePath);
+                    assetsPackageSpec = lockFile.PackageSpec;
+                    targets = lockFile.Targets;
+                }
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
+                _lastPackageSpec = new WeakReference<PackageSpec>(packageSpec);
             }
 
             return packageSpec

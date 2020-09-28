@@ -599,7 +599,7 @@ namespace NuGet.Build.Tasks
                     }
                     else
                     {
-                        string message = String.Format(
+                        string message = string.Format(
                             Strings.Warning_InvalidPackageSaveMode,
                             v);
 
@@ -636,7 +636,7 @@ namespace NuGet.Build.Tasks
                 }
             }
 
-            return Enumerable.Empty<Packaging.PackageReference>();
+            return Enumerable.Empty<PackageReference>();
         }
 
         private static IEnumerable<RestoreLogMessage> ProcessFailedEventsIntoRestoreLogs(ConcurrentQueue<PackageRestoreFailedEventArgs> failedEvents)
@@ -645,16 +645,17 @@ namespace NuGet.Build.Tasks
 
             foreach (var failedEvent in failedEvents)
             {
-                if (failedEvent.Exception is SignatureException)
+                if (failedEvent.Exception is SignatureException signatureException)
                 {
-                    var signatureException = failedEvent.Exception as SignatureException;
+                    if (signatureException.Results != null)
+                    {
+                        IEnumerable<RestoreLogMessage> errorsAndWarnings = signatureException.Results
+                            .SelectMany(r => r.Issues)
+                            .Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning)
+                            .Select(i => i.AsRestoreLogMessage());
 
-                    var errorsAndWarnings = signatureException
-                        .Results.SelectMany(r => r.Issues)
-                        .Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning)
-                        .Select(i => i.AsRestoreLogMessage());
-
-                    result.AddRange(errorsAndWarnings);
+                        result.AddRange(errorsAndWarnings);
+                    }
                 }
                 else
                 {

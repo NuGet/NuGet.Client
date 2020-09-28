@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -20,10 +23,31 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static DeprecatedFrameworkModel GetDeprecatedFrameworkModel(IEnumerable<NuGetProject> affectedProjects)
         {
+            List<string> projects = affectedProjects
+                .Select(project => NuGetProject.GetUniqueNameOrName(project))
+                .OrderBy(name => name)
+                .ToList();
+
             return new DeprecatedFrameworkModel(
                 FrameworkConstants.CommonFrameworks.DotNet,
                 DotnetDeprecationUrl,
-                affectedProjects);
+                projects);
+        }
+
+        public static async ValueTask<DeprecatedFrameworkModel> GetDeprecatedFrameworkModelAsync(
+            IEnumerable<IProjectContextInfo> affectedProjects,
+            CancellationToken cancellationToken)
+        {
+            Task<string>[] tasks = affectedProjects
+                .Select(project => project.GetUniqueNameOrNameAsync(cancellationToken).AsTask())
+                .ToArray();
+
+            string[] projectNames = await Task.WhenAll(tasks);
+
+            return new DeprecatedFrameworkModel(
+                FrameworkConstants.CommonFrameworks.DotNet,
+                DotnetDeprecationUrl,
+                projectNames);
         }
 
         public static IEnumerable<NuGetProject> GetAffectedProjects(IEnumerable<ResolvedAction> actions)

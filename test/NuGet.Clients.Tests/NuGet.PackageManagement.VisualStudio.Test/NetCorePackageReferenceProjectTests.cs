@@ -2253,6 +2253,69 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async Task GetInstalledPackages_WithNominationUpdate_ReloadsCache()
+        {
+            using (var testContext = new SimpleTestPathContext())
+            {
+                // Setup
+                var logger = new TestLogger();
+                var projectName = "project1";
+                var projectFullPath = Path.Combine(testContext.SolutionRoot, projectName + ".csproj");
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(testContext.PackageSource)
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(testContext.PackageSource, "packageA", "1.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(testContext.PackageSource, "packageA", "2.0.0");
+
+                // Project
+                var projectCache = new ProjectSystemCache();
+                var project = CreateNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
+
+                var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                var originalSpec = GetPackageSpec(projectName, projectFullPath, "1.0.0");
+                projectCache.AddProjectRestoreInfo(projectNames, ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(originalSpec), new List<IAssetsLogMessage>());
+                projectCache.AddProject(projectNames, new Mock<IVsProjectAdapter>().Object, project).Should().BeTrue();
+
+                var request = new TestRestoreRequest(originalSpec, sources, testContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = Path.Combine(testContext.SolutionRoot, "obj", "project.assets.json")
+                };
+
+                // Pre-conditions
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                var packages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                Assert.True(result.Success);
+                packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("1.0.0"))));
+
+                // Act - Simulate an installation through restore.
+                var updatedSpec = GetPackageSpec(projectName, projectFullPath, "2.0.0");
+
+                var updatedRestore = new TestRestoreRequest(updatedSpec, sources, testContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = Path.Combine(testContext.SolutionRoot, "obj", "project.assets.json")
+                };
+
+                command = new RestoreCommand(request);
+                result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                // Expectation is that package spec is prefered.
+                packages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("1.0.0"))));
+
+                // Act - Simulate a nomination. This should reset the cache and bring it to spec equivalent.
+                projectCache.AddProjectRestoreInfo(projectNames, ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(updatedSpec), new List<IAssetsLogMessage>());
+                projectCache.AddProject(projectNames, new Mock<IVsProjectAdapter>().Object, project).Should().BeTrue();
+
+                // Assert
+                packages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.0.0"))));
+            }
+        }
+
         private TestNetCorePackageReferenceProject CreateTestNetCorePackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
         {
             projectServices = projectServices == null ? new TestProjectSystemServices() : projectServices;

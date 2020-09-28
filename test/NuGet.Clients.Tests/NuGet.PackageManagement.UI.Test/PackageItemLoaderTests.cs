@@ -18,6 +18,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
 
@@ -30,10 +31,10 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task MultipleSources_Works()
         {
-            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
             Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+                .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
             var source1 = new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json", "NuGetBuild");
@@ -79,10 +80,10 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task EmitsSearchTelemetryEvents()
         {
             // Arrange
-            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
             Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+                .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
             var telemetryService = new Mock<INuGetTelemetryService>();
@@ -167,10 +168,10 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task GetTotalCountAsync_Works()
         {
-            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
             Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+                .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
             var source1 = new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json", "NuGetBuild");
@@ -192,10 +193,10 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task LoadNextAsync_Works()
         {
-            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
             Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+                .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
             var context = new PackageLoadContext(null, false, uiContext);
@@ -233,10 +234,10 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task PackageReader_NotNull()
         {
             // Prepare
-            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = Mock.Of<INuGetUIContext>();
             Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+                .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
             using (var localFeedDir = TestDirectory.Create()) // local feed

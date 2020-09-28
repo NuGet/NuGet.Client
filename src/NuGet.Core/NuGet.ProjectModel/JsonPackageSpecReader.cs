@@ -153,10 +153,6 @@ namespace NuGet.ProjectModel
                         ReadMSBuildMetadata(jsonReader, packageSpec);
                         break;
 
-                    case "restoreSettings":
-                        ReadRestoreSettings(jsonReader, packageSpec);
-                        break;
-
                     case "runtimes":
                         runtimeDescriptions = ReadRuntimes(jsonReader);
                         break;
@@ -1404,19 +1400,6 @@ namespace NuGet.ProjectModel
             }
 
             return wasMappingsRead;
-        }
-
-        private static void ReadRestoreSettings(JsonTextReader jsonReader, PackageSpec packageSpec)
-        {
-            packageSpec.RestoreSettings = new ProjectRestoreSettings();
-
-            jsonReader.ReadObject(propertyName =>
-            {
-                if (propertyName == JsonPackageSpecReader.HideWarningsAndErrors)
-                {
-                    packageSpec.RestoreSettings.HideWarningsAndErrors = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
-                }
-            });
         }
 
         private static RuntimeDependencySet ReadRuntimeDependencySet(JsonTextReader jsonReader, string dependencySetName)

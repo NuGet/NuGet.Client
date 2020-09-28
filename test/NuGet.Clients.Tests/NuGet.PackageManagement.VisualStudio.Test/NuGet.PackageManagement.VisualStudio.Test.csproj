@@ -37,6 +37,8 @@
     <Compile Include="ProjectSystems\ProjectSystemCacheTests.cs" />
     <Compile Include="ProjectSystems\TestVSProjectAdapter.cs" />
     <Compile Include="Services\NuGetLockServiceTests.cs" />
+    <Compile Include="Services\NuGetProjectManagerServiceTests.cs" />
+    <Compile Include="Services\TestSharedServiceState.cs" />
     <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\IntervalTrackerTests.cs" />
     <Compile Include="Telemetry\NuGetTelemetryServiceTests.cs" />

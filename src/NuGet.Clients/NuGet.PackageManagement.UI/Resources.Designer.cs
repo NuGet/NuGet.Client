@@ -574,6 +574,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Installed.
+        /// </summary>
+        public static string ColumnHeader_InstalledVersion {
+            get {
+                return ResourceManager.GetString("ColumnHeader_InstalledVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project.
         /// </summary>
         public static string ColumnHeader_Project {
@@ -583,20 +592,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Version.
+        /// </summary>
+        public static string ColumnHeader_Requested {
+            get {
+                return ResourceManager.GetString("ColumnHeader_Requested", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Selected.
         /// </summary>
         public static string ColumnHeader_Selected {
             get {
                 return ResourceManager.GetString("ColumnHeader_Selected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Version.
-        /// </summary>
-        public static string ColumnHeader_Version {
-            get {
-                return ResourceManager.GetString("ColumnHeader_Version", resourceCulture);
             }
         }
         
@@ -1382,6 +1391,24 @@ namespace NuGet.PackageManagement.UI {
         public static string PackageRestoreWaitMessage {
             get {
                 return ResourceManager.GetString("PackageRestoreWaitMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Getting Package Sources....
+        /// </summary>
+        public static string PackageSourceOptions_OnActivated {
+            get {
+                return ResourceManager.GetString("PackageSourceOptions_OnActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applying changes....
+        /// </summary>
+        public static string PackageSourceOptions_OnApply {
+            get {
+                return ResourceManager.GetString("PackageSourceOptions_OnApply", resourceCulture);
             }
         }
         

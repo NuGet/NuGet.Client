@@ -3,28 +3,28 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Resolver;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
     // used to manage packages in one project.
     public class PackageDetailControlModel : DetailControlModel
     {
-        private readonly ISolutionManager _solutionManager;
+        // This class does not own this instance, so do not dispose of it in this class.
+        private readonly INuGetSolutionManagerService _solutionManager;
 
         public PackageDetailControlModel(
-            ISolutionManager solutionManager,
-            IEnumerable<NuGetProject> nugetProjects)
-            : base(nugetProjects)
+            INuGetSolutionManagerService solutionManager,
+            IEnumerable<IProjectContextInfo> projects)
+            : base(projects)
         {
             _solutionManager = solutionManager;
-            _solutionManager.NuGetProjectUpdated += NuGetProjectChanged;
+            _solutionManager.ProjectUpdated += ProjectChanged;
         }
 
         public async override Task SetCurrentPackage(
@@ -45,7 +45,6 @@ namespace NuGet.PackageManagement.UI
             }
             InstalledVersion = searchResultPackage.InstalledVersion;
             SelectedVersion.IsCurrentInstalled = InstalledVersion == SelectedVersion.Version;
-            OnPropertyChanged(nameof(SelectedVersion));
         }
 
         public override bool IsSolution
@@ -53,9 +52,10 @@ namespace NuGet.PackageManagement.UI
             get { return false; }
         }
 
-        private void NuGetProjectChanged(object sender, NuGetProjectEventArgs e)
+        private void ProjectChanged(object sender, IProjectContextInfo project)
         {
-            _nugetProjects = new List<NuGetProject> { e.NuGetProject };
+            _nugetProjects = new List<IProjectContextInfo> { project };
+
             UpdateInstalledVersion();
         }
 
@@ -76,10 +76,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override void Refresh()
+        public override async Task RefreshAsync(CancellationToken cancellationToken)
         {
             UpdateInstalledVersion();
-            CreateVersions();
+            await CreateVersionsAsync(cancellationToken);
         }
 
         private static bool HasId(string id, IEnumerable<PackageIdentity> packages)
@@ -90,13 +90,12 @@ namespace NuGet.PackageManagement.UI
 
         public override void CleanUp()
         {
-            // unhook event handlers
-            _solutionManager.NuGetProjectUpdated -= NuGetProjectChanged;
+            _solutionManager.ProjectUpdated -= ProjectChanged;
 
             Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
         }
 
-        protected override void CreateVersions()
+        protected override Task CreateVersionsAsync(CancellationToken cancellationToken)
         {
             _versions = new List<DisplayVersion>();
             var installedDependency = InstalledPackageDependencies.Where(p =>
@@ -112,7 +111,7 @@ namespace NuGet.PackageManagement.UI
             // allVersions is null if server doesn't return any versions.
             if (allVersions == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             // null, if no version constraint defined in package.config
@@ -173,6 +172,8 @@ namespace NuGet.PackageManagement.UI
             SelectVersion();
 
             OnPropertyChanged(nameof(Versions));
+
+            return Task.CompletedTask;
         }
 
         private NuGetVersion _installedVersion;
@@ -184,10 +185,27 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersion = value;
                 OnPropertyChanged(nameof(InstalledVersion));
+                OnPropertyChanged(nameof(IsSelectedVersionInstalled));
             }
         }
 
-        public override IEnumerable<NuGetProject> GetSelectedProjects(UserAction action)
+        public override void OnSelectedVersionChanged()
+        {
+            base.OnSelectedVersionChanged();
+            OnPropertyChanged(nameof(IsSelectedVersionInstalled));
+        }
+
+        public bool IsSelectedVersionInstalled
+        {
+            get
+            {
+                return SelectedVersion != null
+                    && InstalledVersion != null
+                    && SelectedVersion.Version == InstalledVersion;
+            }
+        }
+
+        public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
         {
             return _nugetProjects;
         }

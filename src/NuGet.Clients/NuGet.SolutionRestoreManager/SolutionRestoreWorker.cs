@@ -32,8 +32,8 @@ namespace NuGet.SolutionRestoreManager
         private const int IdleTimeoutMs = 400;
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
-        private const int DelayAutoRestoreRetries = 50;
         private const int DelaySolutionLoadRetry = 100;
+        private const int MaxIdleWaitTimeMs = 10000;
 
         private readonly object _lockPendingRequestsObj = new object();
 
@@ -50,6 +50,7 @@ namespace NuGet.SolutionRestoreManager
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
         private int _initialized;
+        private bool _isFirstRestore = true;
 
         private IVsSolution _vsSolution;
 
@@ -428,7 +429,6 @@ namespace NuGet.SolutionRestoreManager
             await TaskScheduler.Default;
 
             var status = false;
-
             // Check if the solution is fully loaded
             while (!_solutionLoadedEvent.IsSet)
             {
@@ -476,8 +476,8 @@ namespace NuGet.SolutionRestoreManager
                         await PromoteTaskToActiveAsync(restoreOperation, token);
 
                         token.ThrowIfCancellationRequested();
+                        DateTime lastNominationReceived = DateTime.UtcNow;
 
-                        var retries = 0;
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
@@ -497,20 +497,17 @@ namespace NuGet.SolutionRestoreManager
                                 }
                                 else
                                 {
-                                    if (retries >= DelayAutoRestoreRetries)
+                                    // Break if we've waited for more than 10s without an actual nomination.
+                                    if (lastNominationReceived.AddMilliseconds(MaxIdleWaitTimeMs) < DateTime.UtcNow)
                                     {
-                                        // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
-                                        // we wait until 20 secs for all the projects to be nominated at solution load.
                                         break;
                                     }
-                                    // if we're still expecting some nominations and also haven't reached our max timeout
-                                    // then increase the retries count.
-                                    retries++;
                                     await Task.Delay(IdleTimeoutMs, token);
                                 }
                             }
                             else
                             {
+                                lastNominationReceived = DateTime.UtcNow;
                                 // Upgrade request if necessary
                                 if (next != null && next.RestoreSource != request.RestoreSource)
                                 {
@@ -561,10 +558,15 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreRequest request,
             CancellationToken token)
         {
+            // if the request is implicit & this is the first restore, assume we are restoring due to a solution load.
+            var isSolutionLoadRestore = _isFirstRestore &&
+                request.RestoreSource == RestoreOperationSource.Implicit;
+            _isFirstRestore = false;
+
             // Start the restore job in a separate task on a background thread
             // it will switch into main thread when necessary.
             var joinableTask = JoinableTaskFactory.RunAsync(
-                () => StartRestoreJobAsync(request, token));
+            () => StartRestoreJobAsync(request, isSolutionLoadRestore, token));
 
             var continuation = joinableTask
                 .Task
@@ -605,7 +607,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private async Task<bool> StartRestoreJobAsync(
-            SolutionRestoreRequest request, CancellationToken token)
+            SolutionRestoreRequest request, bool isSolutionLoadRestore, CancellationToken token)
         {
             await TaskScheduler.Default;
 
@@ -627,7 +629,7 @@ namespace NuGet.SolutionRestoreManager
 
                             // Run restore
                             var job = componentModel.GetService<ISolutionRestoreJob>();
-                            return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, isSolutionLoadRestore, jobCts.Token);
                         }
                         finally
                         {

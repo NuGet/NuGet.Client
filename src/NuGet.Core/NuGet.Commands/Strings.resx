@@ -1111,8 +1111,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="SpecValidation_OriginalTargetFrameworksMustMatchAliases" xml:space="preserve">
     <value>The original target frameworks value must match the aliases. Original target frameworks: {0}, aliases: {1}.</value>
   </data>
-  <data name="Error_PlatformVersionNotPresent" xml:space="preserve">
-    <value>A platform version for '{0}' could not be inferred.</value>
-    <comment>{0} should be the TargetFramework</comment>
+  <data name="Error_MultiplePackagePaths" xml:space="preserve">
+    <value>{0} contains more than one path</value>
   </data>
 </root>

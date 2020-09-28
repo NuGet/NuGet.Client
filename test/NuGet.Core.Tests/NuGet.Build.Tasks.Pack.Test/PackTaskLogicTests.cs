@@ -9,7 +9,6 @@ using System.Reflection;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -62,20 +61,6 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.NotNull(centralTransitiveDependentPackage);
                     Assert.Equal(new List<string> { "Analyzers", "Build", "Runtime" }, centralTransitiveDependentPackage.Exclude);
                 }
-            }
-        }
-
-        [Fact]
-        public void PackTaskLogic_ErrorsOnBadFrameworkPlatform()
-        {
-            // This test uses the ...\NuGet.Build.Tasks.Pack.Test\compiler\resources\project.assets.json assets file.
-            // Arrange
-            using (var testDir = TestDirectory.Create())
-            {
-                var tc = new TestContext(testDir, "net5.0-windows");
-
-                // Act & Assert
-                Assert.Throws<PackagingException>(() => tc.BuildPackage());
             }
         }
 
@@ -515,6 +500,121 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
+        [Fact]
+        public void PackTaskLogic_InfersFrameworkPlatformVersionFromAlias()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir, "net5.0-windows");
+
+                var assetsJson = @"{
+                    ""version"": 3,
+  ""targets"": {
+    ""net5.0"": {},
+    ""net5.0-windows7.0"": {}
+  },
+  ""libraries"": {},
+  ""projectFileDependencyGroups"": {
+    ""net5.0"": [],
+    ""net5.0-windows7.0"": []
+  },
+  ""project"": {
+    ""version"": ""0.0.0"",
+    ""restore"": {
+      ""projectName"": ""bar"",
+      ""projectStyle"": ""PackageReference"",
+      ""crossTargeting"": true,
+      ""fallbackFolders"": [
+        ""C:\\Microsoft\\Xamarin\\NuGet\\""
+      ],
+      ""originalTargetFrameworks"": [
+        ""net5.0"",
+        ""net5.0-windows""
+      ],
+      ""sources"": {
+        ""https://api.nuget.org/v3/index.json"": {},
+      },
+      ""frameworks"": {
+        ""net5.0"": {
+          ""targetAlias"": ""net5.0"",
+          ""projectReferences"": {}
+        },
+        ""net5.0-windows7.0"": {
+          ""targetAlias"": ""net5.0-windows"",
+          ""projectReferences"": {}
+        }
+      },
+      ""warningProperties"": {
+        ""warnAsError"": [
+          ""NU1605""
+        ]
+      }
+    },
+    ""frameworks"": {
+      ""net5.0"": {
+        ""targetAlias"": ""net5.0"",
+        ""imports"": [
+          ""net461"",
+          ""net462"",
+          ""net47"",
+          ""net471"",
+          ""net472"",
+          ""net48""
+        ],
+        ""assetTargetFallback"": true,
+        ""warn"": true,
+        ""frameworkReferences"": {
+          ""Microsoft.NETCore.App"": {
+            ""privateAssets"": ""all""
+          }
+        },
+      },
+      ""net5.0-windows7.0"": {
+        ""targetAlias"": ""net5.0-windows"",
+        ""imports"": [
+          ""net461"",
+          ""net462"",
+          ""net47"",
+          ""net471"",
+          ""net472"",
+          ""net48""
+        ],
+        ""assetTargetFallback"": true,
+        ""warn"": true,
+        ""frameworkReferences"": {
+          ""Microsoft.NETCore.App"": {
+            ""privateAssets"": ""all""
+          }
+        },
+      }
+    }
+  }
+                }";
+                File.WriteAllText(Path.Combine(testDir, "obj", "project.assets.json"), assetsJson);
+
+                // var msbuildItem = tc.AddContentToProject("", "abc.txt", "hello world");
+                // tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                // tc.Request.ContentTargetFolders = new string[] { "content" };
+
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(NuGetFramework.Parse("net5.0-windows7.0"), libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/net5.0-windows7.0/a.dll" }, libItems[0].Items);
+                }
+            }
+        }
+
+
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
@@ -640,8 +740,8 @@ namespace NuGet.Build.Tasks.Pack.Test
 
         private class TestContext
         {
-            public TestContext(TestDirectory testdir)
-                : this(testdir, "net45")
+            public TestContext(TestDirectory testDir)
+                : this(testDir, "net45")
             {
             }
 
