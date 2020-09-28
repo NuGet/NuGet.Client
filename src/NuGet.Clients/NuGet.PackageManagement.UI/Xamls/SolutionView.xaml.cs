@@ -10,9 +10,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
+using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
@@ -28,6 +28,7 @@ namespace NuGet.PackageManagement.UI
 
         // the list of columns that are sortable.
         private List<GridViewColumnHeader> _sortableColumns;
+        private GridViewColumnHeader _requestedVersionColumn;
 
         public SolutionView()
         {
@@ -49,13 +50,34 @@ namespace NuGet.PackageManagement.UI
 
             _projectList.SizeChanged += ListView_SizeChanged;
 
+            //Requested Version column may not be needed, but since saved Sorting Settings are being restored at initialization time,
+            //we should go ahead and create the Header column for it here with its Sort property name.
+            _requestedVersionColumn = new GridViewColumnHeader();
+            SortableColumnHeaderAttachedProperties.SetSortPropertyName(_requestedVersionColumn, "RequestedVersion");
+
             _sortableColumns = new List<GridViewColumnHeader>
             {
                 _projectColumnHeader,
-                _versionColumnHeader
+                _installedVersionColumnHeader,
+                _requestedVersionColumn
             };
 
             SortByColumn(_projectColumnHeader);
+        }
+
+        private void SolutionView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            //Since this event will fire when closing PMUI, when the model is set to Project PMUI,
+            //and when other WPF controls in the tree set their DataContext, this cast is more important than it may seem.
+            if (e.NewValue is PackageSolutionDetailControlModel)
+            {
+                var model = e.NewValue as PackageSolutionDetailControlModel;
+                if (model.IsRequestedVisible)
+                {
+                    GridViewColumn _versionColumn = CreateRequestedVersionColumn();
+                    _gridProjects.Columns.Insert(2, _versionColumn);
+                }
+            }
         }
 
         private void UninstallButton_Clicked(object sender, RoutedEventArgs e)
@@ -180,7 +202,7 @@ namespace NuGet.PackageManagement.UI
             // adjust the width of the "project" column so that it takes
             // up all remaining width.
             var gridView = (GridView)_projectList.View;
-            var width = _projectList.ActualWidth - 2 * SystemParameters.VerticalScrollBarWidth;
+            var width = _projectList.ActualWidth - 3 * SystemParameters.VerticalScrollBarWidth;
             foreach (var column in gridView.Columns)
             {
                 var header = (GridViewColumnHeader)column.Header;
@@ -197,10 +219,18 @@ namespace NuGet.PackageManagement.UI
         private void SortableColumnHeader_SizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
         {
             // GridViewColumnHeader doesn't handle setting minwidth very well so we prevent it here.
-            if (sizeChangedEventArgs.NewSize.Width <= 60)
+            byte columnMinWidth = 60;
+            string columnName = (sizeChangedEventArgs.Source as GridViewColumnHeader)?.Name;
+
+            //"Installed" is a bit wider and can clip when the sorting indicator is applied.
+            if (columnName == "_installedVersionColumnHeader")
+            {
+                columnMinWidth = 64;
+            }
+            if (sizeChangedEventArgs.NewSize.Width <= columnMinWidth)
             {
                 sizeChangedEventArgs.Handled = true;
-                ((GridViewColumnHeader)sender).Column.Width = 60;
+                ((GridViewColumnHeader)sender).Column.Width = columnMinWidth;
             }
         }
 
@@ -225,6 +255,30 @@ namespace NuGet.PackageManagement.UI
                 SortByColumn(sortableColumnHeader);
                 e.Handled = true;
             }
+        }
+
+        private GridViewColumn CreateRequestedVersionColumn()
+        {
+            //The header for this column is always created so that saved sorting settings can be restored at initialization time.
+            //Now we really need this column, so add necessary properties.
+            _requestedVersionColumn.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Resources.ColumnHeader_Requested);
+            _requestedVersionColumn.Name = "_versionColumnHeader";
+            _requestedVersionColumn.Click += ColumnHeader_Clicked;
+            _requestedVersionColumn.Content = Resx.Resources.ColumnHeader_Requested;
+            _requestedVersionColumn.HorizontalContentAlignment = HorizontalAlignment.Left;
+            _requestedVersionColumn.SizeChanged += SortableColumnHeader_SizeChanged;
+            _requestedVersionColumn.PreviewKeyUp += SortableColumnHeader_PreviewKeyUp;
+            _requestedVersionColumn.Focusable = true;
+            _requestedVersionColumn.IsTabStop = true;
+            _requestedVersionColumn.SetResourceReference(FocusVisualStyleProperty, "ControlsFocusVisualStyle");
+
+            var versionColumn = new GridViewColumn()
+            {
+                DisplayMemberBinding = new Binding("RequestedVersion"),
+                Header = _requestedVersionColumn
+            };
+
+            return versionColumn;
         }
     }
 }
