@@ -316,30 +316,35 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         UpdateWorkingDirectory();
                         await ExecuteInitScriptsAsync();
 
-                        // check if PMC console is actually opened, then only hook to solution load/close events.
+                        // check if PMC console is actually opened, then only hook to solution load events.
                         if (console is IWpfConsole)
                         {
                             // Hook up solution events
                             _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
-                            _solutionManager.Value.SolutionClosed += (o, e) =>
-                            {
-                                UpdateWorkingDirectory();
+                        }
 
-                                DefaultProject = null;
-
-                                var telemetryEvent = new TelemetryEvent("PowerShellExecuteCommand", new Dictionary<string, object>
+                        _solutionManager.Value.SolutionClosed += (o, e) =>
+                        {
+                            var telemetryEvent = new TelemetryEvent("PowerShellExecuteCommand", new Dictionary<string, object>
                                 {
                                     { "NugetPMCExecuteCommandCount", _pmcExecutedCount},
                                     { "NugetNonPMCExecuteCommandCount", _nonPmcExecutedCount},
                                     { "NugetTotalExecuteCommandCount", _pmcExecutedCount + _nonPmcExecutedCount}
                                 });
-                                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
-                                _pmcExecutedCount = 0;
-                                _nonPmcExecutedCount = 0;
+                            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+                            _pmcExecutedCount = 0;
+                            _nonPmcExecutedCount = 0;
+
+                            if (console is IWpfConsole)
+                            {
+                                UpdateWorkingDirectory();
+
+                                DefaultProject = null;
 
                                 NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
-                            };
-                        }
+                            }
+                        };
+
                         _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                         _solutionManager.Value.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                         _solutionManager.Value.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
