@@ -4,23 +4,56 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Security;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
-using NuGet.Frameworks;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Common;
+
+#pragma warning disable CA1062 // Validate arguments of public methods
 
 namespace NuGet.VisualStudio
 {
-    public static class EnvDTEProjectInfoUtility
+    public static class EnvDteProjectExtensions
     {
+        public static IVsHierarchy ToVsHierarchy(this EnvDTE.Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IVsHierarchy hierarchy;
+
+            // Get the vs solution
+            var solution = ServiceLocator.GetInstance<IVsSolution>();
+            int hr = solution.GetProjectOfUniqueName(project.GetUniqueName(), out hierarchy);
+
+            if (hr != VSConstants.S_OK)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return hierarchy;
+        }
+
+        public static string[] GetProjectTypeGuids(this EnvDTE.Project project)
+        {
+            Verify.ArgumentIsNotNull(project, nameof(project));
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
+            IVsHierarchy hierarchy = ToVsHierarchy(project);
+            string[] projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuids(hierarchy, project.Kind);
+
+            return projectTypeGuids;
+        }
+
         #region Constants
 
         public const string WebConfig = "web.config";
@@ -35,7 +68,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Returns the full path including the project file name.
         /// </summary>
-        public static string GetFullProjectPath(EnvDTE.Project envDTEProject)
+        public static string GetFullProjectPath(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -72,7 +105,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="envDTEProject">The project.</param>
         /// <returns>The full path of the project directory.</returns>
-        public static string GetFullPath(EnvDTE.Project envDTEProject)
+        public static string GetFullPath(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -132,70 +165,21 @@ namespace NuGet.VisualStudio
             return null;
         }
 
-        public static bool IsUnloaded(EnvDTE.Project envDTEProject)
+        public static bool IsUnloaded(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             return VsProjectTypes.UnloadedProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static EnvDTE.Project GetActiveProject(IVsMonitorSelection vsMonitorSelection)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            IntPtr ppHier = IntPtr.Zero;
-            uint pitemid;
-            IVsMultiItemSelect ppMIS;
-            IntPtr ppSC = IntPtr.Zero;
-
-            try
-            {
-                vsMonitorSelection.GetCurrentSelection(out ppHier, out pitemid, out ppMIS, out ppSC);
-
-                if (ppHier == IntPtr.Zero)
-                {
-                    return null;
-                }
-
-                // multiple items are selected.
-                if (pitemid == (uint)VSConstants.VSITEMID.Selection)
-                {
-                    return null;
-                }
-
-                IVsHierarchy hierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
-                if (hierarchy != null)
-                {
-                    object project;
-                    if (hierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out project) >= 0)
-                    {
-                        return project as EnvDTE.Project;
-                    }
-                }
-
-                return null;
-            }
-            finally
-            {
-                if (ppHier != IntPtr.Zero)
-                {
-                    Marshal.Release(ppHier);
-                }
-                if (ppSC != IntPtr.Zero)
-                {
-                    Marshal.Release(ppSC);
-                }
-            }
-        }
-
-        private static T GetPropertyValue<T>(EnvDTE.Project envDTEProject, string propertyName)
+        private static T GetPropertyValue<T>(this EnvDTE.Project envDTEProject, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Debug.Assert(envDTEProject != null);
             if (envDTEProject.Properties == null)
             {
                 // this happens in unit tests
-                return default(T);
+                return default;
             }
 
             try
@@ -212,14 +196,14 @@ namespace NuGet.VisualStudio
             catch (InvalidCastException)
             {
             }
-            return default(T);
+            return default;
         }
 
         /// <summary>
         /// Returns the full path of the packages config file associated with the project.
         /// </summary>
         /// <param name="envDTEProject">The project.</param>
-        public static string GetPackagesConfigFullPath(EnvDTE.Project envDTEProject)
+        public static string GetPackagesConfigFullPath(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -233,7 +217,7 @@ namespace NuGet.VisualStudio
             return packagesConfigFullPath;
         }
 
-        public static string GetName(EnvDTE.Project envDTEProject)
+        public static string GetName(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -252,7 +236,7 @@ namespace NuGet.VisualStudio
             return name;
         }
 
-        public static string GetUniqueName(EnvDTE.Project envDTEProject)
+        public static string GetUniqueName(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -278,7 +262,7 @@ namespace NuGet.VisualStudio
         /// <remarks>
         /// This is different from the DTE Project.UniqueName property, which is the absolute path to the project file.
         /// </remarks>
-        public static async Task<string> GetCustomUniqueNameAsync(EnvDTE.Project envDTEProject)
+        public static async Task<string> GetCustomUniqueNameAsync(this EnvDTE.Project envDTEProject)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -306,7 +290,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Determine the project framework string based on the project properties.
         /// </summary>
-        public static string GetTargetFrameworkString(EnvDTE.Project envDTEProject)
+        public static string GetTargetFrameworkString(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -340,7 +324,7 @@ namespace NuGet.VisualStudio
         }
 
         // TODO: Return null for library projects
-        public static string GetConfigurationFile(EnvDTE.Project envDTEProject)
+        public static string GetConfigurationFile(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -356,6 +340,7 @@ namespace NuGet.VisualStudio
                 return Path.GetFileName(x).Equals(Path.GetFileName(y), StringComparison.OrdinalIgnoreCase);
             }
 
+            [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Existing behavior.")]
             public int GetHashCode(string obj)
             {
                 return Path.GetFileName(obj).ToLowerInvariant().GetHashCode();
@@ -407,19 +392,19 @@ namespace NuGet.VisualStudio
 
         #region Check Project Types
 
-        public static bool IsJavaScriptProject(EnvDTE.Project envDTEProject)
+        public static bool IsJavaScriptProject(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             return envDTEProject != null && VsProjectTypes.JsProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsManagementPackProject(EnvDTE.Project envDTEProject)
+        private static bool IsManagementPackProject(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             return envDTEProject != null && VsProjectTypes.ManagementPackProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsXnaWindowsPhoneProject(EnvDTE.Project envDTEProject)
+        private static bool IsXnaWindowsPhoneProject(this EnvDTE.Project envDTEProject)
         {
             // XNA projects will have this property set
             const string xnaPropertyValue = "Microsoft.Xna.GameStudio.CodeProject.WindowsPhoneProjectPropertiesExtender.XnaRefreshLevel";
@@ -427,36 +412,29 @@ namespace NuGet.VisualStudio
                    "Windows Phone OS 7.1".Equals(GetPropertyValue<string>(envDTEProject, xnaPropertyValue), StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsNativeProject(EnvDTE.Project envDTEProject)
+        private static bool IsWebProject(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            return envDTEProject != null
-                && VsProjectTypes.CppProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool IsWebProject(EnvDTE.Project envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            string[] types = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
+            string[] types = envDTEProject.GetProjectTypeGuids();
             return types.Contains(VsProjectTypes.WebSiteProjectTypeGuid, StringComparer.OrdinalIgnoreCase) ||
                    types.Contains(VsProjectTypes.WebApplicationProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
 
-        public static bool IsWebSite(EnvDTE.Project envDTEProject)
+        public static bool IsWebSite(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             return envDTEProject.Kind != null && envDTEProject.Kind.Equals(VsProjectTypes.WebSiteProjectTypeGuid, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool IsWindowsStoreApp(EnvDTE.Project envDTEProject)
+        public static bool IsWindowsStoreApp(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string[] types = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
+            string[] types = envDTEProject.GetProjectTypeGuids();
             return types.Contains(VsProjectTypes.WindowsStoreProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
 
-        private static bool IsWixProject(EnvDTE.Project envDTEProject)
+        private static bool IsWixProject(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             return envDTEProject.Kind != null && envDTEProject.Kind.Equals(VsProjectTypes.WixProjectTypeGuid, StringComparison.OrdinalIgnoreCase);

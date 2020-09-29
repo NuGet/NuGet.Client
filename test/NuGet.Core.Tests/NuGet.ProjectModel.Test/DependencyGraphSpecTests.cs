@@ -757,9 +757,9 @@ namespace NuGet.ProjectModel.Test
             return dgSpec;
         }
 
-        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies()
+        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(int centralVersionsDummyLoadCount = 0)
         {
-            return CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation());
+            return CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation(centralVersionsDummyLoadCount));
         }
 
         private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(params TargetFrameworkInformation[] tfis)
@@ -773,7 +773,7 @@ namespace NuGet.ProjectModel.Test
             return dgSpec;
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation()
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(int centralVersionsDummyLoadCount = 0)
         {
             var nugetFramework = new NuGetFramework("net40");
             var dependencyFoo = new LibraryDependency(
@@ -805,8 +805,13 @@ namespace NuGet.ProjectModel.Test
 
             tfi.CentralPackageVersions.Add(centralVersionFoo.Name, centralVersionFoo);
             tfi.CentralPackageVersions.Add(centralVersionBar.Name, centralVersionBar);
-
             LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
+
+            for (int i = 0; i < centralVersionsDummyLoadCount; i++)
+            {
+                var dummy = new CentralPackageVersion($"Dummy{i}", VersionRange.Parse("1.0.0"));
+                tfi.CentralPackageVersions.Add(dummy.Name, dummy);
+            }
 
             return tfi;
         }

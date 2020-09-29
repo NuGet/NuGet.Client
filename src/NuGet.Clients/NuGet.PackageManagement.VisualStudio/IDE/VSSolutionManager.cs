@@ -921,7 +921,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var projectSafeName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            var projectSafeName = await project.GetCustomUniqueNameAsync();
             var nuGetProject = await GetNuGetProjectAsync(projectSafeName);
 
             // if the project does not exist in the solution (this is true for new templates)
