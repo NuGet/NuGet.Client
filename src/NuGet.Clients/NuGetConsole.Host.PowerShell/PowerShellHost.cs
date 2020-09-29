@@ -314,7 +314,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         }
 
                         UpdateWorkingDirectory();
-                        await ExecuteInitScriptsAsync();
+                        await ExecuteInitScriptsAsync(0);
 
                         // check if PMC console is actually opened, then only hook to solution load events.
                         if (console is IWpfConsole)
@@ -329,8 +329,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                 {
                                     { "NuGetPMCExecuteCommandCount", _pmcExecutedCount},
                                     { "NuGetNonPMCExecuteCommandCount", _nonPmcExecutedCount},
-                                    { "NuGetTotalExecuteCommandCount", _pmcExecutedCount + _nonPmcExecutedCount}
+                                    { "NuGetTotalExecuteCommandCount", _pmcExecutedCount + _nonPmcExecutedCount},
+                                    { "isIWpfConsole", console is IWpfConsole}
                                 });
+
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                             _pmcExecutedCount = 0;
                             _nonPmcExecutedCount = 0;
@@ -396,7 +398,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     {
                         if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
                         {
-                            await ExecuteInitScriptsAsync();
+                            await ExecuteInitScriptsAsync(1);
                             break;
                         }
 
@@ -433,7 +435,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want execution of init scripts to crash our console.")]
-        private async Task ExecuteInitScriptsAsync()
+        private async Task ExecuteInitScriptsAsync(int origin)
         {
             // Fix for Bug 1426 Disallow ExecuteInitScripts from being executed concurrently by multiple threads.
             using (await _initScriptsLock.EnterAsync())
@@ -471,7 +473,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 foreach (var installedPackage in installedPackages)
                 {
-                    await ExecuteInitPs1Async(installedPackage.InstallPath, installedPackage.Identity);
+                    await ExecuteInitPs1Async(installedPackage.InstallPath, installedPackage.Identity, origin);
                 }
 
                 // We are done executing scripts, so record the restore and solution directory that we executed for.
@@ -481,7 +483,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
 
-        private async Task ExecuteInitPs1Async(string installPath, PackageIdentity identity)
+        private async Task ExecuteInitPs1Async(string installPath, PackageIdentity identity, int origin)
         {
             try
             {
@@ -507,6 +509,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         var telemetryEvent = new TelemetryEvent(eventName: "PowerShellScriptExecuted");
                         telemetryEvent.AddPiiData("id", identity.Id?.ToLowerInvariant() ?? "(empty package id)");
                         telemetryEvent["version"] = identity.Version;
+                        telemetryEvent["origin"] = origin == 0 ? "Initialize" : origin == 1 ? "HandleSolutionOpened" : "Execute";
+                        telemetryEvent["isIWpfConsole"] = ActiveConsole is IWpfConsole;
                         TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
 
                         return;
@@ -567,7 +571,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // to run it once for each solution
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ExecuteInitScriptsAsync();
+                await ExecuteInitScriptsAsync(2);
             });
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
