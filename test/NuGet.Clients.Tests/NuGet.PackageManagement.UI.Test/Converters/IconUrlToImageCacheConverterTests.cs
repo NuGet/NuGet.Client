@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public void Convert_WithLocalPathAndColorProfile_LoadsImage()
         {
-            var iconUrl = new Uri(@"resources/legendary.png", UriKind.Relative);
+            var iconUrl = new Uri(@"resources/grayicc.png", UriKind.Relative);
 
             var converter = new IconUrlToImageCacheConverter();
 
