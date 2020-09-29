@@ -61,6 +61,7 @@ steps:
 
 - task: MicroBuildLocalizationPlugin@1
   displayName: "Install Localization Plugin"
+  condition: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: MicroBuildSigningPlugin@1
   inputs:
@@ -84,7 +85,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       dotnet tool restore
-  condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
 - task: PowerShell@1
   displayName: "Check source file format"
@@ -92,7 +93,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       dotnet format --check --exclude submodules --verbosity diagnostic
-  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
@@ -117,7 +118,7 @@ steps:
     solution: "nuget.sln"
     msbuildVersion: "16.0"
     msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
-  condition: "succeeded()"
+  condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Ensure package versions are declared in packages.targets"
@@ -126,7 +127,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution"
-  condition: "succeeded()"
+  condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
 
 - task: MSBuild@1
@@ -136,6 +137,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild"
+  condition: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Build Final NuGet.exe (via ILMerge)"
@@ -152,7 +154,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+  condition: "or(and(succeeded(),eq(variables['BuildRTM'], 'true')), and(succeeded(),eq(variables['BuildRTM'], 'false'),not(eq(variables['IsOfficialBuild'], 'true'))))"   #for private build, run this task for nonRTM instead of RTM
 
 - task: MSBuild@1
   displayName: "Run unit tests (stop on error)"
@@ -201,7 +203,7 @@ steps:
     PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
     ArtifactName: "NuGet.CommandLine.Test"
     ArtifactType: "Container"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+  condition: "or(and(succeeded(),eq(variables['BuildRTM'], 'true')), and(succeeded(),eq(variables['BuildRTM'], 'false'),not(eq(variables['IsOfficialBuild'], 'true'))))"  #for private build, run this task for nonRTM instead of RTM
 
 - task: MSBuild@1
   displayName: "Sign Assemblies"
@@ -218,6 +220,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+  condition: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
@@ -250,11 +253,13 @@ steps:
   inputs:
     command: "custom"
     arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
+  contidion: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
   displayName: Verify Assembly Signatures and StrongName for the nupkgs
   inputs:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+  contidion: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
@@ -262,6 +267,7 @@ steps:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
     WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+  contidion: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
