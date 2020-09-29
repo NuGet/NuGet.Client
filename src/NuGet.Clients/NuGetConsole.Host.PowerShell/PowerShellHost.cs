@@ -327,9 +327,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         {
                             var telemetryEvent = new TelemetryEvent("PowerShellExecuteCommand", new Dictionary<string, object>
                                 {
-                                    { "NugetPMCExecuteCommandCount", _pmcExecutedCount},
-                                    { "NugetNonPMCExecuteCommandCount", _nonPmcExecutedCount},
-                                    { "NugetTotalExecuteCommandCount", _pmcExecutedCount + _nonPmcExecutedCount}
+                                    { "NuGetPMCExecuteCommandCount", _pmcExecutedCount},
+                                    { "NuGetNonPMCExecuteCommandCount", _nonPmcExecutedCount},
+                                    { "NuGetTotalExecuteCommandCount", _pmcExecutedCount + _nonPmcExecutedCount}
                                 });
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                             _pmcExecutedCount = 0;
@@ -504,7 +504,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             request.BuildInput(),
                             outputResults: true);
 
-                        var telemetryEvent = new TelemetryEvent(eventName: "PowershellScriptExecuted");
+                        var telemetryEvent = new TelemetryEvent(eventName: "PowerShellScriptExecuted");
                         telemetryEvent.AddPiiData("id", identity.Id?.ToLowerInvariant() ?? "(empty package id)");
                         telemetryEvent["version"] = identity.Version;
                         TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
