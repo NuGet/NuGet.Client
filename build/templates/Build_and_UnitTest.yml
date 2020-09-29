@@ -152,7 +152,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
-  condition: "or(and(succeeded(),eq(variables['BuildRTM'], 'true')), and(succeeded(),eq(variables['BuildRTM'], 'false'),not(eq(variables['IsOfficialBuild'], 'true'))))"   #for private build, run this task for nonRTM instead of RTM
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Run unit tests (stop on error)"
@@ -201,7 +201,7 @@ steps:
     PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
     ArtifactName: "NuGet.CommandLine.Test"
     ArtifactType: "Container"
-  condition: "or(and(succeeded(),eq(variables['BuildRTM'], 'true')), and(succeeded(),eq(variables['BuildRTM'], 'false'),not(eq(variables['IsOfficialBuild'], 'true'))))"  #for private build, run this task for nonRTM instead of RTM
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Sign Assemblies"
@@ -277,6 +277,7 @@ steps:
     SourceFolder: "artifacts\\$(NupkgOutputDir)"
     Contents: "*.nupkg"
     TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
+  condition: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
