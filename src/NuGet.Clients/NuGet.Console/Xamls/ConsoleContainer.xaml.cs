@@ -28,6 +28,10 @@ namespace NuGetConsole
         private int _windowLoadCount;
         private bool _isTelemetryEmitted;
 
+        private const string PackageManagerConsoleLoadCount = "PackageManagerConsoleLoadCount";
+        private const string NuGetPMCLoadCount = "NuGetPMCLoadCount";
+        private const string OpenAtStart = "OpenAtStart";
+
         public ConsoleContainer()
         {
             InitializeComponent();
@@ -82,16 +86,16 @@ namespace NuGetConsole
         {
             if (!_isTelemetryEmitted)
             {
-                var telemetryEvent = new TelemetryEvent("PackageManagerConsoleLoadCount", new Dictionary<string, object>
+                var telemetryEvent = new TelemetryEvent(PackageManagerConsoleLoadCount, new Dictionary<string, object>
                                 {
-                                    { "NuGetPMCLoadCount", _windowLoadCount},
-                                    { "PackageManagerConsoleDefaultOpen", false}
+                                    { NuGetPMCLoadCount, _windowLoadCount},
+                                    { OpenAtStart, false}
                                 });
 
                 // Work around to detect if PMC loaded automatically because it was last focused window.
                 if (IsLoaded)
                 {
-                    telemetryEvent["PackageManagerConsoleDefaultOpen"] = true;
+                    telemetryEvent[OpenAtStart] = true;
                 }
 
                 TelemetryActivity.EmitTelemetryEvent(telemetryEvent);

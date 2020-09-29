@@ -59,6 +59,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string DTEKey = "DTE";
         private const string CancellationTokenKey = "CancellationTokenKey";
         private const int ExecuteInitScriptsRetriesLimit = 50;
+        private const string PowerShellExecuteCommand = "PowerShellExecuteCommand";
+        private const string NuGetPMCExecuteCommandCount = "NuGetPMCExecuteCommandCount";
+        private const string NuGetNonPMCExecuteCommandCount = "NuGetNonPMCExecuteCommandCount";
+        private const string NuGetTotalExecuteCommandCount = "NuGetTotalExecuteCommandCount";
+        private const string IsIWpfConsole = "IsIWpfConsole";
+        private const string PowerShellScriptExecuted = "PowerShellScriptExecuted";
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
@@ -325,12 +331,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         _solutionManager.Value.SolutionClosed += (o, e) =>
                         {
-                            var telemetryEvent = new TelemetryEvent("PowerShellExecuteCommand", new Dictionary<string, object>
+                            var telemetryEvent = new TelemetryEvent(PowerShellExecuteCommand, new Dictionary<string, object>
                                 {
-                                    { "NuGetPMCExecuteCommandCount", _pmcExecutedCount},
-                                    { "NuGetNonPMCExecuteCommandCount", _nonPmcExecutedCount},
-                                    { "NuGetTotalExecuteCommandCount", _pmcExecutedCount + _nonPmcExecutedCount},
-                                    { "isIWpfConsole", console is IWpfConsole}
+                                    { NuGetPMCExecuteCommandCount, _pmcExecutedCount},
+                                    { NuGetNonPMCExecuteCommandCount, _nonPmcExecutedCount},
+                                    { NuGetTotalExecuteCommandCount, _pmcExecutedCount + _nonPmcExecutedCount},
+                                    { IsIWpfConsole, console is IWpfConsole}
                                 });
 
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
@@ -506,11 +512,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             request.BuildInput(),
                             outputResults: true);
 
-                        var telemetryEvent = new TelemetryEvent(eventName: "PowerShellScriptExecuted");
+                        var telemetryEvent = new TelemetryEvent(eventName: PowerShellScriptExecuted);
                         telemetryEvent.AddPiiData("id", identity.Id?.ToLowerInvariant() ?? "(empty package id)");
                         telemetryEvent["version"] = identity.Version;
                         telemetryEvent["origin"] = origin == 0 ? "Initialize" : origin == 1 ? "HandleSolutionOpened" : "Execute";
-                        telemetryEvent["isIWpfConsole"] = ActiveConsole is IWpfConsole;
+                        telemetryEvent[IsIWpfConsole] = ActiveConsole is IWpfConsole;
                         TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
 
                         return;
