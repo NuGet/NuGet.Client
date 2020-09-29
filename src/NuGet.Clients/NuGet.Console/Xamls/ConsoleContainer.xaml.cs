@@ -84,16 +84,17 @@ namespace NuGetConsole
             {
                 var telemetryEvent = new TelemetryEvent("PackageManagerConsoleLoadCount", new Dictionary<string, object>
                                 {
-                                    { "NugetPMCLoadCount", _windowLoadCount}
+                                    { "NuGetPMCLoadCount", _windowLoadCount},
+                                    { "PackageManagerConsoleDefaultOpen", false}
                                 });
-                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
 
                 // Work around to detect if PMC loaded automatically because it was last focused window.
                 if (IsLoaded)
                 {
-                    telemetryEvent = new TelemetryEvent("PackageManagerConsoleDefaultOpen");
-                    TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+                    telemetryEvent["PackageManagerConsoleDefaultOpen"] = true;
                 }
+
+                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
 
                 _isTelemetryEmitted = true;
             }
