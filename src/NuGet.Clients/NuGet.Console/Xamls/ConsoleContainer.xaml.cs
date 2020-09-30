@@ -86,17 +86,13 @@ namespace NuGetConsole
         {
             if (!_isTelemetryEmitted)
             {
+                // Work around to detect if PMC loaded automatically because it was last focused window.
+                var reopenAtStart = IsLoaded;
                 var telemetryEvent = new TelemetryEvent(PackageManagerConsoleLoadCount, new Dictionary<string, object>
                                 {
                                     { NuGetPMCLoadCount, _windowLoadCount},
-                                    { ReOpenAtStart, false}
+                                    { ReOpenAtStart, reopenAtStart}
                                 });
-
-                // Work around to detect if PMC loaded automatically because it was last focused window.
-                if (IsLoaded)
-                {
-                    telemetryEvent[ReOpenAtStart] = true;
-                }
 
                 TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
 

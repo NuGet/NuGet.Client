@@ -64,11 +64,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string NuGetNonPMCExecuteCommandCount = "NuGetNonPMCExecuteCommandCount";
         private const string NuGetTotalExecuteCommandCount = "NuGetTotalExecuteCommandCount";
         private const string IsIWpfConsole = "IsIWpfConsole";
+        private const string RunningDuration = "RunningDuration";
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
         private int _pmcExecutedCount;
         private int _nonPmcExecutedCount;
+        private DateTime _startRunningTime;
 
         private uint _solutionExistsCookie;
 
@@ -121,6 +123,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
                 () => ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>());
             _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetInstanceSafe<ICommonOperations>());
+
+            _startRunningTime = DateTime.UtcNow;
 
             _name = name;
             IsCommandEnabled = true;
@@ -335,7 +339,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                     { NuGetPMCExecuteCommandCount, _pmcExecutedCount},
                                     { NuGetNonPMCExecuteCommandCount, _nonPmcExecutedCount},
                                     { NuGetTotalExecuteCommandCount, _pmcExecutedCount + _nonPmcExecutedCount},
-                                    { IsIWpfConsole, console is IWpfConsole}
+                                    { IsIWpfConsole, console is IWpfConsole},
+                                    { RunningDuration, (DateTime.UtcNow - _startRunningTime).TotalSeconds}
                                 });
 
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
