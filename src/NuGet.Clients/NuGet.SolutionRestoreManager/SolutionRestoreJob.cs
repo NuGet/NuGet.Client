@@ -113,6 +113,7 @@ namespace NuGet.SolutionRestoreManager
             _solutionUpToDateChecker = solutionRestoreChecker;
         }
 
+
         /// <summary>
         /// Restore job entry point. Not re-entrant.
         /// </summary>
@@ -149,13 +150,13 @@ namespace NuGet.SolutionRestoreManager
             {
                 await RestoreAsync(request.ForceRestore, request.RestoreSource, token);
             }
+            catch (OperationCanceledException)
+            {
+            }
             catch (Exception e)
             {
-                if (!token.IsCancellationRequested)
-                {
-                    // Log the exception to the console and activity log
-                    await _logger.LogExceptionAsync(e);
-                }
+                // Log the exception to the console and activity log
+                await _logger.LogExceptionAsync(e);
             }
 
             return _status == NuGetOperationStatus.NoOp || _status == NuGetOperationStatus.Succeeded;
@@ -240,7 +241,7 @@ namespace NuGet.SolutionRestoreManager
                             new SolutionRestoredEventArgs(_status, solutionDirectory));
                     }
                 }
-                catch when (token.IsCancellationRequested)
+                catch (OperationCanceledException)
                 {
                     _status = NuGetOperationStatus.Cancelled;
                     throw;
@@ -496,6 +497,8 @@ namespace NuGet.SolutionRestoreManager
 
             }
         }
+
+
 
         private void PackageRestoreManager_PackageRestoreFailedEvent(
             object sender,
