@@ -38,6 +38,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private static readonly string AggregateSourceName = Resources.AggregateSourceName;
         private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
         private static readonly int MaxTasks = 16;
+        private readonly static object TelemetryLock = new object();
+        private static bool IsTelemetryEmitted;
+        private static int PmcExecutedCount;
+        private static int NonPmcExecutedCount;
+        private static byte PowerShellHostInstances;
 
         private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
         private IVsMonitorSelection VsMonitorSelection => ThreadHelper.JoinableTaskFactory.Run(_vsMonitorSelection.GetValueAsync);
@@ -63,12 +68,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string NuGetPMCExecuteCommandCount = "NuGetPMCExecuteCommandCount";
         private const string NuGetNonPMCExecuteCommandCount = "NuGetNonPMCExecuteCommandCount";
         private const string NuGetTotalExecuteCommandCount = "NuGetTotalExecuteCommandCount";
-        private const string IsIWpfConsole = "IsIWpfConsole";
+        private const string LoadedFromPMC = "LoadedFromPMC";
+        private const string FirstTimeLoadedFromPMC = "FirstTimeLoadedFromPMC";
+        private const string LoadedFromPMUI = "LoadedFromPMUI";
+        private const string FirstTimeLoadedFromPMUI = "FirstTimeLoadedFromPMUI";
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
-        private int _pmcExecutedCount;
-        private int _nonPmcExecutedCount;
 
         private uint _solutionExistsCookie;
 
@@ -330,17 +336,28 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         _solutionManager.Value.SolutionClosed += (o, e) =>
                         {
-                            var telemetryEvent = new TelemetryEvent(PowerShellExecuteCommand, new Dictionary<string, object>
+                            lock (TelemetryLock)
+                            {
+                                if (!IsTelemetryEmitted)
                                 {
-                                    { NuGetPMCExecuteCommandCount, _pmcExecutedCount},
-                                    { NuGetNonPMCExecuteCommandCount, _nonPmcExecutedCount},
-                                    { NuGetTotalExecuteCommandCount, _pmcExecutedCount + _nonPmcExecutedCount},
-                                    { IsIWpfConsole, console is IWpfConsole}
-                                });
+                                    var telemetryEvent = new TelemetryEvent(PowerShellExecuteCommand, new Dictionary<string, object>
+                                    {
+                                        { NuGetPMCExecuteCommandCount, PmcExecutedCount},
+                                        { NuGetNonPMCExecuteCommandCount, NonPmcExecutedCount},
+                                        { NuGetTotalExecuteCommandCount, PmcExecutedCount + NonPmcExecutedCount},
+                                        { LoadedFromPMC, (PowerShellHostInstances & 0b00000001) == 0b00000001},
+                                        { LoadedFromPMUI, (PowerShellHostInstances & 0b00000010) == 0b00000010},
+                                        { FirstTimeLoadedFromPMC, (PowerShellHostInstances & 0b00000100) == 0b00000100},
+                                        { FirstTimeLoadedFromPMUI, (PowerShellHostInstances & 0b00001000) == 0b00001000}
+                                    });
 
-                            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
-                            _pmcExecutedCount = 0;
-                            _nonPmcExecutedCount = 0;
+                                    TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+
+                                    PmcExecutedCount = 0;
+                                    NonPmcExecutedCount = 0;
+                                    IsTelemetryEmitted = true;
+                                }
+                            }
 
                             if (console is IWpfConsole)
                             {
@@ -369,6 +386,31 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         SetPrivateDataOnHost(false);
 
                         StartAsyncDefaultProjectUpdate();
+
+                        lock (TelemetryLock)
+                        {
+                            //There is edge case where PMC is opened but user doesn't execute any command on it.
+                            if (console is IWpfConsole)
+                            {
+                                if ((PowerShellHostInstances & 0b00000001) == 0)
+                                {
+                                    // First time load PMC
+                                    PowerShellHostInstances |= 0b00000100;
+                                }
+
+                                PowerShellHostInstances |= 0b00000001;
+                            }
+                            else
+                            {
+                                if ((PowerShellHostInstances & 0b00000010) == 0)
+                                {
+                                    // First time load from PMUI
+                                    PowerShellHostInstances |= 0b00001000;
+                                }
+
+                                PowerShellHostInstances |= 0b00000010;
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -387,8 +429,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             _scriptExecutor.Value.Reset();
 
-            _pmcExecutedCount = 0;
-            _nonPmcExecutedCount = 0;
+            lock (TelemetryLock)
+            {
+                PmcExecutedCount = 0;
+                NonPmcExecutedCount = 0;
+                IsTelemetryEmitted = false;
+
+                //Reset first time load powershell flag bits, but keep other 2 flags for origin of powershell load.
+                PowerShellHostInstances &= 0b00000011;
+            }
 
             // Solution opened event is raised on the UI thread
             // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
@@ -558,11 +607,17 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // Command can come here from both PMC and PM UI.
             if (console is IWpfConsole)
             {
-                _pmcExecutedCount++;
+                lock (TelemetryLock)
+                {
+                    PmcExecutedCount++;
+                }
             }
             else
             {
-                _nonPmcExecutedCount++;
+                lock (TelemetryLock)
+                {
+                    NonPmcExecutedCount++;
+                }
             }
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
