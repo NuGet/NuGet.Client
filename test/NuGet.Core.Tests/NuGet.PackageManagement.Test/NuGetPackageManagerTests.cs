@@ -6321,7 +6321,7 @@ namespace NuGet.Test
         }
 
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10093")]
         public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_RaiseTelemetryEventsWithWarningCode()
         {
             // Arrange
