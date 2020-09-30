@@ -3,7 +3,6 @@
 
 #nullable enable
 
-
 namespace NuGet.VisualStudio.Internal.Contracts
 {
     public enum LoadingStatus

@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async ValueTask<IReadOnlyCollection<PackageSourceMoniker>> PopulateListAsync(CancellationToken cancellationToken)
         {
             IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            using (var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetServices.SourceProviderService, cancellationToken: cancellationToken))
+            using (INuGetSourcesService nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetServices.SourceProviderService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(nugetSourcesService);
                 IReadOnlyList<PackageSource> packageSources = await nugetSourcesService.GetPackageSourcesAsync(cancellationToken);

@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement
             };
 
             folders.AddRange(pathContext.FallbackPackageFolders);
-            foreach(var folder in folders)
+            foreach (var folder in folders)
             {
                 // Create a repo for each folder
                 var source = sourceRepositoryProvider.CreateRepository(new PackageSource(folder), FeedType.FileSystemV3);

@@ -255,7 +255,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var activeSources = new List<SourceRepository>();
 
             IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers = await PackageSourceMoniker.PopulateListAsync(cancellationToken);
-            foreach(PackageSourceMoniker item in packageSourceMonikers)
+            foreach (PackageSourceMoniker item in packageSourceMonikers)
             {
                 foreach (PackageSource packageSource in item.PackageSources)
                 {

@@ -483,7 +483,7 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
-                    PackageLoadContext plc = new PackageLoadContext(isSolution: false, uiService.UIContext);
+                    var plc = new PackageLoadContext(isSolution: false, uiService.UIContext);
                     var frameworks = (await plc.GetSupportedFrameworksAsync()).ToList();
                     string[] projectIds = (await ProjectUtility.GetSortedProjectIdsAsync(uiService.Projects, cancellationToken)).ToArray();
 

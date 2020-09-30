@@ -81,7 +81,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             writer.Write(MessagePropertyName);
             writer.Write(value.Message);
             writer.Write(ReasonsPropertyName);
-            if(value.Reasons == null)
+            if (value.Reasons == null)
             {
                 writer.WriteNil();
             }
@@ -91,7 +91,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             }
             writer.Write(AlternatePackageMetadataPropertyName);
-            if(value.AlternatePackage == null)
+            if (value.AlternatePackage == null)
             {
                 writer.WriteNil();
             }

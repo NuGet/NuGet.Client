@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.UI
 
         public INuGetSolutionManagerService SolutionManager { get; }
 
-        public Task<PackageCollection> GetInstalledPackagesAsync() =>_installedPackagesTask;
+        public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
         public async Task<IEnumerable<string>> GetSupportedFrameworksAsync()

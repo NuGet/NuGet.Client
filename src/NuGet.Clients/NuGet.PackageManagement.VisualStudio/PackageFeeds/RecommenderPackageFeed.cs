@@ -129,7 +129,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], includePrerelease: false, includeUnlisted: false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
                 if (ver != null)
                 {
-                    PackageIdentity pid = new PackageIdentity(recommendIds[index], ver);
+                    var pid = new PackageIdentity(recommendIds[index], ver);
                     recommendPackages.Add(pid);
                 }
                 index++;
