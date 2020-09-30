@@ -64,7 +64,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string NuGetNonPMCExecuteCommandCount = "NuGetNonPMCExecuteCommandCount";
         private const string NuGetTotalExecuteCommandCount = "NuGetTotalExecuteCommandCount";
         private const string IsIWpfConsole = "IsIWpfConsole";
-        private const string PowerShellScriptExecuted = "PowerShellScriptExecuted";
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
@@ -320,7 +319,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         }
 
                         UpdateWorkingDirectory();
-                        await ExecuteInitScriptsAsync(0);
+                        await ExecuteInitScriptsAsync();
 
                         // check if PMC console is actually opened, then only hook to solution load events.
                         if (console is IWpfConsole)
@@ -404,7 +403,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     {
                         if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
                         {
-                            await ExecuteInitScriptsAsync(1);
+                            await ExecuteInitScriptsAsync();
                             break;
                         }
 
@@ -441,7 +440,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want execution of init scripts to crash our console.")]
-        private async Task ExecuteInitScriptsAsync(int origin)
+        private async Task ExecuteInitScriptsAsync()
         {
             // Fix for Bug 1426 Disallow ExecuteInitScripts from being executed concurrently by multiple threads.
             using (await _initScriptsLock.EnterAsync())
@@ -479,7 +478,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 foreach (var installedPackage in installedPackages)
                 {
-                    await ExecuteInitPs1Async(installedPackage.InstallPath, installedPackage.Identity, origin);
+                    await ExecuteInitPs1Async(installedPackage.InstallPath, installedPackage.Identity);
                 }
 
                 // We are done executing scripts, so record the restore and solution directory that we executed for.
@@ -489,7 +488,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
 
-        private async Task ExecuteInitPs1Async(string installPath, PackageIdentity identity, int origin)
+        private async Task ExecuteInitPs1Async(string installPath, PackageIdentity identity)
         {
             try
             {
@@ -511,13 +510,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             request.BuildCommand(),
                             request.BuildInput(),
                             outputResults: true);
-
-                        var telemetryEvent = new TelemetryEvent(eventName: PowerShellScriptExecuted);
-                        telemetryEvent.AddPiiData("id", identity.Id?.ToLowerInvariant() ?? "(empty package id)");
-                        telemetryEvent["version"] = identity.Version;
-                        telemetryEvent["origin"] = origin == 0 ? "Initialize" : origin == 1 ? "HandleSolutionOpened" : "Execute";
-                        telemetryEvent[IsIWpfConsole] = ActiveConsole is IWpfConsole;
-                        TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
 
                         return;
                     }
@@ -577,7 +569,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // to run it once for each solution
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ExecuteInitScriptsAsync(2);
+                await ExecuteInitScriptsAsync();
             });
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
