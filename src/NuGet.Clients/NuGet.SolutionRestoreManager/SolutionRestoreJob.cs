@@ -498,8 +498,6 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-
-
         private void PackageRestoreManager_PackageRestoreFailedEvent(
             object sender,
             PackageRestoreFailedEventArgs args)
