@@ -164,7 +164,6 @@
     </Compile>
     <Compile Include="Common\TriggerEventMethod.cs" />
     <Compile Include="Converters\MessageLevelToBrushConverter.cs" />
-    <Compile Include="Converters\LoadingStatusToIconConverter.cs" />
     <Compile Include="Converters\NotEqualConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
@@ -309,15 +308,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Xamls\InstalledIndicator.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Xamls\LicenseFileWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Xamls\MigratorHelpIcon.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -514,21 +505,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\StatusOK_32x.png" />
-    <Resource Include="Resources\StatusStop_32x.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Refresh_grey_16x.png" />
-    <Resource Include="Resources\Refresh_inverse_16x.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\StatusInformation_16x.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\statuserror.16.16.png" />
-    <Resource Include="Resources\statusinformation.16.16.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\UpgradeReport.xslt">

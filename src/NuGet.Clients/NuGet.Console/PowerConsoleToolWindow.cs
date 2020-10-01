@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -71,8 +72,7 @@ namespace NuGetConsole.Implementation
             : base(null)
         {
             Caption = Resources.ToolWindowTitle;
-            BitmapResourceID = 301;
-            BitmapIndex = 0;
+            BitmapImageMoniker = KnownMonikers.Console;
             ToolBar = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.idToolbar);
         }
 

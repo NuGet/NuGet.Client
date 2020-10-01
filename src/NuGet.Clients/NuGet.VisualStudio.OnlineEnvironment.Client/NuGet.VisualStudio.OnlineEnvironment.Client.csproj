@@ -5,7 +5,8 @@
   <PropertyGroup>
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <VSToolsPath Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'"></VSToolsPath>
+    <VSToolsPath Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
+    </VSToolsPath>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <SchemaVersion>2.0</SchemaVersion>
@@ -109,17 +110,6 @@
     <VSCTCompile Include="NuGetClientPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\nugetAbout.ico" />
-    <Content Include="Resources\nuget_256.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\nuget_96.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\packageicon.png" />
-    <Content Include="Resources\Toolbar.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
