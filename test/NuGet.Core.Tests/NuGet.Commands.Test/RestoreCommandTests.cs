@@ -27,6 +27,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection("Single Threaded Tests #1")]
     public class RestoreCommandTests
     {
         private static SignedPackageVerifierSettings DefaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);

@@ -18,6 +18,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection("Single Threaded Tests #1")]
     public class CycleTests
     {
         [Fact]

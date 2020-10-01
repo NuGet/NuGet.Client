@@ -25,6 +25,7 @@ namespace NuGet.Commands.Test
 {
     using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
 
+    [Collection("Single Threaded Tests #1")]
     public class OriginalCaseGlobalPackageFolderTests
     {
         [Fact]

@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection("Single Threaded Tests #1")]
     public class Project2ProjectTests
     {
         [Fact]
