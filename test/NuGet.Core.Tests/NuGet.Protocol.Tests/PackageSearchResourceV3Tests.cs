@@ -14,6 +14,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection("Single Threaded Tests")]
     public class PackageSearchResourceV3Tests
     {
         [Fact]

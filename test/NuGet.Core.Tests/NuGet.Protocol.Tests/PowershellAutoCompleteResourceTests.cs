@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection("Single Threaded Tests")]
     // Tests the Powershell autocomplete resource for V2 and v3 sources.  
     public class PowershellAutoCompleteResourceTests
     {

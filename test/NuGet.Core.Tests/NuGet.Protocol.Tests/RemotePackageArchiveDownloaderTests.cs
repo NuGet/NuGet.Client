@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection("Single Threaded Tests")]
     public class RemotePackageArchiveDownloaderTests
     {
         private static readonly PackageIdentity _packageIdentity;

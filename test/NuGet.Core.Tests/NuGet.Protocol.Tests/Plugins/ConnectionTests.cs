@@ -15,6 +15,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
+    [Collection("Single Threaded Tests")]
     public class ConnectionTests
     {
         [Fact]

@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Providers.Tests
 {
+    [Collection("Single Threaded Tests")]
     public class RepositorySignatureResourceProviderTests
     {
         private const string _resourceType470 = "RepositorySignatures/4.7.0";

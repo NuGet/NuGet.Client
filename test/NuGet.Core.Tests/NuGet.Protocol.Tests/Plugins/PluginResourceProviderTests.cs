@@ -17,6 +17,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
+    [Collection("Single Threaded Tests")]
     public class PluginResourceProviderTests
     {
         private const string _sourceUri = "https://unit.test";

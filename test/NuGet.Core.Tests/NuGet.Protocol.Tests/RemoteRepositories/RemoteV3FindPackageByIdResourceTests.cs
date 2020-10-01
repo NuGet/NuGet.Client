@@ -22,6 +22,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection("Single Threaded Tests")]
     public class RemoteV3FindPackageByIdResourceTests
     {
         [Fact]

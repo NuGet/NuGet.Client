@@ -12,6 +12,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection("Single Threaded Tests")]
     public class LocalPackageFileCacheTests
     {
         [Fact]
