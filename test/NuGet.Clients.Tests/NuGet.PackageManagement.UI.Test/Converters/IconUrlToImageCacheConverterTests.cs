@@ -89,6 +89,24 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
+        [Fact]
+        public void Convert_WithLocalPathAndColorProfile_LoadsImage()
+        {
+            var iconUrl = new Uri(@"resources/grayicc.png", UriKind.Relative);
+
+            var converter = new IconUrlToImageCacheConverter();
+
+            var image = converter.Convert(
+                values: new object[] { iconUrl, DependencyProperty.UnsetValue },
+                targetType: null,
+                parameter: DefaultPackageIcon,
+                culture: null) as BitmapImage;
+
+            VerifyImageResult(image);
+            Assert.NotSame(DefaultPackageIcon, image);
+            Assert.Equal(iconUrl, image.UriSource);
+        }
+
         [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
         public void Convert_WithValidImageUrl_DownloadsImage_DefaultImage()
         {
