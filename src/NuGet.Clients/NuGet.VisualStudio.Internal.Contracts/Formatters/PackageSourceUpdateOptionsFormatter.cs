@@ -9,18 +9,24 @@ using NuGet.Configuration;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     internal class PackageSourceUpdateOptionsFormatter : IMessagePackFormatter<PackageSourceUpdateOptions?>
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private const string UpdateCredentialsPropertyName = "updatecredentials";
         private const string UpdateEnabledPropertyName = "updateenabled";
 
+#pragma warning disable CS0618 // Type or member is obsolete
         internal static readonly IMessagePackFormatter<PackageSourceUpdateOptions?> Instance = new PackageSourceUpdateOptionsFormatter();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private PackageSourceUpdateOptionsFormatter()
         {
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public PackageSourceUpdateOptions? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             if (reader.TryReadNil())
             {
@@ -52,7 +58,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     }
                 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 return new PackageSourceUpdateOptions(updateCredentials, updateEnabled);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
             finally
             {
@@ -61,7 +69,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public void Serialize(ref MessagePackWriter writer, PackageSourceUpdateOptions? value, MessagePackSerializerOptions options)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             if (value == null)
             {

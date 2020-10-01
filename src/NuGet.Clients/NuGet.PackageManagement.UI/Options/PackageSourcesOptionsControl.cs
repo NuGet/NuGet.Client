@@ -254,7 +254,9 @@ namespace NuGet.Options
             {
                 if (SourcesChanged(_originalPackageSources, packageSources))
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     await _nugetSourcesService.SavePackageSourcesAsync(packageSources, new PackageSourceUpdateOptions(updateCredentials: false, updateEnabled: true), cancellationToken);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
             // Thrown during creating or saving NuGet.Config.

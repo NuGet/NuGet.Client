@@ -9,7 +9,9 @@ using NuGet.Common;
 
 namespace NuGet.Configuration
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class PackageSourceProvider : IPackageSourceProvider, IPackageSourceProvider2
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         public ISettings Settings { get; private set; }
 
@@ -652,6 +654,7 @@ namespace NuGet.Configuration
             }
         }
 
+        [Obsolete("https://github.com/NuGet/Home/issues/10098")]
         public void SavePackageSources(IEnumerable<PackageSource> sources, PackageSourceUpdateOptions sourceUpdateSettings)
         {
             if (sources == null)
@@ -747,8 +750,9 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentNullException(nameof(sources));
             }
-
+#pragma warning disable CS0618 // Type or member is obsolete
             SavePackageSources(sources, PackageSourceUpdateOptions.Default);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()
