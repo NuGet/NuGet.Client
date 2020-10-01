@@ -406,7 +406,9 @@ namespace NuGet.PackageManagement.VisualStudio
             bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
             if (isCpvmEnabled)
             {
+                // Add the central version information and merge the information to the package reference dependencies
                 projectTfi.CentralPackageVersions.AddRange(await GetCentralPackageVersionsAsync());
+                LibraryDependency.ApplyCentralVersionInformation(projectTfi.Dependencies, projectTfi.CentralPackageVersions);
             }
 
             // Apply fallback settings

@@ -3819,8 +3819,8 @@ namespace NuGet.Commands.Test
                 var centralDependencyX = packSpec.TargetFrameworks.First().CentralPackageVersions["x"];
                 var centralDependencyY = packSpec.TargetFrameworks.First().CentralPackageVersions["Y"];
 
-                Assert.Null(dependencyX.LibraryRange.VersionRange);
-                Assert.Null(dependencyY.LibraryRange.VersionRange);
+                Assert.Equal("(, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
+                Assert.Equal("(, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
                 Assert.Equal("(, )", centralDependencyX.VersionRange.ToNormalizedString());
                 Assert.Equal("(, )", centralDependencyY.VersionRange.ToNormalizedString());
             }

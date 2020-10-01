@@ -1946,7 +1946,7 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal("foo", packageVersion.Key);
             Assert.Equal("[2.0.0, )", packageVersion.Value.VersionRange.ToNormalizedString());
             var packageReference = Assert.Single(tfm.Dependencies);
-            Assert.Null(packageReference.LibraryRange.VersionRange);
+            Assert.Equal("[2.0.0, )", packageReference.LibraryRange.VersionRange.ToNormalizedString());
             Assert.True(result.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 

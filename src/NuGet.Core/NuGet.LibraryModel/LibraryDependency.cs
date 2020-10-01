@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using NuGet.Common;
 using NuGet.Shared;
@@ -168,6 +169,33 @@ namespace NuGet.LibraryModel
             var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
             return new LibraryDependency(clonedLibraryRange, Type, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases);
+        }
+
+        /// <summary>
+        /// Merge the CentralVersion information to the package reference information.
+        /// </summary>
+        public static void ApplyCentralVersionInformation(IList<LibraryDependency> packageReferences, IDictionary<string, CentralPackageVersion> centralPackageVersions)
+        {
+            if (packageReferences == null)
+            {
+                throw new ArgumentNullException(nameof(packageReferences));
+            }
+            if (centralPackageVersions == null)
+            {
+                throw new ArgumentNullException(nameof(centralPackageVersions));
+            }
+            if (centralPackageVersions.Count > 0)
+            {
+                foreach (LibraryDependency d in packageReferences.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
+                {
+                    if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
+                    {
+                        d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
+                    }
+
+                    d.VersionCentrallyManaged = true;
+                }
+            }
         }
     }
 }

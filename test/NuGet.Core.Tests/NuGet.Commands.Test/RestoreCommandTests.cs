@@ -1997,6 +1997,7 @@ namespace NuGet.Commands.Test
             {
                 tfi.CentralPackageVersions.Add(cvd.Name, cvd);
             }
+            LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             return tfi;
         }
