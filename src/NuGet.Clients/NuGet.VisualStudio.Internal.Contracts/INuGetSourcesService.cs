@@ -14,6 +14,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
     public interface INuGetSourcesService : IDisposable
     {
         ValueTask<IReadOnlyList<PackageSource>> GetPackageSourcesAsync(CancellationToken cancellationToken);
+#pragma warning disable CS0618 // Type or member is obsolete
         ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, PackageSourceUpdateOptions packageSourceUpdateOptions, CancellationToken cancellationToken);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
