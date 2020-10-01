@@ -13,6 +13,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -336,44 +337,47 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public async ValueTask<IReadOnlyList<ProjectAction>> GetUninstallActionsAsync(
-            string projectId,
+            IReadOnlyCollection<string> projectIds,
             PackageIdentity packageIdentity,
             bool removeDependencies,
             bool forceRemove,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNullOrEmpty(projectId);
+            Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
             Assumes.False(packageIdentity.HasVersion);
             Assumes.NotNull(_state.SourceCacheContext);
             Assumes.NotNull(_state.ResolvedActions);
             Assumes.Null(_state.PackageIdentity);
+            Assumes.True(_state.ResolvedActions.Count == 0);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            (bool success, NuGetProject? project) = await TryGetNuGetProjectMatchingProjectIdAsync(projectId);
+            _state.PackageIdentity = packageIdentity;
 
-            Assumes.True(success);
-            Assumes.NotNull(project);
+            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             var projectActions = new List<ProjectAction>();
             var uninstallationContext = new UninstallationContext(removeDependencies, forceRemove);
 
             NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUninstallPackageAsync(
-                project,
+            IEnumerable<(NuGetProject, NuGetProjectAction)> projectsWithActions = await packageManager.PreviewProjectsUninstallPackageAsync(
+                projects,
                 packageIdentity.Id,
                 uninstallationContext,
                 projectContext,
                 cancellationToken);
 
-            foreach (NuGetProjectAction action in actions)
+            foreach ((NuGetProject, NuGetProjectAction) projectWithActions in projectsWithActions)
             {
-                var resolvedAction = new ResolvedAction(project, action);
+                NuGetProject nugetProject = projectWithActions.Item1;
+                NuGetProjectAction action = projectWithActions.Item2;
+
+                var resolvedAction = new ResolvedAction(nugetProject, action);
                 var projectAction = new ProjectAction(
                     CreateProjectActionId(),
-                    projectId,
+                    nugetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId),
                     action.PackageIdentity,
                     action.NuGetProjectActionType,
                     implicitActions: null);
@@ -423,17 +427,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            var projects = new List<NuGetProject>();
-
-            foreach (string projectId in projectIds)
-            {
-                (bool success, NuGetProject? project) = await TryGetNuGetProjectMatchingProjectIdAsync(projectId);
-
-                Assumes.True(success);
-                Assumes.NotNull(project);
-
-                projects.Add(project);
-            }
+            var projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             var resolutionContext = new ResolutionContext(
                 dependencyBehavior,
@@ -501,7 +495,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(solutionManager);
 
             Dictionary<string, NuGetProject>? projects = (await solutionManager.GetNuGetProjectsAsync())
-                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _);
+                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _, PathUtility.GetStringComparerBasedOnOS());
             var matchingProjects = new List<NuGetProject>(capacity: projectIds.Count);
 
             foreach (string projectId in projectIds)
@@ -545,17 +539,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return _state.PackageIdentity != null
                 && projectActions.Any(projectAction => projectAction.ProjectActionType == NuGetProjectActionType.Install);
-        }
-
-        private async ValueTask<(bool, NuGetProject?)> TryGetNuGetProjectMatchingProjectIdAsync(string projectId)
-        {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
-
-            NuGetProject project = (await solutionManager.GetNuGetProjectsAsync())
-                .FirstOrDefault(p => projectId.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
-
-            return (project != null, project);
         }
     }
 }
