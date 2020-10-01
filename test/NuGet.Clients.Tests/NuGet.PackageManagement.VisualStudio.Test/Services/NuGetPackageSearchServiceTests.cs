@@ -54,19 +54,24 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
     public class NuGetPackageSearchServiceTests : BaseMockedVSCollectionTest
     {
-        SourceRepository _sourceRepository;
-        IEnumerable<IPackageReferenceContextInfo> _installedPackages;
-        IReadOnlyCollection<IProjectContextInfo> _projects;
+        private readonly SourceRepository _sourceRepository;
+        private readonly IEnumerable<IPackageReferenceContextInfo> _installedPackages;
+        private readonly IReadOnlyCollection<IProjectContextInfo> _projects;
 
         public NuGetPackageSearchServiceTests()
         {
             _installedPackages = new List<IPackageReferenceContextInfo>();
-            _projects = new List<IProjectContextInfo> { new ProjectContextInfo(Guid.NewGuid().ToString(), ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.PackageReference) };
+            _projects = new List<IProjectContextInfo>
+            {
+                new ProjectContextInfo(
+                    Guid.NewGuid().ToString(),
+                    ProjectModel.ProjectStyle.PackageReference,
+                    NuGetProjectKind.PackageReference)
+            };
 
             var query = "https://api-v2v3search-0.nuget.org/query";
             var responses = new Dictionary<string, string>
             {
-
                 { NuGetConstants.V3FeedUrl, ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.index.json", GetType()) },
                 { query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType()) },
                 { query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType()) },
@@ -78,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetTotalCountAsync_MaxCount()
+        public async Task GetTotalCountAsync_WithGreaterThanOrEqualToMaxCountResults_ReturnsMaxCount()
         {
             var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
             var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
@@ -96,74 +101,131 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectManagerService = new Mock<INuGetProjectManagerService>();
 
             var installedPackages = new List<IPackageReferenceContextInfo>();
-            var projects = new List<IProjectContextInfo> { new ProjectContextInfo(Guid.NewGuid().ToString(), ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.PackageReference) };
+            var projects = new List<IProjectContextInfo>
+            {
+                new ProjectContextInfo(
+                    Guid.NewGuid().ToString(),
+                    ProjectModel.ProjectStyle.PackageReference,
+                    NuGetProjectKind.PackageReference)
+            };
 
-            projectManagerService.Setup(x =>
-                x.GetInstalledPackagesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
 
 #pragma warning disable ISB001 // Dispose of proxies
-            serviceBroker.Setup(x =>
-                x.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+            serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(
+                    NuGetServices.ProjectManagerService,
+                    It.IsAny<ServiceActivationOptions>(),
+                    It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
 #pragma warning restore ISB001 // Dispose of proxies
 
-            NuGetPackageSearchService searchService = new NuGetPackageSearchService(serviceActivationOptions, serviceBroker.Object, authorizationService, sharedState);
+            using (var searchService = new NuGetPackageSearchService(
+                serviceActivationOptions,
+                serviceBroker.Object,
+                authorizationService,
+                sharedState))
+            {
+                const int MaxCount = 100;
 
-            var totalCount = await searchService.GetTotalCountAsync(100, projects, sources, new SearchFilter(true), ItemFilter.All, CancellationToken.None);
+                int totalCount = await searchService.GetTotalCountAsync(
+                    MaxCount,
+                    projects,
+                    sources,
+                    new SearchFilter(includePrerelease: true),
+                    ItemFilter.All,
+                    CancellationToken.None);
 
-            Assert.Equal(100, totalCount);
+                Assert.Equal(MaxCount, totalCount);
+            }
         }
 
         [Fact]
-        public async Task GetTotalCountAsync_Works()
+        public async Task GetTotalCountAsync_WithLessThanMaxCountResults_ReturnsResultsCount()
         {
-            var searchService = SetupSearchService();
-            var totalCount = await searchService.GetTotalCountAsync(100, _projects, new List<PackageSource> { _sourceRepository.PackageSource }, new SearchFilter(true), ItemFilter.All, CancellationToken.None);
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                int totalCount = await searchService.GetTotalCountAsync(
+                    maxCount: 100,
+                    _projects,
+                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    new SearchFilter(includePrerelease: true),
+                    ItemFilter.All,
+                    CancellationToken.None);
 
-            Assert.Equal(22, totalCount);
+                Assert.Equal(22, totalCount);
+            }
         }
 
         [Fact]
-        public async Task GetAllPackagesAsync_Works()
+        public async Task GetAllPackagesAsync_WithValidArguments_ReturnsMatchingPackages()
         {
-            var searchService = SetupSearchService();
-            var allPackages = await searchService.GetAllPackagesAsync(_projects, new List<PackageSource> { _sourceRepository.PackageSource }, new SearchFilter(true), ItemFilter.All, CancellationToken.None);
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                IReadOnlyCollection<PackageSearchMetadataContextInfo> allPackages = await searchService.GetAllPackagesAsync(
+                    _projects,
+                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    new SearchFilter(includePrerelease: true),
+                    ItemFilter.All,
+                    CancellationToken.None);
 
-            Assert.Equal(22, allPackages.Count);
+                Assert.Equal(22, allPackages.Count);
+            }
         }
 
         [Fact]
-        public async Task GetPackageMetadataListAsync_Works()
+        public async Task GetPackageMetadataListAsync_WithValidArguments_ReturnsMatchingResults()
         {
-            var searchService = SetupSearchService();
-            var packageMetadataList = await searchService.GetPackageMetadataListAsync("NuGet.Core", new List<PackageSource> { _sourceRepository.PackageSource }, true, true, CancellationToken.None);
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                IReadOnlyCollection<PackageSearchMetadataContextInfo> packageMetadataList = await searchService.GetPackageMetadataListAsync(
+                    id: "NuGet.Core",
+                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    includePrerelease: true,
+                    includeUnlisted: true,
+                    CancellationToken.None);
 
-            Assert.Equal(57, packageMetadataList.Count);
+                Assert.Equal(57, packageMetadataList.Count);
+            }
         }
 
         [Fact]
-        public async Task GetDeprecationMetadataAsync_Works()
+        public async Task GetDeprecationMetadataAsync_WhenDeprecationMetadataExists_ReturnsDeprecationMetadata()
         {
-            var searchService = SetupSearchService();
-            var deprecationMetadata = await searchService.GetDeprecationMetadataAsync(new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")), new List<PackageSource> { _sourceRepository.PackageSource }, true, CancellationToken.None);
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                PackageDeprecationMetadataContextInfo deprecationMetadata = await searchService.GetDeprecationMetadataAsync(
+                    new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")),
+                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    includePrerelease: true,
+                    CancellationToken.None);
 
-            Assert.NotNull(deprecationMetadata);
-            Assert.Equal("NuGet.Core is part of NuGet client v2 APIs. They have been replaced by NuGet client v3 and later APIs.", deprecationMetadata.Message);
-            Assert.Equal("Legacy", deprecationMetadata.Reasons.First());
+                Assert.NotNull(deprecationMetadata);
+                Assert.Equal("NuGet.Core is part of NuGet client v2 APIs. They have been replaced by NuGet client v3 and later APIs.", deprecationMetadata.Message);
+                Assert.Equal("Legacy", deprecationMetadata.Reasons.First());
+            }
         }
 
         [Fact]
-        public async Task GetPackageVersionsAsync_Works()
+        public async Task GetPackageVersionsAsync_WhenPackageVersionsExist_ReturnsPackageVersions()
         {
-            NuGetPackageSearchService searchService = SetupSearchService();
-            var result = await searchService.GetPackageVersionsAsync(new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")), new List<PackageSource> { _sourceRepository.PackageSource }, true, CancellationToken.None);
-            Assert.Equal(51, result.Count);
-            Assert.True(result.Last().Version.Version.Equals(new Version("1.0.1120.104")));
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                IReadOnlyCollection<VersionInfoContextInfo> result = await searchService.GetPackageVersionsAsync(
+                    new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")),
+                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    includePrerelease: true,
+                    CancellationToken.None);
+
+                Assert.Equal(51, result.Count);
+                Assert.True(result.Last().Version.Version.Equals(new Version("1.0.1120.104")));
+            }
         }
 
         [Fact]
-        public async Task SearchAndContinueSearch_Works()
+        public async Task ContinueSearchAsync_WhenSearchIsContinuable_Continues()
         {
             var telemetryService = new Mock<INuGetTelemetryService>();
             var eventsQueue = new ConcurrentQueue<TelemetryEvent>();
@@ -173,44 +235,53 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
 
-            var searchService = SetupSearchService();
-            var searchResult = await searchService.SearchAsync(_projects, new List<PackageSource> { _sourceRepository.PackageSource }, "nuget", new SearchFilter(true), ItemFilter.All, true, CancellationToken.None);
-            var continueSearchResult = await searchService.ContinueSearchAsync(CancellationToken.None);
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                SearchResultContextInfo searchResult = await searchService.SearchAsync(
+                    _projects,
+                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    searchText: "nuget",
+                    new SearchFilter(includePrerelease: true),
+                    ItemFilter.All,
+                    useRecommender: true,
+                    CancellationToken.None);
+                SearchResultContextInfo continueSearchResult = await searchService.ContinueSearchAsync(CancellationToken.None);
 
-            Assert.True(searchResult.PackageSearchItems.First().Title.Equals("NuGet.Core1", StringComparison.OrdinalIgnoreCase));
-            Assert.True(continueSearchResult.PackageSearchItems.First().Title.Equals("NuGet.Core27", StringComparison.OrdinalIgnoreCase));
+                Assert.True(searchResult.PackageSearchItems.First().Title.Equals("NuGet.Core1", StringComparison.OrdinalIgnoreCase));
+                Assert.True(continueSearchResult.PackageSearchItems.First().Title.Equals("NuGet.Core27", StringComparison.OrdinalIgnoreCase));
 
-            var events = eventsQueue.ToArray();
-            Assert.True(4 == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
+                TelemetryEvent[] events = eventsQueue.ToArray();
+                Assert.True(4 == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
 
-            var search = Assert.Single(events, e => e.Name == "Search");
-            Assert.Equal(true, search["IncludePrerelease"]);
-            Assert.Equal("nuget", search.GetPiiData().First(p => p.Key == "Query").Value);
-            var operationId = Assert.IsType<string>(search["OperationId"]);
-            var parsedOperationId = Guid.ParseExact(operationId, "D");
+                TelemetryEvent search = Assert.Single(events, e => e.Name == "Search");
+                Assert.Equal(true, search["IncludePrerelease"]);
+                Assert.Equal("nuget", search.GetPiiData().First(p => p.Key == "Query").Value);
+                string operationId = Assert.IsType<string>(search["OperationId"]);
+                Guid parsedOperationId = Guid.ParseExact(operationId, "D");
 
-            var sources = Assert.Single(events, e => e.Name == "SearchPackageSourceSummary");
-            Assert.Equal(1, sources["NumHTTPv3Feeds"]);
-            Assert.Equal("YesV3", sources["NuGetOrg"]);
-            Assert.Equal(operationId, sources["ParentId"]);
+                TelemetryEvent sources = Assert.Single(events, e => e.Name == "SearchPackageSourceSummary");
+                Assert.Equal(1, sources["NumHTTPv3Feeds"]);
+                Assert.Equal("YesV3", sources["NuGetOrg"]);
+                Assert.Equal(operationId, sources["ParentId"]);
 
-            var page0 = Assert.Single(events, e => e.Name == "SearchPage" && e["PageIndex"] is int && (int)e["PageIndex"] == 0);
-            Assert.Equal("Ready", page0["LoadingStatus"]);
-            Assert.Equal(operationId, page0["ParentId"]);
-            Assert.IsType<int>(page0["ResultCount"]);
-            Assert.IsType<double>(page0["Duration"]);
-            Assert.IsType<double>(page0["ResultsAggregationDuration"]);
-            Assert.IsType<string>(page0["IndividualSourceDurations"]);
-            Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page0["IndividualSourceDurations"])).Values<double>().Count());
+                TelemetryEvent page0 = Assert.Single(events, e => e.Name == "SearchPage" && e["PageIndex"] is int && (int)e["PageIndex"] == 0);
+                Assert.Equal("Ready", page0["LoadingStatus"]);
+                Assert.Equal(operationId, page0["ParentId"]);
+                Assert.IsType<int>(page0["ResultCount"]);
+                Assert.IsType<double>(page0["Duration"]);
+                Assert.IsType<double>(page0["ResultsAggregationDuration"]);
+                Assert.IsType<string>(page0["IndividualSourceDurations"]);
+                Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page0["IndividualSourceDurations"])).Values<double>().Count());
 
-            var page1 = Assert.Single(events, e => e.Name == "SearchPage" && e["PageIndex"] is int && (int)e["PageIndex"] == 1);
-            Assert.Equal("Ready", page1["LoadingStatus"]);
-            Assert.Equal(operationId, page1["ParentId"]);
-            Assert.IsType<int>(page1["ResultCount"]);
-            Assert.IsType<double>(page1["Duration"]);
-            Assert.IsType<double>(page1["ResultsAggregationDuration"]);
-            Assert.IsType<string>(page1["IndividualSourceDurations"]);
-            Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
+                TelemetryEvent page1 = Assert.Single(events, e => e.Name == "SearchPage" && e["PageIndex"] is int && (int)e["PageIndex"] == 1);
+                Assert.Equal("Ready", page1["LoadingStatus"]);
+                Assert.Equal(operationId, page1["ParentId"]);
+                Assert.IsType<int>(page1["ResultCount"]);
+                Assert.IsType<double>(page1["Duration"]);
+                Assert.IsType<double>(page1["ResultsAggregationDuration"]);
+                Assert.IsType<string>(page1["IndividualSourceDurations"]);
+                Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
+            }
         }
 
         private NuGetPackageSearchService SetupSearchService()
@@ -233,13 +304,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var projectManagerService = new Mock<INuGetProjectManagerService>();
 
-            projectManagerService.Setup(x =>
-                x.GetInstalledPackagesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(_installedPackages.ToList()));
 
 #pragma warning disable ISB001 // Dispose of proxies
-            serviceBroker.Setup(x =>
-                x.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService, It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+            serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(
+                    NuGetServices.ProjectManagerService,
+                    It.IsAny<ServiceActivationOptions>(),
+                    It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
 #pragma warning restore ISB001 // Dispose of proxies
 

@@ -246,7 +246,7 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
-                }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged)); ;
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
             }
             else
             {

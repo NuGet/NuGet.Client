@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -22,6 +22,13 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         }
 
         public static TheoryData TestData => new TheoryData<PackageDeprecationMetadataContextInfo>
-            { { new PackageDeprecationMetadataContextInfo("message", new List<string> {"reason" }, new AlternatePackageMetadataContextInfo("packageid", new VersionRange(new NuGetVersion("1.0")))) } };
+            {
+                {
+                    new PackageDeprecationMetadataContextInfo(
+                        "message",
+                        new List<string> {"reason" },
+                        new AlternatePackageMetadataContextInfo("packageid", new VersionRange(new NuGetVersion("1.0"))))
+                }
+            };
     }
 }

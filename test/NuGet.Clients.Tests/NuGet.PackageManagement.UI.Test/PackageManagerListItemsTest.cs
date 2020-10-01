@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -38,7 +41,7 @@ namespace NuGet.PackageManagement.UI.Test
             };
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
-            
+
             var context = new PackageLoadContext(false, uiContext);
 
             var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService, "EntityFramework", false);

@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class SearchObject
     {
         private readonly IPackageFeed _mainFeed;
-        private IPackageFeed? _recommenderFeed;
+        private readonly IPackageFeed? _recommenderFeed;
         private SearchResult<IPackageSearchMetadata>? _lastMainFeedSearchResult;
 
         public SearchObject(IPackageFeed mainFeed, IPackageFeed? recommenderFeed)
@@ -51,30 +51,39 @@ namespace NuGet.PackageManagement.VisualStudio
                 // remove duplicated recommended packages from the browse results
                 var recommendedIds = recommenderFeedResults.Items.Select(item => item.Identity.Id);
 
-                IReadOnlyCollection<PackageSearchMetadataContextInfo> filteredMainFeedResult =
-                        mainFeedResult.Items.Where(item => !recommendedIds.Contains(item.Identity.Id))
-                        .Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata)).ToList();
+                IReadOnlyCollection<PackageSearchMetadataContextInfo> filteredMainFeedResult = mainFeedResult.Items
+                    .Where(item => !recommendedIds.Contains(item.Identity.Id))
+                    .Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata))
+                    .ToList();
 
-                IList<PackageSearchMetadataContextInfo> recommendedPackageSearchMetadataContextInfo =
-                    recommenderFeedResults.Items.Select(
-                        packageSearchMetadata =>
-                        {
-                            var recommendedPackageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata);
-                            recommendedPackageSearchMetadataContextInfo.IsRecommended = true;
-                            recommendedPackageSearchMetadataContextInfo.RecommenderVersion = (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo;
-                            return recommendedPackageSearchMetadataContextInfo;
-                        }).ToList();
+                IList<PackageSearchMetadataContextInfo> recommendedPackageSearchMetadataContextInfo = recommenderFeedResults.Items
+                    .Select(packageSearchMetadata =>
+                    {
+                        var recommendedPackageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata);
+                        recommendedPackageSearchMetadataContextInfo.IsRecommended = true;
+                        recommendedPackageSearchMetadataContextInfo.RecommenderVersion = (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo;
+                        return recommendedPackageSearchMetadataContextInfo;
+                    })
+                    .ToList();
 
                 recommendedPackageSearchMetadataContextInfo.AddRange(filteredMainFeedResult);
-                return new SearchResultContextInfo(recommendedPackageSearchMetadataContextInfo.ToList(), mainFeedResult.SourceSearchStatus, mainFeedResult.NextToken != null)
+                return new SearchResultContextInfo(
+                    recommendedPackageSearchMetadataContextInfo.ToList(),
+                    mainFeedResult.SourceSearchStatus,
+                    mainFeedResult.NextToken != null)
                 {
                     OperationId = _lastMainFeedSearchResult.OperationId
                 };
             }
 
-            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageSearchMetadataContextInfoCollection =
-                mainFeedResult.Items.Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata)).ToList();
-            return new SearchResultContextInfo(packageSearchMetadataContextInfoCollection, mainFeedResult.SourceSearchStatus, mainFeedResult.NextToken != null)
+            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageSearchMetadataContextInfoCollection = mainFeedResult.Items
+                .Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata))
+                .ToList();
+
+            return new SearchResultContextInfo(
+                packageSearchMetadataContextInfoCollection,
+                mainFeedResult.SourceSearchStatus,
+                mainFeedResult.NextToken != null)
             {
                 OperationId = mainFeedResult.OperationId
             };
@@ -84,11 +93,19 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.NotNull(_lastMainFeedSearchResult);
 
-            var refreshSearchResult = await _mainFeed.RefreshSearchAsync(_lastMainFeedSearchResult.RefreshToken, cancellationToken);
+            SearchResult<IPackageSearchMetadata> refreshSearchResult = await _mainFeed.RefreshSearchAsync(
+                _lastMainFeedSearchResult.RefreshToken,
+                cancellationToken);
             _lastMainFeedSearchResult = refreshSearchResult;
 
-            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageItems = _lastMainFeedSearchResult.Items.Select(a => PackageSearchMetadataContextInfo.Create(a)).ToList();
-            return new SearchResultContextInfo(packageItems, refreshSearchResult.SourceSearchStatus, refreshSearchResult.NextToken != null)
+            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageItems = _lastMainFeedSearchResult.Items
+                .Select(item => PackageSearchMetadataContextInfo.Create(item))
+                .ToList();
+
+            return new SearchResultContextInfo(
+                packageItems,
+                refreshSearchResult.SourceSearchStatus,
+                refreshSearchResult.NextToken != null)
             {
                 OperationId = _lastMainFeedSearchResult.OperationId
             };
@@ -99,9 +116,9 @@ namespace NuGet.PackageManagement.VisualStudio
             var packages = new List<PackageSearchMetadataContextInfo>();
             do
             {
-                var searchResult = _lastMainFeedSearchResult?.NextToken != null
+                SearchResultContextInfo searchResult = _lastMainFeedSearchResult?.NextToken != null
                     ? await ContinueSearchAsync(cancellationToken)
-                    : await SearchAsync(string.Empty, searchFilter, false, cancellationToken);
+                    : await SearchAsync(string.Empty, searchFilter, useRecommender: false, cancellationToken);
 
                 if (_lastMainFeedSearchResult?.RefreshToken != null)
                 {
@@ -118,7 +135,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.NotNull(_lastMainFeedSearchResult);
 
-            if(_lastMainFeedSearchResult.NextToken == null)
+            if (_lastMainFeedSearchResult.NextToken == null)
             {
                 return new SearchResultContextInfo()
                 {
@@ -126,11 +143,19 @@ namespace NuGet.PackageManagement.VisualStudio
                 };
             }
 
-            var continueSearchResult = await _mainFeed.ContinueSearchAsync(_lastMainFeedSearchResult.NextToken, cancellationToken);
+            SearchResult<IPackageSearchMetadata> continueSearchResult = await _mainFeed.ContinueSearchAsync(
+                _lastMainFeedSearchResult.NextToken,
+                cancellationToken);
             _lastMainFeedSearchResult = continueSearchResult;
 
-            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageItems = _lastMainFeedSearchResult.Items.Select(a => PackageSearchMetadataContextInfo.Create(a)).ToList();
-            return new SearchResultContextInfo(packageItems, continueSearchResult.SourceSearchStatus, continueSearchResult.NextToken != null)
+            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageItems = _lastMainFeedSearchResult.Items
+                .Select(item => PackageSearchMetadataContextInfo.Create(item))
+                .ToList();
+
+            return new SearchResultContextInfo(
+                packageItems,
+                continueSearchResult.SourceSearchStatus,
+                continueSearchResult.NextToken != null)
             {
                 OperationId = _lastMainFeedSearchResult.OperationId
             };

@@ -281,10 +281,7 @@ namespace NuGet.PackageManagement.UI
 
         public void Dispose()
         {
-            if (_searchService != null)
-            {
-                _searchService.Dispose();
-            }
+            _searchService?.Dispose();
 
             if (_serviceBroker != null)
             {
@@ -302,11 +299,7 @@ namespace NuGet.PackageManagement.UI
 
             public PackageFeedSearchState(SearchResultContextInfo results)
             {
-                if (results == null)
-                {
-                    throw new ArgumentNullException(nameof(results));
-                }
-                _results = results;
+                _results = results ?? throw new ArgumentNullException(nameof(results));
             }
 
             public SearchResultContextInfo Results => _results;

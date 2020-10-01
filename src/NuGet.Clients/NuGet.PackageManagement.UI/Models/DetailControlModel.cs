@@ -526,7 +526,7 @@ namespace NuGet.PackageManagement.UI
 
         internal async Task LoadPackageMetadataAsync(IReadOnlyCollection<PackageSource> packageSources, CancellationToken token)
         {
-            var versions = await _searchResultPackage.GetVersionsAsync();
+            IReadOnlyCollection<VersionInfoContextInfo> versions = await _searchResultPackage.GetVersionsAsync();
 
             // First try to load the metadata from the version info. This will happen if we already fetched metadata
             // about each version at the same time as fetching the version list (that is, V2). This also acts as a
@@ -543,7 +543,7 @@ namespace NuGet.PackageManagement.UI
                 try
                 {
                     IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-                    using (var searchService = await serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, token))
+                    using (INuGetSearchService searchService = await serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, token))
                     {
                         // Load up the full details for each version.
                         IReadOnlyCollection<PackageSearchMetadataContextInfo> packages = await searchService.GetPackageMetadataListAsync(Id, packageSources, includePrerelease: true, includeUnlisted: false, cancellationToken: token);
