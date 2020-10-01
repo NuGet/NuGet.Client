@@ -652,6 +652,7 @@ namespace NuGet.Configuration
             }
         }
 
+        [Obsolete("https://github.com/NuGet/Home/issues/10098")]
         public void SavePackageSources(IEnumerable<PackageSource> sources, PackageSourceUpdateOptions sourceUpdateSettings)
         {
             if (sources == null)
