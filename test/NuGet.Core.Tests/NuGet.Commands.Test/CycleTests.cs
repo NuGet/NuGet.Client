@@ -18,7 +18,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    [Collection("Single Threaded Tests #1")]
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class CycleTests
     {
         [Fact]

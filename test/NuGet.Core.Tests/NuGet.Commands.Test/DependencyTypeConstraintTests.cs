@@ -17,7 +17,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    [Collection("Single Threaded Tests #1")]
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class DependencyTypeConstraintTests
     {
         // Root project is favored over package in global folder

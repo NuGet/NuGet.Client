@@ -14,7 +14,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
-    [Collection("Single Threaded Tests")]
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class ProxyAuthenticationHandlerTests
     {
         private static readonly Uri ProxyAddress = new Uri("http://127.0.0.1:8888/");

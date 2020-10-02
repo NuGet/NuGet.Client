@@ -12,7 +12,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests.Plugins
 {
-    [Collection("Single Threaded Tests")]
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class PluginCacheEntryTests
     {
         [Fact]

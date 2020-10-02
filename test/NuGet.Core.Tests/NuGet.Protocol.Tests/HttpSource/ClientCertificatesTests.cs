@@ -12,7 +12,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
-    [Collection("Single Threaded Tests")]
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class ClientCertificatesTests
     {
         // Skip: https://github.com/NuGet/Home/issues/9684
