@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.UI.Test
                 IconUrl = iconUrl
             };
 
-            BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
             Assert.Same(DefaultPackageIcon, result);
@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.UI.Test
                 IconUrl = iconUrl
             };
 
-            BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
             Assert.Same(DefaultPackageIcon, result);
@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.UI.Test
                 IconUrl = iconUrl
             };
 
-            BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
             Assert.Same(DefaultPackageIcon, result);
@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.UI.Test
                 IconUrl = iconUrl
             };
 
-            BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
             Assert.NotSame(DefaultPackageIcon, result);
@@ -132,7 +132,7 @@ namespace NuGet.PackageManagement.UI.Test
                 IconUrl = iconUrl
             };
 
-            BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
             Assert.Equal(DefaultPackageIcon, result);
@@ -177,7 +177,7 @@ namespace NuGet.PackageManagement.UI.Test
                 _output.WriteLine($"Url {builder.Uri}");
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
                 // Assert
                 _output.WriteLine($"result {result}");
@@ -201,7 +201,7 @@ namespace NuGet.PackageManagement.UI.Test
                 };
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
                 // Assert
                 VerifyImageResult(result);
@@ -233,7 +233,7 @@ namespace NuGet.PackageManagement.UI.Test
                 };
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
                 // Assert
                 VerifyImageResult(result);
@@ -293,7 +293,7 @@ namespace NuGet.PackageManagement.UI.Test
         /// </summary>
         /// <param name="packageItemListViewModel"></param>
         /// <returns></returns>
-        private static async Task<BitmapSource> GetFinalIconBitmapAsync(PackageItemListViewModel packageItemListViewModel)
+        private static async Task<BitmapSource> GetFinalIconBitmapAsyncAsync(PackageItemListViewModel packageItemListViewModel)
         {
             BitmapSource result = packageItemListViewModel.IconBitmap;
 
@@ -345,7 +345,7 @@ namespace NuGet.PackageManagement.UI.Test
                 _output.WriteLine($"Url {builder.Uri}");
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmap(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
                 VerifyImageResult(result);
 
