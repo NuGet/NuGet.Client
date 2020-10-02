@@ -120,7 +120,6 @@ namespace NuGet.PackageManagement.UI.Test
 
             VerifyImageResult(result);
             Assert.NotSame(DefaultPackageIcon, result);
-            Assert.Equal(iconUrl, result.UriSource);
         }
 
         [Fact]
