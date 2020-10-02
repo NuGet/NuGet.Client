@@ -132,7 +132,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(15, lastTelemetryEvent.Count);
+            Assert.Equal(24, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -145,7 +145,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(13, actual.Count);
+            Assert.Equal(22, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 
