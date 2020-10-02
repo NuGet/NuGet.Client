@@ -44,11 +44,11 @@ namespace NuGet.PackageManagement.UI
 
         private static void ExpireOlderValues(ConcurrentQueue<int> q, int expirationOffsetInTicks)
         {
-            while (q.Count > 0)
+            lock (q) //locking for TryPeek and TryDequeue
             {
-                int result;
-                lock (q) //locking for TryPeek and TryDequeue
+                while (q.Count > 0)
                 {
+                    int result;
                     bool peekSucceeded = q.TryPeek(out result);
                     if (!peekSucceeded)
                     {

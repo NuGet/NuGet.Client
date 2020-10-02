@@ -404,7 +404,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     // null or relative uris are not supported, should fallback to default.
                     IconBitmap = Images.DefaultPackageIcon;
-                    IconBitmapComplete = true;
+                    IsIconBitmapComplete = true;
                 }
                 else
                 {
@@ -413,7 +413,7 @@ namespace NuGet.PackageManagement.UI
                     if (cachedBitmapImage != null)
                     {
                         IconBitmap = cachedBitmapImage;
-                        IconBitmapComplete = true;
+                        IsIconBitmapComplete = true;
                     }
                     else
                     {
@@ -422,11 +422,11 @@ namespace NuGet.PackageManagement.UI
                         if (ErrorFloodGate.IsOpen)
                         {
                             IconBitmap = Images.DefaultPackageIcon;
-                            IconBitmapComplete = true;
+                            IsIconBitmapComplete = true;
                         }
                         else
                         {
-                            IconBitmapComplete = false;
+                            IsIconBitmapComplete = false;
                             // IconBitmap will be fetched when IconBitmap getter is first called, generally by the binding when it should be visible.
                             IconBitmap = null;
                         }
@@ -435,7 +435,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IconBitmapComplete { get; private set; }
+        public bool IsIconBitmapComplete { get; private set; }
 
         private BitmapSource _iconBitmap;
         public BitmapSource IconBitmap
@@ -502,7 +502,7 @@ namespace NuGet.PackageManagement.UI
                 AddToCache(cacheKey, imageResult);
             }
 
-            IconBitmapComplete = true;
+            IsIconBitmapComplete = true;
             return imageResult;
         }
 
@@ -518,19 +518,17 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (reader is PackageArchiveReader par) // This reader is closed in BitmapImage events
                     {
-                        var iconEntryNormalized = PathUtility.StripLeadingDirectorySeparators(
+                        string iconEntryNormalized = PathUtility.StripLeadingDirectorySeparators(
                             Uri.UnescapeDataString(iconUrl.Fragment)
                                 .Substring(1)); // Substring skips the '#' in the URI fragment
 
                         // need to use a memorystream, or the bitmapimage won't be freezable.
                         using (var parStream = par.GetEntry(iconEntryNormalized).Open())
+                        using (var memoryStream = new MemoryStream())
                         {
-                            using (var memoryStream = new MemoryStream())
-                            {
-                                parStream.CopyTo(memoryStream);
-                                iconBitmapImage.StreamSource = memoryStream;
-                                FinalizeBitmapImage(iconBitmapImage);
-                            }
+                            parStream.CopyTo(memoryStream);
+                            iconBitmapImage.StreamSource = memoryStream;
+                            FinalizeBitmapImage(iconBitmapImage);
                         }
 
                         iconBitmapImage.Freeze();
@@ -576,8 +574,8 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
-                    // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
                     image = iconBitmapImage ?? Images.DefaultPackageIcon;
+                    // store this bitmapImage in the bitmap image cache, so that other occurences can reuse the BitmapImage
                     string cacheKey = GenerateKeyFromIconUri(iconUrl);
                     AddToCache(cacheKey, image);
                     ErrorFloodGate.ReportAttempt();
@@ -652,7 +650,7 @@ namespace NuGet.PackageManagement.UI
                 try
                 {
                     imageData = await wc.DownloadDataTaskAsync(imageUri);
-                    ms = new MemoryStream(imageData);
+                    ms = new MemoryStream(imageData, writable: false);
                 }
                 catch (WebException webex)
                 {
