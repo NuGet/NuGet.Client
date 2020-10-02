@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -102,6 +103,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(Id));
             OnPropertyChanged(nameof(PackageReader));
             OnPropertyChanged(nameof(IconUrl));
+            OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
 
             var getVersionsTask = searchResultPackage.GetVersionsAsync();
@@ -311,6 +313,8 @@ namespace NuGet.PackageManagement.UI
         public string Id => _searchResultPackage?.Id;
 
         public Uri IconUrl => _searchResultPackage?.IconUrl;
+
+        public BitmapSource IconBitmap => _searchResultPackage?.IconBitmap;
 
         public bool PrefixReserved => _searchResultPackage?.PrefixReserved ?? false;
 

@@ -169,7 +169,6 @@
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
     <Compile Include="Converters\EnumerableToVisibilityConverter.cs" />
     <Compile Include="Converters\FontSizeConverter.cs" />
-    <Compile Include="Converters\IconUrlToVisibilityConverter.cs" />
     <Compile Include="Converters\InstalledVersionsCountConverter.cs" />
     <Compile Include="Converters\InverseNullToVisibilityConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToStringConverter.cs" />
@@ -181,7 +180,6 @@
     <Compile Include="Converters\StyleKeyConverter.cs" />
     <Compile Include="Converters\SummaryToFontStyleConverter.cs" />
     <Compile Include="Converters\SummaryToStringConverter.cs" />
-    <Compile Include="Converters\IconUrlToImageCacheConverter.cs" />
     <Compile Include="Converters\VersionToStringConverter.cs" />
     <Compile Include="Models\DependencyBehaviorItem.cs" />
     <Compile Include="Models\DetailControlModel.cs" />

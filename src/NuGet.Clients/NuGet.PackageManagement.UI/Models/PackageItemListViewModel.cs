@@ -5,8 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Cache;
+using System.Runtime.Caching;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -27,6 +33,24 @@ namespace NuGet.PackageManagement.UI
 
         private static readonly AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
             AsyncLazy.New((PackageDeprecationMetadata)null);
+
+        private const int DecodePixelWidth = 32;
+
+        // same URIs can reuse the bitmapImage that we've already used.
+        private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
+
+        private static readonly WebExceptionStatus[] FatalErrors = new[]
+        {
+            WebExceptionStatus.ConnectFailure,
+            WebExceptionStatus.RequestCanceled,
+            WebExceptionStatus.ConnectionClosed,
+            WebExceptionStatus.Timeout,
+            WebExceptionStatus.UnknownError
+        };
+
+        private static readonly RequestCachePolicy RequestCacheIfAvailable = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
+
+        private static readonly ErrorFloodGate ErrorFloodGate = new ErrorFloodGate();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -369,7 +393,76 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Uri IconUrl { get; set; }
+        private Uri _iconUrl;
+        public Uri IconUrl
+        {
+            get { return _iconUrl; }
+            set
+            {
+                _iconUrl = value;
+                if (_iconUrl == null || !_iconUrl.IsAbsoluteUri)
+                {
+                    // null or relative uris are not supported, should fallback to default.
+                    IconBitmap = Images.DefaultPackageIcon;
+                    IconBitmapComplete = true;
+                }
+                else
+                {
+                    string cacheKey = GenerateKeyFromIconUri(_iconUrl);
+                    var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
+                    if (cachedBitmapImage != null)
+                    {
+                        IconBitmap = cachedBitmapImage;
+                        IconBitmapComplete = true;
+                    }
+                    else
+                    {
+                        // Some people run on networks with internal NuGet feeds, but no access to the package images on the internet.
+                        // This is meant to detect that kind of case, and stop spamming the network, so the app remains responsive.
+                        if (ErrorFloodGate.IsOpen)
+                        {
+                            IconBitmap = Images.DefaultPackageIcon;
+                            IconBitmapComplete = true;
+                        }
+                        else
+                        {
+                            IconBitmapComplete = false;
+                            // IconBitmap will be fetched when IconBitmap getter is first called, generally by the binding when it should be visible.
+                            IconBitmap = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        public bool IconBitmapComplete { get; private set; }
+
+        private BitmapSource _iconBitmap;
+        public BitmapSource IconBitmap
+        {
+            get
+            {
+                if (_iconBitmap == null)
+                {
+                    // Fetch icon on workerthread, via fire and forget.
+                    // When fetched, the real icon, or the default, will be set as the value, and databindings will refresh due to property change event.
+                    async void action() { IconBitmap = await FetchIconStreamAsync(IconUrl); }
+                    new Task(action).Start();
+
+                    // return default package icon for now.
+                    return Images.DefaultPackageIcon;
+                }
+                return _iconBitmap;
+            }
+            set
+            {
+                if (_iconBitmap != value)
+                {
+                    _iconBitmap = value;
+                    OnPropertyChanged(nameof(IconBitmap));
+                }
+            }
+        }
 
         public Lazy<Task<IEnumerable<VersionInfo>>> Versions { private get; set; }
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
@@ -381,6 +474,199 @@ namespace NuGet.PackageManagement.UI
 
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
         private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
+
+        private async Task<BitmapSource> FetchIconStreamAsync(Uri iconUrl)
+        {
+            BitmapSource imageResult;
+
+            if (IsEmbeddedIconUri(IconUrl))
+            {
+                if (PackageReader is Func<PackageReaderBase> lazyReader)
+                {
+                    imageResult = FetchEmbeddedImage(lazyReader, IconUrl);
+                }
+                else // Identified an embedded icon URI, but we are unable to process it
+                {
+                    imageResult = Images.DefaultPackageIcon;
+                }
+            }
+            else
+            {
+                // download http or file image
+                imageResult = await FetchImageAsync(IconUrl);
+            }
+
+            if (imageResult != null)
+            {
+                string cacheKey = GenerateKeyFromIconUri(_iconUrl);
+                AddToCache(cacheKey, imageResult);
+            }
+
+            IconBitmapComplete = true;
+            return imageResult;
+        }
+
+        private BitmapSource FetchEmbeddedImage(Func<PackageReaderBase> lazyReader, Uri iconUrl)
+        {
+            BitmapSource imageResult;
+
+            var iconBitmapImage = new BitmapImage();
+            iconBitmapImage.BeginInit();
+            try
+            {
+                using (PackageReaderBase reader = lazyReader()) // Always returns a new reader. That avoids using an already disposed one
+                {
+                    if (reader is PackageArchiveReader par) // This reader is closed in BitmapImage events
+                    {
+                        var iconEntryNormalized = PathUtility.StripLeadingDirectorySeparators(
+                            Uri.UnescapeDataString(iconUrl.Fragment)
+                                .Substring(1)); // Substring skips the '#' in the URI fragment
+
+                        // need to use a memorystream, or the bitmapimage won't be freezable.
+                        using (var parStream = par.GetEntry(iconEntryNormalized).Open())
+                        {
+                            using (var memoryStream = new MemoryStream())
+                            {
+                                parStream.CopyTo(memoryStream);
+                                iconBitmapImage.StreamSource = memoryStream;
+                                FinalizeBitmapImage(iconBitmapImage);
+                            }
+                        }
+
+                        iconBitmapImage.Freeze();
+                        imageResult = iconBitmapImage;
+                    }
+                    else // we cannot use the reader object
+                    {
+                        imageResult = Images.DefaultPackageIcon;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                imageResult = Images.DefaultPackageIcon;
+            }
+
+            return imageResult;
+        }
+
+        private async Task<BitmapSource> FetchImageAsync(Uri iconUrl)
+        {
+            BitmapSource image = null;
+            if (iconUrl != null)
+            {
+                using (Stream stream = await GetStream(iconUrl))
+                {
+                    BitmapImage iconBitmapImage = null;
+
+                    if (stream != null)
+                    {
+                        iconBitmapImage = new BitmapImage();
+                        iconBitmapImage.BeginInit();
+                        iconBitmapImage.StreamSource = stream;
+
+                        try
+                        {
+                            FinalizeBitmapImage(iconBitmapImage);
+                            iconBitmapImage.Freeze();
+                        }
+                        catch (Exception)
+                        {
+                            iconBitmapImage = null;
+                        }
+                    }
+
+                    // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
+                    image = iconBitmapImage ?? Images.DefaultPackageIcon;
+                    string cacheKey = GenerateKeyFromIconUri(iconUrl);
+                    AddToCache(cacheKey, image);
+                    ErrorFloodGate.ReportAttempt();
+                }
+            }
+            return image;
+        }
+
+        private static void FinalizeBitmapImage(BitmapImage iconBitmapImage)
+        {
+            // Default cache policy: Per MSDN, satisfies a request for a resource either by using the cached copy of the resource or by sending a request
+            // for the resource to the server. The action taken is determined by the current cache policy and the age of the content in the cache.
+            // This is the cache level that should be used by most applications.
+            iconBitmapImage.UriCachePolicy = RequestCacheIfAvailable;
+
+            // Instead of scaling larger images and keeping larger image in memory, this makes it so we scale it down, and throw away the bigger image.
+            // Only need to set this on one dimension, to preserve aspect ratio
+            iconBitmapImage.DecodePixelWidth = DecodePixelWidth;
+
+            // Workaround for https://github.com/dotnet/wpf/issues/3503
+            iconBitmapImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+
+            iconBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+
+            iconBitmapImage.EndInit();
+        }
+
+        /// <summary>
+        /// NuGet Embedded Icon Uri verification
+        /// </summary>
+        /// <param name="iconUrl">An URI to test</param>
+        /// <returns><c>true</c> if <c>iconUrl</c> is an URI to an embedded icon in a NuGet package</returns>
+        public static bool IsEmbeddedIconUri(Uri iconUrl)
+        {
+            return iconUrl != null
+                && iconUrl.IsAbsoluteUri
+                && iconUrl.IsFile
+                && !string.IsNullOrEmpty(iconUrl.Fragment)
+                && iconUrl.Fragment.Length > 1;
+        }
+
+        private static string GenerateKeyFromIconUri(Uri iconUrl)
+        {
+            return iconUrl == null ? string.Empty : iconUrl.ToString();
+        }
+
+        private static void AddToCache(string cacheKey, BitmapSource iconBitmapImage)
+        {
+            var policy = new CacheItemPolicy
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(10),
+                RemovedCallback = CacheEntryRemoved
+            };
+            BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
+        }
+
+        private static void CacheEntryRemoved(CacheEntryRemovedArguments arguments)
+        {
+        }
+
+        private async Task<Stream> GetStream(Uri imageUri)
+        {
+            // BitmapImage can download on its own from URIs, but in order
+            // to support downloading on a worker thread, we need to download the image
+            // data and put into a memorystream. Then have the BitmapImage decode the
+            // image from the memorystream.
+            byte[] imageData = null;
+            MemoryStream ms;
+
+            using (var wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    imageData = await wc.DownloadDataTaskAsync(imageUri);
+                    ms = new MemoryStream(imageData);
+                }
+                catch (WebException webex)
+                {
+                    ms = null;
+
+                    if (webex != null && FatalErrors.Any(c => webex.Status == c))
+                    {
+                        ErrorFloodGate.ReportError();
+                    }
+                }
+            }
+
+            return ms;
+        }
 
         private void TriggerStatusLoader()
         {

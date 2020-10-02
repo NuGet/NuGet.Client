@@ -1,12 +1,11 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
-    /// Sliding in time error threshold evaluator. 
+    /// Sliding in time error threshold evaluator.
     /// Verifies the number of fatal errors within last hour not bigger than reasonable threshold.
-    /// Not thread-safe as all value converter calls happen in main UI thread.
     /// </summary>
     internal class ErrorFloodGate
     {
@@ -17,8 +16,8 @@ namespace NuGet.PackageManagement.UI
         private const int MinFailuresCount = 5;
         private const int SecondsInOneTick = 5;
         private readonly DateTimeOffset _origin = DateTimeOffset.Now;
-        private readonly Queue<int> _attempts = new Queue<int>();
-        private readonly Queue<int> _failures = new Queue<int>();
+        private readonly ConcurrentQueue<int> _attempts = new ConcurrentQueue<int>();
+        private readonly ConcurrentQueue<int> _failures = new ConcurrentQueue<int>();
 
         private DateTimeOffset _lastEvaluate = DateTimeOffset.Now;
         private bool _isOpen = false;
@@ -43,11 +42,28 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static void ExpireOlderValues(Queue<int> q, int expirationOffsetInTicks)
+        private static void ExpireOlderValues(ConcurrentQueue<int> q, int expirationOffsetInTicks)
         {
-            while (q.Count > 0 && q.Peek() < expirationOffsetInTicks)
+            while (q.Count > 0)
             {
-                q.Dequeue();
+                int result;
+                lock (q) //locking for TryPeek and TryDequeue
+                {
+                    bool peekSucceeded = q.TryPeek(out result);
+                    if (!peekSucceeded)
+                    {
+                        continue;
+                    }
+
+                    if (result < expirationOffsetInTicks)
+                    {
+                        q.TryDequeue(out result);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
             }
         }
 
