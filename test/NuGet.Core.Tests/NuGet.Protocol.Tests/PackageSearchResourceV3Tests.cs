@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 

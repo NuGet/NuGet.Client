@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Configuration;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
