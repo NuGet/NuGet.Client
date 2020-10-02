@@ -293,7 +293,7 @@ namespace NuGet.PackageManagement.UI.Test
         /// </summary>
         /// <param name="packageItemListViewModel"></param>
         /// <returns></returns>
-        private static async Task<BitmapSource> GetFinalIconBitmapAsyncAsync(PackageItemListViewModel packageItemListViewModel)
+        private static async Task<BitmapSource> GetFinalIconBitmapAsync(PackageItemListViewModel packageItemListViewModel)
         {
             BitmapSource result = packageItemListViewModel.IconBitmap;
 
