@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio
         };
 
         // List of project types that cannot have binding redirects added
-        private static readonly string[] UnsupportedProjectTypesForBindingRedirects =
+        private static readonly HashSet<string> UnsupportedProjectTypesForBindingRedirects = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             VsProjectTypes.WixProjectTypeGuid,
             VsProjectTypes.JsProjectTypeGuid,
@@ -49,7 +49,7 @@ namespace NuGet.VisualStudio
         };
 
         // List of project types that cannot have references added to them
-        private static readonly string[] UnsupportedProjectTypesForAddingReferences =
+        private static readonly HashSet<string> UnsupportedProjectTypesForAddingReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             VsProjectTypes.WixProjectTypeGuid,
             VsProjectTypes.CppProjectTypeGuid,
