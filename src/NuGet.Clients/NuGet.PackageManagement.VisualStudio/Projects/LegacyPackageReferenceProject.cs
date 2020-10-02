@@ -48,8 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapter vsProjectAdapter,
             string projectId,
             INuGetProjectServices projectServices,
-            IVsProjectThreadingService threadingService,
-            NuGetFramework targetFramework = null)
+            IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.NotNullOrEmpty(projectId);
@@ -69,9 +68,22 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
 
             ProjectServices = projectServices;
+        }
+
+        public LegacyPackageReferenceProject(
+            IVsProjectAdapter vsProjectAdapter,
+            string projectId,
+            INuGetProjectServices projectServices,
+            IVsProjectThreadingService threadingService,
+            NuGetFramework targetFramework)
+            : this(vsProjectAdapter,
+                projectId,
+                projectServices,
+                threadingService)
+        {
+            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
         }
 
         #region BuildIntegratedNuGetProject
@@ -375,10 +387,10 @@ namespace NuGet.PackageManagement.VisualStudio
             if (targets != null)
             {
                 _transitivePackages = new Dictionary<string, PackageReference>(StringComparer.OrdinalIgnoreCase);
-                var _transitivePackages4 = targets
+                var transitivePackageRefs = targets
                      .SelectMany(target => target.Libraries
                          .SelectMany(library => GetTransitivePackageReferences(library.Dependencies, target.TargetFramework, assetsPackageSpec, targets)));
-                foreach (var pkgref in _transitivePackages4)
+                foreach (var pkgref in transitivePackageRefs)
                 {
                     _transitivePackages[pkgref.PackageIdentity.Id] = pkgref;
                 }
