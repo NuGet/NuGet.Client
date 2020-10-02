@@ -28,6 +28,15 @@ namespace NuGet.VisualStudio
             int packageCount,
             int noOpProjectsCount,
             int upToDateProjectsCount,
+            int unknownProjectsCount,
+            int projectJsonProjectsCount,
+            int packageReferenceProjectsCount,
+            int legacyPackageReferenceProjectsCount,
+            int netCorePackageReferenceProjectsCount,
+            int dotnetCliToolProjectsCount,
+            int standaloneProjectsCount,
+            int packagesConfigProjectsCount,
+            int dotnetToolReferenceProjectsCount,
             DateTimeOffset endTime,
             double duration,
             bool isSolutionLoadRestore,
@@ -36,6 +45,15 @@ namespace NuGet.VisualStudio
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
             base[nameof(UpToDateProjectCount)] = upToDateProjectsCount;
+            base[nameof(UnknownProjectsCount)] = unknownProjectsCount;
+            base[nameof(ProjectJsonProjectsCount)] = projectJsonProjectsCount;
+            base[nameof(PackageReferenceProjectsCount)] = packageReferenceProjectsCount;
+            base[nameof(LegacyPackageReferenceProjectsCount)] = legacyPackageReferenceProjectsCount;
+            base[nameof(NetCorePackageReferenceProjectsCount)] = netCorePackageReferenceProjectsCount;
+            base[nameof(DotnetCliToolProjectsCount)] = dotnetCliToolProjectsCount;
+            base[nameof(StandaloneProjectsCount)] = standaloneProjectsCount;
+            base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
+            base[nameof(DotnetToolReferenceProjectsCount)] = dotnetToolReferenceProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
             base[nameof(IsSolutionLoadRestore)] = isSolutionLoadRestore;
 
@@ -56,5 +74,23 @@ namespace NuGet.VisualStudio
         public bool IsSolutionLoadRestore => (bool)base[nameof(IsSolutionLoadRestore)];
 
         public int UpToDateProjectCount => (int)base[nameof(UpToDateProjectCount)];
+
+        public int UnknownProjectsCount => (int)base[nameof(UnknownProjectsCount)];
+
+        public int ProjectJsonProjectsCount => (int)base[nameof(ProjectJsonProjectsCount)];
+
+        public int PackageReferenceProjectsCount => (int)base[nameof(PackageReferenceProjectsCount)];
+
+        public int LegacyPackageReferenceProjectsCount => (int)base[nameof(LegacyPackageReferenceProjectsCount)];
+
+        public int NetCorePackageReferenceProjectsCount => (int)base[nameof(NetCorePackageReferenceProjectsCount)];
+
+        public int DotnetCliToolProjectsCount => (int)base[nameof(DotnetCliToolProjectsCount)];
+
+        public int StandaloneProjectsCount => (int)base[nameof(StandaloneProjectsCount)];
+
+        public int PackagesConfigProjectsCount => (int)base[nameof(PackagesConfigProjectsCount)];
+
+        public int DotnetToolReferenceProjectsCount => (int)base[nameof(DotnetToolReferenceProjectsCount)];
     }
 }

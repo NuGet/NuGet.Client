@@ -308,6 +308,26 @@ namespace NuGet.SolutionRestoreManager
                 packageCount: _packageCount,
                 noOpProjectsCount: _noOpProjectsCount,
                 upToDateProjectsCount: _upToDateProjectCount,
+                unknownProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.Unknown).Count(),
+                projectJsonProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.ProjectJson).Count(),
+                packageReferenceProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.PackageReference).Count(),
+                legacyPackageReferenceProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.PackageReference)
+                    .Where(x => x is LegacyPackageReferenceProject).Count(),
+                netCorePackageReferenceProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.PackageReference)
+                    .Where(x => x is NetCorePackageReferenceProject).Count(),
+                dotnetCliToolProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.DotnetCliTool).Count(),
+                standaloneProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.Standalone).Count(),
+                packagesConfigProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.PackagesConfig).Count(),
+                dotnetToolReferenceProjectsCount: sortedProjects
+                    .Where(x => x.ProjectStyle == ProjectStyle.DotnetToolReference).Count(),
                 DateTimeOffset.Now,
                 duration,
                 isSolutionLoadRestore: _isSolutionLoadRestore,
