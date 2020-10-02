@@ -100,7 +100,7 @@ namespace NuGet.VisualStudio
                 var isPreunzippedString = packagesElement.GetOptionalAttributeValue(IsPreunzippedAttributeName);
                 if (!string.IsNullOrEmpty(isPreunzippedString))
                 {
-                    Boolean.TryParse(isPreunzippedString, out isPreunzipped);
+                    bool.TryParse(isPreunzippedString, out isPreunzipped);
                 }
 
                 var forceDesignTimeBuildString =
@@ -108,7 +108,7 @@ namespace NuGet.VisualStudio
 
                 if (!string.IsNullOrEmpty(forceDesignTimeBuildString))
                 {
-                    Boolean.TryParse(forceDesignTimeBuildString, out forceDesignTimeBuild);
+                    bool.TryParse(forceDesignTimeBuildString, out forceDesignTimeBuild);
                 }
 
                 packages = GetPackages(packagesElement).ToList();
@@ -146,13 +146,13 @@ namespace NuGet.VisualStudio
             bool includeDependenciesValue;
             var missingOrInvalidAttributes = from declaration in declarations
                                              where
-                                                 String.IsNullOrWhiteSpace(declaration.id) ||
-                                                 String.IsNullOrWhiteSpace(declaration.version) ||
+                                                 string.IsNullOrWhiteSpace(declaration.id) ||
+                                                 string.IsNullOrWhiteSpace(declaration.version) ||
                                                  !NuGetVersion.TryParse(declaration.version, out semVer) ||
                                                  (declaration.skipAssemblyReferences != null &&
-                                                  !Boolean.TryParse(declaration.skipAssemblyReferences, out skipAssemblyReferencesValue)) ||
+                                                  !bool.TryParse(declaration.skipAssemblyReferences, out skipAssemblyReferencesValue)) ||
                                                  (declaration.includeDependencies != null &&
-                                                  !Boolean.TryParse(declaration.includeDependencies, out includeDependenciesValue))
+                                                  !bool.TryParse(declaration.includeDependencies, out includeDependenciesValue))
                                              select declaration;
 
             if (missingOrInvalidAttributes.Any())
@@ -166,11 +166,11 @@ namespace NuGet.VisualStudio
                    select new PreinstalledPackageInfo(
                        declaration.id,
                        declaration.version,
-                       skipAssemblyReferences: declaration.skipAssemblyReferences != null && Boolean.Parse(declaration.skipAssemblyReferences),
+                       skipAssemblyReferences: declaration.skipAssemblyReferences != null && bool.Parse(declaration.skipAssemblyReferences),
 
                        // Note that the declaration uses "includeDependencies" but we need to invert it to become ignoreDependencies
                        // The declaration uses includeDependencies so that the default value can be 'false'
-                       ignoreDependencies: !(declaration.includeDependencies != null && Boolean.Parse(declaration.includeDependencies))
+                       ignoreDependencies: !(declaration.includeDependencies != null && bool.Parse(declaration.includeDependencies))
                        );
         }
 
@@ -211,7 +211,7 @@ namespace NuGet.VisualStudio
         private string GetRegistryRepositoryPath(XElement packagesElement, IEnumerable<IRegistryKey> registryKeys)
         {
             string keyName = packagesElement.GetOptionalAttributeValue("keyName");
-            if (String.IsNullOrEmpty(keyName))
+            if (string.IsNullOrEmpty(keyName))
             {
                 ShowErrorMessage(VsResources.TemplateWizard_MissingRegistryKeyName);
                 throw new WizardBackoutException();
@@ -236,7 +236,7 @@ namespace NuGet.VisualStudio
                     return RepositoryType.Template;
 
                 default:
-                    ShowErrorMessage(String.Format(VsResources.TemplateWizard_InvalidRepositoryAttribute,
+                    ShowErrorMessage(string.Format(VsResources.TemplateWizard_InvalidRepositoryAttribute,
                         repositoryAttributeValue));
                     throw new WizardBackoutException();
             }
@@ -356,7 +356,7 @@ namespace NuGet.VisualStudio
                 else
                 {
                     string solutionDir = DetermineSolutionDirectory(replacementsDictionary);
-                    if (!String.IsNullOrEmpty(solutionDir))
+                    if (!string.IsNullOrEmpty(solutionDir))
                     {
                         // If the project is a Website that is created on an Http location,
                         // solutionDir may be an Http address, e.g. http://localhost.
@@ -477,7 +477,7 @@ namespace NuGet.VisualStudio
 
             string solutionName;
             string solutionDir;
-            bool ignoreSolutionDir = (replacementsDictionary.TryGetValue("$specifiedsolutionname$", out solutionName) && String.IsNullOrEmpty(solutionName));
+            bool ignoreSolutionDir = (replacementsDictionary.TryGetValue("$specifiedsolutionname$", out solutionName) && string.IsNullOrEmpty(solutionName));
 
             // We check $destinationdirectory$ twice because we want the following precedence:
             // 1. If $specifiedsolutionname$ == null, ALWAYS use $destinationdirectory$

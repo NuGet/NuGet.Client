@@ -31,13 +31,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    var root = VsProjectAdapter.ProjectDirectory;
-                    var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
-                    await AddImportStatementAsync(location, relativeTargetPath);
-                });
+            {
+                var root = await VsProjectAdapter.GetProjectDirectoryAsync();
+                var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
+                await AddImportStatementAsync(location, relativeTargetPath);
+            });
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -62,14 +60,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    var root = VsProjectAdapter.ProjectDirectory;
-                    // For VS 2012 or above, the operation has to be done inside the Writer lock
-                    var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
-                    await RemoveImportStatementAsync(relativeTargetPath);
-                });
+            {
+                var root = await VsProjectAdapter.GetProjectDirectoryAsync();
+                // For VS 2012 or above, the operation has to be done inside the Writer lock
+                var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
+                await RemoveImportStatementAsync(relativeTargetPath);
+            });
         }
 
         // IMPORTANT: The NoInlining is required to prevent CLR from loading VisualStudio12.dll assembly while running 

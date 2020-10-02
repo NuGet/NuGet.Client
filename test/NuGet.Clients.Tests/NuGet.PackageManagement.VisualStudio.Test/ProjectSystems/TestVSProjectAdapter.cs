@@ -54,12 +54,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        public string MSBuildProjectExtensionsPath
+        public async Task<string> GetMSBuildProjectExtensionsPathAsync()
         {
-            get
-            {
-                return Path.Combine(ProjectDirectory, "obj");
-            }
+            return Path.Combine(await GetProjectDirectoryAsync(), "obj");
         }
 
         public IProjectBuildProperties BuildProperties { get; } = Mock.Of<IProjectBuildProperties>();
@@ -72,7 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         public bool IsDeferred => false;
 
-        public bool IsSupported => true;
+        public Task<bool> IsSupportedAsync() => Task.FromResult(true);
 
         public string NoWarn
         {
@@ -100,13 +97,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        public string ProjectDirectory
-        {
-            get
-            {
-                return Path.GetDirectoryName(FullProjectPath);
-            }
-        }
+        public Task<string> GetProjectDirectoryAsync() => Task.FromResult(Path.GetDirectoryName(FullProjectPath));
 
         public string ProjectName => ProjectNames.ShortName;
 

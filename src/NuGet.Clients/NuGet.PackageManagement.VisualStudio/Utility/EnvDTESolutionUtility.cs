@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var envDTEProject = envDTEProjects.Pop();
 
-                if (EnvDTEProjectUtility.IsSupported(envDTEProject))
+                if (await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
                 {
                     resultantEnvDTEProjects.Add(envDTEProject);
                 }

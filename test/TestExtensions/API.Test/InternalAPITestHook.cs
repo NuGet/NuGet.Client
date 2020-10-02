@@ -156,7 +156,7 @@ namespace API.Test
                 });
         }
 
-        public static async Task<IVsProjectJsonToPackageReferenceMigrateResult> MigrateJsonProject(string projectName)
+        public static async Task<IVsProjectJsonToPackageReferenceMigrateResult> MigrateJsonProjectAsync(string projectName)
         {
             var migrator = ServiceLocator.GetComponent<IVsProjectJsonToPackageReferenceMigrator>();
             return (IVsProjectJsonToPackageReferenceMigrateResult)await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
@@ -178,7 +178,7 @@ namespace API.Test
                         if (!string.IsNullOrEmpty(solutionProjectPath) &&
                             PathUtility.GetStringComparerBasedOnOS().Equals(solutionProjectPath, projectUniqueName))
                         {
-                            return await EnvDTEProjectUtility.ContainsFile(project, filePath);
+                            return await EnvDTEProjectUtility.ContainsFileAsync(project, filePath);
                         }
                     }
 

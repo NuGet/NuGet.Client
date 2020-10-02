@@ -325,7 +325,15 @@ namespace NuGet.VisualStudio
         private async Task<IEnumerable<Project>> GetProjectsInSolutionAsync(DTE dte)
         {
             IEnumerable<Project> allProjects = await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte);
-            IEnumerable<Project> supportedProjects = allProjects.Where(EnvDTEProjectUtility.IsSupported);
+            var supportedProjects = new List<Project>();
+            foreach (Project project in allProjects)
+            {
+                if (await EnvDTEProjectUtility.IsSupportedAsync(project))
+                {
+                    supportedProjects.Add(project);
+                }
+            }
+
             return supportedProjects;
         }
 

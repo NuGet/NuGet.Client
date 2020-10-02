@@ -144,7 +144,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             // Arrange
             var target = new VsFrameworkCompatibility();
             var targetFramework = new FrameworkName(".NETFramework,Version=v4.5.1");
-            var fallbackTargetFrameworks = new FrameworkName[0];
+
             var frameworks = new[]
             {
                 new FrameworkName(".NETFramework,Version=v3.5"),

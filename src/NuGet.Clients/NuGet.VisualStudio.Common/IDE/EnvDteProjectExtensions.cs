@@ -23,14 +23,14 @@ namespace NuGet.VisualStudio
 {
     public static class EnvDteProjectExtensions
     {
-        public static IVsHierarchy ToVsHierarchy(this EnvDTE.Project project)
+        public static async Task<IVsHierarchy> ToVsHierarchyAsync(this EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             IVsHierarchy hierarchy;
 
             // Get the vs solution
-            var solution = ServiceLocator.GetInstance<IVsSolution>();
+            var solution = await ServiceLocator.GetInstanceAsync<IVsSolution>();
             int hr = solution.GetProjectOfUniqueName(project.GetUniqueName(), out hierarchy);
 
             if (hr != VSConstants.S_OK)
@@ -41,14 +41,14 @@ namespace NuGet.VisualStudio
             return hierarchy;
         }
 
-        public static string[] GetProjectTypeGuids(this EnvDTE.Project project)
+        public static async Task<string[]> GetProjectTypeGuidsAsync(this EnvDTE.Project project)
         {
             Verify.ArgumentIsNotNull(project, nameof(project));
 
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
-            IVsHierarchy hierarchy = ToVsHierarchy(project);
+            IVsHierarchy hierarchy = await ToVsHierarchyAsync(project);
             string[] projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuids(hierarchy, project.Kind);
 
             return projectTypeGuids;
@@ -105,9 +105,9 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="envDTEProject">The project.</param>
         /// <returns>The full path of the project directory.</returns>
-        public static string GetFullPath(this EnvDTE.Project envDTEProject)
+        public static async Task<string> GetFullPathAsync(this EnvDTE.Project envDTEProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             Debug.Assert(envDTEProject != null);
             if (IsUnloaded(envDTEProject))
@@ -125,7 +125,7 @@ namespace NuGet.VisualStudio
             // until we can find one containing the full path.
 
             // For website projects, always read FullPath from properties list
-            if (IsWebProject(envDTEProject))
+            if (await IsWebProjectAsync(envDTEProject))
             {
                 // FullPath
                 var fullProjectPath = GetPropertyValue<string>(envDTEProject, FullPath);
@@ -203,12 +203,12 @@ namespace NuGet.VisualStudio
         /// Returns the full path of the packages config file associated with the project.
         /// </summary>
         /// <param name="envDTEProject">The project.</param>
-        public static string GetPackagesConfigFullPath(this EnvDTE.Project envDTEProject)
+        public static async Task<string> GetPackagesConfigFullPathAsync(this EnvDTE.Project envDTEProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             Debug.Assert(envDTEProject != null);
-            var projectDirectory = GetFullPath(envDTEProject);
+            var projectDirectory = await GetFullPathAsync(envDTEProject);
 
             var packagesConfigFullPath = Path.Combine(
                 projectDirectory ?? string.Empty,
@@ -324,11 +324,11 @@ namespace NuGet.VisualStudio
         }
 
         // TODO: Return null for library projects
-        public static string GetConfigurationFile(this EnvDTE.Project envDTEProject)
+        public static async Task<string> GetConfigurationFileAsync(this EnvDTE.Project envDTEProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return IsWebProject(envDTEProject) ? WebConfig : AppConfig;
+            return await IsWebProjectAsync(envDTEProject) ? WebConfig : AppConfig;
         }
 
         private class PathComparer : IEqualityComparer<string>
@@ -412,10 +412,10 @@ namespace NuGet.VisualStudio
                    "Windows Phone OS 7.1".Equals(GetPropertyValue<string>(envDTEProject, xnaPropertyValue), StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsWebProject(this EnvDTE.Project envDTEProject)
+        private static async Task<bool> IsWebProjectAsync(this EnvDTE.Project envDTEProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            string[] types = envDTEProject.GetProjectTypeGuids();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            string[] types = await envDTEProject.GetProjectTypeGuidsAsync();
             return types.Contains(VsProjectTypes.WebSiteProjectTypeGuid, StringComparer.OrdinalIgnoreCase) ||
                    types.Contains(VsProjectTypes.WebApplicationProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
@@ -427,10 +427,10 @@ namespace NuGet.VisualStudio
             return envDTEProject.Kind != null && envDTEProject.Kind.Equals(VsProjectTypes.WebSiteProjectTypeGuid, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool IsWindowsStoreApp(this EnvDTE.Project envDTEProject)
+        public static async Task<bool> IsWindowsStoreAppAsync(this EnvDTE.Project envDTEProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            string[] types = envDTEProject.GetProjectTypeGuids();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            string[] types = await envDTEProject.GetProjectTypeGuidsAsync();
             return types.Contains(VsProjectTypes.WindowsStoreProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
 
