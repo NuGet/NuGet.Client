@@ -1791,7 +1791,7 @@ namespace NuGet.CommandLine.Test
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, "-DisableParallelProcessing");
 
                 // Assert
                 Assert.True(File.Exists(path), r.Item2);
