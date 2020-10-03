@@ -179,12 +179,12 @@ namespace NuGet.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = await _asyncServiceprovider.GetDTEAsync();
+            DTE dte = await _asyncServiceprovider.GetDTEAsync();
             IEnumerable<Project> supportedProjects = await GetProjectsInSolutionAsync(dte);
 
             foreach (Project solutionProject in supportedProjects)
             {
-                var solutionProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(solutionProject);
+                string solutionProjectPath = solutionProject.GetFullProjectPath();
 
                 if (!string.IsNullOrEmpty(solutionProjectPath) &&
                     PathUtility.GetStringComparerBasedOnOS().Equals(solutionProjectPath, projectUniqueName))

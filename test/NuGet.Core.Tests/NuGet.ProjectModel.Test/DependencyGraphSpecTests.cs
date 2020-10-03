@@ -634,6 +634,43 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddProject_DoesNotClone(bool cpvmEnabled)
+        {
+            // Arrange
+            var dependencyFoo = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("foo", versionRange: cpvmEnabled ? null : VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+            };
+
+            var centralVersions = cpvmEnabled
+                ? new List<CentralPackageVersion>() { new CentralPackageVersion("foo", VersionRange.Parse("1.0.0")) }
+                : new List<CentralPackageVersion>();
+
+            var tfi = CreateTargetFrameworkInformation(
+                new List<LibraryDependency>() { dependencyFoo },
+                centralVersions);
+
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
+            {
+                ProjectUniqueName = "a",
+                CentralPackageVersionsEnabled = cpvmEnabled
+            };
+
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore("a");
+            dgSpec.AddProject(packageSpec);
+
+            // Act 
+            var packageSpecFromDGSpec = dgSpec.GetProjectSpec("a");
+
+            // Assert
+            Assert.True(packageSpec.Equals(packageSpecFromDGSpec));
+        }
+
+        [Theory]
         [InlineData(null)]
         [InlineData("")]
         public void CreateFromClosure_WhenProjectUniqueNameIsNullOrEmpty_Throws(string projectUniqueName)
@@ -720,22 +757,23 @@ namespace NuGet.ProjectModel.Test
             return dgSpec;
         }
 
-        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies()
+        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(int centralVersionsDummyLoadCount = 0)
         {
-            return CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation());
+            return CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation(centralVersionsDummyLoadCount));
         }
 
         private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(params TargetFrameworkInformation[] tfis)
         {
             var packageSpec = new PackageSpec(tfis);
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
+
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");
             dgSpec.AddProject(packageSpec);
             return dgSpec;
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation()
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(int centralVersionsDummyLoadCount = 0)
         {
             var nugetFramework = new NuGetFramework("net40");
             var dependencyFoo = new LibraryDependency(
@@ -767,6 +805,13 @@ namespace NuGet.ProjectModel.Test
 
             tfi.CentralPackageVersions.Add(centralVersionFoo.Name, centralVersionFoo);
             tfi.CentralPackageVersions.Add(centralVersionBar.Name, centralVersionBar);
+            LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
+
+            for (int i = 0; i < centralVersionsDummyLoadCount; i++)
+            {
+                var dummy = new CentralPackageVersion($"Dummy{i}", VersionRange.Parse("1.0.0"));
+                tfi.CentralPackageVersions.Add(dummy.Name, dummy);
+            }
 
             return tfi;
         }
@@ -787,6 +832,7 @@ namespace NuGet.ProjectModel.Test
             {
                 tfi.CentralPackageVersions.Add(cvd.Name, cvd);
             }
+            LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             return tfi;
         }

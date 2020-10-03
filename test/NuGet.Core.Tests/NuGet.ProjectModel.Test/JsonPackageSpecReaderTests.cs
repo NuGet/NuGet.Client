@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -3507,6 +3508,71 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(metadata);
             Assert.Equal("alias", metadata.TargetFrameworks.Single().TargetAlias);
         }
+
+
+        [Fact]
+        public void PackageSpecReader_Read()
+        {
+            // Arrange
+            var json = @"{
+                            ""centralTransitiveDependencyGroups"": {
+                                    "".NETCoreApp,Version=v3.1"": {
+                                        ""Foo"": {
+                                            ""exclude"": ""Native"",
+                                            ""include"": ""Build"",
+                                            ""suppressParent"": ""All"",
+                                            ""version"": ""1.0.0""
+                                    }
+                                },
+                                    "".NETCoreApp,Version=v3.0"": {
+                                        ""Bar"": {
+                                            ""exclude"": ""Native"",
+                                            ""include"": ""Build"",
+                                            ""suppressParent"": ""All"",
+                                            ""version"": ""2.0.0""
+                                    }
+                                }
+                            }
+                        }";
+
+            // Act
+            var results = new List<CentralTransitiveDependencyGroup>();
+            using (var stringReader = new StringReader(json.ToString()))
+            using (var jsonReader = new JsonTextReader(stringReader))
+            {
+                jsonReader.ReadObject(ctdPropertyName =>
+                {
+                    jsonReader.ReadObject(frameworkPropertyName =>
+                    {
+                        var dependencies = new List<LibraryDependency>();
+                        NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                        JsonPackageSpecReader.ReadCentralTransitveDependencyGroup(
+                            jsonReader: jsonReader,
+                            results: dependencies,
+                            packageSpecPath: "SomePath");
+                        results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                    });
+                });
+            }
+
+            // Assert
+            Assert.Equal(2, results.Count);
+            Assert.Equal(".NETCoreApp,Version=v3.1", results.ElementAt(0).FrameworkName);
+            var firstGroup = results.ElementAt(0);
+            Assert.Equal(1, firstGroup.TransitiveDependencies.Count());
+            Assert.Equal("Build", firstGroup.TransitiveDependencies.First().IncludeType.ToString());
+            Assert.Equal("All", firstGroup.TransitiveDependencies.First().SuppressParent.ToString());
+            Assert.Equal("[1.0.0, )", firstGroup.TransitiveDependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(firstGroup.TransitiveDependencies.First().VersionCentrallyManaged);
+
+            var secondGroup = results.ElementAt(1);
+            Assert.Equal(1, secondGroup.TransitiveDependencies.Count());
+            Assert.Equal("Build", secondGroup.TransitiveDependencies.First().IncludeType.ToString());
+            Assert.Equal("All", secondGroup.TransitiveDependencies.First().SuppressParent.ToString());
+            Assert.Equal("[2.0.0, )", secondGroup.TransitiveDependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(secondGroup.TransitiveDependencies.First().VersionCentrallyManaged);
+        }
+
 
         private static PackageSpec GetPackageSpec(string json)
         {

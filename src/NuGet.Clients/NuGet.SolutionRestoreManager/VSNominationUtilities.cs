@@ -141,6 +141,9 @@ namespace NuGet.SolutionRestoreManager
                                .Distinct(CentralPackageVersionNameComparer.Default)
                                .ToDictionary(cpv => cpv.Name));
                     }
+
+                    // Merge the central version information to the package information
+                    LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
                 }
 
                 if (targetFrameworkInfo2.FrameworkReferences != null)

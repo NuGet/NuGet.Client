@@ -105,17 +105,15 @@
                       VerticalAlignment="Top"
                       Margin="0,0,16,0" />
         <imaging:CrispImage
-                      x:Name="_checkMark"
+                      x:Name="_latestInstalledMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"
-                      Width="16"
-                      Height="16"
                       VerticalAlignment="Top"
                       Visibility="{Binding IsLatestInstalled, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
                       AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
                       Tag="{Binding Status}"
-                      Moniker="{x:Static nuget:PackageIconMonikers.InstalledIndicator}" />
+                      Moniker="{x:Static catalog:KnownMonikers.StatusOK}" />
         <imaging:CrispImage
                       x:Name="_updateMark"
                       Grid.Row="0"
@@ -247,8 +245,6 @@
           <imaging:CrispImage
                         x:Name="_deprecationIndicator"
                         Grid.Column="0"
-                        Width="12"
-                        Height="12"
                         Visibility="{Binding IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
                         VerticalAlignment="Center"
                         ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
@@ -334,6 +330,7 @@
           <imaging:CrispImage
                         Width="16"
                         Height="16"
+                        Cursor="Hand"
                         Moniker="{x:Static nuget:PackageIconMonikers.UninstallIndicator}"/>
         </Button>
 
@@ -373,11 +370,7 @@
               </Style.Triggers>
             </Style>
           </Button.Style>
-          <imaging:CrispImage
-                        Width="16"
-                        Height="16"
-                        Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}"
-                        />
+          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}" />
         </Button>
 
         <!-- row 1: latest version and the update button-->
@@ -443,10 +436,7 @@
               <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
             </MultiBinding>
           </AutomationProperties.Name>
-          <imaging:CrispImage
-                        Width="16"
-                        Height="16"
-                        Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
+          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
         </Button>
       </Grid>
     </Grid>

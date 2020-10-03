@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.Present(project);
-            return new VsHierarchyItem(VsHierarchyUtility.ToVsHierarchy(project));
+            return new VsHierarchyItem(project.ToVsHierarchy());
         }
 
         public static VsHierarchyItem FromVsHierarchy(IVsHierarchy project)
@@ -73,8 +73,7 @@ namespace NuGet.VisualStudio
         private object GetProperty(__VSHPROPID propid)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            object value = null;
-            if (TryGetProperty((int)propid, out value))
+            if (TryGetProperty((int)propid, out var value))
             {
                 return value;
             }

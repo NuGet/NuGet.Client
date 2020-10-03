@@ -210,8 +210,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 && !fileExistsInProject
                 && !fileName.Equals(ProjectManagement.Constants.PackageReferenceFile)
                 && !fileName.Equals("packages." + ProjectName + ".config")
-                && !fileName.Equals(EnvDTEProjectInfoUtility.WebConfig)
-                && !fileName.Equals(EnvDTEProjectInfoUtility.AppConfig)
+                && !fileName.Equals(EnvDteProjectExtensions.WebConfig)
+                && !fileName.Equals(EnvDteProjectExtensions.AppConfig)
                 && !fileName.Equals(Path.GetFileName(lockFileFullPath))
                 )
             {

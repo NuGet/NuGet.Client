@@ -46,7 +46,7 @@ namespace NuGetVSExtension
     /// This is the class that implements the package exposed by this assembly.
     /// </summary>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [InstalledProductRegistration("#110", "#112", ProductVersion, IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", ProductVersion)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(PowerConsoleToolWindow),
         Style = VsDockStyle.Tabbed,
@@ -79,7 +79,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "5.8.0";
+        public const string ProductVersion = "5.9.0";
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
 
         private AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
@@ -420,7 +420,7 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var vsProject = VsHierarchyUtility.ToVsHierarchy(project);
+            var vsProject = project.ToVsHierarchy();
             var documentName = project.FullName;
 
             // Find existing hierarchy and item id of the document window if it's
@@ -480,7 +480,7 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var uniqueName = EnvDTEProjectInfoUtility.GetUniqueName(project);
+            var uniqueName = project.GetUniqueName();
             var nugetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
 
             // If we failed to generate a cache entry in the solution manager something went wrong.
@@ -580,7 +580,7 @@ namespace NuGetVSExtension
                 await InitializeMEFAsync();
             }
 
-            var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+            var project = VsMonitorSelection.GetActiveProject();
 
             if (!await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null, project))
             {
@@ -588,7 +588,7 @@ namespace NuGetVSExtension
                 return;
             }
 
-            string uniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            string uniqueName = await project.GetCustomUniqueNameAsync();
             // Close NuGet Package Manager if it is open for this project
             IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project);
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
@@ -624,11 +624,11 @@ namespace NuGetVSExtension
                 var searchText = GetSearchText(parameterString);
 
                 // *** temp code
-                var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+                var project = VsMonitorSelection.GetActiveProject();
 
                 if (project != null
                     &&
-                    !EnvDTEProjectInfoUtility.IsUnloaded(project)
+                    !project.IsUnloaded()
                     &&
                     EnvDTEProjectUtility.IsSupported(project))
                 {
@@ -929,9 +929,9 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dteProject = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+            var dteProject = VsMonitorSelection.GetActiveProject();
 
-            var uniqueName = EnvDTEProjectInfoUtility.GetUniqueName(dteProject);
+            var uniqueName = dteProject.GetUniqueName();
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
 
             if (nuGetProject == null)
@@ -1074,8 +1074,8 @@ namespace NuGetVSExtension
         {
             get
             {
-                var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
-                return project != null && !EnvDTEProjectInfoUtility.IsUnloaded(project)
+                var project = VsMonitorSelection.GetActiveProject();
+                return project != null && !project.IsUnloaded()
                        && EnvDTEProjectUtility.IsSupported(project);
             }
         }

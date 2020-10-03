@@ -10,6 +10,8 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
     {
         [Theory]
         [MemberData(nameof(PackageSourceUpdateOptions))]
+#pragma warning disable CS0618 // Type or member is obsolete
+
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(PackageSourceUpdateOptions expectedResult)
         {
             PackageSourceUpdateOptions actualResult = SerializeThenDeserialize(PackageSourceUpdateOptionsFormatter.Instance, expectedResult);
@@ -23,5 +25,6 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
                 { new PackageSourceUpdateOptions(updateCredentials: true, updateEnabled: false) },
                 { new PackageSourceUpdateOptions(updateCredentials: false, updateEnabled: true) },
             };
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
