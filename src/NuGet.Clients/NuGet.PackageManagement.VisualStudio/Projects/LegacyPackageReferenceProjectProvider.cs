@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(INuGetProjectProvider))]
     [Name(nameof(LegacyPackageReferenceProjectProvider))]
-    [Order(After = nameof(NetCorePackageReferenceProjectProvider))]
+    [Order(After = nameof(CpsPackageReferenceProjectProvider))]
     public sealed class LegacyPackageReferenceProjectProvider : INuGetProjectProvider
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();

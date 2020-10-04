@@ -278,7 +278,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<bool> IsAllProjectsNominatedAsync()
         {
-            var netCoreProjects = (await GetNuGetProjectsAsync()).OfType<NetCorePackageReferenceProject>().ToList();
+            var netCoreProjects = (await GetNuGetProjectsAsync()).OfType<CpsPackageReferenceProject>().ToList();
 
             foreach (var project in netCoreProjects)
             {
