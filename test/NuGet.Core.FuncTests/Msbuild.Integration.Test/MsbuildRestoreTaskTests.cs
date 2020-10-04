@@ -162,7 +162,7 @@ namespace Msbuild.Integration.Test
    <!ENTITY sayhello ""&greeting; &name;"">
 ]>
 <packages>
-    <package id=""&sayhello;"" version=""1.1.0"" targetFramework=""net45"" /> 
+    <package id=""&sayhello;"" version=""1.1.0"" targetFramework=""net45"" />
     <package id=""x"" version=""1.0.0"" targetFramework=""net45"" />
 </packages>");
                 }
@@ -597,7 +597,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 var project = new SimpleTestProjectContext("a", ProjectStyle.PackageReference, pathContext.SolutionRoot)
                 {
-                    OutputPath = string.Empty,
+                    ProjectExtensionsPath = string.Empty,
                     Properties =
                     {
                         // When these two properties are not defined, restore should fail with a clear error and not crash

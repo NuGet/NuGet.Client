@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using PathIO = System.IO.Path;
 
 namespace NuGet.Test.Utility
 {
@@ -21,6 +22,7 @@ namespace NuGet.Test.Utility
         }
 
         public string Path { get; }
+
         public DirectoryInfo Info { get; }
 
         public void Dispose()
@@ -48,7 +50,7 @@ namespace NuGet.Test.Utility
         /// </summary>
         public static TestDirectory CreateInTemp()
         {
-            var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "NuGetTestFolder");
+            var root = PathIO.Combine(PathIO.GetTempPath(), "NuGetTestFolder");
             Directory.CreateDirectory(root);
 
             return Create(root);
@@ -56,7 +58,7 @@ namespace NuGet.Test.Utility
 
         public static TestDirectory Create(string root)
         {
-            string parentPath = null;
+            string parentPath;
 
             // Loop until we find a directory that isn't taken (extremely unlikely this would need multiple guids).
             while (true)
@@ -64,12 +66,12 @@ namespace NuGet.Test.Utility
                 var guid = Guid.NewGuid().ToString();
 
                 // Use a shorter path to this easier when debugging
-                parentPath = System.IO.Path.Combine(root, guid.Split('-')[0]);
+                parentPath = PathIO.Combine(root, guid.Split('-')[0]);
 
                 if (Directory.Exists(parentPath))
                 {
                     // If a collision happens use the full guid
-                    parentPath = System.IO.Path.Combine(root, guid);
+                    parentPath = PathIO.Combine(root, guid);
 
                     if (!Directory.Exists(parentPath))
                     {
@@ -85,23 +87,17 @@ namespace NuGet.Test.Utility
             Directory.CreateDirectory(parentPath);
 
             // Record what created this folder in case there is a problem with clean up.
-            File.WriteAllText(System.IO.Path.Combine(parentPath, "testStack.txt"), Environment.StackTrace);
+            File.WriteAllText(PathIO.Combine(parentPath, "testStack.txt"), Environment.StackTrace);
 
             // Create a random sub folder to use, this keeps tests from relying on the folder name.
-            var path = System.IO.Path.Combine(parentPath, Guid.NewGuid().ToString().Split('-')[0]);
+            var path = PathIO.Combine(parentPath, Guid.NewGuid().ToString().Split('-')[0]);
             Directory.CreateDirectory(path);
 
             return new TestDirectory(path, parentPath);
         }
 
-        public static implicit operator string(TestDirectory directory)
-        {
-            return directory.Path;
-        }
+        public static implicit operator string(TestDirectory directory) => directory.Path;
 
-        public override string ToString()
-        {
-            return Path;
-        }
+        public override string ToString() => Path;
     }
 }
