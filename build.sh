@@ -15,11 +15,21 @@ echo "Installing dotnet CLI"
 mkdir -p cli
 curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
 
+if (( $? )); then
+	echo "Could not download 'dotnet-install.sh' script. Please check your network and try again!"
+	exit 1
+fi
+
 # Run install.sh for cli
 chmod +x cli/dotnet-install.sh
 
 # v1 needed for some test and bootstrapping testing version
 cli/dotnet-install.sh -i cli -c 1.0
+
+if (( $? )); then
+	echo "The .NET CLI Install failed!!"
+	exit 1
+fi
 
 DOTNET="$(pwd)/cli/dotnet"
 
@@ -32,8 +42,13 @@ DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranch
 echo $DOTNET_BRANCH
 cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
 
-# Display current version
-$DOTNET --version
+if (( $? )); then
+	echo "The .NET CLI Install failed!!"
+	exit 1
+fi
+
+# Display .NET CLI info
+$DOTNET --info
 
 echo "================="
 
@@ -54,6 +69,7 @@ fi
 # restore packages
 echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1

@@ -25,6 +25,8 @@ pushd $DIR/
 
 mono --version
 
+dotnet --info
+
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
@@ -36,7 +38,12 @@ chmod +x scripts/funcTests/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
 # Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
-scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -NoPath
+scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -nopath
+
+if (( $? )); then
+	echo "The .NET CLI Install failed!!"
+	exit 1
+fi
 
 DOTNET="$(pwd)/cli/dotnet"
 
@@ -60,10 +67,14 @@ do
 	echo "Version is: $Version"
 	scripts/funcTests/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
 
-	# Display current version
-	$DOTNET --version
-	dotnet --info
+	if (( $? )); then
+		echo "The .NET CLI Install for $DOTNET_BRANCH failed!!"
+		exit 1
+	fi
 done
+
+# Display .NET CLI info
+$DOTNET --info
 
 echo "initial dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
@@ -104,6 +115,7 @@ fi
 # restore packages
 echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
