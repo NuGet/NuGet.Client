@@ -553,7 +553,7 @@ namespace NuGet.Packaging
 
                             File.Move(tempNupkgMetadataPath, nupkgMetadataFilePath);
 
-                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
+                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version} from {source}");
 
                             packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;
@@ -825,7 +825,7 @@ namespace NuGet.Packaging
 
                             File.Move(tempNupkgMetadataFilePath, nupkgMetadataFilePath);
 
-                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
+                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version} from {packageDownloader.Source}");
 
                             packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;
