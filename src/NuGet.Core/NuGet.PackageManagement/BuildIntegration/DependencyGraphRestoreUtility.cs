@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class DependencyGraphRestoreUtility
     {
-        private static int threadCount;
+        private static int ThreadCount;
 
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
@@ -338,13 +338,33 @@ namespace NuGet.PackageManagement
             knownProjects.AddRange(projects.Select(e => e.MSBuildProjectPath)
                 .Select(proj => new KeyValuePair<string, bool>(proj, true)));
 
+            var legacyPackageReferenceProjects = new List<IDependencyGraphProject>();
+            var nonLegacyPackageReferenceProjects = new List<IDependencyGraphProject>();
+
+            foreach (var project in projects)
+            {
+                if (project.IsLegacyPackageReferenceProject)
+                {
+                    legacyPackageReferenceProjects.Add(project);
+                }
+                else
+                {
+                    await GetProjectRestoreSpecAndAdditionalMessages(new ProjectRestoreSpec(
+                                                project,
+                                                dgSpec,
+                                                context,
+                                                knownProjects,
+                                                allAdditionalMessages));
+                }
+            }
+
             var options = new ExecutionDataflowBlockOptions()
             {
                 MaxDegreeOfParallelism = Environment.ProcessorCount
             };
             var actionBlock = new ActionBlock<ProjectRestoreSpec>(GetProjectRestoreSpecAndAdditionalMessages, options);
 
-            foreach (IDependencyGraphProject project in projects)
+            foreach (IDependencyGraphProject project in legacyPackageReferenceProjects)
             {
                 await actionBlock.SendAsync(new ProjectRestoreSpec(
                                                 project,
@@ -370,7 +390,7 @@ namespace NuGet.PackageManagement
             ProjectRestoreSpec restoreSpecData)
         {
             var stopWatch = Stopwatch.StartNew();
-            Interlocked.Increment(ref threadCount);
+            Interlocked.Increment(ref ThreadCount);
             var projPaths = restoreSpecData.Project.MSBuildProjectPath.Split('\\');
             NuGetFileLogger.DefaultInstance.Write($"{projPaths[projPaths.Length - 1]} starts.");
 
@@ -441,8 +461,8 @@ namespace NuGet.PackageManagement
             }
 
             stopWatch.Stop();
-            Interlocked.Decrement(ref threadCount);
-            NuGetFileLogger.DefaultInstance.Write($"Parellel threads: {threadCount}");
+            Interlocked.Decrement(ref ThreadCount);
+            NuGetFileLogger.DefaultInstance.Write($"Parellel threads: {ThreadCount}");
             NuGetFileLogger.DefaultInstance.Write($"{projPaths[projPaths.Length - 1]} ends.: {stopWatch.Elapsed.TotalSeconds} ");
         }
 

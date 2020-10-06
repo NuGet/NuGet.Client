@@ -38,6 +38,8 @@ namespace NuGet.ProjectManagement.Projects
 
         public abstract string MSBuildProjectPath { get; }
 
+        public virtual bool IsLegacyPackageReferenceProject => false;
+
         /// <summary>
         /// Returns the path to the assets file or the lock file. Throws an exception if the assets file path cannot be
         /// determined.

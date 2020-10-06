@@ -82,6 +82,8 @@ namespace NuGet.ProjectManagement
 
         public string MSBuildProjectPath => ProjectSystem.ProjectFileFullPath;
 
+        public bool IsLegacyPackageReferenceProject => false;
+
         #endregion Properties
 
         public MSBuildNuGetProject(

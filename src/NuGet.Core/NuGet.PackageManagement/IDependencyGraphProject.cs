@@ -30,5 +30,8 @@ namespace NuGet.ProjectManagement
         /// optionally include more specs to restore such as tools.
         /// </summary>
         Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context);
+
+        bool IsLegacyPackageReferenceProject { get; }
+
     }
 }

@@ -43,6 +43,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private Dictionary<string, ProjectInstalledPackage> _installedPackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
         private DateTime _lastTimeAssetsModified;
 
+        public override bool IsLegacyPackageReferenceProject => true;
+
         public LegacyPackageReferenceProject(
             IVsProjectAdapter vsProjectAdapter,
             string projectId,

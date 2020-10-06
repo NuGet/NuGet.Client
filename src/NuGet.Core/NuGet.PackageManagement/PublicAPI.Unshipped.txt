@@ -5,6 +5,8 @@ NuGet.PackageManagement.NuGetFileLogger.Now.get -> System.DateTimeOffset
 NuGet.PackageManagement.NuGetFileLogger.Write(string logMessage) -> void
 NuGet.PackageManagement.NuGetPackageManager.PreviewProjectsInstallPackageAsync(System.Collections.Generic.IReadOnlyCollection<NuGet.ProjectManagement.NuGetProject> nuGetProjects, NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.PackageManagement.ResolutionContext resolutionContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Collections.Generic.IReadOnlyCollection<NuGet.Protocol.Core.Types.SourceRepository> activeSources, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.ResolvedAction>>
 NuGet.ProjectManagement.BuildIntegratedPackageReference.BuildIntegratedPackageReference(NuGet.LibraryModel.LibraryDependency dependency, NuGet.Frameworks.NuGetFramework projectFramework, NuGet.Packaging.Core.PackageIdentity installedVersion) -> void
+NuGet.ProjectManagement.IDependencyGraphProject.IsLegacyPackageReferenceProject.get -> bool
+NuGet.ProjectManagement.MSBuildNuGetProject.IsLegacyPackageReferenceProject.get -> bool
 NuGet.ProjectManagement.MessageLevelExtensions
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkIdentifier = "TargetFrameworkIdentifier" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkProfile = "TargetFrameworkProfile" -> string
@@ -12,3 +14,4 @@ const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkVersion = "T
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformMoniker = "TargetPlatformMoniker" -> string
 static NuGet.PackageManagement.NuGetFileLogger.DefaultInstance.get -> NuGet.PackageManagement.NuGetFileLogger
 static NuGet.ProjectManagement.MessageLevelExtensions.ToLogLevel(this NuGet.ProjectManagement.MessageLevel messageLevel) -> NuGet.Common.LogLevel
+virtual NuGet.ProjectManagement.Projects.BuildIntegratedNuGetProject.IsLegacyPackageReferenceProject.get -> bool

@@ -2029,6 +2029,8 @@ namespace NuGet.Test
 
             public PackageSpec PackageSpec { get; set; }
 
+            public bool IsLegacyPackageReferenceProject => false;
+
             public TestNonBuildIntegratedNuGetProject()
                 : base()
             {
