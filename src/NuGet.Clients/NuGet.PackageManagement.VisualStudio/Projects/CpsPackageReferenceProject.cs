@@ -181,13 +181,16 @@ namespace NuGet.PackageManagement.VisualStudio
             if (context != null)
             {
                 PackageSpec ignore;
-                foreach (var project in projects
-                    .Where(p => !context.PackageSpecCache.TryGetValue(
-                        p.RestoreMetadata.ProjectUniqueName, out ignore)))
+                lock (context.PackageSpecCache)
                 {
-                    context.PackageSpecCache.Add(
-                        project.RestoreMetadata.ProjectUniqueName,
-                        project);
+                    foreach (var project in projects
+                        .Where(p => !context.PackageSpecCache.TryGetValue(
+                            p.RestoreMetadata.ProjectUniqueName, out ignore)))
+                    {
+                        context.PackageSpecCache.Add(
+                            project.RestoreMetadata.ProjectUniqueName,
+                            project);
+                    }
                 }
             }
 
