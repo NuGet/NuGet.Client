@@ -34,9 +34,7 @@ namespace NuGet.VisualStudio
             int legacyPackageReferenceProjectsCount,
             int netCorePackageReferenceProjectsCount,
             int dotnetCliToolProjectsCount,
-            int standaloneProjectsCount,
             int packagesConfigProjectsCount,
-            int dotnetToolReferenceProjectsCount,
             DateTimeOffset endTime,
             double duration,
             bool isSolutionLoadRestore,
@@ -51,9 +49,7 @@ namespace NuGet.VisualStudio
             base[nameof(LegacyPackageReferenceProjectsCount)] = legacyPackageReferenceProjectsCount;
             base[nameof(NetCorePackageReferenceProjectsCount)] = netCorePackageReferenceProjectsCount;
             base[nameof(DotnetCliToolProjectsCount)] = dotnetCliToolProjectsCount;
-            base[nameof(StandaloneProjectsCount)] = standaloneProjectsCount;
             base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
-            base[nameof(DotnetToolReferenceProjectsCount)] = dotnetToolReferenceProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
             base[nameof(IsSolutionLoadRestore)] = isSolutionLoadRestore;
 
@@ -87,10 +83,6 @@ namespace NuGet.VisualStudio
 
         public int DotnetCliToolProjectsCount => (int)base[nameof(DotnetCliToolProjectsCount)];
 
-        public int StandaloneProjectsCount => (int)base[nameof(StandaloneProjectsCount)];
-
         public int PackagesConfigProjectsCount => (int)base[nameof(PackagesConfigProjectsCount)];
-
-        public int DotnetToolReferenceProjectsCount => (int)base[nameof(DotnetToolReferenceProjectsCount)];
     }
 }

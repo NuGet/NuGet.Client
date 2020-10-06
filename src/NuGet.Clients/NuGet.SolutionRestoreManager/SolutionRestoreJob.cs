@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
@@ -297,6 +298,9 @@ namespace NuGet.SolutionRestoreManager
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
             var projectIds = sortedProjects.Select(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
+            var projectDictionary = sortedProjects
+                .GroupBy(x => x.ProjectStyle)
+                .ToDictionary(x => x.Key, y => y.Count());
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
@@ -308,26 +312,13 @@ namespace NuGet.SolutionRestoreManager
                 packageCount: _packageCount,
                 noOpProjectsCount: _noOpProjectsCount,
                 upToDateProjectsCount: _upToDateProjectCount,
-                unknownProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.Unknown).Count(),
-                projectJsonProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.ProjectJson).Count(),
-                packageReferenceProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.PackageReference).Count(),
-                legacyPackageReferenceProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.PackageReference)
-                    .Where(x => x is LegacyPackageReferenceProject).Count(),
-                netCorePackageReferenceProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.PackageReference)
-                    .Where(x => x is NetCorePackageReferenceProject).Count(),
-                dotnetCliToolProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.DotnetCliTool).Count(),
-                standaloneProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.Standalone).Count(),
-                packagesConfigProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.PackagesConfig).Count(),
-                dotnetToolReferenceProjectsCount: sortedProjects
-                    .Where(x => x.ProjectStyle == ProjectStyle.DotnetToolReference).Count(),
+                unknownProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.Unknown, 0), // appears in DependencyGraphRestoreUtility
+                projectJsonProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.ProjectJson, 0),
+                packageReferenceProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.PackageReference, 0),
+                legacyPackageReferenceProjectsCount: sortedProjects.Where(x => x.ProjectStyle == ProjectStyle.PackageReference && x is LegacyPackageReferenceProject).Count(),
+                netCorePackageReferenceProjectsCount: sortedProjects.Where(x => x.ProjectStyle == ProjectStyle.PackageReference && x is CpsPackageReferenceProject).Count(),
+                dotnetCliToolProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.DotnetCliTool, 0), // appears in DependencyGraphRestoreUtility
+                packagesConfigProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.PackagesConfig, 0),
                 DateTimeOffset.Now,
                 duration,
                 isSolutionLoadRestore: _isSolutionLoadRestore,
