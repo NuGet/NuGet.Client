@@ -524,7 +524,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal async Task LoadPackageMetadataAsync(IReadOnlyCollection<PackageSource> packageSources, CancellationToken token)
+        internal async Task LoadPackageMetadataAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken token)
         {
             IReadOnlyCollection<VersionInfoContextInfo> versions = await _searchResultPackage.GetVersionsAsync();
 

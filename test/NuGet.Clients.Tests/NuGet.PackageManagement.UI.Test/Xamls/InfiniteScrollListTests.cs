@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
@@ -22,8 +23,9 @@ namespace NuGet.PackageManagement.UI.Test
     {
         private readonly ITestOutputHelper _output;
 
-        public InfiniteScrollListTests(ITestOutputHelper output)
+        public InfiniteScrollListTests(GlobalServiceProvider sp, ITestOutputHelper output)
         {
+            sp.Reset();
             _output = output;
         }
 
@@ -162,6 +164,8 @@ namespace NuGet.PackageManagement.UI.Test
         [WpfFact]
         public async Task LoadItems_BeforeGettingCurrent_WaitsForInitialResults()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             var loader = new Mock<IPackageItemLoader>(MockBehavior.Strict);
             var state = new Mock<IItemLoaderState>();
             var hasWaited = false;
@@ -217,10 +221,11 @@ namespace NuGet.PackageManagement.UI.Test
             var searchResultTask = Task.FromResult(new SearchResultContextInfo());
 
 #pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-            using (var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current))
+         //   using (var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current))
 #pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
             {
-                var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => joinableTaskContext.Factory));
+
+                var list = new InfiniteScrollList();
                 var taskCompletionSource = new TaskCompletionSource<string>();
 
                 // Despite LoadItems(...) being a synchronous method, the method internally fires an asynchronous task.
@@ -267,12 +272,14 @@ namespace NuGet.PackageManagement.UI.Test
             PackageSearchMetadataContextInfo[] searchItems,
             int expectedItems)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             var loaderMock = new Mock<IPackageItemLoader>(MockBehavior.Strict);
             var stateMock = new Mock<IItemLoaderState>();
             var searchTask = Task.FromResult(new SearchResultContextInfo(searchItems, new Dictionary<string, LoadingStatus>(), true));
             var testLogger = new TestNuGetUILogger(_output);
             var tcs = new TaskCompletionSource<int>();
-            var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => NuGetUIThreadHelper.JoinableTaskFactory));
+            var list = new InfiniteScrollList();
 
             var currentStatus = LoadingStatus.Loading;
 

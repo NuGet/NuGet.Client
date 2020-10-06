@@ -27,13 +27,13 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly IServiceBroker _serviceBroker;
         private readonly NuGetSolutionManagerServiceWrapper _solutionManagerService;
+        private readonly NuGetSourcesServiceWrapper _sourceService;
         private IProjectContextInfo[] _projects;
 
         public event EventHandler<IReadOnlyCollection<string>> ProjectActionsExecuted;
 
         // Non-private only to facilitate testing.
         internal NuGetUIContext(
-            ISourceRepositoryProvider sourceProvider,
             IServiceBroker serviceBroker,
             IVsSolutionManager solutionManager,
             NuGetSolutionManagerServiceWrapper solutionManagerService,
@@ -42,9 +42,9 @@ namespace NuGet.PackageManagement.UI
             IPackageRestoreManager packageRestoreManager,
             IOptionsPageActivator optionsPageActivator,
             IUserSettingsManager userSettingsManager,
-            IEnumerable<IVsPackageManagerProvider> packageManagerProviders)
+            IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
+            NuGetSourcesServiceWrapper sourceService)
         {
-            SourceProvider = sourceProvider;
             _serviceBroker = serviceBroker;
             SolutionManager = solutionManager;
             _solutionManagerService = solutionManagerService;
@@ -55,16 +55,17 @@ namespace NuGet.PackageManagement.UI
             OptionsPageActivator = optionsPageActivator;
             UserSettingsManager = userSettingsManager;
             PackageManagerProviders = packageManagerProviders;
+            _sourceService = sourceService;
 
             _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
             SolutionManager.ActionsExecuted += OnActionsExecuted;
         }
 
-        public ISourceRepositoryProvider SourceProvider { get; }
-
         public IVsSolutionManager SolutionManager { get; }
 
         public INuGetSolutionManagerService SolutionManagerService => _solutionManagerService;
+
+        public INuGetSourcesService SourceService => _sourceService;
 
         public NuGetPackageManager PackageManager { get; }
 
@@ -98,6 +99,7 @@ namespace NuGet.PackageManagement.UI
             SolutionManager.ActionsExecuted -= OnActionsExecuted;
 
             _solutionManagerService.Dispose();
+            _sourceService.Dispose();
 
             GC.SuppressFinalize(this);
         }
@@ -158,6 +160,12 @@ namespace NuGet.PackageManagement.UI
             {
             }
 
+            var sourceServiceWrapper = new NuGetSourcesServiceWrapper();
+            var sourceService = await GetSourceServiceAsync(serviceBroker, cancellationToken);
+            using (sourceServiceWrapper.Swap(sourceService))
+            {
+            }
+
             var packageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 settings,
@@ -170,7 +178,6 @@ namespace NuGet.PackageManagement.UI
                 lockService);
 
             return new NuGetUIContext(
-                sourceRepositoryProvider,
                 serviceBroker,
                 solutionManager,
                 solutionManagerServiceWrapper,
@@ -179,7 +186,8 @@ namespace NuGet.PackageManagement.UI
                 packageRestoreManager,
                 optionsPageActivator,
                 userSettingsManager,
-                packageManagerProviders);
+                packageManagerProviders,
+                sourceServiceWrapper);
         }
 
         public void RaiseProjectActionsExecuted(IReadOnlyCollection<string> projectIds)
@@ -220,8 +228,31 @@ namespace NuGet.PackageManagement.UI
                     using (_solutionManagerService.Swap(newService))
                     {
                     }
+
+                    INuGetSourcesService newSourceService = await GetSourceServiceAsync(
+                        _serviceBroker,
+                        CancellationToken.None);
+
+                    using (_sourceService.Swap(newSourceService))
+                    {
+                    }
                 })
                 .PostOnFailure(nameof(NuGetUIContext), nameof(OnAvailabilityChanged));
+        }
+
+        private static async ValueTask<INuGetSourcesService> GetSourceServiceAsync(
+            IServiceBroker serviceBroker,
+            CancellationToken cancellationToken)
+        {
+#pragma warning disable ISB001 // Dispose of proxies
+            INuGetSourcesService sourceService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
+                NuGetServices.SourceProviderService,
+                cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            Assumes.NotNull(sourceService);
+
+            return sourceService;
         }
 
         private static async ValueTask<INuGetSolutionManagerService> GetSolutionManagerServiceAsync(

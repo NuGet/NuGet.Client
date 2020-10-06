@@ -33,7 +33,6 @@
     <Compile Include="NetCorePackageReferenceProjectTests.cs" />
     <Compile Include="MockedVS.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
-    <Compile Include="DispatcherThreadCollection.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
     <Compile Include="Feeds\UpdatePackageFeedTests.cs" />
     <Compile Include="Feeds\InstalledPackageFeedTests.cs" />

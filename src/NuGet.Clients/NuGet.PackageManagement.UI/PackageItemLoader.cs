@@ -11,7 +11,6 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -29,7 +28,7 @@ namespace NuGet.PackageManagement.UI
         private readonly PackageLoadContext _context;
         private readonly string _searchText;
         private readonly bool _includePrerelease;
-        private readonly IReadOnlyCollection<PackageSource> _packageSources;
+        private readonly IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
         private readonly ContractItemFilter _itemFilter;
         private readonly bool _useRecommender;
         private PackageCollection _installedPackages;
@@ -43,7 +42,7 @@ namespace NuGet.PackageManagement.UI
 
         private PackageItemLoader(
             PackageLoadContext context,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             ContractItemFilter itemFilter,
             string searchText = null,
             bool includePrerelease = true,
@@ -61,7 +60,7 @@ namespace NuGet.PackageManagement.UI
 
         public static async ValueTask<PackageItemLoader> CreateAsync(
             PackageLoadContext context,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             ContractItemFilter itemFilter,
             string searchText = null,
             bool includePrerelease = true,
@@ -77,7 +76,7 @@ namespace NuGet.PackageManagement.UI
         // For unit testing purposes
         internal static async ValueTask<PackageItemLoader> CreateAsync(
             PackageLoadContext context,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             ContractItemFilter itemFilter,
             INuGetSearchService searchService,
             string searchText = null,

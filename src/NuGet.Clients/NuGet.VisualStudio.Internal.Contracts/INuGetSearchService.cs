@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -21,7 +20,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         ValueTask<SearchResultContextInfo> SearchAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             string searchText,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
@@ -30,7 +29,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
             CancellationToken cancellationToken);
@@ -38,26 +37,26 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<int> GetTotalCountAsync(
             int maxCount,
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
             CancellationToken cancellationToken);
 
         ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
             PackageIdentity identity,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken);
 
         ValueTask<PackageDeprecationMetadataContextInfo?> GetDeprecationMetadataAsync(
             PackageIdentity identity,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken);
 
         ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetPackageMetadataListAsync(
             string id,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             bool includeUnlisted,
             CancellationToken cancellationToken);

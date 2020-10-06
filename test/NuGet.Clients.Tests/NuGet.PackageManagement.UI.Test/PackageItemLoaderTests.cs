@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
@@ -22,23 +23,13 @@ using Xunit;
 namespace NuGet.PackageManagement.UI.Test
 {
     [Collection(MockedVS.Collection)]
-    public class PackageItemLoaderTests : IDisposable
+    public class PackageItemLoaderTests
     {
         private const string TestSearchTerm = "nuget";
-        private JoinableTaskContext _joinableTaskContext;
 
-        public PackageItemLoaderTests()
+        public PackageItemLoaderTests(GlobalServiceProvider sp)
         {
-#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-            _joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
-#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_joinableTaskContext.Factory);
-        }
-
-        public void Dispose()
-        {
-            _joinableTaskContext?.Dispose();
+            sp.Reset();
         }
 
         [Fact]
@@ -62,7 +53,7 @@ namespace NuGet.PackageManagement.UI.Test
             searchService.Setup(x =>
                 x.SearchAsync(
                     It.IsAny<IReadOnlyCollection<IProjectContextInfo>>(),
-                    It.IsAny<IReadOnlyCollection<PackageSource>>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
                     It.IsAny<string>(),
                     It.IsAny<SearchFilter>(),
                     It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
@@ -78,11 +69,11 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
-            var source1 = new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json", "NuGetBuild");
-            var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
+            var source1 = new PackageSourceContextInfo("https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json", "NuGetBuild");
+            var source2 = new PackageSourceContextInfo("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var context = new PackageLoadContext(false, uiContext);
-            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { source1, source2 }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService.Object, "nuget");
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSourceContextInfo> { source1, source2 }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService.Object, "nuget");
 
             await loader.LoadNextAsync(null, CancellationToken.None);
             var items = loader.GetCurrent();
@@ -121,7 +112,7 @@ namespace NuGet.PackageManagement.UI.Test
             searchService.Setup(x =>
                 x.SearchAsync(
                     It.IsAny<IReadOnlyCollection<IProjectContextInfo>>(),
-                    It.IsAny<IReadOnlyCollection<PackageSource>>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
                     It.IsAny<string>(),
                     It.IsAny<SearchFilter>(),
                     It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
@@ -146,7 +137,7 @@ namespace NuGet.PackageManagement.UI.Test
                 var context = new PackageLoadContext(false, uiContext);
 
                 var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-                var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { localSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService.Object, "nuget");
+                var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(localSource) }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService.Object, "nuget");
 
                 // Act
                 await loader.LoadNextAsync(null, CancellationToken.None);

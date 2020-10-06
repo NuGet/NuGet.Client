@@ -24,7 +24,6 @@ using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -66,6 +65,7 @@ namespace NuGet.PackageManagement.UI
         private bool _missingPackageStatus;
         private bool _loadedAndInitialized = false;
         private bool _recommendPackages = false;
+        private IServiceBroker _serviceBroker;
 
         private PackageManagerControl()
         {
@@ -91,6 +91,7 @@ namespace NuGet.PackageManagement.UI
             Settings = await ServiceLocator.GetInstanceAsync<ISettings>();
 
             _windowSearchHostFactory = await ServiceLocator.GetGlobalServiceAsync<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
+            _serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
 
             if (Model.IsSolution)
             {
@@ -155,7 +156,7 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.ProjectActionsExecuted += OnProjectActionsExecuted;
 
-            Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
+            Model.Context.SourceService.PackageSourcesChanged += PackageSourcesChanged;
 
             Unloaded += PackageManagerUnloaded;
 
@@ -476,7 +477,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void Sources_PackageSourcesChanged(object sender, EventArgs e)
+        private void PackageSourcesChanged(object sender, IReadOnlyCollection<PackageSourceContextInfo> e)
         {
             // Set _dontStartNewSearch to true to prevent a new search started in
             // _sourceRepoList_SelectionChanged(). This method will start the new
@@ -485,16 +486,21 @@ namespace NuGet.PackageManagement.UI
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             ResetTabDataLoadFlags();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => Sources_PackageSourcesChangedAsync(timeSpan))
-                .PostOnFailure(nameof(PackageManagerControl), nameof(Sources_PackageSourcesChanged));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
+                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageSourcesChanged));
         }
 
-        private async Task Sources_PackageSourcesChangedAsync(TimeSpan timeSpan)
+        private async Task PackageSourcesChangedAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, TimeSpan timeSpan)
         {
             try
             {
+                var list = await PackageSourceMoniker.PopulateListAsync(packageSources, CancellationToken.None);
+
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                // We access UI components in these calls
                 var prevSelectedItem = SelectedSource;
-                await PopulateSourceRepoListAsync(null, CancellationToken.None);
+
+                await PopulateSourceRepoListAsync(list, null, CancellationToken.None);
 
                 // force a new search explicitly only if active source has changed
                 if (prevSelectedItem == SelectedSource)
@@ -724,25 +730,19 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 // no user settings found. Then use the active source from PackageSourceProvider.
-                activeSourceName = Model.Context.SourceProvider.PackageSourceProvider.ActivePackageSourceName;
+                activeSourceName = await Model.Context.SourceService.GetActivePackageSourceNameAsync(cancellationToken);
             }
 
             await PopulateSourceRepoListAsync(activeSourceName, cancellationToken);
         }
 
-        private IEnumerable<SourceRepository> GetEnabledSources()
+        private ValueTask PopulateSourceRepoListAsync(IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers, string optionalSelectSourceName, CancellationToken cancellationToken)
         {
-            return Model.Context.SourceProvider.GetRepositories().Where(s => s.PackageSource.IsEnabled);
-        }
-
-        private async ValueTask PopulateSourceRepoListAsync(string optionalSelectSourceName, CancellationToken cancellationToken)
-        {
-            var selectedSourceName = optionalSelectSourceName ?? SelectedSource?.SourceName;
-
             // init source repo list
             _topPanel.SourceRepoList.Items.Clear();
 
-            var packageSourceMonikers = await PackageSourceMoniker.PopulateListAsync(cancellationToken);
+            var selectedSourceName = optionalSelectSourceName ?? SelectedSource?.SourceName;
+
             foreach (PackageSourceMoniker packageSourceMoniker in packageSourceMonikers)
             {
                 _topPanel.SourceRepoList.Items.Add(packageSourceMoniker);
@@ -762,6 +762,14 @@ namespace NuGet.PackageManagement.UI
                 // use the first enabled source as the active source by default, but do not choose "All sources"!
                 SelectedSource = PackageSources.FirstOrDefault(psm => !psm.IsAggregateSource);
             }
+
+            return new ValueTask();
+        }
+
+        private async ValueTask PopulateSourceRepoListAsync(string optionalSelectSourceName, CancellationToken cancellationToken)
+        {
+            IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers = await PackageSourceMoniker.PopulateListAsync(cancellationToken);
+            await PopulateSourceRepoListAsync(packageSourceMonikers, optionalSelectSourceName, cancellationToken);
         }
 
         private async ValueTask SearchPackagesAndRefreshUpdateCountAsync(bool useCacheForUpdates)
@@ -877,7 +885,7 @@ namespace NuGet.PackageManagement.UI
                 // also check if this is a PC-style project. We will not provide recommendations for PR-style
                 // projects until we have a way to get dependent packages without negatively impacting perf.
                 && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
-                && TelemetryUtility.IsNuGetOrg(SelectedSource.PackageSources.First()))
+                && TelemetryUtility.IsNuGetOrg(SelectedSource.PackageSources.First()?.Source))
             {
                 _recommendPackages = true;
             }
@@ -982,8 +990,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync(PackageCollectionItem package, CancellationToken cancellationToken)
         {
-            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            using (INuGetSearchService searchService = await serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken: cancellationToken))
+            using (INuGetSearchService searchService = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(searchService);
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1317,7 +1324,7 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
 
-            Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
+            Model.Context.SourceService.PackageSourcesChanged -= PackageSourcesChanged;
 
             Model.Dispose();
 

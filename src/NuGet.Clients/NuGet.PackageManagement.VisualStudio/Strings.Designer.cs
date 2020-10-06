@@ -358,6 +358,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A PackageSource with name &apos;{0}&apos; was not found..
+        /// </summary>
+        public static string PackageSourceNotFound {
+            get {
+                return ResourceManager.GetString("PackageSourceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package stream should be seekable.
         /// </summary>
         public static string PackageStreamShouldBeSeekable {

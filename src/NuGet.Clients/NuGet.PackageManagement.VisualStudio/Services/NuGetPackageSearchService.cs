@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private SearchObject? _searchObject;
         private readonly ISharedServiceState _sharedServiceState;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<SourceRepository> _packagesFolderLocalRepositoryLazy;
-        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IEnumerable<SourceRepository>> _globalPackageFolderRepositoriesLazy;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IReadOnlyList<SourceRepository>> _globalPackageFolderRepositoriesLazy;
 
         public NuGetPackageSearchService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac, ISharedServiceState state)
         {
@@ -38,17 +38,18 @@ namespace NuGet.PackageManagement.VisualStudio
             _serviceBroker = sb;
             _authorizationServiceClient = ac;
             _sharedServiceState = state;
+
             _packagesFolderLocalRepositoryLazy = new Microsoft.VisualStudio.Threading.AsyncLazy<SourceRepository>(
                 GetPackagesFolderSourceRepositoryAsync,
                 NuGetUIThreadHelper.JoinableTaskFactory);
-            _globalPackageFolderRepositoriesLazy = new Microsoft.VisualStudio.Threading.AsyncLazy<IEnumerable<SourceRepository>>(
+            _globalPackageFolderRepositoriesLazy = new Microsoft.VisualStudio.Threading.AsyncLazy<IReadOnlyList<SourceRepository>>(
                 GetGlobalPackageFolderRepositoriesAsync,
                 NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public async ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
             CancellationToken cancellationToken)
@@ -58,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(searchFilter);
 
             bool recommendPackages = false;
-            IReadOnlyCollection<SourceRepository> sourceRepositories = await GetRepositoriesAsync(packageSources, cancellationToken);
+            IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
             (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) packageFeeds = await CreatePackageFeedAsync(
                 projectContextInfos,
                 itemFilter,
@@ -73,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetPackageMetadataListAsync(
             string id,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             bool includeUnlisted,
             CancellationToken cancellationToken)
@@ -90,7 +91,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
             PackageIdentity identity,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
@@ -102,7 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<PackageDeprecationMetadataContextInfo?> GetDeprecationMetadataAsync(
             PackageIdentity identity,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
@@ -130,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<SearchResultContextInfo> SearchAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             string searchText,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
@@ -141,7 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(packageSources);
             Assumes.NotNull(searchFilter);
 
-            IReadOnlyCollection<SourceRepository>? sourceRepositories = await GetRepositoriesAsync(packageSources, cancellationToken);
+            IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
             (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(
                 projectContextInfos,
                 itemFilter,
@@ -157,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<int> GetTotalCountAsync(
             int maxCount,
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
             CancellationToken cancellationToken)
@@ -166,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(packageSources);
             Assumes.NotNull(searchFilter);
 
-            IReadOnlyCollection<SourceRepository>? sourceRepositories = await GetRepositoriesAsync(packageSources, cancellationToken);
+            IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
             (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(projectContextInfos, itemFilter, false, sourceRepositories, cancellationToken);
             Assumes.NotNull(mainFeed);
 
@@ -180,21 +181,13 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         private async ValueTask<IPackageMetadataProvider> GetPackageMetadataProviderAsync(
-            IReadOnlyCollection<PackageSource> packageSources,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             CancellationToken cancellationToken)
         {
-            IReadOnlyCollection<SourceRepository> sourceRepositories = await GetRepositoriesAsync(packageSources, cancellationToken);
+            IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
             SourceRepository localRepo = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             IEnumerable<SourceRepository> globalRepo = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
             return new MultiSourcePackageMetadataProvider(sourceRepositories, localRepo, globalRepo, new VisualStudioActivityLogger());
-        }
-
-        private async Task<IReadOnlyCollection<SourceRepository>> GetRepositoriesAsync(
-            IReadOnlyCollection<PackageSource> packageSources,
-            CancellationToken cancellationToken)
-        {
-            ISourceRepositoryProvider? sourceRepositoryProvider = await _sharedServiceState.SourceRepositoryProvider.GetValueAsync(cancellationToken);
-            return packageSources.Select(packageSource => sourceRepositoryProvider.CreateRepository(packageSource)).ToList();
         }
 
         private async Task<(IPackageFeed? mainFeed, IPackageFeed? recommenderFeed)> CreatePackageFeedAsync(
@@ -273,20 +266,18 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private async Task<IEnumerable<SourceRepository>> GetGlobalPackageFolderRepositoriesAsync()
+        private Task<IReadOnlyList<SourceRepository>> GetGlobalPackageFolderRepositoriesAsync()
         {
-            ISourceRepositoryProvider sourceRepositoryProvider = await _sharedServiceState.SourceRepositoryProvider.GetValueAsync();
             var settings = ServiceLocator.GetInstance<ISettings>();
-            return NuGetPackageManager.GetGlobalPackageFolderRepositories(sourceRepositoryProvider, settings);
+            return Task.FromResult(NuGetPackageManager.GetGlobalPackageFolderRepositories(_sharedServiceState.SourceRepositoryProvider, settings));
         }
 
         private async Task<SourceRepository> GetPackagesFolderSourceRepositoryAsync()
         {
             IVsSolutionManager solutionManager = await _sharedServiceState.SolutionManager.GetValueAsync();
             ISettings settings = ServiceLocator.GetInstance<ISettings>();
-            ISourceRepositoryProvider sourceRepositoryProvider = await _sharedServiceState.SourceRepositoryProvider.GetValueAsync();
 
-            return sourceRepositoryProvider.CreateRepository(
+            return _sharedServiceState.SourceRepositoryProvider.CreateRepository(
                 new PackageSource(PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings)),
                 FeedType.FileSystemPackagesConfig);
         }

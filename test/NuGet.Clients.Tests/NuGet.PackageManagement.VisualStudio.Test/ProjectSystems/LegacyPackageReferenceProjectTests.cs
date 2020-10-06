@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -34,14 +35,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private readonly IVsProjectThreadingService _threadingService;
 
-        public LegacyPackageReferenceProjectTests()
+        public LegacyPackageReferenceProjectTests(GlobalServiceProvider sp)
         {
+            sp.Reset();
             _threadingService = new TestProjectThreadingService(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         [Fact]
         public async Task GetAssetsFilePathAsync_WithValidMSBuildProjectExtensionsPath_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -58,8 +62,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     new TestProjectSystemServices(),
                     _threadingService);
 
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 // Act
                 var assetsPath = await testProject.GetAssetsFilePathAsync();
 
@@ -75,6 +77,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetAssetsFilePathAsync_WithNoMSBuildProjectExtensionsPath_Throws()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (TestDirectory.Create())
             {
@@ -83,8 +87,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
                     _threadingService);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
@@ -95,6 +97,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetCacheFilePathAsync_WithValidMSBuildProjectExtensionsPath_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -116,8 +120,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     new TestProjectSystemServices(),
                     _threadingService);
 
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 // Act
                 var cachePath = await testProject.GetCacheFilePathAsync();
 
@@ -133,6 +135,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetCacheFilePathAsync_WithNoMSBuildProjectExtensionsPath_Throws()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (TestDirectory.Create())
             {
@@ -141,8 +145,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
                     _threadingService);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
@@ -189,6 +191,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithDefaultVersion_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -202,8 +206,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -235,6 +237,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithVersion_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -252,8 +256,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -280,6 +282,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData("RestorePackagesPath", "Source1;Source2", null)]
         public async Task GetPackageSpecsAsync_ReadSettingsWithRelativePaths(string restorePackagesPath, string sources, string fallbackFolders)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -306,8 +309,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -347,6 +348,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", null)]
         public async Task GetPackageSpecsAsync_ReadSettingsWithFullPaths(string restorePackagesPath, string sources, string fallbackFolders)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -373,8 +376,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -410,6 +411,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithPackageTargetFallback_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -425,8 +428,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -464,6 +465,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithPackageReference_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
             {
@@ -489,8 +492,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -519,6 +520,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithProjectReference_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
             {
@@ -541,8 +544,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -704,6 +705,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_SkipContentFilesAlwaysTrue()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
             {
@@ -730,8 +733,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
 
@@ -755,6 +756,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             string lockFilePath,
             bool restoreLockedMode)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -781,8 +784,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);

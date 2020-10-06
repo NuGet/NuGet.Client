@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var serviceBroker = new Mock<IServiceBroker>();
             var authorizationService = new AuthorizationServiceClient(Mock.Of<IAuthorizationService>());
 
-            var sharedState = new SharedServiceState();
+            var sharedState = new SharedServiceState(sourceRepository);
 
             var projectManagerService = new Mock<INuGetProjectManagerService>();
 
@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 int totalCount = await searchService.GetTotalCountAsync(
                     MaxCount,
                     projects,
-                    sources,
+                    sources.Select(s => PackageSourceContextInfo.Create(s)).ToList(),
                     new SearchFilter(includePrerelease: true),
                     ItemFilter.All,
                     CancellationToken.None);
@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 int totalCount = await searchService.GetTotalCountAsync(
                     maxCount: 100,
                     _projects,
-                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     new SearchFilter(includePrerelease: true),
                     ItemFilter.All,
                     CancellationToken.None);
@@ -166,7 +166,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 IReadOnlyCollection<PackageSearchMetadataContextInfo> allPackages = await searchService.GetAllPackagesAsync(
                     _projects,
-                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     new SearchFilter(includePrerelease: true),
                     ItemFilter.All,
                     CancellationToken.None);
@@ -182,7 +182,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 IReadOnlyCollection<PackageSearchMetadataContextInfo> packageMetadataList = await searchService.GetPackageMetadataListAsync(
                     id: "NuGet.Core",
-                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     includePrerelease: true,
                     includeUnlisted: true,
                     CancellationToken.None);
@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 PackageDeprecationMetadataContextInfo deprecationMetadata = await searchService.GetDeprecationMetadataAsync(
                     new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")),
-                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     includePrerelease: true,
                     CancellationToken.None);
 
@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 IReadOnlyCollection<VersionInfoContextInfo> result = await searchService.GetPackageVersionsAsync(
                     new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")),
-                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     includePrerelease: true,
                     CancellationToken.None);
 
@@ -239,7 +239,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 SearchResultContextInfo searchResult = await searchService.SearchAsync(
                     _projects,
-                    new List<PackageSource> { _sourceRepository.PackageSource },
+                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     searchText: "nuget",
                     new SearchFilter(includePrerelease: true),
                     ItemFilter.All,
@@ -286,8 +286,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         private NuGetPackageSearchService SetupSearchService()
         {
+            var packageSourceProvider = new Mock<IPackageSourceProvider>();
+            packageSourceProvider.Setup(x => x.LoadPackageSources()).Returns(new List<PackageSource> { _sourceRepository.PackageSource });
             var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
             sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>())).Returns(_sourceRepository);
+            sourceRepositoryProvider.SetupGet(x => x.PackageSourceProvider).Returns(packageSourceProvider.Object);
             var solutionManager = new Mock<IVsSolutionManager>();
             solutionManager.SetupGet(x => x.SolutionDirectory).Returns("z:\\SomeRandomPath");
             var settings = new Mock<ISettings>();
@@ -300,7 +303,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var serviceBroker = new Mock<IServiceBroker>();
             var authorizationService = new AuthorizationServiceClient(Mock.Of<IAuthorizationService>());
 
-            var sharedState = new SharedServiceState();
+            var sharedState = new SharedServiceState(sourceRepositoryProvider.Object);
 
             var projectManagerService = new Mock<INuGetProjectManagerService>();
 

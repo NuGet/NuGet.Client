@@ -12,9 +12,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
-using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -249,18 +247,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async ValueTask<SourceRepository?> GetSourceRepositoryAsync(CancellationToken cancellationToken)
         {
-            ISourceRepositoryProvider sourceRepositoryProvider = await _state.SourceRepositoryProvider.GetValueAsync(cancellationToken);
-            Assumes.NotNull(sourceRepositoryProvider);
-
             var activeSources = new List<SourceRepository>();
 
             IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers = await PackageSourceMoniker.PopulateListAsync(cancellationToken);
             foreach (PackageSourceMoniker item in packageSourceMonikers)
             {
-                foreach (PackageSource packageSource in item.PackageSources)
-                {
-                    activeSources.Add(sourceRepositoryProvider.CreateRepository(packageSource));
-                }
+                var sources = await _state.GetRepositoriesAsync(item.PackageSources, cancellationToken);
+                activeSources.AddRange(sources);
             }
 
             return activeSources.FirstOrDefault();

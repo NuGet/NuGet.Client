@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class PackageSourceMoniker : IEquatable<PackageSourceMoniker>
     {
-        public PackageSourceMoniker(string sourceName, IEnumerable<PackageSource> packageSources)
+        public PackageSourceMoniker(string sourceName, IEnumerable<PackageSourceContextInfo> packageSources)
         {
             SourceName = sourceName;
 
@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSources = packageSources.ToArray();
         }
 
-        public IReadOnlyCollection<PackageSource> PackageSources { get; private set; }
+        public IReadOnlyCollection<PackageSourceContextInfo> PackageSources { get; private set; }
 
         public IEnumerable<string> PackageSourceNames => PackageSources.Select(s => s.Name);
 
@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 : string.Join("; ", PackageSourceNames);
         }
 
-        private static string GetTooltip(PackageSource packageSource)
+        private static string GetTooltip(PackageSourceContextInfo packageSource)
         {
             return string.IsNullOrEmpty(packageSource.Description)
                 ? $"{packageSource.Name} - {packageSource.Source}"
@@ -86,18 +86,23 @@ namespace NuGet.PackageManagement.VisualStudio
             using (INuGetSourcesService nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetServices.SourceProviderService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(nugetSourcesService);
-                IReadOnlyList<PackageSource> packageSources = await nugetSourcesService.GetPackageSourcesAsync(cancellationToken);
+                IReadOnlyList<PackageSourceContextInfo> packageSources = await nugetSourcesService.GetPackageSourcesAsync(cancellationToken);
 
-                var packageSourceMonikers = new List<PackageSourceMoniker>();
-                if (packageSources.Count > 1) // If more than 1, add 'All'
-                {
-                    packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, packageSources));
-                }
-
-                packageSourceMonikers.AddRange(packageSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s })));
-
-                return packageSourceMonikers;
+                return await PopulateListAsync(packageSources, cancellationToken);
             }
+        }
+
+        public static ValueTask<IReadOnlyCollection<PackageSourceMoniker>> PopulateListAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken cancellationToken)
+        {
+            var packageSourceMonikers = new List<PackageSourceMoniker>();
+            if (packageSources.Count > 1) // If more than 1, add 'All'
+            {
+                packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, packageSources));
+            }
+
+            packageSourceMonikers.AddRange(packageSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s })));
+
+            return new ValueTask<IReadOnlyCollection<PackageSourceMoniker>>(packageSourceMonikers);
         }
     }
 }

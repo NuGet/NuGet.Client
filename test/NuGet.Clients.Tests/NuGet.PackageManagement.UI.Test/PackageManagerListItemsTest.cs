@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             var context = new PackageLoadContext(false, uiContext);
 
-            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService, "EntityFramework", false);
+            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(repo.PackageSource) }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService, "EntityFramework", false);
 
             var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
             {
@@ -91,7 +91,16 @@ namespace NuGet.PackageManagement.UI.Test
 
             var context = new PackageLoadContext(false, uiContext);
 
-            var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSource> { repo.PackageSource, repo1.PackageSource }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService, "EntityFramework", false);
+            var loader = await PackageItemLoader.CreateAsync(context,
+                new List<PackageSourceContextInfo>
+                {
+                    PackageSourceContextInfo.Create(repo.PackageSource),
+                    PackageSourceContextInfo.Create(repo1.PackageSource)
+                },
+                NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                searchService,
+                "EntityFramework",
+                false);
 
             var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
             {
