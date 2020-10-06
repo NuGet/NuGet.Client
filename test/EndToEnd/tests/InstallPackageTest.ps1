@@ -2985,3 +2985,23 @@ function Test-InstallPackageWithRootNamespaceInPPFile {
     $content = [System.IO.File]::ReadAllText($path)
     Assert-True ($content.Contains("namespace testProject"))
 }
+
+function RemoveDirectory {
+    param($dir)
+
+    $iteration = 0
+    while ($iteration++ -lt 10)
+    {
+        if (Test-Path $dir)
+        {
+            # because -Recurse parameter in Remove-Item has a known issue so using Get-ChildItem to
+            # first delete all the children and then delete the folder.
+            Get-ChildItem $dir -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Recurse -Force $dir -ErrorAction SilentlyContinue
+        }
+        else 
+        {
+            break;
+        }
+    }
+}
