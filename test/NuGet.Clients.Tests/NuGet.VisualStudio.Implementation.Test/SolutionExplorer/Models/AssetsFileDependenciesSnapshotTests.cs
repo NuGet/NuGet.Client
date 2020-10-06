@@ -65,6 +65,32 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
         }
 
         [Fact]
+        public void ParseLibraries_LockFileTargetLibrariesWithDifferentCase_Throws()
+        {
+            // Arrange
+            LockFileTarget lockFileTarget = new LockFileTarget();
+            lockFileTarget.Libraries = new List<LockFileTargetLibrary>
+            {
+                new LockFileTargetLibrary()
+                {
+                    Name = "packageA",
+                    Type = "package",
+                    Version = NuGetVersion.Parse("1.0.0")
+                },
+                new LockFileTargetLibrary()
+                {
+                    Name = "PackageA",
+                    Type = "package",
+                    Version = NuGetVersion.Parse("1.0.0")
+                }
+            };
+
+            var exception = Assert.Throws<ArgumentException>(() => AssetsFileDependenciesSnapshot.ParseLibraries(lockFileTarget));
+
+            Assert.Equal("An element with the same key but a different value already exists. Key: PackageA", exception.Message);
+        }
+
+        [Fact]
         public void ParseLibraries_LockFileTargetLibrariesMatchesDependencies_Succeeds()
         {
             // Arrange
