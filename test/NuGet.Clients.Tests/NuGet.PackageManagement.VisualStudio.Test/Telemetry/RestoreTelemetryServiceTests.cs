@@ -58,11 +58,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectJsonProjectsCount: 0,
                 packageReferenceProjectsCount: 0,
                 legacyPackageReferenceProjectsCount: 0,
-                netCorePackageReferenceProjectsCount: 0,
+                cpsPackageReferenceProjectsCount: 0,
                 dotnetCliToolProjectsCount: 0,
-                standaloneProjectsCount: 0,
                 packagesConfigProjectsCount: 0,
-                dotnetToolReferenceProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
                 isSolutionLoadRestore: true,
@@ -113,11 +111,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectJsonProjectsCount: 0,
                 packageReferenceProjectsCount: 0,
                 legacyPackageReferenceProjectsCount: 0,
-                netCorePackageReferenceProjectsCount: 0,
+                cpsPackageReferenceProjectsCount: 0,
                 dotnetCliToolProjectsCount: 0,
-                standaloneProjectsCount: 0,
                 packagesConfigProjectsCount: 0,
-                dotnetToolReferenceProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
                 isSolutionLoadRestore: true,
@@ -132,7 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(24, lastTelemetryEvent.Count);
+            Assert.Equal(22, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -145,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(22, actual.Count);
+            Assert.Equal(20, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 

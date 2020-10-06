@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio
             int projectJsonProjectsCount,
             int packageReferenceProjectsCount,
             int legacyPackageReferenceProjectsCount,
-            int netCorePackageReferenceProjectsCount,
+            int cpsPackageReferenceProjectsCount,
             int dotnetCliToolProjectsCount,
             int packagesConfigProjectsCount,
             DateTimeOffset endTime,
@@ -47,7 +47,7 @@ namespace NuGet.VisualStudio
             base[nameof(ProjectJsonProjectsCount)] = projectJsonProjectsCount;
             base[nameof(PackageReferenceProjectsCount)] = packageReferenceProjectsCount;
             base[nameof(LegacyPackageReferenceProjectsCount)] = legacyPackageReferenceProjectsCount;
-            base[nameof(NetCorePackageReferenceProjectsCount)] = netCorePackageReferenceProjectsCount;
+            base[nameof(CpsPackageReferenceProjectsCount)] = cpsPackageReferenceProjectsCount;
             base[nameof(DotnetCliToolProjectsCount)] = dotnetCliToolProjectsCount;
             base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
@@ -79,7 +79,7 @@ namespace NuGet.VisualStudio
 
         public int LegacyPackageReferenceProjectsCount => (int)base[nameof(LegacyPackageReferenceProjectsCount)];
 
-        public int NetCorePackageReferenceProjectsCount => (int)base[nameof(NetCorePackageReferenceProjectsCount)];
+        public int CpsPackageReferenceProjectsCount => (int)base[nameof(CpsPackageReferenceProjectsCount)];
 
         public int DotnetCliToolProjectsCount => (int)base[nameof(DotnetCliToolProjectsCount)];
 
