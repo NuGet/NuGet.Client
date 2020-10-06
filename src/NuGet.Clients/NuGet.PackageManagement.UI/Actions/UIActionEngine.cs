@@ -773,7 +773,6 @@ namespace NuGet.PackageManagement.UI
             {
                 var stopWatch = Stopwatch.StartNew();
                 NuGetFileLogger.DefaultInstance.Write($"Install: {projects.Count()} {userAction.PackageId}-{userAction.Version}");
-                NuGetFileLogger.DefaultInstance.Write($"Not parallel");
 
                 var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
                 string[] projectIds = projects
