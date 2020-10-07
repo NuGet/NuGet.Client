@@ -42,6 +42,7 @@ namespace NuGet.PackageManagement.UI.Test
                 Assert.Equal(PackUriHelper.UriSchemePack, scheme);
 
                 // ensure that an application exists, so pack application uris work.
+                //TODO: defaultpackageicon won't work without an application, but other tests break due to too many applications.
                 new System.Windows.Application();
             }
 
@@ -72,6 +73,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
+            Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
             Assert.Same(DefaultPackageIcon, result);
         }
 
@@ -88,6 +90,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
+            Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
             Assert.Same(DefaultPackageIcon, result);
         }
 
@@ -104,6 +107,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
+            Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
             Assert.Same(DefaultPackageIcon, result);
         }
 
@@ -119,6 +123,9 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
+
+            // TODO: this isn't working now...and i think it shouldn't work. follow up. (relative URIs...shouldn't work!!!)
+            Assert.Equal(expected: IconBitmapStatus.ShowingFromUrl, packageItemListViewModel.BitmapStatus);
             Assert.NotSame(DefaultPackageIcon, result);
         }
 
@@ -135,7 +142,8 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result);
-            Assert.Equal(DefaultPackageIcon, result);
+            Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
+            Assert.Same(DefaultPackageIcon, result);
         }
 
         [LocalOnlyTheory]
@@ -182,6 +190,7 @@ namespace NuGet.PackageManagement.UI.Test
                 // Assert
                 _output.WriteLine($"result {result}");
                 VerifyImageResult(result);
+                Assert.Equal(expected: IconBitmapStatus.ShowingFromEmbeddedIcon, packageItemListViewModel.BitmapStatus);
                 Assert.NotSame(DefaultPackageIcon, result);
             }
         }
@@ -205,6 +214,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 VerifyImageResult(result);
+                Assert.Equal(expected: IconBitmapStatus.ShowingFromUrl, packageItemListViewModel.BitmapStatus);
                 Assert.NotSame(DefaultPackageIcon, result);
             }
         }
@@ -237,6 +247,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 VerifyImageResult(result);
+                Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
                 Assert.Same(DefaultPackageIcon, result);
             }
         }
@@ -289,7 +300,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         /// <summary>
-        /// Tests the final bitmap returned by the view model, by waiting for the IsIconBitmapComplete to be true.
+        /// Tests the final bitmap returned by the view model, by waiting for the BitmapStatus to be "complete".
         /// </summary>
         /// <param name="packageItemListViewModel"></param>
         /// <returns></returns>
@@ -297,7 +308,9 @@ namespace NuGet.PackageManagement.UI.Test
         {
             BitmapSource result = packageItemListViewModel.IconBitmap;
 
-            while (!packageItemListViewModel.IsIconBitmapComplete)
+            while (packageItemListViewModel.BitmapStatus == IconBitmapStatus.None ||
+                packageItemListViewModel.BitmapStatus == IconBitmapStatus.NeedToFetch ||
+                packageItemListViewModel.BitmapStatus == IconBitmapStatus.FetchQueued)
             {
                 await Task.Delay(250);
             }
@@ -306,7 +319,6 @@ namespace NuGet.PackageManagement.UI.Test
             return result;
         }
 
-        //TODO: why cionly? [CIOnlyTheory]
         [Theory]
         [InlineData("icon.jpg", "icon.jpg", "icon.jpg", "")]
         [InlineData("icon2.jpg", "icon2.jpg", "icon2.jpg", "")]

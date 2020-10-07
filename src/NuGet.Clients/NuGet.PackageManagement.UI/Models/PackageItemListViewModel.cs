@@ -404,7 +404,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     // null or relative uris are not supported, should fallback to default.
                     IconBitmap = Images.DefaultPackageIcon;
-                    IsIconBitmapComplete = true;
+                    BitmapStatus = IconBitmapStatus.ShowingDefault;
                 }
                 else
                 {
@@ -413,7 +413,7 @@ namespace NuGet.PackageManagement.UI
                     if (cachedBitmapImage != null)
                     {
                         IconBitmap = cachedBitmapImage;
-                        IsIconBitmapComplete = true;
+                        BitmapStatus = IconBitmapStatus.ShowingFromCache;
                     }
                     else
                     {
@@ -422,11 +422,11 @@ namespace NuGet.PackageManagement.UI
                         if (ErrorFloodGate.IsOpen)
                         {
                             IconBitmap = Images.DefaultPackageIcon;
-                            IsIconBitmapComplete = true;
+                            BitmapStatus = IconBitmapStatus.ShowingDefault;
                         }
                         else
                         {
-                            IsIconBitmapComplete = false;
+                            BitmapStatus = IconBitmapStatus.NeedToFetch;
                             // IconBitmap will be fetched when IconBitmap getter is first called, generally by the binding when it should be visible.
                             IconBitmap = null;
                         }
@@ -435,7 +435,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsIconBitmapComplete { get; private set; }
+        public IconBitmapStatus BitmapStatus { get; private set; }
 
         private BitmapSource _iconBitmap;
         public BitmapSource IconBitmap
@@ -446,8 +446,16 @@ namespace NuGet.PackageManagement.UI
                 {
                     // Fetch icon on workerthread, via fire and forget.
                     // When fetched, the real icon, or the default, will be set as the value, and databindings will refresh due to property change event.
-                    async void action() { IconBitmap = await FetchIconStreamAsync(IconUrl); }
-                    new Task(action).Start();
+                    async void action()
+                    {
+                        // TODO: do i need to lock here instead?
+                        BitmapStatus = IconBitmapStatus.FetchQueued;
+                        IconBitmap = await FetchIconStreamAsync(IconUrl);
+                    }
+                    if (BitmapStatus == IconBitmapStatus.NeedToFetch)
+                    {
+                        new Task(action).Start();
+                    }
 
                     // return default package icon for now.
                     return Images.DefaultPackageIcon;
@@ -477,7 +485,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<BitmapSource> FetchIconStreamAsync(Uri iconUrl)
         {
-            BitmapSource imageResult;
+            BitmapSource imageResult = null;
 
             if (IsEmbeddedIconUri(IconUrl))
             {
@@ -488,6 +496,7 @@ namespace NuGet.PackageManagement.UI
                 else // Identified an embedded icon URI, but we are unable to process it
                 {
                     imageResult = Images.DefaultPackageIcon;
+                    BitmapStatus = IconBitmapStatus.ShowingDefault;
                 }
             }
             else
@@ -502,7 +511,6 @@ namespace NuGet.PackageManagement.UI
                 AddToCache(cacheKey, imageResult);
             }
 
-            IsIconBitmapComplete = true;
             return imageResult;
         }
 
@@ -533,16 +541,19 @@ namespace NuGet.PackageManagement.UI
 
                         iconBitmapImage.Freeze();
                         imageResult = iconBitmapImage;
+                        BitmapStatus = IconBitmapStatus.ShowingFromEmbeddedIcon;
                     }
                     else // we cannot use the reader object
                     {
                         imageResult = Images.DefaultPackageIcon;
+                        BitmapStatus = IconBitmapStatus.ShowingDefault;
                     }
                 }
             }
             catch (Exception)
             {
                 imageResult = Images.DefaultPackageIcon;
+                BitmapStatus = IconBitmapStatus.ShowingDefault;
             }
 
             return imageResult;
@@ -567,11 +578,17 @@ namespace NuGet.PackageManagement.UI
                         {
                             FinalizeBitmapImage(iconBitmapImage);
                             iconBitmapImage.Freeze();
+                            BitmapStatus = IconBitmapStatus.ShowingFromUrl;
                         }
                         catch (Exception)
                         {
                             iconBitmapImage = null;
+                            BitmapStatus = IconBitmapStatus.ShowingDefault;
                         }
+                    }
+                    else
+                    {
+                        BitmapStatus = IconBitmapStatus.ShowingDefault;
                     }
 
                     image = iconBitmapImage ?? Images.DefaultPackageIcon;

@@ -73,6 +73,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IPackageItemLoader.cs" />
     <Compile Include="Models\FreeText.cs" />
+    <Compile Include="Models\IconBitmapStatus.cs" />
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
