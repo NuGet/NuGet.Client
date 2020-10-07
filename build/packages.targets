@@ -6,7 +6,7 @@
         <VSComponentsVersion>16.6.255</VSComponentsVersion>
         <VSFrameworkVersion>16.6.30107.105</VSFrameworkVersion>
         <VSServicesVersion>16.153.0</VSServicesVersion>
-        <VSThreadingVersion>16.7.54</VSThreadingVersion>
+        <VSThreadingVersion>16.7.56</VSThreadingVersion>
         <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/nuget/home/issues/8952 -->
         <PatchedSystemPackagesVersion>5.0.0-preview.3.20214.6</PatchedSystemPackagesVersion>
     </PropertyGroup>
@@ -27,7 +27,7 @@
         <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
         <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Embeddable" Version="16.4.29305.180" />
-        <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.4.227" />
+        <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.7.96" />
         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
         <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="16.7.3069" />
@@ -62,7 +62,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.Web.Xdt" Version="2.1.2" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
-        <PackageReference Update="System.Collections.Immutable" Version="1.5.0" />
+        <PackageReference Update="System.Collections.Immutable" Version="1.7.1" />
         <PackageReference Update="System.Diagnostics.Debug" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(PatchedSystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Cng" Version="$(PatchedSystemPackagesVersion)" />
