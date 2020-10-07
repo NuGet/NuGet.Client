@@ -353,7 +353,6 @@ namespace NuGet.SolutionRestoreManager
                     var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
                     if (!Path.IsPathRooted(globalPackagesFolder))
                     {
-
                         var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Resources.RelativeGlobalPackagesFolder,
