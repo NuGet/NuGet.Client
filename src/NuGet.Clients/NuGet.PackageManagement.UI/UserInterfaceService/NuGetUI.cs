@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +22,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using StreamJsonRpc;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
@@ -357,36 +357,45 @@ namespace NuGet.PackageManagement.UI
 
         public void ShowError(Exception ex)
         {
-            var signException = ex as SignatureException;
-
-            if (signException != null)
+            if (ex is RemoteInvocationException remoteException
+                && remoteException.DeserializedErrorData is RemoteError remoteError)
             {
-                ProcessSignatureIssues(signException);
+                ShowError(remoteError);
             }
             else
             {
-                if (ex is NuGetResolverConstraintException ||
-                    ex is PackageAlreadyInstalledException ||
-                    ex is MinClientVersionException ||
-                    ex is FrameworkException ||
-                    ex is NuGetProtocolException ||
-                    ex is PackagingException ||
-                    ex is InvalidOperationException ||
-                    ex is PackageReferenceRollbackException)
-                {
-                    // for exceptions that are known to be normal error cases, just
-                    // display the message.
-                    ProjectContext.Log(MessageLevel.Info, ExceptionUtilities.DisplayMessage(ex, indent: true));
+                ProjectContext.Log(MessageLevel.Error, ex.ToString());
 
-                    // write to activity log
-                    var activityLogMessage = string.Format(CultureInfo.CurrentCulture, ex.ToString());
-                    ActivityLog.LogError(LogEntrySource, activityLogMessage);
+                UILogger.ReportError(new LogMessage(LogLevel.Error, ExceptionUtilities.DisplayMessage(ex, indent: false)));
+            }
+        }
+
+        private void ShowError(RemoteError error)
+        {
+            if (error.TypeName == typeof(SignatureException).FullName)
+            {
+                ProcessSignatureIssues(error);
+            }
+            else
+            {
+                if (error.TypeName == typeof(NuGetResolverConstraintException).FullName
+                    || error.TypeName == typeof(PackageAlreadyInstalledException).FullName
+                    || error.TypeName == typeof(MinClientVersionException).FullName
+                    || error.TypeName == typeof(FrameworkException).FullName
+                    || error.TypeName == typeof(NuGetProtocolException).FullName
+                    || error.TypeName == typeof(PackagingException).FullName
+                    || error.TypeName == typeof(InvalidOperationException).FullName
+                    || error.TypeName == typeof(PackageReferenceRollbackException).FullName)
+                {
+                    ProjectContext.Log(MessageLevel.Info, error.ProjectContextLogMessage);
+
+                    ActivityLog.LogError(LogEntrySource, error.ActivityLogMessage);
 
                     // Log additional messages to the error list to provide context on why the rollback failed
-                    var rollbackException = ex as PackageReferenceRollbackException;
-                    if (rollbackException != null)
+                    if (error.LogMessages != null
+                        && error.TypeName == typeof(PackageReferenceRollbackException).FullName)
                     {
-                        foreach (var message in rollbackException.LogMessages)
+                        foreach (ILogMessage message in error.LogMessages)
                         {
                             if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
                             {
@@ -397,10 +406,10 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    ProjectContext.Log(MessageLevel.Error, ex.ToString());
+                    ProjectContext.Log(MessageLevel.Error, error.ProjectContextLogMessage);
                 }
 
-                UILogger.ReportError(new LogMessage(LogLevel.Error, ExceptionUtilities.DisplayMessage(ex, indent: false)));
+                UILogger.ReportError(error.LogMessage);
             }
         }
 
@@ -411,30 +420,27 @@ namespace NuGet.PackageManagement.UI
             GC.SuppressFinalize(this);
         }
 
-        private void ProcessSignatureIssues(SignatureException ex)
+        private void ProcessSignatureIssues(RemoteError error)
         {
-            if (!string.IsNullOrEmpty(ex.Message))
+            if (!string.IsNullOrEmpty(error.LogMessage.Message))
             {
-                UILogger.ReportError(ex.AsLogMessage());
-                ProjectContext.Log(ex.AsLogMessage());
+                UILogger.ReportError(error.LogMessage);
+                ProjectContext.Log(error.LogMessage);
             }
 
-            if (ex.Results is null)
+            if (error.LogMessages is null)
             {
                 return;
             }
 
-            foreach (var result in ex.Results)
-            {
-                var errorList = result.GetErrorIssues().ToList();
-                var warningList = result.GetWarningIssues().ToList();
+            var errorList = error.LogMessages.Where(message => message.Level == LogLevel.Error).ToList();
+            var warningList = error.LogMessages.Where(message => message.Level == LogLevel.Warning).ToList();
 
-                errorList.ForEach(p => UILogger.ReportError(p));
-                warningList.ForEach(p => UILogger.ReportError(p));
+            errorList.ForEach(p => UILogger.ReportError(p));
+            warningList.ForEach(p => UILogger.ReportError(p));
 
-                errorList.ForEach(p => ProjectContext.Log(p));
-                warningList.ForEach(p => ProjectContext.Log(p));
-            }
+            errorList.ForEach(p => ProjectContext.Log(p));
+            warningList.ForEach(p => ProjectContext.Log(p));
         }
     }
 }
