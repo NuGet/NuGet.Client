@@ -220,50 +220,44 @@ namespace NuGet.PackageManagement.UI.Test
             var logger = new Mock<INuGetUILogger>();
             var searchResultTask = Task.FromResult(new SearchResultContextInfo());
 
-#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-         //   using (var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current))
-#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
-            {
+            var list = new InfiniteScrollList();
+            var taskCompletionSource = new TaskCompletionSource<string>();
 
-                var list = new InfiniteScrollList();
-                var taskCompletionSource = new TaskCompletionSource<string>();
+            // Despite LoadItems(...) being a synchronous method, the method internally fires an asynchronous task.
+            // We'll know when that task completes successfully when the LoadItemsCompleted event fires,
+            // and to avoid infinite waits in exceptional cases, we'll interpret a call to reset as a failure.
+            list.LoadItemsCompleted += (sender, args) => taskCompletionSource.TrySetResult(null);
 
-                // Despite LoadItems(...) being a synchronous method, the method internally fires an asynchronous task.
-                // We'll know when that task completes successfully when the LoadItemsCompleted event fires,
-                // and to avoid infinite waits in exceptional cases, we'll interpret a call to reset as a failure.
-                list.LoadItemsCompleted += (sender, args) => taskCompletionSource.TrySetResult(null);
-
-                loader.Setup(x => x.Reset());
-                logger.Setup(x => x.Log(It.Is<ILogMessage>(lm => lm.Level == LogLevel.Error && lm.Message != null)))
-                      .Callback<ILogMessage>(
-                        (logMessage) =>
-                            {
-                                taskCompletionSource.TrySetResult(logMessage.Message);
-                            });
-                loader.Setup(x => x.GetCurrent())
-                    .Returns(() =>
-                    {
-                        if (!hasWaited)
+            loader.Setup(x => x.Reset());
+            logger.Setup(x => x.Log(It.Is<ILogMessage>(lm => lm.Level == LogLevel.Error && lm.Message != null)))
+                  .Callback<ILogMessage>(
+                    (logMessage) =>
                         {
-                            taskCompletionSource.TrySetResult("GetCurrent() was called before waiting for initial results.");
-                        }
+                            taskCompletionSource.TrySetResult(logMessage.Message);
+                        });
+            loader.Setup(x => x.GetCurrent())
+                .Returns(() =>
+                {
+                    if (!hasWaited)
+                    {
+                        taskCompletionSource.TrySetResult("GetCurrent() was called before waiting for initial results.");
+                    }
 
-                        return Enumerable.Empty<PackageItemListViewModel>();
-                    });
+                    return Enumerable.Empty<PackageItemListViewModel>();
+                });
 
-                await list.LoadItemsAsync(
-                    loader.Object,
-                    loadingMessage: "a",
-                    logger: logger.Object,
-                    searchResultTask: searchResultTask,
-                    token: CancellationToken.None);
+            await list.LoadItemsAsync(
+                loader.Object,
+                loadingMessage: "a",
+                logger: logger.Object,
+                searchResultTask: searchResultTask,
+                token: CancellationToken.None);
 
-                var errorMessage = await taskCompletionSource.Task;
+            var errorMessage = await taskCompletionSource.Task;
 
-                Assert.Null(errorMessage);
+            Assert.Null(errorMessage);
 
-                loader.Verify();
-            }
+            loader.Verify();
         }
 
         [WpfTheory]

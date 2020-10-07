@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (packageSources.TryGetValue(packageSourceContextInfo.OriginalHashCode, out PackageSource packageSource))
                 {
                     // If Name/Source/IsEnabled has not changed, we don't need to do anything
-                    if(packageSource.Name.Equals(packageSourceContextInfo.Name, StringComparison.InvariantCulture)
+                    if (packageSource.Name.Equals(packageSourceContextInfo.Name, StringComparison.InvariantCulture)
                         && packageSource.Source.Equals(packageSourceContextInfo.Source, StringComparison.InvariantCulture)
                         && packageSource.IsEnabled == packageSourceContextInfo.IsEnabled)
                     {
