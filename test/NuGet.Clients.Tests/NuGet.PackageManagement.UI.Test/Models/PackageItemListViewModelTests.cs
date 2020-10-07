@@ -19,7 +19,6 @@ namespace NuGet.PackageManagement.UI.Test
     {
         private readonly LocalPackageSearchMetadataFixture _testData;
         private readonly PackageItemListViewModel _testInstance;
-        private static readonly ImageSource DefaultPackageIcon;
         private readonly ITestOutputHelper _output;
 
         public PackageItemListViewModelTests(ITestOutputHelper output, LocalPackageSearchMetadataFixture testData)
@@ -30,23 +29,6 @@ namespace NuGet.PackageManagement.UI.Test
                 PackageReader = _testData.TestData.PackageReader,
             };
             _output = output;
-        }
-
-        static PackageItemListViewModelTests()
-        {
-            // ensure that pack: scheme is registered, otherwise pack: uris won't work in tests.
-            const string scheme = "pack";
-            if (!UriParser.IsKnownScheme(scheme))
-            {
-                // ensure that the pack scheme is registered
-                Assert.Equal(PackUriHelper.UriSchemePack, scheme);
-
-                // ensure that an application exists, so pack application uris work.
-                //TODO: defaultpackageicon won't work without an application, but other tests break due to too many applications.
-                new System.Windows.Application();
-            }
-
-            DefaultPackageIcon = Images.DefaultPackageIcon;
         }
 
         [Fact]
@@ -72,9 +54,8 @@ namespace NuGet.PackageManagement.UI.Test
 
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
-            VerifyImageResult(result);
+            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
             Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
-            Assert.Same(DefaultPackageIcon, result);
         }
 
         [Fact]
@@ -89,9 +70,8 @@ namespace NuGet.PackageManagement.UI.Test
 
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
-            VerifyImageResult(result);
+            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
             Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
-            Assert.Same(DefaultPackageIcon, result);
         }
 
         [Fact]
@@ -106,9 +86,8 @@ namespace NuGet.PackageManagement.UI.Test
 
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
-            VerifyImageResult(result);
+            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
             Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
-            Assert.Same(DefaultPackageIcon, result);
         }
 
         [Fact]
@@ -122,11 +101,10 @@ namespace NuGet.PackageManagement.UI.Test
 
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
-            VerifyImageResult(result);
+            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
 
             // TODO: this isn't working now...and i think it shouldn't work. follow up. (relative URIs...shouldn't work!!!)
             Assert.Equal(expected: IconBitmapStatus.ShowingFromUrl, packageItemListViewModel.BitmapStatus);
-            Assert.NotSame(DefaultPackageIcon, result);
         }
 
         [Fact]
@@ -141,9 +119,8 @@ namespace NuGet.PackageManagement.UI.Test
 
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
-            VerifyImageResult(result);
+            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
             Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
-            Assert.Same(DefaultPackageIcon, result);
         }
 
         [LocalOnlyTheory]
@@ -189,9 +166,8 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 _output.WriteLine($"result {result}");
-                VerifyImageResult(result);
+                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
                 Assert.Equal(expected: IconBitmapStatus.ShowingFromEmbeddedIcon, packageItemListViewModel.BitmapStatus);
-                Assert.NotSame(DefaultPackageIcon, result);
             }
         }
 
@@ -213,9 +189,8 @@ namespace NuGet.PackageManagement.UI.Test
                 BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
                 // Assert
-                VerifyImageResult(result);
+                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
                 Assert.Equal(expected: IconBitmapStatus.ShowingFromUrl, packageItemListViewModel.BitmapStatus);
-                Assert.NotSame(DefaultPackageIcon, result);
             }
         }
 
@@ -246,9 +221,8 @@ namespace NuGet.PackageManagement.UI.Test
                 BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
                 // Assert
-                VerifyImageResult(result);
+                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
                 Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
-                Assert.Same(DefaultPackageIcon, result);
             }
         }
 
@@ -359,24 +333,32 @@ namespace NuGet.PackageManagement.UI.Test
                 // Act
                 BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
-                VerifyImageResult(result);
+                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
 
                 _output.WriteLine($"result {result}");
-                _output.WriteLine($"Pixel format: {result.Format}");
+                string resultFormat = result != null ? result.Format.ToString() : "";
+                _output.WriteLine($"Pixel format: {resultFormat}");
 
                 // Assert
-                Assert.Same(DefaultPackageIcon, result);
+                Assert.Equal(expected: IconBitmapStatus.ShowingDefault, packageItemListViewModel.BitmapStatus);
             }
         }
 
-        private static void VerifyImageResult(object result)
+        private static void VerifyImageResult(object result, IconBitmapStatus bitmapStatus)
         {
-            Assert.NotNull(result);
-            Assert.True(result is BitmapImage || result is CachedBitmap);
-            var image = result as BitmapSource;
-            Assert.NotNull(image);
-            Assert.Equal(32, image.PixelWidth);
-            Assert.Equal(32, image.PixelHeight);
+            if (result == null && bitmapStatus == IconBitmapStatus.ShowingDefault)
+            {
+                return;
+            }
+            else
+            {
+                Assert.NotNull(result);
+                Assert.True(result is BitmapImage || result is CachedBitmap);
+                var image = result as BitmapSource;
+                Assert.NotNull(image);
+                Assert.Equal(32, image.PixelWidth);
+                Assert.Equal(32, image.PixelHeight);
+            }
         }
 
         /// <summary>

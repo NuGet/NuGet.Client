@@ -11,7 +11,6 @@ using System.Net;
 using System.Net.Cache;
 using System.Runtime.Caching;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
