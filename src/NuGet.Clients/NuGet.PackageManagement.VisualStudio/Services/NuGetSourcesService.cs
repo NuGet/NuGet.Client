@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly AuthorizationServiceClient _authorizationServiceClient;
         private readonly ISharedServiceState _sharedServiceState;
 
-        public event EventHandler<IReadOnlyCollection<PackageSourceContextInfo>>? PackageSourcesChanged;
+        public event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
 
         public NuGetSourcesService(
             ServiceActivationOptions options,
@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (PackageSourcesChanged != null)
             {
-                var packageSources = _sharedServiceState.SourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().Select(packageSource => PackageSourceContextInfo.Create(packageSource)).ToList();
+                List<PackageSourceContextInfo> packageSources = _sharedServiceState.SourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().Select(packageSource => PackageSourceContextInfo.Create(packageSource)).ToList();
                 PackageSourcesChanged.Invoke(this, packageSources);
             }
         }
