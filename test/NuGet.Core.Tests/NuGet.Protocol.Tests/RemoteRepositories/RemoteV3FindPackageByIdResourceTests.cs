@@ -22,6 +22,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RemoteV3FindPackageByIdResourceTests
     {
         [Fact]
