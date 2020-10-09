@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class Project2ProjectTests
     {
         [Fact]

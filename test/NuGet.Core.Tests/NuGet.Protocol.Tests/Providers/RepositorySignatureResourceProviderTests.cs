@@ -10,12 +10,14 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Providers.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RepositorySignatureResourceProviderTests
     {
         private const string _resourceType470 = "RepositorySignatures/4.7.0";

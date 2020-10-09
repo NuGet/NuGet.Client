@@ -1,5 +1,7 @@
 {
-  "parallelizeTestCollections": true,
+  "diagnosticMessages": true,
+  "methodDisplay": "classAndMethod",
   "parallelizeAssembly": true,
-  "longRunningTestSeconds": 1200
+  "parallelizeTestCollections": true,
+  "longRunningTestSeconds": 120
 }

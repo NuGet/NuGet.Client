@@ -16,6 +16,7 @@ using System.Threading;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RuntimePackageTests
     {
         [Fact]

@@ -13,6 +13,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class LocalMetadataResourceTests
     {
         [Fact]
