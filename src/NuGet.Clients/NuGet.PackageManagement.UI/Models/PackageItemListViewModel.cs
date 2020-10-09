@@ -418,7 +418,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-
         private BitmapSource _iconBitmap;
         public BitmapSource IconBitmap
         {
@@ -691,13 +690,8 @@ namespace NuGet.PackageManagement.UI
             var policy = new CacheItemPolicy
             {
                 SlidingExpiration = TimeSpan.FromMinutes(10),
-                RemovedCallback = CacheEntryRemoved
             };
             BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
-        }
-
-        private static void CacheEntryRemoved(CacheEntryRemovedArguments arguments)
-        {
         }
 
         private async Task<Stream> GetStream(Uri imageUri)

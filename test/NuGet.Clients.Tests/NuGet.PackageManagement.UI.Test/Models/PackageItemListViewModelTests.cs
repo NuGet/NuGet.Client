@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(expected: IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(expected: IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(expected: IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.UI.Test
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
 
             // TODO: this isn't working now...and i think it shouldn't work. follow up. (relative URIs...shouldn't work!!!)
-            Assert.Equal(expected: IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(expected: IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
         }
 
         [LocalOnlyTheory]
@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.UI.Test
                 // Assert
                 _output.WriteLine($"result {result}");
                 VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-                Assert.Equal(expected: IconBitmapStatus.EmbeddedIcon, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.EmbeddedIcon, packageItemListViewModel.BitmapStatus);
             }
         }
 
@@ -190,7 +190,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-                Assert.Equal(expected: IconBitmapStatus.DownloadedIcon, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.DownloadedIcon, packageItemListViewModel.BitmapStatus);
             }
         }
 
@@ -222,7 +222,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-                Assert.Equal(expected: IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
             }
         }
 
@@ -340,7 +340,7 @@ namespace NuGet.PackageManagement.UI.Test
                 _output.WriteLine($"Pixel format: {resultFormat}");
 
                 // Assert
-                Assert.Equal(expected: IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
             }
         }
 
