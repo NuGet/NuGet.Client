@@ -68,18 +68,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     ProjectModel.ProjectStyle.PackageReference,
                     NuGetProjectKind.PackageReference)
             };
-
+            var testFeedUrl = "https://testsource.com/v3/index.json";
             var query = "https://api-v2v3search-0.nuget.org/query";
             var responses = new Dictionary<string, string>
             {
-                { NuGetConstants.V3FeedUrl, ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.index.json", GetType()) },
+                { testFeedUrl, ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.index.json", GetType()) },
                 { query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType()) },
                 { query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType()) },
                 { query + "?q=&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.blankSearchPage.json", GetType()) },
                 { "https://api.nuget.org/v3/registration3-gz-semver2/" + "nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) }
             };
 
-            _sourceRepository = StaticHttpHandler.CreateSource(NuGetConstants.V3FeedUrl, Repository.Provider.GetCoreV3(), responses);
+            _sourceRepository = StaticHttpHandler.CreateSource(testFeedUrl, Repository.Provider.GetCoreV3(), responses);
         }
 
         [Fact]
@@ -261,7 +261,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 TelemetryEvent sources = Assert.Single(events, e => e.Name == "SearchPackageSourceSummary");
                 Assert.Equal(1, sources["NumHTTPv3Feeds"]);
-                Assert.Equal("YesV3", sources["NuGetOrg"]);
+                Assert.Equal("NotPresent", sources["NuGetOrg"]);
                 Assert.Equal(operationId, sources["ParentId"]);
 
                 TelemetryEvent page0 = Assert.Single(events, e => e.Name == "SearchPage" && e["PageIndex"] is int && (int)e["PageIndex"] == 0);
