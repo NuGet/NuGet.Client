@@ -21,10 +21,9 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         /// </summary>
         /// <param name="projectLibrary">Library from the project file.</param>
         /// <param name="targetFramework">Target framework from the project file.</param>
-        /// <param name="assetsTargetFrameworkInformation">Target framework information from the assets file.</param>
         /// <param name="targets">Target assets file with the package information.</param>
         /// <param name="installedPackages">Installed packages information from the project.</param>
-        internal static PackageIdentity UpdateResolvedVersion(LibraryDependency projectLibrary, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IEnumerable<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
+        internal static PackageIdentity UpdateResolvedVersion(LibraryDependency projectLibrary, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
             NuGetVersion resolvedVersion = default;
 
@@ -37,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                 return installedVersion.InstalledPackage;
             }
 
-            resolvedVersion = GetInstalledVersion(projectLibrary, targetFramework, assetsTargetFrameworkInformation, targets);
+            resolvedVersion = GetInstalledVersion(projectLibrary.Name, targetFramework, targets);
 
             if (resolvedVersion == null)
             {
@@ -59,39 +58,62 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         }
 
         /// <summary>
-        /// Gets the version for the transitive package and target framework.
+        /// Gets the dependencies of a top level package and caches these if the assets file has changed
         /// </summary>
-        /// <param name="dependencyLibrary">Library from the assets file.</param>
+        /// <param name="projectLibrary">Library from the project file.</param>
         /// <param name="targetFramework">Target framework from the project file.</param>
         /// <param name="targets">Target assets file with the package information.</param>
-        internal static PackageIdentity GetResolvedVersionTransitive(PackageDependency dependencyLibrary, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets)
+        /// <param name="installedPackages">Cached installed package information</param>
+        /// <param name="transitivePackages">Cached transitive package information</param>
+        internal static IReadOnlyList<PackageIdentity> UpdateTransitiveDependencies(LockFileTargetLibrary library, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
         {
-            NuGetVersion resolvedVersion = targets
-                .FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
-                ?.Libraries
-                .FirstOrDefault(a => a.Name.Equals(dependencyLibrary.Id, StringComparison.OrdinalIgnoreCase))?.Version;
+            NuGetVersion resolvedVersion = default;
 
-            if (resolvedVersion == null)
+            IList<PackageIdentity> packageIdentities = new List<PackageIdentity>();
+
+            // get the dependencies for this target framework
+            var transitiveDependencies = GetTransitivePackagesForLibrary(library, targetFramework, targets);
+
+            foreach (var package in transitiveDependencies)
             {
-                resolvedVersion = dependencyLibrary.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
+                // don't add transitive packages if they are also top level packages
+                if (!installedPackages.ContainsKey(package.Id))
+                {
+                    resolvedVersion = GetInstalledVersion(package.Id, targetFramework, targets);
+
+                    if (resolvedVersion == null)
+                    {
+                        resolvedVersion = package.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
+                    }
+
+                    // Add or update the the version of the package in transitivePackages
+                    transitivePackages[package.Id] = new ProjectInstalledPackage(package.VersionRange, new PackageIdentity(package.Id, resolvedVersion));
+
+                    // add to list of packages to return
+                    PackageIdentity packageIdentity = new PackageIdentity(package.Id, resolvedVersion);
+                    packageIdentities.Add(packageIdentity);
+                }
             }
 
-            return new PackageIdentity(dependencyLibrary.Id, resolvedVersion);
+            return (IReadOnlyList<PackageIdentity>)packageIdentities;
         }
 
-        private static NuGetVersion GetInstalledVersion(LibraryDependency libraryProjectFile, NuGetFramework targetFramework, TargetFrameworkInformation assetsTargetFrameworkInformation, IEnumerable<LockFileTarget> targets)
+        private static NuGetVersion GetInstalledVersion(string libraryName, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets)
         {
-            LibraryDependency libraryAsset = assetsTargetFrameworkInformation?.Dependencies.FirstOrDefault(e => e.Name.Equals(libraryProjectFile.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (libraryAsset == null)
-            {
-                return null;
-            }
-
             return targets
                 .FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
                 ?.Libraries
-                .FirstOrDefault(a => a.Name.Equals(libraryAsset.Name, StringComparison.OrdinalIgnoreCase))?.Version;
+                .FirstOrDefault(a => a.Name.Equals(libraryName, StringComparison.OrdinalIgnoreCase))?.Version;
+        }
+
+        private static IReadOnlyList<PackageDependency> GetTransitivePackagesForLibrary(LockFileTargetLibrary library, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets)
+        {
+            return targets
+                .FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
+                ?.Libraries
+                .Where(lib => lib.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
+                ?.SelectMany(lib => lib.Dependencies)
+                .ToList();
         }
     }
 }
