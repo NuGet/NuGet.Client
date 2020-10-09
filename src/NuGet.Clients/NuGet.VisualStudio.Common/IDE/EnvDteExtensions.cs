@@ -3,10 +3,13 @@
 
 using System;
 using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio.Common;
+
+#pragma warning disable CA1062 // Validate arguments of public methods
 
 namespace NuGet.VisualStudio
 {
-    public static class EnvDTEExtensions
+    public static class EnvDteExtensions
     {
         public static string GetSKU(this EnvDTE.DTE dte)
         {

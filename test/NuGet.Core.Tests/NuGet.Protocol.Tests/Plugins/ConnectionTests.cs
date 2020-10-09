@@ -10,11 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class ConnectionTests
     {
         [Fact]

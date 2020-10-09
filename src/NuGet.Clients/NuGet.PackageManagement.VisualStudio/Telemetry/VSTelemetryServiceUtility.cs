@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.Telemetry
                     }
                 }
 #if VS15
-                else if (nuGetProject is NetCorePackageReferenceProject)
+                else if (nuGetProject is CpsPackageReferenceProject)
                 {
                     projectType = NuGetProjectType.CPSBasedPackageRefs;
                 }

@@ -19,6 +19,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RestoreBuildTargetsAndPropsTests
     {
         [Fact]
@@ -419,7 +420,7 @@ namespace NuGet.Commands.Test
 
                 // Set proj properties
                 spec.FilePath = project.ProjectPath;
-                spec.RestoreMetadata.OutputPath = project.OutputPath;
+                spec.RestoreMetadata.OutputPath = project.ProjectExtensionsPath;
                 spec.RestoreMetadata.ProjectPath = project.ProjectPath;
 
                 projects.Add(project);

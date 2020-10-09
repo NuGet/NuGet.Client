@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 dteProject, buildStorageProperty, _threadingService);
 
             var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject, vsSolution5);
-            var fullProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(dteProject);
+            var fullProjectPath = dteProject.GetFullProjectPath();
 
             return new VsProjectAdapter(
                 vsHierarchyItem,

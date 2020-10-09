@@ -36,7 +36,7 @@ namespace Msbuild.Integration.Test
             _processEnvVars["UNIT_TEST_RESTORE_TASK"] = bool.TrueString;
             var result = CommandRunner.Run(msBuildExe,
                 workingDirectory,
-                $"/p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=\"true\" {args}",
+                $"/p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true {args}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
 
@@ -53,7 +53,7 @@ namespace Msbuild.Integration.Test
         }
 
         /// <summary>
-        /// Depth-first recursive delete, with handling for descendant 
+        /// Depth-first recursive delete, with handling for descendant
         /// directories open in Windows Explorer or used by another process
         /// </summary>
         private static void DeleteDirectory(string path)

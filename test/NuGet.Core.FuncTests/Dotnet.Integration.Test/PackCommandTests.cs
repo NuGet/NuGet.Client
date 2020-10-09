@@ -180,7 +180,6 @@ namespace Dotnet.Integration.Test
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.ChangeProperty(xml, "TargetFramework", "netcoreapp2.1");
                     ProjectFileUtils.AddProperty(xml, "RuntimeIdentifier", "win7-x64");
-
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
@@ -188,11 +187,10 @@ namespace Dotnet.Integration.Test
                 var args = includeSymbols ? $"-o {workingDirectory} --include-symbols" : $"-o {workingDirectory}";
                 msbuildFixture.PackProject(workingDirectory, projectName, args);
 
-                var nupkgPath = includeSymbols
-                    ? Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg")
-                    : Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nupkgExtension = includeSymbols ? ".symbols.nupkg" : ".nupkg";
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0{nupkgExtension}");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nupkgPath), $"The output {nupkgExtension} is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
@@ -212,10 +210,11 @@ namespace Dotnet.Integration.Test
                     }
                     else
                     {
-                        Assert.Equal(
-                            new[]
-                            {"lib/netcoreapp2.1/ConsoleApp1.dll", "lib/netcoreapp2.1/ConsoleApp1.runtimeconfig.json"},
-                            libItems[0].Items);
+                        Assert.Equal(new[]
+                        {
+                            "lib/netcoreapp2.1/ConsoleApp1.dll",
+                            "lib/netcoreapp2.1/ConsoleApp1.runtimeconfig.json"
+                        }, libItems[0].Items);
                     }
                 }
 
@@ -2326,7 +2325,7 @@ namespace ClassLibrary
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include=""Extensions/**/ext.cs.txt"" Condition=""'$(TargetFramework)' == 'net46'"">
         <PackagePath>net46content</PackagePath>
-      </TfmSpecificPackageFile>  
+      </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>";
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
@@ -4087,7 +4086,7 @@ namespace ClassLibrary
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
-                    // Validate Compile assets 
+                    // Validate Compile assets
                     foreach (var buildTargetFolder in buildTargetFolders.Split(';'))
                     {
                         var compileItems = nupkgReader.GetFiles(buildTargetFolder).ToList();
@@ -4461,7 +4460,7 @@ namespace ClassLibrary
                 // The test depends on the presence of these packages and their versions.
                 // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
                 var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
-                var directoryPackagesPropsContent = @"<Project>  
+                var directoryPackagesPropsContent = @"<Project>
                         <ItemGroup>
                             <PackageVersion Include = ""Moq"" Version = ""4.10.0""/>
                             <PackageVersion Include = ""Castle.Core"" Version = ""4.4.0""/>

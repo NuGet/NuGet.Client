@@ -35,7 +35,7 @@ namespace NuGet.Test.Utility
 
             ProjectName = projectName;
             ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}{ProjectExt}");
-            OutputPath = Path.Combine(solutionRoot, projectName, "obj");
+            ProjectExtensionsPath = Path.Combine(solutionRoot, projectName, "obj");
             Type = type;
         }
 
@@ -61,7 +61,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// MSBuildProjectExtensionsPath
         /// </summary>
-        public string OutputPath { get; set; }
+        public string ProjectExtensionsPath { get; set; }
 
         /// <summary>
         /// Additional MSBuild properties
@@ -130,7 +130,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, "project.assets.json");
+                        return Path.Combine(ProjectExtensionsPath, "project.assets.json");
 
                     case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), "project.lock.json");
@@ -148,7 +148,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, NoOpRestoreUtilities.NoOpCacheFileName);
+                        return Path.Combine(ProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName);
 
                     default:
                         return null;
@@ -181,7 +181,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.targets");
+                        return Path.Combine(ProjectExtensionsPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.targets");
 
                     case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.targets");
@@ -199,7 +199,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.props");
+                        return Path.Combine(ProjectExtensionsPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.props");
 
                     case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.props");
@@ -244,7 +244,7 @@ namespace NuGet.Test.Utility
                 _packageSpec.RestoreMetadata.ProjectName = ProjectName;
                 _packageSpec.RestoreMetadata.ProjectPath = ProjectPath;
                 _packageSpec.RestoreMetadata.ProjectStyle = Type;
-                _packageSpec.RestoreMetadata.OutputPath = OutputPath;
+                _packageSpec.RestoreMetadata.OutputPath = ProjectExtensionsPath;
                 _packageSpec.RestoreMetadata.OriginalTargetFrameworks = _packageSpec.TargetFrameworks.Select(e => e.TargetAlias).ToList();
                 _packageSpec.RestoreMetadata.TargetFrameworks = Frameworks
                     .Select(f => new ProjectRestoreMetadataFrameworkInfo(f.Framework))
@@ -443,7 +443,7 @@ namespace NuGet.Test.Utility
             if (SetMSBuildProjectExtensionsPath)
             {
                 var propertyGroup = new XElement(ns + "PropertyGroup");
-                propertyGroup.Add(new XElement(ns + "MSBuildProjectExtensionsPath", OutputPath));
+                propertyGroup.Add(new XElement(ns + "MSBuildProjectExtensionsPath", ProjectExtensionsPath));
                 xml.Root.AddFirst(propertyGroup);
             }
 
@@ -528,7 +528,7 @@ namespace NuGet.Test.Utility
                         var attributes = new Dictionary<string, string>();
 
                         // To support CPVM scenarios the Version can be null
-                        // In these cases do not write any version 
+                        // In these cases do not write any version
                         if (package.Version != null)
                         {
                             if (ToolingVersion15)

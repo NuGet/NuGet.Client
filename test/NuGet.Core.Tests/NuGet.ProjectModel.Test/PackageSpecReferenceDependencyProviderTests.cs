@@ -35,7 +35,7 @@ namespace NuGet.ProjectModel.Test
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar }, cpvmEnabled);
             var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, tfi);
             var packSpec = dependencyGraphSpec.Projects[0];
 
@@ -71,7 +71,7 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, bool cpvmEnabled)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
 
@@ -86,6 +86,11 @@ namespace NuGet.ProjectModel.Test
             foreach (var cvd in centralVersionsDependencies)
             {
                 tfi.CentralPackageVersions.Add(cvd.Name, cvd);
+            }
+
+            if (cpvmEnabled)
+            {
+                LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
             }
 
             return tfi;

@@ -112,7 +112,7 @@ namespace Dotnet.Integration.Test
                 Path.Combine(workingDirectory, projectName + ".csproj"));
         }
 
-        internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
+        internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string packageSources = null, IList<PackageIdentity> packages = null, int timeOut = 60000)
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
             if (!Directory.Exists(workingDirectory))
@@ -122,36 +122,46 @@ namespace Dotnet.Integration.Test
 
             var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
 
+            packageSources ??= string.Empty;
             var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
             var restoreSolutionDirectory = workingDirectory;
             var msbuildProjectExtensionsPath = Path.Combine(workingDirectory);
-            var packageReference = string.Empty;
-            foreach (var package in packages)
+            var packageReferences = string.Empty;
+
+            if (packages != null)
             {
-                packageReference = string.Concat(packageReference, Environment.NewLine, $@"<PackageReference Include=""{ package.Id }"" Version=""{ package.Version.ToString()}""/>");
+                packageReferences = string.Join(Environment.NewLine, packages.Select(p => $@"        <PackageReference Include='{p.Id}' Version='{p.Version}'/>"));
             }
 
-            var projectFile = $@"<Project Sdk=""Microsoft.NET.Sdk"">
-                <PropertyGroup><RestoreProjectStyle>DotnetToolReference</RestoreProjectStyle>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>{targetFramework}</TargetFramework>
-                <RuntimeIdentifier>{rid}</RuntimeIdentifier>
-                <!-- Things that do change-->
-                <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
-                <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
-                <MSBuildProjectExtensionsPath>{msbuildProjectExtensionsPath}</MSBuildProjectExtensionsPath>
-                <RestoreSources>{source}</RestoreSources>
-                <!--Things that don't change -->
-                <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-                <RestoreFallbackFolders>clear</RestoreFallbackFolders>
-                <RestoreAdditionalProjectSources></RestoreAdditionalProjectSources>
-                <RestoreAdditionalProjectFallbackFolders></RestoreAdditionalProjectFallbackFolders>
-                <RestoreAdditionalProjectFallbackFoldersExcludes></RestoreAdditionalProjectFallbackFoldersExcludes>
-              </PropertyGroup>
-                <ItemGroup>
-                    {packageReference}
-                </ItemGroup>
-            </Project>";
+            var projectFile = $@"<Project>
+    <PropertyGroup>
+        <!-- Things that do change and before common props -->
+        <MSBuildProjectExtensionsPath>{msbuildProjectExtensionsPath}</MSBuildProjectExtensionsPath>
+    </PropertyGroup>
+    <!-- Import it via Sdk attribute for local testing -->
+    <Import Sdk='Microsoft.NET.Sdk' Project='Sdk.props'/>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RuntimeIdentifier>{rid}</RuntimeIdentifier>
+        <TargetFramework>{targetFramework}</TargetFramework>
+        <RestoreProjectStyle>DotnetToolReference</RestoreProjectStyle>
+        <!-- Things that do change -->
+        <RestoreSources>{packageSources}</RestoreSources>
+        <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
+        <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
+        <!--Things that don't change -->
+        <RestoreAdditionalProjectSources/>
+        <RestoreAdditionalProjectFallbackFolders/>
+        <RestoreAdditionalProjectFallbackFoldersExcludes/>
+        <RestoreFallbackFolders>clear</RestoreFallbackFolders>
+        <CheckEolTargetFramework>false</CheckEolTargetFramework>
+        <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    </PropertyGroup>
+    <ItemGroup>
+{packageReferences}
+    </ItemGroup>
+    <Import Sdk='Microsoft.NET.Sdk' Project='Sdk.targets'/>
+</Project>";
 
             try
             {
@@ -166,7 +176,6 @@ namespace Dotnet.Integration.Test
 
         internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args = "")
         {
-
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
@@ -175,25 +184,24 @@ namespace Dotnet.Integration.Test
             return result;
         }
 
-        internal void RestoreProject(string workingDirectory, string projectName, string args)
-            => RestoreProjectOrSolution(workingDirectory, $"{projectName}.csproj", args);
+        internal void RestoreProject(string workingDirectory, string projectName, string args, bool validateSuccess = true)
+            => RestoreProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, validateSuccess);
 
-        internal void RestoreSolution(string workingDirectory, string solutionName, string args)
-            => RestoreProjectOrSolution(workingDirectory, $"{solutionName}.sln", args);
+        internal void RestoreSolution(string workingDirectory, string solutionName, string args, bool validateSuccess = true)
+            => RestoreProjectOrSolution(workingDirectory, $"{solutionName}.sln", args, validateSuccess);
 
-        private void RestoreProjectOrSolution(string workingDirectory, string fileName, string args)
+        private void RestoreProjectOrSolution(string workingDirectory, string fileName, string args, bool validateSuccess)
         {
-
-            var envVar = new Dictionary<string, string>();
-            envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
-
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {fileName} {args}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
-            Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.AllOutput}");
-            Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
+            if (validateSuccess)
+            {
+                Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.AllOutput}");
+                Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
+            }
         }
 
         /// <summary>
@@ -235,17 +243,29 @@ namespace Dotnet.Integration.Test
         }
 
         internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
-            => PackProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, nuspecOutputPath, validateSuccess);
+        {
+            // We can't provide empty or spaces as arguments if we used `string.IsNullOrEmpty` or `string.IsNullOrWhiteSpace`.
+            if (nuspecOutputPath != null)
+            {
+                args = $"{args} /p:NuspecOutputPath={nuspecOutputPath}";
+            }
+            return PackProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, validateSuccess);
+        }
 
         internal CommandRunnerResult PackSolution(string workingDirectory, string solutionName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
-            => PackProjectOrSolution(workingDirectory, $"{solutionName}.sln", args, nuspecOutputPath, validateSuccess);
-
-        private CommandRunnerResult PackProjectOrSolution(string workingDirectory, string file, string args, string nuspecOutputPath, bool validateSuccess)
         {
+            if (nuspecOutputPath != null)
+            {
+                args = $"{args} /p:NuspecOutputPath={nuspecOutputPath}";
+            }
+            return PackProjectOrSolution(workingDirectory, $"{solutionName}.sln", args, validateSuccess);
+        }
 
+        private CommandRunnerResult PackProjectOrSolution(string workingDirectory, string file, string args, bool validateSuccess)
+        {
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                $"pack {file} {args} /p:NuspecOutputPath={nuspecOutputPath}",
+                $"pack {file} {args}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
             if (validateSuccess)
@@ -256,16 +276,36 @@ namespace Dotnet.Integration.Test
             return result;
         }
 
-        internal void BuildProject(string workingDirectory, string projectName, string args)
+        internal void BuildProject(string workingDirectory, string projectName, string args, bool? appendRidToOutputPath = false, bool validateSuccess = true)
         {
+            if (appendRidToOutputPath != null)
+            {
+                args = $"{args} /p:AppendRuntimeIdentifierToOutputPath={appendRidToOutputPath}";
+            }
+            BuildProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, validateSuccess);
+        }
 
+        internal void BuildSolution(string workingDirectory, string solutionName, string args, bool? appendRidToOutputPath = false, bool validateSuccess = true)
+        {
+            if (appendRidToOutputPath != null)
+            {
+                args = $"{args} /p:AppendRuntimeIdentifierToOutputPath={appendRidToOutputPath}";
+            }
+            BuildProjectOrSolution(workingDirectory, $"{solutionName}.sln", args, validateSuccess);
+        }
+
+        private void BuildProjectOrSolution(string workingDirectory, string file, string args, bool validateSuccess)
+        {
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                $"msbuild {projectName}.csproj {args} /p:AppendRuntimeIdentifierToOutputPath=false",
+                $"msbuild {file} {args}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
-            Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.AllOutput}");
-            Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.AllOutput}");
+            if (validateSuccess)
+            {
+                Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.AllOutput}");
+                Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.AllOutput}");
+            }
         }
 
         internal TestDirectory CreateTestDirectory()
@@ -486,13 +526,17 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
 
             const string packProjectName = "NuGet.Build.Tasks.Pack";
             const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
-            // Copy the pack SDK.
 
+            // Copy the pack SDK.
             var packProjectBinDirectory = Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration);
             var tfmToCopy = GetTfmToCopy(sdkTfm, packProjectBinDirectory);
 
             var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(packProjectBinDirectory, tfmToCopy));
-            var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, "CoreCLR");
+
+            // We are only copying the CoreCLR assets, since, we're testing only them under Core MSBuild.
+            var targetRuntimeType = "CoreCLR";
+
+            var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, targetRuntimeType);
             // Be smart here so we don't have to call ILMerge in the VS build. It takes ~15s total.
             // In VisualStudio, simply use the non il merged version.
             var ilMergedPackDirectoryPath = Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge");
@@ -508,23 +552,23 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
                         sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
                         destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName));
                 }
-                else
-                {
-                    foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
-                    {
-                        File.Copy(
-                            sourceFileName: assembly.FullName,
-                            destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name),
-                            overwrite: true);
-                    }
-                }
-                // Copy the pack targets
-                var packTargetsSource = Path.Combine(packProjectCoreArtifactsDirectory.FullName, packTargetsName);
-                var targetsDestination = Path.Combine(pathToPackSdk, "build", packTargetsName);
-                var targetsDestinationCrossTargeting = Path.Combine(pathToPackSdk, "buildCrossTargeting", packTargetsName);
-                File.Copy(packTargetsSource, targetsDestination, overwrite: true);
-                File.Copy(packTargetsSource, targetsDestinationCrossTargeting, overwrite: true);
             }
+            else
+            {
+                foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
+                {
+                    File.Copy(
+                        sourceFileName: assembly.FullName,
+                        destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name),
+                        overwrite: true);
+                }
+            }
+            // Copy the pack targets
+            var packTargetsSource = Path.Combine(packProjectCoreArtifactsDirectory.FullName, packTargetsName);
+            var targetsDestination = Path.Combine(pathToPackSdk, "build", packTargetsName);
+            var targetsDestinationCrossTargeting = Path.Combine(pathToPackSdk, "buildCrossTargeting", packTargetsName);
+            File.Copy(packTargetsSource, targetsDestination, overwrite: true);
+            File.Copy(packTargetsSource, targetsDestinationCrossTargeting, overwrite: true);
         }
 
         public void Dispose()

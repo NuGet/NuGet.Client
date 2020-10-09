@@ -20,6 +20,9 @@
   <!--This header contains the command ids for the menus provided by the shell. -->
   <Extern href="vsshlids.h"/>
 
+  <!--  Include the definitions for images included in the VS image catalog -->
+  <Include href="KnownImageIds.vsct"/>
+
   <!--The Commands section is where commands, menus, and menu groups are defined.
       This section uses a Guid to identify the package that provides the command defined inside it. -->
   <Commands package="guidNuGetClientPackage">
@@ -54,7 +57,8 @@
           If you do not want an image next to your command, remove the Icon node /> -->
       <Button guid="guidNuGetClientPackageCmdSet" id="cmdIdRestorePackages" priority="0x0100" type="Button">
         <Parent guid="guidNuGetClientPackageCmdSet" id="idNuGetClientMenuGroup" />
-        <Icon guid="guidToolbarImages" id="bmpPackageRestore" />
+        <Icon guid="ImageCatalogGuid" id="RestoreMTR" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>AllowClientRole</CommandFlag>
@@ -68,7 +72,8 @@
 
       <Button guid="guidNuGetClientPackageCmdSet" id="cmdIdManageProjectUI" priority="0x0100" type="Button">
         <Parent guid="guidNuGetClientPackageCmdSet" id="idNuGetClientMenuGroup" />
-        <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />        
+        <Icon guid="ImageCatalogGuid" id="NuGet"/>
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>AllowParams</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -81,10 +86,6 @@
         </Strings>
       </Button>
     </Buttons>
-    
-    <Bitmaps>
-      <Bitmap guid="guidToolbarImages" href="Resources\Toolbar.png"/>
-    </Bitmaps>
   </Commands>
 
   <Symbols>
@@ -102,16 +103,6 @@
       <IDSymbol name="idmWSE_ContextMenu" value="0x0002"/>
     </GuidSymbol>
 
-    <GuidSymbol name="guidToolbarImages" value="{6BFD6E62-4D12-4DA2-AFDE-CF3C09BF2319}" >
-      <IDSymbol name="bmpPowerConsole" value="1" />
-      <IDSymbol name="bmpClearConsole" value="2" />
-      <IDSymbol name="bmpSourceSettings" value="3" />
-      <IDSymbol name="bmpStopHost" value="4" />
-      <IDSymbol name="bmpVisualizer" value="5" />
-      <IDSymbol name="bmpAddNuGetPackage" value="6" />
-      <IDSymbol name="bmpPackageRestore" value="7" />
-      <IDSymbol name="bmpUpgradeNuGetProject" value="8" />
-    </GuidSymbol>
   </Symbols>
 
 </CommandTable>

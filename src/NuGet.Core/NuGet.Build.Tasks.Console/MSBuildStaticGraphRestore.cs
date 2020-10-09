@@ -559,6 +559,7 @@ namespace NuGet.Build.Tasks.Console
                 if (isCpvmEnabled && targetFrameworkInformation.Dependencies.Any())
                 {
                     targetFrameworkInformation.CentralPackageVersions.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
+                    LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
                 }
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);

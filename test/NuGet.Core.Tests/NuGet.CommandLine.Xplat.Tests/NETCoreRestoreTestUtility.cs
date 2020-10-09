@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.XPlat.Tests
 
                 // Set proj properties
                 spec.FilePath = project.ProjectPath;
-                spec.RestoreMetadata.OutputPath = project.OutputPath;
+                spec.RestoreMetadata.OutputPath = project.ProjectExtensionsPath;
                 spec.RestoreMetadata.ProjectPath = project.ProjectPath;
 
                 projects.Add(project);

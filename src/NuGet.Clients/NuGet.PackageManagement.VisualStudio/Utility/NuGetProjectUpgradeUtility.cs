@@ -87,14 +87,14 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
 
-            var projectSafeName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(envDTEProject);
+            var projectSafeName = await envDTEProject.GetCustomUniqueNameAsync();
             var nuGetProject = await solutionManager.GetNuGetProjectAsync(projectSafeName);
             return nuGetProject;
         }
 
         private static bool IsProjectPackageReferenceCompatible(Project project)
         {
-            var projectGuids = VsHierarchyUtility.GetProjectTypeGuids(project);
+            var projectGuids = project.GetProjectTypeGuids();
 
             if (projectGuids.Any(t => UnupgradeableProjectTypes.Contains(t)))
             {

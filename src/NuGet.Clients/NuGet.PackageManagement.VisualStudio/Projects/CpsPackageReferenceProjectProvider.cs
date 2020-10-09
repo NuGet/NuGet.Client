@@ -19,12 +19,12 @@ using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Provides a method of creating <see cref="NetCorePackageReferenceProject"/> instance.
+    /// Provides a method of creating <see cref="CpsPackageReferenceProject"/> instance.
     /// </summary>
     [Export(typeof(INuGetProjectProvider))]
-    [Name(nameof(NetCorePackageReferenceProjectProvider))]
+    [Name(nameof(CpsPackageReferenceProjectProvider))]
     [Microsoft.VisualStudio.Utilities.Order(After = nameof(ProjectKNuGetProjectProvider))]
-    public class NetCorePackageReferenceProjectProvider : INuGetProjectProvider
+    public class CpsPackageReferenceProjectProvider : INuGetProjectProvider
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
 
@@ -32,14 +32,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
-        public RuntimeTypeHandle ProjectType => typeof(NetCorePackageReferenceProject).TypeHandle;
+        public RuntimeTypeHandle ProjectType => typeof(CpsPackageReferenceProject).TypeHandle;
 
         [ImportingConstructor]
-        public NetCorePackageReferenceProjectProvider(IProjectSystemCache projectSystemCache)
+        public CpsPackageReferenceProjectProvider(IProjectSystemCache projectSystemCache)
             : this(AsyncServiceProvider.GlobalProvider, projectSystemCache)
         { }
 
-        public NetCorePackageReferenceProjectProvider(
+        public CpsPackageReferenceProjectProvider(
             IAsyncServiceProvider vsServiceProvider,
             IProjectSystemCache projectSystemCache)
         {
@@ -74,27 +74,21 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            // Check if the project is not CPS capable or if it is CPS capable then it does not have TargetFramework(s), if so then return false
-            if (!hierarchy.IsCapabilityMatch("CPS"))
+            // Check if the project is not CPS capable or if it is CPS capable that its opt'd in PackageReferences
+            if (!VsHierarchyUtility.IsCPSCapabilityCompliant(hierarchy) ||
+                !VsHierarchyUtility.IsProjectCapabilityCompliant(hierarchy))
             {
                 return null;
             }
 
             var buildProperties = vsProject.BuildProperties;
 
-            // read MSBuild property RestoreProjectStyle, TargetFramework, and TargetFrameworks
+            // read MSBuild property RestoreProjectStyle
             var restoreProjectStyle = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestoreProjectStyle);
-            var targetFramework = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.TargetFramework);
-            var targetFrameworks = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.TargetFrameworks);
 
             // check for RestoreProjectStyle property is set and if not set to PackageReference then return false
             if (!(string.IsNullOrEmpty(restoreProjectStyle) ||
                 restoreProjectStyle.Equals(PackageReference, StringComparison.OrdinalIgnoreCase)))
-            {
-                return null;
-            }
-            // check whether TargetFramework or TargetFrameworks property is set, else return false
-            else if (string.IsNullOrEmpty(targetFramework) && string.IsNullOrEmpty(targetFrameworks))
             {
                 return null;
             }
@@ -104,7 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectServices = new NetCoreProjectSystemServices(vsProject, await _componentModel.GetValueAsync());
 
-            return new NetCorePackageReferenceProject(
+            return new CpsPackageReferenceProject(
                 vsProject.ProjectName,
                 vsProject.CustomUniqueName,
                 fullProjectPath,

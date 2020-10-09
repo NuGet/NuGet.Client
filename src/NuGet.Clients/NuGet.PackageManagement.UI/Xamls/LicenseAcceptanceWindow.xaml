@@ -66,8 +66,6 @@
         <imaging:CrispImage
                         x:Name="_licenseWarning"
                         Margin="5,0,5,5"
-                        Width="13"
-                        Height="13"
                         Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}"
                         ToolTip="{Binding Text}"
                         Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />

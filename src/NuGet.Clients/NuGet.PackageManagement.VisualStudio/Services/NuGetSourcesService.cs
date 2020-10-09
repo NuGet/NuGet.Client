@@ -38,12 +38,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageSources.PackageSourceProvider.LoadPackageSources().ToList();
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public async ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, PackageSourceUpdateOptions packageSourceUpdateOptions, CancellationToken cancellationToken)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             var packageSources = await ServiceLocator.GetInstanceAsync<ISourceRepositoryProvider>();
             Assumes.NotNull(packageSources);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var packageSources2 = packageSources.PackageSourceProvider as IPackageSourceProvider2;
+#pragma warning restore CS0618 // Type or member is obsolete
             if (packageSources2 != null)
             {
                 packageSources2.SavePackageSources(sources, packageSourceUpdateOptions);

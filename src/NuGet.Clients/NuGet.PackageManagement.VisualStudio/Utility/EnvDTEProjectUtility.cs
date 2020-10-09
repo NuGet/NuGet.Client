@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var item = await GetProjectItemAsync(envDTEProject, path);
                 return item != null;
             }
-            var vsProject = (IVsProject)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var vsProject = (IVsProject)envDTEProject.ToVsHierarchy();
             if (vsProject == null)
             {
                 return false;
@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Both types have the ProjectItems property that we want to access.
             object cursor = envDTEProject;
 
-            var fullPath = EnvDTEProjectInfoUtility.GetFullPath(envDTEProject);
+            var fullPath = envDTEProject.GetFullPath();
             var folderRelativePath = string.Empty;
 
             foreach (var part in pathParts)
@@ -158,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // The JS Metro project system has a bug whereby calling AddFolder() to an existing folder that
                 // does not belong to the project will throw. To work around that, we have to manually include 
                 // it into our project.
-                if (EnvDTEProjectInfoUtility.IsJavaScriptProject(envDTEProject)
+                if (envDTEProject.IsJavaScriptProject()
                     && Directory.Exists(fullPath))
                 {
                     var succeeded = await IncludeExistingFolderToProjectAsync(envDTEProject, folderRelativePath);
@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Execute command to include the existing folder into project. Must do this on UI thread.
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var projectHierarchy = (IVsUIHierarchy)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var projectHierarchy = (IVsUIHierarchy)envDTEProject.ToVsHierarchy();
 
             uint itemId;
             var hr = projectHierarchy.ParseCanonicalName(folderRelativePath, out itemId);
@@ -398,7 +398,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             Debug.Assert(envDTEProject != null);
 
-            var hierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var hierarchy = envDTEProject.ToVsHierarchy();
 
             return VsHierarchyUtility.IsProjectCapabilityCompliant(hierarchy);
         }
@@ -493,7 +493,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static HashSet<string> GetLocalProjectAssemblies(EnvDTE.Project envDTEProject)
         {
-            if (EnvDTEProjectInfoUtility.IsWebSite(envDTEProject))
+            if (envDTEProject.IsWebSite())
             {
                 var websiteLocalAssemblies = GetWebsiteLocalAssemblies(envDTEProject);
                 return websiteLocalAssemblies;
@@ -550,7 +550,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // For website projects, we always add .refresh files that point to the corresponding binaries in packages. In the event of bin deployed assemblies that are also GACed,
             // the ReferenceKind is not AssemblyReferenceBin. Consequently, we work around this by looking for any additional assembly declarations specified via .refresh files.
-            var envDTEProjectPath = EnvDTEProjectInfoUtility.GetFullPath(envDTEProject);
+            var envDTEProjectPath = envDTEProject.GetFullPath();
             CollectionsUtility.AddRange(assemblies, RefreshFileUtility.ResolveRefreshPaths(envDTEProjectPath));
 
             return assemblies;
@@ -575,7 +575,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (EnvDTEProjectInfoUtility.IsWebSite(envDTEProject))
+            if (envDTEProject.IsWebSite())
             {
                 return GetWebsiteReferencedProjects(envDTEProject);
             }
@@ -724,7 +724,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static bool HasUnsupportedProjectCapability(EnvDTE.Project envDTEProject)
         {
-            var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var hier = envDTEProject.ToVsHierarchy();
 
             return VsHierarchyUtility.HasUnsupportedProjectCapability(hier);
         }

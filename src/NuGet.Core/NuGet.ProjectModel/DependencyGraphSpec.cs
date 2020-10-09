@@ -246,34 +246,8 @@ namespace NuGet.ProjectModel
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
-                PackageSpec projectToRestore = projectSpec;
-
-                if (projectSpec.RestoreMetadata != null && projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
-                {
-                    projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
-                }
-
-                _projects.Add(projectUniqueName, projectToRestore);
+                _projects.Add(projectUniqueName, projectSpec);
             }
-        }
-
-        private PackageSpec ToPackageSpecWithCentralVersionInformation(PackageSpec spec)
-        {
-            var newSpec = spec.Clone();
-            foreach (var tfm in newSpec.TargetFrameworks)
-            {
-                foreach (LibraryDependency d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
-                {
-                    if (tfm.CentralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
-                    {
-                        d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
-                    }
-
-                    d.VersionCentrallyManaged = true;
-                }
-            }
-
-            return newSpec;
         }
 
         public static DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs)
@@ -361,7 +335,7 @@ namespace NuGet.ProjectModel
             {
                 jsonWriter.Formatting = Formatting.Indented;
 
-                Write(writer, PackageSpecWriter.Write);
+                Write(writer, compressed: false, PackageSpecWriter.Write);
             }
         }
 
@@ -408,12 +382,12 @@ namespace NuGet.ProjectModel
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, PackageSpecWriter.Write);
+                Write(writer, compressed: true, PackageSpecWriter.Write);
                 return writer.GetHash();
             }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer, Action<PackageSpec, RuntimeModel.IObjectWriter> writeAction)
+        private void Write(RuntimeModel.IObjectWriter writer, bool compressed, Action<PackageSpec, RuntimeModel.IObjectWriter, bool> writeAction)
         {
             writer.WriteObjectStart();
             writer.WriteNameValue("format", Version);
@@ -437,7 +411,7 @@ namespace NuGet.ProjectModel
                 var project = pair.Value;
 
                 writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
-                writeAction.Invoke(project, writer);
+                writeAction.Invoke(project, writer, compressed);
                 writer.WriteObjectEnd();
             }
 

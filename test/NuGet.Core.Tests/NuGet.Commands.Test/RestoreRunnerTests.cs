@@ -18,6 +18,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RestoreRunnerTests
     {
         [Fact]
@@ -1891,6 +1892,117 @@ namespace NuGet.Commands.Test
                     Assert.Equal(0, lockFile.LogMessages.Count);
                     Assert.True(File.Exists(targetsPath));
                     Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_ExecuteAndCommit_ProjectAssetsIsNotCommitedIfNotChanged()
+        {
+            var assetsFileName = "project.assets.json";
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var projectName = "TestProject";
+                var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+
+                var project1Json = @"
+                {
+                  ""version"": ""1.0.0"",
+                    ""restore"": {
+                                    ""projectUniqueName"": ""TestProject"",
+                                    ""centralPackageVersionsManagementEnabled"": true
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""packageA"": {
+                                    ""version"": ""[2.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""packageA"": ""[2.0.0,)"",
+                            ""packageB"": ""[2.0.0,)""
+                        }
+                    }
+                  }
+                }";
+
+                var packageA_Version200 = new SimpleTestPackageContext("packageA", "2.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                packageA_Version200.Dependencies.Add(packageB_Version200);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    NuGet.Packaging.PackageSaveMode.Defaultv3,
+                    packageA_Version200,
+                    packageB_Version200
+                    );
+
+                // set up the project
+                var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, Path.Combine(projectPath, $"{projectName}.json")).WithTestRestoreMetadata();
+
+                spec.RestoreMetadata.Sources = sources;
+                spec.RestoreMetadata.PackagesPath = pathContext.UserPackagesFolder;
+
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(spec);
+                dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        },
+                        AllowNoOp = false,
+                    };
+
+                    // Act + Assert
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    var assetsFilePath = Path.Combine(pathContext.SolutionRoot, projectName, assetsFileName);
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var assetsFileTimeStamp = File.GetCreationTime(assetsFilePath);
+
+                    // restore again, the assets file should not be changed
+                    // the result should not be noop as requested by "AllowNoOp"
+                    summaries = await RestoreRunner.RunAsync(restoreContext);
+                    summary = summaries.Single();
+
+                    var assetsFileTimeStampSecondRestore = File.GetCreationTime(assetsFilePath);
+                    Assert.Equal(assetsFileTimeStamp.ToString(), assetsFileTimeStampSecondRestore.ToString());
+                    Assert.False(summary.NoOpRestore);
+
+                    // Other verifications
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+
+                    Assert.Equal(2, lockFile.Libraries.Count);
+                    Assert.Equal(1, lockFile.Targets.Count);
+                    Assert.Equal(2, lockFile.Targets.First().Libraries.Count);
+                    Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.Count);
+
+                    var centralTransitiveDep = lockFile.CentralTransitiveDependencyGroups.First().TransitiveDependencies.FirstOrDefault();
+                    Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.First().TransitiveDependencies.Count());
+                    Assert.True(centralTransitiveDep.VersionCentrallyManaged);
+                    Assert.Equal("packageB", centralTransitiveDep.Name);
+                    Assert.Equal("[2.0.0, )", centralTransitiveDep.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal(LibraryDependencyReferenceType.Transitive, centralTransitiveDep.ReferenceType);
+                    Assert.Equal(0, lockFile.LogMessages.Count);
                 }
             }
         }

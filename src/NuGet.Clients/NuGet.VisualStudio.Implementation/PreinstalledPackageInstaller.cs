@@ -76,7 +76,7 @@ namespace NuGet.VisualStudio
 
             if (!extensionManagerShim.TryGetExtensionInstallPath(extensionId, out installPath))
             {
-                throwingErrorHandler(String.Format(VsResources.PreinstalledPackages_InvalidExtensionId,
+                throwingErrorHandler(string.Format(VsResources.PreinstalledPackages_InvalidExtensionId,
                     extensionId));
                 Debug.Fail("The throwingErrorHandler did not throw");
             }
@@ -116,7 +116,7 @@ namespace NuGet.VisualStudio
                 {
                     repositoryValue = repositoryKey.GetValue(keyName) as string;
 
-                    if (!String.IsNullOrEmpty(repositoryValue))
+                    if (!string.IsNullOrEmpty(repositoryValue))
                     {
                         break;
                     }
@@ -127,13 +127,13 @@ namespace NuGet.VisualStudio
 
             if (repositoryKey == null)
             {
-                throwingErrorHandler(String.Format(VsResources.PreinstalledPackages_RegistryKeyError, RegistryKeyRoot));
+                throwingErrorHandler(string.Format(VsResources.PreinstalledPackages_RegistryKeyError, RegistryKeyRoot));
                 Debug.Fail("throwingErrorHandler did not throw");
             }
 
-            if (String.IsNullOrEmpty(repositoryValue))
+            if (string.IsNullOrEmpty(repositoryValue))
             {
-                throwingErrorHandler(String.Format(VsResources.PreinstalledPackages_InvalidRegistryValue, keyName, RegistryKeyRoot));
+                throwingErrorHandler(string.Format(VsResources.PreinstalledPackages_InvalidRegistryValue, keyName, RegistryKeyRoot));
                 Debug.Fail("throwingErrorHandler did not throw");
             }
 
@@ -208,7 +208,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            var expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
+            var expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync();
 
             try
             {
@@ -284,13 +284,13 @@ namespace NuGet.VisualStudio
                     errorString.AppendFormat(VsResources.PreinstalledPackages_FailedToInstallPackage, repositoryPath);
                     errorString.AppendLine();
                     errorString.AppendLine();
-                    errorString.Append(String.Join(Environment.NewLine, failedPackageErrors));
+                    errorString.Append(string.Join(Environment.NewLine, failedPackageErrors));
 
                     errorHandler(errorString.ToString());
                 }
 
                 // RepositorySettings = null in unit tests
-                if (EnvDTEProjectInfoUtility.IsWebSite(project))
+                if (project.IsWebSite())
                 {
                     CreateRefreshFilesInBin(
                         project,
@@ -303,7 +303,7 @@ namespace NuGet.VisualStudio
             finally
             {
                 // collapse nodes
-                await VsHierarchyUtility.CollapseAllNodesAsync(_solutionManager, expandedNodes);
+                await VsHierarchyUtility.CollapseAllNodesAsync(expandedNodes);
             }
         }
 
@@ -356,7 +356,7 @@ namespace NuGet.VisualStudio
 
             foreach (var packageName in packageNames)
             {
-                string packagePath = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageName.Id, packageName.Version);
+                string packagePath = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageName.Id, packageName.Version);
 
                 DirectoryInfo packageFolder = new DirectoryInfo(Path.Combine(repositoryPath, packagePath));
 

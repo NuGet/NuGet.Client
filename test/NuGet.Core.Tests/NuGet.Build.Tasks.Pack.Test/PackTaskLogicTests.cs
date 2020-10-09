@@ -506,7 +506,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             // Arrange
             using (var testDir = TestDirectory.Create())
             {
-                var tc = new TestContext(testDir, "net5.0-windows");
+                var tc = new TestContext(testDir, "net50-windows");
 
                 var assetsJson = @"{
                     ""version"": 3,
@@ -530,7 +530,7 @@ namespace NuGet.Build.Tasks.Pack.Test
       ],
       ""originalTargetFrameworks"": [
         ""net5.0"",
-        ""net5.0-windows""
+        ""net50-windows""
       ],
       ""sources"": {
         ""https://api.nuget.org/v3/index.json"": {},
@@ -541,7 +541,7 @@ namespace NuGet.Build.Tasks.Pack.Test
           ""projectReferences"": {}
         },
         ""net5.0-windows7.0"": {
-          ""targetAlias"": ""net5.0-windows"",
+          ""targetAlias"": ""net50-windows"",
           ""projectReferences"": {}
         }
       },
@@ -571,7 +571,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         },
       },
       ""net5.0-windows7.0"": {
-        ""targetAlias"": ""net5.0-windows"",
+        ""targetAlias"": ""net50-windows"",
         ""imports"": [
           ""net461"",
           ""net462"",
@@ -593,9 +593,19 @@ namespace NuGet.Build.Tasks.Pack.Test
                 }";
                 File.WriteAllText(Path.Combine(testDir, "obj", "project.assets.json"), assetsJson);
 
-                // var msbuildItem = tc.AddContentToProject("", "abc.txt", "hello world");
-                // tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
-                // tc.Request.ContentTargetFolders = new string[] { "content" };
+                tc.Request.PackageFiles = new MSBuildItem[] {
+                    tc.AddContentToProject("", "abc.txt", "hello world", new Dictionary<string, string>()
+                    {
+                        {"BuildAction", "Content"}
+                    }),
+                    tc.AddContentToProject("", "def.txt", "hello world", new Dictionary<string, string>()
+                    {
+                        {"BuildAction", "None"},
+                        {"Pack", "true" },
+                        {"PackagePath", "contentFiles\\net5.0-windows" }
+                    })
+                };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
 
                 // Act
                 tc.BuildPackage();
@@ -610,6 +620,23 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(NuGetFramework.Parse("net5.0-windows7.0"), libItems[0].TargetFramework);
                     Assert.Equal(new[] { "lib/net5.0-windows7.0/a.dll" }, libItems[0].Items);
+
+                    var contentFiles = nuspecReader.GetContentFiles().ToList();
+
+                    Assert.Equal(contentFiles.Count, 2);
+                    Assert.Equal(contentFiles[0].BuildAction, "Content", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Include, "any/net5.0-windows7.0/abc.txt", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[1].BuildAction, "None", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[1].Include, "net5.0-windows/def.txt", StringComparer.Ordinal);
+
+                    // Validate the content items
+                    var contentItems = nupkgReader.GetFiles("content").ToList();
+                    var contentFileItems = nupkgReader.GetFiles("contentFiles").ToList();
+                    Assert.Equal(contentItems.Count, 1);
+                    Assert.Equal(contentFileItems.Count, 2);
+                    Assert.Contains("content/abc.txt", contentItems, StringComparer.Ordinal);
+                    Assert.Contains("contentFiles/any/net5.0-windows7.0/abc.txt", contentFileItems, StringComparer.Ordinal);
+                    Assert.Contains("contentFiles/net5.0-windows/def.txt", contentFileItems, StringComparer.Ordinal);
                 }
             }
         }
@@ -740,12 +767,10 @@ namespace NuGet.Build.Tasks.Pack.Test
 
         private class TestContext
         {
-
             public TestContext(TestDirectory testDir)
                 : this(testDir, "net45")
-                {
-
-                }
+            {
+            }
 
             public TestContext(TestDirectory testDir, string tfm)
             {

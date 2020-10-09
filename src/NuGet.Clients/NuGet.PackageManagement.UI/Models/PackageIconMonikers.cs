@@ -10,14 +10,10 @@ namespace NuGet.PackageManagement.UI
         private const int _updateAvailableIndicator = 2;
         private const int _uninstallIndicator = 3;
         private const int _downloadIndicator = 4;
-        private const int _installedIndicator = 5;
-        private const int _migratorHelpIcon = 6;
 
         public static ImageMoniker PrefixReservedIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _prefixReservedIndicator };
         public static ImageMoniker UpdateAvailableIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _updateAvailableIndicator };
         public static ImageMoniker UninstallIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _uninstallIndicator };
         public static ImageMoniker DownloadIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _downloadIndicator };
-        public static ImageMoniker InstalledIndicator => new ImageMoniker { Guid = ManifestGuid, Id = _installedIndicator };
-        public static ImageMoniker MigratorHelpIcon => new ImageMoniker { Guid = ManifestGuid, Id = _migratorHelpIcon };
     }
 }
