@@ -6,11 +6,17 @@ namespace NuGet.PackageManagement.UI
     public enum IconBitmapStatus
     {
         None = 0,
+        InProgress,
         NeedToFetch,
-        FetchQueued,
-        ShowingFromCache,
-        ShowingFromUrl,
-        ShowingFromEmbeddedIcon,
-        ShowingDefault
+        MemoryCachedIcon,
+        DownloadedIcon,
+        EmbeddedIcon,
+        DefaultIcon,
+        DefaultIconDueToDecodingError,
+        DefaultIconDueToNullStream,
+        DefaultIconDueToNoPackageReader,
+        DefaultIconDueToNetworkFailures,
+        DefaultIconDueToWebExceptionBadNetwork,
+        DefaultIconDueToWebExceptionOther
     }
 }

@@ -20,9 +20,9 @@ namespace NuGet.PackageManagement.UI
         private readonly ConcurrentQueue<int> _failures = new ConcurrentQueue<int>();
 
         private DateTimeOffset _lastEvaluate = DateTimeOffset.Now;
-        private bool _isOpen = false;
+        private bool _hasTooManyNetworkErrors = false;
 
-        public bool IsOpen
+        public bool HasTooManyNetworkErrors
         {
             get
             {
@@ -35,10 +35,10 @@ namespace NuGet.PackageManagement.UI
 
                     var attemptsCount = _attempts.Count;
                     var failuresCount = _failures.Count;
-                    _isOpen = attemptsCount > 0 && failuresCount > MinFailuresCount && ((double)failuresCount / attemptsCount) > StopLoadingThreshold;
+                    _hasTooManyNetworkErrors = attemptsCount > 0 && failuresCount > MinFailuresCount && ((double)failuresCount / attemptsCount) > StopLoadingThreshold;
                     _lastEvaluate = DateTimeOffset.Now;
                 }
-                return _isOpen;
+                return _hasTooManyNetworkErrors;
             }
         }
 
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.UI
             _attempts.Enqueue(ticks);
         }
 
-        public void ReportError()
+        public void ReportBadNetworkError()
         {
             int ticks = GetTicks(_origin);
             _failures.Enqueue(ticks);
