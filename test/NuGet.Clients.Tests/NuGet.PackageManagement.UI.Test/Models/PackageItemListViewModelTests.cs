@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIconDueToWebExceptionBadNetwork, packageItemListViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIconDueToWebExceptionBadNetwork, packageItemListViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIconDueToWebExceptionOther, packageItemListViewModel.BitmapStatus);
         }
 
         [LocalOnlyTheory]
@@ -222,7 +222,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-                Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.DefaultIconDueToDecodingError, packageItemListViewModel.BitmapStatus);
             }
         }
 
@@ -340,7 +340,7 @@ namespace NuGet.PackageManagement.UI.Test
                 _output.WriteLine($"Pixel format: {resultFormat}");
 
                 // Assert
-                Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.DefaultIconDueToDecodingError, packageItemListViewModel.BitmapStatus);
             }
         }
 
