@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -11,7 +10,6 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -1993,105 +1991,13 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall for many NuGetProjects.
-        /// </summary>
-        /// <param name="nuGetProjects"></param>
-        /// <param name="packageId"></param>
-        /// <param name="uninstallationContext"></param>
-        /// <param name="nuGetProjectContext"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public async Task<IEnumerable<(NuGetProject, NuGetProjectAction)>> PreviewProjectsUninstallPackageAsync(
-            IReadOnlyCollection<NuGetProject> nuGetProjects,
-            string packageId,
-            UninstallationContext uninstallationContext,
-            INuGetProjectContext nuGetProjectContext,
-            CancellationToken token)
-        {
-            if (nuGetProjects == null)
-            {
-                throw new ArgumentNullException(nameof(nuGetProjects));
-            }
-
-            if (packageId == null)
-            {
-                throw new ArgumentNullException(nameof(packageId));
-            }
-
-            if (uninstallationContext == null)
-            {
-                throw new ArgumentNullException(nameof(uninstallationContext));
-            }
-
-            if (nuGetProjectContext == null)
-            {
-                throw new ArgumentNullException(nameof(nuGetProjectContext));
-            }
-
-            var uninstallActionsForProjects = new ConcurrentBag<(NuGetProject, NuGetProjectAction)>();
-
-            var options = new ExecutionDataflowBlockOptions()
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount
-            };
-            var actionBlock = new ActionBlock<ProjectUninstallActionSpec>(GetProjectNuGetUninstallProjectActionsAsync, options);
-
-            foreach (var nuGetProject in nuGetProjects)
-            {
-                await actionBlock.SendAsync(new ProjectUninstallActionSpec(
-                                                nuGetProject,
-                                                packageId,
-                                                uninstallationContext,
-                                                nuGetProjectContext,
-                                                uninstallActionsForProjects,
-                                                token)
-                                            );
-            }
-
-            actionBlock.Complete();
-            await actionBlock.Completion;
-
-            return uninstallActionsForProjects;
-        }
-
-        private async Task GetProjectNuGetUninstallProjectActionsAsync(ProjectUninstallActionSpec projectUninstallActionSpec)
-        {
-            projectUninstallActionSpec.Token.ThrowIfCancellationRequested();
-
-            // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
-            var installedPackages = await projectUninstallActionSpec.NuGetProject.GetInstalledPackagesAsync(projectUninstallActionSpec.Token);
-            var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Id.Equals(projectUninstallActionSpec.PackageId, StringComparison.OrdinalIgnoreCase));
-            if (packageReference?.PackageIdentity == null)
-            {
-                throw new ArgumentException(string.Format(Strings.PackageToBeUninstalledCouldNotBeFound,
-                    projectUninstallActionSpec.PackageId, projectUninstallActionSpec.NuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
-            }
-
-            var projectUninstallActions = await PreviewUninstallPackageInternalAsync(
-                projectUninstallActionSpec.NuGetProject,
-                packageReference,
-                projectUninstallActionSpec.UninstallationContext,
-                projectUninstallActionSpec.NuGetProjectContext,
-                projectUninstallActionSpec.Token);
-
-            foreach (var projectUninstallAction in projectUninstallActions)
-            {
-                projectUninstallActionSpec.UninstallActions.Add((projectUninstallActionSpec.NuGetProject, projectUninstallAction));
-            }
-        }
-
-        /// <summary>
-        /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall for a project
+        /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall
         /// <paramref name="packageId" /> into <paramref name="nuGetProject" />
         /// <paramref name="uninstallationContext" /> and <paramref name="nuGetProjectContext" /> are used in the
         /// process.
         /// </summary>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(
-            NuGetProject nuGetProject,
-            string packageId,
-            UninstallationContext uninstallationContext,
-            INuGetProjectContext nuGetProjectContext,
-            CancellationToken token)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId,
+            UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -3672,32 +3578,6 @@ namespace NuGet.PackageManagement
             }
 
             return _restoreProviderCache;
-        }
-
-        private class ProjectUninstallActionSpec
-        {
-            public NuGetProject NuGetProject { get; }
-            public string PackageId { get; }
-            public UninstallationContext UninstallationContext { get; }
-            public INuGetProjectContext NuGetProjectContext { get; }
-            public ConcurrentBag<(NuGetProject, NuGetProjectAction)> UninstallActions { get; }
-            public CancellationToken Token { get; }
-
-            public ProjectUninstallActionSpec(
-                NuGetProject nuGetProject,
-                string packageId,
-                UninstallationContext uninstallationContext,
-                INuGetProjectContext nuGetProjectContext,
-                ConcurrentBag<(NuGetProject, NuGetProjectAction)> uninstallActions,
-                CancellationToken token)
-            {
-                NuGetProject = nuGetProject;
-                PackageId = packageId;
-                UninstallationContext = uninstallationContext;
-                NuGetProjectContext = nuGetProjectContext;
-                UninstallActions = uninstallActions;
-                Token = token;
-            }
         }
     }
 }
