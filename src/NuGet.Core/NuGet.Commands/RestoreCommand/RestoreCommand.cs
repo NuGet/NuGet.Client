@@ -57,8 +57,8 @@ namespace NuGet.Commands
         private const string MsbuildAssetsVerificationDuration = "MsbuildAssetsVerificationDuration";
         private const string MsbuildAssetsVerificationResult = "MsbuildAssetsVerificationResult";
         private const string ReplayLogsDuration = "ReplayLogsDuration";
-        private const string EvaluateCacheFileGetHashDuration = "EvaluateCacheFileGetHashDuration";
-        private const string EvaluateCacheFileSafeReadDuration = "EvaluateCacheFileSafeReadDuration";
+        private const string GetNoOpHashDuration = "GetNoOpHashDuration";
+        private const string CacheFileReadDuration = "CacheFileReadDuration";
 
         //names for child events for GenerateRestoreGraph
         private const string CreateRestoreTargetGraph = "CreateRestoreTargetGraph";
@@ -599,7 +599,7 @@ namespace NuGet.Commands
             var sw = new Stopwatch();
             telemetryActivity.StartIntervalMeasure(sw);
             var newDgSpecHash = noOpDgSpec.GetHash();
-            telemetryActivity.EndIntervalMeasure(EvaluateCacheFileGetHashDuration, sw);
+            telemetryActivity.EndIntervalMeasure(GetNoOpHashDuration, sw);
 
             // if --force-evaluate flag is passed then restore noop check will also be skipped.
             // this will also help us to get rid of -force flag in near future.
@@ -611,7 +611,7 @@ namespace NuGet.Commands
             {
                 telemetryActivity.StartIntervalMeasure(sw);
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
-                telemetryActivity.EndIntervalMeasure(EvaluateCacheFileSafeReadDuration, sw);
+                telemetryActivity.EndIntervalMeasure(CacheFileReadDuration, sw);
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyCacheFileMatchesProject(cacheFile))
                 {

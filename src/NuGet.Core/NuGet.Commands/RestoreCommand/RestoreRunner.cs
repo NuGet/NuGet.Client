@@ -184,7 +184,6 @@ namespace NuGet.Commands
                 if (request.Request.LockFilePath == null
                     || uniqueRequest.Add(request.Request.LockFilePath))
                 {
-                    AddParentIdToRequest(request);
                     requests.Add(request);
                 }
             }
@@ -209,26 +208,12 @@ namespace NuGet.Commands
                     // De-dupe requests
                     if (uniqueRequest.Add(request.Request.LockFilePath))
                     {
-                        AddParentIdToRequest(request);
                         requests.Add(request);
                     }
                 }
             }
 
             return requests;
-        }
-
-        /// <summary>
-        /// If the request does not have a ParentId add one.
-        /// This will enable event telemetry correlation.
-        /// </summary>
-        /// <param name="request">The request</param>
-        private static void AddParentIdToRequest(RestoreSummaryRequest request)
-        {
-            if (request.Request.ParentId == default(Guid))
-            {
-                request.Request.ParentId = Guid.NewGuid();
-            }
         }
 
         private static int GetMaxTaskCount(RestoreArgs restoreContext)
