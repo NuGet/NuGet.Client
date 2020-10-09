@@ -342,7 +342,7 @@ namespace NuGet.PackageManagement.VisualStudio
             bool forceRemove,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNullOrEmpty(projectIds);
+            Assumes.NotNull(projectIds);
             Assumes.NotNull(packageIdentity);
             Assumes.False(packageIdentity.HasVersion);
             Assumes.NotNull(_state.SourceCacheContext);
@@ -492,13 +492,16 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(solutionManager);
 
             Dictionary<string, NuGetProject>? projects = (await solutionManager.GetNuGetProjectsAsync())
-                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _, StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _);
             var matchingProjects = new List<NuGetProject>(capacity: projectIds.Count);
 
             foreach (string projectId in projectIds)
             {
+                Assumes.NotNullOrEmpty(projectId);
+
                 if (projects.TryGetValue(projectId, out NuGetProject project))
                 {
+                    Assumes.NotNull(project);
                     matchingProjects.Add(project);
                 }
                 else
@@ -536,17 +539,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return _state.PackageIdentity != null
                 && projectActions.Any(projectAction => projectAction.ProjectActionType == NuGetProjectActionType.Install);
-        }
-
-        private async ValueTask<(bool, NuGetProject?)> TryGetNuGetProjectMatchingProjectIdAsync(string projectId)
-        {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
-
-            NuGetProject project = (await solutionManager.GetNuGetProjectsAsync())
-                .FirstOrDefault(p => projectId.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
-
-            return (project != null, project);
         }
     }
 }
