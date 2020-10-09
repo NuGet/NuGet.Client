@@ -246,6 +246,7 @@ namespace NuGet.PackageManagement.UI
                     DeprecationMetadata = AsyncLazy.New(() => { return GetDeprecationMetadataAsync(metadata.Identity); }),
                     Recommended = metadata.IsRecommended,
                     RecommenderVersion = metadata.RecommenderVersion,
+                    Vulnerabilities = metadata.Vulnerabilities,
                     // PackageReader = metadata.PackageReader, //(metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackageReader, SCOBAN
                 };
 

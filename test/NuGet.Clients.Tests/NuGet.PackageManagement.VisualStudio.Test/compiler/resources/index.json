@@ -7,11 +7,6 @@
       "comment": "Query endpoint of NuGet Search service (primary)"
     },
     {
-      "@id": "https://api-v2v3search-1.nuget.org/query",
-      "@type": "SearchQueryService",
-      "comment": "Query endpoint of NuGet Search service (secondary)"
-    },
-    {
       "@id": "https://api-v2v3search-0.nuget.org/autocomplete",
       "@type": "SearchAutocompleteService",
       "comment": "Autocomplete endpoint of NuGet Search service (primary)"

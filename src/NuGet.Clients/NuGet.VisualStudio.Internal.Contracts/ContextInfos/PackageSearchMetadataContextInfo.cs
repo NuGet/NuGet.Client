@@ -5,10 +5,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MessagePack;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio.Internal.Contracts
@@ -41,7 +41,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         [IgnoreMember]
         public PackageReaderBase? PackageReader { get; set; }
         [IgnoreMember]
-        public IEnumerable<PackageVulnerabilityMetadata>? Vulnerabilities { get; set; }
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; set; }
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
@@ -65,7 +65,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 IsListed = packageSearchMetadata.IsListed,
                 DependencySets = packageSearchMetadata.DependencySets,
                 DownloadCount = packageSearchMetadata.DownloadCount,
-                Vulnerabilities = packageSearchMetadata.Vulnerabilities
+                Vulnerabilities = packageSearchMetadata.Vulnerabilities?.Select(vulnerability => new PackageVulnerabilityMetadataContextInfo()
+                {
+                    Severity = vulnerability.Severity,
+                    AdvisoryUrl = vulnerability.AdvisoryUrl
+                }).ToList()
             };
         }
     }

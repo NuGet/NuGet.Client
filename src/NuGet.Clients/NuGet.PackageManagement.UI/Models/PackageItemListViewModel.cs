@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -389,7 +387,7 @@ namespace NuGet.PackageManagement.UI
         public Lazy<Task<PackageDeprecationMetadataContextInfo>> DeprecationMetadata { private get; set; }
         public Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
 
-        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
         private Lazy<Task<PackageDeprecationMetadataContextInfo>> _backgroundDeprecationMetadataLoader;

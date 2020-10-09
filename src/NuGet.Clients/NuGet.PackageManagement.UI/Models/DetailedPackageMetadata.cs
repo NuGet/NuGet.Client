@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageDeprecationMetadataContextInfo DeprecationMetadata { get; set; }
 
-        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
 
