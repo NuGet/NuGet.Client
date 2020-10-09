@@ -1,10 +1,3 @@
-parameters:
-- name: Part
-  type: string
-  values:
-  - Part1
-  - Part2
-
 steps:
 - task: PowerShell@1
   inputs:
@@ -18,18 +11,8 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-
-- task: PowerShell@1
-  displayName: "Define variables for deviding end to end tests"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      $Part1 = "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1,PackageRestoreTest.ps1"
-      $Part2 = "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
-      $EndToEndTestCommandToRunPart1 = '"' + "Run-Test -Exclude '$Part2' -Verbose *>&1 | Tee-Object $(System.DefaultWorkingDirectory)\artifacts\EndToEnd\FullLog_$(Build.BuildNumber).txt" +'"'
-      $EndToEndTestCommandToRunPart2 = '"' + "Run-Test -Exclude '$Part1' -Verbose *>&1 | Tee-Object $(System.DefaultWorkingDirectory)\artifacts\EndToEnd\FullLog_$(Build.BuildNumber).txt" +'"'
-      Write-Host "##vso[task.setvariable variable=EndToEndTestCommandToRunPart1]$EndToEndTestCommandToRunPart1"
-      Write-Host "##vso[task.setvariable variable=EndToEndTestCommandToRunPart2]$EndToEndTestCommandToRunPart2"
+      $EndToEndTestCommandToRunPart = '"' + "Run-Test -Exclude '${env:PART}' -Verbose *>&1 | Tee-Object $(System.DefaultWorkingDirectory)\artifacts\EndToEnd\FullLog_$(Build.BuildNumber).txt" +'"'
+      Write-Host "##vso[task.setvariable variable=EndToEndTestCommandToRunPart]$EndToEndTestCommandToRunPart"
 
 - task: PowerShell@1
   displayName: "Print Environment Variables"
@@ -77,43 +60,23 @@ steps:
       $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\e2e-collectlogs.zip
   condition: "failed()"
 
-- ${{ if eq(parameters.Part, 'Part1') }}:
-  - task: PowerShell@1
-    displayName: "RunFunctionalTests.ps1 (stop on error)"
-    timeoutInMinutes: 75
-    continueOnError: "true"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
-      arguments: "-PMCCommand $(EndToEndTestCommandToRunPart1) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+- task: PowerShell@1
+  displayName: "RunFunctionalTests.ps1 (stop on error)"
+  timeoutInMinutes: 75
+  continueOnError: "true"
+  inputs:
+    scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
+    arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
+  condition: "eq(variables['IsOfficialBuild'], 'true')"
 
-  - task: PowerShell@1
-    displayName: "RunFunctionalTests.ps1 (continue on error)"
-    timeoutInMinutes: 75
-    continueOnError: "true"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
-      arguments: "-PMCCommand $(EndToEndTestCommandToRunPart1) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
-
-- ${{ if eq(parameters.Part, 'Part2') }}:
-  - task: PowerShell@1
-    displayName: "RunFunctionalTests.ps1 (stop on error)"
-    timeoutInMinutes: 75
-    continueOnError: "true"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
-      arguments: "-PMCCommand $(EndToEndTestCommandToRunPart2) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
-
-  - task: PowerShell@1
-    displayName: "RunFunctionalTests.ps1 (continue on error)"
-    timeoutInMinutes: 75
-    continueOnError: "false"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
-      arguments: "-PMCCommand $(EndToEndTestCommandToRunPart2) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+- task: PowerShell@1
+  displayName: "RunFunctionalTests.ps1 (continue on error)"
+  timeoutInMinutes: 75
+  continueOnError: "true"
+  inputs:
+    scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
+    arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
+  condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
