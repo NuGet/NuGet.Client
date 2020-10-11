@@ -156,10 +156,13 @@ namespace API.Test
                 });
         }
 
-        public static async Task<IVsProjectJsonToPackageReferenceMigrateResult> MigrateJsonProjectAsync(string projectName)
+        public static IVsProjectJsonToPackageReferenceMigrateResult MigrateJsonProject(string projectName)
         {
-            var migrator = ServiceLocator.GetComponent<IVsProjectJsonToPackageReferenceMigrator>();
-            return (IVsProjectJsonToPackageReferenceMigrateResult)await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
+            return ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                var migrator = ServiceLocator.GetComponent<IVsProjectJsonToPackageReferenceMigrator>();
+                return (IVsProjectJsonToPackageReferenceMigrateResult)await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
+            });
         }
 
         public static bool IsFileExistsInProject(string projectUniqueName, string filePath)
