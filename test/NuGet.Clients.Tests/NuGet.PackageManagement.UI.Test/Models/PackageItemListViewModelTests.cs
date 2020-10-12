@@ -8,20 +8,27 @@ using System.IO.Packaging;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Microsoft;
+using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.VisualStudio.Test;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
+using NuGet.VisualStudio;
+using Test.Utility.Threading;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.UI.Test
 {
-    public class PackageItemListViewModelTests : IClassFixture<LocalPackageSearchMetadataFixture>
+    [Collection(DispatcherThreadCollection.CollectionName)]
+    public class PackageItemListViewModelTests : IClassFixture<LocalPackageSearchMetadataFixture>, IClassFixture<DispatcherThreadFixture>
     {
         private readonly LocalPackageSearchMetadataFixture _testData;
         private readonly PackageItemListViewModel _testInstance;
         private readonly ITestOutputHelper _output;
+        private readonly JoinableTaskFactory _jtf;
 
-        public PackageItemListViewModelTests(ITestOutputHelper output, LocalPackageSearchMetadataFixture testData)
+        public PackageItemListViewModelTests(DispatcherThreadFixture fixture, ITestOutputHelper output, LocalPackageSearchMetadataFixture testData)
         {
             _testData = testData;
             _testInstance = new PackageItemListViewModel()
@@ -29,6 +36,11 @@ namespace NuGet.PackageManagement.UI.Test
                 PackageReader = _testData.TestData.PackageReader,
             };
             _output = output;
+
+            Assumes.Present(fixture);
+
+            _jtf = fixture.JoinableTaskFactory;
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
         }
 
         [Fact]
@@ -87,7 +99,7 @@ namespace NuGet.PackageManagement.UI.Test
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIconDueToRelativeUri, packageItemListViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -103,8 +115,9 @@ namespace NuGet.PackageManagement.UI.Test
 
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
 
-            // TODO: this isn't working now...and i think it shouldn't work. follow up. (relative URIs...shouldn't work!!!)
-            Assert.Equal(IconBitmapStatus.DefaultIcon, packageItemListViewModel.BitmapStatus);
+            // TODO: believe somebody merged this case recently. Need to investigate why relative uris need to work at all.
+            // For now, i'm leaving this test failing, so I go figure it out.
+            Assert.Equal(IconBitmapStatus.DownloadedIcon, packageItemListViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -166,8 +179,8 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 _output.WriteLine($"result {result}");
-                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
                 Assert.Equal(IconBitmapStatus.EmbeddedIcon, packageItemListViewModel.BitmapStatus);
+                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
             }
         }
 
@@ -282,9 +295,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             BitmapSource result = packageItemListViewModel.IconBitmap;
 
-            while (packageItemListViewModel.BitmapStatus == IconBitmapStatus.None ||
-                packageItemListViewModel.BitmapStatus == IconBitmapStatus.InProgress ||
-                packageItemListViewModel.BitmapStatus == IconBitmapStatus.NeedToFetch)
+            while (!IconBitmapStatusUtility.GetIsCompleted(packageItemListViewModel.BitmapStatus))
             {
                 await Task.Delay(250);
             }
@@ -346,7 +357,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         private static void VerifyImageResult(object result, IconBitmapStatus bitmapStatus)
         {
-            if (result == null && bitmapStatus == IconBitmapStatus.DefaultIcon)
+            if (result == null && IconBitmapStatusUtility.GetIsDefaultIcon(bitmapStatus))
             {
                 return;
             }
