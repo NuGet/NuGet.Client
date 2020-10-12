@@ -445,7 +445,7 @@ steps:
     SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
     Contents: "**\\*"
     TargetFolder: "$(BuildOutputTargetPath)\\symbols-rtm"
-  condition: " and(succeeded(), not(eq(variables['BuildRTM'], 'false')) "
+  condition: " and(succeeded(), not(eq(variables['BuildRTM'], 'false'))) "
 
 - task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
   displayName: "Publish Symbols on Symweb"
