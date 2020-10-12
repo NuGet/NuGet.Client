@@ -196,6 +196,51 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following dependency group(s) require(s) dots in the framework version: {0}.
+        /// </summary>
+        public static string InvalidUndottedFrameworkInDependencyGroupsWarning {
+            get {
+                return ResourceManager.GetString("InvalidUndottedFrameworkInDependencyGroupsWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following packaged file folder(s) require(s) dots in the framework version: {0}.
+        /// </summary>
+        public static string InvalidUndottedFrameworkInFilesWarning {
+            get {
+                return ResourceManager.GetString("InvalidUndottedFrameworkInFilesWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following framework assembly group(s) require(s) dots in the framework version: {0}.
+        /// </summary>
+        public static string InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning {
+            get {
+                return ResourceManager.GetString("InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following reference group(s) require(s) dots in the framework version: {0}.
+        /// </summary>
+        public static string InvalidUndottedFrameworkInReferenceGroupsWarning {
+            get {
+                return ResourceManager.GetString("InvalidUndottedFrameworkInReferenceGroupsWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One or more target framework specifiers in your package are missing required dots in their framework version numbers. This is required as of .NET5.0. Please rename them to include dots as needed (e.g. &apos;net50&apos; to &apos;net5.0&apos;)..
+        /// </summary>
+        public static string InvalidUndottedFrameworkWarning {
+            get {
+                return ResourceManager.GetString("InvalidUndottedFrameworkWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package version &apos;{0}&apos; uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter. This message can be ignored if the package is not intended for older clients..
         /// </summary>
         public static string LegacyVersionWarning {

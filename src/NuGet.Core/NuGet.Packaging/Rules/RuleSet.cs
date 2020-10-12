@@ -8,7 +8,7 @@ namespace NuGet.Packaging.Rules
 {
     public static class RuleSet
     {
-        private static readonly ReadOnlyCollection<IPackageRule> _packageCreationRules = new ReadOnlyCollection<IPackageRule>(
+        private static readonly ReadOnlyCollection<IPackageRule> PackageCreationRules = new ReadOnlyCollection<IPackageRule>(
             new IPackageRule[] {
                 new InvalidFrameworkFolderRule(AnalysisResources.InvalidFrameworkWarning),
                 new MisplacedAssemblyUnderLibRule(AnalysisResources.AssemblyDirectlyUnderLibWarning),
@@ -29,11 +29,12 @@ namespace NuGet.Packaging.Rules
                 new DependenciesGroupsForEachTFMRule(),
                 new UpholdBuildConventionRule(),
                 new ReferencesInNuspecMatchRefAssetsRule(),
+                new InvalidUndottedFrameworkRule(),
                 new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
             }
         );
 
-        private static readonly ReadOnlyCollection<IPackageRule> _packagesConfigToPackageReferenceMigrationRuleSet = new ReadOnlyCollection<IPackageRule>(
+        private static readonly ReadOnlyCollection<IPackageRule> PackagesConfigToPackageReferenceMigrationRules = new ReadOnlyCollection<IPackageRule>(
             new IPackageRule[] {
                 new MisplacedAssemblyUnderLibRule(AnalysisResources.Migrator_AssemblyDirectlyUnderLibWarning),
                 new InstallScriptInPackageReferenceProjectRule(AnalysisResources.Migrator_PackageHasInstallScript),
@@ -46,7 +47,7 @@ namespace NuGet.Packaging.Rules
         {
             get
             {
-                return _packageCreationRules;
+                return PackageCreationRules;
             }
         }
 
@@ -54,7 +55,7 @@ namespace NuGet.Packaging.Rules
         {
             get
             {
-                return _packagesConfigToPackageReferenceMigrationRuleSet;
+                return PackagesConfigToPackageReferenceMigrationRules;
             }
         }
     }
