@@ -673,6 +673,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Platform is not present for one or more target framework(s): {0}.
+        /// </summary>
+        internal static string Error_PlatformVersionNotPresent {
+            get {
+                return ResourceManager.GetString("Error_PlatformVersionNotPresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error occurred when processing file &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string Error_ProcessingNuspecFile {
