@@ -2626,6 +2626,36 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             }
         }
 
+        [Theory]
+        [InlineData(".txt", "The 'icon' element 'icon.txt' has an invalid file extension. Valid options are .png, .jpg or .jpeg.")]
+        [InlineData(".jpeg", null)]
+        [InlineData(".jpg", null)]
+        [InlineData(".png", null)]
+        [InlineData(".PnG", null)]
+        [InlineData(".jPG", null)]
+        [InlineData(".jpEG", null)]
+        [InlineData("", "The 'icon' element 'icon' has an invalid file extension. Valid options are .png, .jpg or .jpeg.")]
+        public void Icon_IconInvalidExtension_ThrowsException(string fileExtension, string message)
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var nuspecBuilder = NuspecBuilder.Create();
+            var rng = new Random();
+
+            var iconFile = $"icon{fileExtension}";
+
+            nuspecBuilder
+                .WithIcon(iconFile)
+                .WithFile(iconFile);
+
+            testDirBuilder
+                .WithFile(iconFile, rng.Next(1, PackageBuilder.MaxIconFileSize))
+                .WithNuspec(nuspecBuilder);
+
+            TestIconPackaging(
+                testDirBuilder: testDirBuilder,
+                exceptionMessage: message);
+        }
+
         [Fact]
         public void Icon_IconMaxFileSizeExceeded_ThrowsException()
         {

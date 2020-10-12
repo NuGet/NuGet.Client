@@ -314,7 +314,7 @@ namespace NuGet.Packaging
         {
             get
             {
-                return String.Join(" ", Tags);
+                return string.Join(" ", Tags);
             }
         }
 
@@ -580,7 +580,7 @@ namespace NuGet.Packaging
             }
 
             var libFiles = new HashSet<string>(from file in files
-                                               where !String.IsNullOrEmpty(file.Path) && file.Path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
+                                               where !string.IsNullOrEmpty(file.Path) && file.Path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
                                                select Path.GetFileName(file.Path), StringComparer.OrdinalIgnoreCase);
 
             foreach (var reference in packageAssemblyReferences.SelectMany(p => p.References))
@@ -590,7 +590,7 @@ namespace NuGet.Packaging
                     !libFiles.Contains(reference + ".exe") &&
                     !libFiles.Contains(reference + ".winmd"))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5018, String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
+                    throw new PackagingException(NuGetLogCode.NU5018, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
                 }
             }
         }
@@ -683,15 +683,26 @@ namespace NuGet.Packaging
 
         /// <summary>
         /// Given a list of resolved files,
-        /// determine which file will be used as the icon file and validate its size.
+        /// determine which file will be used as the icon file and validate its size and extension.
         /// </summary>
         /// <param name="files">Files resolved from the file entries in the nuspec</param>
-        /// <param name="iconPath">iconpath found in the .nuspec</param>
+        /// <param name="iconPath">icon entry found in the .nuspec</param>
         /// <exception cref="PackagingException">When a validation rule is not met</exception>
         private void ValidateIconFile(IEnumerable<IPackageFile> files, string iconPath)
         {
             if (!PackageTypes.Contains(PackageType.SymbolsPackage) && !string.IsNullOrEmpty(iconPath))
             {
+                var ext = Path.GetExtension(iconPath);
+                if (!string.IsNullOrEmpty(ext) &&
+                        !ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) &&
+                        !ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) &&
+                        !ext.Equals(".png", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5045,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconInvalidExtension, iconPath));
+                }
+
                 // Validate entry
                 IPackageFile iconFile = FindFileInPackage(iconPath, files, out var iconPathWithIncorrectCase);
 
@@ -963,7 +974,7 @@ namespace NuGet.Packaging
             if (!PathResolver.IsWildcardSearch(source) && !PathResolver.IsDirectoryPath(source) && !searchFiles.Any() && string.IsNullOrEmpty(exclude))
             {
                 throw new PackagingException(NuGetLogCode.NU5019,
-                    String.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
+                    string.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
             }
 
             Files.AddRange(searchFiles);
@@ -1017,7 +1028,7 @@ namespace NuGet.Packaging
             {
                 packagePath = Path.GetFileName(fullPath);
             }
-            return Path.Combine(targetPath ?? String.Empty, packagePath);
+            return Path.Combine(targetPath ?? string.Empty, packagePath);
         }
 
         /// <summary>
@@ -1048,7 +1059,7 @@ namespace NuGet.Packaging
 
         private static void ExcludeFiles(List<PhysicalPackageFile> searchFiles, string basePath, string exclude)
         {
-            if (String.IsNullOrEmpty(exclude))
+            if (string.IsNullOrEmpty(exclude))
             {
                 return;
             }
@@ -1197,7 +1208,7 @@ namespace NuGet.Packaging
                     new XAttribute(XNamespace.Xmlns + "dc", dcText),
                     new XAttribute(XNamespace.Xmlns + "dcterms", dctermsText),
                     new XAttribute(XNamespace.Xmlns + "xsi", xsiText),
-                    new XElement(dc + "creator", String.Join(", ", Authors)),
+                    new XElement(dc + "creator", string.Join(", ", Authors)),
                     new XElement(dc + "description", Description),
                     new XElement(dc + "identifier", Id),
                     new XElement(core + "version", Version.ToString()),
