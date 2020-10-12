@@ -104,7 +104,7 @@ jobs:
       - msbuild
 
   steps:
-  - template: templates/Build_and_UnitTest.yml  
+  - template: templates/Build_and_UnitTest.yml
 
 - job: Build_and_UnitTest_RTM
   dependsOn: Initialize_Build
@@ -125,7 +125,7 @@ jobs:
       - msbuild
 
   steps:
-  - template: templates/Build_and_UnitTest.yml  
+  - template: templates/Build_and_UnitTest.yml
 
 - job: Functional_Tests_On_Windows
   dependsOn: Initialize_Build
@@ -418,7 +418,7 @@ jobs:
         Part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
 
   steps:
-  - template: templates/E2E_Tests_On_Windows.yml
+  - template: templates/End_To_End_Tests_On_Windows.yml
 
 - job: Apex_Tests_On_Windows
   dependsOn:
