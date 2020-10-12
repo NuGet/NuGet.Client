@@ -193,7 +193,7 @@ steps:
     arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
   condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
 
 - task: PublishBuildArtifacts@1

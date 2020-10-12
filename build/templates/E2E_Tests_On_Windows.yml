@@ -95,7 +95,7 @@ steps:
     arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "EndToEnd Tests On Windows"
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
   condition: "always()"
 
 - task: PowerShell@1
