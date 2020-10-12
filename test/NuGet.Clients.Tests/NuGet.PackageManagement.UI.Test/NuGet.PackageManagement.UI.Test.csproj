@@ -67,7 +67,7 @@
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
-    <ProjectReference Include="$(NuGetClientsTestDirectory)\NuGet.PackageManagement.VisualStudio.Test.csproj" />
+    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio.Test\NuGet.PackageManagement.VisualStudio.Test.csproj" />
   </ItemGroup>
 
   <ItemGroup>
