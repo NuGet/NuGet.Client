@@ -112,7 +112,7 @@ namespace NuGet.PackageManagement.UI.Test
                 Assembly testAssembly = typeof(PackageItemListViewModelTests).Assembly;
                 Stream sourceStream = testAssembly.GetManifestResourceStream("NuGet.PackageManagement.UI.Test.Resources.grayicc.png");
                 byte[] bytes;
-                using(var memoryStream = new MemoryStream())
+                using (var memoryStream = new MemoryStream())
                 {
                     sourceStream.CopyTo(memoryStream);
                     bytes = memoryStream.ToArray();
