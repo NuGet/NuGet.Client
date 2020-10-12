@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -105,19 +106,32 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task IconUrl_WithLocalPathAndColorProfile_LoadsImage()
         {
-            var iconUrl = new Uri("resources/grayicc.png", UriKind.Relative);
-            var packageItemListViewModel = new PackageItemListViewModel()
+            // Prepare
+            using (var testDir = TestDirectory.Create())
             {
-                IconUrl = iconUrl
-            };
+                Assembly testAssembly = typeof(PackageItemListViewModelTests).Assembly;
+                Stream sourceStream = testAssembly.GetManifestResourceStream("NuGet.PackageManagement.UI.Test.Resources.grayicc.png");
+                byte[] bytes;
+                using(var memoryStream = new MemoryStream())
+                {
+                    sourceStream.CopyTo(memoryStream);
+                    bytes = memoryStream.ToArray();
+                }
+                string grayiccImagePath = Path.Combine(testDir, "grayicc.png");
+                File.WriteAllBytes(grayiccImagePath, bytes);
 
-            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+                var packageItemListViewModel = new PackageItemListViewModel()
+                {
+                    IconUrl = new Uri(grayiccImagePath, UriKind.Absolute)
+                };
 
-            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
+                // Act
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
 
-            // TODO: believe somebody merged this case recently. Need to investigate why relative uris need to work at all.
-            // For now, i'm leaving this test failing, so I go figure it out.
-            Assert.Equal(IconBitmapStatus.DownloadedIcon, packageItemListViewModel.BitmapStatus);
+                // Assert
+                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.DownloadedIcon, packageItemListViewModel.BitmapStatus);
+            }
         }
 
         [Fact]
