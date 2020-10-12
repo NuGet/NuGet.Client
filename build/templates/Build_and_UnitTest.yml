@@ -428,16 +428,24 @@ steps:
     solution: "build\\symbols.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:IsSymbolBuild=true"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+    msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
+  condition: " succeeded() "
 
 - task: CopyFiles@2
-  displayName: "Copy Symbols"
+  displayName: "Copy Symbols (non-rtm)"
   inputs:
     SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
     Contents: "**\\*"
     TargetFolder: "$(BuildOutputTargetPath)\\symbols"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+  condition: " and(succeeded(), eq(variables['BuildRTM'], 'false')) "
+
+- task: CopyFiles@2
+  displayName: "Copy Symbols (rtm)"
+  inputs:
+    SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
+    Contents: "**\\*"
+    TargetFolder: "$(BuildOutputTargetPath)\\symbols-rtm"
+  condition: " and(succeeded(), not(eq(variables['BuildRTM'], 'false')) "
 
 - task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
   displayName: "Publish Symbols on Symweb"
