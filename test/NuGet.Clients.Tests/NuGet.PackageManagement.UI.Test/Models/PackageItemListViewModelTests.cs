@@ -108,14 +108,16 @@ namespace NuGet.PackageManagement.UI.Test
             // Prepare
             using (var testDir = TestDirectory.Create())
             {
-                Assembly testAssembly = typeof(PackageItemListViewModelTests).Assembly;
-                Stream sourceStream = testAssembly.GetManifestResourceStream("NuGet.PackageManagement.UI.Test.Resources.grayicc.png");
                 byte[] bytes;
+                Assembly testAssembly = typeof(PackageItemListViewModelTests).Assembly;
+
+                using (Stream sourceStream = testAssembly.GetManifestResourceStream("NuGet.PackageManagement.UI.Test.Resources.grayicc.png"))
                 using (var memoryStream = new MemoryStream())
                 {
                     sourceStream.CopyTo(memoryStream);
                     bytes = memoryStream.ToArray();
                 }
+
                 string grayiccImagePath = Path.Combine(testDir, "grayicc.png");
                 File.WriteAllBytes(grayiccImagePath, bytes);
 
@@ -290,11 +292,11 @@ namespace NuGet.PackageManagement.UI.Test
                 new object[]{ builder3.Uri, true },
                 new object[]{ builder4.Uri, false },
                 new object[]{ builder5.Uri, false },
-                new object[]{ new Uri("https://sample.uri/"), false },
+                new object[]{ new Uri("https://sample.test/"), false },
                 new object[]{ baseUri, false },
-                new object[]{ new Uri("https://another.uri/#"), false },
-                new object[]{ new Uri("https://complimentary.uri/#anchor"), false },
-                new object[]{ new Uri("https://complimentary.uri/?param"), false },
+                new object[]{ new Uri("https://another.test/#"), false },
+                new object[]{ new Uri("https://complimentary.test/#anchor"), false },
+                new object[]{ new Uri("https://complimentary.test/?param"), false },
                 new object[]{ new Uri("relative/path", UriKind.Relative), false },
             };
         }
@@ -426,8 +428,8 @@ namespace NuGet.PackageManagement.UI.Test
             // Create nuget package
             using (var nuspecStream = new MemoryStream())
             using (FileStream nupkgStream = File.Create(zipPath))
+            using (var writer = new StreamWriter(nuspecStream))
             {
-                var writer = new StreamWriter(nuspecStream);
                 nuspec.Write(writer);
                 writer.Flush();
                 nuspecStream.Position = 0;
