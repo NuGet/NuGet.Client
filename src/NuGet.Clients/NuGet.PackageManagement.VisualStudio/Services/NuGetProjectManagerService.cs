@@ -365,7 +365,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(packageIdentity);
             Assumes.False(packageIdentity.HasVersion);
             Assumes.NotNull(_state.SourceCacheContext);
-            Assumes.NotNull(_state.ResolvedActions);
             Assumes.Null(_state.PackageIdentity);
             Assumes.True(_state.ResolvedActions.Count == 0);
 
@@ -381,30 +380,28 @@ namespace NuGet.PackageManagement.VisualStudio
             var uninstallationContext = new UninstallationContext(removeDependencies, forceRemove);
 
             NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            IEnumerable<(NuGetProject, NuGetProjectAction)> projectsWithActions = await packageManager.PreviewProjectsUninstallPackageAsync(
+            IEnumerable<NuGetProjectAction> projectsWithActions = await packageManager.PreviewProjectsUninstallPackageAsync(
                 projects,
                 packageIdentity.Id,
                 uninstallationContext,
                 projectContext,
                 cancellationToken);
 
-            foreach ((NuGetProject, NuGetProjectAction) projectWithActions in projectsWithActions)
+            foreach (NuGetProjectAction projectWithActions in projectsWithActions)
             {
-                NuGetProject nugetProject = projectWithActions.Item1;
-                NuGetProjectAction action = projectWithActions.Item2;
-
-                var resolvedAction = new ResolvedAction(nugetProject, action);
+                var resolvedAction = new ResolvedAction(projectWithActions.Project, projectWithActions);
                 var projectAction = new ProjectAction(
                     CreateProjectActionId(),
-                    nugetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId),
-                    action.PackageIdentity,
-                    action.NuGetProjectActionType,
+                    projectWithActions.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId),
+                    projectWithActions.PackageIdentity,
+                    projectWithActions.NuGetProjectActionType,
                     implicitActions: null);
 
                 _state.ResolvedActions[projectAction.Id] = resolvedAction;
 
                 projectActions.Add(projectAction);
             }
+	    }
 
             return projectActions;
         }
@@ -517,13 +514,16 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(solutionManager);
 
             Dictionary<string, NuGetProject>? projects = (await solutionManager.GetNuGetProjectsAsync())
-                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _, PathUtility.GetStringComparerBasedOnOS());
+                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _, StringComparer.OrdinalIgnoreCase);
             var matchingProjects = new List<NuGetProject>(capacity: projectIds.Count);
 
             foreach (string projectId in projectIds)
             {
+                Assumes.NotNullOrEmpty(projectId);
+
                 if (projects.TryGetValue(projectId, out NuGetProject project))
                 {
+                    Assumes.NotNull(project);
                     matchingProjects.Add(project);
                 }
                 else

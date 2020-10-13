@@ -2001,7 +2001,7 @@ namespace NuGet.PackageManagement
         /// <param name="nuGetProjectContext"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<(NuGetProject, NuGetProjectAction)>> PreviewProjectsUninstallPackageAsync(
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewProjectsUninstallPackageAsync(
             IReadOnlyCollection<NuGetProject> nuGetProjects,
             string packageId,
             UninstallationContext uninstallationContext,
@@ -2028,24 +2028,24 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
-            var uninstallActionsForProjects = new ConcurrentBag<(NuGetProject, NuGetProjectAction)>();
+            var uninstallActionsForProjects = new ConcurrentBag<NuGetProjectAction>();
 
             var options = new ExecutionDataflowBlockOptions()
             {
                 MaxDegreeOfParallelism = Environment.ProcessorCount
             };
-            var actionBlock = new ActionBlock<ProjectUninstallActionSpec>(GetProjectNuGetUninstallProjectActionsAsync, options);
+            ActionBlock<ProjectUninstallActionSpec> actionBlock = new ActionBlock<ProjectUninstallActionSpec>(GetProjectNuGetUninstallProjectActionsAsync, options);
 
             foreach (var nuGetProject in nuGetProjects)
             {
-                await actionBlock.SendAsync(new ProjectUninstallActionSpec(
-                                                nuGetProject,
-                                                packageId,
-                                                uninstallationContext,
-                                                nuGetProjectContext,
-                                                uninstallActionsForProjects,
-                                                token)
-                                            );
+                await actionBlock.SendAsync(
+                    new ProjectUninstallActionSpec(
+                        nuGetProject,
+                        packageId,
+                        uninstallationContext,
+                        nuGetProjectContext,
+                        uninstallActionsForProjects,
+                        token));
             }
 
             actionBlock.Complete();
@@ -2067,16 +2067,16 @@ namespace NuGet.PackageManagement
                     projectUninstallActionSpec.PackageId, projectUninstallActionSpec.NuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
 
-            var projectUninstallActions = await PreviewUninstallPackageInternalAsync(
+            IEnumerable<NuGetProjectAction> projectUninstallActions = await PreviewUninstallPackageInternalAsync(
                 projectUninstallActionSpec.NuGetProject,
                 packageReference,
                 projectUninstallActionSpec.UninstallationContext,
                 projectUninstallActionSpec.NuGetProjectContext,
                 projectUninstallActionSpec.Token);
 
-            foreach (var projectUninstallAction in projectUninstallActions)
+            foreach (NuGetProjectAction projectUninstallAction in projectUninstallActions)
             {
-                projectUninstallActionSpec.UninstallActions.Add((projectUninstallActionSpec.NuGetProject, projectUninstallAction));
+                projectUninstallActionSpec.UninstallActions.Add(projectUninstallAction);
             }
         }
 
@@ -3680,7 +3680,7 @@ namespace NuGet.PackageManagement
             public string PackageId { get; }
             public UninstallationContext UninstallationContext { get; }
             public INuGetProjectContext NuGetProjectContext { get; }
-            public ConcurrentBag<(NuGetProject, NuGetProjectAction)> UninstallActions { get; }
+            public ConcurrentBag<NuGetProjectAction> UninstallActions { get; }
             public CancellationToken Token { get; }
 
             public ProjectUninstallActionSpec(
@@ -3688,7 +3688,7 @@ namespace NuGet.PackageManagement
                 string packageId,
                 UninstallationContext uninstallationContext,
                 INuGetProjectContext nuGetProjectContext,
-                ConcurrentBag<(NuGetProject, NuGetProjectAction)> uninstallActions,
+                ConcurrentBag<NuGetProjectAction> uninstallActions,
                 CancellationToken token)
             {
                 NuGetProject = nuGetProject;
