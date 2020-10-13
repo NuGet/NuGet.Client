@@ -74,6 +74,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
+            // When a project is retargeted, a new LegacyPackageReferenceProject object gets created with
+            // the new target framework, so this will contain the correct retargeted framework. 
             var targetFramework = await vsProjectAdapter.GetTargetFrameworkAsync();
 
             return new LegacyPackageReferenceProject(
