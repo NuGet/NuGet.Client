@@ -2655,7 +2655,7 @@ namespace NuGet.PackageManagement
 
             // Add all enabled sources for the existing projects
             var enabledSources = SourceRepositoryProvider.GetRepositories().ToList();
-            var allSources = new HashSet<SourceRepository>(enabledSources, new SourceRepositoryComparer());
+            var allSources = new ConcurrentBag<SourceRepository>();
 
             var options = new ExecutionDataflowBlockOptions()
             {
@@ -2685,6 +2685,9 @@ namespace NuGet.PackageManagement
             actionBlock.Complete();
             await actionBlock.Completion;
 
+            var allSourcesUnique = new HashSet<SourceRepository>(enabledSources, new SourceRepositoryComparer());
+            allSourcesUnique.UnionWith(allSources);
+
             // Restore based on the modified package specs for many projects. This operation does not write the lock files to disk.
             var restoreResults = await DependencyGraphRestoreUtility.PreviewRestoreProjectsAsync(
                 SolutionManager,
@@ -2693,7 +2696,7 @@ namespace NuGet.PackageManagement
                 dependencyGraphContext,
                 providerCache,
                 cacheModifier,
-                allSources,
+                allSourcesUnique,
                 nuGetProjectContext.OperationId,
                 logger,
                 token);
@@ -2857,7 +2860,11 @@ namespace NuGet.PackageManagement
                     .Select(action => action.SourceRepository),
                     new SourceRepositoryComparer());
 
-            projectActionInput.AllSources.UnionWith(sources);
+            foreach (var source in sources)
+            {
+                projectActionInput.AllSources.Add(source);
+            }
+
             sources.UnionWith(projectActionInput.EnabledSources);
             projectActionInput.NugetProjectDetailsLookup.NuGetProjectSourceLookup[projectActionInput.BuildIntegratedProject.MSBuildProjectPath] = sources;
 
@@ -3629,7 +3636,7 @@ namespace NuGet.PackageManagement
             public readonly CancellationToken Token;
             public readonly DependencyGraphCacheContext DependencyGraphContext;
             public readonly IReadOnlyCollection<SourceRepository> EnabledSources;
-            public readonly HashSet<SourceRepository> AllSources;
+            public readonly ConcurrentBag<SourceRepository> AllSources;
             public readonly Action<SourceCacheContext> CacheModifier;
             public readonly RestoreCommandProvidersCache ProviderCache;
             public readonly Guid OperationId;
@@ -3643,7 +3650,7 @@ namespace NuGet.PackageManagement
                                                      CancellationToken token,
                                                      DependencyGraphCacheContext dependencyGraphContext,
                                                      IReadOnlyCollection<SourceRepository> enabledSources,
-                                                     HashSet<SourceRepository> allSources,
+                                                     ConcurrentBag<SourceRepository> allSources,
                                                      Action<SourceCacheContext> cacheModifier,
                                                      RestoreCommandProvidersCache providerCache,
                                                      Guid operationId)
