@@ -244,6 +244,10 @@ namespace NuGet.ContentModel
                 var hashCode = 0;
                 foreach (var property in obj.Properties)
                 {
+                    if (property.Key.EndsWith("_raw", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
                     hashCode ^= property.Key.GetHashCode();
                     hashCode ^= property.Value.GetHashCode();
                 }
@@ -264,6 +268,12 @@ namespace NuGet.ContentModel
 
                 foreach (var xProperty in x.Properties)
                 {
+                    if (xProperty.Key.EndsWith("_raw", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // We've started storing raw versions of each key, but
+                        // we don't want that to affect results.
+                        continue;
+                    }
                     object yValue;
                     if (!y.Properties.TryGetValue(xProperty.Key, out yValue))
                     {
