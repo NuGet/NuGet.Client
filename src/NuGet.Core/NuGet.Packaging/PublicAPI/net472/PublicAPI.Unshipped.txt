@@ -1,0 +1,5 @@
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInDependencyGroupsWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFilesWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInReferenceGroupsWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkWarning.get -> string
