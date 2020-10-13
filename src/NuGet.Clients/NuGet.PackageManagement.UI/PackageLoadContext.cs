@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
     internal class PackageLoadContext
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
-        private readonly Task<PackageCollection> _transitivePackagesTask;
+        private readonly JoinableTask<(PackageCollection, PackageCollection)> _allPackagesTask;
 
         public PackageLoadContext(bool isSolution, INuGetUIContext uiContext)
         {
@@ -49,9 +49,29 @@ namespace NuGet.PackageManagement.UI
 
         internal IServiceBroker ServiceBroker { get; }
 
+        public PackageLoadContext(
+            IEnumerable<SourceRepository> sourceRepositories,
+            bool isSolution,
+            INuGetUIContext uiContext)
+        {
+            SourceRepositories = sourceRepositories;
+            IsSolution = isSolution;
+            PackageManager = uiContext.PackageManager;
+            Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
+            PackageManagerProviders = uiContext.PackageManagerProviders;
+            SolutionManager = uiContext.SolutionManagerService;
+            ServiceBroker = uiContext.ServiceBroker;
+
+            _installedPackagesTask = PackageCollection.FromProjectsAsync(
+                ServiceBroker,
+                Projects,
+                CancellationToken.None);
+            _allPackagesTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageCollection.FromProjectsIncludeTransitiveAsync(Projects, CancellationToken.None));
+        }
+
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
 
-        public Task<PackageCollection> GetTransitivePackagesAsync() => _transitivePackagesTask;
+        public async Task<(PackageCollection, PackageCollection)> GetAllPackagesAsync() => await _allPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
         public async Task<IEnumerable<string>> GetSupportedFrameworksAsync()

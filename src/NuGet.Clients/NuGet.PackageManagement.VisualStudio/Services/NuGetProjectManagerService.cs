@@ -158,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return installedPackages;
         }
 
-        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetTransitivePackagesAsync(
+        public async ValueTask<(IReadOnlyCollection<IPackageReferenceContextInfo>, IReadOnlyCollection<IPackageReferenceContextInfo>)> GetAllPackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken)
         {
@@ -168,18 +168,33 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
-            // Read transitive package references from package reference style projects.
-            IEnumerable<Task<IEnumerable<PackageReference>>> tasks = projects
-                .Where(project => project is LegacyPackageReferenceProject)
-                .Select(project => (LegacyPackageReferenceProject)project)
-                .Select(project => project.GetTransitivePackagesAsync(cancellationToken))
-                .Concat(projects
-                    .Where(project => project is NetCorePackageReferenceProject)
-                    .Select(project => (NetCorePackageReferenceProject)project)
-                    .Select(project => project.GetTransitivePackagesAsync(cancellationToken)));
-            IEnumerable<PackageReference>[] transitivePackageReferences = await Task.WhenAll(tasks);
+            // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
+            List<Task<(IEnumerable<PackageReference>, IEnumerable<PackageReference>)>> prStyleTasks = new List<Task<(IEnumerable<PackageReference>, IEnumerable<PackageReference>)>>();
+            List<Task<IEnumerable<PackageReference>>> nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
+            foreach (var project in projects)
+            {
+                if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)
+                {
+                    prStyleTasks.Add(legacyPackageReferenceProject.GetAllPackagesAsync(cancellationToken));
+                }
+                else if (project is NetCorePackageReferenceProject netCorePackageReferenceProject)
+                {
+                    prStyleTasks.Add(netCorePackageReferenceProject.GetAllPackagesAsync(cancellationToken));
+                }
+                else
+                {
+                    nonPrStyleTasks.Add(project.GetInstalledPackagesAsync(cancellationToken));
+                }
+            }
+            (IEnumerable<PackageReference>, IEnumerable<PackageReference>)[] prStyleReferences = await Task.WhenAll(prStyleTasks);
+            IEnumerable<PackageReference>[] nonPrStyleReferences = await Task.WhenAll(nonPrStyleTasks);
 
-            return transitivePackageReferences.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            // combine all of the installed package references
+            var installedPackages = nonPrStyleReferences
+                    .Concat(prStyleReferences
+                        .Select(p => p.Item1));
+
+            return (installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray(), prStyleReferences.SelectMany(e => e.Item2).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray());
         }
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
