@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Packaging;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -303,15 +302,14 @@ namespace NuGet.PackageManagement.UI.Test
         /// <summary>
         /// Tests the final bitmap returned by the view model, by waiting for the BitmapStatus to be "complete".
         /// </summary>
-        /// <param name="packageItemListViewModel"></param>
-        /// <returns></returns>
         private static async Task<BitmapSource> GetFinalIconBitmapAsync(PackageItemListViewModel packageItemListViewModel)
         {
             BitmapSource result = packageItemListViewModel.IconBitmap;
-
-            while (!IconBitmapStatusUtility.GetIsCompleted(packageItemListViewModel.BitmapStatus))
+            int millisecondsToWait = 3000;
+            while (!IconBitmapStatusUtility.GetIsCompleted(packageItemListViewModel.BitmapStatus) && millisecondsToWait >= 0)
             {
                 await Task.Delay(250);
+                millisecondsToWait -= 250;
             }
 
             result = packageItemListViewModel.IconBitmap;

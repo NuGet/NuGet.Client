@@ -23,7 +23,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using nc = NuGet.Common;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -31,11 +30,11 @@ namespace NuGet.PackageManagement.UI
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
     public class PackageItemListViewModel : INotifyPropertyChanged
     {
-        private static readonly nc.AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
-            nc.AsyncLazy.New(Enumerable.Empty<VersionInfo>());
+        private static readonly Common.AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
+            Common.AsyncLazy.New(Enumerable.Empty<VersionInfo>());
 
-        private static readonly nc.AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
-            nc.AsyncLazy.New((PackageDeprecationMetadata)null);
+        private static readonly Common.AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
+            Common.AsyncLazy.New((PackageDeprecationMetadata)null);
 
         private const int DecodePixelWidth = 32;
 
@@ -414,8 +413,11 @@ namespace NuGet.PackageManagement.UI
             get { return _bitmapStatus; }
             set
             {
-                _bitmapStatus = value;
-                OnPropertyChanged(nameof(BitmapStatus));
+                if (_bitmapStatus != value)
+                {
+                    _bitmapStatus = value;
+                    OnPropertyChanged(nameof(BitmapStatus));
+                }
             }
         }
 
@@ -576,66 +578,62 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
             }
-            catch (Exception ex)
-                when (ex is ArgumentException ||
-                ex is COMException ||
-                ex is FileFormatException ||
-                ex is InvalidOperationException ||
-                ex is NotSupportedException ||
-                ex is OutOfMemoryException ||
-                ex is IOException ||
-                ex is UnauthorizedAccessException)
+            catch (Exception ex) when (IsHandleableBitmapEncodingException(ex))
             {
                 IconBitmap = Images.DefaultPackageIcon;
                 BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
             }
         }
 
+        private static bool IsHandleableBitmapEncodingException(Exception ex)
+        {
+            return ex is ArgumentException ||
+                ex is COMException ||
+                ex is FileFormatException ||
+                ex is InvalidOperationException ||
+                ex is NotSupportedException ||
+                ex is OutOfMemoryException ||
+                ex is IOException ||
+                ex is UnauthorizedAccessException;
+        }
+
         private async Task FetchImageAsync(Uri iconUrl)
         {
-            if (iconUrl != null)
+            if (iconUrl is null)
             {
-                using (Stream stream = await GetStream(iconUrl))
+                return;
+            }
+
+            using (Stream stream = await GetStream(iconUrl))
+            {
+                if (stream != null)
                 {
-                    BitmapImage iconBitmapImage = null;
+                    var iconBitmapImage = new BitmapImage();
+                    iconBitmapImage.BeginInit();
+                    iconBitmapImage.StreamSource = stream;
 
-                    if (stream != null)
+                    try
                     {
-                        iconBitmapImage = new BitmapImage();
-                        iconBitmapImage.BeginInit();
-                        iconBitmapImage.StreamSource = stream;
-
-                        try
-                        {
-                            FinalizeBitmapImage(iconBitmapImage);
-                            iconBitmapImage.Freeze();
-                            IconBitmap = iconBitmapImage;
-                            BitmapStatus = IconBitmapStatus.DownloadedIcon;
-                        }
-                        catch (Exception ex)
-                            when (ex is ArgumentException ||
-                            ex is COMException ||
-                            ex is FileFormatException ||
-                            ex is InvalidOperationException ||
-                            ex is NotSupportedException ||
-                            ex is OutOfMemoryException ||
-                            ex is IOException ||
-                            ex is UnauthorizedAccessException)
-                        {
-                            IconBitmap = Images.DefaultPackageIcon;
-                            BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
-                        }
+                        FinalizeBitmapImage(iconBitmapImage);
+                        iconBitmapImage.Freeze();
+                        IconBitmap = iconBitmapImage;
+                        BitmapStatus = IconBitmapStatus.DownloadedIcon;
                     }
-                    else
+                    catch (Exception ex) when (IsHandleableBitmapEncodingException(ex))
                     {
-                        if (BitmapStatus == IconBitmapStatus.Fetching)
-                        {
-                            BitmapStatus = IconBitmapStatus.DefaultIconDueToNullStream;
-                        }
+                        IconBitmap = Images.DefaultPackageIcon;
+                        BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
                     }
-
-                    ErrorFloodGate.ReportAttempt();
                 }
+                else
+                {
+                    if (BitmapStatus == IconBitmapStatus.Fetching)
+                    {
+                        BitmapStatus = IconBitmapStatus.DefaultIconDueToNullStream;
+                    }
+                }
+
+                ErrorFloodGate.ReportAttempt();
             }
         }
 

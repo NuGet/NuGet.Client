@@ -3,6 +3,7 @@
 
 namespace NuGet.PackageManagement.UI
 {
+    // IconBitmapStatusUtility has some helper methods that will need to be modified if we add new enum values.
     public enum IconBitmapStatus
     {
         None = 0,
@@ -19,27 +20,5 @@ namespace NuGet.PackageManagement.UI
         DefaultIconDueToWebExceptionBadNetwork,
         DefaultIconDueToWebExceptionOther,
         DefaultIconDueToRelativeUri
-    }
-
-    public static class IconBitmapStatusUtility
-    {
-        public static bool GetIsDefaultIcon(IconBitmapStatus bitmapStatus)
-        {
-            return (bitmapStatus == IconBitmapStatus.DefaultIcon ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToDecodingError ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToNullStream ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToNoPackageReader ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToNetworkFailures ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToWebExceptionBadNetwork ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToWebExceptionOther ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToRelativeUri);
-        }
-
-        public static bool GetIsCompleted(IconBitmapStatus bitmapStatus)
-        {
-            return !(bitmapStatus == IconBitmapStatus.None ||
-                bitmapStatus == IconBitmapStatus.NeedToFetch ||
-                bitmapStatus == IconBitmapStatus.Fetching);
-        }
     }
 }
