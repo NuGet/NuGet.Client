@@ -1,7 +1,7 @@
 ﻿<#
 .SYNOPSIS
 Script to post status of tests for the commit to GitHub
-https://developer.github.com/v3/repos/statuses/ 
+https://developer.github.com/v3/repos/statuses/
 
 .DESCRIPTION
 Uses the Personal Access Token of NuGetLurker to post status of tests and build to GitHub.
@@ -14,7 +14,7 @@ Function Update-GitCommitStatus {
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken,
         [Parameter(Mandatory = $True)]
-        [ValidateSet( "Unit Tests On Windows", "Tests On Mac", "Tests On Linux", "Functional_Tests_On_Windows IsDesktop", "Functional_Tests_On_Windows IsCore", "EndToEnd Tests On Windows", "Apex Tests On Windows", "Rebuild")]
+        [ValidateSet( "Build_and_UnitTest_NonRTM", "Build_and_UnitTest_RTM", "Tests On Mac", "Tests On Linux", "Functional_Tests_On_Windows IsDesktop", "Functional_Tests_On_Windows IsCore", "End_To_End_Tests_On_Windows Part1", "End_To_End_Tests_On_Windows Part2", "Apex Tests On Windows", "Rebuild")]
         [string]$TestName,
         [Parameter(Mandatory = $True)]
         [ValidateSet( "pending", "success", "error", "failure")]
@@ -55,14 +55,15 @@ Function InitializeAllTestsToPending {
         [string]$CommitSha
     )
 
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Unit Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Build_and_UnitTest_NonRTM" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Build_and_UnitTest_RTM" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     if($env:RunFunctionalTestsOnWindows -eq "true")
     {
         # Setup individual states for the matrixing of jobs in "Functional Tests On Windows".
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsDesktop" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsCore" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    } 
-    else 
+    }
+    else
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsDesktop" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsCore" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
@@ -70,32 +71,34 @@ Function InitializeAllTestsToPending {
     if($env:RunTestsOnMac -eq "true")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    } 
-    else 
+    }
+    else
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
     if($env:RunTestsOnLinux -eq "true")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    } 
-    else 
+    }
+    else
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
     if($env:RunEndToEndTests -eq "true")
     {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    } 
-    else 
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "End_To_End_Tests_On_Windows Part1" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "End_To_End_Tests_On_Windows Part2" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    }
+    else
     {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "End_To_End_Tests_On_Windows Part1" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "End_To_End_Tests_On_Windows Part2" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
     if($env:RunApexTests -eq "true")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    } 
-    else 
+    }
+    else
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
@@ -123,7 +126,7 @@ function SetCommitStatusForTestResult {
     elseif ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
         if(-not $failures)
         {
-            Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "Tests failed to run"    
+            Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "Tests failed to run"
         }
         else
         {
@@ -137,10 +140,11 @@ function SetCommitStatusForTestResult {
     # If the build gets cancelled or fails when the unit tests are running , we also need to call the github api to update status
     # for mac, apex and e2e tests as they only run when the unit tests phase succeeds (or partially succeeds). If we don't do this,
     # the status for those tests will forever be in pending state.
-    if(($env:AGENT_JOBSTATUS -eq "Failed" -or $env:AGENT_JOBSTATUS -eq "Canceled") -and $TestName -eq "Unit Tests On Windows")
+    if(($env:AGENT_JOBSTATUS -eq "Failed" -or $env:AGENT_JOBSTATUS -eq "Canceled") -and $TestName -eq "Build_and_UnitTest_NonRTM")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "End_To_End_Tests_On_Windows Part1" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "End_To_End_Tests_On_Windows Part2" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
     }
 }
@@ -160,7 +164,7 @@ function Get-TestRun {
     $Headers = @{
         Authorization = 'Basic {0}' -f $Base64Token;
     }
-    
+
     $testRuns = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
     Write-Host $testRuns
     $matchingRun = $testRuns.value | where { $_.name -ieq $TestName }
