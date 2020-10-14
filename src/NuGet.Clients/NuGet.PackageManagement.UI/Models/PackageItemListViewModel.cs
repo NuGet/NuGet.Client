@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -558,7 +557,7 @@ namespace NuGet.PackageManagement.UI
                                 .Substring(1)); // Substring skips the '#' in the URI fragment
 
                         // need to use a memorystream, or the bitmapimage won't be freezable.
-                        using (var parStream = par.GetEntry(iconEntryNormalized).Open())
+                        using (Stream parStream = par.GetEntry(iconEntryNormalized).Open())
                         using (var memoryStream = new MemoryStream())
                         {
                             parStream.CopyTo(memoryStream);
@@ -691,7 +690,7 @@ namespace NuGet.PackageManagement.UI
             // data and put into a memorystream. Then have the BitmapImage decode the
             // image from the memorystream.
             byte[] imageData = null;
-            MemoryStream ms;
+            MemoryStream ms = null;
 
             using (var wc = new System.Net.WebClient())
             {
@@ -702,9 +701,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 catch (WebException webex)
                 {
-                    ms = null;
-
-                    if (webex != null && BadNetworkErrors.Any(c => webex.Status == c))
+                    if (BadNetworkErrors.Any(c => webex.Status == c))
                     {
                         ErrorFloodGate.ReportBadNetworkError();
                         BitmapStatus = IconBitmapStatus.DefaultIconDueToWebExceptionBadNetwork;
