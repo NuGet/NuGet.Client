@@ -2317,7 +2317,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_AllProjects()
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_AllProjects_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -2456,7 +2456,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_TopParentProject()
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_TopParentProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -2600,9 +2600,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-
         [Fact]
-        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_MiddleParentProject()
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_MiddleParentProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -2746,7 +2745,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_BottomChildProject()
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_BottomChildProject_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -2886,6 +2885,122 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
                 // Only 4 write to assets for above 4 projects, never more than that.
                 Assert.Equal(writingAssetsLogs.Count, 1);
+            }
+        }
+
+        [Fact]
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_UninstallNonExistingPackage_Fail()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
+            {
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                var packageA_Version100 = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageA = packageA_Version100.Identity;
+                var packageB = packageB_Version100.Identity;
+                var packageSource = Path.Combine(testDirectory, "packageSource");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version100,
+                    packageB_Version100);
+
+                sources.Add(new PackageSource(packageSource));
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                // Project
+                int numberOfProjects = 4;
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                UninstallationContext uninstallationContext = new UninstallationContext();
+                var packageSpecs = new PackageSpec[numberOfProjects];
+                var projectFullPaths = new string[numberOfProjects];
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
+                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var prevProj = string.Empty;
+                PackageSpec prevPackageSpec = null;
+
+                // Create projects
+                for (var i = numberOfProjects - 1; i >= 0; i--)
+                {
+                    var projectName = $"project{i}";
+                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
+
+                    // We need to treat NU1605 warning as error.
+                    project.IsNu1605Error = true;
+                    netCorePackageReferenceProjects.Add(project);
+                    testSolutionManager.NuGetProjects.Add(project);
+
+                    //Let new project pickup my custom package source.
+                    project.ProjectLocalSources.AddRange(sources);
+                    var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                    var packageSpec = GetPackageSpec(
+                        projectName,
+                        projectFullPath,
+                        packageA_Version100.Version);
+
+                    if (prevPackageSpec != null)
+                    {
+                        packageSpec = packageSpec.WithTestProjectReference(prevPackageSpec);
+                    }
+
+                    // Restore info
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                    projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+                    prevProj = projectFullPath;
+                    packageSpecs[i] = packageSpec;
+                    prevPackageSpec = packageSpec;
+                    projectFullPaths[i] = projectFullPath;
+                }
+
+                for (int i = 0; i < numberOfProjects; i++)
+                {
+                    // Install packageB since packageA is already there.
+                    await nuGetPackageManager.InstallPackageAsync(netCorePackageReferenceProjects[i], packageB, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // This code added because nuGetPackageManager.InstallPackageAsync doesn't do updating ProjectSystemCache
+                    var installed = new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange(
+                            name: packageB.Id,
+                            versionRange: new VersionRange(packageB.Version),
+                            typeConstraint: LibraryDependencyTarget.Package),
+                    };
+
+                    var packageSpec = packageSpecs[i];
+                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                    var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
+                    projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                }
+
+                var initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+
+                // Act
+                var nonexistingPackage = packageB.Id + "NonExist";
+                var exception = await Assert.ThrowsAsync<ArgumentException>(
+                    () => nuGetPackageManager.PreviewProjectsUninstallPackageAsync(
+                        netCorePackageReferenceProjects,
+                        nonexistingPackage,
+                        uninstallationContext,
+                        testNuGetProjectContext,
+                        CancellationToken.None));
+
+                // Assert
+                Assert.NotNull(exception);
+                Assert.Equal(exception.Message, $"Package '{nonexistingPackage}' to be uninstalled could not be found in project 'project0'");
             }
         }
 
