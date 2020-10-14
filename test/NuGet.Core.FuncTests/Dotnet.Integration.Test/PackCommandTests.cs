@@ -74,8 +74,9 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_PackToolUsingAlias_DoesNotWarn()
+        public void PackCommand_PackToolUsingAlias_DoesNotWarnAboutNoExactMatchInDependencyGroupAndLibRefDirectories()
         {
+            // Ref: https://github.com/NuGet/Home/issues/10097
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Arrange
@@ -103,6 +104,7 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
 
+                // Assert
                 result.AllOutput.Should().NotContain("NU5128");
             }
         }

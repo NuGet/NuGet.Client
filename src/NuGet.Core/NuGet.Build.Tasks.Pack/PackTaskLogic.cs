@@ -234,9 +234,7 @@ namespace NuGet.Build.Tasks.Pack
                     new HashSet<NuGetFramework>(request.FrameworksWithSuppressedDependencies
                     .Select(t =>
                     {
-                        string translated = null;
-                        var succeeded = aliases.TryGetValue(t.Identity, out translated);
-                        if (succeeded)
+                        if (aliases.TryGetValue(t.Identity, out string translated))
                         {
                             return NuGetFramework.Parse(translated);
                         }
