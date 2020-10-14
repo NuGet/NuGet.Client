@@ -326,6 +326,7 @@ namespace NuGet.ProjectModel
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
+#if enableCPVMTransitivePinning
                 if (packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled == true)
                 {
                     var dependencyNamesSet = new HashSet<string>(targetFrameworkInfo.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
@@ -338,7 +339,7 @@ namespace NuGet.ProjectModel
                             ReferenceType = LibraryDependencyReferenceType.None,
                         }));
                 }
-
+#endif
                 // Remove all framework assemblies
                 dependencies.RemoveAll(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference);
 
