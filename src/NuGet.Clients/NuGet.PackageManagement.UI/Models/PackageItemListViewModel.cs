@@ -432,16 +432,13 @@ namespace NuGet.PackageManagement.UI
                         (BitmapSource iconBitmap, IconBitmapStatus nextStatus) = GetInitialIconBitmapAndStatus();
 
                         BitmapStatus = nextStatus;
+                        _iconBitmap = iconBitmap;
                         if (BitmapStatus == IconBitmapStatus.NeedToFetch)
                         {
                             BitmapStatus = IconBitmapStatus.Fetching;
                             NuGetUIThreadHelper.JoinableTaskFactory
                                 .RunAsync(FetchThenSetIconBitmapAsync)
                                 .PostOnFailure(nameof(PackageItemListViewModel), nameof(IconBitmap));
-                        }
-                        else
-                        {
-                            _iconBitmap = iconBitmap;
                         }
                     }
                 }

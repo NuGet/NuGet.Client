@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public async Task IconUrl_WithMalformedUrlScheme_ReturnsDefault()
+        public async Task IconUrl_WithMalformedUrlScheme_ReturnsDefaultInitallyAndFinally()
         {
             var iconUrl = new Uri("httphttphttp://fake.test/image.png");
 
@@ -64,8 +64,12 @@ namespace NuGet.PackageManagement.UI.Test
                 IconUrl = iconUrl
             };
 
-            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+            // initial result should be fetching and defaultpackageicon
+            BitmapSource initialResult = packageItemListViewModel.IconBitmap;
+            Assert.Equal(IconBitmapStatus.Fetching, packageItemListViewModel.BitmapStatus);
+            Assert.Same(initialResult, Images.DefaultPackageIcon);
 
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
             Assert.Equal(IconBitmapStatus.DefaultIconDueToWebExceptionBadNetwork, packageItemListViewModel.BitmapStatus);
         }
@@ -371,19 +375,13 @@ namespace NuGet.PackageManagement.UI.Test
 
         private static void VerifyImageResult(object result, IconBitmapStatus bitmapStatus)
         {
-            if (result == null && IconBitmapStatusUtility.GetIsDefaultIcon(bitmapStatus))
-            {
-                return;
-            }
-            else
-            {
-                Assert.NotNull(result);
-                Assert.True(result is BitmapImage || result is CachedBitmap);
-                var image = result as BitmapSource;
-                Assert.NotNull(image);
-                Assert.Equal(32, image.PixelWidth);
-                Assert.Equal(32, image.PixelHeight);
-            }
+            Assert.NotNull(result);
+            Assert.True(result is BitmapImage || result is CachedBitmap);
+            var image = result as BitmapSource;
+            Assert.NotNull(image);
+            int expectedSize = IconBitmapStatusUtility.GetIsDefaultIcon(bitmapStatus) ? 1 : 32;
+            Assert.Equal(expectedSize, image.PixelWidth);
+            Assert.Equal(expectedSize, image.PixelHeight);
         }
 
         /// <summary>
