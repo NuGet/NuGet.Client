@@ -24,8 +24,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public bool IsMultiSource => false;
 
         private readonly SourceRepository _sourceRepository;
-        private readonly IEnumerable<PackageCollectionItem> _installedPackages;
-        private readonly IEnumerable<PackageCollectionItem> _transitivePackages;
+        private readonly List<string> _topPackages;
+        private readonly List<string> _depPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
 
@@ -39,16 +39,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
-            IEnumerable<PackageCollectionItem> installedPackages,
-            IEnumerable<PackageCollectionItem> transitivePackages,
+            PackageCollection installedPackages,
+            PackageCollection transitivePackages,
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
-            _installedPackages = installedPackages ?? throw new ArgumentNullException(nameof(installedPackages));
-            _transitivePackages = transitivePackages ?? throw new ArgumentNullException(nameof(transitivePackages));
+            if (installedPackages == null) throw new ArgumentNullException(nameof(installedPackages));
+            if (transitivePackages == null) throw new ArgumentNullException(nameof(transitivePackages));
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            // get lists of only the package ids to send to the recommender
+            _topPackages = installedPackages.Select(item => item.Id).ToList();
+            _depPackages = transitivePackages.Select(item => item.Id).ToList();
 
             _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
                 async () =>
@@ -110,13 +114,9 @@ namespace NuGet.PackageManagement.VisualStudio
             List<string> recommendIds = new List<string>();
             if (NuGetRecommender != null)
             {
-                // get lists of only the package ids to send to the recommender
-                List<string> topPackages = _installedPackages.Select(item => item.Id).ToList();
-                List<string> depPackages = _transitivePackages.Select(item => item.Id).ToList();
-                // get target frameworks
                 var targetFrameworks = searchToken.SearchFilter.SupportedFrameworks;
                 // call the recommender to get package recommendations
-                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(targetFrameworks, topPackages, depPackages, cancellationToken);
+                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(targetFrameworks, _topPackages, _depPackages, cancellationToken);
             }
 
             if (recommendIds == null || !recommendIds.Any())

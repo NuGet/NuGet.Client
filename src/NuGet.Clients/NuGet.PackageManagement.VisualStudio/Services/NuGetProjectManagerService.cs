@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
-            List<Task<(IEnumerable<PackageReference>, IEnumerable<PackageReference>)>> prStyleTasks = new List<Task<(IEnumerable<PackageReference>, IEnumerable<PackageReference>)>>();
+            List<Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)>> prStyleTasks = new List<Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)>>();
             List<Task<IEnumerable<PackageReference>>> nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
             foreach (var project in projects)
             {
@@ -177,7 +177,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     prStyleTasks.Add(legacyPackageReferenceProject.GetAllPackagesAsync(cancellationToken));
                 }
-                else if (project is NetCorePackageReferenceProject netCorePackageReferenceProject)
+                else if (project is CpsPackageReferenceProject netCorePackageReferenceProject)
                 {
                     prStyleTasks.Add(netCorePackageReferenceProject.GetAllPackagesAsync(cancellationToken));
                 }
@@ -186,7 +186,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     nonPrStyleTasks.Add(project.GetInstalledPackagesAsync(cancellationToken));
                 }
             }
-            (IEnumerable<PackageReference>, IEnumerable<PackageReference>)[] prStyleReferences = await Task.WhenAll(prStyleTasks);
+            (IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)[] prStyleReferences = await Task.WhenAll(prStyleTasks);
             IEnumerable<PackageReference>[] nonPrStyleReferences = await Task.WhenAll(nonPrStyleTasks);
 
             // combine all of the installed package references

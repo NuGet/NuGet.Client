@@ -267,7 +267,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return (Array.Empty<PackageReference>(), Array.Empty<PackageReference>());
         }
 
-
         private async Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)> GetAllPackageReferencesAsync(PackageSpec packageSpec)
         {
             var frameworkSorter = new NuGetFrameworkSorter();
