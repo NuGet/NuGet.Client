@@ -2036,7 +2036,7 @@ namespace NuGet.PackageManagement
             };
             ActionBlock<ProjectUninstallActionSpec> actionBlock = new ActionBlock<ProjectUninstallActionSpec>(GetProjectNuGetUninstallProjectActionsAsync, options);
 
-            foreach (var nuGetProject in nuGetProjects)
+            foreach (NuGetProject nuGetProject in nuGetProjects)
             {
                 await actionBlock.SendAsync(
                     new ProjectUninstallActionSpec(
