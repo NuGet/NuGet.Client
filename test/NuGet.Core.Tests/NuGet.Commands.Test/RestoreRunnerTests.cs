@@ -1896,7 +1896,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Depends on cpvm transitive pinning")]
         public async Task RestoreRunner_ExecuteAndCommit_ProjectAssetsIsNotCommitedIfNotChanged()
         {
             var assetsFileName = "project.assets.json";

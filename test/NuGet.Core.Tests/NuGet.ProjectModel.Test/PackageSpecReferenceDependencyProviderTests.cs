@@ -13,7 +13,7 @@ namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecReferenceDependencyProviderTests
     {
-        [Theory]
+        [Theory(Skip = "Depends on cpvm transitive pinning")]
         [InlineData(true)]
         [InlineData(false)]
         public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled)

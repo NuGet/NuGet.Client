@@ -4425,7 +4425,7 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "Depends on cpvm transitive pinning")]
         public void PackCommand_PackProjectWithCentralTransitiveDependencies()
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
