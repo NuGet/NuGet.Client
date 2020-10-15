@@ -72,19 +72,19 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectServices = projectServices;
         }
 
-        public LegacyPackageReferenceProject(
-            IVsProjectAdapter vsProjectAdapter,
-            string projectId,
-            INuGetProjectServices projectServices,
-            IVsProjectThreadingService threadingService,
-            NuGetFramework targetFramework)
-            : this(vsProjectAdapter,
-                projectId,
-                projectServices,
-                threadingService)
-        {
-            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
-        }
+        //public LegacyPackageReferenceProject(
+        //    IVsProjectAdapter vsProjectAdapter,
+        //    string projectId,
+        //    INuGetProjectServices projectServices,
+        //    IVsProjectThreadingService threadingService,
+        //    NuGetFramework targetFramework)
+        //    : this(vsProjectAdapter,
+        //        projectId,
+        //        projectServices,
+        //        threadingService)
+        //{
+        //    InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
+        //}
 
         #region BuildIntegratedNuGetProject
 

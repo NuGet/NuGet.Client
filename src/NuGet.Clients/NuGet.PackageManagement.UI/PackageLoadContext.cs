@@ -73,6 +73,31 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<(PackageCollection, PackageCollection)> GetAllPackagesAsync() => await _allPackagesTask;
 
+        // Returns the target frameworks
+        public async Task<List<string>> GetTargetFrameworksAsync()
+        {
+            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var project in Projects)
+            {
+                // get the target frameworks for PackagesConfig style projects
+                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+                NuGetFramework framework = projectMetadata.TargetFramework;
+
+                if (framework != null && framework.IsSpecificFramework)
+                {
+                    frameworks.Add(framework.DotNetFrameworkName);
+                }
+
+                // get the target frameworks for Package Reference style projects
+                var targetFrameworkInfos = await project.GetTargetFrameworksAsync(CancellationToken.None);
+                foreach(var targetFrameworkInfo in targetFrameworkInfos)
+                {
+                    frameworks.Add(targetFrameworkInfo.FrameworkName.DotNetFrameworkName);
+                }
+            }
+            return frameworks.ToList();
+        }
+
         // Returns the list of frameworks that we need to pass to the server during search
         public async Task<IEnumerable<string>> GetSupportedFrameworksAsync()
         {

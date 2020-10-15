@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Resolver;
 
 namespace NuGet.VisualStudio.Internal.Contracts
@@ -18,6 +19,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             CancellationToken cancellationToken);
         ValueTask<(IReadOnlyCollection<IPackageReferenceContextInfo>, IReadOnlyCollection<IPackageReferenceContextInfo>)> GetAllPackagesAsync(
             IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken);
+        ValueTask<IReadOnlyCollection<TargetFrameworkInformation>> GetTargetFrameworksAsync(
+            string projectId,
             CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
             string projectId,

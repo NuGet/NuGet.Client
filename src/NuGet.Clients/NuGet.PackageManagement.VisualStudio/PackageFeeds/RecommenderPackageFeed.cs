@@ -26,6 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly SourceRepository _sourceRepository;
         private readonly List<string> _topPackages;
         private readonly List<string> _depPackages;
+        private readonly List<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
 
@@ -41,12 +42,14 @@ namespace NuGet.PackageManagement.VisualStudio
             SourceRepository sourceRepository,
             PackageCollection installedPackages,
             PackageCollection transitivePackages,
+            List<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
             if (installedPackages == null) throw new ArgumentNullException(nameof(installedPackages));
             if (transitivePackages == null) throw new ArgumentNullException(nameof(transitivePackages));
+            _targetFrameworks = targetFrameworks ?? throw new ArgumentNullException(nameof(targetFrameworks));
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -114,9 +117,8 @@ namespace NuGet.PackageManagement.VisualStudio
             List<string> recommendIds = new List<string>();
             if (NuGetRecommender != null)
             {
-                var targetFrameworks = searchToken.SearchFilter.SupportedFrameworks;
                 // call the recommender to get package recommendations
-                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(targetFrameworks, _topPackages, _depPackages, cancellationToken);
+                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, _topPackages, _depPackages, cancellationToken);
             }
 
             if (recommendIds == null || !recommendIds.Any())

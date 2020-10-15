@@ -84,7 +84,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // read MSBuild property RestoreProjectStyle
             var restoreProjectStyle = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestoreProjectStyle);
-            var targetFramework = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.TargetFramework);
 
             // check for RestoreProjectStyle property is set and if not set to PackageReference then return false
             if (!(string.IsNullOrEmpty(restoreProjectStyle) ||
@@ -105,8 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 _projectSystemCache,
                 unconfiguredProject,
                 projectServices,
-                vsProject.ProjectId,
-                targetFramework);
+                vsProject.ProjectId);
         }
 
         private static UnconfiguredProject GetUnconfiguredProject(EnvDTE.Project project)

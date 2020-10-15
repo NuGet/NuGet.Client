@@ -19,6 +19,8 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
@@ -227,6 +229,36 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return results.ToArray();
+        }
+
+        // Get target framework information for BuildIntegratedNuGetProjects
+        public async ValueTask<IReadOnlyCollection<TargetFrameworkInformation>> GetTargetFrameworksAsync(
+            string projectId,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectId);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
+                _sharedState.SolutionManager,
+                projectId,
+                cancellationToken);
+
+            Assumes.NotNull(project);
+
+            if (project is BuildIntegratedNuGetProject buildIntegratedProject)
+            {
+                var dgcContext = new DependencyGraphCacheContext();
+                var packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
+
+                var targetFrameworks = packageSpecs
+                    .SelectMany(spec => spec.TargetFrameworks);
+
+                return targetFrameworks.ToArray();
+            }
+
+            return Array.Empty<TargetFrameworkInformation>();
         }
 
         public async ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken)
