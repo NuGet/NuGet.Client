@@ -34,11 +34,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 PackageSourceFormatter.Instance,
                 PackageSourceUpdateOptionsFormatter.Instance,
                 ProjectActionFormatter.Instance,
+                RemoteErrorFormatter.Instance,
                 VersionRangeFormatter.Instance
             };
             var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
 
-            MessagePackSerializerOptions = MessagePackSerializerOptions.Standard.WithSecurity(MessagePackSecurity.UntrustedData).WithResolver(CompositeResolver.Create(formatters, resolvers));
+            MessagePackSerializerOptions = MessagePackSerializerOptions.Standard
+                .WithSecurity(MessagePackSecurity.UntrustedData)
+                .WithResolver(CompositeResolver.Create(formatters, resolvers));
         }
 
         internal NuGetServiceMessagePackRpcDescriptor(ServiceMoniker serviceMoniker)
@@ -65,6 +68,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
             MessagePackFormatter formatter = base.CreateFormatter() as MessagePackFormatter ?? new MessagePackFormatter();
             formatter.SetMessagePackSerializerOptions(MessagePackSerializerOptions);
             return formatter;
+        }
+
+        protected override JsonRpc CreateJsonRpc(IJsonRpcMessageHandler handler)
+        {
+            return new NuGetJsonRpc(handler);
         }
     }
 }
