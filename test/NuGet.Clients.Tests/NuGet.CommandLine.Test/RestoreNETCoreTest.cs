@@ -10068,7 +10068,6 @@ namespace NuGet.CommandLine.Test
             {
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-              
                 var packagesForSource = new List<SimpleTestPackageContext>();
                 var packagesForProject = new List<SimpleTestPackageContext>();
                 var framework = NuGetFramework.Parse("netcoreapp2.0");
@@ -10093,11 +10092,10 @@ namespace NuGet.CommandLine.Test
 
                 // the package references defined in the project should not have version
                 var packageBNoVersion = createTestPackage("B", null, packagesForProject);
-               
                 var packageB100 = createTestPackage("B", "1.0.0", packagesForSource);
                 var packageC100 = createTestPackage("C", "1.0.0", packagesForSource);
                 var packageC200 = createTestPackage("C", "2.0.0", packagesForSource);
-          
+
                 packageB100.Dependencies.Add(packageC100);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
