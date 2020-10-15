@@ -8,8 +8,6 @@
   <nuget:StyleKeyConverter
     x:Key="StyleKeyConverter" />
 
-  <nuget:IconUrlToVisibilityConverter
-    x:Key="IconUrlToVisibilityConverter" />
   <nuget:NuGetFrameworkToStringConverter
     x:Key="NuGetFrameworkToStringConverter" />
   <nuget:NuGetFrameworkToVisibilityConverter
@@ -52,8 +50,6 @@
     x:Key="ProjectAndSolutionViewHeightConverter" />
   <nuget:ProjectAndSolutionViewMinHeightConverter
     x:Key="ProjectAndSolutionViewMinHeightConverter"/>
-  <nuget:IconUrlToImageCacheConverter
-    x:Key="IconUrlToImageCacheConverter"/>
   <nuget:RadioBoolToIntConverter
     x:Key="RadioBoolToIntConverter" />
   <nuget:SubstractionConverter
@@ -71,8 +67,8 @@
         <ControlTemplate>
           <Rectangle x:Name="ControlFocusVisualRectangle"
             Stroke="{TemplateBinding Foreground}"
-            StrokeThickness="1"  
-            StrokeDashArray="1 2"  
+            StrokeThickness="1"
+            StrokeDashArray="1 2"
             SnapsToDevicePixels="true"/>
         </ControlTemplate>
       </Setter.Value>
@@ -182,13 +178,13 @@
             </Grid.ColumnDefinitions>
             <Grid SnapsToDevicePixels="true" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top">
               <Border
-                x:Name="CheckMarkBorder" 
-                Background="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}" 
-                BorderBrush="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}" 
+                x:Name="CheckMarkBorder"
+                Background="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                 BorderThickness="1"/>
               <Path
-                x:Name="CheckMark" 
-                Data="M 6.22,11.02 C6.22,11.02 2.50,7.24 2.50,7.24 2.50,7.24 4.05,5.71 4.05,5.71 4.05,5.71 5.97,7.65 5.97,7.65 5.97,7.65 10.52,1.38 10.52,1.38 10.52,1.38 13.19,1.38 13.19,1.38 13.19,1.38 6.22,11.02 6.22,11.02 6.22,11.02 6.22,11.02 6.22,11.02 z" 
+                x:Name="CheckMark"
+                Data="M 6.22,11.02 C6.22,11.02 2.50,7.24 2.50,7.24 2.50,7.24 4.05,5.71 4.05,5.71 4.05,5.71 5.97,7.65 5.97,7.65 5.97,7.65 10.52,1.38 10.52,1.38 10.52,1.38 13.19,1.38 13.19,1.38 13.19,1.38 6.22,11.02 6.22,11.02 6.22,11.02 6.22,11.02 6.22,11.02 z"
                 Stretch="Uniform" Margin="3,1,2,2" Visibility="Collapsed" Width="9" Height="8"
                 Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"/>
             </Grid>
@@ -252,21 +248,21 @@
                     </TransformGroup.Children>
                   </TransformGroup>
                 </Grid.LayoutTransform>
-                <Ellipse 
-                    x:Name="circle" 
+                <Ellipse
+                    x:Name="circle"
                     Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
-                    HorizontalAlignment="Center" 
-                    Height="19" 
+                    HorizontalAlignment="Center"
+                    Height="19"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                     VerticalAlignment="Center"
                     Width="19"/>
-                <Path 
+                <Path
                     x:Name="arrow"
-                    Data="M 1,1.5 L 4.5,5 L 8,1.5" 
+                    Data="M 1,1.5 L 4.5,5 L 8,1.5"
                     HorizontalAlignment="Center"
                     SnapsToDevicePixels="false"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"
-                    StrokeThickness="2" 
+                    StrokeThickness="2"
                     VerticalAlignment="Center"/>
               </Grid>
               <ContentPresenter HorizontalAlignment="Center" Margin="0,4,0,0" Grid.Row="1" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Top"/>
@@ -313,21 +309,21 @@
                     </TransformGroup.Children>
                   </TransformGroup>
                 </Grid.LayoutTransform>
-                <Ellipse 
-                    x:Name="circle" 
+                <Ellipse
+                    x:Name="circle"
                     Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
-                    HorizontalAlignment="Center" 
-                    Height="19" 
+                    HorizontalAlignment="Center"
+                    Height="19"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                     VerticalAlignment="Center"
                     Width="19"/>
-                <Path 
+                <Path
                     x:Name="arrow"
-                    Data="M 1,1.5 L 4.5,5 L 8,1.5" 
+                    Data="M 1,1.5 L 4.5,5 L 8,1.5"
                     HorizontalAlignment="Center"
                     SnapsToDevicePixels="false"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"
-                    StrokeThickness="2" 
+                    StrokeThickness="2"
                     VerticalAlignment="Center"/>
               </Grid>
               <ContentPresenter Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
@@ -374,21 +370,21 @@
                     </TransformGroup.Children>
                   </TransformGroup>
                 </Grid.LayoutTransform>
-                <Ellipse 
-                    x:Name="circle" 
+                <Ellipse
+                    x:Name="circle"
                     Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
-                    HorizontalAlignment="Center" 
-                    Height="19" 
+                    HorizontalAlignment="Center"
+                    Height="19"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                     VerticalAlignment="Center"
                     Width="19"/>
-                <Path 
+                <Path
                     x:Name="arrow"
-                    Data="M 1,1.5 L 4.5,5 L 8,1.5" 
+                    Data="M 1,1.5 L 4.5,5 L 8,1.5"
                     HorizontalAlignment="Center"
                     SnapsToDevicePixels="false"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"
-                    StrokeThickness="2" 
+                    StrokeThickness="2"
                     VerticalAlignment="Center"/>
               </Grid>
               <ContentPresenter HorizontalAlignment="Center" Margin="0,4,0,0" Grid.Row="1" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Top"/>
@@ -425,21 +421,21 @@
                 <ColumnDefinition Width="19"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <Ellipse 
-                  x:Name="circle" 
+              <Ellipse
+                  x:Name="circle"
                   Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
-                  HorizontalAlignment="Center" 
-                  Height="19" 
+                  HorizontalAlignment="Center"
+                  Height="19"
                   Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                   VerticalAlignment="Center"
                   Width="19"/>
-              <Path 
+              <Path
                   x:Name="arrow"
-                  Data="M 1,1.5 L 4.5,5 L 8,1.5" 
+                  Data="M 1,1.5 L 4.5,5 L 8,1.5"
                   HorizontalAlignment="Center"
                   SnapsToDevicePixels="false"
                   Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"
-                  StrokeThickness="2" 
+                  StrokeThickness="2"
                   VerticalAlignment="Center"/>
               <ContentPresenter Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
             </Grid>
@@ -477,15 +473,15 @@
         <ControlTemplate TargetType="{x:Type Expander}">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="3" SnapsToDevicePixels="true">
             <DockPanel>
-              <ToggleButton 
+              <ToggleButton
                   x:Name="HeaderSite"
                   ContentTemplate="{TemplateBinding HeaderTemplate}"
                   ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
-                  Content="{TemplateBinding Header}" 
-                  DockPanel.Dock="Top" 
+                  Content="{TemplateBinding Header}"
+                  DockPanel.Dock="Top"
                   Foreground="{TemplateBinding Foreground}"
-                  FontWeight="{TemplateBinding FontWeight}" 
-                  FocusVisualStyle="{StaticResource ControlsFocusVisualStyle}" 
+                  FontWeight="{TemplateBinding FontWeight}"
+                  FocusVisualStyle="{StaticResource ControlsFocusVisualStyle}"
                   FontStyle="{TemplateBinding FontStyle}"
                   FontStretch="{TemplateBinding FontStretch}"
                   FontSize="{TemplateBinding FontSize}"
@@ -493,17 +489,17 @@
                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                   IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                   Margin="1"
-                  MinWidth="0" 
+                  MinWidth="0"
                   MinHeight="0"
                   Padding="{TemplateBinding Padding}"
                   Style="{StaticResource ExpanderDownHeaderStyle}"
                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-              <ContentPresenter 
+              <ContentPresenter
                   x:Name="ExpandSite"
-                  DockPanel.Dock="Bottom" 
+                  DockPanel.Dock="Bottom"
                   Focusable="false"
                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                  Margin="{TemplateBinding Padding}" 
+                  Margin="{TemplateBinding Padding}"
                   Visibility="Collapsed"
                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
             </DockPanel>
@@ -603,7 +599,7 @@
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="{x:Type TextBox}">
-              <TextBlock Text="{TemplateBinding Text}" 
+              <TextBlock Text="{TemplateBinding Text}"
                              Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
                              Background="{TemplateBinding Background}"
                              FontSize="{TemplateBinding FontSize}"
@@ -689,22 +685,6 @@
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="Height" Value="32" />
     <Setter Property="Width" Value="32" />
-    <Setter Property="Source">
-      <Setter.Value>
-        <MultiBinding
-          Converter="{StaticResource IconUrlToImageCacheConverter}"
-          ConverterParameter="{x:Static nuget:Images.DefaultPackageIcon}"
-          TargetNullValue="{x:Static nuget:Images.DefaultPackageIcon}"
-          FallbackValue="{x:Static nuget:Images.DefaultPackageIcon}">
-          <Binding
-            Path="DataContext.IconUrl"
-            RelativeSource="{RelativeSource Self}" />
-          <Binding
-            Path="DataContext.PackageReader"
-            RelativeSource="{RelativeSource Self}" />
-        </MultiBinding>
-      </Setter.Value>
-    </Setter>
-    <EventSetter Event="ImageFailed" Handler="PackageIconImage_ImageFailed"/>
+    <Setter Property="Source" Value="{Binding Path='DataContext.IconBitmap',RelativeSource='{RelativeSource Self}'}" />
   </Style>
 </ResourceDictionary>
