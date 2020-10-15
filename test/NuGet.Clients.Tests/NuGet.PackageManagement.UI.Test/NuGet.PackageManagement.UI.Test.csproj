@@ -32,7 +32,6 @@
     <Compile Include="Actions\AccessiblePackageIdentityTests.cs" />
     <Compile Include="Actions\UIActionEngineTests.cs" />
     <Compile Include="Actions\UpdatePreviewResultTests.cs" />
-    <Compile Include="Converters\IconUrlToImageCacheConverterTests.cs" />
     <Compile Include="Converters\DateTimeConverterTests.cs" />
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
@@ -68,6 +67,7 @@
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
+    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio.Test\NuGet.PackageManagement.VisualStudio.Test.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -79,12 +79,7 @@
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\grayicc.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\packageicon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="Resources\grayicc.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\EntityFrameworkSearch.json" />
