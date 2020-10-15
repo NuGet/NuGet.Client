@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.UI
         private static readonly Common.AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
             Common.AsyncLazy.New((PackageDeprecationMetadata)null);
 
-        private const int DecodePixelWidth = 32;
+        internal const int DecodePixelWidth = 32;
 
         // same URIs can reuse the bitmapImage that we've already used.
         private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;

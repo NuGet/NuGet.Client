@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI
 
                 // Instead of scaling larger images and keeping larger image in memory, this makes it so we scale it down, and throw away the bigger image.
                 // Only need to set this on one dimension, to preserve aspect ratio
-                image.DecodePixelWidth = 32;
+                image.DecodePixelWidth = PackageItemListViewModel.DecodePixelWidth;
 
                 image.EndInit();
                 image.Freeze();
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI
                     dpiY: 96.0,
                     PixelFormats.Bgr32,
                     palette: null,
-                    new byte[] { 0, 0, 255, 0 },
+                    pixels: new byte[] { 0, 0, 255, 0 },
                     stride: 32);
                 image.Freeze();
                 DefaultPackageIcon = image;
