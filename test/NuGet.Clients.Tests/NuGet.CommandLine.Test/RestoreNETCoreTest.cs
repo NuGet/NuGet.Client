@@ -9795,7 +9795,7 @@ namespace NuGet.CommandLine.Test
         ///  P will be accepted (because its parent B is Accepted)
         ///  S will be accepted (because its parent O 300 is Accepted)
         /// </summary>
-        [Fact(Skip = "Depends on cpvm transitive pinning")]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10133")]
         public async Task RestoreNetCore_CPVMProject_MultipleLinkedCentralTransitiveDepenencies()
         {
             // Arrange
@@ -10070,7 +10070,7 @@ namespace NuGet.CommandLine.Test
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
                 var packagesForSource = new List<SimpleTestPackageContext>();
                 var packagesForProject = new List<SimpleTestPackageContext>();
-                var framework = NuGetFramework.Parse("netcoreapp2.0");
+                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
 
                 SimpleTestPackageContext createTestPackage(string name, string version, List<SimpleTestPackageContext> source)
                 {
@@ -10087,7 +10087,7 @@ namespace NuGet.CommandLine.Test
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                    "projectA",
                    pathContext.SolutionRoot,
-                   NuGetFramework.Parse("netcoreapp2.0"));
+                   framework);
                 projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
 
                 // the package references defined in the project should not have version
