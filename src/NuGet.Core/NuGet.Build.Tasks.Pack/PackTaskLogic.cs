@@ -219,13 +219,30 @@ namespace NuGet.Build.Tasks.Pack
                     .ToDictionary(msbuildItem => msbuildItem.Identity,
                     msbuildItem => msbuildItem.GetProperty("ProjectVersion"), PathUtility.GetStringComparerBasedOnOS());
             }
+
+            var aliases = new Dictionary<string, string>();
+            foreach (var tfm in assetsFile.PackageSpec.TargetFrameworks)
+            {
+                aliases[tfm.TargetAlias] = tfm.FrameworkName.GetShortFolderName();
+            }
+
             var nuGetFrameworkComparer = new NuGetFrameworkFullComparer();
             var frameworksWithSuppressedDependencies = new HashSet<NuGetFramework>(nuGetFrameworkComparer);
             if (request.FrameworksWithSuppressedDependencies != null && request.FrameworksWithSuppressedDependencies.Any())
             {
                 frameworksWithSuppressedDependencies =
                     new HashSet<NuGetFramework>(request.FrameworksWithSuppressedDependencies
-                    .Select(t => NuGetFramework.Parse(t.Identity)).ToList(), nuGetFrameworkComparer);
+                    .Select(t =>
+                    {
+                        if (aliases.TryGetValue(t.Identity, out string translated))
+                        {
+                            return NuGetFramework.Parse(translated);
+                        }
+                        else
+                        {
+                            return NuGetFramework.Parse(t.Identity);
+                        }
+                    }).ToList(), nuGetFrameworkComparer);
             }
 
             PopulateProjectAndPackageReferences(builder,
