@@ -1568,7 +1568,7 @@ namespace NuGet.Commands.Test
             Assert.Equal(NuGetLogCode.NU1109, logMessage.Code);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10133")]
         public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency()
         {
             // Arrange
