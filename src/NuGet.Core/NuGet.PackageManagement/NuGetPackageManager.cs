@@ -2059,8 +2059,8 @@ namespace NuGet.PackageManagement
             projectUninstallActionSpec.Token.ThrowIfCancellationRequested();
 
             // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
-            var installedPackages = await projectUninstallActionSpec.NuGetProject.GetInstalledPackagesAsync(projectUninstallActionSpec.Token);
-            var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Id.Equals(projectUninstallActionSpec.PackageId, StringComparison.OrdinalIgnoreCase));
+            IEnumerable<PackageReference> installedPackages = await projectUninstallActionSpec.NuGetProject.GetInstalledPackagesAsync(projectUninstallActionSpec.Token);
+            PackageReference packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Id.Equals(projectUninstallActionSpec.PackageId, StringComparison.OrdinalIgnoreCase));
             if (packageReference?.PackageIdentity == null)
             {
                 throw new ArgumentException(string.Format(Strings.PackageToBeUninstalledCouldNotBeFound,

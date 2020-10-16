@@ -445,7 +445,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
             INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            var projects = await GetProjectsAsync(projectIds, cancellationToken);
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
                 var resolutionContext = new ResolutionContext(
                     dependencyBehavior,
