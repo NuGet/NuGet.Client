@@ -13,7 +13,7 @@ namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecReferenceDependencyProviderTests
     {
-        [Theory]
+        [Theory(Skip = "https://github.com/NuGet/Home/issues/10133")]
         [InlineData(true)]
         [InlineData(false)]
         public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled)
