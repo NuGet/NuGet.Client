@@ -80,26 +80,6 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
-        //public CpsPackageReferenceProject(
-        //    string projectName,
-        //    string projectUniqueName,
-        //    string projectFullPath,
-        //    IProjectSystemCache projectSystemCache,
-        //    UnconfiguredProject unconfiguredProject,
-        //    INuGetProjectServices projectServices,
-        //    string projectId,
-        //    string targetFramework)
-        //    : this(projectName,
-        //        projectUniqueName,
-        //        projectFullPath,
-        //        projectSystemCache,
-        //        unconfiguredProject,
-        //        projectServices,
-        //        projectId)
-        //{
-        //    InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse(targetFramework));
-        //}
-
         public override async Task<string> GetAssetsFilePathAsync()
         {
             return await GetAssetsFilePathAsync(shouldThrow: true);
