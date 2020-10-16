@@ -839,4 +839,19 @@ Valid from:</comment>
     <value>The timestamp service responded with HTTP status code '{0}' ('{1}').</value>
     <comment>{0} is the httpResponse.StatusCode, {1} is the httpResponse.ReasonPhrase.</comment>
   </data>
+  <data name="MissingTargetPlatformVersions" xml:space="preserve">
+    <value>Some package components lack platform versions in their TFMs: {0}</value>
+  </data>
+  <data name="MissingTargetPlatformVersionsFromDependencyGroups" xml:space="preserve">
+    <value>Some dependency group TFMs are missing a platform version: {0}</value>
+  </data>
+  <data name="MissingTargetPlatformVersionsFromFrameworkAssemblyGroups" xml:space="preserve">
+    <value>Some reference assembly group TFMs are missing a platform version: {0}</value>
+  </data>
+  <data name="MissingTargetPlatformVersionsFromIncludedFiles" xml:space="preserve">
+    <value>Some included files are included under TFMs which are missing a platform version: {0}</value>
+  </data>
+  <data name="MissingTargetPlatformVersionsFromReferenceGroups" xml:space="preserve">
+    <value>Some reference group TFMs are missing a platform version: {0}</value>
+  </data>
 </root>

@@ -30,6 +30,7 @@ namespace NuGet.Packaging.Rules
                 new UpholdBuildConventionRule(),
                 new ReferencesInNuspecMatchRefAssetsRule(),
                 new InvalidUndottedFrameworkRule(),
+                new TargetFrameworkMissingPlatformVersionRule(),
                 new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
             }
         );
