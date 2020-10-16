@@ -1896,7 +1896,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10133")]
         public async Task RestoreRunner_ExecuteAndCommit_ProjectAssetsIsNotCommitedIfNotChanged()
         {
             var assetsFileName = "project.assets.json";
