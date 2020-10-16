@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
 
             var solutionManagerServiceWrapper = new NuGetSolutionManagerServiceWrapper();
-            var solutionManagerService = await GetSolutionManagerServiceAsync(serviceBroker, cancellationToken);
+            INuGetSolutionManagerService solutionManagerService = await GetSolutionManagerServiceAsync(serviceBroker, cancellationToken);
 
             // The initial Swap(...) should return a null implementation of the interface that does not require disposal.
             // However, there's no harm in following form.
@@ -161,7 +161,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             var sourceServiceWrapper = new NuGetSourcesServiceWrapper();
-            var sourceService = await GetSourceServiceAsync(serviceBroker, cancellationToken);
+            INuGetSourcesService sourceService = await GetSourceServiceAsync(serviceBroker, cancellationToken);
             using (sourceServiceWrapper.Swap(sourceService))
             {
             }

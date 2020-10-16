@@ -76,9 +76,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ValueTask();
         }
 
-        public ValueTask<string> GetActivePackageSourceNameAsync(CancellationToken cancellationToken)
+        public ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken)
         {
-            return new ValueTask<string>(_sharedServiceState.SourceRepositoryProvider.PackageSourceProvider.ActivePackageSourceName);
+            return new ValueTask<string?>(_sharedServiceState.SourceRepositoryProvider.PackageSourceProvider.ActivePackageSourceName);
         }
 
         public void Dispose()
@@ -90,11 +90,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void PackageSourceProvider_PackageSourcesChanged(object sender, EventArgs e)
         {
-            if (PackageSourcesChanged != null)
-            {
-                List<PackageSourceContextInfo> packageSources = _sharedServiceState.SourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().Select(packageSource => PackageSourceContextInfo.Create(packageSource)).ToList();
-                PackageSourcesChanged.Invoke(this, packageSources);
-            }
+            List<PackageSourceContextInfo> packageSources = _sharedServiceState.SourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().Select(packageSource => PackageSourceContextInfo.Create(packageSource)).ToList();
+            PackageSourcesChanged?.Invoke(this, packageSources);
         }
 
         private IReadOnlyList<PackageSource> GetPackageSourcesToUpdate(IReadOnlyList<PackageSourceContextInfo> packageSourceContextInfos)

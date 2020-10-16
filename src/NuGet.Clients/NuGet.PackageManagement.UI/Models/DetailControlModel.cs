@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
-using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -451,7 +450,7 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            var versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.Range, VersionRangeFormatter.Instance);
+            var versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.VersionRange, VersionRangeFormatter.Instance);
             return $"{alternatePackageMetadata.PackageId} {versionString}";
         }
 

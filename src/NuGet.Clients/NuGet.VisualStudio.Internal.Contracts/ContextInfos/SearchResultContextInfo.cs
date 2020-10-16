@@ -5,15 +5,26 @@
 
 using System;
 using System.Collections.Generic;
-using MessagePack;
+using System.Collections.Immutable;
 using Microsoft;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class SearchResultContextInfo
     {
-        public SearchResultContextInfo(IReadOnlyCollection<PackageSearchMetadataContextInfo> packageSearchItems, IDictionary<string, LoadingStatus> sourceLoadingStatus, bool hasMoreItems)
+        public SearchResultContextInfo(
+            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageSearchItems,
+            IReadOnlyDictionary<string, LoadingStatus> sourceLoadingStatus,
+            bool hasMoreItems)
+            : this(packageSearchItems, sourceLoadingStatus, hasMoreItems, operationId: null)
+        {
+        }
+
+        public SearchResultContextInfo(
+            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageSearchItems,
+            IReadOnlyDictionary<string, LoadingStatus> sourceLoadingStatus,
+            bool hasMoreItems,
+            Guid? operationId)
         {
             Assumes.NotNull(packageSearchItems);
             Assumes.NotNull(sourceLoadingStatus);
@@ -21,17 +32,25 @@ namespace NuGet.VisualStudio.Internal.Contracts
             PackageSearchItems = packageSearchItems;
             SourceLoadingStatus = sourceLoadingStatus;
             HasMoreItems = hasMoreItems;
+            OperationId = operationId;
+        }
+
+        public SearchResultContextInfo(Guid? operationId)
+            : this(Array.Empty<PackageSearchMetadataContextInfo>(),
+                  ImmutableDictionary<string, LoadingStatus>.Empty,
+                  hasMoreItems: false,
+                  operationId: operationId)
+        {
         }
 
         public SearchResultContextInfo()
+            : this(operationId: null)
         {
-            PackageSearchItems = new List<PackageSearchMetadataContextInfo>(0);
-            SourceLoadingStatus = new Dictionary<string, LoadingStatus>();
         }
 
-        public Guid? OperationId { get; set; }
-        public bool HasMoreItems { get; set; }
+        public Guid? OperationId { get; }
+        public bool HasMoreItems { get; }
         public IReadOnlyCollection<PackageSearchMetadataContextInfo> PackageSearchItems { get; }
-        public IDictionary<string, LoadingStatus> SourceLoadingStatus { get; }
+        public IReadOnlyDictionary<string, LoadingStatus> SourceLoadingStatus { get; }
     }
 }

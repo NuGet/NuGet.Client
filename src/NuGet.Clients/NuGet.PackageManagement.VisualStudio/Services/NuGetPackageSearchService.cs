@@ -54,8 +54,8 @@ namespace NuGet.PackageManagement.VisualStudio
             ItemFilter itemFilter,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNull(projectContextInfos);
-            Assumes.NotNull(packageSources);
+            Assumes.NotNullOrEmpty(projectContextInfos);
+            Assumes.NotNullOrEmpty(packageSources);
             Assumes.NotNull(searchFilter);
 
             bool recommendPackages = false;
@@ -66,6 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 recommendPackages,
                 sourceRepositories,
                 cancellationToken);
+
             Assumes.NotNull(packageFeeds.mainFeed);
 
             var searchObject = new SearchObject(packageFeeds.mainFeed, packageFeeds.recommenderFeed);
@@ -79,6 +80,9 @@ namespace NuGet.PackageManagement.VisualStudio
             bool includeUnlisted,
             CancellationToken cancellationToken)
         {
+            Assumes.NotNullOrEmpty(id);
+            Assumes.NotNullOrEmpty(packageSources);
+
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
             IEnumerable<IPackageSearchMetadata> packageMetadata = await packageMetadataProvider.GetPackageMetadataListAsync(
                 id,
@@ -95,6 +99,9 @@ namespace NuGet.PackageManagement.VisualStudio
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
+            Assumes.NotNull(identity);
+            Assumes.NotNullOrEmpty(packageSources);
+
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
             IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
             IEnumerable<VersionInfo> versions = await packageMetadata.GetVersionsAsync();
@@ -107,6 +114,9 @@ namespace NuGet.PackageManagement.VisualStudio
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
+            Assumes.NotNull(identity);
+            Assumes.NotNullOrEmpty(packageSources);
+
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
             IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
             PackageDeprecationMetadata deprecationMetadata = await packageMetadata.GetDeprecationMetadataAsync();
@@ -138,8 +148,8 @@ namespace NuGet.PackageManagement.VisualStudio
             bool useRecommender,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNull(projectContextInfos);
-            Assumes.NotNull(packageSources);
+            Assumes.NotNullOrEmpty(projectContextInfos);
+            Assumes.NotNullOrEmpty(packageSources);
             Assumes.NotNull(searchFilter);
 
             IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
@@ -163,12 +173,12 @@ namespace NuGet.PackageManagement.VisualStudio
             ItemFilter itemFilter,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNull(projectContextInfos);
-            Assumes.NotNull(packageSources);
+            Assumes.NotNullOrEmpty(projectContextInfos);
+            Assumes.NotNullOrEmpty(packageSources);
             Assumes.NotNull(searchFilter);
 
             IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
-            (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(projectContextInfos, itemFilter, false, sourceRepositories, cancellationToken);
+            (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(projectContextInfos, itemFilter, recommendPackages: false, sourceRepositories, cancellationToken);
             Assumes.NotNull(mainFeed);
 
             var searchObject = new SearchObject(mainFeed, recommenderFeed);

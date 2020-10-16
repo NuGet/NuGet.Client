@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using Microsoft;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -13,14 +14,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public AlternatePackageMetadataContextInfo(string packageId, VersionRange range)
         {
             PackageId = packageId;
-            Range = range;
+            VersionRange = range;
         }
 
         public string PackageId { get; }
-        public VersionRange Range { get; }
+        public VersionRange VersionRange { get; }
 
         public static AlternatePackageMetadataContextInfo Create(AlternatePackageMetadata alternatePackageMetadata)
         {
+            Assumes.NotNull(alternatePackageMetadata);
+
             return new AlternatePackageMetadataContextInfo(alternatePackageMetadata.PackageId, alternatePackageMetadata.Range);
         }
     }

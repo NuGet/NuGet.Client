@@ -17,7 +17,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
 
         /// <remarks> First available in version 1.0.1 </remarks>
-        ValueTask<string> GetActivePackageSourceNameAsync(CancellationToken cancellationToken);
+        ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken);
 
         /// <remarks> First available in version 1.0.1 </remarks>
         ValueTask SavePackageSourceContextInfosAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken);

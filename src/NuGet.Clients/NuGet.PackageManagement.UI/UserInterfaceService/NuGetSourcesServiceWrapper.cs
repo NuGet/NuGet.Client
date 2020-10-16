@@ -53,9 +53,12 @@ namespace NuGet.PackageManagement.UI
 
         public void Dispose()
         {
-            using (INuGetSourcesService? service = _service)
+            lock (_syncObject)
             {
-                _service = NullNuGetSourcesService.Instance;
+                using (INuGetSourcesService? service = _service)
+                {
+                    _service = NullNuGetSourcesService.Instance;
+                }
             }
 
             GC.SuppressFinalize(this);
@@ -78,7 +81,7 @@ namespace NuGet.PackageManagement.UI
         }
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        public ValueTask<string> GetActivePackageSourceNameAsync(CancellationToken cancellationToken)
+        public ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken)
         {
             return Service.GetActivePackageSourceNameAsync(cancellationToken);
         }
@@ -91,9 +94,7 @@ namespace NuGet.PackageManagement.UI
 
             public void Dispose() { }
 
-            public ValueTask<string> GetSolutionDirectoryAsync(CancellationToken cancellationToken) => new ValueTask<string>();
-
-            public ValueTask<IReadOnlyList<PackageSourceContextInfo>> GetPackageSourcesAsync(CancellationToken cancellationToken) => new ValueTask<IReadOnlyList<PackageSourceContextInfo>>();
+            public ValueTask<IReadOnlyList<PackageSourceContextInfo>> GetPackageSourcesAsync(CancellationToken cancellationToken) => new ValueTask<IReadOnlyList<PackageSourceContextInfo>>(Array.Empty<PackageSourceContextInfo>());
 
             public ValueTask SavePackageSourceContextInfosAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken) => new ValueTask();
 
@@ -101,7 +102,7 @@ namespace NuGet.PackageManagement.UI
             public ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, PackageSourceUpdateOptions packageSourceUpdateOptions, CancellationToken cancellationToken) => new ValueTask();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            public ValueTask<string> GetActivePackageSourceNameAsync(CancellationToken cancellationToken) => new ValueTask<string>();
+            public ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken) => new ValueTask<string?>();
         }
     }
 }

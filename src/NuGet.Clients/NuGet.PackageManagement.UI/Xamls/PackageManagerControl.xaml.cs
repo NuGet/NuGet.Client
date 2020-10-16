@@ -312,19 +312,26 @@ namespace NuGet.PackageManagement.UI
 
         private async Task SolutionManager_CacheUpdatedAsync(TimeSpan timeSpan, string eventProjectFullName)
         {
-            // This is a project package manager, so there is one and only one project.
-            IProjectContextInfo project = Model.Context.Projects.First();
-            IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
-
-            // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
-            // We also refresh the UI if projectFullPath is not present.
-            if (projectMetadata.FullPath == eventProjectFullName)
+            if (Model.IsSolution)
             {
                 await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.CacheUpdated, timeSpan);
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NotApplicable);
+                // This is a project package manager, so there is one and only one project.
+                IProjectContextInfo project = Model.Context.Projects.First();
+                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+
+                // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
+                // We also refresh the UI if projectFullPath is not present.
+                if (projectMetadata.FullPath == eventProjectFullName)
+                {
+                    await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.CacheUpdated, timeSpan);
+                }
+                else
+                {
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NotApplicable);
+                }
             }
         }
 
@@ -399,7 +406,6 @@ namespace NuGet.PackageManagement.UI
             }
             await RefreshConsolidatablePackagesCountAsync();
         }
-
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
         {
@@ -483,7 +489,7 @@ namespace NuGet.PackageManagement.UI
             // _sourceRepoList_SelectionChanged(). This method will start the new
             // search when needed by itself.
             _dontStartNewSearch = true;
-            var timeSpan = GetTimeSinceLastRefreshAndRestart();
+            TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
             ResetTabDataLoadFlags();
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
@@ -494,13 +500,13 @@ namespace NuGet.PackageManagement.UI
         {
             try
             {
-                var list = await PackageSourceMoniker.PopulateListAsync(packageSources, CancellationToken.None);
+                IReadOnlyCollection<PackageSourceMoniker> list = await PackageSourceMoniker.PopulateListAsync(packageSources, CancellationToken.None);
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 // We access UI components in these calls
-                var prevSelectedItem = SelectedSource;
+                PackageSourceMoniker prevSelectedItem = SelectedSource;
 
-                await PopulateSourceRepoListAsync(list, null, CancellationToken.None);
+                await PopulateSourceRepoListAsync(list, optionalSelectSourceName: null, cancellationToken: CancellationToken.None);
 
                 // force a new search explicitly only if active source has changed
                 if (prevSelectedItem == SelectedSource)
@@ -962,7 +968,6 @@ namespace NuGet.PackageManagement.UI
             // Update installed tab warning icon
             var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(loadContext, refreshCts.Token);
 
-            var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
             _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount);
 
             Model.CachedUpdates = new PackageSearchMetadataCache

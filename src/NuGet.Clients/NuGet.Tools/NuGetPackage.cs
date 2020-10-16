@@ -72,11 +72,11 @@ namespace NuGetVSExtension
     [FontAndColorsRegistration("Package Manager Console", NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString, "{" + GuidList.guidNuGetPkgString + "}")]
     [ProvideBrokeredService(ContractsNuGetServices.NuGetProjectServiceName, ContractsNuGetServices.Version1, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
-    [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion_1_0_1, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion_1_0_1, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SolutionManagerServiceName, BrokeredServicesUtilities.SolutionManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectManagerServiceName, BrokeredServicesUtilities.ProjectManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
-    [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {

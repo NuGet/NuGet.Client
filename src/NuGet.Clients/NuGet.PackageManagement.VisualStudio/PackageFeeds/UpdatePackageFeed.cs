@@ -44,15 +44,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException("Invalid token");
             }
 
-            var packagesWithUpdates = await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
+            IEnumerable<IPackageSearchMetadata> packagesWithUpdates = await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
 
-            var items = packagesWithUpdates
+            IPackageSearchMetadata[] items = packagesWithUpdates
                 .Skip(searchToken.StartIndex)
                 .ToArray();
 
-            var result = SearchResult.FromItems(items);
+            SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(items);
 
-            var loadingStatus = items.Length == 0
+            LoadingStatus loadingStatus = items.Length == 0
                 ? LoadingStatus.NoItemsFound
                 : LoadingStatus.NoMoreItems;
             result.SourceSearchStatus = new Dictionary<string, LoadingStatus>

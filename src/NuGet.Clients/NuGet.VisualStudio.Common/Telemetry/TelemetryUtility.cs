@@ -97,8 +97,6 @@ namespace NuGet.VisualStudio.Telemetry
             return false;
         }
 
-
-
         /// <summary>
         /// True if the source is an Azure Artifacts (DevOps) feed
         /// </summary>

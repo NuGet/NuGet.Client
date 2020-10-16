@@ -6,44 +6,44 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MessagePack;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class PackageSearchMetadataContextInfo
     {
-        public PackageIdentity? Identity { get; set; }
-        public string? Title { get; set; }
-        public string? Description { get; set; }
-        public string? Authors { get; set; }
-        public Uri? IconUrl { get; set; }
-        public string? Tags { get; set; }
-        public Uri? LicenseUrl { get; set; }
-        public string? Owners { get; set; }
-        public Uri? ProjectUrl { get; set; }
-        public DateTimeOffset? Published { get; set; }
-        public Uri? ReportAbuseUrl { get; set; }
-        public Uri? PackageDetailsUrl { get; set; }
-        public bool RequireLicenseAcceptance { get; set; }
-        public string? Summary { get; set; }
-        public bool PrefixReserved { get; set; }
-        public bool IsRecommended { get; set; }
-        public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
-        public bool IsListed { get; set; }
-        public long? DownloadCount { get; set; }
-        public IEnumerable<PackageDependencyGroup>? DependencySets { get; set; }
-        [IgnoreMember]
-        public LicenseMetadata? LicenseMetadata { get; set; }
-        [IgnoreMember]
-        public PackageReaderBase? PackageReader { get; set; }
-        [IgnoreMember]
-        public IEnumerable<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; set; }
+        public PackageIdentity? Identity { get; internal set; }
+        public string? Title { get; internal set; }
+        public string? Description { get; internal set; }
+        public string? Authors { get; internal set; }
+        public Uri? IconUrl { get; internal set; }
+        public string? Tags { get; internal set; }
+        public Uri? LicenseUrl { get; internal set; }
+        public string? Owners { get; internal set; }
+        public Uri? ProjectUrl { get; internal set; }
+        public DateTimeOffset? Published { get; internal set; }
+        public Uri? ReportAbuseUrl { get; internal set; }
+        public Uri? PackageDetailsUrl { get; internal set; }
+        public bool RequireLicenseAcceptance { get; internal set; }
+        public string? Summary { get; internal set; }
+        public bool PrefixReserved { get; internal set; }
+        public bool IsRecommended { get; internal set; }
+        public (string modelVersion, string vsixVersion)? RecommenderVersion { get; internal set; }
+        public bool IsListed { get; internal set; }
+        public long? DownloadCount { get; internal set; }
+        public IReadOnlyCollection<PackageDependencyGroup>? DependencySets { get; internal set; }
+        public LicenseMetadata? LicenseMetadata { get; internal set; }
+        public PackageReaderBase? PackageReader { get; internal set; }
+        public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; internal set; }
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
+        {
+            return Create(packageSearchMetadata, false, null);
+        }
+
+        public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, bool isRecommended, (string, string)? recommenderVersion)
         {
             return new PackageSearchMetadataContextInfo()
             {
@@ -54,6 +54,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Tags = packageSearchMetadata.Tags,
                 Identity = packageSearchMetadata.Identity,
                 LicenseUrl = packageSearchMetadata.LicenseUrl,
+                IsRecommended = isRecommended,
+                RecommenderVersion = recommenderVersion,
                 Owners = packageSearchMetadata.Owners,
                 ProjectUrl = packageSearchMetadata.ProjectUrl,
                 Published = packageSearchMetadata.Published,
@@ -63,13 +65,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Summary = packageSearchMetadata.Summary,
                 PrefixReserved = packageSearchMetadata.PrefixReserved,
                 IsListed = packageSearchMetadata.IsListed,
-                DependencySets = packageSearchMetadata.DependencySets,
+                DependencySets = packageSearchMetadata.DependencySets?.ToList(),
                 DownloadCount = packageSearchMetadata.DownloadCount,
-                Vulnerabilities = packageSearchMetadata.Vulnerabilities?.Select(vulnerability => new PackageVulnerabilityMetadataContextInfo()
-                {
-                    Severity = vulnerability.Severity,
-                    AdvisoryUrl = vulnerability.AdvisoryUrl
-                }).ToList()
+                Vulnerabilities = packageSearchMetadata.Vulnerabilities?.Select(vulnerability => new PackageVulnerabilityMetadataContextInfo(vulnerability.AdvisoryUrl, vulnerability.Severity)).ToArray(),
             };
         }
     }

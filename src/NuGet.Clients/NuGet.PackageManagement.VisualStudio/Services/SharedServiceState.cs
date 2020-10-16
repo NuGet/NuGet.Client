@@ -105,7 +105,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            _ = Interlocked.Exchange(ref _repositories, null);
+            _repositories = null;
             SourceRepositories = new AsyncLazy<IReadOnlyCollection<SourceRepository>>(
                 GetSourceRepositoriesAsync,
                 NuGetUIThreadHelper.JoinableTaskFactory);

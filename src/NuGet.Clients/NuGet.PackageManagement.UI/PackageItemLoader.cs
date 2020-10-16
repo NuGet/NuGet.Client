@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageItemLoader : IPackageItemLoader, IDisposable
     {
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly PackageLoadContext _context;
         private readonly string _searchText;
         private readonly bool _includePrerelease;
@@ -44,11 +46,12 @@ namespace NuGet.PackageManagement.UI
             PackageLoadContext context,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             ContractItemFilter itemFilter,
-            string searchText = null,
-            bool includePrerelease = true,
-            bool useRecommender = true)
+            string searchText,
+            bool includePrerelease,
+            bool useRecommender)
         {
             Assumes.NotNull(context);
+            Assumes.NotNull(packageSources);
 
             _context = context;
             _searchText = searchText ?? string.Empty;
@@ -66,8 +69,6 @@ namespace NuGet.PackageManagement.UI
             bool includePrerelease = true,
             bool useRecommender = true)
         {
-            Assumes.NotNull(context);
-
             var itemLoader = new PackageItemLoader(context, packageSources, itemFilter, searchText, includePrerelease, useRecommender);
             await itemLoader.InitializeAsync();
             return itemLoader;
@@ -96,16 +97,24 @@ namespace NuGet.PackageManagement.UI
             };
 
             _serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
             _searchService = searchService ?? await GetSearchServiceAsync(CancellationToken.None);
+            _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
         }
 
         private void OnAvailabilityChanged(object sender, BrokeredServicesChangedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                _searchService?.Dispose();
-                _searchService = await GetSearchServiceAsync(CancellationToken.None);
+                await _semaphore.WaitAsync();
+                try
+                {
+                    _searchService?.Dispose();
+                    _searchService = await GetSearchServiceAsync(CancellationToken.None);
+                }
+                finally
+                {
+                    _semaphore.Release();
+                }
             }).PostOnFailure(nameof(PackageItemLoader), nameof(OnAvailabilityChanged));
         }
 
@@ -120,7 +129,18 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<int> GetTotalCountAsync(int maxCount, CancellationToken cancellationToken)
         {
-            return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
+            await _semaphore.WaitAsync();
+            try
+            {
+                return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
         public async Task<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(CancellationToken cancellationToken)
@@ -129,8 +149,15 @@ namespace NuGet.PackageManagement.UI
             await TaskScheduler.Default;
 
             ActivityCorrelationId.StartNew();
-
-            return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
+            await _semaphore.WaitAsync();
+            try
+            {
+                return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -141,9 +168,14 @@ namespace NuGet.PackageManagement.UI
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 
-            await UpdateStateAndReportAsync(new SearchResultContextInfo() { HasMoreItems = _state.Results?.HasMoreItems ?? false }, progress, cancellationToken);
+            await UpdateStateAndReportAsync(
+                new SearchResultContextInfo(Array.Empty<PackageSearchMetadataContextInfo>(),
+                    ImmutableDictionary<string, LoadingStatus>.Empty,
+                    hasMoreItems: _state.Results?.HasMoreItems ?? false),
+                progress,
+                cancellationToken);
 
-            var searchResult = await SearchAsync(cancellationToken);
+            SearchResultContextInfo searchResult = await SearchAsync(cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -156,30 +188,45 @@ namespace NuGet.PackageManagement.UI
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
+            await _semaphore.WaitAsync();
+            try
+            {
+                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 
-            progress?.Report(_state);
+                progress?.Report(_state);
 
-            SearchResultContextInfo searchResult = await _searchService.RefreshSearchAsync(cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
-            await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
+                SearchResultContextInfo searchResult = await _searchService.RefreshSearchAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
+                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
         public async Task<SearchResultContextInfo> SearchAsync(CancellationToken cancellationToken)
         {
             await TaskScheduler.Default;
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (_state.Results != null && _state.Results.HasMoreItems)
+            await _semaphore.WaitAsync();
+            try
             {
-                // only continue search for the search package feed, not the recommender.
-                return await _searchService.ContinueSearchAsync(cancellationToken);
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            return await _searchService.SearchAsync(_context.Projects, _packageSources, _searchText, _searchFilter, _itemFilter, _useRecommender, cancellationToken);
+                if (_state.Results != null && _state.Results.HasMoreItems)
+                {
+                    // only continue search for the search package feed, not the recommender.
+                    return await _searchService.ContinueSearchAsync(cancellationToken);
+                }
+
+                return await _searchService.SearchAsync(_context.Projects, _packageSources, _searchText, _searchFilter, _itemFilter, _useRecommender, cancellationToken);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
         public async Task UpdateStateAndReportAsync(SearchResultContextInfo searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -267,21 +314,41 @@ namespace NuGet.PackageManagement.UI
             return listItemViewModels.ToArray();
         }
 
-        private Task<PackageDeprecationMetadataContextInfo> GetDeprecationMetadataAsync(PackageIdentity identity)
+        private async Task<PackageDeprecationMetadataContextInfo> GetDeprecationMetadataAsync(PackageIdentity identity)
         {
             Assumes.NotNull(identity);
-            return _searchService.GetDeprecationMetadataAsync(identity, _packageSources, _includePrerelease, CancellationToken.None).AsTask();
+
+            await _semaphore.WaitAsync();
+            try
+            {
+
+                return await _searchService.GetDeprecationMetadataAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
-        private Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoAsync(PackageIdentity identity)
+        private async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoAsync(PackageIdentity identity)
         {
             Assumes.NotNull(identity);
-            return _searchService.GetPackageVersionsAsync(identity, _packageSources, _includePrerelease, CancellationToken.None).AsTask();
+
+            await _semaphore.WaitAsync();
+            try
+            {
+                return await _searchService.GetPackageVersionsAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
         public void Dispose()
         {
             _searchService?.Dispose();
+            _semaphore.Dispose();
 
             if (_serviceBroker != null)
             {
@@ -310,13 +377,13 @@ namespace NuGet.PackageManagement.UI
             {
                 get
                 {
-                    if (_results == null)
+                    if (_results == null || SourceLoadingStatus == null || SourceLoadingStatus.Values == null)
                     {
                         // initial status when no load called before
                         return LoadingStatus.Unknown;
                     }
 
-                    return (SourceLoadingStatus?.Values).Aggregate();
+                    return SourceLoadingStatus.Values.Aggregate();
                 }
             }
 
@@ -324,7 +391,7 @@ namespace NuGet.PackageManagement.UI
             // simply because it correlates to un-merged items
             public int ItemsCount => _results?.PackageSearchItems.Count ?? 0;
 
-            public IDictionary<string, LoadingStatus> SourceLoadingStatus => _results?.SourceLoadingStatus;
+            public IReadOnlyDictionary<string, LoadingStatus> SourceLoadingStatus => _results?.SourceLoadingStatus;
         }
     }
 }

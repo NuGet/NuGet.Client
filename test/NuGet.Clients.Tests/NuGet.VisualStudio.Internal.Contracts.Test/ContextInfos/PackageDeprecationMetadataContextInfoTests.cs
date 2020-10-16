@@ -17,7 +17,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 
             Assert.Equal(expectedResult.Message, actualResult.Message);
             Assert.Equal(expectedResult.AlternatePackage.PackageId, actualResult.AlternatePackage.PackageId);
-            Assert.Equal(expectedResult.AlternatePackage.Range, actualResult.AlternatePackage.Range);
+            Assert.Equal(expectedResult.AlternatePackage.VersionRange, actualResult.AlternatePackage.VersionRange);
             Assert.Equal(expectedResult.Reasons, actualResult.Reasons);
         }
 

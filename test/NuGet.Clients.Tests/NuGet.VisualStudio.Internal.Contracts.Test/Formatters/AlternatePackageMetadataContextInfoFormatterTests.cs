@@ -15,7 +15,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             AlternatePackageMetadataContextInfo actualResult = SerializeThenDeserialize(AlternatePackageMetadataContextInfoFormatter.Instance, expectedResult);
 
             Assert.Equal(expectedResult.PackageId, actualResult.PackageId);
-            Assert.Equal(expectedResult.Range, actualResult.Range);
+            Assert.Equal(expectedResult.VersionRange, actualResult.VersionRange);
         }
 
         public static TheoryData TestData => new TheoryData<AlternatePackageMetadataContextInfo>

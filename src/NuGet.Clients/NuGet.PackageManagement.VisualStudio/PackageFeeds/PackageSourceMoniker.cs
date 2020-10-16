@@ -8,13 +8,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
-using NuGet.Configuration;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class PackageSourceMoniker : IEquatable<PackageSourceMoniker>
     {
+        private readonly string _stringRepresentation;
+        private readonly string _tooltip;
+
         public PackageSourceMoniker(string sourceName, IEnumerable<PackageSourceContextInfo> packageSources)
         {
             SourceName = sourceName;
@@ -27,24 +29,29 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentException("List of sources cannot be empty", nameof(packageSources));
             }
+
             PackageSources = packageSources.ToArray();
+            PackageSourceNames = PackageSources.Select(s => s.Name).ToList();
+
+            _stringRepresentation = $"{SourceName}: [{string.Join("; ", PackageSourceNames)}]";
+            _tooltip = PackageSources.Count() == 1
+                ? GetTooltip(PackageSources.First())
+                : string.Join("; ", PackageSourceNames);
         }
 
-        public IReadOnlyCollection<PackageSourceContextInfo> PackageSources { get; private set; }
+        public IReadOnlyCollection<PackageSourceContextInfo> PackageSources { get; }
 
-        public IEnumerable<string> PackageSourceNames => PackageSources.Select(s => s.Name);
+        public IReadOnlyList<string> PackageSourceNames { get; }
 
-        public string SourceName { get; private set; }
+        public string SourceName { get; }
 
         public bool IsAggregateSource => PackageSources.Count > 1;
 
-        public override string ToString() => $"{SourceName}: [{string.Join("; ", PackageSourceNames)}]";
+        public override string ToString() => _stringRepresentation;
 
         public string GetTooltip()
         {
-            return PackageSources.Count() == 1
-                ? GetTooltip(PackageSources.First())
-                : string.Join("; ", PackageSourceNames);
+            return _tooltip;
         }
 
         private static string GetTooltip(PackageSourceContextInfo packageSource)

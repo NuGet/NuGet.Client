@@ -15,7 +15,6 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
@@ -39,16 +38,18 @@ namespace NuGet.PackageManagement.UI.Test
             var uiContext = Mock.Of<INuGetUIContext>();
             var searchService = new Mock<INuGetSearchService>(MockBehavior.Strict);
 
-            var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
+            var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
-                new PackageSearchMetadataContextInfo()
-                {
-                    Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
-                    PrefixReserved = true
-                }
+                Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
+                PrefixReserved = true
             };
 
-            var searchResult = new SearchResultContextInfo(packageSearchMetadata, new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } }, false);
+            var packageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>()
+            {
+                PackageSearchMetadataContextInfo.Create(packageSearchMetadata)
+            };
+
+            var searchResult = new SearchResultContextInfo(packageSearchMetadataContextInfo, new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } }, false);
 
             searchService.Setup(x =>
                 x.SearchAsync(
@@ -98,16 +99,18 @@ namespace NuGet.PackageManagement.UI.Test
                 .Returns(solutionManager);
             var searchService = new Mock<INuGetSearchService>(MockBehavior.Strict);
 
-            var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
+            var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
-                new PackageSearchMetadataContextInfo()
-                {
-                    Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
-                    PrefixReserved = true
-                }
+                Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
+                PrefixReserved = true
             };
 
-            var searchResult = new SearchResultContextInfo(packageSearchMetadata, new Dictionary<string, LoadingStatus> { { "Search", LoadingStatus.Loading } }, false);
+            var packageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>()
+            {
+                PackageSearchMetadataContextInfo.Create(packageSearchMetadata)
+            };
+
+            var searchResult = new SearchResultContextInfo(packageSearchMetadataContextInfo, new Dictionary<string, LoadingStatus> { { "Search", LoadingStatus.Loading } }, false);
 
             searchService.Setup(x =>
                 x.SearchAsync(

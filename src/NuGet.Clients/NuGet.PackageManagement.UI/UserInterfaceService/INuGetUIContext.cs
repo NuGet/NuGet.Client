@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
 
         INuGetSolutionManagerService SolutionManagerService { get; }
 
-        public INuGetSourcesService SourceService { get; }
+        INuGetSourcesService SourceService { get; }
 
         NuGetPackageManager PackageManager { get; }
 

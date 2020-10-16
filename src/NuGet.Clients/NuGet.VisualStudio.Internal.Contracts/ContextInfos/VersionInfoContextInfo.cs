@@ -4,34 +4,37 @@
 #nullable enable
 
 using System.Threading.Tasks;
-using MessagePack;
+using Microsoft;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class VersionInfoContextInfo
     {
-        public VersionInfoContextInfo(NuGetVersion version)
+        public VersionInfoContextInfo(NuGetVersion version) : this(version, new long?())
         {
-            Version = version;
         }
 
-        public NuGetVersion Version { get; set; }
-        public long DownloadCount { get; set; }
+        public VersionInfoContextInfo(NuGetVersion version, long? downloadCount)
+        {
+            Version = version;
+            DownloadCount = downloadCount;
+        }
 
-        public PackageDeprecationMetadataContextInfo? PackageDeprecationMetadata { get; set; }
+        public NuGetVersion Version { get; }
+        public long? DownloadCount { get; }
 
-        public PackageSearchMetadataContextInfo? PackageSearchMetadata { get; set; }
+        public PackageDeprecationMetadataContextInfo? PackageDeprecationMetadata { get; internal set; }
+
+        public PackageSearchMetadataContextInfo? PackageSearchMetadata { get; internal set; }
 
         public static async ValueTask<VersionInfoContextInfo> CreateAsync(VersionInfo versionInfo)
         {
-            var versionContextInfo = new VersionInfoContextInfo(versionInfo.Version)
-            {
-                DownloadCount = versionInfo.DownloadCount.GetValueOrDefault(),
-            };
+            Assumes.NotNull(versionInfo);
+
+            var versionContextInfo = new VersionInfoContextInfo(versionInfo.Version, versionInfo.DownloadCount);
 
             if (versionInfo.PackageSearchMetadata != null)
             {

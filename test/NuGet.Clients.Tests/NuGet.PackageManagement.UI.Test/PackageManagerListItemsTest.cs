@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using Moq;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -46,16 +45,18 @@ namespace NuGet.PackageManagement.UI.Test
 
             var loader = await PackageItemLoader.CreateAsync(context, new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(repo.PackageSource) }, NuGet.VisualStudio.Internal.Contracts.ItemFilter.All, searchService, "EntityFramework", false);
 
-            var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
+            var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
-                new PackageSearchMetadataContextInfo()
-                {
-                    Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
-                    PrefixReserved = true
-                }
+                Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
+                PrefixReserved = true
             };
 
-            var searchResult = new SearchResultContextInfo(packageSearchMetadata, new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } }, false);
+            var packageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>()
+            {
+                PackageSearchMetadataContextInfo.Create(packageSearchMetadata)
+            };
+
+            var searchResult = new SearchResultContextInfo(packageSearchMetadataContextInfo, new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } }, false);
 
             await loader.UpdateStateAndReportAsync(searchResult, null, CancellationToken.None);
             var items = loader.GetCurrent();
@@ -102,16 +103,18 @@ namespace NuGet.PackageManagement.UI.Test
                 "EntityFramework",
                 false);
 
-            var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
+            var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
-                new PackageSearchMetadataContextInfo()
-                {
-                    Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
-                    PrefixReserved = true
-                }
+                Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
+                PrefixReserved = true
             };
 
-            var searchResult = new SearchResultContextInfo(packageSearchMetadata, new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } }, false);
+            var packageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>()
+            {
+                PackageSearchMetadataContextInfo.Create(packageSearchMetadata)
+            };
+
+            var searchResult = new SearchResultContextInfo(packageSearchMetadataContextInfo, new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } }, false);
 
             await loader.UpdateStateAndReportAsync(searchResult, null, CancellationToken.None);
             var items = loader.GetCurrent();

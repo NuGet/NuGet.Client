@@ -59,21 +59,19 @@ namespace NuGet.PackageManagement.VisualStudio
                 IList<PackageSearchMetadataContextInfo> recommendedPackageSearchMetadataContextInfo = recommenderFeedResults.Items
                     .Select(packageSearchMetadata =>
                     {
-                        var recommendedPackageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata);
-                        recommendedPackageSearchMetadataContextInfo.IsRecommended = true;
-                        recommendedPackageSearchMetadataContextInfo.RecommenderVersion = (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo;
-                        return recommendedPackageSearchMetadataContextInfo;
+                        return PackageSearchMetadataContextInfo.Create(
+                            packageSearchMetadata,
+                            isRecommended: true,
+                            recommenderVersion: (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo);
                     })
                     .ToList();
 
                 recommendedPackageSearchMetadataContextInfo.AddRange(filteredMainFeedResult);
                 return new SearchResultContextInfo(
                     recommendedPackageSearchMetadataContextInfo.ToList(),
-                    mainFeedResult.SourceSearchStatus,
-                    mainFeedResult.NextToken != null)
-                {
-                    OperationId = _lastMainFeedSearchResult.OperationId
-                };
+                    mainFeedResult.SourceSearchStatus.ToImmutableDictionary(),
+                    mainFeedResult.NextToken != null,
+                    _lastMainFeedSearchResult.OperationId);
             }
 
             IReadOnlyCollection<PackageSearchMetadataContextInfo> packageSearchMetadataContextInfoCollection = mainFeedResult.Items
@@ -82,11 +80,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return new SearchResultContextInfo(
                 packageSearchMetadataContextInfoCollection,
-                mainFeedResult.SourceSearchStatus,
-                mainFeedResult.NextToken != null)
-            {
-                OperationId = mainFeedResult.OperationId
-            };
+                mainFeedResult.SourceSearchStatus.ToImmutableDictionary(),
+                mainFeedResult.NextToken != null,
+                mainFeedResult.OperationId);
         }
 
         public async ValueTask<SearchResultContextInfo> RefreshSearchAsync(CancellationToken cancellationToken)
@@ -104,11 +100,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return new SearchResultContextInfo(
                 packageItems,
-                refreshSearchResult.SourceSearchStatus,
-                refreshSearchResult.NextToken != null)
-            {
-                OperationId = _lastMainFeedSearchResult.OperationId
-            };
+                refreshSearchResult.SourceSearchStatus.ToImmutableDictionary(),
+                refreshSearchResult.NextToken != null,
+                _lastMainFeedSearchResult.OperationId);
         }
 
         public async ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(SearchFilter searchFilter, CancellationToken cancellationToken)
@@ -137,10 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (_lastMainFeedSearchResult.NextToken == null)
             {
-                return new SearchResultContextInfo()
-                {
-                    OperationId = _lastMainFeedSearchResult.OperationId,
-                };
+                return new SearchResultContextInfo(_lastMainFeedSearchResult.OperationId);
             }
 
             SearchResult<IPackageSearchMetadata> continueSearchResult = await _mainFeed.ContinueSearchAsync(
@@ -154,11 +145,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return new SearchResultContextInfo(
                 packageItems,
-                continueSearchResult.SourceSearchStatus,
-                continueSearchResult.NextToken != null)
-            {
-                OperationId = _lastMainFeedSearchResult.OperationId
-            };
+                continueSearchResult.SourceSearchStatus.ToImmutableDictionary(),
+                continueSearchResult.NextToken != null,
+                _lastMainFeedSearchResult.OperationId);
         }
 
         public async ValueTask<int> GetTotalCountAsync(int maxCount, SearchFilter filter, CancellationToken cancellationToken)

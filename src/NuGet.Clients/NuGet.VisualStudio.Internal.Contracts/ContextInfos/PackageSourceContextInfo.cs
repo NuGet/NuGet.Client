@@ -4,13 +4,11 @@
 #nullable enable
 
 using System;
-using MessagePack;
 using NuGet.Configuration;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    [MessagePackObject(keyAsPropertyName: true)]
-    public class PackageSourceContextInfo
+    public sealed class PackageSourceContextInfo
     {
         private readonly int _hashCode;
 
@@ -39,7 +37,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public bool IsMachineWide { get; set; }
         public bool IsEnabled { get; set; }
         public string? Description { get; set; }
-        public int OriginalHashCode { get; set; }
+        public int OriginalHashCode { get; internal set; }
 
         public bool Equals(PackageSourceContextInfo other)
         {

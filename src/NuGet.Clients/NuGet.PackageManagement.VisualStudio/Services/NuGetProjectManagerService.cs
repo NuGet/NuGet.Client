@@ -525,7 +525,7 @@ namespace NuGet.PackageManagement.VisualStudio
             CancellationToken cancellationToken)
         {
             var sourceRepositories = new List<SourceRepository>();
-            Dictionary<string, SourceRepository>? allSourceRepositories = _sharedState.SourceRepositoryProvider.GetRepositories()
+            Dictionary<string, SourceRepository> allSourceRepositories = _sharedState.SourceRepositoryProvider.GetRepositories()
                 .ToDictionary(sr => sr.PackageSource.Name, sr => sr);
 
             foreach (string packageSourceName in packageSourceNames)
