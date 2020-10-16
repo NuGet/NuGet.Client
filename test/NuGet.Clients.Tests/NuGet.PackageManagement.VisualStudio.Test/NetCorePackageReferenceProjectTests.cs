@@ -2353,7 +2353,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     deleteOnRestartManager);
 
                 var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var netCorePackageReferenceProjects = new List<CpsPackageReferenceProject>();
                 string prevProjectFullPath = null;
                 PackageSpec prevPackageSpec = null;
 
@@ -2495,7 +2495,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     deleteOnRestartManager);
 
                 var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var netCorePackageReferenceProjects = new List<CpsPackageReferenceProject>();
                 string prevProjectFullPath = null;
                 PackageSpec prevPackageSpec = null;
 
@@ -2557,7 +2557,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }
 
                 IEnumerable<PackageReference> initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                var targetProjects = new List<NetCorePackageReferenceProject>()
+                var targetProjects = new List<CpsPackageReferenceProject>()
                 {
                     netCorePackageReferenceProjects[numberOfProjects-1] // Top parent project.
                 };
@@ -2642,7 +2642,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     deleteOnRestartManager);
 
                 var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var netCorePackageReferenceProjects = new List<CpsPackageReferenceProject>();
                 string prevProjectFullPath = null;
                 PackageSpec prevPackageSpec = null;
 
@@ -2704,7 +2704,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }
 
                 IEnumerable<PackageReference> initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                var targetProjects = new List<NetCorePackageReferenceProject>()
+                var targetProjects = new List<CpsPackageReferenceProject>()
                 {
                     netCorePackageReferenceProjects[numberOfProjects-2] // Middle parent project.
                 };
@@ -2788,7 +2788,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     deleteOnRestartManager);
 
                 var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var netCorePackageReferenceProjects = new List<CpsPackageReferenceProject>();
                 string prevProjectFullPath = null;
                 PackageSpec prevPackageSpec = null;
 
@@ -2850,7 +2850,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }
 
                 IEnumerable<PackageReference> initialInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                var targetProjects = new List<NetCorePackageReferenceProject>()
+                var targetProjects = new List<CpsPackageReferenceProject>()
                 {
                     netCorePackageReferenceProjects[0] // Bottom child project.
                 };
@@ -2934,7 +2934,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     deleteOnRestartManager);
 
                 var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-                var netCorePackageReferenceProjects = new List<NetCorePackageReferenceProject>();
+                var netCorePackageReferenceProjects = new List<CpsPackageReferenceProject>();
                 string prevProjectFullPath = null;
                 PackageSpec prevPackageSpec = null;
 

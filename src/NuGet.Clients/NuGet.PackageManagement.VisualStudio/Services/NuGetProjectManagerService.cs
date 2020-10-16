@@ -372,38 +372,37 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return await CatchAndRethrowExceptionAsync(async () =>
             {
+                INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+                IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+                var projectActions = new List<ProjectAction>();
+                var uninstallationContext = new UninstallationContext(removeDependencies, forceRemove);
 
-            var projectActions = new List<ProjectAction>();
-            var uninstallationContext = new UninstallationContext(removeDependencies, forceRemove);
+                NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                IEnumerable<NuGetProjectAction> projectsWithActions = await packageManager.PreviewProjectsUninstallPackageAsync(
+                    projects,
+                    packageIdentity.Id,
+                    uninstallationContext,
+                    projectContext,
+                    cancellationToken);
 
-            NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            IEnumerable<NuGetProjectAction> projectsWithActions = await packageManager.PreviewProjectsUninstallPackageAsync(
-                projects,
-                packageIdentity.Id,
-                uninstallationContext,
-                projectContext,
-                cancellationToken);
+                foreach (NuGetProjectAction projectWithActions in projectsWithActions)
+                {
+                    var resolvedAction = new ResolvedAction(projectWithActions.Project, projectWithActions);
+                    var projectAction = new ProjectAction(
+                        CreateProjectActionId(),
+                        projectWithActions.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId),
+                        projectWithActions.PackageIdentity,
+                        projectWithActions.NuGetProjectActionType,
+                        implicitActions: null);
 
-            foreach (NuGetProjectAction projectWithActions in projectsWithActions)
-            {
-                var resolvedAction = new ResolvedAction(projectWithActions.Project, projectWithActions);
-                var projectAction = new ProjectAction(
-                    CreateProjectActionId(),
-                    projectWithActions.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId),
-                    projectWithActions.PackageIdentity,
-                    projectWithActions.NuGetProjectActionType,
-                    implicitActions: null);
+                    _state.ResolvedActions[projectAction.Id] = resolvedAction;
 
-                _state.ResolvedActions[projectAction.Id] = resolvedAction;
+                    projectActions.Add(projectAction);
+                }
 
-                projectActions.Add(projectAction);
-            }
-	    }
-
-            return projectActions;
+                return projectActions;
+            });
         }
 
         public async ValueTask<IReadOnlyList<ProjectAction>> GetUpdateActionsAsync(
@@ -444,8 +443,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+                INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+                IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
                 var resolutionContext = new ResolutionContext(
                     dependencyBehavior,
@@ -561,17 +560,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return _state.PackageIdentity != null
                 && projectActions.Any(projectAction => projectAction.ProjectActionType == NuGetProjectActionType.Install);
-        }
-
-        private async ValueTask<(bool, NuGetProject?)> TryGetNuGetProjectMatchingProjectIdAsync(string projectId)
-        {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
-
-            NuGetProject project = (await solutionManager.GetNuGetProjectsAsync())
-                .FirstOrDefault(p => projectId.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
-
-            return (project != null, project);
         }
 
         private async ValueTask CatchAndRethrowExceptionAsync(Func<Task> taskFunc)
