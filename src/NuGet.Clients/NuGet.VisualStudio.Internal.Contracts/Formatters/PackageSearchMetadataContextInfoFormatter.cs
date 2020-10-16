@@ -88,16 +88,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             }
                             break;
                         case DescriptionPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                description = reader.ReadString();
-                            }
+                            description = reader.ReadString();
                             break;
                         case AuthorsPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                authors = reader.ReadString();
-                            }
+                            authors = reader.ReadString();
                             break;
                         case IconUrlPropertyName:
                             if (!reader.TryReadNil())
@@ -106,16 +100,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             }
                             break;
                         case TitlePropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                title = reader.ReadString();
-                            }
+                            title = reader.ReadString();
                             break;
                         case TagsPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                tags = reader.ReadString();
-                            }
+                            tags = reader.ReadString();
                             break;
                         case LicenseUrlPropertyName:
                             if (!reader.TryReadNil())
@@ -136,10 +124,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             }
                             break;
                         case OwnersPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                owners = reader.ReadString();
-                            }
+                            owners = reader.ReadString();
                             break;
                         case ReportAbuseUrlPropertyName:
                             if (!reader.TryReadNil())
@@ -157,10 +142,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             requireLicenseAcceptance = reader.ReadBoolean();
                             break;
                         case SummaryPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                summary = reader.ReadString();
-                            }
+                            summary = reader.ReadString();
                             break;
                         case PrefixReservedPropertyName:
                             prefixReserved = reader.ReadBoolean();
@@ -243,34 +225,13 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             writer.WriteMapHeader(count: 21);
             writer.Write(AuthorsPropertyName);
-            if (value.Authors == null)
-            {
-                writer.WriteNil();
-            }
-            else
-            {
-                writer.Write(value.Authors);
-            }
+            writer.Write(value.Authors);
 
             writer.Write(TitlePropertyName);
-            if (value.Title == null)
-            {
-                writer.WriteNil();
-            }
-            else
-            {
-                writer.Write(value.Title);
-            }
+            writer.Write(value.Title);
 
             writer.Write(DescriptionPropertyName);
-            if (value.Description == null)
-            {
-                writer.WriteNil();
-            }
-            else
-            {
-                writer.Write(value.Description);
-            }
+            writer.Write(value.Description);
 
             writer.Write(IconUrlPropertyName);
             if (value.IconUrl == null)
@@ -283,14 +244,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             writer.Write(TagsPropertyName);
-            if (value.Tags == null)
-            {
-                writer.WriteNil();
-            }
-            else
-            {
-                writer.Write(value.Tags);
-            }
+            writer.Write(value.Tags);
 
             writer.Write(IdentityPropertyName);
             if (value.Identity == null)
@@ -313,14 +267,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             writer.Write(OwnersPropertyName);
-            if (value.Owners == null)
-            {
-                writer.WriteNil();
-            }
-            else
-            {
-                writer.Write(value.Owners);
-            }
+
+            writer.Write(value.Owners);
 
             writer.Write(ProjectUrlPropertyName);
             if (value.ProjectUrl == null)
@@ -366,14 +314,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             writer.Write(value.RequireLicenseAcceptance);
 
             writer.Write(SummaryPropertyName);
-            if (value.Summary == null)
-            {
-                writer.WriteNil();
-            }
-            else
-            {
-                writer.Write(value.Summary);
-            }
+            writer.Write(value.Summary);
 
             writer.Write(PrefixReservedPropertyName);
             writer.Write(value.PrefixReserved);

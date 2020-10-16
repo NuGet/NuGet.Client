@@ -40,7 +40,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
-            return Create(packageSearchMetadata, false, null);
+            return Create(packageSearchMetadata, isRecommended: false, recommenderVersion: null);
         }
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, bool isRecommended, (string, string)? recommenderVersion)

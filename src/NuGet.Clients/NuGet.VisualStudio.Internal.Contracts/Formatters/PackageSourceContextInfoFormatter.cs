@@ -61,10 +61,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             name = reader.ReadString();
                             break;
                         case DescriptionPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                description = reader.ReadString();
-                            }
+                            description = reader.ReadString();
                             break;
                         case OriginalHashCodePropertyName:
                             originalHashCode = reader.ReadInt32();
@@ -112,14 +109,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             writer.Write(OriginalHashCodePropertyName);
             writer.Write(value.OriginalHashCode);
             writer.Write(DescriptionPropertyName);
-            if (string.IsNullOrEmpty(value.Description))
-            {
-                writer.WriteNil();
-            }
-            else
-            {
-                writer.Write(value.Description);
-            }
+            writer.Write(value.Description);
         }
     }
 }

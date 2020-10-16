@@ -26,7 +26,6 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageItemLoader : IPackageItemLoader, IDisposable
     {
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly PackageLoadContext _context;
         private readonly string _searchText;
         private readonly bool _includePrerelease;
@@ -51,7 +50,7 @@ namespace NuGet.PackageManagement.UI
             bool useRecommender)
         {
             Assumes.NotNull(context);
-            Assumes.NotNull(packageSources);
+            Assumes.NotNullOrEmpty(packageSources);
 
             _context = context;
             _searchText = searchText ?? string.Empty;
@@ -105,16 +104,8 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await _semaphore.WaitAsync();
-                try
-                {
-                    _searchService?.Dispose();
-                    _searchService = await GetSearchServiceAsync(CancellationToken.None);
-                }
-                finally
-                {
-                    _semaphore.Release();
-                }
+                _searchService?.Dispose();
+                _searchService = await GetSearchServiceAsync(CancellationToken.None);
             }).PostOnFailure(nameof(PackageItemLoader), nameof(OnAvailabilityChanged));
         }
 
@@ -131,16 +122,7 @@ namespace NuGet.PackageManagement.UI
         {
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;
-
-            await _semaphore.WaitAsync();
-            try
-            {
-                return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
         }
 
         public async Task<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(CancellationToken cancellationToken)
@@ -149,15 +131,7 @@ namespace NuGet.PackageManagement.UI
             await TaskScheduler.Default;
 
             ActivityCorrelationId.StartNew();
-            await _semaphore.WaitAsync();
-            try
-            {
-                return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
         }
 
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -188,45 +162,29 @@ namespace NuGet.PackageManagement.UI
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _semaphore.WaitAsync();
-            try
-            {
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
+            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 
-                progress?.Report(_state);
+            progress?.Report(_state);
 
-                SearchResultContextInfo searchResult = await _searchService.RefreshSearchAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
-                await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
+            SearchResultContextInfo searchResult = await _searchService.RefreshSearchAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
 
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
         public async Task<SearchResultContextInfo> SearchAsync(CancellationToken cancellationToken)
         {
             await TaskScheduler.Default;
-            await _semaphore.WaitAsync();
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                if (_state.Results != null && _state.Results.HasMoreItems)
-                {
-                    // only continue search for the search package feed, not the recommender.
-                    return await _searchService.ContinueSearchAsync(cancellationToken);
-                }
-
-                return await _searchService.SearchAsync(_context.Projects, _packageSources, _searchText, _searchFilter, _itemFilter, _useRecommender, cancellationToken);
-            }
-            finally
+            if (_state.Results != null && _state.Results.HasMoreItems)
             {
-                _semaphore.Release();
+                // only continue search for the search package feed, not the recommender.
+                return await _searchService.ContinueSearchAsync(cancellationToken);
             }
+
+            return await _searchService.SearchAsync(_context.Projects, _packageSources, _searchText, _searchFilter, _itemFilter, _useRecommender, cancellationToken);
         }
 
         public async Task UpdateStateAndReportAsync(SearchResultContextInfo searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -318,37 +276,19 @@ namespace NuGet.PackageManagement.UI
         {
             Assumes.NotNull(identity);
 
-            await _semaphore.WaitAsync();
-            try
-            {
-
-                return await _searchService.GetDeprecationMetadataAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            return await _searchService.GetDeprecationMetadataAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
         }
 
         private async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoAsync(PackageIdentity identity)
         {
             Assumes.NotNull(identity);
 
-            await _semaphore.WaitAsync();
-            try
-            {
-                return await _searchService.GetPackageVersionsAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            return await _searchService.GetPackageVersionsAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
         }
 
         public void Dispose()
         {
             _searchService?.Dispose();
-            _semaphore.Dispose();
 
             if (_serviceBroker != null)
             {

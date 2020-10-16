@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using Microsoft;
 using NuGet.Configuration;
 
 namespace NuGet.VisualStudio.Internal.Contracts
@@ -24,6 +25,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public PackageSourceContextInfo(string source, string name, bool isEnabled)
         {
+            Assumes.NotNullOrEmpty(name);
+            Assumes.NotNullOrEmpty(source);
+
             Name = name;
             Source = source;
             IsEnabled = isEnabled;
@@ -34,9 +38,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public string Name { get; set; }
         public string Source { get; set; }
-        public bool IsMachineWide { get; set; }
+        public bool IsMachineWide { get; internal set; }
         public bool IsEnabled { get; set; }
-        public string? Description { get; set; }
+        public string? Description { get; internal set; }
         public int OriginalHashCode { get; internal set; }
 
         public bool Equals(PackageSourceContextInfo other)

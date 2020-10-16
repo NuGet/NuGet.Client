@@ -13,7 +13,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
     internal class AlternatePackageMetadataContextInfoFormatter : IMessagePackFormatter<AlternatePackageMetadataContextInfo?>
     {
         private const string PackageIdPropertyName = "packageid";
-        private const string RangePropertyName = "range";
+        private const string VersionRangePropertyName = "versionrange";
 
         internal static readonly IMessagePackFormatter<AlternatePackageMetadataContextInfo?> Instance = new AlternatePackageMetadataContextInfoFormatter();
 
@@ -44,7 +44,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                         case PackageIdPropertyName:
                             packageId = reader.ReadString();
                             break;
-                        case RangePropertyName:
+                        case VersionRangePropertyName:
                             range = VersionRangeFormatter.Instance.Deserialize(ref reader, options);
                             break;
                         default:
@@ -76,7 +76,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             writer.WriteMapHeader(count: 2);
             writer.Write(PackageIdPropertyName);
             writer.Write(value.PackageId);
-            writer.Write(RangePropertyName);
+            writer.Write(VersionRangePropertyName);
             VersionRangeFormatter.Instance.Serialize(ref writer, value.VersionRange, options);
         }
     }
