@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -29,6 +28,9 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class DependencyGraphRestoreUtility
     {
+        private static readonly object LockObject = new object();
+        private static readonly SemaphoreSlim SemaphoreLock = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
@@ -378,7 +380,19 @@ namespace NuGet.PackageManagement
         private async static Task GetProjectRestoreSpecAndAdditionalMessages(
             ProjectRestoreSpec restoreSpecData)
         {
-            var (packageSpecs, projectAdditionalMessages) = await restoreSpecData.Project.GetPackageSpecsAndAdditionalMessagesAsync(restoreSpecData.Context);
+            IReadOnlyList<PackageSpec> packageSpecs;
+            IReadOnlyList<IAssetsLogMessage> projectAdditionalMessages;
+
+            await SemaphoreLock.WaitAsync();
+            try
+            {
+                (packageSpecs, projectAdditionalMessages) = await restoreSpecData.Project.GetPackageSpecsAndAdditionalMessagesAsync(restoreSpecData.Context);
+            }
+            finally
+            {
+                SemaphoreLock.Release();
+            }
+            
             var dgSpec = restoreSpecData.DgSpec;
 
             if (projectAdditionalMessages?.Count > 0)
@@ -391,7 +405,7 @@ namespace NuGet.PackageManagement
 
             foreach (var packageSpec in packageSpecs)
             {
-                lock (dgSpec)
+                lock (LockObject)
                 {
                     dgSpec.AddProject(packageSpec);
                 }
@@ -401,7 +415,7 @@ namespace NuGet.PackageManagement
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
                 {
-                    lock (dgSpec)
+                    lock (LockObject)
                     {
                         dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                     }
@@ -431,7 +445,7 @@ namespace NuGet.PackageManagement
                                             // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
                                             restoreSpecData.KnownProjects[dependentPackageSpec.RestoreMetadata.ProjectPath] = true;
 
-                                            lock (dgSpec)
+                                            lock (LockObject)
                                             {
                                                 dgSpec.AddProject(dependentPackageSpec);
                                             }

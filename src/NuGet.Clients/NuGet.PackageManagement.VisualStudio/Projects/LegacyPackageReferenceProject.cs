@@ -130,14 +130,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     throw new InvalidOperationException(
                         string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
-
-                if (context != null)
-                {
-                    lock (context.PackageSpecCache)
-                    {
-                        context.PackageSpecCache.Add(_projectFullPath, packageSpec);
-                    }
-                }
+                context?.PackageSpecCache.Add(_projectFullPath, packageSpec);
             }
 
             return (new[] { packageSpec }, null);

@@ -698,13 +698,7 @@ namespace NuGet.ProjectManagement
                     }
                 }
 
-                if (context != null)
-                {
-                    lock (context.PackageSpecCache)
-                    {
-                        context.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
-                    }
-                }
+                context.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
 
             return (new[] { packageSpec }, null);
