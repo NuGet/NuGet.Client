@@ -137,6 +137,9 @@
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Scripts\about_NuGet.help.txt">
+      <CopyToOutputDirectory Condition="$(IsVsixBuild) != 'true'">PreserveNewest</CopyToOutputDirectory>
+    </None>
     <!-- We copy this xml file to output directory so CI can pick it for localization from artifacts directory
     However, we condition it to only be copied when building the project itself and not the vsix to prevent VSIX
     from including this file -->
@@ -149,7 +152,7 @@
   <PropertyGroup>
     <SignTargetsForRealSigning>$(SignTargetsForRealSigning);GetScriptsForSigning</SignTargetsForRealSigning>
     <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
-    <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
+    <GetLocalizedFilesForVsixDependsOn>GerLocalizedFiles</GetLocalizedFilesForVsixDependsOn>
   </PropertyGroup>
 
   <Target Name="AfterBuild">
@@ -167,7 +170,7 @@
       </ScriptsToSign>
     </ItemGroup>
   </Target>
-  <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(PowerShellCmdletsHelpFiles)">
+  <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(FilesToLocalize)">
     <ItemGroup>
       <_PowerShellCmdletsHelpFiles Include="$(OutputPath)Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
       <PowerShellCmdletsHelpFiles Include="@(_PowerShellCmdletsHelpFiles)">
@@ -176,14 +179,28 @@
         <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lci</LciCommentFile>
         <Parser>210</Parser>
       </PowerShellCmdletsHelpFiles>
+      <!-- We need to contact localization team to localize this file
+      <_TxtHelpFile Include="$(OutputPath)Scripts\about_NuGet.help.txt" />
+      <TxtHelpFile Include="@(_TxtHelpFile)">
+        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(_TxtHelpFile.Filename)%(_TxtHelpFile.Extension).lcl</TranslationFile>
+        <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_TxtHelpFile.Filename)%(_TxtHelpFile.Extension).lci</LciCommentFile>
+        <Parser>2</Parser>
+      </TxtHelpFile>
+      -->
+      <FilesToLocalize Include="@(PowerShellCmdletsHelpFiles)" />
     </ItemGroup>
   </Target>
-  <Target Name="GetLocalizedPowerShellCmdletHelpFile">
+  <Target Name="GerLocalizedFiles">
     <ItemGroup>
+      <_AllLocalizedTxtFiles Include="$(OutputPath)Scripts\**\about_NuGet.Cmdlets.help.txt" />
+      <_TxtLocFiles Include="@(_AllLocalizedTxtFiles)">
+        <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedTxtFiles.Identity)))</TargetPath>
+      </_TxtLocFiles>
       <_AllLocalizedXmlFiles Include="$(OutputPath)Scripts\**\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
-      <LocalizedFilesForVsix Include="@(_AllLocalizedXmlFiles)">
+      <_XmlLocFiles Include="@(_AllLocalizedXmlFiles)">
         <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
-      </LocalizedFilesForVsix>
+      </_XmlLocFiles>
+      <LocalizedFilesForVsix Include="@(_XmlLocFiles);@(_TxtLocFiles)" />
     </ItemGroup>
   </Target>
 </Project>
