@@ -548,13 +548,13 @@ namespace NuGet.Packaging
         private static void ValidateDependencies(SemanticVersion version,
             IEnumerable<PackageDependencyGroup> dependencies)
         {
-            var bads = new HashSet<string>(dependencies
+            var frameworksMissingPlatformVersion = new HashSet<string>(dependencies
                 .Select(group => group.TargetFramework)
                 .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
                 .Select(framework => framework.GetShortFolderName()));
-            if (bads.Any())
+            if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, String.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", bads)));
+                throw new PackagingException(NuGetLogCode.NU1012, String.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", frameworksMissingPlatformVersion)));
             }
 
             if (version == null)
@@ -571,13 +571,13 @@ namespace NuGet.Packaging
 
         public static void ValidateReferenceAssemblies(IEnumerable<IPackageFile> files, IEnumerable<PackageReferenceSet> packageAssemblyReferences)
         {
-            var bads = new HashSet<string>(packageAssemblyReferences
+            var frameworksMissingPlatformVersion = new HashSet<string>(packageAssemblyReferences
                 .Select(group => group.TargetFramework)
                 .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
                 .Select(framework => framework.GetShortFolderName()));
-            if (bads.Any())
+            if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromReferenceGroups, string.Join(", ", bads)));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromReferenceGroups, string.Join(", ", frameworksMissingPlatformVersion)));
             }
 
             var libFiles = new HashSet<string>(from file in files
@@ -598,13 +598,13 @@ namespace NuGet.Packaging
 
         private static void ValidateFrameworkAssemblies(IEnumerable<FrameworkReferenceGroup> packageFrameworkAssemblies)
         {
-            var bads = new HashSet<string>(packageFrameworkAssemblies
+            var frameworksMissingPlatformVersion = new HashSet<string>(packageFrameworkAssemblies
                 .Select(group => group.TargetFramework)
                 .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
                 .Select(framework => framework.GetShortFolderName()));
-            if (bads.Any())
+            if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyGroups, string.Join(", ", bads)));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyGroups, string.Join(", ", frameworksMissingPlatformVersion)));
             }
         }
 
@@ -713,7 +713,7 @@ namespace NuGet.Packaging
             };
             var warnPaths = new HashSet<string>();
 
-            var bads = new HashSet<string>();
+            var frameworksMissingPlatformVersion = new HashSet<string>();
             foreach (var pattern in frameworkPatterns)
             {
                 IEnumerable<ContentItemGroup> targetedItemGroups = ContentExtractor.GetContentForPattern(collection, pattern);
@@ -729,15 +729,15 @@ namespace NuGet.Packaging
 
                         if (framework.HasPlatform && framework.PlatformVersion == FrameworkConstants.EmptyVersion)
                         {
-                            bads.Add(framework.GetShortFolderName());
+                            frameworksMissingPlatformVersion.Add(framework.GetShortFolderName());
                         }
                     }
                 }
             }
 
-            if (bads.Any())
+            if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromIncludedFiles, string.Join(", ", bads)));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromIncludedFiles, string.Join(", ", frameworksMissingPlatformVersion)));
             }
         }
 
