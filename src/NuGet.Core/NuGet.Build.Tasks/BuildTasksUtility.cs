@@ -677,6 +677,7 @@ namespace NuGet.Build.Tasks
         /// <param name="additionalProjectFallbackFoldersExcludes">An <see cref="IEnumerable{String}" /> containing fallback folders to exclude.</param>
         /// <param name="settings">An <see cref="ISettings" /> object containing settings for the project.</param>
         /// <returns>A <see cref="T:string[]" /> containing the package fallback folders for the project.</returns>
+        [Obsolete("This method calculates the source overrides incorrectly and will be removed in a future release")]
         public static string[] GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
         {
             // Fallback folders
@@ -695,6 +696,7 @@ namespace NuGet.Build.Tasks
             return AppendItems(projectDirectory, currentFallbackFolders, filteredAdditionalProjectFallbackFolders);
         }
 
+        [Obsolete("This method calculates the source overrides incorrectly and will be removed in a future release")]
         public static string[] GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
         {
             // Sources
