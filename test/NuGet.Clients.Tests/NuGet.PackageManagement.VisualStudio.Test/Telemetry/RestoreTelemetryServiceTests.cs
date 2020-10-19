@@ -40,8 +40,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 noopProjectsCount = 1;
             }
 
-            var stausMessage = status == NuGetOperationStatus.Failed ? "Operation Failed" : string.Empty;
-
             var operationId = Guid.NewGuid().ToString();
 
             var restoreTelemetryData = new RestoreTelemetryEvent(
@@ -54,6 +52,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 2,
                 noOpProjectsCount: noopProjectsCount,
                 upToDateProjectsCount: 5,
+                unknownProjectsCount: 0,
+                projectJsonProjectsCount: 0,
+                packageReferenceProjectsCount: 0,
+                legacyPackageReferenceProjectsCount: 0,
+                cpsPackageReferenceProjectsCount: 0,
+                dotnetCliToolProjectsCount: 0,
+                packagesConfigProjectsCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
                 isSolutionLoadRestore: true,
@@ -100,6 +105,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 noOpProjectsCount: 0,
                 upToDateProjectsCount: 0,
+                unknownProjectsCount: 0,
+                projectJsonProjectsCount: 0,
+                packageReferenceProjectsCount: 1,
+                legacyPackageReferenceProjectsCount: 0,
+                cpsPackageReferenceProjectsCount: 1,
+                dotnetCliToolProjectsCount: 0,
+                packagesConfigProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
                 isSolutionLoadRestore: true,
@@ -114,7 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(15, lastTelemetryEvent.Count);
+            Assert.Equal(22, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -127,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(13, actual.Count);
+            Assert.Equal(20, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 
@@ -135,8 +147,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expected.ForceRestore, (bool)actual["ForceRestore"]);
             Assert.Equal(expected.IsSolutionLoadRestore, (bool)actual["IsSolutionLoadRestore"]);
             Assert.Equal(expected.UpToDateProjectCount, (int)actual["UpToDateProjectCount"]);
+            Assert.Equal(expected.PackageReferenceProjectsCount, (int)actual["PackageReferenceProjectsCount"]);
+            Assert.Equal(expected.ProjectJsonProjectsCount, (int)actual["ProjectJsonProjectsCount"]);
+            Assert.Equal(expected.PackagesConfigProjectsCount, (int)actual["PackagesConfigProjectsCount"]);
+            Assert.Equal(expected.DotnetCliToolProjectsCount, (int)actual["DotnetCliToolProjectsCount"]);
+            Assert.Equal(expected.UnknownProjectsCount, (int)actual["UnknownProjectsCount"]);
+            Assert.Equal(expected.LegacyPackageReferenceProjectsCount, (int)actual["LegacyPackageReferenceProjectsCount"]);
+            Assert.Equal(expected.CpsPackageReferenceProjectsCount, (int)actual["CpsPackageReferenceProjectsCount"]);
+            AssertProjectsCount(expected);
 
             TestTelemetryUtility.VerifyTelemetryEventData(operationId, expected, actual);
+        }
+
+        private void AssertProjectsCount(RestoreTelemetryEvent t)
+        {
+            Assert.True(t.ProjectsCount >= t.PackageReferenceProjectsCount + t.ProjectJsonProjectsCount + t.PackagesConfigProjectsCount + t.DotnetCliToolProjectsCount + t.UnknownProjectsCount);
+            Assert.True(t.PackageReferenceProjectsCount >= t.LegacyPackageReferenceProjectsCount + t.CpsPackageReferenceProjectsCount);
         }
     }
 }
