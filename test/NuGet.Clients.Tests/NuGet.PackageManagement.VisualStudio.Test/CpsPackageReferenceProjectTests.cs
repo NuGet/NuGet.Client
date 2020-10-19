@@ -2316,6 +2316,24 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public void IsLegacyPackageReferenceProject_ReturnsFalse()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                var projectName = "testProject";
+                var projectCache = new ProjectSystemCache();
+                var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                TestCpsPackageReferenceProject project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+
+                // Act
+
+                // Assert
+                Assert.False(project.IsLegacyPackageReferenceProject);
+            }
+        }
+
         private TestCpsPackageReferenceProject CreateTestCpsPackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
         {
             projectServices = projectServices == null ? new TestProjectSystemServices() : projectServices;

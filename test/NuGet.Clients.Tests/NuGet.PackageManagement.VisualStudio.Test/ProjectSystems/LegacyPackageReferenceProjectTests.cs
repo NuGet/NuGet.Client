@@ -1129,6 +1129,21 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public void IsLegacyPackageReferenceProject_ReturnsTrue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProjectNoPackages(testDirectory);
+
+                // Act
+
+                // Assert
+                Assert.True(testProject.IsLegacyPackageReferenceProject);
+            }
+        }
+
         private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)
         {
             var framework = NuGetFramework.Parse("netstandard13");
