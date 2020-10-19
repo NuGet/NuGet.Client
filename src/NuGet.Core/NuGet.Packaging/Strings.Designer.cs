@@ -790,15 +790,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some package components lack platform versions in their TFMs: {0}.
-        /// </summary>
-        internal static string MissingTargetPlatformVersions {
-            get {
-                return ResourceManager.GetString("MissingTargetPlatformVersions", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Some dependency group TFMs are missing a platform version: {0}.
         /// </summary>
         internal static string MissingTargetPlatformVersionsFromDependencyGroups {
