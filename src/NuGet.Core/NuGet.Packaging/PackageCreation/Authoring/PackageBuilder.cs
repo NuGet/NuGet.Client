@@ -12,11 +12,14 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Xml.Linq;
+using NuGet.Client;
 using NuGet.Common;
+using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Rules;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging
@@ -226,7 +229,7 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Exposes the additional properties extracted by the metadata 
+        /// Exposes the additional properties extracted by the metadata
         /// extractor or received from the command line.
         /// </summary>
         public Dictionary<string, string> Properties
@@ -377,8 +380,10 @@ namespace NuGet.Packaging
 
             ValidateDependencies(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
+            ValidateFrameworkAssemblies(FrameworkReferenceGroups);
             ValidateLicenseFile(Files, LicenseMetadata);
             ValidateIconFile(Files, Icon);
+            ValidateFileFrameworks(Files);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -543,6 +548,15 @@ namespace NuGet.Packaging
         private static void ValidateDependencies(SemanticVersion version,
             IEnumerable<PackageDependencyGroup> dependencies)
         {
+            var bads = new HashSet<string>(dependencies
+                .Select(group => group.TargetFramework)
+                .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
+                .Select(framework => framework.GetShortFolderName()));
+            if (bads.Any())
+            {
+                throw new PackagingException(NuGetLogCode.NU1012, String.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", bads)));
+            }
+
             if (version == null)
             {
                 // We have independent validation for null-versions.
@@ -557,6 +571,15 @@ namespace NuGet.Packaging
 
         public static void ValidateReferenceAssemblies(IEnumerable<IPackageFile> files, IEnumerable<PackageReferenceSet> packageAssemblyReferences)
         {
+            var bads = new HashSet<string>(packageAssemblyReferences
+                .Select(group => group.TargetFramework)
+                .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
+                .Select(framework => framework.GetShortFolderName()));
+            if (bads.Any())
+            {
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromReferenceGroups, string.Join(", ", bads)));
+            }
+
             var libFiles = new HashSet<string>(from file in files
                                                where !String.IsNullOrEmpty(file.Path) && file.Path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
                                                select Path.GetFileName(file.Path), StringComparer.OrdinalIgnoreCase);
@@ -570,6 +593,18 @@ namespace NuGet.Packaging
                 {
                     throw new PackagingException(NuGetLogCode.NU5018, String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
                 }
+            }
+        }
+
+        private static void ValidateFrameworkAssemblies(IEnumerable<FrameworkReferenceGroup> packageFrameworkAssemblies)
+        {
+            var bads = new HashSet<string>(packageFrameworkAssemblies
+                .Select(group => group.TargetFramework)
+                .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
+                .Select(framework => framework.GetShortFolderName()));
+            if (bads.Any())
+            {
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyGroups, string.Join(", ", bads)));
             }
         }
 
@@ -646,6 +681,63 @@ namespace NuGet.Packaging
                         NuGetLogCode.NU5046,
                         string.Format(CultureInfo.CurrentCulture, NuGetResources.IconCannotOpenFile, iconPath, e.Message));
                 }
+            }
+        }
+
+        private static void ValidateFileFrameworks(IEnumerable<IPackageFile> files)
+        {
+            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var file in files.Select(t => PathUtility.GetPathWithDirectorySeparator(t.Path)))
+            {
+                set.Add(file);
+            }
+
+            var managedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
+            var collection = new ContentItemCollection();
+            collection.Load(set.Select(path => path.Replace('\\', '/')).ToArray());
+
+            var patterns = managedCodeConventions.Patterns;
+
+            var frameworkPatterns = new List<PatternSet>()
+            {
+                patterns.RuntimeAssemblies,
+                patterns.CompileRefAssemblies,
+                patterns.CompileLibAssemblies,
+                patterns.NativeLibraries,
+                patterns.ResourceAssemblies,
+                patterns.MSBuildFiles,
+                patterns.ContentFiles,
+                patterns.ToolsAssemblies,
+                patterns.EmbedAssemblies,
+                patterns.MSBuildTransitiveFiles
+            };
+            var warnPaths = new HashSet<string>();
+
+            var bads = new HashSet<string>();
+            foreach (var pattern in frameworkPatterns)
+            {
+                IEnumerable<ContentItemGroup> targetedItemGroups = ContentExtractor.GetContentForPattern(collection, pattern);
+                foreach (ContentItemGroup group in targetedItemGroups)
+                {
+                    foreach (ContentItem item in group.Items)
+                    {
+                        var framework = (NuGetFramework)item.Properties["tfm"];
+                        if (framework == null)
+                        {
+                            continue;
+                        }
+
+                        if (framework.HasPlatform && framework.PlatformVersion == FrameworkConstants.EmptyVersion)
+                        {
+                            bads.Add(framework.GetShortFolderName());
+                        }
+                    }
+                }
+            }
+
+            if (bads.Any())
+            {
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromIncludedFiles, string.Join(", ", bads)));
             }
         }
 
