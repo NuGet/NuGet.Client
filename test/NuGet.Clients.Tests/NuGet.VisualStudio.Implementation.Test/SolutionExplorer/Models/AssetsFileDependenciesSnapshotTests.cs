@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -68,7 +69,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
         public void ParseLibraries_LockFileTargetLibrariesWithDifferentCase_Throws()
         {
             // Arrange
-            LockFileTarget lockFileTarget = new LockFileTarget();
+            var lockFileTarget = new LockFileTarget();
             lockFileTarget.Libraries = new List<LockFileTargetLibrary>
             {
                 new LockFileTargetLibrary()
@@ -87,14 +88,14 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
 
             var exception = Assert.Throws<ArgumentException>(() => AssetsFileDependenciesSnapshot.ParseLibraries(lockFileTarget));
 
-            Assert.Equal("An element with the same key but a different value already exists. Key: PackageA", exception.Message);
+            Assert.Contains("PackageA", exception.Message);
         }
 
         [Fact]
         public void ParseLibraries_LockFileTargetLibrariesMatchesDependencies_Succeeds()
         {
             // Arrange
-            LockFileTarget lockFileTarget = new LockFileTarget();
+            var lockFileTarget = new LockFileTarget();
             lockFileTarget.Libraries = new List<LockFileTargetLibrary>
             {
                 new LockFileTargetLibrary()
@@ -123,7 +124,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
                 }
             };
 
-            var dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(lockFileTarget);
+            ImmutableDictionary<string, AssetsFileTargetLibrary> dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(lockFileTarget);
 
             Assert.Equal(lockFileTarget.Libraries.Count, dependencies.Count);
             Assert.All<LockFileTargetLibrary>(lockFileTarget.Libraries,
@@ -131,7 +132,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
                 {
                     Assert.True(dependencies.ContainsKey(source.Name));
 
-                    var target = dependencies[source.Name];
+                    AssetsFileTargetLibrary target = dependencies[source.Name];
                     Assert.Equal(source.Name, target.Name);
                     Assert.Equal(source.Version.ToNormalizedString(), target.Version);
 
