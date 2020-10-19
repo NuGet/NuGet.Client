@@ -2,3 +2,5 @@ NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetPla
 NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetPlatform.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.get -> string
 NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.set -> void
+static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string startupDirectory, string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
+static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string startupDirectory, string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
