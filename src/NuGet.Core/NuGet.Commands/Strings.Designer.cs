@@ -673,7 +673,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Platform is not present for one or more target framework(s): {0}.
+        ///   Looks up a localized string similar to Platform version is not present for one or more target frameworks, even though they have specified a platform: {0}.
         /// </summary>
         internal static string Error_PlatformVersionNotPresent {
             get {
