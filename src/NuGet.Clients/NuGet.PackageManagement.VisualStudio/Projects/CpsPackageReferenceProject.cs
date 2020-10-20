@@ -292,6 +292,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
         {
+            TargetFrameworkInformation assetsTargetFrameworkInformation = assetsPackageSpec?.TargetFrameworks.First(t => t.FrameworkName.Equals(targetFramework));
+
             var targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
 
             if (targetFrameworkPackages.Item2 == null)
@@ -303,11 +305,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return libraries
                 .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(l => new BuildIntegratedPackageReference(l, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(l, targetFramework, targets, targetFrameworkPackages.Item2)));
+                .Select(l => new BuildIntegratedPackageReference(l, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(l, targetFramework, assetsTargetFrameworkInformation, targets, targetFrameworkPackages.Item2)));
         }
 
         private IReadOnlyList<PackageReference> GetTransitivePackageReferences(NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> transitivePackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
         {
+            TargetFrameworkInformation assetsTargetFrameworkInformation = assetsPackageSpec?.TargetFrameworks.First(t => t.FrameworkName.Equals(targetFramework));
+
             var targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
             var targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
 
@@ -330,7 +334,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return targets
                     .SelectMany(target => target.Libraries)
                     .Where(library => library.Type == "package")
-                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, targetFrameworkInstalledPackages.Item2, targetFrameworkTransitivePackages.Item2))
+                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, assetsTargetFrameworkInformation, targets, targetFrameworkInstalledPackages.Item2, targetFrameworkTransitivePackages.Item2))
                     .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
                     .ToList();
             }
