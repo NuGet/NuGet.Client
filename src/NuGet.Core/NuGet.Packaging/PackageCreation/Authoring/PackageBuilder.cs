@@ -687,7 +687,7 @@ namespace NuGet.Packaging
         private static void ValidateFileFrameworks(IEnumerable<IPackageFile> files)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var file in files.Select(t => PathUtility.GetPathWithDirectorySeparator(t.Path)))
+            foreach (var file in files.Where(t => t.Path != null).Select(t => PathUtility.GetPathWithDirectorySeparator(t.Path)))
             {
                 set.Add(file);
             }
