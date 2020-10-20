@@ -25,7 +25,7 @@
   <ItemGroup>
     <Compile Include="Feeds\SourceRepositoryCreator.cs" />
     <Compile Include="Feeds\SourceRepositoryExtensionsTests.cs" />
-    <Compile Include="NetCorePackageReferenceProjectTests.cs" />
+    <Compile Include="CpsPackageReferenceProjectTests.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
     <Compile Include="DispatcherThreadCollection.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />

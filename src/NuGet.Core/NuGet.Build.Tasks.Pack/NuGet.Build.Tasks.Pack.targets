@@ -43,7 +43,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsInnerBuild Condition="'$(TargetFramework)' != '' AND '$(TargetFrameworks)' != ''">true</IsInnerBuild>
     <SymbolPackageFormat Condition="'$(SymbolPackageFormat)' == ''">symbols.nupkg</SymbolPackageFormat>
     <AddPriFileDependsOn Condition="'$(MicrosoftPortableCurrentVersionPropsHasBeenImported)' == 'true'">DeterminePortableBuildCapabilities</AddPriFileDependsOn>
-    <NuspecOutputPath Condition="'$(NuspecOutputPath)' == ''">$(BaseIntermediateOutputPath)$(Configuration)\</NuspecOutputPath>
     <WarnOnPackingNonPackableProject Condition="'$(WarnOnPackingNonPackableProject)' == ''">false</WarnOnPackingNonPackableProject>
     <ImportNuGetBuildTasksPackTargetsFromSdk Condition="'$(ImportNuGetBuildTasksPackTargetsFromSdk)' == ''">false</ImportNuGetBuildTasksPackTargetsFromSdk>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>.dll; .exe; .winmd; .json; .pri; .xml; $(AllowedOutputExtensionsInPackageBuildOutputFolder)</AllowedOutputExtensionsInPackageBuildOutputFolder>
@@ -70,8 +69,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BuildOutputInPackage>
   </ItemDefinitionGroup>
 
-  <Target Name="_GetOutputItemsFromPack"
-          Returns="@(_OutputPackItems)">
+  <PropertyGroup>
+    <RestoreOutputPath Condition="'$(RestoreOutputPath)' == ''">$(MSBuildProjectExtensionsPath)</RestoreOutputPath>
+    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(BaseOutputPath)$(Configuration)\</PackageOutputPath>
+    <NuspecOutputPath Condition="'$(NuspecOutputPath)' == ''">$(BaseIntermediateOutputPath)$(Configuration)\</NuspecOutputPath>
+  </PropertyGroup>
+
+  <!--
+    ============================================================
+    _GetAbsoluteOutputPathsForPack
+    Gets the absolute output paths for Pack.
+    ============================================================
+  -->
+  <Target Name="_GetAbsoluteOutputPathsForPack">
+    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
 
     <ConvertToAbsolutePath Paths="$(PackageOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PackageOutputAbsolutePath" />
@@ -80,6 +93,19 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ConvertToAbsolutePath Paths="$(NuspecOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecOutputAbsolutePath" />
     </ConvertToAbsolutePath>
+  </Target>
+
+  <!--
+    ============================================================
+    _GetOutputItemsFromPack
+    Gets the output '.nupkg' and '.nuspec' absolute file paths.
+    ============================================================
+  -->
+  <Target Name="_GetOutputItemsFromPack"
+          DependsOnTargets="_GetAbsoluteOutputPathsForPack"
+          Returns="@(_OutputPackItems)">
+
+    <!-- 'PackageOutputAbsolutePath' and 'NuspecOutputAbsolutePath' will be provided by '_GetAbsoluteOutputPathsForPack' target -->
 
     <GetPackOutputItemsTask
         PackageOutputPath="$(PackageOutputAbsolutePath)"
@@ -153,23 +179,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition="$(ContinuePackingAfterGeneratingNuspec) == '' ">
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
     </PropertyGroup>
-    <PropertyGroup>
-      <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(OutputPath)</PackageOutputPath>
-      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(MSBuildProjectExtensionsPath)</RestoreOutputPath>
-    </PropertyGroup>
-
-    <ConvertToAbsolutePath Paths="$(NuspecOutputPath)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="NuspecOutputAbsolutePath" />
-    </ConvertToAbsolutePath>
-    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
-    </ConvertToAbsolutePath>
-    <ConvertToAbsolutePath Paths="$(PackageOutputPath)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="PackageOutputAbsolutePath" />
-    </ConvertToAbsolutePath>
-    <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
-    </ConvertToAbsolutePath>
 
     <ItemGroup>
       <!--This catches changes to properties-->
@@ -203,6 +212,11 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="$(IsPackable) == 'true'"
           Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)"
           DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack;_GetProjectReferenceVersions;_InitializeNuspecRepositoryInformationProperties">
+
+    <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
+    </ConvertToAbsolutePath>
+
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
               PackageFiles="@(_PackageFiles)"
@@ -294,10 +308,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_GetProjectReferenceVersions"
           Condition="'$(NuspecFile)' == ''"
-          DependsOnTargets="_CalculateInputsOutputsForPack;$(GetPackageVersionDependsOn)">
-    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
-    </ConvertToAbsolutePath>
+          DependsOnTargets="_GetAbsoluteOutputPathsForPack;$(GetPackageVersionDependsOn)">
+
+    <!-- 'RestoreOutputAbsolutePath' will be provided by '_GetAbsoluteOutputPathsForPack' target -->
 
     <ConvertToAbsolutePath Condition="'$(ProjectAssetsFile)' != ''" Paths="$(ProjectAssetsFile)">
       <Output TaskParameter="AbsolutePaths" PropertyName="ProjectAssetsFileAbsolutePath" />
