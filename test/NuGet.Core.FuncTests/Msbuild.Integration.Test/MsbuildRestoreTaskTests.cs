@@ -683,7 +683,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Restore the project with a PackageReference which generates assets
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {project.ProjectPath} /p:RestoreSources=\"{relativePath}\"" +
-                    (isStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty),
+                    (isStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty),
                     ignoreExitCode: true);
                 result.Success.Should().BeTrue(because: result.AllOutput);
 
