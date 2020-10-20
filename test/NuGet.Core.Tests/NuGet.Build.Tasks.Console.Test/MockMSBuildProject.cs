@@ -55,5 +55,10 @@ namespace NuGet.Build.Tasks.Console.Test
         {
             return Items.TryGetValue(name, out var items) ? items : null;
         }
+
+        public string GetGlobalProperty(string property)
+        {
+            return string.Empty;
+        }
     }
 }

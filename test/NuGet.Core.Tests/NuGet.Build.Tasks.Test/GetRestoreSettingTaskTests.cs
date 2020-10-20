@@ -641,6 +641,76 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
+        [Fact]
+        public void GetRestoreSettingsTask_WithRestoreSourcesOverride_ResolvesAgainstWorkingDirectory()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var testLogger = buildEngine.TestLogger;
+
+                var settingsPerFramework = new List<ITaskItem>();
+                var settings1 = new Mock<ITaskItem>();
+                settings1.SetupGet(e => e.ItemSpec).Returns("a");
+                settingsPerFramework.Add(settings1.Object);
+                var startupDirectory = Path.Combine(testDir, "innerPath");
+                var relativePath = "relativeSource";
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = startupDirectory,
+                    ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
+                    RestoreSources = new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") },
+                    RestoreSourcesOverride = new[] { relativePath },
+                    RestoreSettingsPerFramework = settingsPerFramework.ToArray()
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
+            }
+        }
+
+        [Fact]
+        public void GetRestoreSettingsTask_WithFallbackFoldersOverride_ResolvesAgainstWorkingDirectory()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var testLogger = buildEngine.TestLogger;
+
+                var settingsPerFramework = new List<ITaskItem>();
+                var settings1 = new Mock<ITaskItem>();
+                settings1.SetupGet(e => e.ItemSpec).Returns("a");
+                settingsPerFramework.Add(settings1.Object);
+                var startupDirectory = Path.Combine(testDir, "innerPath");
+                var relativePath = "relativeSource";
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = startupDirectory,
+                    ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
+                    RestoreFallbackFolders = new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") },
+                    RestoreFallbackFoldersOverride = new[] { relativePath },
+                    RestoreSettingsPerFramework = settingsPerFramework.ToArray()
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
+            }
+        }
+
         private static readonly string MachineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
                 </configuration>";
