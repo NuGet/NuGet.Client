@@ -18,7 +18,7 @@ namespace NuGet.Shared.Test
         {
             //Act
             var exception = Assert.Throws<ArgumentNullException>(() => XmlUtility.Load(inputUri: null));
-           
+
             //Assert
             Assert.Equal("inputUri", exception.ParamName);
         }
