@@ -221,8 +221,11 @@ namespace NuGet.Build.Tasks.Console.Test
             {
                 var project = new MockMSBuildProject(testDirectory, new Dictionary<string, string>
                 {
-                    ["RestorePackagesPathOverride"] = packagesPathOverride,
                     ["RestorePackagesPath"] = packagesPath
+                },
+                new Dictionary<string, string>
+                {
+                    ["RestorePackagesPath"] = packagesPathOverride,
                 });
 
                 var settings = new MockSettings
@@ -505,8 +508,11 @@ namespace NuGet.Build.Tasks.Console.Test
                 var project = new MockMSBuildProject(testDirectory, new Dictionary<string, string>
                 {
                     ["RestoreRepositoryPath"] = restoreRepositoryPath,
-                    ["RestoreRepositoryPathOverride"] = repositoryPathOverride,
                     ["SolutionPath"] = solutionPath == null || solutionPath == "*Undefined*" ? solutionPath : UriUtility.GetAbsolutePath(testDirectory, solutionPath)
+                },
+                new Dictionary<string, string>
+                {
+                    ["RestoreRepositoryPath"] = repositoryPathOverride,
                 });
 
                 var settings = new MockSettings
@@ -607,7 +613,10 @@ namespace NuGet.Build.Tasks.Console.Test
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
                 ["RestoreSources"] = "https://source1;https://source2",
-                ["RestoreSourcesOverride"] = "https://source3"
+            },
+            new Dictionary<string, string>
+            {
+                ["RestoreSources"] = "https://source3"
             });
 
             var settings = new MockSettings
