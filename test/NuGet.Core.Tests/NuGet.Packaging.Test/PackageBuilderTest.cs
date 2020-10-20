@@ -139,7 +139,6 @@ namespace NuGet.Packaging.Test
         [InlineData(".NETFramework,Version=v4.7.2", ".NETFramework4.7.2")]
         [InlineData(".NETFramework,Version=v4.7.2,Profile=foo", ".NETFramework4.7.2-foo")]
         [InlineData("net5.0", "net5.0")]
-        [InlineData("net5.0-windows", "net5.0-windows")]
         [InlineData("net5.0-macos10.8", "net5.0-macos10.8")]
         [InlineData("net6.0", "net6.0")]
         public void CreatePackageTFMFormatting(string from, string to)
@@ -214,8 +213,8 @@ namespace NuGet.Packaging.Test
             var net45 = new PackageDependencyGroup(new NuGetFramework(".NETFramework", new Version(4, 5)), dependencies45);
             builder.DependencyGroups.Add(net45);
 
-            var net50win = new PackageDependencyGroup(new NuGetFramework(".NETCoreApp", new Version(5, 0), "windows", new Version(0, 0)), dependencies50);
-            builder.DependencyGroups.Add(net50win);
+            var net50win7 = new PackageDependencyGroup(new NuGetFramework(".NETCoreApp", new Version(5, 0), "windows", new Version(7, 0)), dependencies50);
+            builder.DependencyGroups.Add(net50win7);
 
             using (var ms = new MemoryStream())
             {
