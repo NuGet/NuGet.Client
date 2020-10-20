@@ -116,7 +116,7 @@ namespace NuGet.Packaging
             XDocument document;
             if (propertyProvider == null)
             {
-                document = XmlUtility.Load(stream);
+                document = Shared.XmlUtility.Load(stream);
             }
             else
             {
