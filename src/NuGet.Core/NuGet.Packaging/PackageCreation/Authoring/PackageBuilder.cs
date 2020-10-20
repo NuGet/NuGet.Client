@@ -601,6 +601,7 @@ namespace NuGet.Packaging
             // Check standalone references
             var frameworksMissingPlatformVersion = new HashSet<string>(references
                 .SelectMany(reference => reference.SupportedFrameworks)
+                .Where(framework => framework.HasPlatform && framework.PlatformVersion == FrameworkConstants.EmptyVersion)
                 .Select(framework => framework.GetShortFolderName())
             );
             if (frameworksMissingPlatformVersion.Any())
