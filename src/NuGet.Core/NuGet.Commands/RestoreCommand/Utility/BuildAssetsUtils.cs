@@ -15,7 +15,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
-using NuGet.Shared;
 using NuGet.Versioning;
 using XmlUtility = NuGet.Shared.XmlUtility;
 
