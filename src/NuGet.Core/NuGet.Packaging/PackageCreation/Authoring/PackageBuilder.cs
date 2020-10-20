@@ -380,7 +380,7 @@ namespace NuGet.Packaging
 
             ValidateDependencies(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
-            ValidateFrameworkAssemblies(FrameworkReferenceGroups);
+            ValidateFrameworkAssemblies(FrameworkReferences, FrameworkReferenceGroups);
             ValidateLicenseFile(Files, LicenseMetadata);
             ValidateIconFile(Files, Icon);
             ValidateFileFrameworks(Files);
@@ -596,9 +596,20 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void ValidateFrameworkAssemblies(IEnumerable<FrameworkReferenceGroup> packageFrameworkAssemblies)
+        private static void ValidateFrameworkAssemblies(IEnumerable<FrameworkAssemblyReference> references, IEnumerable<FrameworkReferenceGroup> referenceGroups)
         {
-            var frameworksMissingPlatformVersion = new HashSet<string>(packageFrameworkAssemblies
+            // Check standalone references
+            var frameworksMissingPlatformVersion = new HashSet<string>(references
+                .SelectMany(reference => reference.SupportedFrameworks)
+                .Select(framework => framework.GetShortFolderName())
+            );
+            if (frameworksMissingPlatformVersion.Any())
+            {
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyReferences, string.Join(", ", frameworksMissingPlatformVersion)));
+            }
+
+            // Check reference groups too
+            frameworksMissingPlatformVersion = new HashSet<string>(referenceGroups
                 .Select(group => group.TargetFramework)
                 .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
                 .Select(framework => framework.GetShortFolderName()));

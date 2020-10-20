@@ -855,4 +855,8 @@ Valid from:</comment>
     <value>Some reference group TFMs are missing a platform version: {0}</value>
     <comment>0 - comma-separated list of reference group TFMs</comment>
   </data>
+  <data name="MissingTargetPlatformVersionsFromFrameworkAssemblyReferences" xml:space="preserve">
+    <value>Some framework assembly reference TFMs are missing a platform version: {0}</value>
+    <comment>0 - comma-separated list of reference group TFMs</comment>
+  </data>
 </root>

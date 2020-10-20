@@ -1318,6 +1318,96 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void SavingPackageValidatesMissingTPVInReferences()
+        {
+            // Arrange
+            var builder = new PackageBuilder
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Test",
+            };
+            builder.Authors.Add("Test");
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0-windows\Foo.dll" });
+            builder.PackageAssemblyReferences = new[] { new PackageReferenceSet(NuGetFramework.Parse("net5.0-windows"), new string[] { "Foo.dll" }) };
+
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
+                "Some reference group TFMs are missing a platform version: net5.0-windows");
+        }
+
+        [Fact]
+        public void SavingPackageValidatesMissingTPVInFiles()
+        {
+            // Arrange
+            var builder = new PackageBuilder
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Test",
+            };
+            builder.Authors.Add("Test");
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0-windows\Foo.dll" });
+
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
+                "Some included files are included under TFMs which are missing a platform version: net5.0-windows");
+        }
+
+        [Fact]
+        public void SavingPackageValidatesMissingTPVInFrameworkReferences()
+        {
+            // Arrange
+            var builder = new PackageBuilder
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Test",
+            };
+            builder.Authors.Add("Test");
+            builder.FrameworkReferences.Add(new FrameworkAssemblyReference("System.Web", new[] { NuGetFramework.Parse("net5.0-windows") }));
+
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
+                "Some framework assembly reference TFMs are missing a platform version: net5.0-windows");
+        }
+
+        [Fact]
+        public void SavingPackageValidatesMissingTPVInFrameworkReferenceGroups()
+        {
+            // Arrange
+            var builder = new PackageBuilder
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Test",
+            };
+            builder.Authors.Add("Test");
+            builder.FrameworkReferenceGroups.Add(new FrameworkReferenceGroup(NuGetFramework.Parse("net5.0-windows"), new List<FrameworkReference>()));
+
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
+                "Some reference assembly group TFMs are missing a platform version: net5.0-windows");
+        }
+
+        [Fact]
+        public void SavingPackageValidatesMissingTPVInDependencyGroups()
+        {
+            // Arrange
+            var builder = new PackageBuilder
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Test",
+            };
+            builder.Authors.Add("Test");
+            var dependencySet = new PackageDependencyGroup(NuGetFramework.Parse("net5.0-windows"), new[] {
+                        new PackageDependency("B", new VersionRange(NuGetVersion.Parse("2.0"), true, NuGetVersion.Parse("2.0")))
+                    });
+
+            builder.DependencyGroups.Add(dependencySet);
+
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
+                "Some dependency group TFMs are missing a platform version: net5.0-windows");
+        }
+
+        [Fact]
         public void SavingPackageWithInvalidDependencyVersionMaxLessThanMinThrows()
         {
             // Arrange

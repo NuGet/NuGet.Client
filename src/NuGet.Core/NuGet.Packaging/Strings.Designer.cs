@@ -808,6 +808,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Some framework assembly reference TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromFrameworkAssemblyReferences {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromFrameworkAssemblyReferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some included files are included under TFMs which are missing a platform version: {0}.
         /// </summary>
         internal static string MissingTargetPlatformVersionsFromIncludedFiles {
