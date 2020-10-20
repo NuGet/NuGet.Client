@@ -17,6 +17,7 @@ using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.Shared;
 using NuGet.Versioning;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.Commands
 {

@@ -13,6 +13,7 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Xml;
 using NuGet.Shared;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.Packaging
 {
