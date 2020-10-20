@@ -239,7 +239,7 @@ namespace NuGet.Packaging.Test
       <group targetFramework="".NETFramework4.5"">
         <dependency id=""packageB"" version=""1.0.0"" exclude=""z"" />
       </group>
-      <group targetFramework=""net5.0-windows"">
+      <group targetFramework=""net5.0-windows7.0"">
         <dependency id=""packageC"" version=""1.0.0"" include=""a,b,c"" exclude=""b,c"" />
       </group>
     </dependencies>
