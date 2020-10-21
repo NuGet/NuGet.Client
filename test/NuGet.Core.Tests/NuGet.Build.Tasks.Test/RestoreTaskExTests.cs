@@ -52,10 +52,12 @@ namespace NuGet.Build.Tasks.Test
                     NoCache = true,
                     ProjectFullPath = projectPath,
                     Recursive = true,
-                    RestorePackagesConfig = true
+                    RestorePackagesConfig = true,
+                    MSBuildStartupDirectory = testDirectory,
                 })
                 {
-                    task.GetCommandLineArguments().ToList().Should().BeEquivalentTo(
+                    var arguments = task.GetCommandLineArguments().ToList();
+                    arguments.Should().BeEquivalentTo(
 #if IS_CORECLR
                     Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
 #endif
@@ -66,7 +68,7 @@ namespace NuGet.Build.Tasks.Test
                     Path.Combine(msbuildBinPath, "MSBuild.exe"),
 #endif
                     projectPath,
-                        "Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=true");
+                        $"Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=true;OriginalMSBuildStartupDirectory={testDirectory}");
                 }
             }
         }
