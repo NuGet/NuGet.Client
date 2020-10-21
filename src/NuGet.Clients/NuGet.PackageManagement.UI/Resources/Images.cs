@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -31,17 +32,28 @@ namespace NuGet.PackageManagement.UI
                 image.Freeze();
                 DefaultPackageIcon = image;
             }
-            else // for tests, don't actually load the icon, just use a 1x1 image.
+            else // for tests, don't actually load the icon, just use a 32x32 image.
             {
+                const int size = PackageItemListViewModel.DecodePixelWidth;
+                var bytes = new List<byte>();
+                byte[] pixel = new byte[] { 0, 0, 255, 0 };
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        bytes.AddRange(pixel);
+                    }
+                }
+
                 BitmapSource image = BitmapSource.Create(
-                    pixelWidth: 1,
-                    pixelHeight: 1,
+                    pixelWidth: size,
+                    pixelHeight: size,
                     dpiX: 96.0,
                     dpiY: 96.0,
                     PixelFormats.Bgr32,
                     palette: null,
-                    pixels: new byte[] { 0, 0, 255, 0 },
-                    stride: 32);
+                    pixels: bytes.ToArray(),
+                    stride: 4 * size);
                 image.Freeze();
                 DefaultPackageIcon = image;
             }
