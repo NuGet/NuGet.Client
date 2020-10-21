@@ -379,8 +379,8 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.True(result is BitmapImage || result is CachedBitmap);
             var image = result as BitmapSource;
             Assert.NotNull(image);
-            Assert.Equal( PackageItemListViewModel.DecodePixelWidth, image.PixelWidth);
-            Assert.Equal( PackageItemListViewModel.DecodePixelWidth, image.PixelHeight);
+            Assert.Equal(PackageItemListViewModel.DecodePixelWidth, image.PixelWidth);
+            Assert.Equal(PackageItemListViewModel.DecodePixelWidth, image.PixelHeight);
         }
 
         /// <summary>
