@@ -1357,7 +1357,18 @@ namespace NuGet.Packaging.Test
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"buildTransitive\net13.0-windows\foo.props" });
 
             ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
-                "Some included files are included under TFMs which are missing a platform version: " + string.Join(", ", new string[] { "net5.0-windows", "net6.0-windows", "net7.0-windows", "net8.0-windows", "net9.0-windows", "net10.0-windows", "net11.0-windows", "net12.0-windows", "net13.0-windows"}.OrderBy(str => str)));
+                "Some included files are included under TFMs which are missing a platform version: " + string.Join(", ", new string[]
+                {
+                  "net5.0-windows",
+                  "net6.0-windows",
+                  "net7.0-windows",
+                  "net8.0-windows",
+                  "net9.0-windows",
+                  "net10.0-windows",
+                  "net11.0-windows",
+                  "net12.0-windows",
+                  "net13.0-windows"
+                }.OrderBy(str => str)));
         }
 
         [Fact]
