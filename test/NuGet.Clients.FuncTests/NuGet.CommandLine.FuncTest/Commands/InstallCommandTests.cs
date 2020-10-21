@@ -196,7 +196,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, context.WorkingDirectory);
                 SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
 
-                //Making sure the OCSP responce expires
                 await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
                 certificateAuthority.Revoke(
                     bcCertificate,
