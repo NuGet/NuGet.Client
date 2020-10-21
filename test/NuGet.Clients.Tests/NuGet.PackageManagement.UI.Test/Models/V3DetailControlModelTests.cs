@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
@@ -96,6 +97,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
             _testInstance = new PackageDetailControlModel(
+                Mock.Of<IServiceBroker>(),
                 solutionManager: solMgr.Object,
                 Array.Empty<IProjectContextInfo>());
             _testInstance.SetCurrentPackage(

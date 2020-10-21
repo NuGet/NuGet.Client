@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -23,22 +24,27 @@ namespace NuGet.PackageManagement.UI
         private bool _isSelected;
         private string _projectName;
         private AlternativePackageManagerProviders _providers;
+        private readonly IServiceBroker _serviceBroker;
 
-        private PackageInstallationInfo(IProjectContextInfo project)
+        private PackageInstallationInfo(IServiceBroker serviceBroker, IProjectContextInfo project)
         {
+            _serviceBroker = serviceBroker;
             NuGetProject = project;
         }
 
-        public static async ValueTask<PackageInstallationInfo> CreateAsync(IProjectContextInfo project, CancellationToken cancellationToken)
+        public static async ValueTask<PackageInstallationInfo> CreateAsync(
+            IServiceBroker serviceBroker,
+            IProjectContextInfo project,
+            CancellationToken cancellationToken)
         {
-            var packageInstallationInfo = new PackageInstallationInfo(project);
+            var packageInstallationInfo = new PackageInstallationInfo(serviceBroker, project);
             await packageInstallationInfo.InitializeAsync(cancellationToken);
             return packageInstallationInfo;
         }
 
         private async ValueTask InitializeAsync(CancellationToken cancellationToken)
         {
-            _projectName = await NuGetProject.GetUniqueNameOrNameAsync(cancellationToken);
+            _projectName = await NuGetProject.GetUniqueNameOrNameAsync(_serviceBroker, cancellationToken);
         }
 
         private NuGetVersion _versionInstalled;

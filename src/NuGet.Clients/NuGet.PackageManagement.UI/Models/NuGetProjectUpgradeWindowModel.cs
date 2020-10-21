@@ -9,7 +9,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using NuGet.Common;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Rules;
@@ -49,6 +51,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public static async Task<NuGetProjectUpgradeWindowModel> CreateAsync(
+            IServiceBroker serviceBroker,
             IProjectContextInfo project,
             IList<PackageDependencyInfo> packageDependencyInfos,
             CancellationToken cancellationToken)
@@ -58,7 +61,7 @@ namespace NuGet.PackageManagement.UI
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            string projectName = await project.GetUniqueNameOrNameAsync(CancellationToken.None);
+            string projectName = await project.GetUniqueNameOrNameAsync(serviceBroker, CancellationToken.None);
             string title = string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_NuGetMigrator, projectName);
             var notFoundPackages = new HashSet<PackageIdentity>();
             var hasIssues = false;
@@ -70,6 +73,7 @@ namespace NuGet.PackageManagement.UI
             foreach (NuGetProjectUpgradeDependencyItem dependencyItem in dependencyItems)
             {
                 (bool _, string packagePath) = await project.TryGetInstalledPackageFilePathAsync(
+                    serviceBroker,
                     dependencyItem.Identity,
                     cancellationToken);
 

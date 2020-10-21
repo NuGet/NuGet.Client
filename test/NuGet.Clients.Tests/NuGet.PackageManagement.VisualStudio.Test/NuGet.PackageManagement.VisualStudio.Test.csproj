@@ -23,6 +23,7 @@
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\IProjectContextInfoExtensionsTests.cs" />
     <Compile Include="Feeds\SourceRepositoryCreator.cs" />
     <Compile Include="Feeds\SourceRepositoryExtensionsTests.cs" />
     <Compile Include="CpsPackageReferenceProjectTests.cs" />

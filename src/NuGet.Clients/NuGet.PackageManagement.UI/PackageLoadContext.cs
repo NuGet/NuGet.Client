@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
@@ -33,6 +34,8 @@ namespace NuGet.PackageManagement.UI
 
         public INuGetSolutionManagerService SolutionManager { get; }
 
+        internal IServiceBroker ServiceBroker { get; }
+
         public PackageLoadContext(
             IEnumerable<SourceRepository> sourceRepositories,
             bool isSolution,
@@ -44,8 +47,12 @@ namespace NuGet.PackageManagement.UI
             Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
             PackageManagerProviders = uiContext.PackageManagerProviders;
             SolutionManager = uiContext.SolutionManagerService;
+            ServiceBroker = uiContext.ServiceBroker;
 
-            _installedPackagesTask = PackageCollection.FromProjectsAsync(Projects, CancellationToken.None);
+            _installedPackagesTask = PackageCollection.FromProjectsAsync(
+                ServiceBroker,
+                Projects,
+                CancellationToken.None);
         }
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
@@ -55,9 +62,11 @@ namespace NuGet.PackageManagement.UI
         {
             var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var project in Projects)
+            foreach (IProjectContextInfo project in Projects)
             {
-                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                    ServiceBroker,
+                    CancellationToken.None);
                 NuGetFramework framework = projectMetadata.TargetFramework;
 
                 if (framework != null)
