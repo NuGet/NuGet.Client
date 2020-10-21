@@ -1347,9 +1347,17 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("Test");
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0-windows\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"ref\net6.0-windows\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"runtimes\win7-x64\lib\net7.0-windows\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"runtimes\win7-x64\nativeassets\net8.0-windows\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"build\net9.0-windows\foo.props" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"contentFiles\csharp\net10.0-windows\Foo.txt" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"tools\net11.0-windows\win7-x64\Foo.exe" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"embed\net12.0-windows\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"buildTransitive\net13.0-windows\foo.props" });
 
             ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
-                "Some included files are included under TFMs which are missing a platform version: net5.0-windows");
+                "Some included files are included under TFMs which are missing a platform version: " + string.Join(", ", new string[] { "net5.0-windows", "net6.0-windows", "net7.0-windows", "net8.0-windows", "net9.0-windows", "net10.0-windows", "net11.0-windows", "net12.0-windows", "net13.0-windows"}.OrderBy(str => str)));
         }
 
         [Fact]

@@ -554,7 +554,7 @@ namespace NuGet.Packaging
                 .Select(framework => framework.GetShortFolderName()));
             if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, String.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", frameworksMissingPlatformVersion)));
+                throw new PackagingException(NuGetLogCode.NU1012, String.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
             }
 
             if (version == null)
@@ -577,7 +577,7 @@ namespace NuGet.Packaging
                 .Select(framework => framework.GetShortFolderName()));
             if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromReferenceGroups, string.Join(", ", frameworksMissingPlatformVersion)));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromReferenceGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
             }
 
             var libFiles = new HashSet<string>(from file in files
@@ -606,7 +606,7 @@ namespace NuGet.Packaging
             );
             if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyReferences, string.Join(", ", frameworksMissingPlatformVersion)));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyReferences, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
             }
 
             // Check reference groups too
@@ -616,7 +616,7 @@ namespace NuGet.Packaging
                 .Select(framework => framework.GetShortFolderName()));
             if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyGroups, string.Join(", ", frameworksMissingPlatformVersion)));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
             }
         }
 
@@ -749,7 +749,7 @@ namespace NuGet.Packaging
 
             if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromIncludedFiles, string.Join(", ", frameworksMissingPlatformVersion)));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromIncludedFiles, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
             }
         }
 
