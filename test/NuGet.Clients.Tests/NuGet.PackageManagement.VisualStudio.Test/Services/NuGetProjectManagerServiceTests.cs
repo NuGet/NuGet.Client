@@ -12,6 +12,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -31,13 +32,12 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
 using Test.Utility;
-using Test.Utility.Threading;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
+    [Collection(MockedVS.Collection)]
     public sealed class NuGetProjectManagerServiceTests : IAsyncServiceProvider, IDisposable
     {
         private NuGetPackageManager _packageManager;
@@ -49,9 +49,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private NuGetProjectManagerServiceState _state;
         private TestDirectory _testDirectory;
 
-        public NuGetProjectManagerServiceTests(DispatcherThreadFixture dispatcherThreadFixture)
+        public NuGetProjectManagerServiceTests(GlobalServiceProvider sp)
         {
-            Assert.NotNull(dispatcherThreadFixture);
+            sp.Reset();
 
             _projectContext = new TestNuGetProjectContext();
             _services = new Dictionary<Type, Task<object>>()
@@ -60,8 +60,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
 
             ServiceLocator.InitializePackageServiceProvider(this);
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(dispatcherThreadFixture.JoinableTaskFactory);
         }
 
         public void Dispose()
@@ -369,8 +367,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     () => Task.FromResult(_packageManager)),
                 new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolutionManager>(
                     () => Task.FromResult<IVsSolutionManager>(_solutionManager)),
-                new Microsoft.VisualStudio.Threading.AsyncLazy<ISourceRepositoryProvider>(
-                    () => Task.FromResult<ISourceRepositoryProvider>(sourceRepositoryProvider)));
+                sourceRepositoryProvider,
+                new Microsoft.VisualStudio.Threading.AsyncLazy<IReadOnlyCollection<SourceRepository>>(
+                    () => Task.FromResult<IReadOnlyCollection<SourceRepository>>(sourceRepositoryProvider.GetRepositories().ToList())));
             _projectManager = new NuGetProjectManagerService(
                 default(ServiceActivationOptions),
                 Mock.Of<IServiceBroker>(),

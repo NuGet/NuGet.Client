@@ -247,14 +247,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async ValueTask<SourceRepository?> GetSourceRepositoryAsync(CancellationToken cancellationToken)
         {
-            ISourceRepositoryProvider sourceRepositoryProvider = await _state.SourceRepositoryProvider.GetValueAsync(cancellationToken);
-            Assumes.NotNull(sourceRepositoryProvider);
-
             var activeSources = new List<SourceRepository>();
 
-            PackageSourceMoniker
-                .PopulateList(sourceRepositoryProvider)
-                .ForEach(source => activeSources.AddRange(source.SourceRepositories));
+            IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers = await PackageSourceMoniker.PopulateListAsync(
+                _serviceBroker,
+                cancellationToken);
+
+            foreach (PackageSourceMoniker item in packageSourceMonikers)
+            {
+                var sources = await _state.GetRepositoriesAsync(item.PackageSources, cancellationToken);
+                activeSources.AddRange(sources);
+            }
 
             return activeSources.FirstOrDefault();
         }

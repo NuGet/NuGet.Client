@@ -8,39 +8,35 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft;
-using Microsoft.VisualStudio.Threading;
-using NuGet.PackageManagement.VisualStudio.Test;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
-using NuGet.VisualStudio;
 using Test.Utility.Threading;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.UI.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
+    [Collection(MockedVS.Collection)]
     public class PackageItemListViewModelTests : IClassFixture<LocalPackageSearchMetadataFixture>, IClassFixture<DispatcherThreadFixture>
     {
         private readonly LocalPackageSearchMetadataFixture _testData;
         private readonly PackageItemListViewModel _testInstance;
         private readonly ITestOutputHelper _output;
-        private readonly JoinableTaskFactory _jtf;
 
-        public PackageItemListViewModelTests(DispatcherThreadFixture fixture, ITestOutputHelper output, LocalPackageSearchMetadataFixture testData)
+        public PackageItemListViewModelTests(
+            GlobalServiceProvider globalServiceProvider,
+            ITestOutputHelper output,
+            LocalPackageSearchMetadataFixture testData)
         {
+            globalServiceProvider.Reset();
+
             _testData = testData;
             _testInstance = new PackageItemListViewModel()
             {
                 PackageReader = _testData.TestData.PackageReader,
             };
             _output = output;
-
-            Assumes.Present(fixture);
-
-            _jtf = fixture.JoinableTaskFactory;
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
         }
 
         [Fact]

@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.Telemetry
                                 // Http V3 feed
                                 httpV3++;
 
-                                if (TelemetryUtility.IsNuGetOrg(source))
+                                if (TelemetryUtility.IsNuGetOrg(source.Source))
                                 {
                                     nugetOrg |= HttpStyle.YesV3;
                                 }
@@ -90,7 +90,7 @@ namespace NuGet.PackageManagement.Telemetry
                                 // Http V2 feed
                                 httpV2++;
 
-                                if (TelemetryUtility.IsNuGetOrg(source))
+                                if (TelemetryUtility.IsNuGetOrg(source.Source))
                                 {
                                     if (source.Source.IndexOf(
                                         "api/v2/curated-feeds/microsoftdotnet",
