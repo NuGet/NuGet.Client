@@ -958,6 +958,7 @@ namespace Proj1
                     proj1Directory,
                     $"restore {project1Path}",
                     waitForExit: true);
+                Assert.True(t.Success, t.AllOutput);
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1052,6 +1053,7 @@ namespace Proj1
                     proj1Directory,
                     "restore packages.config -PackagesDirectory " + packagesDirectory,
                     waitForExit: true);
+                Assert.True(t.Success, t.AllOutput);
 
                 // Act
                 var r = CommandRunner.Run(
@@ -4372,6 +4374,7 @@ namespace Proj2
                     waitForExit: true);
 
                 // Assert
+                Assert.True(r.Success, r.AllOutput);
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0-alpha.nupkg"));
                 Assert.Equal("0.0.0-alpha", package.Version.ToString());
             }
@@ -6754,7 +6757,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     proj1Directory,
                     "pack proj1.csproj -build -solutionDir ../solution",
                     waitForExit: true);
-                Assert.Equal(0, r.Item1);
+                Assert.True(r.Success, r.AllOutput);
             }
         }
 
@@ -6804,7 +6807,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     proj1Directory,
                     "pack proj1.csproj -build -packagesDir ../pkgs",
                     waitForExit: true);
-                Assert.Equal(0, r.Item1);
+                Assert.True(r.Success, r.AllOutput);
             }
         }
 

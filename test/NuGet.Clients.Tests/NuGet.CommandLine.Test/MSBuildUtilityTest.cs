@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class MsBuildUtilityTest
     {
         // Test that when msbuildVersion is null, GetMsBuildDirectoryInternal returns the highest installed version.
@@ -104,7 +105,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that GetMsBuildDirectoryInternal returns path of the toolset whose toolset version matches
-        // the userVersion. Also tests that, when userVersion is just a number, it can be matched with version 
+        // the userVersion. Also tests that, when userVersion is just a number, it can be matched with version
         // userVersion + ".0". And non-numeric/case insensitive tests.
         [Theory]
         [MemberData("VersionMatchData", MemberType = typeof(ToolsetDataSource))]
@@ -195,7 +196,7 @@ namespace NuGet.CommandLine.Test
                 //    |- 15.1
                 //       |- bin
                 //          |- msbuild.exe
-                // We want the highest version within the VS tree chosen (typically there's only one, but that's the logic 
+                // We want the highest version within the VS tree chosen (typically there's only one, but that's the logic
                 // we'll go with in case there are more).
                 var msBuild15BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.0", "Bin")).FullName;
                 var msBuild151BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.1", "Bin")).FullName;
@@ -242,7 +243,7 @@ namespace NuGet.CommandLine.Test
                 //    |- 15.1
                 //       |- bin
                 //          |- msbuild.exe
-                // We want the highest version within the VS tree chosen (typically there's only one, but that's the logic 
+                // We want the highest version within the VS tree chosen (typically there's only one, but that's the logic
                 // we'll go with in case there are more).
                 var msBuild15BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.0", "Bin")).FullName;
                 var msBuild151BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.1", "Bin")).FullName;
