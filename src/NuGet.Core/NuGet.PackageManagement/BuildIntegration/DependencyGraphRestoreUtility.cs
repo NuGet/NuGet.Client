@@ -392,7 +392,7 @@ namespace NuGet.PackageManagement
             {
                 SemaphoreLock.Release();
             }
-            
+
             var dgSpec = restoreSpecData.DgSpec;
 
             if (projectAdditionalMessages?.Count > 0)
