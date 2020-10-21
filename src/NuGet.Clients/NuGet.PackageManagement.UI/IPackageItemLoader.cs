@@ -4,8 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,11 +13,9 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal interface IPackageItemLoader : IItemLoader<PackageItemListViewModel>
     {
-        Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken,
-            CancellationToken cancellationToken);
+        Task<SearchResultContextInfo> SearchAsync(CancellationToken cancellationToken);
 
-        Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult,
+        Task UpdateStateAndReportAsync(SearchResultContextInfo searchResult,
             IProgress<IItemLoaderState> progress, CancellationToken cancellationToken);
-
     }
 }

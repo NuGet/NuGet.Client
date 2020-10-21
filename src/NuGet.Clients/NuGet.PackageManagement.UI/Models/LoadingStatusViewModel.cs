@@ -4,8 +4,8 @@
 using System.Globalization;
 using System.Linq;
 using System.Windows;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Internal.Contracts;
 using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI

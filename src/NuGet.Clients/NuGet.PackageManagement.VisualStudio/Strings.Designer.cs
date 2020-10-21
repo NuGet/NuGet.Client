@@ -484,6 +484,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The feed type &apos;{0}&apos; is unsupported..
+        /// </summary>
+        public static string UnsupportedFeedType {
+            get {
+                return ResourceManager.GetString("UnsupportedFeedType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Directory &apos;{0}&apos; is not empty. Skipping....
         /// </summary>
         public static string Warning_DirectoryNotEmpty {
