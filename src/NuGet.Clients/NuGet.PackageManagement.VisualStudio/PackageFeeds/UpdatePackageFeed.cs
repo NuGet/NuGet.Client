@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -20,8 +21,6 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IEnumerable<PackageCollectionItem> _installedPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
-        private readonly PackageSearchMetadataCache _cachedUpdates;
-        private readonly Common.ILogger _logger;
         private readonly IProjectContextInfo[] _projects;
         private readonly IServiceBroker _serviceBroker;
 
@@ -29,16 +28,17 @@ namespace NuGet.PackageManagement.VisualStudio
             IServiceBroker serviceBroker,
             IEnumerable<PackageCollectionItem> installedPackages,
             IPackageMetadataProvider metadataProvider,
-            IProjectContextInfo[] projects,
-            PackageSearchMetadataCache optionalCachedUpdates,
-            Common.ILogger logger)
+            IProjectContextInfo[] projects)
         {
-            _installedPackages = installedPackages ?? throw new ArgumentNullException(nameof(installedPackages));
-            _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
-            _projects = projects ?? throw new ArgumentNullException(nameof(projects));
-            _cachedUpdates = optionalCachedUpdates;
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _serviceBroker = serviceBroker ?? throw new ArgumentNullException(nameof(serviceBroker));
+            Assumes.NotNull(serviceBroker);
+            Assumes.NotNull(installedPackages);
+            Assumes.NotNull(metadataProvider);
+            Assumes.NotNull(projects);
+
+            _serviceBroker = serviceBroker;
+            _installedPackages = installedPackages;
+            _metadataProvider = metadataProvider;
+            _projects = projects;
         }
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
@@ -49,19 +49,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException("Invalid token");
             }
 
-            var packagesWithUpdates = (_cachedUpdates?.IncludePrerelease == searchToken.SearchFilter.IncludePrerelease)
-                ?
-                    GetPackagesFromCache(searchToken.SearchString)
-                :
-                    await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
+            IEnumerable<IPackageSearchMetadata> packagesWithUpdates = await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
 
-            var items = packagesWithUpdates
+            IPackageSearchMetadata[] items = packagesWithUpdates
                 .Skip(searchToken.StartIndex)
                 .ToArray();
 
-            var result = SearchResult.FromItems(items);
+            SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(items);
 
-            var loadingStatus = items.Length == 0
+            LoadingStatus loadingStatus = items.Length == 0
                 ? LoadingStatus.NoItemsFound
                 : LoadingStatus.NoMoreItems;
             result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
@@ -70,11 +66,6 @@ namespace NuGet.PackageManagement.VisualStudio
             };
 
             return result;
-        }
-
-        private IEnumerable<IPackageSearchMetadata> GetPackagesFromCache(string searchText)
-        {
-            return _cachedUpdates.Packages.Where(p => p.Identity.Id.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1);
         }
 
         public async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesWithUpdatesAsync(string searchText, SearchFilter searchFilter, CancellationToken cancellationToken)

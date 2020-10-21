@@ -54,6 +54,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
             var formatters = new IMessagePackFormatter[]
             {
+                AlternatePackageMetadataContextInfoFormatter.Instance,
                 FloatRangeFormatter.Instance,
                 IPackageReferenceContextInfoFormatter.Instance,
                 IProjectContextInfoFormatter.Instance,
@@ -61,14 +62,21 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 NuGetFrameworkFormatter.Instance,
                 NuGetVersionFormatter.Instance,
                 PackageDependencyFormatter.Instance,
+                PackageDependencyGroupFormatter.Instance,
                 PackageDependencyInfoFormatter.Instance,
+                PackageDeprecationMetadataContextInfoFormatter.Instance,
                 PackageIdentityFormatter.Instance,
                 PackageReferenceFormatter.Instance,
+                PackageSearchMetadataContextInfoFormatter.Instance,
                 PackageSourceFormatter.Instance,
+                PackageSourceContextInfoFormatter.Instance,
                 PackageSourceUpdateOptionsFormatter.Instance,
+                PackageVulnerabilityMetadataContextInfoFormatter.Instance,
                 ProjectActionFormatter.Instance,
-                RemoteErrorFormatter.Instance,
-                VersionRangeFormatter.Instance
+                VersionRangeFormatter.Instance,
+                SearchFilterFormatter.Instance,
+                SearchResultContextInfoFormatter.Instance,
+                VersionInfoContextInfoFormatter.Instance,
             };
             var resolvers = new IFormatterResolver[] { MessagePack.MessagePackSerializerOptions.Standard.Resolver };
 

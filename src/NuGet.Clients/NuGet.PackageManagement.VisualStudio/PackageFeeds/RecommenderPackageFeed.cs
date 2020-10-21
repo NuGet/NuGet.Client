@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -24,9 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly SourceRepository _sourceRepository;
         private readonly IEnumerable<PackageCollectionItem> _installedPackages;
-        private readonly IEnumerable<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
-        private readonly Common.ILogger _logger;
 
         public (string modelVersion, string vsixVersion) VersionInfo { get; set; } = (modelVersion: (string)null, vsixVersion: (string)null);
 
@@ -39,15 +38,11 @@ namespace NuGet.PackageManagement.VisualStudio
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
             IEnumerable<PackageCollectionItem> installedPackages,
-            IEnumerable<string> targetFrameworks,
-            IPackageMetadataProvider metadataProvider,
-            Common.ILogger logger)
+            IPackageMetadataProvider metadataProvider)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
             _installedPackages = installedPackages ?? throw new ArgumentNullException(nameof(installedPackages));
-            _targetFrameworks = targetFrameworks ?? throw new ArgumentNullException(nameof(targetFrameworks));
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
                 async () =>
@@ -115,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // when we implement PR-style projects.
                 List<string> depPackages = new List<string>();
                 // call the recommender to get package recommendations
-                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
+                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(searchToken.SearchFilter.SupportedFrameworks, topPackages, depPackages, cancellationToken);
             }
 
             if (recommendIds == null || !recommendIds.Any())
@@ -134,7 +129,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], includePrerelease: false, includeUnlisted: false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
                 if (ver != null)
                 {
-                    NuGet.Packaging.Core.PackageIdentity pid = new NuGet.Packaging.Core.PackageIdentity(recommendIds[index], ver);
+                    var pid = new PackageIdentity(recommendIds[index], ver);
                     recommendPackages.Add(pid);
                 }
                 index++;
