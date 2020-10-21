@@ -39,6 +39,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
+    [Collection(MockedVS.Collection)]
     public sealed class NuGetProjectManagerServiceTests : MockedVSCollectionTests, IDisposable
     {
         private NuGetPackageManager _packageManager;
@@ -414,8 +415,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     () => Task.FromResult(_packageManager)),
                 new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolutionManager>(
                     () => Task.FromResult<IVsSolutionManager>(_solutionManager)),
-                new Microsoft.VisualStudio.Threading.AsyncLazy<ISourceRepositoryProvider>(
-                    () => Task.FromResult<ISourceRepositoryProvider>(sourceRepositoryProvider)));
+                sourceRepositoryProvider,
+                new Microsoft.VisualStudio.Threading.AsyncLazy<IReadOnlyCollection<SourceRepository>>(
+                    () => Task.FromResult<IReadOnlyCollection<SourceRepository>>(sourceRepositoryProvider.GetRepositories().ToList())));
             _projectManager = new NuGetProjectManagerService(
                 default(ServiceActivationOptions),
                 Mock.Of<IServiceBroker>(),
