@@ -6,26 +6,23 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Credentials;
-using Test.Utility.Threading;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
+    [Collection(MockedVS.Collection)]
     public class VisualStudioCredentialProviderTests
     {
         private static readonly Uri _uri = new Uri("http://unit.test");
 
-        private readonly DispatcherThreadFixture _fixture;
-
-        public VisualStudioCredentialProviderTests(DispatcherThreadFixture fixture)
+        public VisualStudioCredentialProviderTests(GlobalServiceProvider sp)
         {
-            _fixture = fixture;
+            sp.Reset();
         }
 
         [Fact]
@@ -117,8 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Verifiable();
 
             var provider = new VisualStudioCredentialProvider(
-                vsWebProxy.Object,
-                new Lazy<JoinableTaskFactory>(() => _fixture.JoinableTaskFactory));
+                vsWebProxy.Object);
 
             var response = await provider.GetAsync(
                 _uri,

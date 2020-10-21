@@ -52,6 +52,7 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(NuGetServices.SolutionManagerService, factory.CreateSolutionManagerServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.ProjectManagerService, factory.CreateProjectManagerServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.ProjectUpgraderService, factory.CreateProjectUpgraderServiceAsync);
+            brokeredServiceContainer.Proffer(NuGetServices.SearchService, factory.CreatePackageSearchServiceAsync);
         }
 
         private ValueTask<object> CreateSourceProviderServiceAsync(
@@ -62,8 +63,14 @@ namespace NuGetVSExtension
             CancellationToken cancellationToken)
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            return new ValueTask<object>(new NuGetSourcesService(options, serviceBroker, authorizationServiceClient));
+            var service = new NuGetSourcesService(
+                options,
+                serviceBroker,
+                authorizationServiceClient,
+                _sharedServiceState);
 #pragma warning restore CA2000 // Dispose objects before losing scope
+
+            return new ValueTask<object>(service);
         }
 
         private async ValueTask<object> CreateSolutionManagerServiceAsync(
@@ -123,6 +130,26 @@ namespace NuGetVSExtension
             return service;
         }
 
+        private async ValueTask<object> CreatePackageSearchServiceAsync(
+            ServiceMoniker moniker,
+            ServiceActivationOptions options,
+            IServiceBroker serviceBroker,
+            AuthorizationServiceClient authorizationServiceClient,
+            CancellationToken cancellationToken)
+        {
+            await _lazyInitializer.InitializeAsync(cancellationToken);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var service = new NuGetPackageSearchService(
+                options,
+                serviceBroker,
+                authorizationServiceClient,
+                _sharedServiceState);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            return service;
+        }
+
         private async ValueTask<object> CreateNuGetProjectServiceV1(
             ServiceMoniker moniker,
             ServiceActivationOptions options,
@@ -137,14 +164,12 @@ namespace NuGetVSExtension
             return new NuGetProjectService(solutionManager, settings);
         }
 
-        private Task InitializeAsync()
+        private async Task InitializeAsync()
         {
             _lazySettings = new AsyncLazy<ISettings>(ServiceLocator.GetInstanceAsync<ISettings>, ThreadHelper.JoinableTaskFactory);
             _lazySolutionManager = new AsyncLazy<IVsSolutionManager>(ServiceLocator.GetInstanceAsync<IVsSolutionManager>, ThreadHelper.JoinableTaskFactory);
             _projectManagerServiceSharedState = new NuGetProjectManagerServiceState();
-            _sharedServiceState = new SharedServiceState();
-
-            return Task.CompletedTask;
+            _sharedServiceState = await SharedServiceState.CreateAsync(CancellationToken.None);
         }
     }
 }
