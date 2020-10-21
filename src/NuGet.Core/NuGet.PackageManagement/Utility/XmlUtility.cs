@@ -55,13 +55,10 @@ namespace NuGet.ProjectManagement
                 catch (FileNotFoundException) { }
             }
 
-            var document = new XDocument(new XElement(rootName));
-            // Add it to the file system
-            FileSystemUtility.AddFile(root, path, document.Save, nuGetProjectContext);
-
-            return document;
+            return CreateDocument(rootName, root, path, nuGetProjectContext);
         }
 
+        [Obsolete("Use MSBuildNuGetProjectSystemUtility.GetOrCreateDocument instead.")]
         public static XDocument CreateDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             var document = new XDocument(new XElement(rootName));
