@@ -228,7 +228,7 @@ namespace NuGet.PackageManagement.UI
 
             string[] projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
 
-            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.PackageSourceNames;
+            IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
 
             return await projectManagerService.GetUpdateActionsAsync(
                 projectIds,
@@ -767,7 +767,7 @@ namespace NuGet.PackageManagement.UI
                 userAction.Action == NuGetProjectActionType.Uninstall ||
                 userAction.Version.IsPrerelease == true;
 
-            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.PackageSourceNames;
+            IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
 
             if (userAction.Action == NuGetProjectActionType.Install)
             {

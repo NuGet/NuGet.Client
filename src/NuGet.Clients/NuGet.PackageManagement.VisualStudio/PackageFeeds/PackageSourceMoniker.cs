@@ -101,13 +101,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static ValueTask<IReadOnlyCollection<PackageSourceMoniker>> PopulateListAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken cancellationToken)
         {
+            var enabeldSources = packageSources.Where(source => source.IsEnabled).ToList();
+
             var packageSourceMonikers = new List<PackageSourceMoniker>();
             if (packageSources.Count > 1) // If more than 1, add 'All'
             {
-                packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, packageSources));
+                packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, enabeldSources));
             }
 
-            packageSourceMonikers.AddRange(packageSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s })));
+            packageSourceMonikers.AddRange(enabeldSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s })));
 
             return new ValueTask<IReadOnlyCollection<PackageSourceMoniker>>(packageSourceMonikers);
         }

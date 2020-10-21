@@ -314,7 +314,7 @@ namespace NuGet.PackageManagement.UI
 
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
 
-        public PackageSourceMoniker ActiveSources
+        public PackageSourceMoniker ActivePackageSourceMoniker
         {
             get
             {
