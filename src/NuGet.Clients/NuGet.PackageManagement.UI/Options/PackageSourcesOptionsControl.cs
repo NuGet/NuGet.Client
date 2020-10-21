@@ -38,7 +38,7 @@ namespace NuGet.Options
         private BindingSource _machineWidepackageSources;
         private readonly IServiceProvider _serviceProvider;
         private bool _initialized;
-        private IReadOnlyList<PackageSource> _originalPackageSources;
+        private IReadOnlyList<PackageSourceContextInfo> _originalPackageSources;
 #pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
         private INuGetSourcesService _nugetSourcesService; // Store proxy object in case the dialog is up and we lose connection we wont grab the local proxy and try to save to that
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
@@ -89,8 +89,8 @@ namespace NuGet.Options
             // Never MUST both the listboxes be selected
             Debug.Assert(PackageSourcesListBox.SelectedItem == null || MachineWidePackageSourcesListBox.SelectedItem == null);
 
-            var selectedSource = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
-            var selectedMachineSource = (Configuration.PackageSource)MachineWidePackageSourcesListBox.SelectedItem;
+            var selectedSource = (PackageSourceContextInfo)PackageSourcesListBox.SelectedItem;
+            var selectedMachineSource = (PackageSourceContextInfo)MachineWidePackageSourcesListBox.SelectedItem;
 
             if (selectedMachineSource != null)
             {
@@ -166,7 +166,6 @@ namespace NuGet.Options
                 var allPackageSources = _originalPackageSources;
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
                 var machineWidePackageSources = allPackageSources.Where(ps => ps.IsMachineWide).ToList();
-                //_activeSource = _packageSourceProvider.ActivePackageSource;
 
                 // bind to the package sources, excluding Aggregate
                 _packageSources = new BindingSource(packageSources.Select(ps => ps.Clone()).ToList(), null);
@@ -247,16 +246,14 @@ namespace NuGet.Options
             }
 
             // get package sources as ordered list
-            var packageSources = PackageSourcesListBox.Items.Cast<PackageSource>().ToList();
-            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSource>().ToList());
+            List<PackageSourceContextInfo> packageSources = PackageSourcesListBox.Items.Cast<PackageSourceContextInfo>().ToList();
+            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSourceContextInfo>().ToList());
 
             try
             {
                 if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    await _nugetSourcesService.SavePackageSourcesAsync(packageSources, new PackageSourceUpdateOptions(updateCredentials: false, updateEnabled: true), cancellationToken);
-#pragma warning restore CS0618 // Type or member is obsolete
+                    await _nugetSourcesService.SavePackageSourceContextInfosAsync(packageSources, cancellationToken);
                 }
             }
             // Thrown during creating or saving NuGet.Config.
@@ -289,7 +286,7 @@ namespace NuGet.Options
         }
 
         // Returns true if there are no changes between existingSources and packageSources.
-        private static bool SourcesChanged(IReadOnlyList<PackageSource> existingSources, IReadOnlyList<PackageSource> packageSources)
+        private static bool SourcesChanged(IReadOnlyList<PackageSourceContextInfo> existingSources, IReadOnlyList<PackageSourceContextInfo> packageSources)
         {
             if (existingSources.Count != packageSources.Count)
             {
@@ -347,14 +344,14 @@ namespace NuGet.Options
             UpdateUI();
         }
 
-        private Configuration.PackageSource CreateNewPackageSource()
+        private PackageSourceContextInfo CreateNewPackageSource()
         {
-            var sourcesList = (IEnumerable<Configuration.PackageSource>)_packageSources.List;
+            var sourcesList = (IEnumerable<PackageSourceContextInfo>)_packageSources.List;
             for (int i = 0; ; i++)
             {
                 var newName = i == 0 ? "Package source" : "Package source " + i;
                 var newSource = i == 0 ? "https://packagesource" : "https://packagesource" + i;
-                var packageSource = new Configuration.PackageSource(newSource, newName);
+                var packageSource = new PackageSourceContextInfo(newSource, newName);
                 if (sourcesList.All(ps => !ps.Equals(packageSource)))
                 {
                     return packageSource;
@@ -405,24 +402,22 @@ namespace NuGet.Options
                 return TryUpdateSourceResults.InvalidSource;
             }
 
-            var selectedPackageSource = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
+            var selectedPackageSource = (PackageSourceContextInfo)PackageSourcesListBox.SelectedItem;
             if (selectedPackageSource == null)
             {
                 return TryUpdateSourceResults.NotUpdated;
             }
 
-            var newPackageSource = new Configuration.PackageSource(source, name, selectedPackageSource.IsEnabled);
-            if (selectedPackageSource.Equals(newPackageSource))
+            if (selectedPackageSource.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase) && selectedPackageSource.Source.Equals(source, StringComparison.OrdinalIgnoreCase))
             {
                 return TryUpdateSourceResults.Unchanged;
             }
 
-            var sourcesList = (IEnumerable<Configuration.PackageSource>)_packageSources.List;
+            var sourcesList = (IEnumerable<PackageSourceContextInfo>)_packageSources.List;
 
             // check to see if name has already been added
             // also make sure it's not the same as the aggregate source ('All')
-            bool hasName = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                 string.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
+            bool hasName = sourcesList.Any(ps => ps != selectedPackageSource && string.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
             if (hasName)
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_UniqueName, Resources.ShowWarning_Title);
@@ -432,8 +427,8 @@ namespace NuGet.Options
 
             // check to see if source has already been added
             bool hasSource = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                   string.Equals(PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(source),
-                                                                 PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(ps.Source),
+                                                   string.Equals(PathValidator.GetCanonicalPath(source),
+                                                                 PathValidator.GetCanonicalPath(ps.Source),
                                                                  StringComparison.OrdinalIgnoreCase));
             if (hasSource)
             {
@@ -442,7 +437,9 @@ namespace NuGet.Options
                 return TryUpdateSourceResults.SourceConflicted;
             }
 
-            _packageSources[_packageSources.Position] = newPackageSource;
+            selectedPackageSource.Name = name;
+            selectedPackageSource.Source = source;
+            _packageSources.ResetCurrentItem();
 
             return TryUpdateSourceResults.Successful;
         }
@@ -467,7 +464,7 @@ namespace NuGet.Options
                 && currentListBox.SelectedItem != null
                 && e.ClickedItem == CopyPackageSourceStripMenuItem)
             {
-                CopySelectedItem((Configuration.PackageSource)currentListBox.SelectedItem);
+                CopySelectedItem((PackageSourceContextInfo)currentListBox.SelectedItem);
             }
         }
 
@@ -476,7 +473,7 @@ namespace NuGet.Options
             var currentListBox = (PackageSourceCheckedListBox)sender;
             if (e.KeyCode == Keys.C && e.Control)
             {
-                CopySelectedItem((Configuration.PackageSource)currentListBox.SelectedItem);
+                CopySelectedItem((PackageSourceContextInfo)currentListBox.SelectedItem);
                 e.Handled = true;
             }
             else if (e.KeyCode == Keys.Space)
@@ -493,7 +490,7 @@ namespace NuGet.Options
                 return;
             }
 
-            var item = (Configuration.PackageSource)currentListBox.Items[itemIndex];
+            var item = (PackageSourceContextInfo)currentListBox.Items[itemIndex];
             item.IsEnabled = !item.IsEnabled;
 
             currentListBox.Invalidate(GetCheckBoxRectangleForListBoxItem(currentListBox, itemIndex));
@@ -515,7 +512,7 @@ namespace NuGet.Options
             return checkBoxRectangle;
         }
 
-        private static void CopySelectedItem(Configuration.PackageSource selectedPackageSource)
+        private static void CopySelectedItem(PackageSourceContextInfo selectedPackageSource)
         {
             Clipboard.Clear();
             Clipboard.SetText(selectedPackageSource.Source);
@@ -557,7 +554,7 @@ namespace NuGet.Options
                 && index < currentListBox.Items.Count
                 && e.Y <= currentListBox.PreferredHeight)
             {
-                var source = (Configuration.PackageSource)currentListBox.Items[index];
+                var source = (PackageSourceContextInfo)currentListBox.Items[index];
                 string newToolTip = !string.IsNullOrEmpty(source.Description) ?
                     source.Description :
                     source.Source;
@@ -579,7 +576,7 @@ namespace NuGet.Options
             MachineWidePackageSourcesListBox.ClearSelected();
             UpdateUI();
 
-            UpdateTextBoxes((Configuration.PackageSource)_packageSources.Current);
+            UpdateTextBoxes((PackageSourceContextInfo)_packageSources.Current);
         }
 
         private void OnSelectedMachineWidePackageSourceChanged(object sender, EventArgs e)
@@ -587,10 +584,10 @@ namespace NuGet.Options
             PackageSourcesListBox.ClearSelected();
             UpdateUI();
 
-            UpdateTextBoxes((Configuration.PackageSource)_machineWidepackageSources.Current);
+            UpdateTextBoxes((PackageSourceContextInfo)_machineWidepackageSources.Current);
         }
 
-        private void UpdateTextBoxes(Configuration.PackageSource packageSource)
+        private void UpdateTextBoxes(PackageSourceContextInfo packageSource)
         {
             if (packageSource != null)
             {
@@ -662,7 +659,7 @@ namespace NuGet.Options
                 return initialDir;
             }
 
-            var selectedItem = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
+            var selectedItem = (PackageSourceContextInfo)PackageSourcesListBox.SelectedItem;
             if (selectedItem != null)
             {
                 initialDir = selectedItem.Source;

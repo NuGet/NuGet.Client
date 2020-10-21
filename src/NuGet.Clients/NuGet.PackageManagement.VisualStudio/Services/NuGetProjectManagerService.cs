@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _state.PackageIdentity = packageIdentity;
 
-            IReadOnlyList<SourceRepository> sourceRepositories = await GetSourceRepositoriesAsync(
+            IReadOnlyList<SourceRepository> sourceRepositories = GetSourceRepositories(
                 packageSourceNames,
                 cancellationToken);
 
@@ -405,8 +405,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var primarySources = new List<SourceRepository>();
             var secondarySources = new List<SourceRepository>();
 
-            ISourceRepositoryProvider sourceRepositoryProvider = await _sharedState.SourceRepositoryProvider.GetValueAsync(cancellationToken);
-            IEnumerable<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories();
+            IEnumerable<SourceRepository> sourceRepositories = _sharedState.SourceRepositoryProvider.GetRepositories();
             var packageSourceNamesSet = new HashSet<string>(packageSourceNames, StringComparer.OrdinalIgnoreCase);
 
             foreach (SourceRepository sourceRepository in sourceRepositories)
@@ -521,13 +520,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return matchingProjects;
         }
 
-        private async ValueTask<IReadOnlyList<SourceRepository>> GetSourceRepositoriesAsync(
+        private IReadOnlyList<SourceRepository> GetSourceRepositories(
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken)
         {
-            ISourceRepositoryProvider sourceRepositoryProvider = await _sharedState.SourceRepositoryProvider.GetValueAsync(cancellationToken);
             var sourceRepositories = new List<SourceRepository>();
-            Dictionary<string, SourceRepository>? allSourceRepositories = sourceRepositoryProvider.GetRepositories()
+            Dictionary<string, SourceRepository> allSourceRepositories = _sharedState.SourceRepositoryProvider.GetRepositories()
                 .ToDictionary(sr => sr.PackageSource.Name, sr => sr);
 
             foreach (string packageSourceName in packageSourceNames)

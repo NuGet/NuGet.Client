@@ -72,9 +72,11 @@ namespace NuGetVSExtension
     [FontAndColorsRegistration("Package Manager Console", NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString, "{" + GuidList.guidNuGetPkgString + "}")]
     [ProvideBrokeredService(ContractsNuGetServices.NuGetProjectServiceName, ContractsNuGetServices.Version1, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion_1_0_1, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SolutionManagerServiceName, BrokeredServicesUtilities.SolutionManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectManagerServiceName, BrokeredServicesUtilities.ProjectManagerServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -137,6 +139,7 @@ namespace NuGetVSExtension
         private IDisposable ProjectUpgradeHandler { get; set; }
 
         private INuGetProjectManagerServiceState _projectManagerServiceState;
+        private ISharedServiceState _sharedServiceState;
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -183,21 +186,24 @@ namespace NuGetVSExtension
             var nuGetBrokeredServiceFactory = new NuGetBrokeredServiceFactory(lazySolutionManager, lazySettings);
             brokeredServiceContainer.Proffer(ContractsNuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
 
-            var state = new SharedServiceState();
+            _sharedServiceState = await SharedServiceState.CreateAsync(cancellationToken);
             _projectManagerServiceState = new NuGetProjectManagerServiceState();
 
             brokeredServiceContainer.Proffer(
                 NuGetServices.SourceProviderService,
-                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac)));
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac, _sharedServiceState)));
             brokeredServiceContainer.Proffer(
                 NuGetServices.SolutionManagerService,
                 (mk, options, sb, ac, ct) => ToValueTaskOfObject(NuGetSolutionManagerService.CreateAsync(options, sb, ac, ct)));
             brokeredServiceContainer.Proffer(
                 NuGetServices.ProjectManagerService,
-                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac, _projectManagerServiceState, state)));
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac, _projectManagerServiceState, _sharedServiceState)));
             brokeredServiceContainer.Proffer(
                 NuGetServices.ProjectUpgraderService,
-                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectUpgraderService(options, sb, ac, state)));
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectUpgraderService(options, sb, ac, _sharedServiceState)));
+            brokeredServiceContainer.Proffer(
+                NuGetServices.SearchService,
+                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetPackageSearchService(options, sb, ac, _sharedServiceState)));
         }
 
         /// <summary>
@@ -1114,6 +1120,7 @@ namespace NuGetVSExtension
             _dteEvents = null;
 
             _projectManagerServiceState?.Dispose();
+            _sharedServiceState?.Dispose();
         }
 
         #region IVsPersistSolutionOpts

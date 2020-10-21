@@ -73,9 +73,11 @@
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
     <Compile Include="Services\ISharedServiceState.cs" />
+    <Compile Include="Services\NuGetPackageSearchService.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceState.cs" />
     <Compile Include="Services\NuGetProjectUpgraderService.cs" />
+    <Compile Include="Services\SearchObject.cs" />
     <Compile Include="Services\SharedServiceState.cs" />
     <Compile Include="Services\NuGetSolutionManagerService.cs" />
     <Compile Include="Services\NuGetSourcesService.cs" />
@@ -108,7 +110,6 @@
     <Compile Include="PackageFeeds\InstalledPackageFeed.cs" />
     <Compile Include="PackageFeeds\IPackageFeed.cs" />
     <Compile Include="PackageFeeds\IPackageMetadataProvider.cs" />
-    <Compile Include="PackageFeeds\LoadingStatus.cs" />
     <Compile Include="PackageFeeds\MultiSourceAutoCompleteProvider.cs" />
     <Compile Include="PackageFeeds\MultiSourcePackageFeed.cs" />
     <Compile Include="PackageFeeds\MultiSourcePackageMetadataProvider.cs" />

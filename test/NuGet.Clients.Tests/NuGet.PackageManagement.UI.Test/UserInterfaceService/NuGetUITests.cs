@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
@@ -21,23 +22,16 @@ namespace NuGet.PackageManagement.UI.Test
     [Collection(MockedVS.Collection)]
     public class NuGetUITests : IDisposable
     {
-        private readonly JoinableTaskContext _joinableTaskContext;
         private readonly TestDirectory _testDirectory;
 
-        public NuGetUITests()
+        public NuGetUITests(GlobalServiceProvider sp)
         {
-#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-            _joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
-#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_joinableTaskContext.Factory);
-
+            sp.Reset();
             _testDirectory = TestDirectory.Create();
         }
 
         public void Dispose()
         {
-            _joinableTaskContext?.Dispose();
             _testDirectory.Dispose();
         }
 
@@ -77,7 +71,6 @@ namespace NuGet.PackageManagement.UI.Test
                 _testDirectory.Path);
 
             return new NuGetUIContext(
-                sourceRepositoryProvider,
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<IVsSolutionManager>(),
                 new NuGetSolutionManagerServiceWrapper(),
@@ -89,7 +82,8 @@ namespace NuGet.PackageManagement.UI.Test
                 Mock.Of<IPackageRestoreManager>(),
                 Mock.Of<IOptionsPageActivator>(),
                 Mock.Of<IUserSettingsManager>(),
-                Enumerable.Empty<IVsPackageManagerProvider>());
+                Enumerable.Empty<IVsPackageManagerProvider>(),
+                new NuGetSourcesServiceWrapper());
         }
     }
 }

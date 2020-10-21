@@ -8,8 +8,8 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
 using Microsoft.VisualStudio.ProjectSystem.Interop;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Frameworks;
@@ -18,24 +18,16 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
-using Test.Utility.Threading;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
+    [Collection(MockedVS.Collection)]
     public class ProjectKNuGetProjectTests
     {
-        private readonly JoinableTaskFactory _jtf;
-
-        public ProjectKNuGetProjectTests(DispatcherThreadFixture fixture)
+        public ProjectKNuGetProjectTests(GlobalServiceProvider sp)
         {
-            Assumes.Present(fixture);
-
-            _jtf = fixture.JoinableTaskFactory;
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
+            sp.Reset();
         }
 
         [Fact]

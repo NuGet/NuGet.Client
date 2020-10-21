@@ -228,7 +228,7 @@ namespace NuGet.PackageManagement.UI
 
             string[] projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
 
-            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.Select(source => source.PackageSource.Name).ToList();
+            IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
 
             return await projectManagerService.GetUpdateActionsAsync(
                 projectIds,
@@ -483,7 +483,7 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
-                    PackageLoadContext plc = new PackageLoadContext(sourceRepositories: null, isSolution: false, uiService.UIContext);
+                    var plc = new PackageLoadContext(isSolution: false, uiService.UIContext);
                     var frameworks = (await plc.GetSupportedFrameworksAsync()).ToList();
                     string[] projectIds = (await ProjectUtility.GetSortedProjectIdsAsync(uiService.Projects, cancellationToken)).ToArray();
 
@@ -767,7 +767,7 @@ namespace NuGet.PackageManagement.UI
                 userAction.Action == NuGetProjectActionType.Uninstall ||
                 userAction.Version.IsPrerelease == true;
 
-            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.Select(source => source.PackageSource.Name).ToList();
+            IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
 
             if (userAction.Action == NuGetProjectActionType.Install)
             {

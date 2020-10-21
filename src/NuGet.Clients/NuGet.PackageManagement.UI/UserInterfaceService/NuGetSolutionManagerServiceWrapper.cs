@@ -35,9 +35,12 @@ namespace NuGet.PackageManagement.UI
 
         public void Dispose()
         {
-            using (INuGetSolutionManagerService? service = _service)
+            lock (_syncObject)
             {
-                _service = NullNuGetSolutionManagerService.Instance;
+                using (INuGetSolutionManagerService? service = _service)
+                {
+                    _service = NullNuGetSolutionManagerService.Instance;
+                }
             }
 
             GC.SuppressFinalize(this);
