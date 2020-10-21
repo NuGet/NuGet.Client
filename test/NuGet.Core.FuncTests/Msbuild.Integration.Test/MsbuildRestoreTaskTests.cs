@@ -638,7 +638,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
-        //[InlineData(false)]
+        [InlineData(false)]
         public async Task MsbuildRestore_WithRelativeSource_ResolvesAgainstCurrentWorkingDirectory(bool isStaticGraphRestore)
         {
             // Arrange
