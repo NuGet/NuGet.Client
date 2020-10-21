@@ -298,6 +298,6 @@
   </data>
   <data name="UnsupportedFeedType" xml:space="preserve">
     <value>The feed type '{0}' is unsupported.</value>
-    <comment>{0} is the filter type</comment>
+    <comment>{0} is the ItemFilter type which correlates to the selected tab</comment>
   </data>
 </root>
