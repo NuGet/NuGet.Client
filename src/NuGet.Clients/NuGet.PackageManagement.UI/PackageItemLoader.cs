@@ -249,6 +249,7 @@ namespace NuGet.PackageManagement.UI
                     PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
                     Versions = AsyncLazy.New(() => { return GetVersionInfoAsync(metadata.Identity); }),
                     DeprecationMetadata = AsyncLazy.New(() => { return GetDeprecationMetadataAsync(metadata.Identity); }),
+                    DetailedPackageSearchMetadata = AsyncLazy.New(() => { return GetDetailedPackageSearchMetadataContextInfoAsync(metadata.Identity); }),
                     Recommended = metadata.IsRecommended,
                     RecommenderVersion = metadata.RecommenderVersion,
                     Vulnerabilities = metadata.Vulnerabilities,
@@ -284,6 +285,13 @@ namespace NuGet.PackageManagement.UI
             Assumes.NotNull(identity);
 
             return await _searchService.GetPackageVersionsAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
+        }
+
+        private async Task<PackageSearchMetadataContextInfo> GetDetailedPackageSearchMetadataContextInfoAsync(PackageIdentity identity)
+        {
+            Assumes.NotNull(identity);
+
+            return await _searchService.GetDetailedPackageSearchMetadataContextInfoAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
         }
 
         public void Dispose()

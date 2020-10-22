@@ -196,6 +196,17 @@ namespace NuGet.PackageManagement.UI
 
             await CreateVersionsAsync(CancellationToken.None);
             OnCurrentPackageChanged();
+
+            var detailedPackageSearchMetadata = await searchResultPackage.GetDetailedPackageSearchMetadataAsync();
+            if (detailedPackageSearchMetadata != null)
+            {
+                var deprecationMetadata = await searchResultPackage.GetPackageDeprecationMetadataAsync();
+
+                PackageMetadata = new DetailedPackageMetadata(
+                    detailedPackageSearchMetadata,
+                    deprecationMetadata,
+                    searchResultPackage.DownloadCount);
+            }
         }
 
         private (NuGetVersion version, bool isDeprecated) GetVersion(VersionInfoContextInfo versionInfo)

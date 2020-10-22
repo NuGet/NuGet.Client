@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\EntityFrameworkSearch.json" />
+    <EmbeddedResource Include="compiler\resources\loggingAbstractions.json" />
     <EmbeddedResource Include="compiler\resources\nugetCoreIndex.json" />
     <EmbeddedResource Include="compiler\resources\index.json" />
     <EmbeddedResource Include="compiler\resources\blankSearchPage.json" />

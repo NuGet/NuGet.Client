@@ -27,6 +27,9 @@ namespace NuGet.PackageManagement.UI
         private static readonly AsyncLazy<PackageDeprecationMetadataContextInfo> LazyNullDeprecationMetadata =
             AsyncLazy.New((PackageDeprecationMetadataContextInfo)null);
 
+        private static readonly AsyncLazy<PackageSearchMetadataContextInfo> LazyNullDetailedPackageSearchMetadata =
+            AsyncLazy.New((PackageSearchMetadataContextInfo)null);
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string Id { get; set; }
@@ -383,6 +386,9 @@ namespace NuGet.PackageManagement.UI
 
         public Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>> Versions { get; set; }
         public Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
+
+        public Lazy<Task<PackageSearchMetadataContextInfo>> DetailedPackageSearchMetadata { get; set; }
+        public Task<PackageSearchMetadataContextInfo> GetDetailedPackageSearchMetadataAsync() => (DetailedPackageSearchMetadata ?? LazyNullDetailedPackageSearchMetadata).Value;
 
         public Lazy<Task<PackageDeprecationMetadataContextInfo>> DeprecationMetadata { private get; set; }
         public Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;

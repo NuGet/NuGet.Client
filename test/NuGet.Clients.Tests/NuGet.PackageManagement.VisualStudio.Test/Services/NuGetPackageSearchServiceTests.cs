@@ -76,7 +76,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType()) },
                 { query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType()) },
                 { query + "?q=&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.blankSearchPage.json", GetType()) },
-                { "https://api.nuget.org/v3/registration3-gz-semver2/" + "nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) }
+                { "https://api.nuget.org/v3/registration3-gz-semver2/nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) },
+                { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
             };
 
             _sourceRepository = StaticHttpHandler.CreateSource(testFeedUrl, Repository.Provider.GetCoreV3(), responses);
@@ -90,6 +91,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var sources = new List<PackageSource> { source1, source2 };
             var sourceRepository = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
 
+            var solutionManager = new Mock<IVsSolutionManager>();
+            solutionManager.SetupGet(x => x.SolutionDirectory).Returns("z:\\SomeRandomPath");
+            var settings = new Mock<ISettings>();
+
+            AddService<IVsSolutionManager>(Task.FromResult<object>(solutionManager.Object));
+            AddService<ISettings>(Task.FromResult<object>(settings.Object));
             AddService<ISourceRepositoryProvider>(Task.FromResult<object>(sourceRepository));
 
             var serviceActivationOptions = default(ServiceActivationOptions);
@@ -155,7 +162,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     ItemFilter.All,
                     CancellationToken.None);
 
-                Assert.Equal(22, totalCount);
+                Assert.Equal(1, totalCount);
             }
         }
 
@@ -171,7 +178,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     ItemFilter.All,
                     CancellationToken.None);
 
-                Assert.Equal(22, allPackages.Count);
+                Assert.Equal(1, allPackages.Count);
             }
         }
 
@@ -197,13 +204,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (NuGetPackageSearchService searchService = SetupSearchService())
             {
                 PackageDeprecationMetadataContextInfo deprecationMetadata = await searchService.GetDeprecationMetadataAsync(
-                    new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")),
+                    new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5")),
                     new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     includePrerelease: true,
                     CancellationToken.None);
 
                 Assert.NotNull(deprecationMetadata);
-                Assert.Equal("NuGet.Core is part of NuGet client v2 APIs. They have been replaced by NuGet client v3 and later APIs.", deprecationMetadata.Message);
+                Assert.Equal("This is deprecated.", deprecationMetadata.Message);
                 Assert.Equal("Legacy", deprecationMetadata.Reasons.First());
             }
         }
@@ -214,13 +221,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (NuGetPackageSearchService searchService = SetupSearchService())
             {
                 IReadOnlyCollection<VersionInfoContextInfo> result = await searchService.GetPackageVersionsAsync(
-                    new PackageIdentity("NuGet.Core", new Versioning.NuGetVersion("2.14.0")),
+                    new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5")),
                     new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     includePrerelease: true,
                     CancellationToken.None);
 
-                Assert.Equal(51, result.Count);
-                Assert.True(result.Last().Version.Version.Equals(new Version("1.0.1120.104")));
+                Assert.Equal(60, result.Count);
+                Assert.True(result.Last().Version.Version.Equals(new Version("1.0.0.0")));
             }
         }
 

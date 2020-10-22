@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
@@ -18,18 +19,24 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal class SearchObject
+    internal sealed class SearchObject
     {
         private readonly IPackageFeed _mainFeed;
         private readonly IPackageFeed? _recommenderFeed;
         private SearchResult<IPackageSearchMetadata>? _lastMainFeedSearchResult;
+        private readonly IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
+        private readonly IPackageMetadataProvider _packageMetadataProvider;
+        private readonly ObjectCache _inMemoryObjectCache = MemoryCache.Default;
 
-        public SearchObject(IPackageFeed mainFeed, IPackageFeed? recommenderFeed)
+        public SearchObject(IPackageFeed mainFeed, IPackageFeed? recommenderFeed, IPackageMetadataProvider packageMetadataProvider, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
         {
             Assumes.NotNull(mainFeed);
+            Assumes.NotNullOrEmpty(packageSources);
 
             _mainFeed = mainFeed;
             _recommenderFeed = recommenderFeed;
+            _packageSources = packageSources;
+            _packageMetadataProvider = packageMetadataProvider;
         }
 
         public async ValueTask<SearchResultContextInfo> SearchAsync(string searchText, SearchFilter filter, bool useRecommender, CancellationToken cancellationToken)
@@ -49,12 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (recommenderFeedResults != null)
             {
                 // remove duplicated recommended packages from the browse results
-                var recommendedIds = recommenderFeedResults.Items.Select(item => item.Identity.Id);
-
-                IReadOnlyCollection<PackageSearchMetadataContextInfo> filteredMainFeedResult = mainFeedResult.Items
-                    .Where(item => !recommendedIds.Contains(item.Identity.Id))
-                    .Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata))
-                    .ToList();
+                IEnumerable<string> recommendedIds = recommenderFeedResults.Items.Select(item => item.Identity.Id).ToList();
 
                 IList<PackageSearchMetadataContextInfo> recommendedPackageSearchMetadataContextInfo = recommenderFeedResults.Items
                     .Select(packageSearchMetadata =>
@@ -66,7 +68,21 @@ namespace NuGet.PackageManagement.VisualStudio
                     })
                     .ToList();
 
-                recommendedPackageSearchMetadataContextInfo.AddRange(filteredMainFeedResult);
+                List<IPackageSearchMetadata> filteredMainFeedResults = mainFeedResult.Items.Where(item => !recommendedIds.Contains(item.Identity.Id)).ToList();
+
+                recommendedPackageSearchMetadataContextInfo.AddRange(
+                    filteredMainFeedResults
+                    .Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata))
+                    .ToList());
+
+                List<IPackageSearchMetadata> packageSearchMetadataList = new List<IPackageSearchMetadata>(recommenderFeedResults.Items);
+                packageSearchMetadataList.AddRange(filteredMainFeedResults);
+
+                foreach (IPackageSearchMetadata packageSearchMetadata in packageSearchMetadataList)
+                {
+                    CacheBackgroundDataAsync(packageSearchMetadata);
+                }
+
                 return new SearchResultContextInfo(
                     recommendedPackageSearchMetadataContextInfo.ToList(),
                     mainFeedResult.SourceSearchStatus.ToImmutableDictionary(),
@@ -77,6 +93,11 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<PackageSearchMetadataContextInfo> packageSearchMetadataContextInfoCollection = mainFeedResult.Items
                 .Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata))
                 .ToList();
+
+            foreach (IPackageSearchMetadata packageSearchMetadata in mainFeedResult.Items)
+            {
+                CacheBackgroundDataAsync(packageSearchMetadata);
+            }
 
             return new SearchResultContextInfo(
                 packageSearchMetadataContextInfoCollection,
@@ -97,6 +118,11 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<PackageSearchMetadataContextInfo> packageItems = _lastMainFeedSearchResult.Items
                 .Select(item => PackageSearchMetadataContextInfo.Create(item))
                 .ToList();
+
+            foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
+            {
+                CacheBackgroundDataAsync(packageSearchMetadata);
+            }
 
             return new SearchResultContextInfo(
                 packageItems,
@@ -143,6 +169,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(item => PackageSearchMetadataContextInfo.Create(item))
                 .ToList();
 
+            foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
+            {
+                CacheBackgroundDataAsync(packageSearchMetadata);
+            }
+
             return new SearchResultContextInfo(
                 packageItems,
                 continueSearchResult.SourceSearchStatus.ToImmutableDictionary(),
@@ -174,6 +205,14 @@ namespace NuGet.PackageManagement.VisualStudio
             } while (nextToken != null && totalCount < maxCount);
 
             return totalCount;
+        }
+
+        private void CacheBackgroundDataAsync(IPackageSearchMetadata packageSearchMetadata)
+        {
+            _inMemoryObjectCache.Set(
+                PackageSearchMetadataCacheObject.GetCacheId(packageSearchMetadata.Identity.Id, _packageSources),
+                new PackageSearchMetadataCacheObject(packageSearchMetadata, _packageMetadataProvider),
+                new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10) });
         }
     }
 }
