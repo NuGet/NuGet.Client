@@ -11,7 +11,7 @@ using Microsoft;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class SearchResultContextInfoFormatter : IMessagePackFormatter<SearchResultContextInfo?>
+    internal sealed class SearchResultContextInfoFormatter : NuGetMessagePackFormatter<SearchResultContextInfo>
     {
         private const string HasMoreItemsPropertyName = "hasmoreitems";
         private const string SourceLoadingStatusPropertyName = "sourceloadingstatus";
@@ -24,73 +24,51 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public SearchResultContextInfo? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override SearchResultContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            Guid? operationId = null;
+            bool hasMoreItems = false;
+            IReadOnlyCollection<PackageSearchMetadataContextInfo>? packageSearchItems = null;
+            IReadOnlyDictionary<string, LoadingStatus>? sourceLoadingStatus = null;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                Guid? operationId = null;
-                bool hasMoreItems = false;
-                IReadOnlyCollection<PackageSearchMetadataContextInfo>? packageSearchItems = null;
-                IReadOnlyDictionary<string, LoadingStatus>? sourceLoadingStatus = null;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case HasMoreItemsPropertyName:
-                            hasMoreItems = reader.ReadBoolean();
-                            break;
-                        case PackageSearchItemsPropertyName:
-                            packageSearchItems = options.Resolver.GetFormatter<IReadOnlyCollection<PackageSearchMetadataContextInfo>>().Deserialize(ref reader, options);
-                            break;
-                        case SourceLoadingStatusPropertyName:
-                            sourceLoadingStatus = options.Resolver.GetFormatter<IReadOnlyDictionary<string, LoadingStatus>>().Deserialize(ref reader, options);
-                            break;
-                        case OperationIdPropertyName:
-                            if (!reader.TryReadNil())
+                    case HasMoreItemsPropertyName:
+                        hasMoreItems = reader.ReadBoolean();
+                        break;
+                    case PackageSearchItemsPropertyName:
+                        packageSearchItems = options.Resolver.GetFormatter<IReadOnlyCollection<PackageSearchMetadataContextInfo>>().Deserialize(ref reader, options);
+                        break;
+                    case SourceLoadingStatusPropertyName:
+                        sourceLoadingStatus = options.Resolver.GetFormatter<IReadOnlyDictionary<string, LoadingStatus>>().Deserialize(ref reader, options);
+                        break;
+                    case OperationIdPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            string guidString = reader.ReadString();
+                            if (Guid.TryParse(guidString, out Guid operationIdGuid))
                             {
-                                string guidString = reader.ReadString();
-                                if (Guid.TryParse(guidString, out Guid operationIdGuid))
-                                {
-                                    operationId = operationIdGuid;
-                                }
+                                operationId = operationIdGuid;
                             }
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                        }
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNull(packageSearchItems);
-                Assumes.NotNull(sourceLoadingStatus);
-
-                return new SearchResultContextInfo(packageSearchItems, sourceLoadingStatus, hasMoreItems, operationId);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.NotNull(packageSearchItems);
+            Assumes.NotNull(sourceLoadingStatus);
+
+            return new SearchResultContextInfo(packageSearchItems, sourceLoadingStatus, hasMoreItems, operationId);
         }
 
-        public void Serialize(ref MessagePackWriter writer, SearchResultContextInfo? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, SearchResultContextInfo value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 4);
             writer.Write(HasMoreItemsPropertyName);
             writer.Write(value.HasMoreItems);
@@ -105,6 +83,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 writer.WriteNil();
             }
+
             writer.Write(PackageSearchItemsPropertyName);
             options.Resolver.GetFormatter<IReadOnlyCollection<PackageSearchMetadataContextInfo>>().Serialize(ref writer, value.PackageSearchItems, options);
         }
