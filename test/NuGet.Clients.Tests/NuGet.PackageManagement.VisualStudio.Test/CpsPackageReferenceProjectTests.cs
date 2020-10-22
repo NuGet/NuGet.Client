@@ -2317,7 +2317,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_AllProjects_Success()
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_AllProjects_UninstallExistingPackage_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -2440,7 +2440,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 List<string> uninstalledLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Successfully uninstalled ")).ToList();
-                Assert.Equal(uninstalledLogs.Count(), 1); // There is bug in Package manager log it only mention 1 project is "Successfully uninstalled " instead of 4.
+                Assert.Equal(uninstalledLogs.Count(), 1); // Currently in Package manager log it only mention 1 project is "Successfully uninstalled " instead of 4.
                 List<string> restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
                 List<string> restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
                 // Making sure project0 restored only once, not many.
@@ -2459,7 +2459,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_TopParentProject_Success()
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_TopParentProject_UninstallExistingPackage_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -2586,7 +2586,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 List<string> uninstalledLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Successfully uninstalled ")).ToList();
-                Assert.Equal(uninstalledLogs.Count(), 0); // There is another bug Package manager log it doesn't log "Successfully uninstalled " for top project.
+                Assert.Equal(uninstalledLogs.Count(), 0); // Currently in Package manager log it doesn't log "Successfully uninstalled " for top project.
                 List<string> restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
                 List<string> restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
                 // Making sure project0 restored only once, not many.
@@ -2606,7 +2606,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_MiddleParentProject_Success()
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_MiddleParentProject_UninstallExistingPackage_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -2733,7 +2733,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => b.RestoreResult.Success));
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 List<string> uninstalledLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Successfully uninstalled ")).ToList();
-                Assert.Equal(uninstalledLogs.Count(), 0); // There is another bug Package manager log it doesn't log "Successfully uninstalled " for middle project.
+                Assert.Equal(uninstalledLogs.Count(), 0); // Currently in Package manager log it doesn't log "Successfully uninstalled " for middle project.
                 List<string> restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
                 List<string> restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
                 Assert.Equal(restoringLogs.Count(l => l.EndsWith("project0.csproj...")), 0);
@@ -2752,7 +2752,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_BottomChildProject_Success()
+        public async Task TestPackageManager_PreviewProjectsUninstallPackageAsync_BottomChildProject_UninstallExistingPackage_Success()
         {
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
