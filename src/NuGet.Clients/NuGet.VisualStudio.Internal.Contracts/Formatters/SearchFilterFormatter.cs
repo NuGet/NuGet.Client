@@ -10,7 +10,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class SearchFilterFormatter : IMessagePackFormatter<SearchFilter?>
+    internal sealed class SearchFilterFormatter : NuGetMessagePackFormatter<SearchFilter>
     {
         private const string IncludePrereleasePropertyName = "includeprerelease";
         private const string IncludeDelistedPropertyName = "includedelisted";
@@ -25,78 +25,56 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public SearchFilter? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override SearchFilter? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            bool includePrerelease = false;
+            bool includeDelisted = false;
+            SearchFilterType? filterType = null;
+            SearchOrderBy? searchOrderBy = null;
+            IEnumerable<string>? supportedFrameworks = null;
+            IEnumerable<string>? packageTypes = null;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                bool includePrerelease = false;
-                bool includeDelisted = false;
-                SearchFilterType? filterType = null;
-                SearchOrderBy? searchOrderBy = null;
-                IEnumerable<string>? supportedFrameworks = null;
-                IEnumerable<string>? packageTypes = null;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case IncludePrereleasePropertyName:
-                            includePrerelease = reader.ReadBoolean();
-                            break;
-                        case IncludeDelistedPropertyName:
-                            includeDelisted = reader.ReadBoolean();
-                            break;
-                        case PackageTypesPropertyName:
-                            packageTypes = options.Resolver.GetFormatter<IEnumerable<string>>().Deserialize(ref reader, options);
-                            break;
-                        case FilterPropertyName:
-                            filterType = options.Resolver.GetFormatter<SearchFilterType?>().Deserialize(ref reader, options);
-                            break;
-                        case OrderByPropertyName:
-                            searchOrderBy = options.Resolver.GetFormatter<SearchOrderBy?>().Deserialize(ref reader, options);
-                            break;
-                        case SupportedFrameworksPropertyName:
-                            supportedFrameworks = options.Resolver.GetFormatter<IEnumerable<string>>().Deserialize(ref reader, options);
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case IncludePrereleasePropertyName:
+                        includePrerelease = reader.ReadBoolean();
+                        break;
+                    case IncludeDelistedPropertyName:
+                        includeDelisted = reader.ReadBoolean();
+                        break;
+                    case PackageTypesPropertyName:
+                        packageTypes = options.Resolver.GetFormatter<IEnumerable<string>>().Deserialize(ref reader, options);
+                        break;
+                    case FilterPropertyName:
+                        filterType = options.Resolver.GetFormatter<SearchFilterType?>().Deserialize(ref reader, options);
+                        break;
+                    case OrderByPropertyName:
+                        searchOrderBy = options.Resolver.GetFormatter<SearchOrderBy?>().Deserialize(ref reader, options);
+                        break;
+                    case SupportedFrameworksPropertyName:
+                        supportedFrameworks = options.Resolver.GetFormatter<IEnumerable<string>>().Deserialize(ref reader, options);
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
+            }
 
-                return new SearchFilter(includePrerelease, filterType)
-                {
-                    SupportedFrameworks = supportedFrameworks,
-                    OrderBy = searchOrderBy,
-                    PackageTypes = packageTypes,
-                    IncludeDelisted = includeDelisted,
-                };
-            }
-            finally
+            return new SearchFilter(includePrerelease, filterType)
             {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+                SupportedFrameworks = supportedFrameworks,
+                OrderBy = searchOrderBy,
+                PackageTypes = packageTypes,
+                IncludeDelisted = includeDelisted,
+            };
         }
 
-        public void Serialize(ref MessagePackWriter writer, SearchFilter? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, SearchFilter value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
-            writer.WriteMapHeader(6);
+            writer.WriteMapHeader(count: 6);
             writer.Write(IncludePrereleasePropertyName);
             writer.Write(value.IncludePrerelease);
             writer.Write(IncludeDelistedPropertyName);

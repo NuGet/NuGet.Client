@@ -10,7 +10,7 @@ using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class VersionInfoContextInfoFormatter : IMessagePackFormatter<VersionInfoContextInfo?>
+    internal sealed class VersionInfoContextInfoFormatter : NuGetMessagePackFormatter<VersionInfoContextInfo>
     {
         private const string NuGetVersionPropertyName = "nugetversion";
         private const string DownloadCountPropertyName = "downloadcount";
@@ -23,78 +23,56 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public VersionInfoContextInfo? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override VersionInfoContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            NuGetVersion? nuGetVersion = null;
+            long? downloadCount = null;
+            PackageDeprecationMetadataContextInfo? packageDeprecationMetadata = null;
+            PackageSearchMetadataContextInfo? packageSearchMetadata = null;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                NuGetVersion? nuGetVersion = null;
-                long? downloadCount = null;
-                PackageDeprecationMetadataContextInfo? packageDeprecationMetadata = null;
-                PackageSearchMetadataContextInfo? packageSearchMetadata = null;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case NuGetVersionPropertyName:
-                            nuGetVersion = NuGetVersionFormatter.Instance.Deserialize(ref reader, options);
-                            break;
-                        case DownloadCountPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                downloadCount = reader.ReadInt64();
-                            }
-                            break;
-                        case PackageDeprecationMetadataPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                packageDeprecationMetadata = PackageDeprecationMetadataContextInfoFormatter.Instance.Deserialize(ref reader, options);
-                            }
-                            break;
-                        case PackageSearchMetadataPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                packageSearchMetadata = PackageSearchMetadataContextInfoFormatter.Instance.Deserialize(ref reader, options);
-                            }
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case NuGetVersionPropertyName:
+                        nuGetVersion = NuGetVersionFormatter.Instance.Deserialize(ref reader, options);
+                        break;
+                    case DownloadCountPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            downloadCount = reader.ReadInt64();
+                        }
+                        break;
+                    case PackageDeprecationMetadataPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            packageDeprecationMetadata = PackageDeprecationMetadataContextInfoFormatter.Instance.Deserialize(ref reader, options);
+                        }
+                        break;
+                    case PackageSearchMetadataPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            packageSearchMetadata = PackageSearchMetadataContextInfoFormatter.Instance.Deserialize(ref reader, options);
+                        }
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNull(nuGetVersion);
-
-                return new VersionInfoContextInfo(nuGetVersion, downloadCount)
-                {
-                    PackageSearchMetadata = packageSearchMetadata,
-                    PackageDeprecationMetadata = packageDeprecationMetadata,
-                };
             }
-            finally
+
+            Assumes.NotNull(nuGetVersion);
+
+            return new VersionInfoContextInfo(nuGetVersion, downloadCount)
             {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+                PackageSearchMetadata = packageSearchMetadata,
+                PackageDeprecationMetadata = packageDeprecationMetadata,
+            };
         }
 
-        public void Serialize(ref MessagePackWriter writer, VersionInfoContextInfo? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, VersionInfoContextInfo value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 4);
             writer.Write(NuGetVersionPropertyName);
             NuGetVersionFormatter.Instance.Serialize(ref writer, value.Version, options);

@@ -12,7 +12,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class PackageSearchMetadataContextInfoFormatter : IMessagePackFormatter<PackageSearchMetadataContextInfo?>
+    internal sealed class PackageSearchMetadataContextInfoFormatter : NuGetMessagePackFormatter<PackageSearchMetadataContextInfo>
     {
         private const string IdentityPropertyName = "identity";
         private const string DescriptionPropertyName = "description";
@@ -42,187 +42,165 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public PackageSearchMetadataContextInfo? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override PackageSearchMetadataContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            PackageIdentity? identity = null;
+            string? title = null;
+            string? description = null;
+            string? authors = null;
+            Uri? iconUrl = null;
+            string? tags = null;
+            Uri? licenseUrl = null;
+            string? owners = null;
+            Uri? projectUrl = null;
+            DateTimeOffset? published = null;
+            Uri? reportAbuseUrl = null;
+            Uri? packageDetailsUrl = null;
+            bool requireLicenseAcceptance = false;
+            string? summary = null;
+            bool prefixReserved = false;
+            bool isRecommended = false;
+            (string modelVersion, string vsixVersion)? recommenderVersion = null;
+            bool isListed = false;
+            long? downloadCount = null;
+            IReadOnlyCollection<PackageDependencyGroup>? dependencySets = null;
+            IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>? vulnerabilities = null;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                PackageIdentity? identity = null;
-                string? title = null;
-                string? description = null;
-                string? authors = null;
-                Uri? iconUrl = null;
-                string? tags = null;
-                Uri? licenseUrl = null;
-                string? owners = null;
-                Uri? projectUrl = null;
-                DateTimeOffset? published = null;
-                Uri? reportAbuseUrl = null;
-                Uri? packageDetailsUrl = null;
-                bool requireLicenseAcceptance = false;
-                string? summary = null;
-                bool prefixReserved = false;
-                bool isRecommended = false;
-                (string modelVersion, string vsixVersion)? recommenderVersion = null;
-                bool isListed = false;
-                long? downloadCount = null;
-                IReadOnlyCollection<PackageDependencyGroup>? dependencySets = null;
-                IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>? vulnerabilities = null;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case IdentityPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                identity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
-                            }
-                            break;
-                        case DescriptionPropertyName:
-                            description = reader.ReadString();
-                            break;
-                        case AuthorsPropertyName:
-                            authors = reader.ReadString();
-                            break;
-                        case IconUrlPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                iconUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case TitlePropertyName:
-                            title = reader.ReadString();
-                            break;
-                        case TagsPropertyName:
-                            tags = reader.ReadString();
-                            break;
-                        case LicenseUrlPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                licenseUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case ProjectUrlPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                projectUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case PublishedPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                published = options.Resolver.GetFormatter<DateTimeOffset>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case OwnersPropertyName:
-                            owners = reader.ReadString();
-                            break;
-                        case ReportAbuseUrlPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                reportAbuseUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case PackageDetailsUrlPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                packageDetailsUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case RequireLicenseAcceptancePropertyName:
-                            requireLicenseAcceptance = reader.ReadBoolean();
-                            break;
-                        case SummaryPropertyName:
-                            summary = reader.ReadString();
-                            break;
-                        case PrefixReservedPropertyName:
-                            prefixReserved = reader.ReadBoolean();
-                            break;
-                        case IsRecommendedPropertyName:
-                            isRecommended = reader.ReadBoolean();
-                            break;
-                        case RecommenderVersionPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                recommenderVersion = options.Resolver.GetFormatter<(string, string)>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case DownloadCountPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                downloadCount = reader.ReadInt64();
-                            }
-                            break;
-                        case DependencySetsPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                dependencySets = options.Resolver.GetFormatter<IReadOnlyCollection<PackageDependencyGroup>>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case VulnerabilitiesPropertyName:
-                            if (!reader.TryReadNil())
-                            {
-                                vulnerabilities = options.Resolver.GetFormatter<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>>().Deserialize(ref reader, options);
-                            }
-                            break;
-                        case IsListedPropertyName:
-                            isListed = reader.ReadBoolean();
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case IdentityPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            identity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
+                        }
+                        break;
+                    case DescriptionPropertyName:
+                        description = reader.ReadString();
+                        break;
+                    case AuthorsPropertyName:
+                        authors = reader.ReadString();
+                        break;
+                    case IconUrlPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            iconUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case TitlePropertyName:
+                        title = reader.ReadString();
+                        break;
+                    case TagsPropertyName:
+                        tags = reader.ReadString();
+                        break;
+                    case LicenseUrlPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            licenseUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case ProjectUrlPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            projectUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case PublishedPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            published = options.Resolver.GetFormatter<DateTimeOffset>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case OwnersPropertyName:
+                        owners = reader.ReadString();
+                        break;
+                    case ReportAbuseUrlPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            reportAbuseUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case PackageDetailsUrlPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            packageDetailsUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case RequireLicenseAcceptancePropertyName:
+                        requireLicenseAcceptance = reader.ReadBoolean();
+                        break;
+                    case SummaryPropertyName:
+                        summary = reader.ReadString();
+                        break;
+                    case PrefixReservedPropertyName:
+                        prefixReserved = reader.ReadBoolean();
+                        break;
+                    case IsRecommendedPropertyName:
+                        isRecommended = reader.ReadBoolean();
+                        break;
+                    case RecommenderVersionPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            recommenderVersion = options.Resolver.GetFormatter<(string, string)>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case DownloadCountPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            downloadCount = reader.ReadInt64();
+                        }
+                        break;
+                    case DependencySetsPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            dependencySets = options.Resolver.GetFormatter<IReadOnlyCollection<PackageDependencyGroup>>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case VulnerabilitiesPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            vulnerabilities = options.Resolver.GetFormatter<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>>().Deserialize(ref reader, options);
+                        }
+                        break;
+                    case IsListedPropertyName:
+                        isListed = reader.ReadBoolean();
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
+            }
 
-                return new PackageSearchMetadataContextInfo()
-                {
-                    Title = title,
-                    Description = description,
-                    Authors = authors,
-                    IconUrl = iconUrl,
-                    Tags = tags,
-                    Identity = identity,
-                    LicenseUrl = licenseUrl,
-                    IsRecommended = isRecommended,
-                    RecommenderVersion = recommenderVersion,
-                    Owners = owners,
-                    ProjectUrl = projectUrl,
-                    Published = published,
-                    ReportAbuseUrl = reportAbuseUrl,
-                    PackageDetailsUrl = packageDetailsUrl,
-                    RequireLicenseAcceptance = requireLicenseAcceptance,
-                    Summary = summary,
-                    PrefixReserved = prefixReserved,
-                    IsListed = isListed,
-                    DependencySets = dependencySets,
-                    DownloadCount = downloadCount,
-                    Vulnerabilities = vulnerabilities,
-                };
-            }
-            finally
+            return new PackageSearchMetadataContextInfo()
             {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+                Title = title,
+                Description = description,
+                Authors = authors,
+                IconUrl = iconUrl,
+                Tags = tags,
+                Identity = identity,
+                LicenseUrl = licenseUrl,
+                IsRecommended = isRecommended,
+                RecommenderVersion = recommenderVersion,
+                Owners = owners,
+                ProjectUrl = projectUrl,
+                Published = published,
+                ReportAbuseUrl = reportAbuseUrl,
+                PackageDetailsUrl = packageDetailsUrl,
+                RequireLicenseAcceptance = requireLicenseAcceptance,
+                Summary = summary,
+                PrefixReserved = prefixReserved,
+                IsListed = isListed,
+                DependencySets = dependencySets,
+                DownloadCount = downloadCount,
+                Vulnerabilities = vulnerabilities
+            };
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageSearchMetadataContextInfo? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, PackageSearchMetadataContextInfo value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 21);
             writer.Write(AuthorsPropertyName);
             writer.Write(value.Authors);
