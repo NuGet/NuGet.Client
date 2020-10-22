@@ -9,7 +9,7 @@ using Microsoft;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class PackageSourceContextInfoFormatter : IMessagePackFormatter<PackageSourceContextInfo?>
+    internal sealed class PackageSourceContextInfoFormatter : NuGetMessagePackFormatter<PackageSourceContextInfo>
     {
         private const string SourcePropertyName = "source";
         private const string IsEnabledPropertyName = "isenabled";
@@ -24,79 +24,57 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public PackageSourceContextInfo? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override PackageSourceContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            string? source = null;
+            string? name = null;
+            bool isMachineWide = false;
+            bool isEnabled = true;
+            string? description = null;
+            int originalHashCode = 0;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                string? source = null;
-                string? name = null;
-                bool isMachineWide = false;
-                bool isEnabled = true;
-                string? description = null;
-                int originalHashCode = 0;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case SourcePropertyName:
-                            source = reader.ReadString();
-                            break;
-                        case IsEnabledPropertyName:
-                            isEnabled = reader.ReadBoolean();
-                            break;
-                        case IsMachineWidePropertyName:
-                            isMachineWide = reader.ReadBoolean();
-                            break;
-                        case NamePropertyName:
-                            name = reader.ReadString();
-                            break;
-                        case DescriptionPropertyName:
-                            description = reader.ReadString();
-                            break;
-                        case OriginalHashCodePropertyName:
-                            originalHashCode = reader.ReadInt32();
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case SourcePropertyName:
+                        source = reader.ReadString();
+                        break;
+                    case IsEnabledPropertyName:
+                        isEnabled = reader.ReadBoolean();
+                        break;
+                    case IsMachineWidePropertyName:
+                        isMachineWide = reader.ReadBoolean();
+                        break;
+                    case NamePropertyName:
+                        name = reader.ReadString();
+                        break;
+                    case DescriptionPropertyName:
+                        description = reader.ReadString();
+                        break;
+                    case OriginalHashCodePropertyName:
+                        originalHashCode = reader.ReadInt32();
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNullOrEmpty(source);
-                Assumes.NotNullOrEmpty(name);
-
-                return new PackageSourceContextInfo(source, name, isEnabled)
-                {
-                    IsMachineWide = isMachineWide,
-                    Description = description,
-                    OriginalHashCode = originalHashCode,
-                };
             }
-            finally
+
+            Assumes.NotNullOrEmpty(source);
+            Assumes.NotNullOrEmpty(name);
+
+            return new PackageSourceContextInfo(source, name, isEnabled)
             {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+                IsMachineWide = isMachineWide,
+                Description = description,
+                OriginalHashCode = originalHashCode,
+            };
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageSourceContextInfo? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, PackageSourceContextInfo value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 6);
             writer.Write(SourcePropertyName);
             writer.Write(value.Source);
