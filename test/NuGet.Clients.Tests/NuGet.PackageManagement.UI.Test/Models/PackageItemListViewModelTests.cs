@@ -379,11 +379,8 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.True(result is BitmapImage || result is CachedBitmap);
             var image = result as BitmapSource;
             Assert.NotNull(image);
-            int expectedSize = IconBitmapStatusUtility.GetIsDefaultIcon(bitmapStatus)
-                ? 1
-                : PackageItemListViewModel.DecodePixelWidth;
-            Assert.Equal(expectedSize, image.PixelWidth);
-            Assert.Equal(expectedSize, image.PixelHeight);
+            Assert.Equal(PackageItemListViewModel.DecodePixelWidth, image.PixelWidth);
+            Assert.Equal(PackageItemListViewModel.DecodePixelWidth, image.PixelHeight);
         }
 
         /// <summary>
