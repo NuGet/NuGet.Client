@@ -80,49 +80,54 @@ namespace NuGet.PackageManagement.UI
 
             foreach (IProjectContextInfo project in Projects)
             {
-                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
-                    ServiceBroker,
-                    CancellationToken.None);
-                NuGetFramework framework = projectMetadata.TargetFramework;
-
-                if (framework != null)
+                if (project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                 {
-                    if (framework.IsAny)
+                    // get the target frameworks for Package Reference style projects
+                    var targetFrameworkInfos = await project.GetTargetFrameworksAsync(CancellationToken.None);
+                    foreach (var targetFrameworkInfo in targetFrameworkInfos)
                     {
-                        // One of the project's target framework is AnyFramework. In this case,
-                        // we don't need to pass the framework filter to the server.
-                        return new List<string>();
-                    }
-
-                    if (framework.IsSpecificFramework)
-                    {
-                        frameworks.Add(framework.DotNetFrameworkName);
+                        frameworks.Add(targetFrameworkInfo.FrameworkName.DotNetFrameworkName);
                     }
                 }
                 else
                 {
-                    // we also need to process SupportedFrameworks
-                    IReadOnlyCollection<NuGetFramework> supportedFrameworks = projectMetadata.SupportedFrameworks;
+                    IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                        ServiceBroker,
+                        CancellationToken.None);
+                    NuGetFramework framework = projectMetadata.TargetFramework;
 
-                    if (supportedFrameworks != null && supportedFrameworks.Count > 0)
+                    if (framework != null)
                     {
-                        foreach (var f in supportedFrameworks)
+                        if (framework.IsAny)
                         {
-                            if (f.IsAny)
-                            {
-                                return new List<string>();
-                            }
+                            // One of the project's target framework is AnyFramework. In this case,
+                            // we don't need to pass the framework filter to the server.
+                            return new List<string>();
+                        }
 
-                            frameworks.Add(f.DotNetFrameworkName);
+                        if (framework.IsSpecificFramework)
+                        {
+                            frameworks.Add(framework.DotNetFrameworkName);
                         }
                     }
-                }
+                    else
+                    {
+                        // we also need to process SupportedFrameworks
+                        IReadOnlyCollection<NuGetFramework> supportedFrameworks = projectMetadata.SupportedFrameworks;
 
-                // get the target frameworks for Package Reference style projects
-                var targetFrameworkInfos = await project.GetTargetFrameworksAsync(CancellationToken.None);
-                foreach (var targetFrameworkInfo in targetFrameworkInfos)
-                {
-                    frameworks.Add(targetFrameworkInfo.FrameworkName.DotNetFrameworkName);
+                        if (supportedFrameworks != null && supportedFrameworks.Count > 0)
+                        {
+                            foreach (var f in supportedFrameworks)
+                            {
+                                if (f.IsAny)
+                                {
+                                    return new List<string>();
+                                }
+
+                                frameworks.Add(f.DotNetFrameworkName);
+                            }
+                        }
+                    }
                 }
             }
 
