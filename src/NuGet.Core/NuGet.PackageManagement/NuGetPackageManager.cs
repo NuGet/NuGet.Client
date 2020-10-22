@@ -2030,7 +2030,6 @@ namespace NuGet.PackageManagement
 
             var results = new List<NuGetProjectAction>();
 
-            // BuildIntegratedNuGetProject type projects are now supports parallel preview action for faster performance.
             var buildIntegratedProjectsToUpdate = new List<BuildIntegratedNuGetProject>();
             var otherTargetProjectsToUpdate = new List<NuGetProject>();
 
