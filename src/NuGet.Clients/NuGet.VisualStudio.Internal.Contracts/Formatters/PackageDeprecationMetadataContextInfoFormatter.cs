@@ -10,7 +10,7 @@ using Microsoft;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class PackageDeprecationMetadataContextInfoFormatter : IMessagePackFormatter<PackageDeprecationMetadataContextInfo?>
+    internal sealed class PackageDeprecationMetadataContextInfoFormatter : NuGetMessagePackFormatter<PackageDeprecationMetadataContextInfo>
     {
         private const string MessagePropertyName = "message";
         private const string ReasonsPropertyName = "reasons";
@@ -22,61 +22,39 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public PackageDeprecationMetadataContextInfo? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override PackageDeprecationMetadataContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            string? message = null;
+            IReadOnlyCollection<string>? reasons = null;
+            AlternatePackageMetadataContextInfo? alternatePackageMetadataContextInfo = null;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                string? message = null;
-                IReadOnlyCollection<string>? reasons = null;
-                AlternatePackageMetadataContextInfo? alternatePackageMetadataContextInfo = null;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case MessagePropertyName:
-                            message = reader.ReadString();
-                            break;
-                        case ReasonsPropertyName:
-                            reasons = reader.TryReadNil() ? null : options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Deserialize(ref reader, options);
-                            break;
-                        case AlternatePackageMetadataPropertyName:
-                            alternatePackageMetadataContextInfo = reader.TryReadNil() ? null : AlternatePackageMetadataContextInfoFormatter.Instance.Deserialize(ref reader, options);
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case MessagePropertyName:
+                        message = reader.ReadString();
+                        break;
+                    case ReasonsPropertyName:
+                        reasons = reader.TryReadNil() ? null : options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Deserialize(ref reader, options);
+                        break;
+                    case AlternatePackageMetadataPropertyName:
+                        alternatePackageMetadataContextInfo = reader.TryReadNil() ? null : AlternatePackageMetadataContextInfoFormatter.Instance.Deserialize(ref reader, options);
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNullOrEmpty(message);
-
-                return new PackageDeprecationMetadataContextInfo(message, reasons, alternatePackageMetadataContextInfo);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.NotNullOrEmpty(message);
+
+            return new PackageDeprecationMetadataContextInfo(message, reasons, alternatePackageMetadataContextInfo);
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageDeprecationMetadataContextInfo? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, PackageDeprecationMetadataContextInfo value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 3);
             writer.Write(MessagePropertyName);
             writer.Write(value.Message);

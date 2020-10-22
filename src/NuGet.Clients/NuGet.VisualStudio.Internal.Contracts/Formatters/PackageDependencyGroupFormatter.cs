@@ -13,7 +13,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal sealed class PackageDependencyGroupFormatter : IMessagePackFormatter<PackageDependencyGroup?>
+    internal sealed class PackageDependencyGroupFormatter : NuGetMessagePackFormatter<PackageDependencyGroup>
     {
         private const string TargetFrameworkPropertyName = "targetframework";
         private const string PackagesPropertyName = "packages";
@@ -24,59 +24,37 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public PackageDependencyGroup? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override PackageDependencyGroup? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            NuGetFramework? framework = null;
+            IEnumerable<PackageDependency>? packageDependencies = null;
+
+            int propertyCount = reader.ReadMapHeader();
+
+            for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                NuGetFramework? framework = null;
-                IEnumerable<PackageDependency>? packageDependencies = null;
-
-                int propertyCount = reader.ReadMapHeader();
-
-                for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case TargetFrameworkPropertyName:
-                            framework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
-                            break;
-                        case PackagesPropertyName:
-                            packageDependencies = options.Resolver.GetFormatter<IEnumerable<PackageDependency>>().Deserialize(ref reader, options);
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case TargetFrameworkPropertyName:
+                        framework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
+                        break;
+                    case PackagesPropertyName:
+                        packageDependencies = options.Resolver.GetFormatter<IEnumerable<PackageDependency>>().Deserialize(ref reader, options);
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNull(framework);
-                Assumes.NotNull(packageDependencies);
-
-                return new PackageDependencyGroup(framework, packageDependencies);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.NotNull(framework);
+            Assumes.NotNull(packageDependencies);
+
+            return new PackageDependencyGroup(framework, packageDependencies);
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageDependencyGroup? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, PackageDependencyGroup value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 2);
             writer.Write(TargetFrameworkPropertyName);
             NuGetFrameworkFormatter.Instance.Serialize(ref writer, value.TargetFramework, options);
