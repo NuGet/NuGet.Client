@@ -10,7 +10,7 @@ using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class AlternatePackageMetadataContextInfoFormatter : IMessagePackFormatter<AlternatePackageMetadataContextInfo?>
+    internal sealed class AlternatePackageMetadataContextInfoFormatter : NuGetMessagePackFormatter<AlternatePackageMetadataContextInfo>
     {
         private const string PackageIdPropertyName = "packageid";
         private const string VersionRangePropertyName = "versionrange";
@@ -21,58 +21,36 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public AlternatePackageMetadataContextInfo? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override AlternatePackageMetadataContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            string? packageId = null;
+            VersionRange? range = null;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                string? packageId = null;
-                VersionRange? range = null;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case PackageIdPropertyName:
-                            packageId = reader.ReadString();
-                            break;
-                        case VersionRangePropertyName:
-                            range = VersionRangeFormatter.Instance.Deserialize(ref reader, options);
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case PackageIdPropertyName:
+                        packageId = reader.ReadString();
+                        break;
+                    case VersionRangePropertyName:
+                        range = VersionRangeFormatter.Instance.Deserialize(ref reader, options);
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNullOrEmpty(packageId);
-                Assumes.NotNull(range);
-
-                return new AlternatePackageMetadataContextInfo(packageId, range);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.NotNullOrEmpty(packageId);
+            Assumes.NotNull(range);
+
+            return new AlternatePackageMetadataContextInfo(packageId, range);
         }
 
-        public void Serialize(ref MessagePackWriter writer, AlternatePackageMetadataContextInfo? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, AlternatePackageMetadataContextInfo value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 2);
             writer.Write(PackageIdPropertyName);
             writer.Write(value.PackageId);
