@@ -1519,9 +1519,9 @@ namespace NuGet.Commands.Test
             var provider = new DependencyProvider();
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
-            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B
 
-            // Input 
+            // Input
             // A -> B (version = 3.0.0) -> C (version = 3.0.0) -> D (version = 3.0.0)
             // A ~> D (version = 2.0.0
             //         the dependency is not direct,
@@ -1534,6 +1534,7 @@ namespace NuGet.Commands.Test
             //    -> D (version = 2.0.0)
             provider.Package("A", otherVersion)
                     .DependsOn("B", otherVersion)
+                    // Simulates the existence of a D centrally defined package that is not direct dependency
                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
             provider.Package("B", otherVersion)
@@ -1541,10 +1542,6 @@ namespace NuGet.Commands.Test
 
             provider.Package("C", otherVersion)
                   .DependsOn(centralPackageName, otherVersion);
-
-            // Simulates the existence of a D centrally defined package that is not direct dependency
-            provider.Package("A", otherVersion)
-                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
             // Add central package to the source with multiple versions
             provider.Package(centralPackageName, "1.0.0");
@@ -1722,7 +1719,7 @@ namespace NuGet.Commands.Test
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
 
-                // Package Bar does not have a corresponding PackageVersion 
+                // Package Bar does not have a corresponding PackageVersion
                 var packageRefDependecyFoo = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange("foo", versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
@@ -1779,7 +1776,7 @@ namespace NuGet.Commands.Test
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
 
-                // Package Bar does not have a corresponding PackageVersion 
+                // Package Bar does not have a corresponding PackageVersion
                 var packageRefDependecyBar = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange("bar", versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
@@ -1838,7 +1835,7 @@ namespace NuGet.Commands.Test
                 var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
 
                 // net472 will have packageA as direct dependency that has packageB as transitive
-                // netstandard1.1 will have packageB as direct dependency 
+                // netstandard1.1 will have packageB as direct dependency
                 var project1Json = @"
                 {
                   ""version"": ""1.0.0"",

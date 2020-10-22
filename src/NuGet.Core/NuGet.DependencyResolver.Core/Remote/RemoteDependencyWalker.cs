@@ -159,6 +159,8 @@ namespace NuGet.DependencyResolver
                 };
             }
 
+            Dictionary<string, LibraryDependency> dependencyMap = null;
+
             // do not add nodes for all the centrally managed package versions to the graph
             // they will be added only if they are transitive
             foreach (var dependency in node.Item.Data.Dependencies.Where(d => IsDependencyValidForGraph(d)))
@@ -187,12 +189,18 @@ namespace NuGet.DependencyResolver
                             tasks = new List<Task<GraphNode<RemoteResolveResult>>>(1);
                         }
 
+                        if (dependencyMap == null)
+                        {
+                            dependencyMap = node.Item.Data.Dependencies
+                                .ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+                        }
+
                         tasks.Add(CreateGraphNode(
                             dependency.LibraryRange,
                             framework,
                             runtimeName,
                             runtimeGraph,
-                            ChainPredicate(predicate, node, dependency),
+                            ChainPredicate(predicate, node.Item.Data.Match.Library.Name, dependencyMap, dependency),
                             innerEdge,
                             transitiveCentralPackageVersions));
                     }
@@ -239,30 +247,30 @@ namespace NuGet.DependencyResolver
             return node;
         }
 
-        private Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> ChainPredicate(Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate, GraphNode<RemoteResolveResult> node, LibraryDependency dependency)
+        private Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> ChainPredicate(Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate,
+                string nodeName,
+                Dictionary<string, LibraryDependency> dependencies,
+                LibraryDependency dependency)
         {
-            var item = node.Item;
-
             return library =>
             {
-                if (StringComparer.OrdinalIgnoreCase.Equals(item.Data.Match.Library.Name, library.Name))
+                if (StringComparer.OrdinalIgnoreCase.Equals(nodeName, library.Name))
                 {
                     return (DependencyResult.Cycle, null);
                 }
 
-                foreach (var d in item.Data.Dependencies)
+                if (dependencies.TryGetValue(library.Name, out var d) &&
+                    !ReferenceEquals(dependency, d) &&
+                    library.IsEclipsedBy(d.LibraryRange))
                 {
-                    if (d != dependency && library.IsEclipsedBy(d.LibraryRange))
+                    if (d.LibraryRange.VersionRange != null &&
+                        library.VersionRange != null &&
+                        !IsGreaterThanOrEqualTo(d.LibraryRange.VersionRange, library.VersionRange))
                     {
-                        if (d.LibraryRange.VersionRange != null &&
-                            library.VersionRange != null &&
-                            !IsGreaterThanOrEqualTo(d.LibraryRange.VersionRange, library.VersionRange))
-                        {
-                            return (DependencyResult.PotentiallyDowngraded, d);
-                        }
-
-                        return (DependencyResult.Eclipsed, d);
+                        return (DependencyResult.PotentiallyDowngraded, d);
                     }
+
+                    return (DependencyResult.Eclipsed, d);
                 }
 
                 return predicate(library);
@@ -414,12 +422,15 @@ namespace NuGet.DependencyResolver
             RuntimeGraph runtimeGraph,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
+            var dependencies = rootNode.Item.Data.Dependencies
+                .ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+
             GraphNode<RemoteResolveResult> node = await CreateGraphNode(
                     libraryRange: centralPackageVersionDependency.LibraryRange,
                     framework: framework,
                     runtimeName: runtimeIdentifier,
                     runtimeGraph: runtimeGraph,
-                    predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
+                    predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode.Item.Data.Match.Library.Name, dependencies, centralPackageVersionDependency),
                     outerEdge: null,
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
