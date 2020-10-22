@@ -1114,4 +1114,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_MultiplePackagePaths" xml:space="preserve">
     <value>{0} contains more than one path</value>
   </data>
+  <data name="Error_PlatformVersionNotPresent" xml:space="preserve">
+    <value>Platform version is not present for one or more target frameworks, even though they have specified a platform: {0}</value>
+    <comment>0 - comma-separated list of TFMs missing a platform version</comment>
+  </data>
 </root>

@@ -790,6 +790,51 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Some dependency group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromDependencyGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromDependencyGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some reference assembly group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromFrameworkAssemblyGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromFrameworkAssemblyGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some framework assembly reference TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromFrameworkAssemblyReferences {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromFrameworkAssemblyReferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some included files are included under TFMs which are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromIncludedFiles {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromIncludedFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some reference group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromReferenceGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromReferenceGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Multiple {0} attributes are not allowed..
         /// </summary>
         internal static string MultipleAttributesDisallowed {
