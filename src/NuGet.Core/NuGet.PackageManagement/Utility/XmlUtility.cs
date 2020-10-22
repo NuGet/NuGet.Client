@@ -27,7 +27,7 @@ namespace NuGet.ProjectManagement
         public static XDocument LoadSafe(Stream input, bool ignoreWhiteSpace)
         {
             if (ignoreWhiteSpace)
-                Shared.XmlUtility.Load(input);
+                return Shared.XmlUtility.Load(input);
 
             return Shared.XmlUtility.Load(input, LoadOptions.PreserveWhitespace);
         }
