@@ -43,6 +43,10 @@ namespace NuGet.VisualStudio
             return !string.IsNullOrEmpty(projectTypeGuid) && SupportedProjectTypes.IsSupported(projectTypeGuid) && !HasUnsupportedProjectCapability(hierarchy);
         }
 
+        /// <summary>Check if this project appears to support NuGet.</summary>
+        /// <param name="hierarchy">IVsHierarchy representing the project in the solution.</param>
+        /// <returns>True if NuGet should enable this project, false if NuGet should ignore the project.</returns>
+        /// <remarks>The project may be packages.config or PackageReference. This method does not tell you which.</remarks>
         public static bool IsProjectCapabilityCompliant(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -83,11 +87,23 @@ namespace NuGet.VisualStudio
         /// Check for CPS capability in IVsHierarchy. All CPS projects will have CPS capability except VisualC projects.
         /// So checking for VisualC explicitly with a OR flag.
         /// </summary>
+        /// <remarks>This does not mean the project also supports PackageReference!</remarks>
         public static bool IsCPSCapabilityCompliant(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             return hierarchy.IsCapabilityMatch("CPS | VisualC");
+        }
+
+        /// <summary>Checks if the project advertises PackageReferences capability.</summary>
+        /// <param name="hierarchy">IVsHierarchy representing the project in the solution.</param>
+        /// <returns>True if the project has the PackageReferences capability, false otherwise.</returns>
+        /// <remarks>This method does not tell us which project system the project uses.</remarks>
+        public static bool IsPackageReferenceCapabilityCompliant(IVsHierarchy hierarchy)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            return hierarchy.IsCapabilityMatch("PackageReferences");
         }
 
         /// <summary>
