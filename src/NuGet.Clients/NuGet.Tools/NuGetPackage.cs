@@ -25,6 +25,7 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
@@ -137,6 +138,9 @@ namespace NuGetVSExtension
         private IDisposable ProjectUpgradeHandler { get; set; }
 
         private INuGetProjectManagerServiceState _projectManagerServiceState;
+
+        [Import]
+        private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -404,7 +408,10 @@ namespace NuGetVSExtension
                     }
 
                     IProjectContextInfo existingProject = projects.First();
-                    IProjectMetadataContextInfo projectMetadata = await existingProject.GetMetadataAsync(CancellationToken.None);
+                    IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
+                    IProjectMetadataContextInfo projectMetadata = await existingProject.GetMetadataAsync(
+                        serviceBroker,
+                        CancellationToken.None);
 
                     if (string.Equals(projectMetadata.Name, project.Name, StringComparison.OrdinalIgnoreCase))
                     {
@@ -495,8 +502,9 @@ namespace NuGetVSExtension
             // is thrown, an error dialog will pop up and this doc window will not be created.
             _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
+            IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
             IProjectContextInfo contextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);
-            INuGetUI uiController = await UIFactory.Value.CreateAsync(contextInfo);
+            INuGetUI uiController = await UIFactory.Value.CreateAsync(serviceBroker, contextInfo);
 
             // This model takes ownership of --- and Dispose() responsibility for --- the INuGetUI instance.
             var model = new PackageManagerModel(
@@ -593,10 +601,11 @@ namespace NuGetVSExtension
             IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project);
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
 
+            IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
             NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
             IProjectContextInfo projectContextInfo = await ProjectContextInfo.CreateAsync(nuGetProject, CancellationToken.None);
 
-            using (INuGetUI uiController = await UIFactory.Value.CreateAsync(projectContextInfo))
+            using (INuGetUI uiController = await UIFactory.Value.CreateAsync(serviceBroker, projectContextInfo))
             {
                 await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, projectContextInfo);
 
@@ -721,12 +730,14 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
+            IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
             IReadOnlyCollection<IProjectContextInfo> projectContexts;
-            IServiceBroker remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            using (var nugetProjectManagerService = await remoteBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
+
+            using (INuGetProjectManagerService projectManagerService = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
+                NuGetServices.ProjectManagerService))
             {
-                Assumes.NotNull(nugetProjectManagerService);
-                projectContexts = await nugetProjectManagerService.GetProjectsAsync(CancellationToken.None);
+                Assumes.NotNull(projectManagerService);
+                projectContexts = await projectManagerService.GetProjectsAsync(CancellationToken.None);
 
                 if (projectContexts.Count == 0)
                 {
@@ -735,7 +746,7 @@ namespace NuGetVSExtension
                 }
             }
 
-            INuGetUI uiController = await UIFactory.Value.CreateAsync(projectContexts.ToArray());
+            INuGetUI uiController = await UIFactory.Value.CreateAsync(serviceBroker, projectContexts.ToArray());
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 
             // This model takes ownership of --- and Dispose() responsibility for --- the INuGetUI instance.

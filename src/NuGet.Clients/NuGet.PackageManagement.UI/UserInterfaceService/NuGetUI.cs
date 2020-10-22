@@ -64,6 +64,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public static async Task<NuGetUI> CreateAsync(
+            IServiceBroker serviceBroker,
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
             ISourceRepositoryProvider sourceRepositoryProvider,
@@ -80,6 +81,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken,
             params IProjectContextInfo[] projects)
         {
+            Assumes.NotNull(serviceBroker);
             Assumes.NotNull(commonOperations);
             Assumes.NotNull(projectContext);
             Assumes.NotNull(sourceRepositoryProvider);
@@ -102,6 +104,7 @@ namespace NuGet.PackageManagement.UI
                 logger)
             {
                 UIContext = await NuGetUIContext.CreateAsync(
+                    serviceBroker,
                     sourceRepositoryProvider,
                     settings,
                     solutionManager,
@@ -123,7 +126,10 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            DeprecatedFrameworkModel dataContext = await DotnetDeprecatedPrompt.GetDeprecatedFrameworkModelAsync(projects, cancellationToken);
+            DeprecatedFrameworkModel dataContext = await DotnetDeprecatedPrompt.GetDeprecatedFrameworkModelAsync(
+                UIContext.ServiceBroker,
+                projects,
+                cancellationToken);
 
             InvokeOnUIThread(() => { result = WarnAboutDotnetDeprecationImpl(dataContext); });
 
@@ -207,7 +213,7 @@ namespace NuGet.PackageManagement.UI
 
             List<IProjectContextInfo> projects = Projects.ToList();
 
-            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            IServiceBroker serviceBroker = UIContext.ServiceBroker;
 
             using (INuGetProjectUpgraderService projectUpgrader = await serviceBroker.GetProxyAsync<INuGetProjectUpgraderService>(
                 NuGetServices.ProjectUpgraderService,

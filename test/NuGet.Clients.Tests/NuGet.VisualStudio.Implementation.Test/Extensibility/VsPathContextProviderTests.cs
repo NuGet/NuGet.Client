@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
@@ -22,22 +22,16 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility.Threading;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
+    [Collection(MockedVs.CollectionName)]
     public class VsPathContextProviderTests
     {
-        private readonly JoinableTaskFactory _jtf;
-
-        public VsPathContextProviderTests(DispatcherThreadFixture fixture)
+        public VsPathContextProviderTests(GlobalServiceProvider serviceProvider)
         {
-            Assumes.Present(fixture);
-
-            _jtf = fixture.JoinableTaskFactory;
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
+            serviceProvider.Reset();
         }
 
         [Fact]

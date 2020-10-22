@@ -25,7 +25,6 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public sealed class NuGetUIContext : INuGetUIContext
     {
-        private readonly IServiceBroker _serviceBroker;
         private readonly NuGetSolutionManagerServiceWrapper _solutionManagerService;
         private IProjectContextInfo[] _projects;
 
@@ -45,7 +44,7 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders)
         {
             SourceProvider = sourceProvider;
-            _serviceBroker = serviceBroker;
+            ServiceBroker = serviceBroker;
             SolutionManager = solutionManager;
             _solutionManagerService = solutionManagerService;
             PackageManager = packageManager;
@@ -56,9 +55,11 @@ namespace NuGet.PackageManagement.UI
             UserSettingsManager = userSettingsManager;
             PackageManagerProviders = packageManagerProviders;
 
-            _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
+            ServiceBroker.AvailabilityChanged += OnAvailabilityChanged;
             SolutionManager.ActionsExecuted += OnActionsExecuted;
         }
+
+        public IServiceBroker ServiceBroker { get; }
 
         public ISourceRepositoryProvider SourceProvider { get; }
 
@@ -94,7 +95,7 @@ namespace NuGet.PackageManagement.UI
 
         public void Dispose()
         {
-            _serviceBroker.AvailabilityChanged -= OnAvailabilityChanged;
+            ServiceBroker.AvailabilityChanged -= OnAvailabilityChanged;
             SolutionManager.ActionsExecuted -= OnActionsExecuted;
 
             _solutionManagerService.Dispose();
@@ -104,7 +105,7 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<bool> IsNuGetProjectUpgradeableAsync(IProjectContextInfo project, CancellationToken cancellationToken)
         {
-            return await project.IsUpgradeableAsync(cancellationToken);
+            return await project.IsUpgradeableAsync(ServiceBroker, cancellationToken);
         }
 
         public async Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService)
@@ -124,6 +125,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public static async ValueTask<NuGetUIContext> CreateAsync(
+            IServiceBroker serviceBroker,
             ISourceRepositoryProvider sourceRepositoryProvider,
             ISettings settings,
             IVsSolutionManager solutionManager,
@@ -135,6 +137,7 @@ namespace NuGet.PackageManagement.UI
             INuGetLockService lockService,
             CancellationToken cancellationToken)
         {
+            Assumes.NotNull(serviceBroker);
             Assumes.NotNull(sourceRepositoryProvider);
             Assumes.NotNull(settings);
             Assumes.NotNull(solutionManager);
@@ -147,10 +150,8 @@ namespace NuGet.PackageManagement.UI
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-
             var solutionManagerServiceWrapper = new NuGetSolutionManagerServiceWrapper();
-            var solutionManagerService = await GetSolutionManagerServiceAsync(serviceBroker, cancellationToken);
+            INuGetSolutionManagerService solutionManagerService = await GetSolutionManagerServiceAsync(serviceBroker, cancellationToken);
 
             // The initial Swap(...) should return a null implementation of the interface that does not require disposal.
             // However, there's no harm in following form.
@@ -214,7 +215,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     INuGetSolutionManagerService newService = await GetSolutionManagerServiceAsync(
-                        _serviceBroker,
+                        ServiceBroker,
                         CancellationToken.None);
 
                     using (_solutionManagerService.Swap(newService))

@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
@@ -13,9 +15,15 @@ namespace NuGet.PackageManagement.UI
     internal static class ProjectUtility
     {
         internal static async ValueTask<IEnumerable<string>> GetSortedProjectIdsAsync(
+            IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
             CancellationToken cancellationToken)
         {
+            if (serviceBroker is null)
+            {
+                throw new ArgumentNullException(nameof(serviceBroker));
+            }
+
             if (projects is null)
             {
                 throw new ArgumentNullException(nameof(projects));
@@ -24,7 +32,7 @@ namespace NuGet.PackageManagement.UI
             cancellationToken.ThrowIfCancellationRequested();
 
             IEnumerable<Task<IProjectMetadataContextInfo>> tasks = projects.Select(
-                project => project.GetMetadataAsync(cancellationToken).AsTask());
+                project => project.GetMetadataAsync(serviceBroker, cancellationToken).AsTask());
 
             IProjectMetadataContextInfo[] projectMetadatas = await Task.WhenAll(tasks);
 
