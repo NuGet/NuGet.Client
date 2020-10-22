@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Common;
@@ -442,6 +443,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 targetPlatformMinVersion: platformMinVersion);
 
             return frameworkStrings.FirstOrDefault();
+        }
+
+        public async Task<bool> IsCapabilityMatchAsync(string capabilityExpression)
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            return VsHierarchy.IsCapabilityMatch(capabilityExpression);
         }
 
         #endregion Getters

@@ -53,7 +53,7 @@ namespace NuGet.VisualStudio
 
             // NOTE: (AssemblyReferences + DeclaredSourceItems + UserSourceItems) exists solely for compatibility reasons
             // with existing custom CPS-based projects that existed before "PackageReferences" capability was introduced.
-            return hierarchy.IsCapabilityMatch("(AssemblyReferences + DeclaredSourceItems + UserSourceItems) | PackageReferences");
+            return hierarchy.IsCapabilityMatch(IDE.ProjectCapabilities.SupportsNuGet);
         }
 
         public static bool HasUnsupportedProjectCapability(IVsHierarchy hierarchy)
@@ -84,26 +84,14 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
-        /// Check for CPS capability in IVsHierarchy. All CPS projects will have CPS capability except VisualC projects.
-        /// So checking for VisualC explicitly with a OR flag.
+        /// Check for CPS capability in IVsHierarchy.
         /// </summary>
         /// <remarks>This does not mean the project also supports PackageReference!</remarks>
         public static bool IsCPSCapabilityCompliant(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            return hierarchy.IsCapabilityMatch("CPS | VisualC");
-        }
-
-        /// <summary>Checks if the project advertises PackageReferences capability.</summary>
-        /// <param name="hierarchy">IVsHierarchy representing the project in the solution.</param>
-        /// <returns>True if the project has the PackageReferences capability, false otherwise.</returns>
-        /// <remarks>This method does not tell us which project system the project uses.</remarks>
-        public static bool IsPackageReferenceCapabilityCompliant(IVsHierarchy hierarchy)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            return hierarchy.IsCapabilityMatch("PackageReferences");
+            return hierarchy.IsCapabilityMatch(IDE.ProjectCapabilities.Cps);
         }
 
         /// <summary>
