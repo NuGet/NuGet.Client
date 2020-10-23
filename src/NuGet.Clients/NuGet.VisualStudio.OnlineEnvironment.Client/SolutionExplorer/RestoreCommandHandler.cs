@@ -8,10 +8,10 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using SB = Microsoft.VisualStudio.Shell.ServiceBroker;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio.Internal.Contracts;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using SB = Microsoft.VisualStudio.Shell.ServiceBroker;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.OnlineEnvironment.Client

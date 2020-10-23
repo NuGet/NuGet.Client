@@ -782,14 +782,14 @@ namespace NuGet.PackageManagement.UI
                 userAction.Version.IsPrerelease == true;
 
             IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.Select(source => source.PackageSource.Name).ToList();
+            string[] projectIds = projects
+                .Select(project => project.ProjectId)
+                .Distinct()
+                .ToArray();
 
             if (userAction.Action == NuGetProjectActionType.Install)
             {
                 var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
-                string[] projectIds = projects
-                    .Select(project => project.ProjectId)
-                    .Distinct()
-                    .ToArray();
 
                 IReadOnlyList<ProjectAction> actions = await projectManagerService.GetInstallActionsAsync(
                     projectIds,
@@ -806,17 +806,14 @@ namespace NuGet.PackageManagement.UI
             {
                 var packageIdentity = new PackageIdentity(userAction.PackageId, version: null);
 
-                foreach (ProjectContextInfo project in projects)
-                {
-                    IEnumerable<ProjectAction> actions = await projectManagerService.GetUninstallActionsAsync(
-                        project.ProjectId,
-                        packageIdentity,
-                        removeDependencies,
-                        forceRemove,
-                        token);
+                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUninstallActionsAsync(
+                    projectIds,
+                    packageIdentity,
+                    removeDependencies,
+                    forceRemove,
+                    token);
 
-                    results.AddRange(actions);
-                }
+                results.AddRange(actions);
             }
 
             return results;
