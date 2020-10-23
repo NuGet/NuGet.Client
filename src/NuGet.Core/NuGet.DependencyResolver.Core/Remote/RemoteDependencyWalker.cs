@@ -192,7 +192,7 @@ namespace NuGet.DependencyResolver
                         if (dependencyMap == null)
                         {
                             dependencyMap = node.Item.Data.Dependencies
-                                .ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+                                .ToDictionary(d => d.Name, d => d, StringComparer.OrdinalIgnoreCase);
                         }
 
                         tasks.Add(CreateGraphNode(
@@ -423,7 +423,7 @@ namespace NuGet.DependencyResolver
             TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
             var dependencies = rootNode.Item.Data.Dependencies
-                .ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(d => d.Name, d => d, StringComparer.OrdinalIgnoreCase);
 
             GraphNode<RemoteResolveResult> node = await CreateGraphNode(
                     libraryRange: centralPackageVersionDependency.LibraryRange,
