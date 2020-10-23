@@ -83,10 +83,10 @@ namespace NuGet.PackageManagement.UI
                 if (project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                 {
                     // get the target frameworks for Package Reference style projects
-                    var targetFrameworkInfos = await project.GetTargetFrameworksAsync(CancellationToken.None);
-                    foreach (var targetFrameworkInfo in targetFrameworkInfos)
+                    var targetFrameworks = await project.GetTargetFrameworksAsync(CancellationToken.None);
+                    foreach (var targetFramework in targetFrameworks)
                     {
-                        frameworks.Add(targetFrameworkInfo.FrameworkName.DotNetFrameworkName);
+                        frameworks.Add(targetFramework.DotNetFrameworkName);
                     }
                 }
                 else

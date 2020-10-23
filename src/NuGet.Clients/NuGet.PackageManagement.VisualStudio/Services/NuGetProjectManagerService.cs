@@ -15,12 +15,12 @@ using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
@@ -232,7 +232,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         // Get target framework information for BuildIntegratedNuGetProjects
-        public async ValueTask<IReadOnlyCollection<TargetFrameworkInformation>> GetTargetFrameworksAsync(
+        public async ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
             string projectId,
             CancellationToken cancellationToken)
         {
@@ -253,12 +253,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 var packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
 
                 var targetFrameworks = packageSpecs
-                    .SelectMany(spec => spec.TargetFrameworks);
+                    .SelectMany(spec => spec.TargetFrameworks)
+                    .Select(f => f.FrameworkName);
 
                 return targetFrameworks.ToArray();
             }
 
-            return Array.Empty<TargetFrameworkInformation>();
+            return Array.Empty<NuGetFramework>();
         }
 
         public async ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken)

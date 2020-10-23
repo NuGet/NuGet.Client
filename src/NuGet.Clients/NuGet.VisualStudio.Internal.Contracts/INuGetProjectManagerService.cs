@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
-using NuGet.ProjectModel;
 using NuGet.Resolver;
 
 namespace NuGet.VisualStudio.Internal.Contracts
@@ -20,7 +20,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<(IReadOnlyCollection<IPackageReferenceContextInfo>, IReadOnlyCollection<IPackageReferenceContextInfo>)> GetAllPackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
-        ValueTask<IReadOnlyCollection<TargetFrameworkInformation>> GetTargetFrameworksAsync(
+        ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
             string projectId,
             CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
