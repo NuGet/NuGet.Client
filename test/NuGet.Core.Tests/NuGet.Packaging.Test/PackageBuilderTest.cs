@@ -84,6 +84,68 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void CreatePackageWithFiles()
+        {
+            // Arrange
+            PackageBuilder builder = new PackageBuilder()
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Descriptions",
+            };
+
+            builder.Authors.Add("testAuthor");
+
+            var dependencies = new List<PackageDependency>();
+            dependencies.Add(new PackageDependency("packageB", VersionRange.Parse("1.0.0"), null, new[] { "z" }));
+            dependencies.Add(new PackageDependency(
+                "packageC",
+                VersionRange.Parse("1.0.0"),
+                new[] { "a", "b", "c" },
+                new[] { "b", "c" }));
+
+            var set = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
+            builder.DependencyGroups.Add(set);
+
+            builder.Files.Add(CreatePackageFile(@"build" + Path.DirectorySeparatorChar + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"content" + Path.DirectorySeparatorChar + "foo.jpg"));
+            builder.Files.Add(CreatePackageFile(@"contentFiles" + Path.DirectorySeparatorChar + "any" + Path.DirectorySeparatorChar + "any" + Path.DirectorySeparatorChar + "foo.png"));
+            builder.Files.Add(CreatePackageFile(@"lib" + Path.DirectorySeparatorChar + "net5.0" + Path.DirectorySeparatorChar + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"native" + Path.DirectorySeparatorChar + "net5.0" + Path.DirectorySeparatorChar + "foo"));
+            builder.Files.Add(CreatePackageFile(@"ref" + Path.DirectorySeparatorChar + "net5.0" + Path.DirectorySeparatorChar + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"runtimes" + Path.DirectorySeparatorChar + "net5.0" + Path.DirectorySeparatorChar + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"tools" + Path.DirectorySeparatorChar + "foo.dll"));
+
+            using (var ms = new MemoryStream())
+            {
+                // Act
+                builder.Save(ms);
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                using (var archive = new ZipArchive(ms, ZipArchiveMode.Read, leaveOpen: true))
+                {
+                    var files = archive.Entries
+                        .Where(file => file.Name.StartsWith("foo"))
+                        .Select(file => file.FullName)
+                        .OrderBy(s => s)
+                        .ToArray();
+
+                    // Assert
+                    Assert.Equal(8, files.Length);
+                    Assert.Equal(@"build/foo.props", files[0]);
+                    Assert.Equal(@"content/foo.jpg", files[1]);
+                    Assert.Equal(@"contentFiles/any/any/foo.png", files[2]);
+                    Assert.Equal(@"lib/net5.0/foo.dll", files[3]);
+                    Assert.Equal(@"native/net5.0/foo", files[4]);
+                    Assert.Equal(@"ref/net5.0/foo.dll", files[5]);
+                    Assert.Equal(@"runtimes/net5.0/foo.dll", files[6]);
+                    Assert.Equal(@"tools/foo.dll", files[7]);
+                }
+            }
+        }
+
+        [Fact]
         public void CreatePackageWithNuspecIncludeExcludeAnyGroup()
         {
             // Arrange
