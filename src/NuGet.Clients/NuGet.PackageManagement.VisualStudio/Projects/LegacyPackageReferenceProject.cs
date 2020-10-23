@@ -168,6 +168,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
+        /// <summary>
+        /// Gets the installed (top level) package references for this project. 
+        /// </summary>
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             // Settings are not needed for this purpose, this only finds the installed packages
@@ -175,6 +178,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return await GetPackageReferencesAsync(packageSpec);
         }
 
+        /// <summary>
+        /// Gets the both the installed (top level) and transitive package references for this project.
+        /// Returns the package reference as two separate lists (installed and transitive).
+        /// </summary>
         public async Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)> GetAllPackagesAsync(CancellationToken token)
         {
             // Settings are not needed for this purpose, this finds the installed and transitive packages
