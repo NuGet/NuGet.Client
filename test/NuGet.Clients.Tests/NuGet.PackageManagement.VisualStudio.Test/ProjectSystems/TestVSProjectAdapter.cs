@@ -246,5 +246,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             return string.Empty;
         }
+
+        public Task<bool> IsCapabilityMatchAsync(string capabilityExpression)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
