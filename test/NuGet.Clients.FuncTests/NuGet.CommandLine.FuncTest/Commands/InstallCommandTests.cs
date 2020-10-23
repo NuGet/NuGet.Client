@@ -195,10 +195,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, context.WorkingDirectory);
                 SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
+
+                await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
                 certificateAuthority.Revoke(
                     bcCertificate,
                     RevocationReason.KeyCompromise,
-                    DateTimeOffset.UtcNow);
+                    DateTimeOffset.UtcNow.AddSeconds(-1));
 
                 var args = new string[]
                 {
