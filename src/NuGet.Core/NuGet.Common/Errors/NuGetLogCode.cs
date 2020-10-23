@@ -880,6 +880,6 @@ namespace NuGet.Common
         /// <summary>
         /// InvalidUndottedFrameworkWarning
         /// </summary>
-        NU5501 = 5501,
+        NU5502 = 5502,
     }
 }
