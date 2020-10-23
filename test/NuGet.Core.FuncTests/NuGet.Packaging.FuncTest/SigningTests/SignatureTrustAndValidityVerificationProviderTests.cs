@@ -1553,7 +1553,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             // Case1: primary signature (trusted + non-expired) doesn't fall back to countersignature (trusted + non-expired).
-            // The verification result is the primary signature status(valid). 
+            // The verification result is the primary signature status(valid).
             [CIOnlyFact]
             public async Task GetTrustResultAsync_WithGoodPrimarySignatureAndGoodCountersignature_NoFallbackAndReturnsValidAsync()
             {

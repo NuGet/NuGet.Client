@@ -12,7 +12,7 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatLocalsTests
     {
-        private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli();
+        private static readonly string DotnetCli = TestFileSystemUtility.GetDotnetCli();
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
         [Theory]

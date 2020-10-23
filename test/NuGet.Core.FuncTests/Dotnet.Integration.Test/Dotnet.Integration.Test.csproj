@@ -9,7 +9,13 @@
   
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
+    <Compile Remove="Utils\**" />
     <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Remove="Utils\**" />
+    <None Remove="Utils\**" />
   </ItemGroup>
   
   <ItemGroup>

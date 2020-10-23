@@ -53,6 +53,30 @@
 
   <!--
     ============================================================
+    Run package signing cross verify tests
+    ============================================================
+  -->
+  <Target Name="CrossVerifyTests" DependsOnTargets="BuildVS;Pack">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>@(CrossVerifyProjects)</TestProjectPaths>
+      <TestResultsFileName>CrossVerifyTests</TestResultsFileName>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
     Run core unit tests (non-VS specific)
     ============================================================
   -->
@@ -308,6 +332,27 @@
       Targets="Restore"
       Properties="RestoreGraphProjectInput=$(ProjectListValue);
                   $(CommonMSBuildProperties)">
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Restore package signing cross framework verify test project
+    ============================================================
+  -->
+  <Target Name="RestoreCrossVerifyTest">
+    <Message Text="Restoring package signing cross framework verify test project" Importance="high" />
+
+    <PropertyGroup>
+      <ProjectListValue>@(CrossVerifyProjects)</ProjectListValue>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="restorehelper.targets"
+      Targets="Restore"
+      Properties="RestoreGraphProjectInput=$(ProjectListValue);
+                  $(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
   </Target>
 

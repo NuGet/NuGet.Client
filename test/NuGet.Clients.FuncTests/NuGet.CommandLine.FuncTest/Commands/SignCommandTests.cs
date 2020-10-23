@@ -66,7 +66,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     waitForExit: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,8 @@ namespace NuGet.Test.Utility
     {
         private static readonly Lazy<string> _root = new Lazy<string>(() => GetRootDirectory());
         private static readonly Lazy<bool> _skipCleanUp = new Lazy<bool>(() => SkipCleanUp());
+        private const string DotnetCliBinary = "dotnet";
+        private const string DotnetCliExe = "dotnet.exe";
 
         /// <summary>
         /// Root test folder where temporary test outputs should go.
@@ -88,6 +91,44 @@ namespace NuGet.Test.Utility
             return currentDir;
         }
 
+        public static string GetDotnetCli()
+        {
+            var cliDirName = "cli";
+            var dir = TestFileSystemUtility.ParentDirectoryLookup()
+                .FirstOrDefault(d => TestFileSystemUtility.DirectoryContains(d, cliDirName));
+            if (dir != null)
+            {
+                var dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliExe);
+                if (File.Exists(dotnetCli))
+                {
+                    return dotnetCli;
+                }
+
+                dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliBinary);
+                if (File.Exists(dotnetCli))
+                {
+                    return dotnetCli;
+                }
+            }
+
+            return null;
+        }
+
+        public static string GetArtifactsDirectoryInRepo()
+        {
+            var repositoryRootDir = ParentDirectoryLookup()
+                .FirstOrDefault(d => DirectoryContains(d, "artifacts"));
+
+            return Path.Combine(repositoryRootDir?.FullName, "artifacts");
+        }
+
+        public static string GetNuGetExeDirectoryInRepo()
+        {
+            var ArtifactDir = GetArtifactsDirectoryInRepo();
+
+            return Path.Combine(ArtifactDir, "VS15");
+        }
+
         public static bool DeleteRandomTestFolder(string randomTestPath)
         {
             // Avoid cleaning up test folders if 
@@ -145,6 +186,25 @@ namespace NuGet.Test.Utility
             {
                 OldPath = oldPath
             };
+        }
+
+        public static IEnumerable<DirectoryInfo> ParentDirectoryLookup()
+        {
+            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (currentDirInfo != null)
+            {
+                yield return currentDirInfo;
+                currentDirInfo = currentDirInfo.Parent;
+            }
+
+            yield break;
+        }
+
+        public static bool DirectoryContains(DirectoryInfo directoryInfo, string subDirectory)
+        {
+            return directoryInfo
+                .EnumerateDirectories()
+                .Any(dir => StringComparer.OrdinalIgnoreCase.Equals(dir.Name, subDirectory));
         }
     }
 }
