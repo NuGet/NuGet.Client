@@ -4,18 +4,18 @@
 namespace NuGet.Common
 {
     /// <summary>
-    /// This enum is used to quantify NuGet error and warning codes. 
+    /// This enum is used to quantify NuGet error and warning codes.
     /// Format - NUxyzw where NU is the prefix indicating NuGet and xyzw is a 4 digit code
     ///
     /// Numbers - xyzw
     ///     x - 'x' is the largest digit and should be used to quantify a set of errors.
     ///         For example 1yzw are set of restore related errors and no other code path should use the range 1000 to 1999 for errors or warnings.
-    ///         
+    ///
     ///     y - 'y' is the second largest digit and should be used for sub sections withing a broad category.
-    ///     
+    ///
     ///         For example 12zw cvould be http related errors.
     ///         Further 'y' = 0-4 should be used for errors and 'y' = 5-9 should be warnings.
-    ///         
+    ///
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
     ///
@@ -31,9 +31,9 @@ namespace NuGet.Common
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
-    /// 
+    ///
     /// All new codes need a corresponding MarkDown file under https://github.com/NuGet/docs.microsoft.com-nuget/tree/master/docs/reference/errors-and-warnings.
-    /// 
+    ///
     /// </summary>
     public enum NuGetLogCode
     {
@@ -101,6 +101,11 @@ namespace NuGet.Common
         /// Central floating versions are not allowed.
         /// </summary>
         NU1011 = 1011,
+
+        /// <summary>
+        /// Platform version not found.
+        /// </summary>
+        NU1012 = 1012,
 
         /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.

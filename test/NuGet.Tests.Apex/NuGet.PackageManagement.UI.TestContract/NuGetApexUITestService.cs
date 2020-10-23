@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.Models;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -77,7 +78,10 @@ namespace NuGet.PackageManagement.UI.TestContract
                         }
 
                         IProjectContextInfo existingProject = projects.First();
-                        IProjectMetadataContextInfo projectMetadata = await existingProject.GetMetadataAsync(CancellationToken.None);
+                        IServiceBroker serviceBroker = packageManagerWindowPane.Model.Context.ServiceBroker;
+                        IProjectMetadataContextInfo projectMetadata = await existingProject.GetMetadataAsync(
+                            serviceBroker,
+                            CancellationToken.None);
 
                         if (string.Equals(projectMetadata.Name, projectUniqueName, StringComparison.OrdinalIgnoreCase))
                         {

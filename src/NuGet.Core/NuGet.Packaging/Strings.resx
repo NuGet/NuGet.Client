@@ -839,4 +839,24 @@ Valid from:</comment>
     <value>The timestamp service responded with HTTP status code '{0}' ('{1}').</value>
     <comment>{0} is the httpResponse.StatusCode, {1} is the httpResponse.ReasonPhrase.</comment>
   </data>
+  <data name="MissingTargetPlatformVersionsFromDependencyGroups" xml:space="preserve">
+    <value>Some dependency group TFMs are missing a platform version: {0}</value>
+    <comment>0 - comma-separated list of dependency group TFMs</comment>
+  </data>
+  <data name="MissingTargetPlatformVersionsFromFrameworkAssemblyGroups" xml:space="preserve">
+    <value>Some reference assembly group TFMs are missing a platform version: {0}</value>
+    <comment>0 - comma-separated list of reference assembly group TFMs</comment>
+  </data>
+  <data name="MissingTargetPlatformVersionsFromIncludedFiles" xml:space="preserve">
+    <value>Some included files are included under TFMs which are missing a platform version: {0}</value>
+    <comment>0 - comma-separated list of files with bad TFMs</comment>
+  </data>
+  <data name="MissingTargetPlatformVersionsFromReferenceGroups" xml:space="preserve">
+    <value>Some reference group TFMs are missing a platform version: {0}</value>
+    <comment>0 - comma-separated list of reference group TFMs</comment>
+  </data>
+  <data name="MissingTargetPlatformVersionsFromFrameworkAssemblyReferences" xml:space="preserve">
+    <value>Some framework assembly reference TFMs are missing a platform version: {0}</value>
+    <comment>0 - comma-separated list of reference group TFMs</comment>
+  </data>
 </root>

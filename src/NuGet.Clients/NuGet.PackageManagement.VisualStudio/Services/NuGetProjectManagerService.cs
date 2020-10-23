@@ -13,13 +13,16 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using StreamJsonRpc;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -218,38 +221,51 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-
-            Assumes.NotNull(projectContext);
-
-            if (IsDirectInstall(actions))
+            await CatchAndRethrowExceptionAsync(async () =>
             {
-                NuGetPackageManager.SetDirectInstall(_state.PackageIdentity, projectContext);
-            }
+                INuGetProjectContext? projectContext = null;
 
-            var nugetProjectActions = new List<NuGetProjectAction>();
-
-            foreach (ProjectAction action in actions)
-            {
-                if (_state.ResolvedActions.TryGetValue(action.Id, out ResolvedAction resolvedAction))
+                try
                 {
-                    nugetProjectActions.Add(resolvedAction.Action);
+                    projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+
+                    Assumes.NotNull(projectContext);
+
+                    if (IsDirectInstall(actions))
+                    {
+                        NuGetPackageManager.SetDirectInstall(_state.PackageIdentity, projectContext);
+                    }
+
+                    var nugetProjectActions = new List<NuGetProjectAction>();
+
+                    foreach (ProjectAction action in actions)
+                    {
+                        if (_state.ResolvedActions.TryGetValue(action.Id, out ResolvedAction resolvedAction))
+                        {
+                            nugetProjectActions.Add(resolvedAction.Action);
+                        }
+                    }
+
+                    Assumes.NotNullOrEmpty(nugetProjectActions);
+
+                    NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                    IEnumerable<NuGetProject> projects = nugetProjectActions.Select(action => action.Project);
+
+                    await packageManager.ExecuteNuGetProjectActionsAsync(
+                        projects,
+                        nugetProjectActions,
+                        projectContext,
+                        _state.SourceCacheContext,
+                        cancellationToken);
                 }
-            }
-
-            Assumes.NotNullOrEmpty(nugetProjectActions);
-
-            NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            IEnumerable<NuGetProject> projects = nugetProjectActions.Select(action => action.Project);
-
-            await packageManager.ExecuteNuGetProjectActionsAsync(
-                projects,
-                nugetProjectActions,
-                projectContext,
-                _state.SourceCacheContext,
-                cancellationToken);
-
-            NuGetPackageManager.ClearDirectInstall(projectContext);
+                finally
+                {
+                    if (projectContext != null)
+                    {
+                        NuGetPackageManager.ClearDirectInstall(projectContext);
+                    }
+                }
+            });
         }
 
         public async ValueTask<IReadOnlyList<ProjectAction>> GetInstallActionsAsync(
@@ -270,120 +286,123 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _state.PackageIdentity = packageIdentity;
-
-            IReadOnlyList<SourceRepository> sourceRepositories = await GetSourceRepositoriesAsync(
-                packageSourceNames,
-                cancellationToken);
-
-            Assumes.NotNullOrEmpty(sourceRepositories);
-
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
-
-            var resolutionContext = new ResolutionContext(
-                dependencyBehavior,
-                includePrelease,
-                includeUnlisted: false,
-                versionConstraints,
-                new GatherCache(),
-                _state.SourceCacheContext);
-
-            NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            IEnumerable<ResolvedAction> resolvedActions = await packageManager.PreviewProjectsInstallPackageAsync(
-                projects,
-                _state.PackageIdentity,
-                resolutionContext,
-                projectContext,
-                sourceRepositories,
-                cancellationToken);
-
-            var projectActions = new List<ProjectAction>();
-
-            foreach (ResolvedAction resolvedAction in resolvedActions)
+            return await CatchAndRethrowExceptionAsync(async () =>
             {
-                List<ImplicitProjectAction>? implicitActions = null;
+                _state.PackageIdentity = packageIdentity;
 
-                if (resolvedAction.Action is BuildIntegratedProjectAction buildIntegratedAction)
+                IReadOnlyList<SourceRepository> sourceRepositories = await GetSourceRepositoriesAsync(
+                    packageSourceNames,
+                    cancellationToken);
+
+                Assumes.NotNullOrEmpty(sourceRepositories);
+
+                INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+                IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+                var resolutionContext = new ResolutionContext(
+                    dependencyBehavior,
+                    includePrelease,
+                    includeUnlisted: false,
+                    versionConstraints,
+                    new GatherCache(),
+                    _state.SourceCacheContext);
+
+                NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                IEnumerable<ResolvedAction> resolvedActions = await packageManager.PreviewProjectsInstallPackageAsync(
+                    projects,
+                    _state.PackageIdentity,
+                    resolutionContext,
+                    projectContext,
+                    sourceRepositories,
+                    cancellationToken);
+
+                var projectActions = new List<ProjectAction>();
+
+                foreach (ResolvedAction resolvedAction in resolvedActions)
                 {
-                    implicitActions = new List<ImplicitProjectAction>();
+                    List<ImplicitProjectAction>? implicitActions = null;
 
-                    foreach (NuGetProjectAction? buildAction in buildIntegratedAction.GetProjectActions())
+                    if (resolvedAction.Action is BuildIntegratedProjectAction buildIntegratedAction)
                     {
-                        var implicitAction = new ImplicitProjectAction(
-                            CreateProjectActionId(),
-                            buildAction.PackageIdentity,
-                            buildAction.NuGetProjectActionType);
+                        implicitActions = new List<ImplicitProjectAction>();
 
-                        implicitActions.Add(implicitAction);
+                        foreach (NuGetProjectAction? buildAction in buildIntegratedAction.GetProjectActions())
+                        {
+                            var implicitAction = new ImplicitProjectAction(
+                                CreateProjectActionId(),
+                                buildAction.PackageIdentity,
+                                buildAction.NuGetProjectActionType);
+
+                            implicitActions.Add(implicitAction);
+                        }
                     }
+
+                    string projectId = resolvedAction.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                    var projectAction = new ProjectAction(
+                        CreateProjectActionId(),
+                        projectId,
+                        resolvedAction.Action.PackageIdentity,
+                        resolvedAction.Action.NuGetProjectActionType,
+                        implicitActions);
+
+                    _state.ResolvedActions[projectAction.Id] = resolvedAction;
+
+                    projectActions.Add(projectAction);
                 }
 
-                string projectId = resolvedAction.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
-                var projectAction = new ProjectAction(
-                    CreateProjectActionId(),
-                    projectId,
-                    resolvedAction.Action.PackageIdentity,
-                    resolvedAction.Action.NuGetProjectActionType,
-                    implicitActions);
-
-                _state.ResolvedActions[projectAction.Id] = resolvedAction;
-
-                projectActions.Add(projectAction);
-            }
-
-            return projectActions;
+                return projectActions;
+            });
         }
 
         public async ValueTask<IReadOnlyList<ProjectAction>> GetUninstallActionsAsync(
-            string projectId,
+            IReadOnlyCollection<string> projectIds,
             PackageIdentity packageIdentity,
             bool removeDependencies,
             bool forceRemove,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNullOrEmpty(projectId);
+            Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
             Assumes.False(packageIdentity.HasVersion);
             Assumes.NotNull(_state.SourceCacheContext);
-            Assumes.NotNull(_state.ResolvedActions);
             Assumes.Null(_state.PackageIdentity);
+            Assumes.True(_state.ResolvedActions.Count == 0);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            (bool success, NuGetProject? project) = await TryGetNuGetProjectMatchingProjectIdAsync(projectId);
-
-            Assumes.True(success);
-            Assumes.NotNull(project);
-
-            var projectActions = new List<ProjectAction>();
-            var uninstallationContext = new UninstallationContext(removeDependencies, forceRemove);
-
-            NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUninstallPackageAsync(
-                project,
-                packageIdentity.Id,
-                uninstallationContext,
-                projectContext,
-                cancellationToken);
-
-            foreach (NuGetProjectAction action in actions)
+            return await CatchAndRethrowExceptionAsync(async () =>
             {
-                var resolvedAction = new ResolvedAction(project, action);
-                var projectAction = new ProjectAction(
-                    CreateProjectActionId(),
-                    projectId,
-                    action.PackageIdentity,
-                    action.NuGetProjectActionType,
-                    implicitActions: null);
+                INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+                IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
-                _state.ResolvedActions[projectAction.Id] = resolvedAction;
+                var projectActions = new List<ProjectAction>();
+                var uninstallationContext = new UninstallationContext(removeDependencies, forceRemove);
 
-                projectActions.Add(projectAction);
-            }
+                NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                IEnumerable<NuGetProjectAction> projectsWithActions = await packageManager.PreviewProjectsUninstallPackageAsync(
+                    projects,
+                    packageIdentity.Id,
+                    uninstallationContext,
+                    projectContext,
+                    cancellationToken);
 
-            return projectActions;
+                foreach (NuGetProjectAction projectWithActions in projectsWithActions)
+                {
+                    var resolvedAction = new ResolvedAction(projectWithActions.Project, projectWithActions);
+                    var projectAction = new ProjectAction(
+                        CreateProjectActionId(),
+                        projectWithActions.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId),
+                        projectWithActions.PackageIdentity,
+                        projectWithActions.NuGetProjectActionType,
+                        implicitActions: null);
+
+                    _state.ResolvedActions[projectAction.Id] = resolvedAction;
+
+                    projectActions.Add(projectAction);
+                }
+
+                return projectActions;
+            });
         }
 
         public async ValueTask<IReadOnlyList<ProjectAction>> GetUpdateActionsAsync(
@@ -402,76 +421,69 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(_state.ResolvedActions);
             Assumes.Null(_state.PackageIdentity);
 
-            var primarySources = new List<SourceRepository>();
-            var secondarySources = new List<SourceRepository>();
-
-            ISourceRepositoryProvider sourceRepositoryProvider = await _sharedState.SourceRepositoryProvider.GetValueAsync(cancellationToken);
-            IEnumerable<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories();
-            var packageSourceNamesSet = new HashSet<string>(packageSourceNames, StringComparer.OrdinalIgnoreCase);
-
-            foreach (SourceRepository sourceRepository in sourceRepositories)
+            return await CatchAndRethrowExceptionAsync(async () =>
             {
-                if (packageSourceNamesSet.Contains(sourceRepository.PackageSource.Name))
+                var primarySources = new List<SourceRepository>();
+                var secondarySources = new List<SourceRepository>();
+
+                ISourceRepositoryProvider sourceRepositoryProvider = await _sharedState.SourceRepositoryProvider.GetValueAsync(cancellationToken);
+                IEnumerable<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories();
+                var packageSourceNamesSet = new HashSet<string>(packageSourceNames, StringComparer.OrdinalIgnoreCase);
+
+                foreach (SourceRepository sourceRepository in sourceRepositories)
                 {
-                    primarySources.Add(sourceRepository);
+                    if (packageSourceNamesSet.Contains(sourceRepository.PackageSource.Name))
+                    {
+                        primarySources.Add(sourceRepository);
+                    }
+
+                    if (sourceRepository.PackageSource.IsEnabled)
+                    {
+                        secondarySources.Add(sourceRepository);
+                    }
                 }
 
-                if (sourceRepository.PackageSource.IsEnabled)
+                INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+                IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+                var resolutionContext = new ResolutionContext(
+                    dependencyBehavior,
+                    includePrelease,
+                    includeUnlisted: true,
+                    versionConstraints,
+                    new GatherCache(),
+                    _state.SourceCacheContext);
+
+                NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUpdatePackagesAsync(
+                      packageIdentities.ToList(),
+                      projects,
+                      resolutionContext,
+                      projectContext,
+                      primarySources,
+                      secondarySources,
+                      cancellationToken);
+
+                var projectActions = new List<ProjectAction>();
+
+                foreach (NuGetProjectAction action in actions)
                 {
-                    secondarySources.Add(sourceRepository);
+                    string projectId = action.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                    var resolvedAction = new ResolvedAction(action.Project, action);
+                    var projectAction = new ProjectAction(
+                        CreateProjectActionId(),
+                        projectId,
+                        action.PackageIdentity,
+                        action.NuGetProjectActionType,
+                        implicitActions: null);
+
+                    _state.ResolvedActions[projectAction.Id] = resolvedAction;
+
+                    projectActions.Add(projectAction);
                 }
-            }
 
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-            var projects = new List<NuGetProject>();
-
-            foreach (string projectId in projectIds)
-            {
-                (bool success, NuGetProject? project) = await TryGetNuGetProjectMatchingProjectIdAsync(projectId);
-
-                Assumes.True(success);
-                Assumes.NotNull(project);
-
-                projects.Add(project);
-            }
-
-            var resolutionContext = new ResolutionContext(
-                dependencyBehavior,
-                includePrelease,
-                includeUnlisted: true,
-                versionConstraints,
-                new GatherCache(),
-                _state.SourceCacheContext);
-
-            NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUpdatePackagesAsync(
-                  packageIdentities.ToList(),
-                  projects,
-                  resolutionContext,
-                  projectContext,
-                  primarySources,
-                  secondarySources,
-                  cancellationToken);
-
-            var projectActions = new List<ProjectAction>();
-
-            foreach (NuGetProjectAction action in actions)
-            {
-                string projectId = action.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
-                var resolvedAction = new ResolvedAction(action.Project, action);
-                var projectAction = new ProjectAction(
-                    CreateProjectActionId(),
-                    projectId,
-                    action.PackageIdentity,
-                    action.NuGetProjectActionType,
-                    implicitActions: null);
-
-                _state.ResolvedActions[projectAction.Id] = resolvedAction;
-
-                projectActions.Add(projectAction);
-            }
-
-            return projectActions;
+                return projectActions;
+            });
         }
 
         public async ValueTask<IReadOnlyCollection<IProjectContextInfo>> GetProjectsWithDeprecatedDotnetFrameworkAsync(CancellationToken cancellationToken)
@@ -501,13 +513,16 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(solutionManager);
 
             Dictionary<string, NuGetProject>? projects = (await solutionManager.GetNuGetProjectsAsync())
-                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _);
+                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _, StringComparer.OrdinalIgnoreCase);
             var matchingProjects = new List<NuGetProject>(capacity: projectIds.Count);
 
             foreach (string projectId in projectIds)
             {
+                Assumes.NotNullOrEmpty(projectId);
+
                 if (projects.TryGetValue(projectId, out NuGetProject project))
                 {
+                    Assumes.NotNull(project);
                     matchingProjects.Add(project);
                 }
                 else
@@ -547,15 +562,40 @@ namespace NuGet.PackageManagement.VisualStudio
                 && projectActions.Any(projectAction => projectAction.ProjectActionType == NuGetProjectActionType.Install);
         }
 
-        private async ValueTask<(bool, NuGetProject?)> TryGetNuGetProjectMatchingProjectIdAsync(string projectId)
+        private async ValueTask CatchAndRethrowExceptionAsync(Func<Task> taskFunc)
         {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
+            try
+            {
+                await taskFunc();
+            }
+            catch (Exception ex)
+            {
+                var exception = new LocalRpcException(ex.Message, ex)
+                {
+                    ErrorCode = (int)RemoteErrorCode.RemoteError,
+                    ErrorData = RemoteErrorUtility.ToRemoteError(ex)
+                };
 
-            NuGetProject project = (await solutionManager.GetNuGetProjectsAsync())
-                .FirstOrDefault(p => projectId.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
+                throw exception;
+            }
+        }
 
-            return (project != null, project);
+        private async ValueTask<T> CatchAndRethrowExceptionAsync<T>(Func<Task<T>> taskFunc)
+        {
+            try
+            {
+                return await taskFunc();
+            }
+            catch (Exception ex)
+            {
+                var exception = new LocalRpcException(ex.Message, ex)
+                {
+                    ErrorCode = (int)RemoteErrorCode.RemoteError,
+                    ErrorData = RemoteErrorUtility.ToRemoteError(ex)
+                };
+
+                throw exception;
+            }
         }
     }
 }

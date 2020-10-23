@@ -159,5 +159,10 @@ namespace NuGet.VisualStudio
         /// <param name="metadataNames">The metadata names to read.</param>
         /// <returns>An <see cref="IEnumerable{(string ItemId, string[] ItemMetadata)}"/> containing the itemId and the metadata values.</returns>
         Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames);
+
+        /// <summary>
+        /// See <see cref="Microsoft.VisualStudio.Shell.PackageUtilities.IsCapabilityMatch(IVsHierarchy, string)"/>
+        /// </summary>
+        Task<bool> IsCapabilityMatchAsync(string capabilityExpression);
     }
 }

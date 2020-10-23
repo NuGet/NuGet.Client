@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands.Test;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -28,6 +29,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using StreamJsonRpc;
 using Test.Utility;
 using Test.Utility.Threading;
 using Xunit;
@@ -81,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var packageIdentity = new PackageIdentity(id: "b", NuGetVersion.Parse("1.0.0"));
                 string[] packageSourceNames = new[] { TestSourceRepositoryUtility.V3PackageSource.Name };
 
-                ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
+                LocalRpcException exception = await Assert.ThrowsAsync<LocalRpcException>(
                     () => projectManager.GetInstallActionsAsync(
                         projectIds,
                         packageIdentity,
@@ -91,8 +93,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         packageSourceNames,
                         CancellationToken.None).AsTask());
 
-                Assert.StartsWith($"A project with ID '{projectIds.Single()}' was not found.", exception.Message);
-                Assert.Equal("projectIds", exception.ParamName);
+                string expectedMessage = $"A project with ID '{projectIds.Single()}' was not found.\r\nParameter name: projectIds";
+                Assert.StartsWith(expectedMessage, exception.Message);
+                Assert.Equal((int)RemoteErrorCode.RemoteError, exception.ErrorCode);
+                Assert.IsType<RemoteError>(exception.ErrorData);
+
+                var remoteError = (RemoteError)exception.ErrorData;
+
+                Assert.Null(remoteError.ActivityLogMessage);
+                Assert.Equal(NuGetLogCode.Undefined, remoteError.LogMessage.Code);
+                Assert.Equal(LogLevel.Error, remoteError.LogMessage.Level);
+                Assert.Equal(expectedMessage, remoteError.LogMessage.Message);
+                Assert.Null(remoteError.LogMessage.ProjectPath);
+                Assert.InRange(remoteError.LogMessage.Time, DateTimeOffset.UtcNow.AddSeconds(-10), DateTimeOffset.UtcNow.AddSeconds(1));
+                Assert.Equal(WarningLevel.Severe, remoteError.LogMessage.WarningLevel);
+                Assert.Null(remoteError.LogMessages);
+                Assert.Null(remoteError.ProjectContextLogMessage);
+                Assert.Equal(typeof(ArgumentException).FullName, remoteError.TypeName);
             });
         }
 
@@ -348,11 +365,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 deleteOnRestartManager);
             _state = new NuGetProjectManagerServiceState();
             _sharedState = new TestSharedServiceState(
-                new AsyncLazy<NuGetPackageManager>(
+                new Microsoft.VisualStudio.Threading.AsyncLazy<NuGetPackageManager>(
                     () => Task.FromResult(_packageManager)),
-                new AsyncLazy<IVsSolutionManager>(
+                new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolutionManager>(
                     () => Task.FromResult<IVsSolutionManager>(_solutionManager)),
-                new AsyncLazy<ISourceRepositoryProvider>(
+                new Microsoft.VisualStudio.Threading.AsyncLazy<ISourceRepositoryProvider>(
                     () => Task.FromResult<ISourceRepositoryProvider>(sourceRepositoryProvider)));
             _projectManager = new NuGetProjectManagerService(
                 default(ServiceActivationOptions),
@@ -434,7 +451,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packagesConfigFolderPath)
             {
                 InternalMetadata[NuGetProjectMetadataKeys.ProjectId] = projectId;
-                //ProjectClosure = new List<ExternalProjectReference>();
             }
         }
 

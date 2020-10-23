@@ -251,8 +251,10 @@ namespace NuGet.PackageManagement.UI
             // but for project view, get the allowed version range and pass it to package item view model to choose the latest version based on that
             if (_packageReferences == null && !_context.IsSolution)
             {
-                var tasks = _context.Projects
-                    .Select(project => project.GetInstalledPackagesAsync(cancellationToken).AsTask());
+                IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = _context.Projects
+                    .Select(project => project.GetInstalledPackagesAsync(
+                        _context.ServiceBroker,
+                        cancellationToken).AsTask());
                 _packageReferences = (await Task.WhenAll(tasks)).SelectMany(p => p).Where(p => p != null);
             }
 
@@ -314,8 +316,14 @@ namespace NuGet.PackageManagement.UI
                         listItem.ProvidersLoader = AsyncLazy.New(
                             async () =>
                             {
-                                string uniqueProjectName = await _context.Projects[0].GetUniqueNameOrNameAsync(CancellationToken.None);
-                                return await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(_context.PackageManagerProviders, listItem.Id, uniqueProjectName);
+                                string uniqueProjectName = await _context.Projects[0].GetUniqueNameOrNameAsync(
+                                    _context.ServiceBroker,
+                                    CancellationToken.None);
+
+                                return await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
+                                    _context.PackageManagerProviders,
+                                    listItem.Id,
+                                    uniqueProjectName);
                             });
                     }
 

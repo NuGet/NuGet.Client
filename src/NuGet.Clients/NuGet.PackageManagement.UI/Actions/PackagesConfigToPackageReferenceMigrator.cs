@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI
                         return null;
                     }
 
-                    IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+                    IServiceBroker serviceBroker = context.ServiceBroker;
 
                     using (INuGetProjectUpgraderService projectUpgrader = await serviceBroker.GetProxyAsync<INuGetProjectUpgraderService>(
                         NuGetServices.ProjectUpgraderService,
@@ -160,7 +160,10 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    IEnumerable<string> projectIds = await ProjectUtility.GetSortedProjectIdsAsync(uiService.Projects, token);
+                    IEnumerable<string> projectIds = await ProjectUtility.GetSortedProjectIdsAsync(
+                        uiService.UIContext.ServiceBroker,
+                        uiService.Projects,
+                        token);
 
                     upgradeInformationTelemetryEvent.SetResult(projectIds, status, packagesCount);
                 }
