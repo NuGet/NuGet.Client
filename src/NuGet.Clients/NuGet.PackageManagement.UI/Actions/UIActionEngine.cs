@@ -771,6 +771,9 @@ namespace NuGet.PackageManagement.UI
 
             if (userAction.Action == NuGetProjectActionType.Install)
             {
+                var stopWatch = Stopwatch.StartNew();
+                NuGetFileLogger.DefaultInstance.Write($"Install: {projects.Count()} {userAction.PackageId}-{userAction.Version}");
+
                 var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
                 string[] projectIds = projects
                     .Select(project => project.ProjectId)
@@ -787,6 +790,10 @@ namespace NuGet.PackageManagement.UI
                     token);
 
                 results.AddRange(actions);
+
+                stopWatch.Stop();
+                NuGetFileLogger.DefaultInstance.Write($"Grand End: {stopWatch.Elapsed.TotalSeconds} ");
+                NuGetFileLogger.DefaultInstance.Write($"#######################");
             }
             else
             {
