@@ -72,6 +72,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
             _testInstance = new PackageDetailControlModel(
+                Mock.Of<IServiceBroker>(),
                 solutionManager: solMgr.Object,
                 projects: new List<IProjectContextInfo>());
 
@@ -104,7 +105,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .Returns(projectKind);
 
             var model = new PackageDetailControlModel(
-                solutionManager: Mock.Of<INuGetSolutionManagerService>(),
+                Mock.Of<IServiceBroker>(),
+                Mock.Of<INuGetSolutionManagerService>(),
                 projects: new[] { project.Object });
 
             Assert.False(model.Options.ShowClassicOptions);
@@ -119,7 +121,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .Returns(NuGetProjectKind.PackagesConfig);
 
             var model = new PackageDetailControlModel(
-                solutionManager: Mock.Of<INuGetSolutionManagerService>(),
+                Mock.Of<IServiceBroker>(),
+                Mock.Of<INuGetSolutionManagerService>(),
                 projects: new[] { project.Object });
 
             Assert.True(model.Options.ShowClassicOptions);
@@ -129,6 +132,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public void IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreNull_ReturnsFalse()
         {
             var model = new PackageDetailControlModel(
+                Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 Enumerable.Empty<IProjectContextInfo>());
 
@@ -141,6 +145,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public async Task IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreNotEqual_ReturnsFalse()
         {
             var model = new PackageDetailControlModel(
+                Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 Enumerable.Empty<IProjectContextInfo>());
 
@@ -168,6 +173,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public async Task IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreEqual_ReturnsTrue()
         {
             var model = new PackageDetailControlModel(
+                Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 Enumerable.Empty<IProjectContextInfo>());
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
@@ -73,8 +74,15 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
-        public async ValueTask<INuGetUI> CreateAsync(params IProjectContextInfo[] projects)
+        public async ValueTask<INuGetUI> CreateAsync(
+            IServiceBroker serviceBroker,
+            params IProjectContextInfo[] projects)
         {
+            if (serviceBroker is null)
+            {
+                throw new ArgumentNullException(nameof(serviceBroker));
+            }
+
             var adapterLogger = new LoggerAdapter(ProjectContext);
 
             ProjectContext.PackageExtractionContext = new PackageExtractionContext(
@@ -89,6 +97,7 @@ namespace NuGet.PackageManagement.UI
                 PackageManagerProviders, MaxPackageManager);
 
             return await NuGetUI.CreateAsync(
+                serviceBroker,
                 CommonOperations,
                 ProjectContext,
                 SourceRepositoryProvider.Value,

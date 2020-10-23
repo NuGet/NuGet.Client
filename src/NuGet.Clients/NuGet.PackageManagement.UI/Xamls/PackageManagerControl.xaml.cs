@@ -96,6 +96,7 @@ namespace NuGet.PackageManagement.UI
             if (Model.IsSolution)
             {
                 _detailModel = await PackageSolutionDetailControlModel.CreateAsync(
+                    Model.Context.ServiceBroker,
                     Model.Context.SolutionManagerService,
                     Model.Context.Projects,
                     Model.Context.PackageManagerProviders,
@@ -103,7 +104,10 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                _detailModel = new PackageDetailControlModel(Model.Context.SolutionManagerService, Model.Context.Projects);
+                _detailModel = new PackageDetailControlModel(
+                    Model.Context.ServiceBroker,
+                    Model.Context.SolutionManagerService,
+                    Model.Context.Projects);
             }
 
             if (_windowSearchHostFactory != null)
@@ -220,8 +224,12 @@ namespace NuGet.PackageManagement.UI
 
             IProjectContextInfo currentNugetProject = Model.Context.Projects.First();
 
-            IProjectMetadataContextInfo currentProjectMetadata = await currentNugetProject.GetMetadataAsync(CancellationToken.None);
-            IProjectMetadataContextInfo renamedProjectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+            IProjectMetadataContextInfo currentProjectMetadata = await currentNugetProject.GetMetadataAsync(
+                Model.Context.ServiceBroker,
+                CancellationToken.None);
+            IProjectMetadataContextInfo renamedProjectMetadata = await project.GetMetadataAsync(
+                Model.Context.ServiceBroker,
+                CancellationToken.None);
 
             if (currentProjectMetadata.FullPath == renamedProjectMetadata.FullPath)
             {
@@ -317,7 +325,9 @@ namespace NuGet.PackageManagement.UI
         {
             // This is a project package manager, so there is one and only one project.
             IProjectContextInfo project = Model.Context.Projects.First();
-            IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+            IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                Model.Context.ServiceBroker,
+                CancellationToken.None);
 
             // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
             // We also refresh the UI if projectFullPath is not present.
@@ -521,7 +531,9 @@ namespace NuGet.PackageManagement.UI
             if (!Model.IsSolution)
             {
                 IProjectContextInfo project = Model.Context.Projects.First();
-                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(cancellationToken);
+                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                    Model.Context.ServiceBroker,
+                    cancellationToken);
                 string projectName;
 
                 if (string.IsNullOrEmpty(projectMetadata.Name))
@@ -690,7 +702,9 @@ namespace NuGet.PackageManagement.UI
                 if (projectMetadata is null)
                 {
                     IProjectContextInfo project = Model.Context.Projects.First();
-                    IProjectMetadataContextInfo metadata = await project.GetMetadataAsync(CancellationToken.None);
+                    IProjectMetadataContextInfo metadata = await project.GetMetadataAsync(
+                        Model.Context.ServiceBroker,
+                        CancellationToken.None);
 
                     projectName = metadata.Name;
                 }
@@ -1139,6 +1153,7 @@ namespace NuGet.PackageManagement.UI
             if (filter == ItemFilter.UpdatesAvailable)
             {
                 packageFeeds.mainFeed = new UpdatePackageFeed(
+                    context.ServiceBroker,
                     installedPackages,
                     metadataProvider,
                     context.Projects,
@@ -1253,7 +1268,12 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    var installedPackages = await PackageCollection.FromProjectsAsync(Model.Context.Projects, CancellationToken.None);
+
+                    PackageCollection installedPackages = await PackageCollection.FromProjectsAsync(
+                        Model.Context.ServiceBroker,
+                        Model.Context.Projects,
+                        CancellationToken.None);
+
                     _packageList.UpdatePackageStatus(installedPackages.ToArray());
                 })
                 .PostOnFailure(nameof(PackageManagerControl), nameof(Refresh));

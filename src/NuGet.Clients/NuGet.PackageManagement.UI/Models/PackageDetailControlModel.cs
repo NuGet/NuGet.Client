@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.ServiceHub.Framework;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -19,9 +20,10 @@ namespace NuGet.PackageManagement.UI
         private readonly INuGetSolutionManagerService _solutionManager;
 
         public PackageDetailControlModel(
+            IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects)
-            : base(projects)
+            : base(serviceBroker, projects)
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;

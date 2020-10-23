@@ -55,7 +55,8 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.ServiceHub.Framework" />
-</ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
+  </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
