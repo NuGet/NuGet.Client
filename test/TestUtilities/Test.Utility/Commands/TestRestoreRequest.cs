@@ -153,6 +153,9 @@ namespace NuGet.Commands.Test
                 clientPolicyContext,
                 log)
         {
+            DependencyGraphSpec = new DependencyGraphSpec();
+            DependencyGraphSpec.AddProject(project);
+            DependencyGraphSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
         }
     }
 }

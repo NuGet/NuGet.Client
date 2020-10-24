@@ -130,7 +130,8 @@ namespace NuGet.Commands
                 var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
                 CacheFile cacheFile = null;
-
+                string originalHashValue = default;
+                string updatedHash = default;
                 using (var noOpTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: RestoreNoOpInformation))
                 {
                     if (NoOpRestoreUtilities.IsNoOpSupported(_request))
@@ -139,6 +140,7 @@ namespace NuGet.Commands
 
                         bool noOp;
                         (cacheFile, noOp) = EvaluateCacheFile();
+                        originalHashValue = cacheFile.DgSpecHash;
 
                         noOpTelemetry.EndIntervalMeasure(CacheFileEvaluateDuration);
 
@@ -161,6 +163,12 @@ namespace NuGet.Commands
                                 noOpTelemetry.EndIntervalMeasure(ReplayLogsDuration);
 
                                 restoreTime.Stop();
+
+                                updatedHash = _request.DependencyGraphSpec.GetHash();
+                                if (originalHashValue != updatedHash)
+                                {
+                                    throw new ArgumentException("Well this sucks!" + Environment.NewLine + $"For{_request.Project.Name}, old hash{originalHashValue}, new hash {updatedHash}");
+                                }
 
                                 return new NoOpRestoreResult(
                                     _success,
@@ -208,6 +216,12 @@ namespace NuGet.Commands
                         if (cacheFile != null)
                         {
                             cacheFile.Success = _success;
+                        }
+
+                        updatedHash = _request.DependencyGraphSpec?.GetHash();
+                        if (originalHashValue != updatedHash)
+                        {
+                            throw new ArgumentException("Well this sucks! 2" + Environment.NewLine + $"For{_request.Project.Name}, old hash{originalHashValue}, new hash {updatedHash}");
                         }
 
                         return new RestoreResult(
@@ -385,6 +399,12 @@ namespace NuGet.Commands
                 }
 
                 restoreTime.Stop();
+
+                var newHashValue = _request.DependencyGraphSpec?.GetHash();
+                if (originalHashValue != newHashValue)
+                {
+                    throw new ArgumentException("Well this sucks! 3" + Environment.NewLine + $"For{_request.Project.Name}, old hash{originalHashValue}, new hash {newHashValue}");
+                }
 
                 // Create result
                 return new RestoreResult(
