@@ -229,7 +229,7 @@ namespace NuGet.Packaging.Rules
                     {
                         var exists = item.Properties.TryGetValue("tfm_raw", out var frameworkRaw);
                         string frameworkString = (string)frameworkRaw;
-                        if (!exists || !string.IsNullOrEmpty(frameworkString))
+                        if (!exists || string.IsNullOrEmpty(frameworkString))
                         {
                             continue;
                         }
