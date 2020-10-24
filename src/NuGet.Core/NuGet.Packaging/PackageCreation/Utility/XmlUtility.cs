@@ -8,7 +8,7 @@ using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.Packaging
 {
-    [Obsolete("Use NuGet.Shared.XmlUtility instead.")]
+    [Obsolete("This class is obsolete and will be removed in a future release.")]
     public static class XmlUtility
     {
         public static XDocument LoadSafe(Stream input)

@@ -11,19 +11,19 @@ namespace NuGet.ProjectManagement
 {
     public static class XmlUtility
     {
-        [Obsolete("Use NuGet.Shared.XmlUtility.Load instead.")]
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static XDocument LoadSafe(string filePath)
         {
             return Shared.XmlUtility.Load(filePath);
         }
 
-        [Obsolete("Use NuGet.Shared.XmlUtility.Load instead.")]
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static XDocument LoadSafe(Stream input)
         {
             return Shared.XmlUtility.Load(input);
         }
 
-        [Obsolete("Use NuGet.Shared.XmlUtility.Load instead.")]
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static XDocument LoadSafe(Stream input, bool ignoreWhiteSpace)
         {
             if (ignoreWhiteSpace)
@@ -32,7 +32,7 @@ namespace NuGet.ProjectManagement
             return Shared.XmlUtility.Load(input, LoadOptions.PreserveWhitespace);
         }
 
-        [Obsolete("Use NuGet.Shared.XmlUtility.Load instead.")]
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static XDocument LoadSafe(Stream input, LoadOptions options)
         {
             return Shared.XmlUtility.Load(input, options);
@@ -75,7 +75,7 @@ namespace NuGet.ProjectManagement
             return document;
         }
 
-        [Obsolete("Use NuGet.Shared.XmlUtility.Load instead.")]
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static XDocument GetDocument(string root, string path)
         {
             var fullPath = Path.Combine(root, path);

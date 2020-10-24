@@ -7,7 +7,7 @@ using static NuGet.Shared.XmlUtility;
 
 namespace NuGet.Common
 {
-    [Obsolete("Use NuGet.Shared.XmlUtility instead.")]
+    [Obsolete("This class is obsolete and will be removed in a future release.")]
     public static class XmlUtility
     {
         /// <summary>
