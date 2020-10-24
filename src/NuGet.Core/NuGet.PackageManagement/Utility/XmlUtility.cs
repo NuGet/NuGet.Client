@@ -38,7 +38,7 @@ namespace NuGet.ProjectManagement
             return Shared.XmlUtility.Load(input, options);
         }
 
-        [Obsolete("Use MSBuildNuGetProjectSystemUtility.GetOrCreateDocument instead.")]
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static XDocument GetOrCreateDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             return MSBuildNuGetProjectSystemUtility.GetOrCreateDocument(rootName, path, msBuildNuGetProjectSystem);
@@ -58,7 +58,7 @@ namespace NuGet.ProjectManagement
             return CreateDocument(rootName, root, path, nuGetProjectContext);
         }
 
-        [Obsolete("Use MSBuildNuGetProjectSystemUtility.GetOrCreateDocument instead.")]
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static XDocument CreateDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             var document = new XDocument(new XElement(rootName));
