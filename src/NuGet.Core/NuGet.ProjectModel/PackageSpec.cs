@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
@@ -133,10 +134,9 @@ namespace NuGet.ProjectModel
             hashCode.AddDictionary(Scripts);
             hashCode.AddDictionary(PackInclude);
             hashCode.AddObject(PackOptions);
-            hashCode.AddSequence(TargetFrameworks);
+            hashCode.AddSequence(TargetFrameworks.OrderBy(tfm => tfm.TargetAlias));
             hashCode.AddObject(RuntimeGraph);
             hashCode.AddObject(RestoreMetadata);
-
             return hashCode.CombinedHash;
         }
 

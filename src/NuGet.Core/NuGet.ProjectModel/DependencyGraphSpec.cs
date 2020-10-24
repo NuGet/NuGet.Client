@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -379,12 +380,32 @@ namespace NuGet.ProjectModel
 
         public string GetHash()
         {
+            return GetObjectBasedHash().ToString();
+        }
+
+        private string GetPackageSpecWriterBasedHash()
+        {
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
                 Write(writer, compressed: true, PackageSpecWriter.Write);
                 return writer.GetHash();
             }
+        }
+
+        private int GetObjectBasedHash()
+        {
+            var hashCodeCombiner = new HashCodeCombiner();
+            hashCodeCombiner.AddObject(Version);
+            foreach (var restoreName in _restore)
+            {
+                hashCodeCombiner.AddObject(restoreName);
+            }
+            foreach (var pair in _projects)
+            {
+                hashCodeCombiner.AddObject(pair.Value);
+            }
+            return hashCodeCombiner.CombinedHash;
         }
 
         private void Write(RuntimeModel.IObjectWriter writer, bool compressed, Action<PackageSpec, RuntimeModel.IObjectWriter, bool> writeAction)

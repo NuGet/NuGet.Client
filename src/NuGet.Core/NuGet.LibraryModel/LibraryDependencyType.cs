@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.LibraryModel
 {
@@ -78,7 +79,12 @@ namespace NuGet.LibraryModel
 
         public override int GetHashCode()
         {
-            return _keywords.GetHashCode();
+            var combiner = new HashCodeCombiner();
+            foreach(var val in _keywords)
+            {
+                combiner.AddObject(val);
+            }
+            return combiner.CombinedHash;
         }
 
         public override string ToString()
