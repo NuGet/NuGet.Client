@@ -3,4 +3,20 @@
         <ReporterSwitch>verbose</ReporterSwitch>
         <TargetFrameworkVersion>FrameworkCore10</TargetFrameworkVersion>
     </RunConfiguration>
+    <LoggerRunSettings>
+        <Loggers>
+            <Logger friendlyName="blame" enabled="True" />
+        </Loggers>
+    </LoggerRunSettings>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="blame" enabled="True">
+                <Configuration>
+                    <CollectDumpOnTestSessionHang TestTimeout="9m" DumpType="full" />
+                    <CollectDump CollectAlways="true" DumpType="full" />
+                    <ResultsDirectory>$(TestResultsDirectory)</ResultsDirectory>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
 </RunSettings>
