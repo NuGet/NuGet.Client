@@ -137,7 +137,7 @@
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\about_NuGet.help.txt">
+    <None Include="Scripts\about_NuGet.Cmdlets.help.txt">
       <CopyToOutputDirectory Condition="$(IsVsixBuild) != 'true'">PreserveNewest</CopyToOutputDirectory>
     </None>
     <!-- We copy this xml file to output directory so CI can pick it for localization from artifacts directory
@@ -152,7 +152,7 @@
   <PropertyGroup>
     <SignTargetsForRealSigning>$(SignTargetsForRealSigning);GetScriptsForSigning</SignTargetsForRealSigning>
     <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
-    <GetLocalizedFilesForVsixDependsOn>GerLocalizedFiles</GetLocalizedFilesForVsixDependsOn>
+    <GetLocalizedFilesForVsixDependsOn>GetLocalizedFiles</GetLocalizedFilesForVsixDependsOn>
   </PropertyGroup>
 
   <Target Name="AfterBuild">
@@ -179,7 +179,8 @@
         <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lci</LciCommentFile>
         <Parser>210</Parser>
       </PowerShellCmdletsHelpFiles>
-      <!-- We need to contact localization team to localize this file
+      <!-- We need to contact localization team to localize this file -->
+      <!--
       <_TxtHelpFile Include="$(OutputPath)Scripts\about_NuGet.help.txt" />
       <TxtHelpFile Include="@(_TxtHelpFile)">
         <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(_TxtHelpFile.Filename)%(_TxtHelpFile.Extension).lcl</TranslationFile>
@@ -187,19 +188,37 @@
         <Parser>2</Parser>
       </TxtHelpFile>
       -->
-      <FilesToLocalize Include="@(PowerShellCmdletsHelpFiles)" />
+      <FilesToLocalize Include="@(PowerShellCmdletsHelpFiles);@(TxtHelpFile)" />
     </ItemGroup>
   </Target>
-  <Target Name="GerLocalizedFiles">
+
+  <!-- This is called at PackVsix time to gather files -->
+  <Target Name="GetLocalizedFiles">
     <ItemGroup>
-      <_AllLocalizedTxtFiles Include="$(OutputPath)Scripts\**\about_NuGet.Cmdlets.help.txt" />
-      <_TxtLocFiles Include="@(_AllLocalizedTxtFiles)">
-        <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedTxtFiles.Identity)))</TargetPath>
-      </_TxtLocFiles>
+      <!-- Localized languages -->
+      <Lango Include="CHT" Locale="zh-Hant" />
+      <Lango Include="CHS" Locale="zh-Hans" />
+      <Lango Include="CSY" Locale="cs" />
+      <Lango Include="DEU" Locale="de" />
+      <Lango Include="ESN" Locale="es" />
+      <Lango Include="FRA" Locale="fr" />
+      <Lango Include="ITA" Locale="it" />
+      <Lango Include="JPN" Locale="ja" />
+      <Lango Include="KOR" Locale="ko" />
+      <Lango Include="PLK" Locale="pl" />
+      <Lango Include="PTB" Locale="pt-BR" />
+      <Lango Include="RUS" Locale="ru" />
+      <Lango Include="TRK" Locale="tr" />
+
       <_AllLocalizedXmlFiles Include="$(OutputPath)Scripts\**\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
       <_XmlLocFiles Include="@(_AllLocalizedXmlFiles)">
         <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
       </_XmlLocFiles>
+      
+      <_TxtLocFiles Include="$(LocalizationRootDirectory)\%(Lango.Identity)\15\about_NuGet.Cmdlets.help.txt">
+        <TargetPath>Modules\NuGet\%(Lango.Locale)\about_NuGet.Cmdlets.help.txt</TargetPath>
+      </_TxtLocFiles>
+
       <LocalizedFilesForVsix Include="@(_XmlLocFiles);@(_TxtLocFiles)" />
     </ItemGroup>
   </Target>
