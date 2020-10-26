@@ -182,7 +182,7 @@
     </ItemGroup>
   </Target>
 
-  <!-- This is called at PackVsix time to gather files -->
+  <!-- This is called at PackVsix time to get localized files -->
   <Target Name="GetLocalizedPowerShellCmdletHelpFile">
     <ItemGroup>
       <!-- Localized languages -->
@@ -204,7 +204,7 @@
       <_XmlLocFiles Include="@(_AllLocalizedXmlFiles)">
         <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
       </_XmlLocFiles>
-      
+
       <_TxtLocFiles Include="$(LocalizationRootDirectory)\%(Lango.Identity)\15\about_NuGet.Cmdlets.help.txt">
         <TargetPath>Modules\NuGet\%(Lango.Locale)\about_NuGet.Cmdlets.help.txt</TargetPath>
       </_TxtLocFiles>
