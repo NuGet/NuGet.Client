@@ -74,42 +74,6 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_PackToolUsingAlias_DoesNotWarnAboutNoExactMatchInDependencyGroupAndLibRefDirectories()
-        {
-            // Ref: https://github.com/NuGet/Home/issues/10097
-            using (var testDirectory = msbuildFixture.CreateTestDirectory())
-            {
-                // Arrange
-                var projectName = "ConsoleApp1";
-                var workingDirectory = Path.Combine(testDirectory, projectName);
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console");
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    var xml = XDocument.Load(stream);
-
-                    ProjectFileUtils.AddProperty(xml, "PackAsTool", "true");
-                    ProjectFileUtils.ChangeProperty(xml, "TargetFramework", "myalias");
-
-                    var tfmProps = new Dictionary<string, string>();
-                    tfmProps["TargetFrameworkIdentifier"] = ".NETCoreApp";
-                    tfmProps["TargetFrameworkVersion"] = "v3.1";
-                    tfmProps["TargetFrameworkMoniker"] = ".NETCoreApp,Version=v3.1";
-                    ProjectFileUtils.AddProperties(xml, tfmProps, " '$(TargetFramework)' == 'myalias' ");
-
-                    ProjectFileUtils.WriteXmlToFile(xml, stream);
-                }
-
-                // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
-
-                // Assert
-                result.AllOutput.Should().NotContain("NU5128");
-            }
-        }
-
-        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_IncludeSymbolsWithSnupkg()
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
