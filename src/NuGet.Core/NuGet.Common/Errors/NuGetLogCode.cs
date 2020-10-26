@@ -857,10 +857,5 @@ namespace NuGet.Common
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
-
-        /// <summary>
-        /// InvalidUndottedFrameworkWarning
-        /// </summary>
-        NU5501 = 5501,
     }
 }
