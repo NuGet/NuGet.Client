@@ -302,6 +302,14 @@ jobs:
       mergeTestResults: "true"
     condition: "succeededOrFailed()"
 
+  - task: PublishBuildArtifacts@2
+    displayName: "Publish Linux Tests Hang Dump File"
+    inputs:
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/*/*.*"
+      ArtifactName: "LinuxTestHang"
+      ArtifactType: "Container"
+    condition: "failed()"
+
   - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
