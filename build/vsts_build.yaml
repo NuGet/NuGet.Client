@@ -302,7 +302,7 @@ jobs:
       mergeTestResults: "true"
     condition: "succeededOrFailed()"
 
-  - task: PublishBuildArtifacts@2
+  - task: PublishBuildArtifacts@1
     displayName: "Publish Linux Tests Hang Dump File"
     inputs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/*/*.*"
