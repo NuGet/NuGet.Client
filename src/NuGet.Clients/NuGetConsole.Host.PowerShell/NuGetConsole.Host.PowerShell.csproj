@@ -152,7 +152,7 @@
   <PropertyGroup>
     <SignTargetsForRealSigning>$(SignTargetsForRealSigning);GetScriptsForSigning</SignTargetsForRealSigning>
     <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
-    <GetLocalizedFilesForVsixDependsOn>GetLocalizedFiles</GetLocalizedFilesForVsixDependsOn>
+    <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
   </PropertyGroup>
 
   <Target Name="AfterBuild">
@@ -170,7 +170,7 @@
       </ScriptsToSign>
     </ItemGroup>
   </Target>
-  <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(FilesToLocalize)">
+  <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(PowerShellCmdletsHelpFiles)">
     <ItemGroup>
       <_PowerShellCmdletsHelpFiles Include="$(OutputPath)Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
       <PowerShellCmdletsHelpFiles Include="@(_PowerShellCmdletsHelpFiles)">
@@ -179,21 +179,11 @@
         <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lci</LciCommentFile>
         <Parser>210</Parser>
       </PowerShellCmdletsHelpFiles>
-      <!-- We need to contact localization team to localize this file -->
-      <!--
-      <_TxtHelpFile Include="$(OutputPath)Scripts\about_NuGet.help.txt" />
-      <TxtHelpFile Include="@(_TxtHelpFile)">
-        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(_TxtHelpFile.Filename)%(_TxtHelpFile.Extension).lcl</TranslationFile>
-        <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_TxtHelpFile.Filename)%(_TxtHelpFile.Extension).lci</LciCommentFile>
-        <Parser>2</Parser>
-      </TxtHelpFile>
-      -->
-      <FilesToLocalize Include="@(PowerShellCmdletsHelpFiles);@(TxtHelpFile)" />
     </ItemGroup>
   </Target>
 
   <!-- This is called at PackVsix time to gather files -->
-  <Target Name="GetLocalizedFiles">
+  <Target Name="GetLocalizedPowerShellCmdletHelpFile">
     <ItemGroup>
       <!-- Localized languages -->
       <Lango Include="CHT" Locale="zh-Hant" />
