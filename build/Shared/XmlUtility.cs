@@ -78,7 +78,7 @@ namespace NuGet.Shared
         /// Creates an instance of <see cref="System.Xml.XmlReaderSettings"/> with safe settings
         /// <param name="options">A set of <see cref="LoadOptions"/>.</param>
         /// </summary>
-        internal static XmlReaderSettings GetXmlReaderSettings(LoadOptions options)
+        private static XmlReaderSettings GetXmlReaderSettings(LoadOptions options)
         {
             XmlReaderSettings rs = new XmlReaderSettings();
             if ((options & LoadOptions.PreserveWhitespace) == 0)
