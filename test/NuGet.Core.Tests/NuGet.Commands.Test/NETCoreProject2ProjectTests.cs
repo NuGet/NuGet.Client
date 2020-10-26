@@ -19,7 +19,6 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class NETCoreProject2ProjectTests
     {
         [Theory]

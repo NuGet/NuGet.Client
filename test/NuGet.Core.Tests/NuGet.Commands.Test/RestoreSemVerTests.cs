@@ -16,7 +16,6 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RestoreSemVerTests
     {
         // Float on release label

@@ -17,7 +17,6 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class DependencyTypeConstraintTests
     {
         // Root project is favored over package in global folder

@@ -12,7 +12,6 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests.Plugins
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class PluginCacheEntryTests
     {
         [Fact]

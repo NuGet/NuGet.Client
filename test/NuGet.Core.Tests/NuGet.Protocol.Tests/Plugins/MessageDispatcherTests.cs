@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class MessageDispatcherTests
     {
         private readonly Mock<IConnection> _connection = new Mock<IConnection>(MockBehavior.Strict);

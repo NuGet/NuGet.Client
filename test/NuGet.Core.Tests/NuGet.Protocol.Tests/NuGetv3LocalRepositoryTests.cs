@@ -16,7 +16,6 @@ using Xunit;
 
 namespace NuGet.Repositories.Test
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class NuGetv3LocalRepositoryTests
     {
         [Fact]
