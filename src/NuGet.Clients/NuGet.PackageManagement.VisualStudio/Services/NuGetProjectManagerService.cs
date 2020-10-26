@@ -249,14 +249,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (project is BuildIntegratedNuGetProject buildIntegratedProject)
             {
-                var dgcContext = new DependencyGraphCacheContext();
-                var packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
+                if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)
+                {
+                    return new NuGetFramework[]{legacyPackageReferenceProject.GetTargetFramework()};
+                }
+                else
+                {
+                    var dgcContext = new DependencyGraphCacheContext();
+                    var packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
 
-                var targetFrameworks = packageSpecs
-                    .SelectMany(spec => spec.TargetFrameworks)
-                    .Select(f => f.FrameworkName);
+                    var targetFrameworks = packageSpecs
+                        .SelectMany(spec => spec.TargetFrameworks)
+                        .Select(f => f.FrameworkName);
 
-                return targetFrameworks.ToArray();
+                    return targetFrameworks.ToArray();
+                }
             }
 
             return Array.Empty<NuGetFramework>();

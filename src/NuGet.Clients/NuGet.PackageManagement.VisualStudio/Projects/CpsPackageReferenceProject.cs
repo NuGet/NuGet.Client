@@ -260,7 +260,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var assetsFilePath = await GetAssetsFilePathAsync();
             var fileInfo = new FileInfo(assetsFilePath);
-            PackageSpec assetsPackageSpec = default;
             IList<LockFileTarget> targets = default;
             PackageSpec lastPackageSpec = default;
             _lastPackageSpec?.TryGetTarget(out lastPackageSpec);
@@ -271,7 +270,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (fileInfo.Exists)
                 {
                     var lockFile = new LockFileFormat().Read(assetsFilePath);
-                    assetsPackageSpec = lockFile.PackageSpec;
                     targets = lockFile.Targets;
                 }
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
@@ -283,24 +281,22 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var installedPackages = packageSpec
                .TargetFrameworks
-               .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, assetsPackageSpec, targets))
+               .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, targets))
                .GroupBy(p => p.PackageIdentity)
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             // get the transitive packages, excluding any already contained in the installed packages
             var transitivePackages = packageSpec
                .TargetFrameworks
-               .SelectMany(f => GetTransitivePackageReferences(f.FrameworkName, _installedPackages, _transitivePackages, assetsPackageSpec, targets))
+               .SelectMany(f => GetTransitivePackageReferences(f.FrameworkName, _installedPackages, _transitivePackages, targets))
                .GroupBy(p => p.PackageIdentity)
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             return (installedPackages.ToList(), transitivePackages.ToList());
         }
 
-        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
+        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, IList<LockFileTarget> targets)
         {
-            TargetFrameworkInformation assetsTargetFrameworkInformation = assetsPackageSpec?.TargetFrameworks.First(t => t.FrameworkName.Equals(targetFramework));
-
             var targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
 
             if (targetFrameworkPackages.Item2 == null)
@@ -312,13 +308,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return libraries
                 .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(l => new BuildIntegratedPackageReference(l, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(l, targetFramework, assetsTargetFrameworkInformation, targets, targetFrameworkPackages.Item2)));
+                .Select(l => new BuildIntegratedPackageReference(l, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(l, targetFramework, targets, targetFrameworkPackages.Item2)));
         }
 
-        private IReadOnlyList<PackageReference> GetTransitivePackageReferences(NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> transitivePackages, PackageSpec assetsPackageSpec, IList<LockFileTarget> targets)
+        private IReadOnlyList<PackageReference> GetTransitivePackageReferences(NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> transitivePackages, IList<LockFileTarget> targets)
         {
-            TargetFrameworkInformation assetsTargetFrameworkInformation = assetsPackageSpec?.TargetFrameworks.First(t => t.FrameworkName.Equals(targetFramework));
-
             var targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
             var targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
 
@@ -341,7 +335,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return targets
                     .SelectMany(target => target.Libraries)
                     .Where(library => library.Type == "package")
-                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, assetsTargetFrameworkInformation, targets, targetFrameworkInstalledPackages.Item2, targetFrameworkTransitivePackages.Item2))
+                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, targetFrameworkInstalledPackages.Item2, targetFrameworkTransitivePackages.Item2))
                     .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
                     .ToList();
             }
