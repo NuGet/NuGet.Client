@@ -305,7 +305,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: "Publish Tests Hang Dump"
     inputs:
-      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/HangDumps"
       ArtifactName: "LinuxTestHang"
       ArtifactType: "Container"
     condition: "failed()"
