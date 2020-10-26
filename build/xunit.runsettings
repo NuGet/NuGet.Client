@@ -12,8 +12,7 @@
         <DataCollectors>
             <DataCollector friendlyName="blame" enabled="True">
                 <Configuration>
-                    <CollectDumpOnTestSessionHang TestTimeout="9m" DumpType="full" />
-                    <CollectDump CollectAlways="true" DumpType="full" />
+                    <CollectDumpOnTestSessionHang TestTimeout="1s" HangDumpType="Full" />
                     <ResultsDirectory>$(TestResultsDirectory)</ResultsDirectory>
                 </Configuration>
             </DataCollector>
