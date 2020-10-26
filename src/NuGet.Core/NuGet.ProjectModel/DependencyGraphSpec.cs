@@ -21,6 +21,7 @@ namespace NuGet.ProjectModel
         private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
         private readonly Lazy<JObject> _json;
+        private readonly object _lockObject = new object();
 
         private const int Version = 1;
 
@@ -238,6 +239,14 @@ namespace NuGet.ProjectModel
             _restore.Add(projectUniqueName);
         }
 
+        public void SafeAddRestore(string projectUniqueName)
+        {
+            lock(_lockObject)
+            {
+                _restore.Add(projectUniqueName);
+            }
+        }
+
         public void AddProject(PackageSpec projectSpec)
         {
             // Find the unique name in the spec, otherwise generate a new one.
@@ -247,6 +256,14 @@ namespace NuGet.ProjectModel
             if (!_projects.ContainsKey(projectUniqueName))
             {
                 _projects.Add(projectUniqueName, projectSpec);
+            }
+        }
+
+        public void SafeAddProject(PackageSpec projectSpec)
+        {
+            lock(_lockObject)
+            {
+                AddProject(projectSpec);
             }
         }
 

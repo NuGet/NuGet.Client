@@ -44,6 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private DateTime _lastTimeAssetsModified;
 
         public override bool IsLegacyPackageReferenceProject => true;
+        private readonly object _lockObject = new object();
 
         public LegacyPackageReferenceProject(
             IVsProjectAdapter vsProjectAdapter,
@@ -130,7 +131,12 @@ namespace NuGet.PackageManagement.VisualStudio
                     throw new InvalidOperationException(
                         string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
-                context?.PackageSpecCache.Add(_projectFullPath, packageSpec);
+
+                lock (_lockObject)
+                {
+                    context?.PackageSpecCache.Add(_projectFullPath, packageSpec);
+                }
+                
             }
 
             return (new[] { packageSpec }, null);
