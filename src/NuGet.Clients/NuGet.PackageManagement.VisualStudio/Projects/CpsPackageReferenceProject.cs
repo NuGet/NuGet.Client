@@ -20,7 +20,6 @@ using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -36,19 +35,14 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Key feature/difference is the project restore info is pushed by nomination API and stored in 
     /// a cache. Factory method retrieving the info from the cache should be provided.
     /// </summary>
-    public class CpsPackageReferenceProject : BuildIntegratedNuGetProject
+    public class CpsPackageReferenceProject : PackageReferenceProject
     {
         private const string TargetFrameworkCondition = "TargetFramework";
-
-        private readonly string _projectName;
-        private readonly string _projectUniqueName;
-        private readonly string _projectFullPath;
 
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly UnconfiguredProject _unconfiguredProject;
         private List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> _installedPackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
         private List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> _transitivePackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
-        private DateTime _lastTimeAssetsModified;
         private WeakReference<PackageSpec> _lastPackageSpec;
 
         public CpsPackageReferenceProject(
@@ -80,15 +74,6 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
-        public override async Task<string> GetAssetsFilePathAsync()
-        {
-            return await GetAssetsFilePathAsync(shouldThrow: true);
-        }
-
-        public override async Task<string> GetAssetsFilePathOrNullAsync()
-        {
-            return await GetAssetsFilePathAsync(shouldThrow: false);
-        }
 
         public override Task AddFileToProjectAsync(string filePath)
         {
@@ -97,7 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.CompletedTask;
         }
 
-        private Task<string> GetAssetsFilePathAsync(bool shouldThrow)
+        private protected override Task<string> GetAssetsFilePathAsync(bool shouldThrow)
         {
             var packageSpec = GetPackageSpec();
             if (packageSpec == null)
@@ -136,14 +121,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
 
         public override string MSBuildProjectPath => _projectFullPath;
-
-        public override string ProjectName => _projectName;
-
-        public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
-        {
-            var (dgSpecs, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);
-            return dgSpecs;
-        }
 
         public override Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
         {
@@ -227,15 +204,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public async override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            var packageSpec = GetPackageSpec();
-
-            if (packageSpec != null)
-            {
-                var packages = await GetAllPackageReferencesAsync(packageSpec);
-                return packages.Item1;
-            }
-
-            return Array.Empty<PackageReference>();
+            var packages = await GetAllPackagesAsync(token);
+            return packages.Item1;
         }
 
         /// <summary>
@@ -244,58 +214,56 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public async Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)> GetAllPackagesAsync(CancellationToken token)
         {
+            var installedPackages = new List<PackageReference>();
+            var transitivePackages = new List<PackageReference>();
+
             var packageSpec = GetPackageSpec();
 
             if (packageSpec != null)
             {
-                return await GetAllPackageReferencesAsync(packageSpec);
-            }
+                var frameworkSorter = new NuGetFrameworkSorter();
 
-            return (Array.Empty<PackageReference>(), Array.Empty<PackageReference>());
-        }
+                var assetsFilePath = await GetAssetsFilePathAsync();
+                var fileInfo = new FileInfo(assetsFilePath);
+                IList<LockFileTarget> targets = default;
+                PackageSpec lastPackageSpec = default;
+                _lastPackageSpec?.TryGetTarget(out lastPackageSpec);
 
-        private async Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)> GetAllPackageReferencesAsync(PackageSpec packageSpec)
-        {
-            var frameworkSorter = new NuGetFrameworkSorter();
-
-            var assetsFilePath = await GetAssetsFilePathAsync();
-            var fileInfo = new FileInfo(assetsFilePath);
-            IList<LockFileTarget> targets = default;
-            PackageSpec lastPackageSpec = default;
-            _lastPackageSpec?.TryGetTarget(out lastPackageSpec);
-
-            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !ReferenceEquals(lastPackageSpec, packageSpec))
-            {
-                await TaskScheduler.Default;
-                if (fileInfo.Exists)
+                if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !ReferenceEquals(lastPackageSpec, packageSpec))
                 {
-                    var lockFile = new LockFileFormat().Read(assetsFilePath);
-                    targets = lockFile.Targets;
+                    await TaskScheduler.Default;
+                    if (fileInfo.Exists)
+                    {
+                        var lockFile = new LockFileFormat().Read(assetsFilePath);
+                        targets = lockFile.Targets;
+                    }
+                    _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
+                    _lastPackageSpec = new WeakReference<PackageSpec>(packageSpec);
+
+                    // clear the transitive packages cache, since we don't know when a dependency has been removed
+                    _transitivePackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
                 }
-                _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
-                _lastPackageSpec = new WeakReference<PackageSpec>(packageSpec);
 
-                // clear the transitive packages cache, since we don't know when a dependency has been removed
-                _transitivePackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
+                installedPackages = packageSpec
+                   .TargetFrameworks
+                   .SelectMany(f => GetPackageReferencesForFramework(f.Dependencies, f.FrameworkName, _installedPackages, targets))
+                   .GroupBy(p => p.PackageIdentity)
+                   .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
+                   .ToList();
+
+                // get the transitive packages, excluding any already contained in the installed packages
+                transitivePackages = packageSpec
+                   .TargetFrameworks
+                   .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, targets))
+                   .GroupBy(p => p.PackageIdentity)
+                   .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
+                   .ToList();
             }
-
-            var installedPackages = packageSpec
-               .TargetFrameworks
-               .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, targets))
-               .GroupBy(p => p.PackageIdentity)
-               .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
-
-            // get the transitive packages, excluding any already contained in the installed packages
-            var transitivePackages = packageSpec
-               .TargetFrameworks
-               .SelectMany(f => GetTransitivePackageReferences(f.FrameworkName, _installedPackages, _transitivePackages, targets))
-               .GroupBy(p => p.PackageIdentity)
-               .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             return (installedPackages.ToList(), transitivePackages.ToList());
         }
 
-        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, IList<LockFileTarget> targets)
+        private IEnumerable<PackageReference> GetPackageReferencesForFramework(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, IList<LockFileTarget> targets)
         {
             var targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
 
@@ -306,15 +274,20 @@ namespace NuGet.PackageManagement.VisualStudio
                 installedPackages.Add(targetFrameworkPackages);
             }
 
-            return libraries
-                .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(l => new BuildIntegratedPackageReference(l, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(l, targetFramework, targets, targetFrameworkPackages.Item2)));
+            return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Item2, targets);
         }
 
-        private IReadOnlyList<PackageReference> GetTransitivePackageReferences(NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> transitivePackages, IList<LockFileTarget> targets)
+        private IReadOnlyList<PackageReference> GetTransitivePackageReferencesForFramework(NuGetFramework targetFramework, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> installedPackages, List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)> transitivePackages, IList<LockFileTarget> targets)
         {
             var targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
             var targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.Item1.Equals(targetFramework));
+
+            if (targetFrameworkInstalledPackages.Item2 == null)
+            {
+                targetFrameworkInstalledPackages.Item1 = targetFramework;
+                targetFrameworkInstalledPackages.Item2 = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
+                installedPackages.Add(targetFrameworkInstalledPackages);
+            }
 
             if (targetFrameworkTransitivePackages.Item2 == null)
             {
@@ -323,22 +296,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 transitivePackages.Add(targetFrameworkTransitivePackages);
             }
 
-            // If the assets files has not been updated, return the cached transitive packages
-            if (targets == null)
-            {
-                return targetFrameworkTransitivePackages.Item2
-                    .Select(package => new PackageReference(package.Value.InstalledPackage, targetFramework))
-                    .ToList();
-            }
-            else
-            {
-                return targets
-                    .SelectMany(target => target.Libraries)
-                    .Where(library => library.Type == "package")
-                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, targetFrameworkInstalledPackages.Item2, targetFrameworkTransitivePackages.Item2))
-                    .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
-                    .ToList();
-            }
+            return GetTransitivePackageReferences(targetFramework, targetFrameworkInstalledPackages.Item2, targetFrameworkTransitivePackages.Item2, targets);
         }
 
         public override async Task<bool> InstallPackageAsync(

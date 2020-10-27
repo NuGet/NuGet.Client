@@ -74,6 +74,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
+    <Compile Include="Projects\PackageReferenceProject.cs" />
     <Compile Include="Services\ISharedServiceState.cs" />
     <Compile Include="Services\NuGetPackageSearchService.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
