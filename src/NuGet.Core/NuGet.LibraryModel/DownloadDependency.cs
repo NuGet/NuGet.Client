@@ -73,7 +73,7 @@ namespace NuGet.LibraryModel
         {
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddObject(Name.ToLowerInvariant());
+            hashCode.AddSequence(Name.ToLowerInvariant());
             hashCode.AddObject(VersionRange);
 
             return hashCode.CombinedHash;

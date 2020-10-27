@@ -112,21 +112,21 @@ namespace NuGet.ProjectModel
         {
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddObject(Title);
+            hashCode.AddSequence(Title);
             hashCode.AddObject(Version);
             hashCode.AddObject(IsDefaultVersion);
             hashCode.AddObject(HasVersionSnapshot);
-            hashCode.AddObject(Description);
-            hashCode.AddObject(Summary);
-            hashCode.AddObject(ReleaseNotes);
+            hashCode.AddSequence(Description);
+            hashCode.AddSequence(Summary);
+            hashCode.AddSequence(ReleaseNotes);
             hashCode.AddSequence(Authors);
             hashCode.AddSequence(Owners);
-            hashCode.AddObject(ProjectUrl);
-            hashCode.AddObject(IconUrl);
-            hashCode.AddObject(LicenseUrl);
+            hashCode.AddSequence(ProjectUrl);
+            hashCode.AddSequence(IconUrl);
+            hashCode.AddSequence(LicenseUrl);
             hashCode.AddObject(RequireLicenseAcceptance);
-            hashCode.AddObject(Copyright);
-            hashCode.AddObject(Language);
+            hashCode.AddSequence(Copyright);
+            hashCode.AddSequence(Language);
             hashCode.AddObject(BuildOptions);
             hashCode.AddSequence(Tags);
             hashCode.AddSequence(ContentFiles);

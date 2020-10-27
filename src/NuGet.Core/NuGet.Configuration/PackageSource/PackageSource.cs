@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -125,7 +126,10 @@ namespace NuGet.Configuration
             IsEnabled = isEnabled;
             IsOfficial = isOfficial;
             IsPersistable = isPersistable;
-            _hashCode = Name.ToUpperInvariant().GetHashCode() * 3137 + Source.ToUpperInvariant().GetHashCode();
+            var combiner = new HashCodeCombiner();
+            combiner.AddSequence(Name.ToUpperInvariant());
+            combiner.AddSequence(Source.ToUpperInvariant());
+            _hashCode = combiner.CombinedHash;
         }
 
         public SourceItem AsSourceItem()
