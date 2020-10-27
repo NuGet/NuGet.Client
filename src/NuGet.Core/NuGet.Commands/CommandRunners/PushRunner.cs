@@ -70,7 +70,7 @@ namespace NuGet.Commands
                 logger);
         }
 
-        [Obsolete]
+        [Obsolete("Use Run method which takes multiple package paths.")]
         public static Task Run(
             ISettings settings,
             IPackageSourceProvider sourceProvider,

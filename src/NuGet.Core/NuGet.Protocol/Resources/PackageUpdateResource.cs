@@ -101,7 +101,7 @@ namespace NuGet.Protocol.Core.Types
             }
         }
 
-        [Obsolete]
+        [Obsolete("Use Push method which takes multiple package paths.")]
         public Task Push(
             string packagePath,
             string symbolSource, // empty to not push symbols
