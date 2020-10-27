@@ -368,7 +368,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var isSupported = false;
 
-            foreach (Project project in EnvDTESolutionUtility.GetAllEnvDTEProjects(dte))
+            foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
             {
                 if (await EnvDTEProjectUtility.IsSupportedAsync(project))
                 {
@@ -667,7 +667,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         var dte = await _asyncServiceProvider.GetDTEAsync();
 
                         var supportedProjects = new List<Project>();
-                        foreach (Project project in EnvDTESolutionUtility.GetAllEnvDTEProjects(dte))
+                        foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
                         {
                             if (await EnvDTEProjectUtility.IsSupportedAsync(project))
                             {
