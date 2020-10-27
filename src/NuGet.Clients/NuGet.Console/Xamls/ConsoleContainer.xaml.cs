@@ -11,8 +11,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGetConsole
@@ -34,7 +34,8 @@ namespace NuGetConsole
                     await System.Threading.Tasks.Task.Run(
                         async () =>
                         {
-                            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+                            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
+                            IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
                             _solutionManager = await serviceBroker.GetProxyAsync<INuGetSolutionManagerService>(
                                 NuGetServices.SolutionManagerService,

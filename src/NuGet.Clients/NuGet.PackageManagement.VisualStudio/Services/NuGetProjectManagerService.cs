@@ -13,6 +13,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -354,49 +355,45 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public async ValueTask<IReadOnlyList<ProjectAction>> GetUninstallActionsAsync(
-            string projectId,
+            IReadOnlyCollection<string> projectIds,
             PackageIdentity packageIdentity,
             bool removeDependencies,
             bool forceRemove,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNullOrEmpty(projectId);
+            Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
             Assumes.False(packageIdentity.HasVersion);
             Assumes.NotNull(_state.SourceCacheContext);
-            Assumes.NotNull(_state.ResolvedActions);
             Assumes.Null(_state.PackageIdentity);
+            Assumes.True(_state.ResolvedActions.Count == 0);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             return await CatchAndRethrowExceptionAsync(async () =>
             {
-
                 INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-                (bool success, NuGetProject? project) = await TryGetNuGetProjectMatchingProjectIdAsync(projectId);
-
-                Assumes.True(success);
-                Assumes.NotNull(project);
+                IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
                 var projectActions = new List<ProjectAction>();
                 var uninstallationContext = new UninstallationContext(removeDependencies, forceRemove);
 
                 NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-                IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUninstallPackageAsync(
-                    project,
+                IEnumerable<NuGetProjectAction> projectsWithActions = await packageManager.PreviewProjectsUninstallPackageAsync(
+                    projects,
                     packageIdentity.Id,
                     uninstallationContext,
                     projectContext,
                     cancellationToken);
 
-                foreach (NuGetProjectAction action in actions)
+                foreach (NuGetProjectAction projectWithActions in projectsWithActions)
                 {
-                    var resolvedAction = new ResolvedAction(project, action);
+                    var resolvedAction = new ResolvedAction(projectWithActions.Project, projectWithActions);
                     var projectAction = new ProjectAction(
                         CreateProjectActionId(),
-                        projectId,
-                        action.PackageIdentity,
-                        action.NuGetProjectActionType,
+                        projectWithActions.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId),
+                        projectWithActions.PackageIdentity,
+                        projectWithActions.NuGetProjectActionType,
                         implicitActions: null);
 
                     _state.ResolvedActions[projectAction.Id] = resolvedAction;
@@ -447,17 +444,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
-                var projects = new List<NuGetProject>();
-
-                foreach (string projectId in projectIds)
-                {
-                    (bool success, NuGetProject? project) = await TryGetNuGetProjectMatchingProjectIdAsync(projectId);
-
-                    Assumes.True(success);
-                    Assumes.NotNull(project);
-
-                    projects.Add(project);
-                }
+                IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
                 var resolutionContext = new ResolutionContext(
                     dependencyBehavior,
@@ -526,13 +513,16 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(solutionManager);
 
             Dictionary<string, NuGetProject>? projects = (await solutionManager.GetNuGetProjectsAsync())
-                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _);
+                .ToDictionary(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), _ => _, StringComparer.OrdinalIgnoreCase);
             var matchingProjects = new List<NuGetProject>(capacity: projectIds.Count);
 
             foreach (string projectId in projectIds)
             {
+                Assumes.NotNullOrEmpty(projectId);
+
                 if (projects.TryGetValue(projectId, out NuGetProject project))
                 {
+                    Assumes.NotNull(project);
                     matchingProjects.Add(project);
                 }
                 else
@@ -570,17 +560,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return _state.PackageIdentity != null
                 && projectActions.Any(projectAction => projectAction.ProjectActionType == NuGetProjectActionType.Install);
-        }
-
-        private async ValueTask<(bool, NuGetProject?)> TryGetNuGetProjectMatchingProjectIdAsync(string projectId)
-        {
-            var solutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
-            Assumes.NotNull(solutionManager);
-
-            NuGetProject project = (await solutionManager.GetNuGetProjectsAsync())
-                .FirstOrDefault(p => projectId.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId), StringComparison.OrdinalIgnoreCase));
-
-            return (project != null, project);
         }
 
         private async ValueTask CatchAndRethrowExceptionAsync(Func<Task> taskFunc)

@@ -3,12 +3,11 @@
 
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
-using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.VisualStudio.Common
 {
-    public interface INuGetUIFactory
+    public interface IServiceBrokerProvider
     {
-        ValueTask<INuGetUI> CreateAsync(IServiceBroker serviceBroker, params IProjectContextInfo[] projects);
+        ValueTask<IServiceBroker> GetAsync();
     }
 }

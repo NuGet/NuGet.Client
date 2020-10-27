@@ -93,7 +93,7 @@ namespace NuGet.PackageManagement.UI
                 new LoggerAdapter(uiService.ProjectContext),
                 CancellationToken.None);
 
-            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            IServiceBroker serviceBroker = context.ServiceBroker;
             NuGetProjectUpgradeWindowModel upgradeInformationWindowModel;
 
             using (INuGetProjectManagerService projectManager = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
@@ -108,6 +108,7 @@ namespace NuGet.PackageManagement.UI
                     CancellationToken.None);
 
                 upgradeInformationWindowModel = await NuGetProjectUpgradeWindowModel.CreateAsync(
+                    serviceBroker,
                     project,
                     packagesDependencyInfo.ToList(),
                     CancellationToken.None);
@@ -120,7 +121,10 @@ namespace NuGet.PackageManagement.UI
                 var packagesCount = upgradeInformationWindowModel.UpgradeDependencyItems.Count;
 
                 var upgradeTelemetryEvent = new UpgradeInformationTelemetryEvent();
-                IEnumerable<string> projectIds = await ProjectUtility.GetSortedProjectIdsAsync(uiService.Projects, CancellationToken.None);
+                IEnumerable<string> projectIds = await ProjectUtility.GetSortedProjectIdsAsync(
+                    uiService.UIContext.ServiceBroker,
+                    uiService.Projects,
+                    CancellationToken.None);
 
                 upgradeTelemetryEvent.SetResult(
                     projectIds,
@@ -133,7 +137,9 @@ namespace NuGet.PackageManagement.UI
             }
 
             var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
-            string projectName = await project.GetUniqueNameOrNameAsync(CancellationToken.None);
+            string projectName = await project.GetUniqueNameOrNameAsync(
+                uiService.UIContext.ServiceBroker,
+                CancellationToken.None);
             string backupPath;
 
             var windowTitle = string.Format(
@@ -195,7 +201,7 @@ namespace NuGet.PackageManagement.UI
             List<PackageIdentity> packagesToUpdate,
             CancellationToken cancellationToken)
         {
-            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            IServiceBroker serviceBroker = uiService.UIContext.ServiceBroker;
 
             using (INuGetProjectManagerService projectManagerService = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
                 NuGetServices.ProjectManagerService,
@@ -247,7 +253,7 @@ namespace NuGet.PackageManagement.UI
             ResolveActionsAsync resolveActionsAsync,
             CancellationToken cancellationToken)
         {
-            IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            IServiceBroker serviceBroker = uiService.UIContext.ServiceBroker;
 
             using (INuGetProjectManagerService projectManagerService = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
                 NuGetServices.ProjectManagerService,
@@ -307,7 +313,9 @@ namespace NuGet.PackageManagement.UI
                 // collect the install state of the existing packages
                 foreach (IProjectContextInfo project in uiService.Projects)
                 {
-                    IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(cancellationToken);
+                    IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
+                        uiService.UIContext.ServiceBroker,
+                        cancellationToken);
 
                     foreach (IPackageReferenceContextInfo package in installedPackages)
                     {
@@ -485,7 +493,10 @@ namespace NuGet.PackageManagement.UI
 
                     PackageLoadContext plc = new PackageLoadContext(sourceRepositories: null, isSolution: false, uiService.UIContext);
                     var frameworks = (await plc.GetSupportedFrameworksAsync()).ToList();
-                    string[] projectIds = (await ProjectUtility.GetSortedProjectIdsAsync(uiService.Projects, cancellationToken)).ToArray();
+                    string[] projectIds = (await ProjectUtility.GetSortedProjectIdsAsync(
+                        uiService.UIContext.ServiceBroker,
+                        uiService.Projects,
+                        cancellationToken)).ToArray();
 
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
@@ -661,7 +672,10 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 Task<IProjectMetadataContextInfo>[] tasks = upgradeableProjects
-                    .Select(project => project.GetMetadataAsync(cancellationToken).AsTask())
+                    .Select(project => project.GetMetadataAsync(
+                            uiService.UIContext.ServiceBroker,
+                            cancellationToken)
+                        .AsTask())
                     .ToArray();
 
                 IProjectMetadataContextInfo[] projectMetadatas = await Task.WhenAll(tasks);
@@ -768,14 +782,14 @@ namespace NuGet.PackageManagement.UI
                 userAction.Version.IsPrerelease == true;
 
             IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.Select(source => source.PackageSource.Name).ToList();
+            string[] projectIds = projects
+                .Select(project => project.ProjectId)
+                .Distinct()
+                .ToArray();
 
             if (userAction.Action == NuGetProjectActionType.Install)
             {
                 var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
-                string[] projectIds = projects
-                    .Select(project => project.ProjectId)
-                    .Distinct()
-                    .ToArray();
 
                 IReadOnlyList<ProjectAction> actions = await projectManagerService.GetInstallActionsAsync(
                     projectIds,
@@ -792,17 +806,14 @@ namespace NuGet.PackageManagement.UI
             {
                 var packageIdentity = new PackageIdentity(userAction.PackageId, version: null);
 
-                foreach (ProjectContextInfo project in projects)
-                {
-                    IEnumerable<ProjectAction> actions = await projectManagerService.GetUninstallActionsAsync(
-                        project.ProjectId,
-                        packageIdentity,
-                        removeDependencies,
-                        forceRemove,
-                        token);
+                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUninstallActionsAsync(
+                    projectIds,
+                    packageIdentity,
+                    removeDependencies,
+                    forceRemove,
+                    token);
 
-                    results.AddRange(actions);
-                }
+                results.AddRange(actions);
             }
 
             return results;

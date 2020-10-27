@@ -23,6 +23,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Resx = NuGet.PackageManagement.UI.Resources;
@@ -91,6 +92,9 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         private IDisposable ProjectRetargetingHandler { get; set; }
 
         private IDisposable ProjectUpgradeHandler { get; set; }
+
+        [Import]
+        private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
         private void Initialize()
         {
@@ -245,7 +249,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (!Guid.TryParse(ProjectContextInfo.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
+            if (!Guid.TryParse(IProjectContextInfoUtility.GetProjectGuidStringFromVslsQueryString(workspaceVisualNodeBase.VSSelectionMoniker), out Guid projectGuid))
             {
                 throw new InvalidOperationException();
             }
@@ -280,8 +284,9 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             if (windowFrame == null)
             {
-                IProjectContextInfo projectContextInfo = await ProjectContextInfo.CreateAsync(projectGuid.ToString(), CancellationToken.None);
-                INuGetUI uiController = await UIFactory.Value.CreateAsync(projectContextInfo);
+                IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
+                IProjectContextInfo projectContextInfo = await IProjectContextInfoUtility.CreateAsync(serviceBroker, projectGuid.ToString(), CancellationToken.None);
+                INuGetUI uiController = await UIFactory.Value.CreateAsync(serviceBroker, projectContextInfo);
                 // This model takes ownership of --- and Dispose() responsibility for --- the INuGetUI instance.
                 var model = new PackageManagerModel(uiController, isSolution: false, editorFactoryGuid: GuidList.NuGetEditorType);
                 var control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value);
@@ -393,6 +398,5 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             return !_initialized;
         }
-
     }
 }
