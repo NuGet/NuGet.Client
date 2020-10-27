@@ -275,18 +275,7 @@ namespace NuGet.SolutionRestoreManager
 
         public async Task LogExceptionAsync(Exception ex)
         {
-            string message;
-            if (OutputVerbosity < 3)
-            {
-                message = string.Format(CultureInfo.CurrentCulture,
-                    Resources.ErrorOccurredRestoringPackages,
-                    ex.Message);
-            }
-            else
-            {
-                // output exception detail when _msBuildOutputVerbosity is >= Detailed.
-                message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex);
-            }
+            string message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex);
 
             if (_operationSource == RestoreOperationSource.Explicit)
             {
