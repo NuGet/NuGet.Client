@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,7 +13,6 @@ using System.Threading.Tasks.Dataflow;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -28,7 +28,6 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class DependencyGraphRestoreUtility
     {
-
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
@@ -321,13 +320,13 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
+            var stopWatch = Stopwatch.StartNew();
+
             var dgSpec = new DependencyGraphSpec();
-            var allAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>();
+            List<IAssetsLogMessage> allAdditionalMessages = null;
+
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
-            var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
-            // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
-            knownProjects.AddRange(projects.Select(e => e.MSBuildProjectPath)
-                .Select(proj => new KeyValuePair<string, bool>(proj, true)));
+            HashSet<string> knownProjects = projects.Select(e => e.MSBuildProjectPath).ToHashSet(PathUtility.GetStringComparerBasedOnOS());
             var legacyPackageReferenceProjects = new List<IDependencyGraphProject>();
             var nonLegacyPackageReferenceProjects = new List<IDependencyGraphProject>();
 
@@ -339,42 +338,130 @@ namespace NuGet.PackageManagement
                 }
                 else
                 {
-                    await GetProjectRestoreSpecAndAdditionalMessages(new ProjectRestoreSpec(
-                                                project,
-                                                dgSpec,
-                                                context,
-                                                knownProjects,
-                                                allAdditionalMessages,
-                                                false));
+                    nonLegacyPackageReferenceProjects.Add(project);
+                }
+            }
+
+            for (var i = 0; i < nonLegacyPackageReferenceProjects.Count; i++)
+            {
+                var (packageSpecs, projectAdditionalMessages) = await nonLegacyPackageReferenceProjects[i].GetPackageSpecsAndAdditionalMessagesAsync(context);
+
+                if (projectAdditionalMessages != null && projectAdditionalMessages.Count > 0)
+                {
+                    if (allAdditionalMessages == null)
+                    {
+                        allAdditionalMessages = new List<IAssetsLogMessage>();
+                    }
+
+                    allAdditionalMessages.AddRange(projectAdditionalMessages);
+                }
+
+                foreach (var packageSpec in packageSpecs)
+                {
+                    dgSpec.AddProject(packageSpec);
+
+                    if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
+                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
+                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
+                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
+                    {
+                        dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+
+                        var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
+                        var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
+                        var outputPath = packageSpec.RestoreMetadata.OutputPath;
+
+                        if (!string.IsNullOrEmpty(outputPath))
+                        {
+                            for (int frameworkCount = 0; frameworkCount < packageSpec.RestoreMetadata.TargetFrameworks.Count; frameworkCount++)
+                            {
+                                for (var projectReferenceCount = 0; projectReferenceCount < packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences.Count; projectReferenceCount++)
+                                {
+                                    if (!knownProjects.Contains(packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
+                                    {
+                                        var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
+                                        if (File.Exists(persistedDGSpecPath))
+                                        {
+                                            var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
+                                            foreach (var dependentPackageSpec in persistedDGSpec.Projects.Where(e => !knownProjects.Contains(e.RestoreMetadata.ProjectPath)))
+                                            {
+                                                // Include all the missing projects from the closure.
+                                                // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
+                                                knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
+                                                dgSpec.AddProject(dependentPackageSpec);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             if (legacyPackageReferenceProjects.Count > 0)
             {
-                var options = new ExecutionDataflowBlockOptions()
-                {
-                    MaxDegreeOfParallelism = Environment.ProcessorCount
-                };
-                var actionBlock = new ActionBlock<ProjectRestoreSpec>(GetProjectRestoreSpecAndAdditionalMessages, options);
-
-                foreach (IDependencyGraphProject project in legacyPackageReferenceProjects)
-                {
-                    await actionBlock.SendAsync(new ProjectRestoreSpec(
-                                                    project,
-                                                    dgSpec,
-                                                    context,
-                                                    knownProjects,
-                                                    allAdditionalMessages,
-                                                    true)
-                                                );
-                }
-
-                actionBlock.Complete();
-                await actionBlock.Completion;
+                await GetLegacyPackageReferenceProjectsRestoreSpecAndAdditionalMessages(
+                    dgSpec,
+                    legacyPackageReferenceProjects,
+                    knownProjects,
+                    allAdditionalMessages,
+                    context);
             }
 
             // Return dg file
-            return (dgSpec, allAdditionalMessages.Count == 0 ? null : allAdditionalMessages.ToList());
+            return (dgSpec, allAdditionalMessages);
+        }
+
+        // Below looks like code duplication (as above) for you but in case of very sensetive improvement which measured in milloseconds it's necessary
+        // to seperate parallelization code and sequential code so parallel code locks doesn't delay sequential part.
+        public static async Task GetLegacyPackageReferenceProjectsRestoreSpecAndAdditionalMessages(
+            DependencyGraphSpec dgSpec,
+            List<IDependencyGraphProject> legacyPackageReferenceProjects,
+            HashSet<string> otherKnownProjects,
+            List<IAssetsLogMessage> otherAdditionalMessages,
+            DependencyGraphCacheContext context)
+        {
+            var allAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>();
+
+            var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
+            foreach (string otherKnownProject in otherKnownProjects)
+            {
+                // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
+                knownProjects[otherKnownProject] = true;
+            }
+
+            var options = new ExecutionDataflowBlockOptions()
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
+            var actionBlock = new ActionBlock<ProjectRestoreSpec>(GetProjectRestoreSpecAndAdditionalMessages, options);
+
+            foreach (IDependencyGraphProject project in legacyPackageReferenceProjects)
+            {
+                await actionBlock.SendAsync(new ProjectRestoreSpec(
+                                                project,
+                                                dgSpec,
+                                                context,
+                                                knownProjects,
+                                                allAdditionalMessages)
+                                            );
+            }
+
+            actionBlock.Complete();
+            await actionBlock.Completion;
+
+            if (allAdditionalMessages.Count != 0)
+            {
+                if (otherAdditionalMessages != null)
+                {
+                    otherAdditionalMessages.AddRange(allAdditionalMessages);
+                }
+                else
+                {
+                    otherAdditionalMessages = allAdditionalMessages.ToList();
+                }
+            }
         }
 
         private async static Task GetProjectRestoreSpecAndAdditionalMessages(
@@ -394,28 +481,14 @@ namespace NuGet.PackageManagement
 
             foreach (var packageSpec in packageSpecs)
             {
-                if (restoreSpecData.IsParallelCall)
-                {
-                    dgSpec.SafeAddProject(packageSpec);
-                }
-                else
-                {
-                    dgSpec.AddProject(packageSpec);
-                }
+                dgSpec.SafeAddProject(packageSpec);
 
                 if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
                 {
-                    if (restoreSpecData.IsParallelCall)
-                    {
-                        dgSpec.SafeAddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-                    }
-                    else
-                    {
-                        dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-                    }
+                    dgSpec.SafeAddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
 
                     var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
                     var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
@@ -441,15 +514,7 @@ namespace NuGet.PackageManagement
                                             // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
                                             // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
                                             restoreSpecData.KnownProjects[dependentPackageSpec.RestoreMetadata.ProjectPath] = true;
-
-                                            if (restoreSpecData.IsParallelCall)
-                                            {
-                                                dgSpec.SafeAddProject(dependentPackageSpec);
-                                            }
-                                            else
-                                            {
-                                                dgSpec.AddProject(dependentPackageSpec);
-                                            }
+                                            dgSpec.SafeAddProject(dependentPackageSpec);
                                         }
                                     }
                                 }
@@ -508,15 +573,13 @@ namespace NuGet.PackageManagement
             public readonly DependencyGraphCacheContext Context;
             public readonly ConcurrentDictionary<string, bool> KnownProjects;
             public readonly ConcurrentBag<IAssetsLogMessage> AllAdditionalMessages;
-            public readonly bool IsParallelCall;
 
             public ProjectRestoreSpec(
                     IDependencyGraphProject project,
                     DependencyGraphSpec dgSpec,
                     DependencyGraphCacheContext context,
                     ConcurrentDictionary<string, bool> knownProjects,
-                    ConcurrentBag<IAssetsLogMessage> allAdditionalMessages,
-                    bool isParallelCall
+                    ConcurrentBag<IAssetsLogMessage> allAdditionalMessages
             )
             {
                 Project = project;
@@ -524,7 +587,6 @@ namespace NuGet.PackageManagement
                 Context = context;
                 KnownProjects = knownProjects;
                 AllAdditionalMessages = allAdditionalMessages;
-                IsParallelCall = isParallelCall;
             }
         }
     }

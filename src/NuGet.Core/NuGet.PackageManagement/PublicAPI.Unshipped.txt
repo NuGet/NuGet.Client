@@ -8,5 +8,6 @@ const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkIdentifier =
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkProfile = "TargetFrameworkProfile" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkVersion = "TargetFrameworkVersion" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformMoniker = "TargetPlatformMoniker" -> string
+static NuGet.PackageManagement.DependencyGraphRestoreUtility.GetLegacyPackageReferenceProjectsRestoreSpecAndAdditionalMessages(NuGet.ProjectModel.DependencyGraphSpec dgSpec, System.Collections.Generic.List<NuGet.ProjectManagement.IDependencyGraphProject> legacyPackageReferenceProjects, System.Collections.Generic.HashSet<string> otherKnownProjects, System.Collections.Generic.List<NuGet.ProjectModel.IAssetsLogMessage> otherAdditionalMessages, NuGet.ProjectManagement.DependencyGraphCacheContext context) -> System.Threading.Tasks.Task
 static NuGet.ProjectManagement.MessageLevelExtensions.ToLogLevel(this NuGet.ProjectManagement.MessageLevel messageLevel) -> NuGet.Common.LogLevel
 virtual NuGet.ProjectManagement.Projects.BuildIntegratedNuGetProject.IsLegacyPackageReferenceProject.get -> bool
