@@ -289,7 +289,7 @@ jobs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: ShellScript@2
     displayName: "Run Tests (stop on error)"
@@ -298,7 +298,7 @@ jobs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
