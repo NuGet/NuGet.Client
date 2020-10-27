@@ -2,7 +2,6 @@
     <RunConfiguration>
         <ReporterSwitch>verbose</ReporterSwitch>
         <TargetFrameworkVersion>FrameworkCore10</TargetFrameworkVersion>
-        <ResultsDirectory>$(TestResultsDirectory)\HangDumps</ResultsDirectory>
     </RunConfiguration>
     <LoggerRunSettings>
         <Loggers>
@@ -13,7 +12,8 @@
         <DataCollectors>
             <DataCollector friendlyName="blame" enabled="True">
                 <Configuration>
-                    <CollectDumpOnTestSessionHang TestTimeout="1min" HangDumpType="Full" />                    
+                    <CollectDumpOnTestSessionHang TestTimeout="1min" HangDumpType="Full" />
+                    <ResultsDirectory>%AGENT_TEMPDIRECTORY%</ResultsDirectory>
                 </Configuration>
             </DataCollector>
         </DataCollectors>

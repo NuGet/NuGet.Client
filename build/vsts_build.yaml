@@ -225,6 +225,14 @@ jobs:
       testRunTitle: "NuGet.Client Functional Tests On Windows"
     condition: "succeededOrFailed()"
 
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Test Hang Dump"
+    inputs:
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+      ArtifactName: "WindowsFuncTestHang"
+      ArtifactType: "Container"
+    condition: "failed()"
+
   - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
@@ -303,9 +311,9 @@ jobs:
     condition: "succeededOrFailed()"
 
   - task: PublishBuildArtifacts@1
-    displayName: "Publish Tests Hang Dump"
+    displayName: "Publish Test Hang Dump"
     inputs:
-      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/HangDumps"
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
       ArtifactName: "LinuxTestHang"
       ArtifactType: "Container"
     condition: "failed()"
