@@ -229,7 +229,7 @@ jobs:
     displayName: "Publish Test Hang Dump"
     inputs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
-      ArtifactName: "$(Agent.Job)"
+      ArtifactName: "$(Agent.JobName)"
       ArtifactType: "Container"
     condition: "failed()"
 
@@ -314,7 +314,7 @@ jobs:
     displayName: "Publish Test Hang Dump"
     inputs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
-      ArtifactName: "LinuxTestHang"
+      ArtifactName: "$(Agent.JobName)"
       ArtifactType: "Container"
     condition: "failed()"
 
