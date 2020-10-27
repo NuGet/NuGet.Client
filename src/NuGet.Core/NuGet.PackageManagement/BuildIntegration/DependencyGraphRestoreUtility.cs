@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -322,15 +321,9 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
-            var stopWatch = Stopwatch.StartNew();
-
             var dgSpec = new DependencyGraphSpec();
             var allAdditionalMessages = new ConcurrentBag<IAssetsLogMessage>();
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
-
-            var solPaths = solutionManager.SolutionDirectory.Split('\\');
-            NuGetFileLogger.DefaultInstance.Write($"Semaphore Starts: {solPaths[solPaths.Length - 1]}: {projects.Count}: GetSolutionRestoreSpecAndAdditionalMessages.");
-
             var knownProjects = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
             // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
             knownProjects.AddRange(projects.Select(e => e.MSBuildProjectPath)
@@ -377,10 +370,6 @@ namespace NuGet.PackageManagement
                 actionBlock.Complete();
                 await actionBlock.Completion;
             }
-
-            stopWatch.Stop();
-            NuGetFileLogger.DefaultInstance.Write($"End: {stopWatch.Elapsed.Milliseconds} ", stopWatch.Elapsed.Milliseconds);
-            NuGetFileLogger.DefaultInstance.Write($"-------------------------------------");
 
             // Return dg file
             return (dgSpec, allAdditionalMessages.ToList());
