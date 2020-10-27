@@ -344,7 +344,8 @@ namespace NuGet.PackageManagement
                                                 dgSpec,
                                                 context,
                                                 knownProjects,
-                                                allAdditionalMessages));
+                                                allAdditionalMessages,
+                                                false));
                 }
             }
 
@@ -363,7 +364,8 @@ namespace NuGet.PackageManagement
                                                     dgSpec,
                                                     context,
                                                     knownProjects,
-                                                    allAdditionalMessages)
+                                                    allAdditionalMessages,
+                                                    true)
                                                 );
                 }
 
@@ -372,7 +374,7 @@ namespace NuGet.PackageManagement
             }
 
             // Return dg file
-            return (dgSpec, allAdditionalMessages.ToList());
+            return (dgSpec, allAdditionalMessages.Count == 0 ? null : allAdditionalMessages.ToList());
         }
 
         private async static Task GetProjectRestoreSpecAndAdditionalMessages(
@@ -392,14 +394,28 @@ namespace NuGet.PackageManagement
 
             foreach (var packageSpec in packageSpecs)
             {
-                dgSpec.SafeAddProject(packageSpec);
+                if (restoreSpecData.IsParallelCall)
+                {
+                    dgSpec.SafeAddProject(packageSpec);
+                }
+                else
+                {
+                    dgSpec.AddProject(packageSpec);
+                }
 
                 if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
                     packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
                 {
-                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                    if (restoreSpecData.IsParallelCall)
+                    {
+                        dgSpec.SafeAddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                    }
+                    else
+                    {
+                        dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                    }
 
                     var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
                     var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
@@ -426,7 +442,14 @@ namespace NuGet.PackageManagement
                                             // Here below 'true' value is unimportant. It's only there because we needed ConcurrentDictionary since there is no ConcurrentHashSet for thread safety.
                                             restoreSpecData.KnownProjects[dependentPackageSpec.RestoreMetadata.ProjectPath] = true;
 
-                                            dgSpec.SafeAddProject(dependentPackageSpec);
+                                            if (restoreSpecData.IsParallelCall)
+                                            {
+                                                dgSpec.SafeAddProject(dependentPackageSpec);
+                                            }
+                                            else
+                                            {
+                                                dgSpec.AddProject(dependentPackageSpec);
+                                            }
                                         }
                                     }
                                 }
@@ -485,13 +508,15 @@ namespace NuGet.PackageManagement
             public readonly DependencyGraphCacheContext Context;
             public readonly ConcurrentDictionary<string, bool> KnownProjects;
             public readonly ConcurrentBag<IAssetsLogMessage> AllAdditionalMessages;
+            public readonly bool IsParallelCall;
 
             public ProjectRestoreSpec(
                     IDependencyGraphProject project,
                     DependencyGraphSpec dgSpec,
                     DependencyGraphCacheContext context,
                     ConcurrentDictionary<string, bool> knownProjects,
-                    ConcurrentBag<IAssetsLogMessage> allAdditionalMessages
+                    ConcurrentBag<IAssetsLogMessage> allAdditionalMessages,
+                    bool isParallelCall
             )
             {
                 Project = project;
@@ -499,6 +524,7 @@ namespace NuGet.PackageManagement
                 Context = context;
                 KnownProjects = knownProjects;
                 AllAdditionalMessages = allAdditionalMessages;
+                IsParallelCall = isParallelCall;
             }
         }
     }

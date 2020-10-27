@@ -241,7 +241,7 @@ namespace NuGet.ProjectModel
 
         public void SafeAddRestore(string projectUniqueName)
         {
-            lock(_lockObject)
+            lock (_lockObject)
             {
                 _restore.Add(projectUniqueName);
             }
@@ -261,7 +261,7 @@ namespace NuGet.ProjectModel
 
         public void SafeAddProject(PackageSpec projectSpec)
         {
-            lock(_lockObject)
+            lock (_lockObject)
             {
                 AddProject(projectSpec);
             }

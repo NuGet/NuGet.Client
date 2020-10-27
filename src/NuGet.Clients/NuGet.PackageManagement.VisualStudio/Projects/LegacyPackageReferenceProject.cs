@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     context?.PackageSpecCache.Add(_projectFullPath, packageSpec);
                 }
-                
+
             }
 
             return (new[] { packageSpec }, null);
