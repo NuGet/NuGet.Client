@@ -229,7 +229,7 @@ jobs:
     displayName: "Publish Test Hang Dump"
     inputs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
-      ArtifactName: "WindowsFuncTestHang"
+      ArtifactName: "$(Agent.Job)"
       ArtifactType: "Container"
     condition: "failed()"
 
