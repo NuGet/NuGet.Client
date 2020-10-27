@@ -45,7 +45,7 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
-            string packagePath = Arguments[0];
+            IList<string> packagePaths = Arguments;
             string apiKeyValue = null;
 
             if (!string.IsNullOrEmpty(ApiKey))
@@ -62,7 +62,7 @@ namespace NuGet.CommandLine
                 await PushRunner.Run(
                     Settings,
                     SourceProvider,
-                    packagePath,
+                    packagePaths,
                     Source,
                     apiKeyValue,
                     SymbolSource,

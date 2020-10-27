@@ -39,7 +39,7 @@ namespace NuGet.Commands.Test
                 await PushRunner.Run(
                     Settings.LoadDefaultSettings(null, null, null),
                     new TestPackageSourceProvider(packageSources),
-                    packageInfo.FullName,
+                    new[]{packageInfo.FullName},
                     packagePushDest.FullName,
                     null, // api key
                     null, // symbols source
