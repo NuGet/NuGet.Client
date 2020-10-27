@@ -68,16 +68,15 @@ namespace NuGet.Protocol.Core.Types
             // TODO: Figure out how to hook this up with the HTTP request
             _disableBuffering = disableBuffering;
 
-            foreach (var packagePath in packagePaths)
+            using (var tokenSource = new CancellationTokenSource())
             {
-                using (var tokenSource = new CancellationTokenSource())
+                var requestTimeout = TimeSpan.FromSeconds(timeoutInSecond);
+                tokenSource.CancelAfter(requestTimeout);
+                var apiKey = getApiKey(_source);
+
+                foreach (var packagePath in packagePaths)
                 {
-                    var requestTimeout = TimeSpan.FromSeconds(timeoutInSecond);
-                    tokenSource.CancelAfter(requestTimeout);
-                    var apiKey = getApiKey(_source);
-
                     bool explicitSnupkgPush = true;
-
                     if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
                     {
                         await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate,
