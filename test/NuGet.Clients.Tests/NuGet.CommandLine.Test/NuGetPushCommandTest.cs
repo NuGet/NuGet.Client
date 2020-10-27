@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
@@ -48,6 +49,42 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
                 var output = result.Item2;
                 Assert.DoesNotContain("WARNING: No API Key was provided", output);
+            }
+        }
+
+        // Tests pushing multiple packages (multiple paths)
+        [Fact]
+        public void PushCommand_PushMultiplePaths()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
+            {
+                // Arrange
+                var packagePaths = new[]
+                {
+                    Util.CreateTestPackage("testPackageA", "1.1.0", packageDirectory),
+                    Util.CreateTestPackage("testPackageB", "1.1.0", packageDirectory),
+                };
+
+                // Act
+                var args = new[] {"push", "-Source", source}.Concat(packagePaths);
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                var output = result.Item2;
+                Assert.DoesNotContain("WARNING: No API Key was provided", output);
+
+                foreach (var packagePath in packagePaths)
+                {
+                    Assert.True(File.Exists(Path.Combine(source, packagePath)));
+                }
             }
         }
 
