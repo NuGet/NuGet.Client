@@ -128,7 +128,7 @@ namespace NuGet.LibraryModel
             hashCode.AddSequence(NoWarn);
             hashCode.AddObject(GeneratePathProperty);
             hashCode.AddObject(VersionCentrallyManaged);
-            hashCode.AddObject(Aliases);
+            hashCode.AddSequence(Aliases);
             hashCode.AddObject(ReferenceType);
 
             return hashCode.CombinedHash;

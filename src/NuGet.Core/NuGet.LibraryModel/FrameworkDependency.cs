@@ -58,7 +58,7 @@ namespace NuGet.LibraryModel
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
-            hashCode.AddObject(ComparisonUtility.FrameworkReferenceNameComparer.GetHashCode(Name));
+            hashCode.AddSequence(Name);
             hashCode.AddObject(PrivateAssets);
             return hashCode.CombinedHash;
         }

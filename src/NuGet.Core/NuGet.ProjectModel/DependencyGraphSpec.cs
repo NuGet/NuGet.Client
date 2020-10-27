@@ -399,7 +399,7 @@ namespace NuGet.ProjectModel
             hashCodeCombiner.AddObject(Version);
             foreach (var restoreName in _restore)
             {
-                hashCodeCombiner.AddObject(restoreName);
+                hashCodeCombiner.AddSequence(restoreName);
             }
             foreach (var pair in _projects)
             {

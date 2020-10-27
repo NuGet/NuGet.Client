@@ -45,7 +45,7 @@ namespace NuGet.Packaging
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
-            combiner.AddObject(Name, ComparisonUtility.FrameworkReferenceNameComparer);
+            combiner.AddSequence(Name.ToUpperInvariant());
             return combiner.CombinedHash;
         }
 

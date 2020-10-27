@@ -122,41 +122,41 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(ProjectStyle);
             if (ProjectPath != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectPath));
+                hashCode.AddSequence(ProjectPath);
             }
             if (ProjectJsonPath != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectJsonPath));
+                hashCode.AddSequence(ProjectJsonPath);
             }
             if (OutputPath != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(OutputPath));
+                hashCode.AddSequence(OutputPath);
             }
             if (ProjectName != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectName));
+                hashCode.AddSequence(ProjectName);
             }
             if (ProjectUniqueName != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectUniqueName));
+                hashCode.AddSequence(ProjectUniqueName);
             }
             hashCode.AddSequence(Sources.OrderBy(e => e.Source, StringComparer.OrdinalIgnoreCase));
             if (PackagesPath != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(PackagesPath));
+                hashCode.AddSequence(PackagesPath);
             }
             foreach (var reference in ConfigFilePaths.OrderBy(s => s, PathUtility.GetStringComparerBasedOnOS()))
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(reference));
+                hashCode.AddSequence(reference);
             }
             foreach (var reference in FallbackFolders.OrderBy(s => s, PathUtility.GetStringComparerBasedOnOS()))
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(reference));
+                hashCode.AddSequence(reference);
             }
             hashCode.AddSequence(TargetFrameworks.OrderBy(dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase));
             foreach (var reference in OriginalTargetFrameworks.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
             {
-                hashCode.AddObject(StringComparer.OrdinalIgnoreCase.GetHashCode(reference));
+                hashCode.AddSequence(reference);
             }
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);
