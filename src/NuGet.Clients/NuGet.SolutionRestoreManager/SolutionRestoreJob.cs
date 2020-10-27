@@ -397,9 +397,9 @@ namespace NuGet.SolutionRestoreManager
                         dgSpec = originalDgSpec.WithoutRestores();
                         foreach (var uniqueProjectId in projectsNeedingRestore)
                         {
-                            dgSpec.AddRestore(uniqueProjectId);
+                            dgSpec.AddRestore(uniqueProjectId); // Fill DGSpec copy only with restore-needed projects
                         }
-                        // recorded the number of up to date projects
+                        // Calculate the number of up to date projects
                         _upToDateProjectCount = originalDgSpec.Restore.Count - specialReferencesCount - projectsNeedingRestore.Count;
                         _noOpProjectsCount = _upToDateProjectCount;
                     }
