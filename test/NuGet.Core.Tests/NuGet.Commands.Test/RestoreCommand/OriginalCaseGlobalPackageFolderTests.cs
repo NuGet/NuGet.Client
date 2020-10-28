@@ -25,6 +25,7 @@ namespace NuGet.Commands.Test
 {
     using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
 
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class OriginalCaseGlobalPackageFolderTests
     {
         [Fact]

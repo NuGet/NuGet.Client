@@ -10,10 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Configuration;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class ProxyAuthenticationHandlerTests
     {
         private static readonly Uri ProxyAddress = new Uri("http://127.0.0.1:8888/");
