@@ -20,6 +20,10 @@
       <AssetManifestPath>$(ArtifactsLogDir)AssetManifest\$(AssetManifestFileName)</AssetManifestPath>
     </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Maestro.Tasks" Version="$(MicrosoftDotNetMaestroTasksVersion)" />
+  </ItemGroup>
+
     <Error Condition="!Exists($(NuGetClientNupkgsDirectoryPath))" Text="The package directory path '$(NuGetClientNupkgsDirectoryPath)' does not exist." />
     <Error Condition="Exists($(AssetManifestPath))" Text="The manifest file '$(AssetManifestPath)' already exists." />
 
@@ -66,7 +70,8 @@
     <PushMetadataToBuildAssetRegistry
       BuildAssetRegistryToken="$(MaestroAccessToken)"
       MaestroApiEndpoint="$(MaestroApiEndpoint)"
-      ManifestsPath="$(ArtifactsLogDir)AssetManifest\" />
+      ManifestsPath="$(ArtifactsLogDir)AssetManifest\"
+      AssetVersion="$(Version)" />
   </Target>
 
 </Project>

@@ -51,6 +51,7 @@
     <MicroBuildDirectory>$(SolutionPackagesFolder)microbuild.core\0.2.0\build\</MicroBuildDirectory>
     <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\6.0.0-beta.20508.7\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
     <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.20527.2\tools\netcoreapp3.1\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
+    <MicrosoftDotNetMaestroTasksVersion>1.1.0-beta.20527.2</MicrosoftDotNetMaestroTasksVersion>
     <NoWarn>$(NoWarn);NU5105;NU5048</NoWarn>
   </PropertyGroup>
 
