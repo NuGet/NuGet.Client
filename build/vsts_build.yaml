@@ -231,7 +231,7 @@ jobs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
       ArtifactName: "$(Agent.JobName)"
       ArtifactType: "Container"
-    condition: "failed()"
+    condition: "or(failed(), canceled())"
 
   - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
@@ -316,7 +316,7 @@ jobs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
       ArtifactName: "$(Agent.JobName)"
       ArtifactType: "Container"
-    condition: "failed()"
+    condition: "or(failed(), canceled())"
 
   - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
