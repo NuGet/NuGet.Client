@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
@@ -66,7 +67,10 @@ namespace NuGet.PackageManagement.UI
                 ServiceBroker,
                 Projects,
                 CancellationToken.None);
-            _allPackagesTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageCollection.FromProjectsIncludeTransitiveAsync(Projects, CancellationToken.None));
+            _allPackagesTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageCollection.FromProjectsIncludeTransitiveAsync(
+                ServiceBroker,
+                Projects,
+                CancellationToken.None));
         }
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
@@ -83,7 +87,7 @@ namespace NuGet.PackageManagement.UI
                 if (project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                 {
                     // get the target frameworks for Package Reference style projects
-                    var targetFrameworks = await project.GetTargetFrameworksAsync(CancellationToken.None);
+                    var targetFrameworks = await project.GetTargetFrameworksAsync(ServiceBroker, CancellationToken.None);
                     foreach (var targetFramework in targetFrameworks)
                     {
                         frameworks.Add(targetFramework.DotNetFrameworkName);

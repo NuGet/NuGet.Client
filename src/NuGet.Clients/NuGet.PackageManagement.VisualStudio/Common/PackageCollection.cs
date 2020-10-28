@@ -67,11 +67,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageCollection(packages);
         }
 
-        public static async Task<(PackageCollection, PackageCollection)> FromProjectsIncludeTransitiveAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
+        public static async Task<(PackageCollection, PackageCollection)> FromProjectsIncludeTransitiveAsync(
+            IServiceBroker serviceBroker,
+            IEnumerable<IProjectContextInfo> projects,
+            CancellationToken cancellationToken)
         {
             // Read installed and transitive package references from all projects.
             IEnumerable<Task<(IReadOnlyCollection<IPackageReferenceContextInfo>, IReadOnlyCollection<IPackageReferenceContextInfo>)>>? tasks = projects
-                .Select(project => project.GetAllPackagesAsync(cancellationToken).AsTask());
+                .Select(project => project.GetAllPackagesAsync(serviceBroker, cancellationToken).AsTask());
             (IReadOnlyCollection<IPackageReferenceContextInfo>, IReadOnlyCollection<IPackageReferenceContextInfo>)[]? allPackageReferences = await Task.WhenAll(tasks);
 
             // Group all installed package references for an id/version into a single item.
