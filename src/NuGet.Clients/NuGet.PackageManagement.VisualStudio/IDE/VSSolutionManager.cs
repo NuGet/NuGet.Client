@@ -547,10 +547,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectRenamed(Project envDTEProject, string oldName)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 if (!string.IsNullOrEmpty(oldName) && await IsSolutionOpenAsync() && _solutionOpenedRaised)
                 {
                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
@@ -603,10 +601,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectAdded(Project envDTEProject)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 if (await IsSolutionOpenAsync()
                     && await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject)
                     && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
