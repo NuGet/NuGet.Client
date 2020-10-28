@@ -401,6 +401,14 @@ jobs:
       testRunTitle: "NuGet.Client Tests On Mac"
     condition: "succeededOrFailed()"
 
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Test Hang Dump"
+    inputs:
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+      ArtifactName: "$(Agent.JobName)"
+      ArtifactType: "Container"
+    condition: "or(failed(), canceled())"
+
   - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
