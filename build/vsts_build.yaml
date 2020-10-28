@@ -202,7 +202,7 @@ jobs:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Run Functional Tests (stop on error)"
@@ -212,7 +212,7 @@ jobs:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -380,7 +380,7 @@ jobs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: ShellScript@2
     displayName: "Run Tests (stop on error)"
@@ -389,7 +389,7 @@ jobs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -552,7 +552,7 @@ jobs:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Run Apex Tests (stop on error)"
@@ -563,7 +563,7 @@ jobs:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
