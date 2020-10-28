@@ -165,7 +165,7 @@ namespace NuGet.Commands
                                 restoreTime.Stop();
 
                                 updatedHash = _request.DependencyGraphSpec.GetHash();
-                                if (originalHashValue != updatedHash)
+                                if (originalHashValue != updatedHash && !(_request.ProjectStyle == ProjectStyle.DotnetCliTool))
                                 {
                                     throw new ArgumentException("Well this sucks!" + Environment.NewLine + $"For{_request.Project.Name}, old hash{originalHashValue}, new hash {updatedHash}");
                                 }
@@ -219,7 +219,7 @@ namespace NuGet.Commands
                         }
 
                         updatedHash = _request.DependencyGraphSpec?.GetHash();
-                        if (originalHashValue != updatedHash)
+                        if (originalHashValue != updatedHash && !(_request.ProjectStyle == ProjectStyle.DotnetCliTool))
                         {
                             throw new ArgumentException("Well this sucks! 2" + Environment.NewLine + $"For{_request.Project.Name}, old hash{originalHashValue}, new hash {updatedHash}");
                         }
@@ -401,7 +401,7 @@ namespace NuGet.Commands
                 restoreTime.Stop();
 
                 var newHashValue = _request.DependencyGraphSpec?.GetHash();
-                if (originalHashValue != newHashValue)
+                if (originalHashValue != newHashValue && !(_request.ProjectStyle == ProjectStyle.DotnetCliTool))
                 {
                     throw new ArgumentException("Well this sucks! 3" + Environment.NewLine + $"For{_request.Project.Name}, old hash{originalHashValue}, new hash {newHashValue}");
                 }
