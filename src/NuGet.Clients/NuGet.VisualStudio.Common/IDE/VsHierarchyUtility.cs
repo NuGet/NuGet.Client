@@ -176,7 +176,7 @@ namespace NuGet.VisualStudio
             await projectHierarchyItem.WalkDepthFirstAsync(
                 fVisible: true,
                 processCallbackAsync:
-                    async (VsHierarchyItem vsItem, object callerObject) => 
+                    async (VsHierarchyItem vsItem, object callerObject) =>
                     {
                         if (await IsVsHierarchyItemExpandedAsync(vsItem, solutionExplorerWindow))
                         {
