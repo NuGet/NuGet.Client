@@ -1,10 +1,9 @@
 <#
 .SYNOPSIS
-Sets build variables during a VSTS build dynamically.
+Publish generated packages to NuGet.Client's feed.
 
 .DESCRIPTION
-This script is used to publish all offical nupkgs (from dev and release-* branches) to 
-myget feeds.
+This script is used to publish all offical nupkgs (from dev and release-* branches) to "nightly" feeds, not nuget.org.
 
 #>
 
@@ -12,39 +11,21 @@ param
 (
     [Parameter(Mandatory=$True)]
     [string]$NuGetBuildFeedUrl,
-
     [Parameter(Mandatory=$True)]
-    [string]$NuGetBuildSymbolsFeedUrl,
-
-    [Parameter(Mandatory=$True)]
-    [string]$DotnetCoreFeedUrl,
-
-    [Parameter(Mandatory=$True)]
-    [string]$DotnetCoreSymbolsFeedUrl,
-
-    [Parameter(Mandatory=$True)]
-    [string]$NuGetBuildFeedApiKey,
-
-    [Parameter(Mandatory=$True)]
-    [string]$DotnetCoreFeedApiKey
+    [string]$NuGetBuildFeedApiKey
 )
 
-function Push-ToMyGet {
+function Push-ToFeed {
     [CmdletBinding(SupportsShouldProcess=$True)]
     param(
         [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
         [string[]] $NupkgFiles,
         [string] $ApiKey,
-        [string] $BuildFeed,
-        [string] $SymbolSource
+        [string] $BuildFeed
     )
     Process {
         $NupkgFiles | %{
-            $Feed = Switch -Wildcard ($_) {
-                "*.symbols.nupkg" { $SymbolSource }
-                Default { $BuildFeed }
-            }
-            $opts = 'nuget', 'push', $_, '-k', $ApiKey, '-s', $Feed
+            $opts = 'nuget', 'push', $_, '-k', $ApiKey, '-s', $BuildFeed
             if ($VerbosePreference) {
                 $opts += '-verbosity', 'detailed'
             }
@@ -65,8 +46,6 @@ $NupkgsDir = Join-Path $env:BUILD_REPOSITORY_LOCALPATH artifacts\nupkgs
 if(Test-Path $NupkgsDir)
 {
     # Push all nupkgs to the nuget-build feed on myget.
-    Get-Item "$NupkgsDir\*.nupkg" -Exclude "Test.*.nupkg", "*.symbols.nupkg" | Push-ToMyGet -ApiKey $NuGetBuildFeedApiKey -BuildFeed $NuGetBuildFeedUrl -SymbolSource $NuGetBuildSymbolsFeedUrl
-    # We push NuGet.Build.Tasks.Pack nupkg to dotnet-core feed as per the request of the CLI team.
-    Get-Item "$NupkgsDir\NuGet.Build.Tasks.Pack*.nupkg" -Exclude "*.symbols.nupkg" | Push-ToMyGet -ApiKey $DotnetCoreFeedApiKey -BuildFeed $DotnetCoreFeedUrl -SymbolSource $DotnetCoreSymbolsFeedUrl
+    Get-Item "$NupkgsDir\*.nupkg" -Exclude "Test.*.nupkg", "*.symbols.nupkg" | Push-ToFeed -ApiKey $NuGetBuildFeedApiKey -BuildFeed $NuGetBuildFeedUrl
 }
 

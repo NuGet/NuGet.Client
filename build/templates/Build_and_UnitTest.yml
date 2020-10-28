@@ -413,14 +413,30 @@ steps:
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: PowerShell@1
-  displayName: "Publish Artifacts to MyGet"
-  continueOnError: "true"
+- task: NuGetAuthenticate@0
+  displayName: 'Authenticate nuget-build feed'
   inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\PublishArtifactsFromVsts.ps1"
-    arguments: "-NuGetBuildFeedUrl $(NuGetBuildFeed) -NuGetBuildSymbolsFeedUrl $(NuGetBuildSymbolsFeed) -DotnetCoreFeedUrl $(DotnetCoreBuildFeed) -DotnetCoreSymbolsFeedUrl $(DotnetCoreSymbolsFeed) -NuGetBuildFeedApiKey $(NuGetBuildApiKey) -DotnetCoreFeedApiKey $(DotnetCoreFeedApiKey)"
-    failOnStandardError: "true"
+    nuGetServiceConnections: nuget-build-dnceng-public-feed
   condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
+
+- task: NuGetCommand@2
+  displayName: Publish public Nuget packages to nuget-build
+  inputs:
+    command: push
+    packagesToPush: 'artifacts\nupkgs\*.nupkg;!artifacts\nupkgs\Test.*.nupkg;!artifacts\nupkgs\*.symbols.nupkg'
+    nuGetFeedType: external
+    allowPackageConflicts: true
+    publishFeedCredentials : nuget-build-dnceng-public-feed
+  condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
+
+# - task: PowerShell@1
+#   displayName: "Publish Artifacts to MyGet"
+#   continueOnError: "true"
+#   inputs:
+#     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\PublishArtifactsFromVsts.ps1"
+#     arguments: "-NuGetBuildFeedUrl $(NuGetBuildAzDOFeed) -NuGetBuildFeedApiKey $(NuGetBuildAzDOApiKey)"
+#     failOnStandardError: "true"
+#   condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
 - task: MSBuild@1
   displayName: "Collect Build Symbols"
