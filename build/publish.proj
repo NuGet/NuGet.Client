@@ -18,7 +18,6 @@
     <PropertyGroup>
       <AssetManifestFileName>nuget.client.xml</AssetManifestFileName>
       <AssetManifestPath>$(ArtifactsLogDir)AssetManifest\$(AssetManifestFileName)</AssetManifestPath>
-      <MicrosoftDotNetMaestroTasksVersion>1.1.0-beta.20528.3</MicrosoftDotNetMaestroTasksVersion>
     </PropertyGroup>
 
     <Error Condition="!Exists($(NuGetClientNupkgsDirectoryPath))" Text="The package directory path '$(NuGetClientNupkgsDirectoryPath)' does not exist." />
@@ -68,7 +67,7 @@
       BuildAssetRegistryToken="$(MaestroAccessToken)"
       MaestroApiEndpoint="$(MaestroApiEndpoint)"
       ManifestsPath="$(ArtifactsLogDir)AssetManifest\"
-      AssetVersion="$(MicrosoftDotNetMaestroTasksVersion)" />
+      AssetVersion="$(Version)" />
   </Target>
 
 </Project>
