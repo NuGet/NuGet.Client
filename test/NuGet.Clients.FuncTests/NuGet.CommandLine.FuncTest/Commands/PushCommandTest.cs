@@ -502,8 +502,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.True(result.Success, "Snupkg File did not exist but should not fail a nupkg push.");
                 Assert.Contains(MESSAGE_PACKAGE_PUSHED, result.Output);
                 Assert.DoesNotContain(WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST, result.Errors);
-                Assert.DoesNotContain(NuGetConstants.SnupkgExtension,
-                    result.AllOutput); //Snupkgs should not be mentioned.
+                Assert.DoesNotContain(NuGetConstants.SnupkgExtension, result.AllOutput); //Snupkgs should not be mentioned.
             }
         }
 
