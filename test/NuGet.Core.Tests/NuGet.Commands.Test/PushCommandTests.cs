@@ -59,7 +59,7 @@ namespace NuGet.Commands.Test
                 foreach (var packageInfo in packageInfoCollection)
                 {
                     var destFile = Path.Combine(packagePushDest.FullName, packageInfo.Name);
-                    Assert.Equal(true, File.Exists(destFile));
+                    Assert.True(File.Exists(destFile));
                 }
             }
         }
