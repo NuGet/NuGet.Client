@@ -280,7 +280,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(projectDir.FullName, "project.json"), projectJson);
 
                 var specPath = Path.Combine(projectDir.FullName, "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath);
+                var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath).WithProjectJsonTestRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(

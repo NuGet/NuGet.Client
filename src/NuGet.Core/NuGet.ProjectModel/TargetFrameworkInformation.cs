@@ -74,7 +74,13 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(FrameworkReferences.OrderBy(s => s.Name, ComparisonUtility.FrameworkReferenceNameComparer));
             if (RuntimeIdentifierGraphPath != null)
             {
-                hashCode.AddSequence(RuntimeIdentifierGraphPath);
+                if (RuntimeEnvironmentHelper.IsLinux)
+                {
+                    hashCode.AddSequence(RuntimeIdentifierGraphPath);
+                } else
+                {
+                    hashCode.AddSequence(RuntimeIdentifierGraphPath.ToUpperInvariant());
+                }
             }
             hashCode.AddSequence(CentralPackageVersions.Values.OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase));
             hashCode.AddSequence(TargetAlias.ToUpperInvariant());
