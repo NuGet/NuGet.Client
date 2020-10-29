@@ -144,7 +144,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new[]{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -198,7 +198,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new []{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -287,7 +287,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new[]{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: symbolSource,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -353,7 +353,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new[]{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: symbolSource,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -427,7 +427,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new []{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: symbolSource,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -503,7 +503,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new[]{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -556,7 +556,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new[]{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -606,7 +606,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new []{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -669,7 +669,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new[]{packageInfo.FullName},
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -739,7 +739,7 @@ namespace NuGet.Protocol.Tests
                 // Act
                 var ex = await Assert.ThrowsAsync<HttpRequestException>(
                     async () => await resource.Push(
-                        packagePaths: new[] {packageInfo.FullName},
+                        packagePaths: new[] { packageInfo.FullName },
                         symbolSource: symbolSource,
                         timeoutInSecond: 5,
                         disableBuffering: false,
@@ -806,7 +806,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePaths: new[]{symbolPackageInfo.FullName},
+                    packagePaths: new[] { symbolPackageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,

@@ -33,7 +33,7 @@ namespace NuGet.Commands.Test
                     new PackageSource(packagePushDest.FullName)
                 };
 
-                var packageInfoCollection = new []
+                var packageInfoCollection = new[]
                 {
                     await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test1", "1.0.0"),
                     await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test2", "1.0.0")
@@ -43,7 +43,7 @@ namespace NuGet.Commands.Test
                 await PushRunner.Run(
                     Settings.LoadDefaultSettings(null, null, null),
                     new TestPackageSourceProvider(packageSources),
-                    new[]{packageInfoCollection[0].FullName, packageInfoCollection[1].FullName},
+                    new[] { packageInfoCollection[0].FullName, packageInfoCollection[1].FullName },
                     packagePushDest.FullName,
                     null, // api key
                     null, // symbols source

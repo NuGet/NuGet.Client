@@ -114,7 +114,7 @@ namespace NuGet.Protocol.Core.Types
             SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
             ILogger log)
         {
-            return Push(new[] {packagePath}, symbolSource, timeoutInSecond, disableBuffering, getApiKey,
+            return Push(new[] { packagePath }, symbolSource, timeoutInSecond, disableBuffering, getApiKey,
                 getSymbolApiKey, noServiceEndpoint, skipDuplicate, symbolPackageUpdateResource, log);
         }
 

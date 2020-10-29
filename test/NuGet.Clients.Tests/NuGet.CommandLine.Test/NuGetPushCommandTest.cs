@@ -69,10 +69,10 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var args = new[] {"push", "-Source", source}.Concat(packagePaths);
+                var args = new[] { "push", "-Source", source }.Concat(packagePaths);
                 var result = CommandRunner.Run(
-                    process:nugetexe,
-                    workingDirectory:Directory.GetCurrentDirectory(),
+                    process: nugetexe,
+                    workingDirectory: Directory.GetCurrentDirectory(),
                     arguments: string.Join(" ", args),
                     waitForExit: true);
 

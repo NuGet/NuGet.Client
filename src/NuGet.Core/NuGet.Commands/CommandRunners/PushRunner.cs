@@ -88,7 +88,7 @@ namespace NuGet.Commands
         {
             return Run(settings: settings,
                 sourceProvider: sourceProvider,
-                packagePaths: new[] {packagePath},
+                packagePaths: new[] { packagePath },
                 source: source,
                 apiKey: apiKey,
                 symbolSource: symbolSource,
