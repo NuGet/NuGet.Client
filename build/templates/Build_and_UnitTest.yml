@@ -413,12 +413,6 @@ steps:
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: NuGetAuthenticate@0
-  displayName: 'Authenticate nuget-build feed'
-  inputs:
-    nuGetServiceConnections: nuget-build-dnceng-public-feed
-  condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
-
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
   inputs:
