@@ -149,7 +149,7 @@ namespace NuGet.LibraryModel
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddSequence(Name);
+            combiner.AddSequence(Name.ToUpperInvariant());
             combiner.AddObject(VersionRange);
             combiner.AddObject(TypeConstraint);
 

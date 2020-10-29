@@ -77,7 +77,7 @@ namespace NuGet.ProjectModel
                 hashCode.AddSequence(RuntimeIdentifierGraphPath);
             }
             hashCode.AddSequence(CentralPackageVersions.Values.OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase));
-            hashCode.AddSequence(TargetAlias);
+            hashCode.AddSequence(TargetAlias.ToUpperInvariant());
             return hashCode.CombinedHash;
         }
 

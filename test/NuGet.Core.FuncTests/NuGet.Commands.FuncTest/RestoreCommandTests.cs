@@ -27,7 +27,7 @@ namespace NuGet.Commands.FuncTest
 {
     using static NuGet.Frameworks.FrameworkConstants;
 
-    using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
+    using LocalPackageArchiveDownloader = Protocol.LocalPackageArchiveDownloader;
 
     public class RestoreCommandTests
     {
@@ -47,7 +47,7 @@ namespace NuGet.Commands.FuncTest
             using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath);
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath).WithProjectJsonTestRestoreMetadata();
 
                 AddDependency(spec, "ENTITYFRAMEWORK", "6.1.3-BETA1");
                 var logger = new TestLogger();
@@ -1360,7 +1360,7 @@ namespace NuGet.Commands.FuncTest
             using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath).WithProjectJsonTestRestoreMetadata();
 
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
@@ -1396,7 +1396,7 @@ namespace NuGet.Commands.FuncTest
             using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath).WithProjectJsonTestRestoreMetadata();
 
                 AddDependency(spec, "owin", "1.0");
 

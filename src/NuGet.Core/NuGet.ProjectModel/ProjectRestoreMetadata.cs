@@ -156,7 +156,7 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(TargetFrameworks.OrderBy(dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase));
             foreach (var reference in OriginalTargetFrameworks.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
             {
-                hashCode.AddSequence(reference);
+                hashCode.AddSequence(reference.ToUpperInvariant());
             }
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);
