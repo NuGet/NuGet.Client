@@ -6,25 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.VisualStudio;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public static class EnvDTESolutionUtility
     {
-        /// <summary>
-        /// Get the list of all supported projects in the current solution. This method
-        /// recursively iterates through all projects.
-        /// </summary>
-        public static IEnumerable<EnvDTE.Project> GetAllEnvDTEProjects(EnvDTE.DTE dte)
-        {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    var result = await GetAllEnvDTEProjectsAsync(dte);
-                    return result;
-                });
-        }
-
         public static async Task<IEnumerable<EnvDTE.Project>> GetAllEnvDTEProjectsAsync(EnvDTE.DTE dte)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -50,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var envDTEProject = envDTEProjects.Pop();
 
-                if (EnvDTEProjectUtility.IsSupported(envDTEProject))
+                if (await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
                 {
                     resultantEnvDTEProjects.Add(envDTEProject);
                 }

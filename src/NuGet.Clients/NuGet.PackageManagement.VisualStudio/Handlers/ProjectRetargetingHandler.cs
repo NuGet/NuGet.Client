@@ -149,8 +149,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     var packageReferencesToBeReinstalled = ProjectRetargetingUtility.GetPackageReferencesMarkedForReinstallation(nuGetProject);
                     if (packageReferencesToBeReinstalled.Count > 0)
                     {
-                        Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                        var projectHierarchy = project.ToVsHierarchy();
+                        Debug.Assert(await ProjectRetargetingUtility.IsNuGetInUseAsync(project));
+                        var projectHierarchy = await project.ToVsHierarchyAsync();
                         ShowRetargetingErrorTask(packageReferencesToBeReinstalled.Select(p => p.PackageIdentity.Id), projectHierarchy, TaskErrorCategory.Warning, TaskPriority.Normal);
                     }
                 }
@@ -275,9 +275,9 @@ namespace NuGet.PackageManagement.VisualStudio
                                     if (packagesToBeReinstalled.Count > 0)
                                     {
                                         // By asserting that NuGet is in use, we are also asserting that NuGet.VisualStudio.dll is already loaded
-                                        // Hence, it is okay to call project.ToVsHierarchy()
-                                        Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                                        var projectHierarchy = project.ToVsHierarchy();
+                                        // Hence, it is okay to call project.ToVsHierarchyAsync()
+                                        Debug.Assert(await ProjectRetargetingUtility.IsNuGetInUseAsync(project));
+                                        var projectHierarchy = await project.ToVsHierarchyAsync();
                                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
                                     }
                                     // NuGet/Home#4833 Baseline

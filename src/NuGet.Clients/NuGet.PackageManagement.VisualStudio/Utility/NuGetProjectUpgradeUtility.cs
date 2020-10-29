@@ -75,12 +75,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 envDTEProject = vsmsBuildNuGetProjectSystem.VsProjectAdapter.Project;
             }
 
-            if (!EnvDTEProjectUtility.IsSupported(envDTEProject))
+            if (!await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
             {
                 return false;
             }
 
-            return IsProjectPackageReferenceCompatible(envDTEProject);
+            return await IsProjectPackageReferenceCompatibleAsync(envDTEProject);
         }
 
         private static async Task<NuGetProject> GetNuGetProject(Project envDTEProject)
@@ -92,9 +92,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return nuGetProject;
         }
 
-        private static bool IsProjectPackageReferenceCompatible(Project project)
+        private static async Task<bool> IsProjectPackageReferenceCompatibleAsync(Project project)
         {
-            var projectGuids = project.GetProjectTypeGuids();
+            var projectGuids = await project.GetProjectTypeGuidsAsync();
 
             if (projectGuids.Any(t => UnupgradeableProjectTypes.Contains(t)))
             {
@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Project is supported language, and not an unsupported type
             return UpgradeableProjectTypes.Contains(project.Kind) &&
-                   projectGuids.All(projectTypeGuid => !SupportedProjectTypes.IsUnsupported(projectTypeGuid));
+                   projectGuids.All(projectTypeGuid => !ProjectType.IsUnsupported(projectTypeGuid));
         }
 
         public static bool IsPackagesConfigSelected(IVsMonitorSelection vsMonitorSelection)

@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// MSBuildProjectExtensionsPath project property (e.g. c:\projFoo\obj)
         /// </summary>
-        string MSBuildProjectExtensionsPath { get; }
+        Task<string> GetMSBuildProjectExtensionsPathAsync();
 
         IProjectBuildProperties BuildProperties { get; }
 
@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio
 
         bool IsDeferred { get; }
 
-        bool IsSupported { get; }
+        Task<bool> IsSupportedAsync();
 
         /// <summary>
         /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
@@ -58,7 +58,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Full path to a parent directory containing project file.
         /// </summary>
-        string ProjectDirectory { get; }
+        Task<string> GetProjectDirectoryAsync();
 
         string ProjectName { get; }
 
