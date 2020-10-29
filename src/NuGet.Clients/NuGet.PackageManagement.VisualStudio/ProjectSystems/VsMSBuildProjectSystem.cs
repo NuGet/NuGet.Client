@@ -72,8 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        _projectFullPath = VsProjectAdapter.ProjectDirectory;
+                        _projectFullPath = await VsProjectAdapter.GetProjectDirectoryAsync();
                     });
                 }
 
@@ -465,7 +464,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var containsFile = await EnvDTEProjectUtility.ContainsFile(VsProjectAdapter.Project, path);
+                    var containsFile = await EnvDTEProjectUtility.ContainsFileAsync(VsProjectAdapter.Project, path);
                     return containsFile;
                 });
         }

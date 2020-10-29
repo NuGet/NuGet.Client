@@ -793,7 +793,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             var notFoundException =
                 new ItemNotFoundException(
-                    String.Format(
+                    string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.Cmdlet_ProjectNotFound, projectName));
 
@@ -831,7 +831,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes", Justification = "This exception is passed to PowerShell. We really don't care about the type of exception here.")]
         protected void WriteError(string message)
         {
-            if (!String.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(message))
             {
                 WriteError(new Exception(message));
             }
@@ -1043,7 +1043,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (path != null)
                 {
                     string command = "& " + PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
-                    LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
+                    LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
                 }

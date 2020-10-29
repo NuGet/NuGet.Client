@@ -256,9 +256,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Determines if NuGet is used in the project. Currently, it is determined by checking if packages.config is part of the project
         /// </summary>
         /// <param name="project">The project which is checked to see if NuGet is used in it</param>
-        public static bool IsNuGetInUse(Project project)
+        public static async Task<bool> IsNuGetInUseAsync(Project project)
         {
-            return EnvDTEProjectUtility.IsSupported(project) && File.Exists(project.GetPackagesConfigFullPath());
+            return await EnvDTEProjectUtility.IsSupportedAsync(project) && File.Exists(await project.GetPackagesConfigFullPathAsync());
         }
     }
 }
