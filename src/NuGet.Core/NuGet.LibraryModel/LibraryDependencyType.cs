@@ -80,7 +80,7 @@ namespace NuGet.LibraryModel
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
-            foreach(var val in _keywords)
+            foreach (var val in _keywords)
             {
                 combiner.AddObject(val);
             }

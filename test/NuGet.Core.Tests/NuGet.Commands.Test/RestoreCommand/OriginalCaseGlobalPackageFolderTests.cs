@@ -215,7 +215,8 @@ namespace NuGet.Commands.Test
 
         private static RestoreRequest GetRestoreRequest(string packagesDirectory, TestLogger logger, params string[] fallbackDirectories)
         {
-            using (var testDirectory = TestDirectory.Create()) {
+            using (var testDirectory = TestDirectory.Create())
+            {
                 return new TestRestoreRequest(
                     new PackageSpec() { FilePath = testDirectory.Path + "a.csproj" }.WithProjectJsonTestRestoreMetadata(),
                     Enumerable.Empty<PackageSource>(),

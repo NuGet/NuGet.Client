@@ -58,7 +58,7 @@ namespace NuGet.LibraryModel
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
-            hashCode.AddSequence(Name);
+            hashCode.AddSequence(Name.ToUpperInvariant());
             hashCode.AddObject(PrivateAssets);
             return hashCode.CombinedHash;
         }
