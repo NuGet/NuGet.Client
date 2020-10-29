@@ -366,9 +366,16 @@ namespace NuGet.PackageManagement.VisualStudio
             // first check with DTE, and if we find any supported project, then return immediately.
             var dte = await _asyncServiceProvider.GetDTEAsync();
 
-            var isSupported = EnvDTESolutionUtility.GetAllEnvDTEProjects(dte)
-                .Where(EnvDTEProjectUtility.IsSupported)
-                .Any();
+            var isSupported = false;
+
+            foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
+            {
+                if (await EnvDTEProjectUtility.IsSupportedAsync(project))
+                {
+                    isSupported = true;
+                    break;
+                }
+            }
 
             return isSupported;
         }
@@ -540,15 +547,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectRenamed(Project envDTEProject, string oldName)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 if (!string.IsNullOrEmpty(oldName) && await IsSolutionOpenAsync() && _solutionOpenedRaised)
                 {
                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
 
-                    if (EnvDTEProjectUtility.IsSupported(envDTEProject))
+                    if (await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
                     {
                         RemoveVsProjectAdapterFromCache(oldName);
 
@@ -565,11 +570,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         AfterNuGetProjectRenamed?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
 
                     }
-                    else if (EnvDTEProjectUtility.IsSolutionFolder(envDTEProject))
+                    else if (await EnvDTEProjectUtility.IsSolutionFolderAsync(envDTEProject))
                     {
                         // In the case where a solution directory was changed, project FullNames are unchanged.
                         // We only need to invalidate the projects under the current tree so as to sync the CustomUniqueNames.
-                        foreach (var item in EnvDTEProjectUtility.GetSupportedChildProjects(envDTEProject))
+                        foreach (var item in await EnvDTEProjectUtility.GetSupportedChildProjectsAsync(envDTEProject))
                         {
                             RemoveVsProjectAdapterFromCache(item.FullName);
 
@@ -596,12 +601,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectAdded(Project envDTEProject)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 if (await IsSolutionOpenAsync()
-                    && EnvDTEProjectUtility.IsSupported(envDTEProject)
+                    && await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject)
                     && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
                     && _solutionOpenedRaised)
                 {
@@ -659,9 +662,14 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         var dte = await _asyncServiceProvider.GetDTEAsync();
 
-                        var supportedProjects = EnvDTESolutionUtility
-                            .GetAllEnvDTEProjects(dte)
-                            .Where(EnvDTEProjectUtility.IsSupported);
+                        var supportedProjects = new List<Project>();
+                        foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
+                        {
+                            if (await EnvDTEProjectUtility.IsSupportedAsync(project))
+                            {
+                                supportedProjects.Add(project);
+                            }
+                        }
 
                         foreach (var project in supportedProjects)
                         {
@@ -697,7 +705,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task AddVsProjectAdapterToCacheAsync(IVsProjectAdapter vsProjectAdapter)
         {
-            if (!vsProjectAdapter.IsSupported)
+            if (!await vsProjectAdapter.IsSupportedAsync())
             {
                 return;
             }

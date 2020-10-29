@@ -53,8 +53,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Directory.CreateDirectory(testMSBuildProjectExtensionsPath);
                 var projectAdapter = Mock.Of<IVsProjectAdapter>();
                 Mock.Get(projectAdapter)
-                    .SetupGet(x => x.MSBuildProjectExtensionsPath)
-                    .Returns(testMSBuildProjectExtensionsPath);
+                    .Setup(x => x.GetMSBuildProjectExtensionsPathAsync())
+                    .Returns(Task.FromResult(testMSBuildProjectExtensionsPath));
 
                 var testProject = new LegacyPackageReferenceProject(
                     projectAdapter,
@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Verify
                 Mock.Get(projectAdapter)
-                    .VerifyGet(x => x.MSBuildProjectExtensionsPath, Times.AtLeastOnce);
+                    .Verify(x => x.GetMSBuildProjectExtensionsPathAsync(), Times.AtLeastOnce);
             }
         }
 
@@ -107,8 +107,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Directory.CreateDirectory(testMSBuildProjectExtensionsPath);
                 var projectAdapter = Mock.Of<IVsProjectAdapter>();
                 Mock.Get(projectAdapter)
-                    .SetupGet(x => x.MSBuildProjectExtensionsPath)
-                    .Returns(testMSBuildProjectExtensionsPath);
+                    .Setup(x => x.GetMSBuildProjectExtensionsPathAsync())
+                    .Returns(Task.FromResult(testMSBuildProjectExtensionsPath));
 
                 Mock.Get(projectAdapter)
                     .SetupGet(x => x.FullProjectPath)
@@ -130,7 +130,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Verify
                 Mock.Get(projectAdapter)
-                    .VerifyGet(x => x.MSBuildProjectExtensionsPath, Times.AtLeastOnce);
+                    .Verify(x => x.GetMSBuildProjectExtensionsPathAsync(), Times.AtLeastOnce);
             }
         }
 
@@ -165,8 +165,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Directory.CreateDirectory(testMSBuildProjectExtensionsPath);
                 var projectAdapter = Mock.Of<IVsProjectAdapter>();
                 Mock.Get(projectAdapter)
-                    .SetupGet(x => x.MSBuildProjectExtensionsPath)
-                    .Returns(testMSBuildProjectExtensionsPath);
+                    .Setup(x => x.GetMSBuildProjectExtensionsPathAsync())
+                    .Returns(Task.FromResult(testMSBuildProjectExtensionsPath));
 
                 Mock.Get(projectAdapter)
                     .SetupGet(x => x.FullProjectPath)
@@ -186,7 +186,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Verify
                 Mock.Get(projectAdapter)
-                    .VerifyGet(x => x.MSBuildProjectExtensionsPath, Times.AtLeastOnce);
+                    .Verify(x => x.GetMSBuildProjectExtensionsPathAsync(), Times.AtLeastOnce);
             }
         }
 
@@ -1203,8 +1203,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var testMSBuildProjectExtensionsPath = Path.Combine(fullPath, "obj");
             Directory.CreateDirectory(testMSBuildProjectExtensionsPath);
             projectAdapter
-                .Setup(x => x.MSBuildProjectExtensionsPath)
-                .Returns(testMSBuildProjectExtensionsPath);
+                .Setup(x => x.GetMSBuildProjectExtensionsPathAsync())
+                .Returns(Task.FromResult(testMSBuildProjectExtensionsPath));
 
             return projectAdapter.Object;
         }
