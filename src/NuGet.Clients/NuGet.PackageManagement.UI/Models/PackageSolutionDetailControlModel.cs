@@ -32,6 +32,7 @@ namespace NuGet.PackageManagement.UI
         // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is being updated by code, while false means the state is changed by user clicking the checkbox.
         private bool _updatingSelectCheckBoxState;
         private bool? _selectCheckBoxState;
+        private bool _isInBatchUpdate;
         private List<PackageInstallationInfo> _projects; // List of projects in the solution
 
         private PackageSolutionDetailControlModel(
@@ -388,10 +389,20 @@ namespace NuGet.PackageManagement.UI
 
         private void Project_SelectedChanged(object sender, EventArgs e)
         {
+            if (_isInBatchUpdate)
+            {
+                return;
+            }
+
+            UpdateSelectAllAfterProjectSelectionChanged();
+        }
+
+        private void UpdateSelectAllAfterProjectSelectionChanged()
+        {
             UpdateSelectCheckBoxState();
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAndUpdateInstallUninstallAsync())
-                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(Project_SelectedChanged));
+                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(UpdateSelectAllAfterProjectSelectionChanged));
         }
 
         private async Task CreateVersionsAndUpdateInstallUninstallAsync()
@@ -465,11 +476,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            foreach (var project in Projects)
-            {
-                project.IsSelected = select;
-            }
-            await CreateVersionsAndUpdateInstallUninstallAsync();
+            await BatchUpdateIsSelectedAsync(select);
         }
 
         [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD100", Justification = "NuGet/Home#4833 Baseline")]
@@ -505,10 +512,7 @@ namespace NuGet.PackageManagement.UI
             if (_filter == ItemFilter.Consolidate ||
                 _filter == ItemFilter.UpdatesAvailable)
             {
-                foreach (var project in _projects)
-                {
-                    project.IsSelected = project.InstalledVersion != null;
-                }
+                BatchUpdateIsSelectedBasedOnInstalledVersion();
             }
         }
 
@@ -521,10 +525,7 @@ namespace NuGet.PackageManagement.UI
             if ((previousFilter == ItemFilter.Consolidate || previousFilter == ItemFilter.UpdatesAvailable) &&
                 (_filter == ItemFilter.All || _filter == ItemFilter.Installed))
             {
-                foreach (var project in _projects)
-                {
-                    project.IsSelected = false;
-                }
+                BatchUnselectAllProjects();
             }
         }
 
@@ -562,6 +563,63 @@ namespace NuGet.PackageManagement.UI
             }
 
             return selectedProjects;
+        }
+
+        private void BatchUnselectAllProjects()
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = false;
+                }
+
+                UpdateSelectCheckBoxState();
+                UpdateSelectAllAfterProjectSelectionChanged();
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
+        }
+
+        private void BatchUpdateIsSelectedBasedOnInstalledVersion()
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = project.InstalledVersion != null;
+                }
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
+        }
+
+        private async ValueTask BatchUpdateIsSelectedAsync(bool isSelected)
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = isSelected;
+                }
+
+                UpdateSelectCheckBoxState();
+                await CreateVersionsAndUpdateInstallUninstallAsync();
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
         }
     }
 }
