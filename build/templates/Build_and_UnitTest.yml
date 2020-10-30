@@ -87,14 +87,6 @@ steps:
       dotnet tool restore
   condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
-- task: PowerShell@1
-  displayName: "Check source file format"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      dotnet format --check --exclude submodules --verbosity diagnostic
-  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
-
 - task: MSBuild@1
   displayName: "Restore for VS2019"
   inputs:
@@ -185,6 +177,14 @@ steps:
     mergeTestResults: "true"
     publishRunAttachments: "false"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+
+- task: PowerShell@1
+  displayName: "Check source file format"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      dotnet format --check --exclude submodules --verbosity diagnostic
+  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
