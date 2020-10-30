@@ -218,7 +218,7 @@ namespace NuGet.Commands.Test
             using (var testDirectory = TestDirectory.Create())
             {
                 return new TestRestoreRequest(
-                    new PackageSpec() { FilePath = testDirectory.Path + "a.csproj" }.WithProjectJsonTestRestoreMetadata(),
+                    new PackageSpec() { FilePath = testDirectory.Path + "a.csproj" }.EnsureProjectJsonRestoreMetadata(),
                     Enumerable.Empty<PackageSource>(),
                     packagesDirectory,
                     fallbackDirectories,

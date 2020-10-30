@@ -162,7 +162,7 @@ namespace NuGet.Commands.Test
             return updated;
         }
 
-        public static PackageSpec WithProjectJsonTestRestoreMetadata(this PackageSpec spec)
+        private static PackageSpec WithProjectJsonTestRestoreMetadata(this PackageSpec spec)
         {
             var updated = spec.Clone();
             var metadata = new ProjectRestoreMetadata();
