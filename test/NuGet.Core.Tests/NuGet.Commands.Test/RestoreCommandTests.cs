@@ -2041,7 +2041,7 @@ namespace NuGet.Commands.Test
             packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
             packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             packageSpec.RestoreMetadata.OutputPath = outputPath;
-            packageSpec.RestoreMetadata.OutputPath = Path.Combine(outputPath, "project.nuget.cache");
+            packageSpec.RestoreMetadata.CacheFilePath = Path.Combine(outputPath, "project.nuget.cache");
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddProject(packageSpec);
 
