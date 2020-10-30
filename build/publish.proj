@@ -51,22 +51,23 @@
       <ManifestBuildData Include="AzureDevOpsBuildNumber=$(BUILD_BUILDNUMBER)" />
       <ManifestBuildData Include="AzureDevOpsRepository=$(BUILD_REPOSITORY_URI)" />
       <ManifestBuildData Include="AzureDevOpsBranch=$(BUILD_SOURCEBRANCH)" />
-      <ManifestBuildData Include="PublishingVersion=2"/>
     </ItemGroup>
 
     <PushToAzureDevOpsArtifacts
       ItemsToPush="@(ItemsToPush)"
       ManifestBuildData="@(ManifestBuildData)"
-      ManifestRepoUri="$(BUILD_REPOSITORY_URI)"
+      ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
       ManifestBranch="$(BUILD_SOURCEBRANCH)"
       ManifestBuildId="$(BUILD_BUILDNUMBER)"
       ManifestCommit="$(BUILD_SOURCEVERSION)"
-      AssetManifestPath="$(AssetManifestPath)" />
+      AssetManifestPath="$(AssetManifestPath)"
+      PublishingVersion="3" />
 
     <PushMetadataToBuildAssetRegistry
       BuildAssetRegistryToken="$(MaestroAccessToken)"
       MaestroApiEndpoint="$(MaestroApiEndpoint)"
-      ManifestsPath="$(ArtifactsLogDir)AssetManifest\" />
+      ManifestsPath="$(ArtifactsLogDir)AssetManifest\"
+      AssetVersion="$(Version)" />
   </Target>
 
 </Project>
