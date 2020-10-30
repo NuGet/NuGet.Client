@@ -2,11 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -22,7 +18,6 @@ namespace NuGet.Build.Tasks.Console.Test
             using (var testDir = TestDirectory.CreateInTemp())
             {
                 // Arrange
-
                 var startupDirectory = Path.Combine(testDir, "startup");
                 var projectDirectory = Path.Combine(testDir, "project");
                 var relativePath = "relativeSource";
@@ -33,7 +28,7 @@ namespace NuGet.Build.Tasks.Console.Test
                      projectDirectory: projectDirectory,
                      sources: new string[] { relativePath },
                      sourcesOverride: null,
-                     additionalProjectSources: new string[] { },
+                     additionalProjectSources: Array.Empty<string>(),
                      settings: NullSettings.Instance
                      );
 
@@ -48,7 +43,6 @@ namespace NuGet.Build.Tasks.Console.Test
             using (var testDir = TestDirectory.CreateInTemp())
             {
                 // Arrange
-
                 var startupDirectory = Path.Combine(testDir, "startup");
                 var projectDirectory = Path.Combine(testDir, "project");
                 var relativePath = "relativeSource";
@@ -59,7 +53,7 @@ namespace NuGet.Build.Tasks.Console.Test
                      projectDirectory: projectDirectory,
                      sources: new string[] { relativePath },
                      sourcesOverride: new string[] { relativePath },
-                     additionalProjectSources: new string[] { },
+                     additionalProjectSources: Array.Empty<string>(),
                      settings: NullSettings.Instance
                      );
 

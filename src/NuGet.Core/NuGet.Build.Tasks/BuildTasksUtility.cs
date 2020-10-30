@@ -690,8 +690,7 @@ namespace NuGet.Build.Tasks
             // Append additional fallback folders after removing excluded folders
             var filteredAdditionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
                     values: additionalProjectFallbackFolders,
-                    excludeValues: additionalProjectFallbackFoldersExcludes)
-                .ToArray();
+                    excludeValues: additionalProjectFallbackFoldersExcludes);
 
             return AppendItems(projectDirectory, currentFallbackFolders, filteredAdditionalProjectFallbackFolders);
         }
@@ -711,8 +710,7 @@ namespace NuGet.Build.Tasks
             var filteredAdditionalProjectSources = MSBuildRestoreUtility.AggregateSources(
                     values: additionalProjectSources,
                     excludeValues: Enumerable.Empty<string>())
-                .Select(MSBuildRestoreUtility.FixSourcePath)
-                .ToArray();
+                .Select(MSBuildRestoreUtility.FixSourcePath);
 
             return AppendItems(projectDirectory, currentSources, filteredAdditionalProjectSources);
         }
@@ -731,8 +729,7 @@ namespace NuGet.Build.Tasks
             var filteredAdditionalProjectSources = MSBuildRestoreUtility.AggregateSources(
                     values: additionalProjectSources,
                     excludeValues: Enumerable.Empty<string>())
-                .Select(MSBuildRestoreUtility.FixSourcePath)
-                .ToArray();
+                .Select(MSBuildRestoreUtility.FixSourcePath);
 
             return AppendItems(projectDirectory, currentSources, filteredAdditionalProjectSources);
         }
@@ -760,15 +757,14 @@ namespace NuGet.Build.Tasks
             // Append additional fallback folders after removing excluded folders
             var filteredAdditionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
                     values: additionalProjectFallbackFolders,
-                    excludeValues: additionalProjectFallbackFoldersExcludes)
-                .ToArray();
+                    excludeValues: additionalProjectFallbackFoldersExcludes);
 
             return AppendItems(projectDirectory, currentFallbackFolders, filteredAdditionalProjectFallbackFolders);
         }
 
-        private static string[] AppendItems(string projectDirectory, string[] current, string[] additional)
+        private static string[] AppendItems(string projectDirectory, string[] current, IEnumerable<string> additional)
         {
-            if (additional == null || additional.Length == 0)
+            if (additional == null || !additional.Any())
             {
                 // noop
                 return current;
