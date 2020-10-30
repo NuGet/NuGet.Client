@@ -417,41 +417,42 @@ namespace NuGet.CommandLine.FuncTest.Commands
         /// <summary>
         /// When pushing a nupkg by filename to a Symbol Server with no matching snupkg, do not show a File Not Found error.
         /// </summary>
-        [Fact]
-        public void PushCommand_Server_Nupkg_ByFilename_SnupkgDoesNotExist_NoFileNotFoundError()
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        public void PushCommand_Server_Nupkg_ByFilename_SnupkgDoesNotExist_NoFileNotFoundError(int numberOfPaths)
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (var testRoot = TestDirectory.Create())
             {
                 var nuget = Util.GetNuGetExePath();
 
                 string packageId = "packageWithoutSnupkg";
                 string version = "1.1.0";
 
-                //Create Nupkg in test directory.
-                string nupkgFullPath = Util.CreateTestPackage(packageId, version, packageDirectory);
+                //Create Nupkg files in test directory. Each file in separate folder.
+                var nupkgFullPaths = Enumerable.Range(1, numberOfPaths)
+                    .Select(x => Util.CreateTestPackage(packageId, version, Path.Combine(testRoot, x.ToString())))
+                    .ToList();
 
-                string nupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
-                string snupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+                string pushArgument = string.Join(" ", nupkgFullPaths);
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(testRoot, out string sourceName))
                 {
                     SetupMockServerAlwaysCreate(server);
 
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
-                        $"push {nupkgFullPath} -Source {sourceName} -Timeout 110",
+                        testRoot,
+                        $"push {pushArgument} -Source {sourceName} -Timeout 110",
                         waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
                 // Assert
-
                 Assert.True(result.Success, "Expected to successfully push a nupkg without a snupkg.");
                 Assert.Contains(MESSAGE_PACKAGE_PUSHED, result.Output);
                 Assert.DoesNotContain(WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST, result.Errors);
@@ -474,12 +475,17 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 string packageId = "packageWithoutSnupkg";
                 string version = "1.1.0";
 
-                //Create Nupkg files in test directory. Each file in separate folder
-                var nupkgFullPaths = Enumerable.Range(1, numberOfPaths)
-                    .Select(x => Util.CreateTestPackage(packageId, version, Path.Combine(testRoot, x.ToString())))
+                var nupkgDirectories = Enumerable.Range(1, numberOfPaths)
+                    .Select(x => Path.Combine(testRoot, x.ToString()))
                     .ToList();
 
-                string pushArgument = string.Join(" ", nupkgFullPaths);
+                //Create Nupkg files in test directory. Each file in separate folder.
+                foreach (var nupkgDirectory in nupkgDirectories)
+                {
+                    Util.CreateTestPackage(packageId, version, nupkgDirectory);
+                }
+
+                string pushArgument = string.Join(" ", nupkgDirectories.Select(x => Path.Combine(x, "*.nupkg")));
                 CommandRunnerResult result = null;
 
                 using (var server = CreateAndStartMockV3Server(testRoot, out string sourceName))
@@ -496,9 +502,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 }
 
                 // Assert
-
-                string expectedFileNotFoundErrorMessage = string.Format(MESSAGE_FILE_DOES_NOT_EXIST, pushArgument);
-
                 Assert.True(result.Success, "Snupkg File did not exist but should not fail a nupkg push.");
                 Assert.Contains(MESSAGE_PACKAGE_PUSHED, result.Output);
                 Assert.DoesNotContain(WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST, result.Errors);
