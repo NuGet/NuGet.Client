@@ -137,7 +137,9 @@
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt" />
+    <None Include="Scripts\about_NuGet.Cmdlets.help.txt">
+      <CopyToOutputDirectory Condition="$(IsVsixBuild) != 'true'">PreserveNewest</CopyToOutputDirectory>
+    </None>
     <!-- We copy this xml file to output directory so CI can pick it for localization from artifacts directory
     However, we condition it to only be copied when building the project itself and not the vsix to prevent VSIX
     from including this file -->
@@ -179,12 +181,35 @@
       </PowerShellCmdletsHelpFiles>
     </ItemGroup>
   </Target>
+
+  <!-- This is called at PackVsix time to get localized files -->
   <Target Name="GetLocalizedPowerShellCmdletHelpFile">
     <ItemGroup>
+      <!-- VS localized languages defined at MicroBuild.Plugins.Localization.targets, which is installed as a plugin in VSTS MicroBuild -->
+      <VSLanguage Include="CHT" Locale="zh-Hant" />
+      <VSLanguage Include="CHS" Locale="zh-Hans" />
+      <VSLanguage Include="CSY" Locale="cs" />
+      <VSLanguage Include="DEU" Locale="de" />
+      <VSLanguage Include="ESN" Locale="es" />
+      <VSLanguage Include="FRA" Locale="fr" />
+      <VSLanguage Include="ITA" Locale="it" />
+      <VSLanguage Include="JPN" Locale="ja" />
+      <VSLanguage Include="KOR" Locale="ko" />
+      <VSLanguage Include="PLK" Locale="pl" />
+      <VSLanguage Include="PTB" Locale="pt-BR" />
+      <VSLanguage Include="RUS" Locale="ru" />
+      <VSLanguage Include="TRK" Locale="tr" />
+
       <_AllLocalizedXmlFiles Include="$(OutputPath)Scripts\**\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
-      <LocalizedFilesForVsix Include="@(_AllLocalizedXmlFiles)">
+      <_XmlLocFiles Include="@(_AllLocalizedXmlFiles)">
         <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
-      </LocalizedFilesForVsix>
+      </_XmlLocFiles>
+
+      <_TxtLocFiles Include="$(LocalizationRootDirectory)\%(VSLanguage.Identity)\15\about_NuGet.Cmdlets.help.txt">
+        <TargetPath>Modules\NuGet\%(VSLanguage.Locale)\about_NuGet.Cmdlets.help.txt</TargetPath>
+      </_TxtLocFiles>
+
+      <LocalizedFilesForVsix Include="@(_XmlLocFiles);@(_TxtLocFiles)" />
     </ItemGroup>
   </Target>
 </Project>
