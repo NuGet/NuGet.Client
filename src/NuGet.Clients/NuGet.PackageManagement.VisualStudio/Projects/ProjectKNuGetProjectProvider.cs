@@ -28,11 +28,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (project.IsDeferred)
-            {
-                return null;
-            }
-
             var projectK = EnvDTEProjectUtility.GetProjectKPackageManager(project.Project);
             if (projectK == null)
             {

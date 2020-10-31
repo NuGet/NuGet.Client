@@ -99,14 +99,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<string> GetProjectDirectoryAsync()
         {
-            if (!IsDeferred)
-            {
-                return await Project.GetFullPathAsync();
-            }
-            else
-            {
-                return Path.GetDirectoryName(FullProjectPath);
-            }
+            return await Project.GetFullPathAsync();
         }
 
         public string FullProjectPath { get; private set; }
@@ -121,12 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<bool> IsSupportedAsync()
         {
-            if (!IsDeferred)
-            {
-                return await EnvDTEProjectUtility.IsSupportedAsync(Project);
-            }
-
-            return await VsHierarchyUtility.IsSupportedAsync(VsHierarchy, _projectTypeGuid);
+            return await EnvDTEProjectUtility.IsSupportedAsync(Project);
         }
 
         public string PackageTargetFallback
