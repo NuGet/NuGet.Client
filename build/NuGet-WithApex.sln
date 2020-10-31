@@ -52,7 +52,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{96255044
 		..\test\EndToEnd\tests\OpenPackagePageTest.ps1 = ..\test\EndToEnd\tests\OpenPackagePageTest.ps1
 		..\test\EndToEnd\tests\PackageRestoreTest.ps1 = ..\test\EndToEnd\tests\PackageRestoreTest.ps1
 		..\test\EndToEnd\tests\PackTest.ps1 = ..\test\EndToEnd\tests\PackTest.ps1
-		..\test\EndToEnd\tests\ProjectKTest.ps1 = ..\test\EndToEnd\tests\ProjectKTest.ps1
 		..\test\EndToEnd\tests\ProjectRetargeting.ps1 = ..\test\EndToEnd\tests\ProjectRetargeting.ps1
 		..\test\EndToEnd\tests\ServicesTest.ps1 = ..\test\EndToEnd\tests\ServicesTest.ps1
 		..\test\EndToEnd\tests\Settings.ps1 = ..\test\EndToEnd\tests\Settings.ps1

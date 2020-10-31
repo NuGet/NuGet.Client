@@ -616,8 +616,6 @@ NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject.IsUAPFramework(NuGet.Fr
 NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject.JsonConfigPath.get -> string
 NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject.ProjectJsonNuGetProject(string jsonConfig, string msBuildProjectPath) -> void
 NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject.RemoveDependencyAsync(string packageId, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
-NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase
-NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase.ProjectKNuGetProjectBase() -> void
 NuGet.ProjectManagement.SourceControlManager
 NuGet.ProjectManagement.SourceControlManager.IsPackagesFolderBoundToSourceControl() -> bool
 NuGet.ProjectManagement.SourceControlManager.Settings.get -> NuGet.Configuration.ISettings

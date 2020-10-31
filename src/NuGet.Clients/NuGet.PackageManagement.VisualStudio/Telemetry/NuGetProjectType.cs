@@ -28,10 +28,7 @@ namespace NuGet.PackageManagement.Telemetry
         /// </summary>
         UwpProjectJson = 3,
 
-        /// <summary>
-        /// Corresponds to <see cref="ProjectKNuGetProjectBase"/>.
-        /// </summary>
-        XProjProjectJson = 4,
+        // TODO NK - More cleanup?
 
         /// <summary>
         /// Corresponds to <see cref="MSBuildShellOutNuGetProject"/>.

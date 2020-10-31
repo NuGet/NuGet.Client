@@ -124,7 +124,6 @@
     <Compile Include="Projects\INuGetProjectProvider.cs" />
     <Compile Include="Projects\MSBuildNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectJsonProjectProvider.cs" />
-    <Compile Include="Projects\ProjectKNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectSystemCache.cs" />
     <Compile Include="Projects\CpsPackageReferenceProjectProvider.cs" />
     <Compile Include="Projects\ProjectProviderContext.cs" />
@@ -147,7 +146,6 @@
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\NativeProjectSystem.cs" />
-    <Compile Include="Projects\ProjectKNuGetProject.cs" />
     <Compile Include="ProjectSystems\WebProjectSystem.cs" />
     <Compile Include="ProjectSystems\WebSiteProjectSystem.cs" />
     <Compile Include="ProjectSystems\WindowsStoreProjectSystem.cs" />

@@ -53,10 +53,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 projectKind = NuGetProjectKind.PackagesConfig;
             }
-            else if (nugetProject is ProjectKNuGetProjectBase)
-            {
-                projectKind = NuGetProjectKind.ProjectK;
-            }
 
             return projectKind;
         }
