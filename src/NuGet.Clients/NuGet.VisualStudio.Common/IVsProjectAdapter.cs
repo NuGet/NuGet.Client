@@ -34,6 +34,7 @@ namespace NuGet.VisualStudio
 
         string FullProjectPath { get; }
 
+        //TODO - Remove
         bool IsDeferred { get; }
 
         Task<bool> IsSupportedAsync();

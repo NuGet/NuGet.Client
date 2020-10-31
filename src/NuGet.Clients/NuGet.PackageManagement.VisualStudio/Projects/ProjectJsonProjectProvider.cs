@@ -110,19 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<INuGetProjectServices> CreateProjectServicesAsync(IVsProjectAdapter vsProjectAdapter)
         {
             var componentModel = await _componentModel.GetValueAsync();
-
-            if (vsProjectAdapter.IsDeferred)
-            {
-                return new DeferredProjectServicesProxy(
-                    vsProjectAdapter,
-                    new DeferredProjectCapabilities { SupportsPackageReferences = false },
-                    () => new VsCoreProjectSystemServices(vsProjectAdapter, componentModel),
-                    componentModel);
-            }
-            else
-            {
-                return new VsCoreProjectSystemServices(vsProjectAdapter, componentModel);
-            }
+            return new VsCoreProjectSystemServices(vsProjectAdapter, componentModel);
         }
     }
 }

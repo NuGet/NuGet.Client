@@ -89,7 +89,6 @@
     <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
     <Compile Include="PackageFeeds\LoadingStatusExtensionMethods.cs" />
-    <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
     <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
     <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
@@ -118,7 +117,6 @@
     <Compile Include="PackageFeeds\SourceRepositoryExtensions.cs" />
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
     <Compile Include="Services\BrokeredServicesUtilities.cs" />
-    <Compile Include="Services\DeferredProjectWorkspaceService.cs" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
@@ -209,7 +207,6 @@
     <Compile Include="Utility\MicrosoftBuildEvaluationProjectUtility.cs" />
     <Compile Include="IDE\VSSolutionManager.cs" />
     <Compile Include="Services\DefaultProjectThreadingService.cs" />
-    <Compile Include="ProjectServices\DeferredProjectServicesProxy.cs" />
     <Compile Include="Projects\IVsProjectAdapterProvider.cs" />
     <Compile Include="Services\IVsProjectThreadingService.cs" />
     <Compile Include="ProjectServices\VsProjectBuildProperties.cs" />
@@ -217,8 +214,6 @@
     <Compile Include="Projects\VsProjectAdapter.cs" />
     <Compile Include="Projects\VsProjectAdapterProvider.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemServices.cs" />
-    <Compile Include="ProjectServices\WorkspaceProjectBuildProperties.cs" />
-    <Compile Include="ProjectServices\WorkspaceProjectServices.cs" />
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>

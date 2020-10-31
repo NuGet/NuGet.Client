@@ -27,7 +27,6 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
 
-        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
@@ -35,23 +34,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         [ImportingConstructor]
         public LegacyPackageReferenceProjectProvider(
-            Lazy<IDeferredProjectWorkspaceService> workspaceService,
             IVsProjectThreadingService threadingService)
             : this(AsyncServiceProvider.GlobalProvider,
-                   workspaceService,
                    threadingService)
         { }
 
         public LegacyPackageReferenceProjectProvider(
             IAsyncServiceProvider vsServiceProvider,
-            Lazy<IDeferredProjectWorkspaceService> workspaceService,
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsServiceProvider);
-            Assumes.Present(workspaceService);
             Assumes.Present(threadingService);
 
-            _workspaceService = workspaceService;
             _threadingService = threadingService;
 
             _componentModel = new AsyncLazy<IComponentModel>(
@@ -99,61 +93,24 @@ namespace NuGet.PackageManagement.VisualStudio
             var restoreProjectStyle = await vsProjectAdapter.BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.RestoreProjectStyle);
 
-            if (vsProjectAdapter.IsDeferred)
-            {
-                if (!forceCreate &&
-                    !PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!await ProjectHasPackageReferencesAsync(vsProjectAdapter))
-                    {
-                        return null;
-                    }
-                }
+            var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
 
-                return new DeferredProjectServicesProxy(
-                    vsProjectAdapter,
-                    new DeferredProjectCapabilities { SupportsPackageReferences = true },
-                    () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel),
-                    componentModel);
+            // A legacy CSProj must cast to VSProject4 to manipulate package references
+            if (asVSProject4 == null)
+            {
+                return null;
             }
-            else
+
+            // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
+            // project has atleast one package dependency defined as PackageReference
+            if (forceCreate
+                || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
+                || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
             {
-                var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
-
-                // A legacy CSProj must cast to VSProject4 to manipulate package references
-                if (asVSProject4 == null)
-                {
-                    return null;
-                }
-
-                // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
-                // project has atleast one package dependency defined as PackageReference
-                if (forceCreate
-                    || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
-                    || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
-                {
-                    return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel);
-                }
+                return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel);
             }
 
             return null;
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-        private async Task<bool> ProjectHasPackageReferencesAsync(IVsProjectAdapter vsProjectAdapter)
-        {
-            var buildProjectDataService = await _workspaceService.Value.GetMSBuildProjectDataServiceAsync(
-                vsProjectAdapter.FullProjectPath);
-            Assumes.Present(buildProjectDataService);
-
-            var referenceItems = await buildProjectDataService.GetProjectItems(
-                ProjectItems.PackageReference, CancellationToken.None);
-            if (referenceItems == null || referenceItems.Count == 0)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private INuGetProjectServices CreateCoreProjectSystemServices(
