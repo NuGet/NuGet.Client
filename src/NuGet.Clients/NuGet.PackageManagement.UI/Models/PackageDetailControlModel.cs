@@ -91,8 +91,6 @@ namespace NuGet.PackageManagement.UI
         public override void CleanUp()
         {
             _solutionManager.ProjectUpdated -= ProjectChanged;
-
-            Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
         }
 
         protected override Task CreateVersionsAsync(CancellationToken cancellationToken)

@@ -22,25 +22,25 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _packageSearchMetadata = packageSearchMetadata;
             _packageMetadataProvider = packageMetadataProvider;
-            VersionInfoContextInfo = GetVersionInfoContextInfoAsync();
+            AllVersionsContextInfo = GetVersionInfoContextInfoAsync();
             PackageDeprecrationMetadataContextInfo = GetPackageDeprecationMetadataContextInfoAsync();
             DetailedPackageSearchMetadataContextInfo = GetDetailedPackageSearchMetadataContextInfoAsync();
         }
 
-        public Task<IReadOnlyCollection<VersionInfoContextInfo>> VersionInfoContextInfo { get; }
+        public Task<IReadOnlyCollection<VersionInfoContextInfo>> AllVersionsContextInfo { get; }
         public Task<PackageDeprecationMetadataContextInfo?> PackageDeprecrationMetadataContextInfo { get; }
         public Task<PackageSearchMetadataContextInfo> DetailedPackageSearchMetadataContextInfo { get; }
 
-        public static string GetCacheId(string packageId, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
+        public static string GetCacheId(string packageId, bool includePrerelease, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
         {
             string packageSourcesString = string.Join(" ", packageSources.Select(ps => ps.Name));
-            return string.Concat(packageId, " - ", packageSourcesString);
+            return string.Concat(packageId, ":", includePrerelease, " - ", packageSourcesString);
         }
 
         private async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoContextInfoAsync()
         {
             IEnumerable<VersionInfo> versions = await _packageSearchMetadata.GetVersionsAsync();
-            IEnumerable<Task<VersionInfoContextInfo>> versionContextInfoTasks = versions.Select((System.Func<VersionInfo, Task<VersionInfoContextInfo>>)(async v => await NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo.CreateAsync(v)));
+            IEnumerable<Task<VersionInfoContextInfo>> versionContextInfoTasks = versions.Select(async v => await VersionInfoContextInfo.CreateAsync(v));
             return await Task.WhenAll(versionContextInfoTasks);
         }
 

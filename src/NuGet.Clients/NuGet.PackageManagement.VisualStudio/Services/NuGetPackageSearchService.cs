@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Caching;
@@ -32,7 +33,13 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly ISharedServiceState _sharedServiceState;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<SourceRepository> _packagesFolderLocalRepositoryLazy;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IReadOnlyList<SourceRepository>> _globalPackageFolderRepositoriesLazy;
-        private readonly ObjectCache _packageSearchMetadataCache = MemoryCache.Default;
+        private readonly static MemoryCache PackageSearchMetadataMemoryCache = new MemoryCache("PackageSearchMetadata",
+             new NameValueCollection
+             {
+                {"cacheMemoryLimitMegabytes", "4"},
+                {"physicalMemoryLimitPercentage", "0"},
+                {"pollingInterval", "00:02:00"}
+             });
 
         public NuGetPackageSearchService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac, ISharedServiceState state)
         {
@@ -79,8 +86,43 @@ namespace NuGet.PackageManagement.VisualStudio
                 globalPackageFolderRepositories,
                 new VisualStudioActivityLogger());
 
-            var searchObject = new SearchObject(packageFeeds.mainFeed, packageFeeds.recommenderFeed, metadataProvider, packageSources);
+            var searchObject = new SearchObject(packageFeeds.mainFeed, packageFeeds.recommenderFeed, metadataProvider, packageSources, PackageSearchMetadataMemoryCache);
             return await searchObject.GetAllPackagesAsync(searchFilter, cancellationToken);
+        }
+
+        public async ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> GetPackageMetadataAsync(
+            PackageIdentity identity,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrerelease,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(identity);
+            Assumes.NotNullOrEmpty(packageSources);
+
+            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
+            if (PackageSearchMetadataMemoryCache.Get(cacheId) is PackageSearchMetadataCacheObject backgroundDataCache)
+            {
+                var packageSearchData = await backgroundDataCache.DetailedPackageSearchMetadataContextInfo;
+                var deprecatedData = await backgroundDataCache.PackageDeprecrationMetadataContextInfo;
+                return (packageSearchData, deprecatedData);
+            }
+
+            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
+            IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(
+                identity,
+                includePrerelease,
+                cancellationToken);
+
+            PackageSearchMetadataContextInfo packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageMetadata);
+            PackageDeprecationMetadataContextInfo? deprecationMetadataContextInfo = null;
+
+            PackageDeprecationMetadata? deprecationMetadata = await packageMetadata.GetDeprecationMetadataAsync();
+            if (deprecationMetadata != null)
+            {
+                deprecationMetadataContextInfo = PackageDeprecationMetadataContextInfo.Create(deprecationMetadata);
+            }
+
+            return (packageSearchMetadataContextInfo, deprecationMetadataContextInfo);
         }
 
         public async ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetPackageMetadataListAsync(
@@ -112,8 +154,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
 
-            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, packageSources);
-            PackageSearchMetadataCacheObject? backgroundDataCache = _packageSearchMetadataCache.Get(cacheId) as PackageSearchMetadataCacheObject;
+            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
+            PackageSearchMetadataCacheObject? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheObject;
             if (backgroundDataCache != null)
             {
                 return await backgroundDataCache.DetailedPackageSearchMetadataContextInfo;
@@ -133,11 +175,11 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
 
-            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, packageSources);
-            PackageSearchMetadataCacheObject? backgroundDataCache = _packageSearchMetadataCache.Get(cacheId) as PackageSearchMetadataCacheObject;
+            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
+            PackageSearchMetadataCacheObject? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheObject;
             if (backgroundDataCache != null)
             {
-                return await backgroundDataCache.VersionInfoContextInfo;
+                return await backgroundDataCache.AllVersionsContextInfo;
             }
 
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
@@ -156,8 +198,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
 
-            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, packageSources);
-            PackageSearchMetadataCacheObject? backgroundDataCache = _packageSearchMetadataCache.Get(cacheId) as PackageSearchMetadataCacheObject;
+            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
+            PackageSearchMetadataCacheObject? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheObject;
             if (backgroundDataCache != null)
             {
                 return await backgroundDataCache.PackageDeprecrationMetadataContextInfo;
@@ -215,7 +257,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 globalPackageFolderRepositories,
                 new VisualStudioActivityLogger());
 
-            _searchObject = new SearchObject(mainFeed, recommenderFeed, metadataProvider, packageSources);
+            _searchObject = new SearchObject(mainFeed, recommenderFeed, metadataProvider, packageSources, PackageSearchMetadataMemoryCache);
             return await _searchObject.SearchAsync(searchText, searchFilter, useRecommender, cancellationToken);
         }
 
@@ -243,7 +285,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 globalPackageFolderRepositories,
                 new VisualStudioActivityLogger());
 
-            var searchObject = new SearchObject(mainFeed, recommenderFeed, metadataProvider, packageSources);
+            var searchObject = new SearchObject(mainFeed, recommenderFeed, metadataProvider, packageSources, searchCache: null);
             return await searchObject.GetTotalCountAsync(maxCount, searchFilter, cancellationToken);
         }
 
@@ -260,6 +302,13 @@ namespace NuGet.PackageManagement.VisualStudio
             SourceRepository localRepo = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             IEnumerable<SourceRepository> globalRepo = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
             return new MultiSourcePackageMetadataProvider(sourceRepositories, localRepo, globalRepo, new VisualStudioActivityLogger());
+        }
+
+        private async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetAllInstalledPackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
+        {
+            IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = projectContextInfos.Select(project => project.GetInstalledPackagesAsync(cancellationToken).AsTask());
+            IReadOnlyCollection<IPackageReferenceContextInfo>[] packageReferences = await Task.WhenAll(tasks);
+            return packageReferences.SelectMany(e => e).ToList();
         }
 
         private async Task<(IPackageFeed? mainFeed, IPackageFeed? recommenderFeed)> CreatePackageFeedAsync(
@@ -279,63 +328,55 @@ namespace NuGet.PackageManagement.VisualStudio
                 return packageFeeds;
             }
 
-            using (INuGetProjectManagerService? projectManagerService = await _serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
-                NuGetServices.ProjectManagerService,
-                _options,
-                cancellationToken))
+            IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
+
+            var installedPackageCollection = PackageCollection.FromPackageReferences(installedPackages);
+
+            SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
+            IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
+            var metadataProvider = new MultiSourcePackageMetadataProvider(
+                sourceRepositories,
+                packagesFolderSourceRepository,
+                globalPackageFolderRepositories,
+                logger);
+
+            if (itemFilter == ItemFilter.All)
             {
-                Assumes.NotNull(projectManagerService);
-
-                List<string> projectIds = projectContextInfos.Select(pci => pci.ProjectId).ToList();
-                IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await projectManagerService.GetInstalledPackagesAsync(projectIds, cancellationToken);
-                var installedPackageCollection = PackageCollection.FromPackageReferences(installedPackages);
-
-                SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-                IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
-                var metadataProvider = new MultiSourcePackageMetadataProvider(
-                    sourceRepositories,
-                    packagesFolderSourceRepository,
-                    globalPackageFolderRepositories,
-                    logger);
-
-                if (itemFilter == ItemFilter.All)
-                {
-                    // if we get here, recommendPackages == true
-                    // for now, we are only making recommendations for PC-style projects, and for these the dependent packages are
-                    // already included in the installedPackages list. When we implement PR-style projects, we'll need to also pass
-                    // the dependent packages to RecommenderPackageFeed.
-                    packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
-                    packageFeeds.recommenderFeed = new RecommenderPackageFeed(sourceRepositories.First(), installedPackageCollection, metadataProvider);
-                    return packageFeeds;
-                }
-
-                if (itemFilter == ItemFilter.Installed)
-                {
-                    packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider, logger);
-                    return packageFeeds;
-                }
-
-                if (itemFilter == ItemFilter.Consolidate)
-                {
-                    packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackageCollection, metadataProvider, logger);
-                    return packageFeeds;
-                }
-
-                // Search all / updates available cannot work without a source repo
-                if (sourceRepositories == null)
-                {
-                    return packageFeeds;
-                }
-
-                if (itemFilter == ItemFilter.UpdatesAvailable)
-                {
-                    packageFeeds.mainFeed = new UpdatePackageFeed(installedPackageCollection, metadataProvider, projectContextInfos.ToArray());
-                    return packageFeeds;
-                }
-
-                throw new InvalidOperationException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedFeedType, itemFilter));
+                // if we get here, recommendPackages == true
+                // for now, we are only making recommendations for PC-style projects, and for these the dependent packages are
+                // already included in the installedPackages list. When we implement PR-style projects, we'll need to also pass
+                // the dependent packages to RecommenderPackageFeed.
+                packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
+                packageFeeds.recommenderFeed = new RecommenderPackageFeed(sourceRepositories.First(), installedPackageCollection, metadataProvider);
+                return packageFeeds;
             }
+
+            if (itemFilter == ItemFilter.Installed)
+            {
+                packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider, logger);
+                return packageFeeds;
+            }
+
+            if (itemFilter == ItemFilter.Consolidate)
+            {
+                packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackageCollection, metadataProvider, logger);
+                return packageFeeds;
+            }
+
+            // Search all / updates available cannot work without a source repo
+            if (sourceRepositories == null)
+            {
+                return packageFeeds;
+            }
+
+            if (itemFilter == ItemFilter.UpdatesAvailable)
+            {
+                packageFeeds.mainFeed = new UpdatePackageFeed(installedPackageCollection, metadataProvider, projectContextInfos.ToArray());
+                return packageFeeds;
+            }
+
+            throw new InvalidOperationException(
+                string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedFeedType, itemFilter));
         }
 
         private Task<IReadOnlyList<SourceRepository>> GetGlobalPackageFolderRepositoriesAsync()

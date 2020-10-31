@@ -24,11 +24,23 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IPackageFeed _mainFeed;
         private readonly IPackageFeed? _recommenderFeed;
         private SearchResult<IPackageSearchMetadata>? _lastMainFeedSearchResult;
+        private SearchFilter? _lastSearchFilter;
         private readonly IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
         private readonly IPackageMetadataProvider _packageMetadataProvider;
-        private readonly ObjectCache _inMemoryObjectCache = MemoryCache.Default;
+        private readonly MemoryCache? _inMemoryObjectCache;
 
-        public SearchObject(IPackageFeed mainFeed, IPackageFeed? recommenderFeed, IPackageMetadataProvider packageMetadataProvider, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
+        private readonly CacheItemPolicy _cacheItemPolicy = new CacheItemPolicy
+        {
+            SlidingExpiration = ObjectCache.NoSlidingExpiration,
+            AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
+        };
+
+        public SearchObject(
+            IPackageFeed mainFeed,
+            IPackageFeed? recommenderFeed,
+            IPackageMetadataProvider packageMetadataProvider,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            MemoryCache? searchCache)
         {
             Assumes.NotNull(mainFeed);
             Assumes.NotNullOrEmpty(packageSources);
@@ -37,6 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _recommenderFeed = recommenderFeed;
             _packageSources = packageSources;
             _packageMetadataProvider = packageMetadataProvider;
+            _inMemoryObjectCache = searchCache;
         }
 
         public async ValueTask<SearchResultContextInfo> SearchAsync(string searchText, SearchFilter filter, bool useRecommender, CancellationToken cancellationToken)
@@ -52,6 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             _lastMainFeedSearchResult = mainFeedResult; // Store this so we can ContinueSearch, we don't store recommended as we only do that on the first search
+            _lastSearchFilter = filter;
 
             if (recommenderFeedResults != null)
             {
@@ -80,7 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 foreach (IPackageSearchMetadata packageSearchMetadata in packageSearchMetadataList)
                 {
-                    CacheBackgroundDataAsync(packageSearchMetadata);
+                    CacheBackgroundDataAsync(packageSearchMetadata, filter.IncludePrerelease);
                 }
 
                 return new SearchResultContextInfo(
@@ -96,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (IPackageSearchMetadata packageSearchMetadata in mainFeedResult.Items)
             {
-                CacheBackgroundDataAsync(packageSearchMetadata);
+                CacheBackgroundDataAsync(packageSearchMetadata, filter.IncludePrerelease);
             }
 
             return new SearchResultContextInfo(
@@ -109,6 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<SearchResultContextInfo> RefreshSearchAsync(CancellationToken cancellationToken)
         {
             Assumes.NotNull(_lastMainFeedSearchResult);
+            Assumes.NotNull(_lastSearchFilter);
 
             SearchResult<IPackageSearchMetadata> refreshSearchResult = await _mainFeed.RefreshSearchAsync(
                 _lastMainFeedSearchResult.RefreshToken,
@@ -121,7 +136,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
             {
-                CacheBackgroundDataAsync(packageSearchMetadata);
+                CacheBackgroundDataAsync(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
             }
 
             return new SearchResultContextInfo(
@@ -154,6 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<SearchResultContextInfo> ContinueSearchAsync(CancellationToken cancellationToken)
         {
             Assumes.NotNull(_lastMainFeedSearchResult);
+            Assumes.NotNull(_lastSearchFilter);
 
             if (_lastMainFeedSearchResult.NextToken == null)
             {
@@ -171,7 +187,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
             {
-                CacheBackgroundDataAsync(packageSearchMetadata);
+                CacheBackgroundDataAsync(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
             }
 
             return new SearchResultContextInfo(
@@ -207,12 +223,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return totalCount;
         }
 
-        private void CacheBackgroundDataAsync(IPackageSearchMetadata packageSearchMetadata)
+        private void CacheBackgroundDataAsync(IPackageSearchMetadata packageSearchMetadata, bool includesPrerelease)
         {
-            _inMemoryObjectCache.Set(
-                PackageSearchMetadataCacheObject.GetCacheId(packageSearchMetadata.Identity.Id, _packageSources),
-                new PackageSearchMetadataCacheObject(packageSearchMetadata, _packageMetadataProvider),
-                new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10) });
+            if (_inMemoryObjectCache == null)
+            {
+                return;
+            }
+
+            _ = _inMemoryObjectCache.AddOrGetExisting(
+                    PackageSearchMetadataCacheObject.GetCacheId(packageSearchMetadata.Identity.Id, includesPrerelease, _packageSources),
+                    new PackageSearchMetadataCacheObject(packageSearchMetadata, _packageMetadataProvider),
+                    _cacheItemPolicy);
         }
     }
 }

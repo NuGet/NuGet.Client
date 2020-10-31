@@ -43,6 +43,7 @@ namespace NuGet.PackageManagement.UI
         internal event EventHandler _actionCompleted;
         internal DetailControlModel _detailModel;
         internal CancellationTokenSource _loadCts;
+        private CancellationTokenSource _cancelSelectionChangedSource;
         private bool _initialized;
         private IVsWindowSearchHost _windowSearchHost;
         private IVsWindowSearchHostFactory _windowSearchHostFactory;
@@ -1028,20 +1029,26 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var loadCts = new CancellationTokenSource();
+            var oldCts = Interlocked.Exchange(ref _cancelSelectionChangedSource, loadCts);
+            oldCts?.Cancel();
+            oldCts?.Dispose();
+
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(UpdateDetailPaneAsync)
+                .RunAsync(async () => await UpdateDetailPaneAsync(_packageList.SelectedItem, loadCts.Token))
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
         }
 
         /// <summary>
         /// Updates the detail pane based on the selected package
         /// </summary>
-        internal async Task UpdateDetailPaneAsync()
+        internal async Task UpdateDetailPaneAsync(PackageItemListViewModel selectedItem, CancellationToken cancellationToken)
         {
-            var selectedPackage = _packageList.SelectedItem;
-            var selectedIndex = _packageList.SelectedIndex;
-            var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
-            if (selectedPackage == null)
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
+            int selectedIndex = _packageList.SelectedIndex;
+            int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+
+            if (selectedItem == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
             }
@@ -1050,15 +1057,17 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.Visibility = Visibility.Visible;
                 _packageDetail.DataContext = _detailModel;
 
-                EmitSearchSelectionTelemetry(selectedPackage);
+                EmitSearchSelectionTelemetry(selectedItem);
 
-                await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
-                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedPackage.RecommenderVersion);
+                await _detailModel.SetCurrentPackage(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
 
                 _packageDetail.ScrollToHome();
 
-                var context = new PackageLoadContext(Model.IsSolution, Model.Context);
-                await _detailModel.LoadPackageMetadataAsync(SelectedSource.PackageSources, CancellationToken.None);
+                if(cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
             }
         }
 
@@ -1341,7 +1350,7 @@ namespace NuGet.PackageManagement.UI
             _loadCts?.Dispose();
             _refreshCts?.Dispose();
 
-            _detailModel.CleanUp();
+            _detailModel.Dispose();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;
         }
 

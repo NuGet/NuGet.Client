@@ -285,8 +285,6 @@ namespace NuGet.PackageManagement.UI
             _solutionManager.ProjectRenamed -= SolutionProjectChanged;
             _solutionManager.ProjectUpdated -= SolutionProjectChanged;
 
-            Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
-
             if (Projects != null)
             {
                 foreach (var project in Projects)

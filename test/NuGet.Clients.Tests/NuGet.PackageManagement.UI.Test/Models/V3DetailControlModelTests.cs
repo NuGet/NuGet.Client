@@ -43,9 +43,11 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             _testViewModel = new PackageItemListViewModel()
             {
+                Id = "nuget.psm",
                 Version = testVersion,
                 Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions)),
                 InstalledVersion = testVersion,
+                Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("nuget.psm.test") },
             };
         }
     }
@@ -58,13 +60,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             : base(sp, testData)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
-            _testInstance = new PackageDetailControlModel(
-                solutionManager: solMgr.Object,
-                Array.Empty<IProjectContextInfo>());
-            _testInstance.SetCurrentPackage(
-                _testViewModel,
-                ItemFilter.All,
-                () => null).Wait();
 
             var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
             {
@@ -89,6 +84,13 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .Returns(null);
 
+            mockSearchService.Setup(x => x.GetPackageMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>((packageSearchMetadata[0], null)));
+
             var mockServiceBroker = new Mock<IServiceBroker>();
 #pragma warning disable ISB001 // Dispose of proxies
             mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>())).Returns(new ValueTask<INuGetSearchService>(mockSearchService.Object));
@@ -98,19 +100,25 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _services.Add(typeof(SVsBrokeredServiceContainer), Task.FromResult<object>(brokeredServiceContainer.Object));
 
             ServiceLocator.InitializePackageServiceProvider(this);
+
+            _testInstance = new PackageDetailControlModel(
+                 solutionManager: solMgr.Object,
+                 Array.Empty<IProjectContextInfo>());
+            _testInstance.SetCurrentPackage(
+                _testViewModel,
+                ItemFilter.All,
+                () => null).Wait();
         }
 
         [Fact]
-        public async void ViewModelMarkedVulnerableWhenMetadataHasVulnerability_Flagged()
+        public void ViewModelMarkedVulnerableWhenMetadataHasVulnerability_Flagged()
         {
-            await _testInstance.LoadPackageMetadataAsync(new List<PackageSourceContextInfo> { new PackageSourceContextInfo("nuget.psm.test"), }, CancellationToken.None);
             Assert.True(_testInstance.IsPackageVulnerable);
         }
 
         [Fact]
-        public async void MaxVulnerabilitySeverityWhenMetadataHasVulnerability_Calculated()
+        public void MaxVulnerabilitySeverityWhenMetadataHasVulnerability_Calculated()
         {
-            await _testInstance.LoadPackageMetadataAsync(new List<PackageSourceContextInfo> { new PackageSourceContextInfo("nuget.psm.test"), }, CancellationToken.None);
             Assert.Equal(_testInstance.PackageVulnerabilityMaxSeverity, _testData.TestData.Vulnerabilities.Max(v => v.Severity));
         }
 
