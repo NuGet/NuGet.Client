@@ -38,6 +38,18 @@ namespace NuGet.ProjectManagement
             return Shared.XmlUtility.Load(input, options);
         }
 
+        internal static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
+        {
+            var safeSettings = new XmlReaderSettings
+            {
+                XmlResolver = null,
+                DtdProcessing = DtdProcessing.Prohibit,
+                IgnoreWhitespace = ignoreWhiteSpace
+            };
+
+            return safeSettings;
+        }
+
         [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static XDocument GetOrCreateDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
