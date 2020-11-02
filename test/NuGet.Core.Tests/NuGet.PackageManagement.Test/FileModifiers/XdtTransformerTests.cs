@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.Test
             {
                 var projectFileOriginalContent =
                 @"<?xml version=""1.0""?>
-<!DOCTYPE package [
+<!DOCTYPE a [
    <!ENTITY greeting ""Hello"">
    <!ENTITY name ""NuGet Client "">
    <!ENTITY sayhello ""&greeting; &name;"">
