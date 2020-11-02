@@ -108,13 +108,9 @@ namespace NuGet.ProjectManagement
                     {
                         using (var document = new XmlTransformableDocument())
                         {
-                            //document.PreserveWhitespace = true;
-
                             // make sure we close the input stream immediately so that we can override 
                             // the file below when we save to it.
-                            using (var reader = XmlReader.Create(
-                                FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath),
-                                XmlUtility.CreateSafeSettings()))
+                            using (var reader = XmlReader.Create(FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath)))
                             {
                                 document.Load(reader);
                             }

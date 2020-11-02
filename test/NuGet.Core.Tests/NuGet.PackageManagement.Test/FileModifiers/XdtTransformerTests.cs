@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.Test
                             using (var reader = new StreamReader(stream))
                             {
                                 var actualResult = reader.ReadToEnd();
-                                var expectedResult = "<a><x>\t\t<y>\t\t\t<z>d</z>\t\t</y>\t</x></a>";
+                                var expectedResult = "<a>\r\n  <x>\r\n    <y>\r\n      <z>d</z>\r\n    </y>\r\n  </x>\r\n</a>";
 
                                 Assert.Equal(expectedResult, actualResult);
                             }
