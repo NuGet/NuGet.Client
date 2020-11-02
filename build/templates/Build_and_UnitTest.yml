@@ -87,14 +87,6 @@ steps:
       dotnet tool restore
   condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
-- task: PowerShell@1
-  displayName: "Check source file format"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      dotnet format --check --exclude submodules --verbosity diagnostic
-  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
-
 - task: MSBuild@1
   displayName: "Restore for VS2019"
   inputs:
@@ -185,6 +177,14 @@ steps:
     mergeTestResults: "true"
     publishRunAttachments: "false"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+
+- task: PowerShell@1
+  displayName: "Check source file format"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      dotnet format --check --exclude submodules --verbosity diagnostic
+  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
@@ -413,13 +413,14 @@ steps:
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: PowerShell@1
-  displayName: "Publish Artifacts to MyGet"
-  continueOnError: "true"
+- task: NuGetCommand@2
+  displayName: Publish public Nuget packages to nuget-build
   inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\PublishArtifactsFromVsts.ps1"
-    arguments: "-NuGetBuildFeedUrl $(NuGetBuildFeed) -NuGetBuildSymbolsFeedUrl $(NuGetBuildSymbolsFeed) -DotnetCoreFeedUrl $(DotnetCoreBuildFeed) -DotnetCoreSymbolsFeedUrl $(DotnetCoreSymbolsFeed) -NuGetBuildFeedApiKey $(NuGetBuildApiKey) -DotnetCoreFeedApiKey $(DotnetCoreFeedApiKey)"
-    failOnStandardError: "true"
+    command: push
+    packagesToPush: 'artifacts\nupkgs\*.nupkg;!artifacts\nupkgs\*.symbols.nupkg'
+    nuGetFeedType: external
+    allowPackageConflicts: true
+    publishFeedCredentials : nuget-build-dnceng-public-feed
   condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
 - task: MSBuild@1
@@ -492,7 +493,7 @@ steps:
 - task: CmdLine@2
   displayName: "Publish to the .NET Core build asset registry (BAR)"
   inputs:
-    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken)
+    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /p:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken)
     workingDirectory: cli
     failOnStderr: true
   env:
