@@ -38,7 +38,7 @@ namespace NuGet.ProjectManagement
             return Shared.XmlUtility.Load(input, options);
         }
 
-        internal static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
+        private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
         {
             var safeSettings = new XmlReaderSettings
             {
