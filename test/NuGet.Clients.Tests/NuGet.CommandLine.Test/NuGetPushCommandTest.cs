@@ -82,7 +82,7 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var packagePath in packagePaths)
                 {
-                    Assert.True(File.Exists(Path.Combine(source, packagePath)));
+                    Assert.True(File.Exists(Path.Combine(source, Path.GetFileName(packagePath))));
                 }
             }
         }
