@@ -26,18 +26,15 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
-using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using ContractsNuGetServices = NuGet.VisualStudio.Contracts.NuGetServices;
-using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 using ISettings = NuGet.Configuration.ISettings;
 using ProvideBrokeredServiceAttribute = Microsoft.VisualStudio.Shell.ServiceBroker.ProvideBrokeredServiceAttribute;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudience;
-using SVsBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.SVsBrokeredServiceContainer;
 using Task = System.Threading.Tasks.Task;
 using UI = NuGet.PackageManagement.UI;
 
@@ -137,8 +134,6 @@ namespace NuGetVSExtension
 
         private IDisposable ProjectUpgradeHandler { get; set; }
 
-        private INuGetProjectManagerServiceState _projectManagerServiceState;
-
         [Import]
         private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
@@ -181,27 +176,7 @@ namespace NuGetVSExtension
                 },
                 ThreadHelper.JoinableTaskFactory);
 
-            var brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
-            var lazySolutionManager = new AsyncLazy<IVsSolutionManager>(() => ServiceLocator.GetInstanceAsync<IVsSolutionManager>(), ThreadHelper.JoinableTaskFactory);
-            var lazySettings = new AsyncLazy<ISettings>(() => ServiceLocator.GetInstanceAsync<ISettings>(), ThreadHelper.JoinableTaskFactory);
-            var nuGetBrokeredServiceFactory = new NuGetBrokeredServiceFactory(lazySolutionManager, lazySettings);
-            brokeredServiceContainer.Proffer(ContractsNuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
-
-            var state = new SharedServiceState();
-            _projectManagerServiceState = new NuGetProjectManagerServiceState();
-
-            brokeredServiceContainer.Proffer(
-                NuGetServices.SourceProviderService,
-                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac)));
-            brokeredServiceContainer.Proffer(
-                NuGetServices.SolutionManagerService,
-                (mk, options, sb, ac, ct) => ToValueTaskOfObject(NuGetSolutionManagerService.CreateAsync(options, sb, ac, ct)));
-            brokeredServiceContainer.Proffer(
-                NuGetServices.ProjectManagerService,
-                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectManagerService(options, sb, ac, _projectManagerServiceState, state)));
-            brokeredServiceContainer.Proffer(
-                NuGetServices.ProjectUpgraderService,
-                (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetProjectUpgraderService(options, sb, ac, state)));
+            await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
         }
 
         /// <summary>
@@ -1120,8 +1095,6 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
-
-            _projectManagerServiceState?.Dispose();
         }
 
         #region IVsPersistSolutionOpts
@@ -1165,12 +1138,5 @@ namespace NuGetVSExtension
         }
 
         #endregion IVsPersistSolutionOpts
-
-        private static async ValueTask<object> ToValueTaskOfObject<T>(ValueTask<T> valueTask)
-        {
-            T value = await valueTask;
-
-            return (object)value;
-        }
     }
 }
