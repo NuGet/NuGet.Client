@@ -11,8 +11,10 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
+using NuGet.Common.Telemetry;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -25,11 +27,13 @@ namespace NuGetConsole
     public sealed partial class ConsoleContainer : UserControl, IDisposable
     {
         private INuGetSolutionManagerService _solutionManager;
+        private IVsSolutionManager _iVsSolutionManager;
+        private INuGetSolutionTelemetry _nugetSolutionTelemetry;
         private int _windowLoadCount;
         private bool _isTelemetryEmitted;
 
-        private const string PackageManagerConsoleLoadCount = "PackageManagerConsoleLoadCount";
-        private const string NuGetPMCLoadCount = "NuGetPMCLoadCount";
+        private const string PackageManagerConsoleWindowsLoad = "PackageManagerConsoleWindowsLoad";
+        private const string NuGetPMCWindowLoadCount = "NuGetPMCWindowLoadCount";
         private const string ReOpenAtStart = "ReOpenAtStart";
 
         public ConsoleContainer()
@@ -52,10 +56,31 @@ namespace NuGetConsole
 
                             Assumes.NotNull(_solutionManager);
 
+                            _iVsSolutionManager = await ServiceLocator.GetInstanceAsync<IVsSolutionManager>();
+                            Assumes.NotNull(_iVsSolutionManager);
+
+                            // Hook up solution events
+                            _iVsSolutionManager.SolutionOpening += (_, __) =>
+                            {
+                                // PMC used before any solution is loaded, let's emit what we have before loading a solution.
+                                // Please note: Here _windowLoadCount is already 1 if PMC reopen since it was last active window last time VS instance close.
+                                if (_windowLoadCount > 0)
+                                {
+                                    EmitPowershellUsageTelemetry();
+                                }
+
+                                //_isTelemetryEmitted = false;
+                            };
+                            _iVsSolutionManager.SolutionClosing += (o, e) =>
+                            {
+                                EmitPowershellUsageTelemetry();
+                            };
+
                             var productUpdateService = ServiceLocator.GetInstance<IProductUpdateService>();
                             var packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
                             var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
                             var shell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
+                            _nugetSolutionTelemetry = ServiceLocator.GetInstanceSafe<INuGetSolutionTelemetry>();
 
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -89,13 +114,13 @@ namespace NuGetConsole
             {
                 // Work around to detect if PMC loaded automatically because it was last focused window.
                 var reopenAtStart = IsLoaded;
-                var telemetryEvent = new TelemetryEvent(PackageManagerConsoleLoadCount, new Dictionary<string, object>
+                var telemetryEvent = new TelemetryEvent(PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
                                 {
-                                    { NuGetPMCLoadCount, _windowLoadCount},
+                                    { NuGetPMCWindowLoadCount, _windowLoadCount}, // Usefull if PMC used without any solution load at all then VS instance closed.
                                     { ReOpenAtStart, reopenAtStart}
                                 });
 
-                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+                _nugetSolutionTelemetry.AddSolutionTelemetryEvent(telemetryEvent);
 
                 _isTelemetryEmitted = true;
             }
@@ -114,6 +139,17 @@ namespace NuGetConsole
         void ConsoleContainer_Loaded(object sender, RoutedEventArgs e)
         {
             _windowLoadCount++;
+        }
+
+        private void EmitPowershellUsageTelemetry()
+        {
+            var telemetryEvent = new TelemetryEvent(PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
+                                {
+                                    { NuGetPMCWindowLoadCount, _windowLoadCount},
+                                });
+            _nugetSolutionTelemetry.AddSolutionTelemetryEvent(telemetryEvent);
+
+            _windowLoadCount = 0;
         }
     }
 }

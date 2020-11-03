@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.Common.Telemetry;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -56,6 +57,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<ISourceControlManagerProvider> _sourceControlManagerProvider;
         private readonly Lazy<ICommonOperations> _commonOperations;
+        private readonly Lazy<INuGetSolutionTelemetry> _nugetSolutionTelemetry;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
         private const string ActivePackageSourceKey = "activePackageSource";
@@ -67,11 +69,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string PowerShellExecuteCommand = "PowerShellExecuteCommand";
         private const string NuGetPMCExecuteCommandCount = "NuGetPMCExecuteCommandCount";
         private const string NuGetNonPMCExecuteCommandCount = "NuGetNonPMCExecuteCommandCount";
-        private const string NuGetTotalExecuteCommandCount = "NuGetTotalExecuteCommandCount";
         private const string LoadedFromPMC = "LoadedFromPMC";
         private const string FirstTimeLoadedFromPMC = "FirstTimeLoadedFromPMC";
         private const string LoadedFromPMUI = "LoadedFromPMUI";
         private const string FirstTimeLoadedFromPMUI = "FirstTimeLoadedFromPMUI";
+        private const string SolutionLoaded = "SolutionLoaded";
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
@@ -127,7 +129,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
                 () => ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>());
             _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetInstanceSafe<ICommonOperations>());
-
+            _nugetSolutionTelemetry = new Lazy<INuGetSolutionTelemetry>(() => ServiceLocator.GetInstanceSafe<INuGetSolutionTelemetry>());
             _name = name;
             IsCommandEnabled = true;
 
@@ -334,31 +336,22 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
                         }
 
+                        _solutionManager.Value.SolutionOpening += (o, e) =>
+                        {
+                            if (PmcExecutedCount > 0)
+                            {
+                                // PMC used before any solution is loaded, let's emit what we have before loading a solution.
+                                EmitPowershellUsageTelemetry(false);
+                            }
+                        };
+
+                        _solutionManager.Value.SolutionClosing += (o, e) =>
+                        {
+                            EmitPowershellUsageTelemetry(true);
+                        };
+
                         _solutionManager.Value.SolutionClosed += (o, e) =>
                         {
-                            lock (TelemetryLock)
-                            {
-                                if (!IsTelemetryEmitted)
-                                {
-                                    var telemetryEvent = new TelemetryEvent(PowerShellExecuteCommand, new Dictionary<string, object>
-                                    {
-                                        { NuGetPMCExecuteCommandCount, PmcExecutedCount},
-                                        { NuGetNonPMCExecuteCommandCount, NonPmcExecutedCount},
-                                        { NuGetTotalExecuteCommandCount, PmcExecutedCount + NonPmcExecutedCount},
-                                        { LoadedFromPMC, (PowerShellHostInstances & 0b00000001) == 0b00000001},
-                                        { LoadedFromPMUI, (PowerShellHostInstances & 0b00000010) == 0b00000010},
-                                        { FirstTimeLoadedFromPMC, (PowerShellHostInstances & 0b00000100) == 0b00000100},
-                                        { FirstTimeLoadedFromPMUI, (PowerShellHostInstances & 0b00001000) == 0b00001000}
-                                    });
-
-                                    TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
-
-                                    PmcExecutedCount = 0;
-                                    NonPmcExecutedCount = 0;
-                                    IsTelemetryEmitted = true;
-                                }
-                            }
-
                             if (console is IWpfConsole)
                             {
                                 UpdateWorkingDirectory();
@@ -398,6 +391,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                     PowerShellHostInstances |= 0b00000100;
                                 }
 
+                                // LoadedFromPMC
                                 PowerShellHostInstances |= 0b00000001;
                             }
                             else
@@ -408,6 +402,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                     PowerShellHostInstances |= 0b00001000;
                                 }
 
+                                // LoadedFromPMUI
                                 PowerShellHostInstances |= 0b00000010;
                             }
                         }
@@ -429,15 +424,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             _scriptExecutor.Value.Reset();
 
-            lock (TelemetryLock)
-            {
-                PmcExecutedCount = 0;
-                NonPmcExecutedCount = 0;
-                IsTelemetryEmitted = false;
-
-                //Reset first time load powershell flag bits, but keep other 2 flags for origin of powershell load.
-                PowerShellHostInstances &= 0b00000011;
-            }
+            PmcExecutedCount = 0;
+            NonPmcExecutedCount = 0;
+            IsTelemetryEmitted = false;
 
             // Solution opened event is raised on the UI thread
             // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
@@ -919,6 +908,34 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return await doneTask;
         }
 
+        private void EmitPowershellUsageTelemetry(bool withSolution)
+        {
+            lock (TelemetryLock)
+            {
+                if (!IsTelemetryEmitted)
+                {
+                    var telemetryEvent = new TelemetryEvent(PowerShellExecuteCommand, new Dictionary<string, object>
+                                    {
+                                        { NuGetPMCExecuteCommandCount, PmcExecutedCount},
+                                        { NuGetNonPMCExecuteCommandCount, NonPmcExecutedCount},
+                                        { LoadedFromPMC, (PowerShellHostInstances & 0b00000001) == 0b00000001},
+                                        { LoadedFromPMUI, (PowerShellHostInstances & 0b00000010) == 0b00000010},
+                                        { FirstTimeLoadedFromPMC, (PowerShellHostInstances & 0b00000100) == 0b00000100},
+                                        { FirstTimeLoadedFromPMUI, (PowerShellHostInstances & 0b00001000) == 0b00001000},
+                                        { SolutionLoaded, withSolution}
+                                    });
+                    _nugetSolutionTelemetry.Value.AddSolutionTelemetryEvent(telemetryEvent);
+
+                    PmcExecutedCount = 0;
+                    NonPmcExecutedCount = 0;
+                    IsTelemetryEmitted = true;
+
+                    //Reset first time load powershell flag bits, but keep other 2 flags for origin of powershell load.
+                    PowerShellHostInstances &= 0b00000011;
+                }
+            }
+        }
+
         #region ITabExpansion
 
         public Task<string[]> GetExpansionsAsync(string line, string lastWord, CancellationToken token)
@@ -1003,6 +1020,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
+
+            // Below emits telemetry in there was no solution was loaded at all, but if there were any solution then this one internally ignored because it's already emitted with solution SolutionClosing event.
+            EmitPowershellUsageTelemetry(false);
         }
 
         #endregion

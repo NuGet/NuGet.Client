@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <PropertyGroup>
@@ -128,6 +128,10 @@
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
+      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
@@ -154,13 +158,11 @@
     <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
     <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
   </PropertyGroup>
-
   <Target Name="AfterBuild">
     <ItemGroup>
       <PowerShellScripts Include="$(MSBuildProjectDirectory)\Scripts\*.ps*" Exclude="$(MSBuildProjectDirectory)\Scripts\NuGet.psd1" />
     </ItemGroup>
-    <Copy SourceFiles="@(PowerShellScripts)"
-          DestinationFolder="$(ArtifactsDirectory)Scripts" />
+    <Copy SourceFiles="@(PowerShellScripts)" DestinationFolder="$(ArtifactsDirectory)Scripts" />
     <Exec Command="powershell.exe -ExecutionPolicy Bypass &quot;$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\UpdateNuGetModuleManifest.ps1&quot; -NuGetPackageManagementPowerShellCmdletsFilePath &quot;$(ArtifactsDirectory)NuGet.PackageManagement.PowerShellCmdlets\$(BuildVariationFolder)\bin\$(Configuration)\NuGet.PackageManagement.PowerShellCmdlets.dll&quot; -ManifestModuleSourceFilePath &quot;$(MSBuildProjectDirectory)\Scripts\NuGet.psd1&quot; -ManifestModuleDestinationFilePath &quot;$(ArtifactsDirectory)Scripts\NuGet.psd1&quot;" />
   </Target>
   <Target Name="GetScriptsForSigning" Returns="@(ScriptsToSign)">
