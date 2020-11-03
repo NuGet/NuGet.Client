@@ -19,7 +19,7 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
-    internal class NuGetProjectService : INuGetProjectService
+    public sealed class NuGetProjectService : INuGetProjectService
     {
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISettings _settings;

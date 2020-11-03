@@ -39,6 +39,7 @@
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="NuGetBrokeredServiceFactory.cs" />
     <Compile Include="NuGetPackage.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
     <Compile Include="NuGetSearchTask.cs" />
