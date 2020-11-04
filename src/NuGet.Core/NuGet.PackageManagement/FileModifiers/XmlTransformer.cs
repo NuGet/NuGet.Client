@@ -71,7 +71,7 @@ namespace NuGet.ProjectManagement
             // Get the xml fragment
             var xmlFragment = await GetXmlAsync(streamTaskFactory, projectSystem, cancellationToken);
 
-            var transformDocument = XmlUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, projectSystem);
+            var transformDocument = MSBuildNuGetProjectSystemUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, projectSystem);
 
             // Do a merge
             transformDocument.Root.MergeWith(xmlFragment, _nodeActions);

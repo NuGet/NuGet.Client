@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -23,6 +21,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
 using Task = System.Threading.Tasks.Task;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.VisualStudio
 {
@@ -244,7 +243,7 @@ namespace NuGet.VisualStudio
 
         internal virtual XDocument LoadDocument(string path)
         {
-            return XmlUtility.LoadSafe(path);
+            return XmlUtility.Load(path, LoadOptions.PreserveWhitespace);
         }
 
         private Task ProjectFinishedGeneratingAsync(Project project)
