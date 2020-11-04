@@ -214,9 +214,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public async Task<(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)> GetAllPackagesAsync(CancellationToken token)
         {
-            var installedPackages = new List<PackageReference>();
-            var transitivePackages = new List<PackageReference>();
-
             var packageSpec = GetPackageSpec();
 
             if (packageSpec != null)
@@ -244,7 +241,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     _transitivePackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
                 }
 
-                installedPackages = packageSpec
+                var installedPackages = packageSpec
                    .TargetFrameworks
                    .SelectMany(f => GetPackageReferencesForFramework(f.Dependencies, f.FrameworkName, _installedPackages, targets))
                    .GroupBy(p => p.PackageIdentity)
@@ -252,15 +249,19 @@ namespace NuGet.PackageManagement.VisualStudio
                    .ToList();
 
                 // get the transitive packages, excluding any already contained in the installed packages
-                transitivePackages = packageSpec
+                var transitivePackages = packageSpec
                    .TargetFrameworks
                    .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, targets))
                    .GroupBy(p => p.PackageIdentity)
                    .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                    .ToList();
+                return (installedPackages.ToList(), transitivePackages.ToList());
+            }
+            else
+            {
+                return (Array.Empty<PackageReference>(), Array.Empty<PackageReference>());
             }
 
-            return (installedPackages.ToList(), transitivePackages.ToList());
         }
 
         private IEnumerable<PackageReference> GetPackageReferencesForFramework(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> packages)> installedPackages, IList<LockFileTarget> targets)
