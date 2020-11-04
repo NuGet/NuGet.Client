@@ -16,7 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.Versioning;
-using XmlUtility = NuGet.Common.XmlUtility;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.Commands
 {

@@ -9,22 +9,22 @@ using System.Xml.Linq;
 using NuGet.Test.Utility;
 using Xunit;
 
-namespace NuGet.Common.Test
+namespace NuGet.Shared.Test
 {
     public class XmlUtilityTests
     {
         [Fact]
-        public void Load_WhenFilePathIsNull_Throws()
+        public void Load_FilePathIsNull_Throws()
         {
             //Act
-            var exception = Assert.Throws<ArgumentException>(() => XmlUtility.Load(filePath: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => XmlUtility.Load(inputUri: null));
 
             //Assert
-            Assert.Equal("filePath", exception.ParamName);
+            Assert.Equal("inputUri", exception.ParamName);
         }
 
         [Fact]
-        public void Load_WhenFileWithSecureXmlIsPassedAsArgument_Success()
+        public void Load_FileWithSecureXml_Success()
         {
             using (var root = TestDirectory.Create())
             {
@@ -50,7 +50,7 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void Load_WhenFileWithInSecureXmlIsPassedAsArgument_Throws()
+        public void Load_FileWithInSecureXml_Throws()
         {
             using (var root = TestDirectory.Create())
             {
@@ -73,6 +73,27 @@ namespace NuGet.Common.Test
                 //Act & Assert
                 Assert.Throws<XmlException>(() => XmlUtility.Load(path));
             }
+        }
+
+        [Fact]
+        public void GetEncodedXMLName_ValidXmlElementNameMatchesInput_Success()
+        {
+            string validXml = "packageSources";
+
+            string encodedXml = XmlUtility.GetEncodedXMLName(validXml);
+
+            Assert.Equal(validXml, encodedXml);
+        }
+
+        [Fact]
+        public void GetEncodedXMLName_EncodesInValidXmlElementName_Success()
+        {
+            string invalidXml = "package Sources";
+
+            string encodedXml = XmlUtility.GetEncodedXMLName(invalidXml);
+
+            Assert.NotEqual(invalidXml, encodedXml);
+            Assert.Equal(encodedXml, "package_x0020_Sources");
         }
     }
 }
