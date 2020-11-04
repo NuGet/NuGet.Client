@@ -171,7 +171,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
-            List<Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)>> prStyleTasks = new List<Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)>>();
+            List<Task<(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)>> prStyleTasks = new List<Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)>>();
             List<Task<IEnumerable<PackageReference>>> nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
             foreach (var project in projects)
             {
@@ -188,13 +188,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     nonPrStyleTasks.Add(project.GetInstalledPackagesAsync(cancellationToken));
                 }
             }
-            (IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)[] prStyleReferences = await Task.WhenAll(prStyleTasks);
+            (IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)[] prStyleReferences = await Task.WhenAll(prStyleTasks);
             IEnumerable<PackageReference>[] nonPrStyleReferences = await Task.WhenAll(nonPrStyleTasks);
 
             // combine all of the installed package references
             var installedPackages = nonPrStyleReferences
                     .Concat(prStyleReferences
-                        .Select(p => p.Item1));
+                        .Select(p => p.installedPackages));
 
             return (installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray(), prStyleReferences.SelectMany(e => e.Item2).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray());
         }

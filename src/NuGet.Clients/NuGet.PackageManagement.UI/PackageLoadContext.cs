@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI
     internal class PackageLoadContext
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
-        private readonly JoinableTask<(PackageCollection, PackageCollection)> _allPackagesTask;
+        private readonly JoinableTask<(PackageCollection installedPackages, PackageCollection transitivePackages)> _allPackagesTask;
 
         public PackageLoadContext(bool isSolution, INuGetUIContext uiContext)
         {
