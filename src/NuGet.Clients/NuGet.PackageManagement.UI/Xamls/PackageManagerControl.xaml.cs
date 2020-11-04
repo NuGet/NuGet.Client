@@ -1035,15 +1035,16 @@ namespace NuGet.PackageManagement.UI
             oldCts?.Dispose();
 
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(async () => await UpdateDetailPaneAsync(_packageList.SelectedItem, loadCts.Token))
+                .RunAsync(async () => await UpdateDetailPaneAsync(loadCts.Token))
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
         }
 
         /// <summary>
         /// Updates the detail pane based on the selected package
         /// </summary>
-        internal async Task UpdateDetailPaneAsync(PackageItemListViewModel selectedItem, CancellationToken cancellationToken)
+        internal async Task UpdateDetailPaneAsync(CancellationToken cancellationToken)
         {
+            PackageItemListViewModel selectedItem = _packageList.SelectedItem;
             IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
             int selectedIndex = _packageList.SelectedIndex;
             int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
@@ -1059,12 +1060,12 @@ namespace NuGet.PackageManagement.UI
 
                 EmitSearchSelectionTelemetry(selectedItem);
 
-                await _detailModel.SetCurrentPackage(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
                 _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
 
                 _packageDetail.ScrollToHome();
 
-                if(cancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
@@ -1345,10 +1346,12 @@ namespace NuGet.PackageManagement.UI
             // make sure to cancel currently running load or refresh tasks
             _loadCts?.Cancel();
             _refreshCts?.Cancel();
+            _cancelSelectionChangedSource?.Cancel();
 
             // make sure to dispose cancellation token source
             _loadCts?.Dispose();
             _refreshCts?.Dispose();
+            _cancelSelectionChangedSource?.Dispose();
 
             _detailModel.Dispose();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;

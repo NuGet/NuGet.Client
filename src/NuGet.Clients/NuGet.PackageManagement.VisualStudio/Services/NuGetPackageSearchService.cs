@@ -34,12 +34,12 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<SourceRepository> _packagesFolderLocalRepositoryLazy;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IReadOnlyList<SourceRepository>> _globalPackageFolderRepositoriesLazy;
         private readonly static MemoryCache PackageSearchMetadataMemoryCache = new MemoryCache("PackageSearchMetadata",
-             new NameValueCollection
-             {
-                {"cacheMemoryLimitMegabytes", "4"},
-                {"physicalMemoryLimitPercentage", "0"},
-                {"pollingInterval", "00:02:00"}
-             });
+            new NameValueCollection
+            {
+                { "cacheMemoryLimitMegabytes", "4" },
+                { "physicalMemoryLimitPercentage", "0" },
+                { "pollingInterval", "00:02:00" }
+            });
 
         public NuGetPackageSearchService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac, ISharedServiceState state)
         {
@@ -102,8 +102,8 @@ namespace NuGet.PackageManagement.VisualStudio
             string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
             if (PackageSearchMetadataMemoryCache.Get(cacheId) is PackageSearchMetadataCacheObject backgroundDataCache)
             {
-                var packageSearchData = await backgroundDataCache.DetailedPackageSearchMetadataContextInfo;
-                var deprecatedData = await backgroundDataCache.PackageDeprecrationMetadataContextInfo;
+                PackageSearchMetadataContextInfo packageSearchData = await backgroundDataCache.DetailedPackageSearchMetadataContextInfo;
+                PackageDeprecationMetadataContextInfo? deprecatedData = await backgroundDataCache.PackageDeprecationMetadataContextInfo;
                 return (packageSearchData, deprecatedData);
             }
 
@@ -202,7 +202,7 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSearchMetadataCacheObject? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheObject;
             if (backgroundDataCache != null)
             {
-                return await backgroundDataCache.PackageDeprecrationMetadataContextInfo;
+                return await backgroundDataCache.PackageDeprecationMetadataContextInfo;
             }
 
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
@@ -330,7 +330,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
 
-            var installedPackageCollection = PackageCollection.FromPackageReferences(installedPackages);
+            PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedPackages);
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);

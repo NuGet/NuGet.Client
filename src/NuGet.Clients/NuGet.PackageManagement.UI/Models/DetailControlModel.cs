@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.UI
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
 
@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="searchResultPackage">The package to be displayed.</param>
         /// <param name="filter">The current filter. This will used to select the default action.</param>
-        public async virtual Task SetCurrentPackage(
+        public async virtual Task SetCurrentPackageAsync(
             PackageItemListViewModel searchResultPackage,
             ItemFilter filter,
             Func<PackageItemListViewModel> getPackageItemListViewModel)
@@ -217,11 +217,11 @@ namespace NuGet.PackageManagement.UI
             await CreateVersionsAsync(CancellationToken.None);
             OnCurrentPackageChanged();
 
-            var detailedPackageSearchMetadata = await searchResultPackage.GetDetailedPackageSearchMetadataAsync();
-            if (detailedPackageSearchMetadata.Item1 != null)
-            {
-                var deprecationMetadata = detailedPackageSearchMetadata.Item2;
+            (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
+                await searchResultPackage.GetDetailedPackageSearchMetadataAsync();
 
+            if (packageSearchMetadata != null)
+            {
                 // Getting the metadata can take awhile, check to see if its still selected
                 if (getPackageItemListViewModel() != searchResultPackage)
                 {
@@ -229,9 +229,9 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 var detailedPackageMetadata = new DetailedPackageMetadata(
-                    detailedPackageSearchMetadata.Item1,
-                    deprecationMetadata,
-                    detailedPackageSearchMetadata.Item1.DownloadCount);
+                    packageSearchMetadata,
+                    packageDeprecationMetadata,
+                    packageSearchMetadata.DownloadCount);
 
                 _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
 
@@ -543,8 +543,9 @@ namespace NuGet.PackageManagement.UI
         private async ValueTask SelectedVersionChangedAsync(PackageItemListViewModel packageItemListViewModel, NuGetVersion nugetVersion, CancellationToken cancellationToken)
         {
             // Load the detailed metadata that we already have and check to see if this matches what is selected, we cannot use the _metadataDict here unfortunately as it won't be populated yet
-            (PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo) detailedPackageSearchMetadata = await packageItemListViewModel.GetDetailedPackageSearchMetadataAsync();
-            if (detailedPackageSearchMetadata.Item1 != null && detailedPackageSearchMetadata.Item1.Identity.Version.Equals(nugetVersion))
+            (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
+                await packageItemListViewModel.GetDetailedPackageSearchMetadataAsync();
+            if (packageSearchMetadata != null && packageSearchMetadata.Identity.Version.Equals(nugetVersion))
             {
                 if (_searchResultPackage != packageItemListViewModel)
                 {
@@ -552,8 +553,8 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 PackageMetadata = new DetailedPackageMetadata(
-                    detailedPackageSearchMetadata.Item1,
-                    detailedPackageSearchMetadata.Item2,
+                    packageSearchMetadata,
+                    packageDeprecationMetadata,
                     packageItemListViewModel.DownloadCount);
             }
             else
@@ -562,19 +563,19 @@ namespace NuGet.PackageManagement.UI
                 IServiceBroker serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
                 using (INuGetSearchService searchService = await serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
                 {
-                    PackageIdentity id = new PackageIdentity(packageItemListViewModel.Id, nugetVersion);
-                    (PackageSearchMetadataContextInfo searchMetadata, PackageDeprecationMetadataContextInfo deprecationData) packageMetadata =
-                        await searchService.GetPackageMetadataAsync(id, packageItemListViewModel.Sources, includePrerelease: true, cancellationToken);
+                    var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, nugetVersion);
+                    (PackageSearchMetadataContextInfo searchMetadata, PackageDeprecationMetadataContextInfo deprecationData) =
+                        await searchService.GetPackageMetadataAsync(packageIdentity, packageItemListViewModel.Sources, includePrerelease: true, cancellationToken);
 
                     if (cancellationToken.IsCancellationRequested || _searchResultPackage != packageItemListViewModel)
                     {
                         return;
                     }
 
-                    DetailedPackageMetadata detailedPackageMetadata = new DetailedPackageMetadata(
-                        packageMetadata.searchMetadata,
-                        packageMetadata.deprecationData,
-                        packageMetadata.searchMetadata.DownloadCount);
+                    var detailedPackageMetadata = new DetailedPackageMetadata(
+                        searchMetadata,
+                        deprecationData,
+                        searchMetadata.DownloadCount);
 
                     _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
 

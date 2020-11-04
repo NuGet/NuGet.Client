@@ -43,6 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
             MemoryCache? searchCache)
         {
             Assumes.NotNull(mainFeed);
+            Assumes.NotNull(packageMetadataProvider);
             Assumes.NotNullOrEmpty(packageSources);
 
             _mainFeed = mainFeed;
@@ -55,14 +56,14 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<SearchResultContextInfo> SearchAsync(string searchText, SearchFilter filter, bool useRecommender, CancellationToken cancellationToken)
         {
             SearchResult<IPackageSearchMetadata>? mainFeedResult = await _mainFeed.SearchAsync(searchText, filter, cancellationToken);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
             SearchResult<IPackageSearchMetadata>? recommenderFeedResults = null;
+
             if (useRecommender && _recommenderFeed != null)
             {
                 recommenderFeedResults = await _recommenderFeed.SearchAsync(searchText, filter, cancellationToken);
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             _lastMainFeedSearchResult = mainFeedResult; // Store this so we can ContinueSearch, we don't store recommended as we only do that on the first search
             _lastSearchFilter = filter;
@@ -70,47 +71,40 @@ namespace NuGet.PackageManagement.VisualStudio
             if (recommenderFeedResults != null)
             {
                 // remove duplicated recommended packages from the browse results
-                IEnumerable<string> recommendedIds = recommenderFeedResults.Items.Select(item => item.Identity.Id).ToList();
+                List<string> recommendedIds = recommenderFeedResults.Items.Select(item => item.Identity.Id).ToList();
+                var recommendedPackageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>();
 
-                IList<PackageSearchMetadataContextInfo> recommendedPackageSearchMetadataContextInfo = recommenderFeedResults.Items
-                    .Select(packageSearchMetadata =>
-                    {
-                        return PackageSearchMetadataContextInfo.Create(
-                            packageSearchMetadata,
-                            isRecommended: true,
-                            recommenderVersion: (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo);
-                    })
-                    .ToList();
-
-                List<IPackageSearchMetadata> filteredMainFeedResults = mainFeedResult.Items.Where(item => !recommendedIds.Contains(item.Identity.Id)).ToList();
-
-                recommendedPackageSearchMetadataContextInfo.AddRange(
-                    filteredMainFeedResults
-                    .Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata))
-                    .ToList());
-
-                List<IPackageSearchMetadata> packageSearchMetadataList = new List<IPackageSearchMetadata>(recommenderFeedResults.Items);
-                packageSearchMetadataList.AddRange(filteredMainFeedResults);
-
-                foreach (IPackageSearchMetadata packageSearchMetadata in packageSearchMetadataList)
+                foreach (var recommendedFeedResultItem in recommenderFeedResults.Items)
                 {
-                    CacheBackgroundDataAsync(packageSearchMetadata, filter.IncludePrerelease);
+                    CacheBackgroundDataAsync(recommendedFeedResultItem, filter.IncludePrerelease);
+                    recommendedPackageSearchMetadataContextInfo.Add(
+                        PackageSearchMetadataContextInfo.Create(
+                            recommendedFeedResultItem,
+                            isRecommended: true,
+                            recommenderVersion: (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo));
+                }
+
+                foreach (var mainFeedResultItem in mainFeedResult.Items)
+                {
+                    if (!recommendedIds.Contains(mainFeedResultItem.Identity.Id))
+                    {
+                        CacheBackgroundDataAsync(mainFeedResultItem, filter.IncludePrerelease);
+                        recommendedPackageSearchMetadataContextInfo.Add(PackageSearchMetadataContextInfo.Create(mainFeedResultItem));
+                    }
                 }
 
                 return new SearchResultContextInfo(
                     recommendedPackageSearchMetadataContextInfo.ToList(),
                     mainFeedResult.SourceSearchStatus.ToImmutableDictionary(),
                     mainFeedResult.NextToken != null,
-                    _lastMainFeedSearchResult.OperationId);
+                    mainFeedResult.OperationId);
             }
 
-            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageSearchMetadataContextInfoCollection = mainFeedResult.Items
-                .Select(mainFeedPackageSearchMetadata => PackageSearchMetadataContextInfo.Create(mainFeedPackageSearchMetadata))
-                .ToList();
-
+            var packageSearchMetadataContextInfoCollection = new List<PackageSearchMetadataContextInfo>(mainFeedResult.Items.Count);
             foreach (IPackageSearchMetadata packageSearchMetadata in mainFeedResult.Items)
             {
                 CacheBackgroundDataAsync(packageSearchMetadata, filter.IncludePrerelease);
+                packageSearchMetadataContextInfoCollection.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata));
             }
 
             return new SearchResultContextInfo(
@@ -130,13 +124,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 cancellationToken);
             _lastMainFeedSearchResult = refreshSearchResult;
 
-            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageItems = _lastMainFeedSearchResult.Items
-                .Select(item => PackageSearchMetadataContextInfo.Create(item))
-                .ToList();
+            var packageItems = new List<PackageSearchMetadataContextInfo>(_lastMainFeedSearchResult.Items.Count);
 
             foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
             {
                 CacheBackgroundDataAsync(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
+                packageItems.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata));
             }
 
             return new SearchResultContextInfo(
@@ -181,13 +174,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 cancellationToken);
             _lastMainFeedSearchResult = continueSearchResult;
 
-            IReadOnlyCollection<PackageSearchMetadataContextInfo> packageItems = _lastMainFeedSearchResult.Items
-                .Select(item => PackageSearchMetadataContextInfo.Create(item))
-                .ToList();
+            var packageItems = new List<PackageSearchMetadataContextInfo>(_lastMainFeedSearchResult.Items.Count);
 
             foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
             {
                 CacheBackgroundDataAsync(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
+                packageItems.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata));
             }
 
             return new SearchResultContextInfo(

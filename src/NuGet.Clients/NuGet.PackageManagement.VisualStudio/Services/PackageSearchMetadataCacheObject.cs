@@ -4,11 +4,13 @@
 #nullable enable
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -23,38 +25,38 @@ namespace NuGet.PackageManagement.VisualStudio
             _packageSearchMetadata = packageSearchMetadata;
             _packageMetadataProvider = packageMetadataProvider;
             AllVersionsContextInfo = GetVersionInfoContextInfoAsync();
-            PackageDeprecrationMetadataContextInfo = GetPackageDeprecationMetadataContextInfoAsync();
+            PackageDeprecationMetadataContextInfo = GetPackageDeprecationMetadataContextInfoAsync();
             DetailedPackageSearchMetadataContextInfo = GetDetailedPackageSearchMetadataContextInfoAsync();
         }
 
-        public Task<IReadOnlyCollection<VersionInfoContextInfo>> AllVersionsContextInfo { get; }
-        public Task<PackageDeprecationMetadataContextInfo?> PackageDeprecrationMetadataContextInfo { get; }
-        public Task<PackageSearchMetadataContextInfo> DetailedPackageSearchMetadataContextInfo { get; }
+        public ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> AllVersionsContextInfo { get; }
+        public ValueTask<PackageDeprecationMetadataContextInfo?> PackageDeprecationMetadataContextInfo { get; }
+        public ValueTask<PackageSearchMetadataContextInfo> DetailedPackageSearchMetadataContextInfo { get; }
 
         public static string GetCacheId(string packageId, bool includePrerelease, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
         {
             string packageSourcesString = string.Join(" ", packageSources.Select(ps => ps.Name));
-            return string.Concat(packageId, ":", includePrerelease, " - ", packageSourcesString);
+            return HashCodeCombiner.GetHashCode(packageId, includePrerelease, packageSourcesString).ToString(CultureInfo.InvariantCulture);
         }
 
-        private async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoContextInfoAsync()
+        private async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoContextInfoAsync()
         {
             IEnumerable<VersionInfo> versions = await _packageSearchMetadata.GetVersionsAsync();
             IEnumerable<Task<VersionInfoContextInfo>> versionContextInfoTasks = versions.Select(async v => await VersionInfoContextInfo.CreateAsync(v));
             return await Task.WhenAll(versionContextInfoTasks);
         }
 
-        private async Task<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationMetadataContextInfoAsync()
+        private async ValueTask<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationMetadataContextInfoAsync()
         {
             PackageDeprecationMetadata? deprecationMetadata = await _packageSearchMetadata.GetDeprecationMetadataAsync();
             if (deprecationMetadata == null)
             {
                 return null;
             }
-            return PackageDeprecationMetadataContextInfo.Create(deprecationMetadata);
+            return NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.Create(deprecationMetadata);
         }
 
-        private async Task<PackageSearchMetadataContextInfo> GetDetailedPackageSearchMetadataContextInfoAsync()
+        private async ValueTask<PackageSearchMetadataContextInfo> GetDetailedPackageSearchMetadataContextInfoAsync()
         {
             IPackageSearchMetadata detailedMetadata = await _packageMetadataProvider.GetPackageMetadataAsync(_packageSearchMetadata.Identity, includePrerelease: true, CancellationToken.None);
             return PackageSearchMetadataContextInfo.Create(detailedMetadata);

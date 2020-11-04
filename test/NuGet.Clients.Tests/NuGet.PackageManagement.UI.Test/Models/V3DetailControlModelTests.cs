@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance = new PackageDetailControlModel(
                  solutionManager: solMgr.Object,
                  Array.Empty<IProjectContextInfo>());
-            _testInstance.SetCurrentPackage(
+            _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();

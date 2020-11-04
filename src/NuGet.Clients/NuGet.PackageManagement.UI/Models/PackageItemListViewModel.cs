@@ -467,8 +467,9 @@ namespace NuGet.PackageManagement.UI
             _backgroundDeprecationMetadataLoader = AsyncLazy.New(
                 async () =>
                 {
-                    var packageSearchMetadata = await GetDetailedPackageSearchMetadataAsync();
-                    return packageSearchMetadata.Item2;
+                    (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
+                        await GetDetailedPackageSearchMetadataAsync();
+                    return packageDeprecationMetadata;
                 });
 
             OnPropertyChanged(nameof(Status));
