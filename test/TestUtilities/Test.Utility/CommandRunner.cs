@@ -22,7 +22,6 @@ namespace NuGet.Test.Utility
             bool waitForExit,
             int timeOutInMilliseconds = 60000,
             Action<StreamWriter> inputAction = null,
-            bool shareProcessObject = false,
             IDictionary<string, string> environmentVariables = null)
         {
             var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
@@ -60,27 +59,33 @@ namespace NuGet.Test.Utility
 
             Process p = null;
 
-            try
+            using (p = new Process())
             {
-                p = new Process();
+                p.OutputDataReceived += OutputHandler;
+                p.ErrorDataReceived += ErrorHandler;
 
                 p.StartInfo = psi;
                 p.Start();
 
-                var outputTask = ConsumeStreamReaderAsync(p.StandardOutput, output);
-                var errorTask = ConsumeStreamReaderAsync(p.StandardError, errors);
-
                 inputAction?.Invoke(p.StandardInput);
+
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
 
                 if (waitForExit)
                 {
-#if DEBUG
-                    var processExited = true;
+#if DEBUG                   
                     p.WaitForExit();
+                    var processExited = true;
 #else
                     var processExited = p.WaitForExit(timeOutInMilliseconds);
 #endif
-                    if (!processExited)
+                    if (processExited)
+                    {
+                        p.WaitForExit();
+                        exitCode = p.ExitCode;
+                    }
+                    else
                     {
                         Kill(p);
                         WaitForExit(p);
@@ -89,34 +94,25 @@ namespace NuGet.Test.Utility
 
                         throw new TimeoutException($"{processName} timed out: " + psi.Arguments);
                     }
+                }
 
-                    if (processExited)
-                    {
-                        Task.WaitAll(outputTask, errorTask);
-                        exitCode = p.ExitCode;
-                    }
-                }
+                p.CancelOutputRead();
+                p.CancelErrorRead();
             }
-            finally
+
+            void OutputHandler(object sendingProcess, DataReceivedEventArgs e)
             {
-                if (!shareProcessObject)
-                {
-                    p.Dispose();
-                }
+                if (!string.IsNullOrEmpty(e.Data))
+                    output.AppendLine(e.Data);
+            }
+
+            void ErrorHandler(object sendingProcess, DataReceivedEventArgs e)
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                    errors.AppendLine(e.Data);
             }
 
             return new CommandRunnerResult(p, exitCode, output.ToString(), errors.ToString());
-        }
-
-        private static async Task ConsumeStreamReaderAsync(StreamReader reader, StringBuilder lines)
-        {
-            await Task.Yield();
-
-            string line;
-            while ((line = await reader.ReadLineAsync()) != null)
-            {
-                lines.AppendLine(line);
-            }
         }
 
         private static void Kill(Process process)
