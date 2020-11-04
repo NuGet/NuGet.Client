@@ -54,7 +54,7 @@ namespace NuGet.Protocol.Core.Types
         }
 
         public async Task Push(
-            string packagePath,
+            IList<string> packagePaths,
             string symbolSource, // empty to not push symbols
             int timeoutInSecond,
             bool disableBuffering,
@@ -74,29 +74,48 @@ namespace NuGet.Protocol.Core.Types
                 tokenSource.CancelAfter(requestTimeout);
                 var apiKey = getApiKey(_source);
 
-                bool explicitSnupkgPush = true;
-
-                if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
+                foreach (var packagePath in packagePaths)
                 {
-                    await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate,
-                                      requestTimeout, log, tokenSource.Token);
+                    bool explicitSnupkgPush = true;
+                    if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate,
+                            requestTimeout, log, tokenSource.Token);
 
-                    //Since this was not a snupkg push (probably .nupkg), when we try pushing symbols later, don't error if there are no snupkg files found.
-                    explicitSnupkgPush = false;
-                }
+                        //Since this was not a snupkg push (probably .nupkg), when we try pushing symbols later, don't error if there are no snupkg files found.
+                        explicitSnupkgPush = false;
+                    }
 
-                // symbolSource is only set when:
-                // - The user specified it on the command line
-                // - The endpoint for main package supports pushing snupkgs
-                if (!string.IsNullOrEmpty(symbolSource))
-                {
-                    var symbolApiKey = getSymbolApiKey(symbolSource);
+                    // symbolSource is only set when:
+                    // - The user specified it on the command line
+                    // - The endpoint for main package supports pushing snupkgs
+                    if (!string.IsNullOrEmpty(symbolSource))
+                    {
+                        var symbolApiKey = getSymbolApiKey(symbolSource);
 
-                    await PushSymbols(packagePath, symbolSource, symbolApiKey,
-                        noServiceEndpoint, skipDuplicate, symbolPackageUpdateResource,
-                        requestTimeout, log, explicitSnupkgPush, tokenSource.Token);
+                        await PushSymbols(packagePath, symbolSource, symbolApiKey,
+                            noServiceEndpoint, skipDuplicate, symbolPackageUpdateResource,
+                            requestTimeout, log, explicitSnupkgPush, tokenSource.Token);
+                    }
                 }
             }
+        }
+
+        [Obsolete("Use Push method which takes multiple package paths.")]
+        public Task Push(
+            string packagePath,
+            string symbolSource, // empty to not push symbols
+            int timeoutInSecond,
+            bool disableBuffering,
+            Func<string, string> getApiKey,
+            Func<string, string> getSymbolApiKey,
+            bool noServiceEndpoint,
+            bool skipDuplicate,
+            SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
+            ILogger log)
+        {
+            return Push(new[] { packagePath }, symbolSource, timeoutInSecond, disableBuffering, getApiKey,
+                getSymbolApiKey, noServiceEndpoint, skipDuplicate, symbolPackageUpdateResource, log);
         }
 
         [Obsolete("Consolidating to one PackageUpdateResource.Push method which has all parameters defined.")]

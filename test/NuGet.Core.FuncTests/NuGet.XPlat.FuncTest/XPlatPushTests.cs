@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -144,6 +146,45 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, exitCode);
                 Assert.Contains($"PUT {packageSource.Source}", log.ShowMessages());
                 Assert.Contains("Your package was pushed.", log.ShowMessages());
+            }
+        }
+
+        // Tests pushing multiple packages (multiple paths)
+        [Fact]
+        public async Task PushMultiplePathsToFileSystemSource()
+        {
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
+            {
+                // Arrange
+                var log = new TestCommandOutputLogger();
+                var packageInfoCollection = new[]
+                {
+                    await TestPackagesCore.GetRuntimePackageAsync(packageDirectory, "testPackageA", "1.1.0"),
+                    await TestPackagesCore.GetRuntimePackageAsync(packageDirectory, "testPackageB", "1.1.0"),
+                };
+
+                var pushArgs = new List<string>
+                {
+                    "push",
+                    packageInfoCollection[0].FullName,
+                    packageInfoCollection[1].FullName,
+                    "--source",
+                    source,
+                };
+
+                // Act
+                var exitCode = CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+
+                // Assert
+                Assert.Equal(string.Empty, log.ShowErrors());
+                Assert.Equal(0, exitCode);
+
+                foreach (var packageInfo in packageInfoCollection)
+                {
+                    Assert.Contains($"Pushing {packageInfo.Name}", log.ShowMessages());
+                    Assert.True(File.Exists(Path.Combine(source, packageInfo.Name)));
+                }
             }
         }
 

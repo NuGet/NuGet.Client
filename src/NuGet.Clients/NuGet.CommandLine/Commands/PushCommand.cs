@@ -62,7 +62,7 @@ namespace NuGet.CommandLine
                 await PushRunner.Run(
                     Settings,
                     SourceProvider,
-                    packagePath,
+                    new[] { packagePath },
                     Source,
                     apiKeyValue,
                     SymbolSource,
