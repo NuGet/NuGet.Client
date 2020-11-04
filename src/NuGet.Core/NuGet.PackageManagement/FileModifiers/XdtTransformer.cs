@@ -8,8 +8,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 using Microsoft.Web.XmlTransform;
 using NuGet.PackageManagement;
+using static NuGet.Shared.XmlUtility;
 
 namespace NuGet.ProjectManagement
 {
@@ -110,7 +112,8 @@ namespace NuGet.ProjectManagement
                         {
                             // make sure we close the input stream immediately so that we can override 
                             // the file below when we save to it.
-                            using (var reader = XmlReader.Create(FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath)))
+                            string path = FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath);
+                            using (var reader = XmlReader.Create(path, GetXmlReaderSettings(LoadOptions.PreserveWhitespace)))
                             {
                                 document.Load(reader);
                             }
