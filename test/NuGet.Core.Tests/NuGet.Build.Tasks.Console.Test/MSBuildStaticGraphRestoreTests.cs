@@ -219,11 +219,12 @@ namespace NuGet.Build.Tasks.Console.Test
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var project = new MockMSBuildProject(testDirectory, new Dictionary<string, string>
+                var project = new MockMSBuildProject(testDirectory,
+                properties: new Dictionary<string, string>
                 {
                     ["RestorePackagesPath"] = packagesPath
                 },
-                new Dictionary<string, string>
+                globalProperties: new Dictionary<string, string>
                 {
                     ["RestorePackagesPath"] = packagesPathOverride,
                 });
@@ -505,12 +506,13 @@ namespace NuGet.Build.Tasks.Console.Test
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var project = new MockMSBuildProject(testDirectory, new Dictionary<string, string>
+                var project = new MockMSBuildProject(testDirectory,
+                properties: new Dictionary<string, string>
                 {
                     ["RestoreRepositoryPath"] = restoreRepositoryPath,
                     ["SolutionPath"] = solutionPath == null || solutionPath == "*Undefined*" ? solutionPath : UriUtility.GetAbsolutePath(testDirectory, solutionPath)
                 },
-                new Dictionary<string, string>
+                globalProperties: new Dictionary<string, string>
                 {
                     ["RestoreRepositoryPath"] = repositoryPathOverride,
                 });
@@ -610,11 +612,12 @@ namespace NuGet.Build.Tasks.Console.Test
         [Fact]
         public void GetSources_WhenRestoreSourcesAndRestoreSourcesOverrideSpecified_CorrectSourcesDetected()
         {
-            var project = new MockMSBuildProject(new Dictionary<string, string>
+            var project = new MockMSBuildProject(
+            properties: new Dictionary<string, string>
             {
                 ["RestoreSources"] = "https://source1;https://source2",
             },
-            new Dictionary<string, string>
+            globalProperties: new Dictionary<string, string>
             {
                 ["RestoreSources"] = "https://source3"
             });
