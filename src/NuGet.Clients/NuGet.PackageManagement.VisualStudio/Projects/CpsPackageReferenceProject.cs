@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Gets the both the installed (top level) and transitive package references for this project.
         /// Returns the package reference as two separate lists (installed and transitive).
         /// </summary>
-        public async Task<(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)> GetAllPackagesAsync(CancellationToken token)
+        public override async Task<(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)> GetAllPackagesAsync(CancellationToken token)
         {
             var packageSpec = GetPackageSpec();
 

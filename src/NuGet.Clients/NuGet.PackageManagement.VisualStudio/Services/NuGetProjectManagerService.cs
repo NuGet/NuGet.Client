@@ -175,13 +175,9 @@ namespace NuGet.PackageManagement.VisualStudio
             List<Task<IEnumerable<PackageReference>>> nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
             foreach (var project in projects)
             {
-                if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)
+                if (project is PackageReferenceProject packageReferenceProject)
                 {
-                    prStyleTasks.Add(legacyPackageReferenceProject.GetAllPackagesAsync(cancellationToken));
-                }
-                else if (project is CpsPackageReferenceProject netCorePackageReferenceProject)
-                {
-                    prStyleTasks.Add(netCorePackageReferenceProject.GetAllPackagesAsync(cancellationToken));
+                    prStyleTasks.Add(packageReferenceProject.GetAllPackagesAsync(cancellationToken));
                 }
                 else
                 {
