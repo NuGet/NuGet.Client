@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 foreach (var recommendedFeedResultItem in recommenderFeedResults.Items)
                 {
-                    CacheBackgroundDataAsync(recommendedFeedResultItem, filter.IncludePrerelease);
+                    CacheBackgroundData(recommendedFeedResultItem, filter.IncludePrerelease);
                     recommendedPackageSearchMetadataContextInfo.Add(
                         PackageSearchMetadataContextInfo.Create(
                             recommendedFeedResultItem,
@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     if (!recommendedIds.Contains(mainFeedResultItem.Identity.Id))
                     {
-                        CacheBackgroundDataAsync(mainFeedResultItem, filter.IncludePrerelease);
+                        CacheBackgroundData(mainFeedResultItem, filter.IncludePrerelease);
                         recommendedPackageSearchMetadataContextInfo.Add(PackageSearchMetadataContextInfo.Create(mainFeedResultItem));
                     }
                 }
@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageSearchMetadataContextInfoCollection = new List<PackageSearchMetadataContextInfo>(mainFeedResult.Items.Count);
             foreach (IPackageSearchMetadata packageSearchMetadata in mainFeedResult.Items)
             {
-                CacheBackgroundDataAsync(packageSearchMetadata, filter.IncludePrerelease);
+                CacheBackgroundData(packageSearchMetadata, filter.IncludePrerelease);
                 packageSearchMetadataContextInfoCollection.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata));
             }
 
@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
             {
-                CacheBackgroundDataAsync(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
+                CacheBackgroundData(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
                 packageItems.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata));
             }
 
@@ -178,7 +178,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
             {
-                CacheBackgroundDataAsync(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
+                CacheBackgroundData(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
                 packageItems.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata));
             }
 
@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return totalCount;
         }
 
-        private void CacheBackgroundDataAsync(IPackageSearchMetadata packageSearchMetadata, bool includesPrerelease)
+        private void CacheBackgroundData(IPackageSearchMetadata packageSearchMetadata, bool includesPrerelease)
         {
             if (_inMemoryObjectCache == null)
             {

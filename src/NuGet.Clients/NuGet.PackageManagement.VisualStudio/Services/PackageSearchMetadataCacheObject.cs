@@ -35,8 +35,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static string GetCacheId(string packageId, bool includePrerelease, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
         {
-            string packageSourcesString = string.Join(" ", packageSources.Select(ps => ps.Name));
-            return HashCodeCombiner.GetHashCode(packageId, includePrerelease, packageSourcesString).ToString(CultureInfo.InvariantCulture);
+            var hashCodeCombiner = new HashCodeCombiner();
+            hashCodeCombiner.AddSequence(packageSources);
+            hashCodeCombiner.AddStringIgnoreCase(packageId);
+            hashCodeCombiner.AddObject(includePrerelease.GetHashCode());
+            return hashCodeCombiner.CombinedHash.ToString(CultureInfo.InvariantCulture);
         }
 
         private async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoContextInfoAsync()
