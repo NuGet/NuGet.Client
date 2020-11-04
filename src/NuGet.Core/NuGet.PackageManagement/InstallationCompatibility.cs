@@ -13,7 +13,6 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
@@ -173,14 +172,6 @@ namespace NuGet.PackageManagement
                     packageType == PackageType.Dependency) // A package explicitly stated as a dependency.
                 {
                     // These types are always acceptable.
-                }
-                else if (nuGetProject is ProjectKNuGetProjectBase &&
-                         packageType == PackageType.DotnetCliTool)
-                {
-                    // ProjectKNuGetProjectBase projects are .NET Core (both "dotnet" and "dnx").
-                    // .NET CLI tools are support for "dotnet" projects. The projects eventually
-                    // call into INuGetPackageManager, which is not implemented by NuGet. This code
-                    // will make the decision of how to install the .NET CLI tool package.
                 }
                 else
                 {

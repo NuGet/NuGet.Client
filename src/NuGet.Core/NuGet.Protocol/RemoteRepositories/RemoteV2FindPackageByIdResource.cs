@@ -28,14 +28,9 @@ namespace NuGet.Protocol
     {
         private static readonly XName _xnameEntry = XName.Get("entry", "http://www.w3.org/2005/Atom");
         private static readonly XName _xnameContent = XName.Get("content", "http://www.w3.org/2005/Atom");
-        private static readonly XName _xnameLink = XName.Get("link", "http://www.w3.org/2005/Atom");
         private static readonly XName _xnameProperties = XName.Get("properties", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata");
         private static readonly XName _xnameId = XName.Get("Id", "http://schemas.microsoft.com/ado/2007/08/dataservices");
         private static readonly XName _xnameVersion = XName.Get("Version", "http://schemas.microsoft.com/ado/2007/08/dataservices");
-        private static readonly XName _xnamePublish = XName.Get("Published", "http://schemas.microsoft.com/ado/2007/08/dataservices");
-
-        // An unlisted package's publish time must be 1900-01-01T00:00:00.
-        private static readonly DateTime _unlistedPublishedTime = new DateTime(1900, 1, 1, 0, 0, 0);
 
         private readonly string _baseUri;
         private readonly HttpSource _httpSource;

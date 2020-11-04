@@ -20,7 +20,6 @@ namespace NuGet.Protocol
         private readonly IDictionary<string, List<ServiceIndexEntry>> _index;
         private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
-        private static readonly IReadOnlyList<Uri> _emptyUris = new List<Uri>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
 
         public ServiceIndexResourceV3(JObject index, DateTime requestTime)

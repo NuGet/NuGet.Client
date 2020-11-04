@@ -23,7 +23,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     [Export(typeof(INuGetProjectProvider))]
     [Name(nameof(CpsPackageReferenceProjectProvider))]
-    [Microsoft.VisualStudio.Utilities.Order(After = nameof(ProjectKNuGetProjectProvider))]
     public class CpsPackageReferenceProjectProvider : INuGetProjectProvider
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();

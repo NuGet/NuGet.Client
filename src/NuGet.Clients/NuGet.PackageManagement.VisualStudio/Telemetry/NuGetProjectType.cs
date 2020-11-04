@@ -29,11 +29,6 @@ namespace NuGet.PackageManagement.Telemetry
         UwpProjectJson = 3,
 
         /// <summary>
-        /// Corresponds to <see cref="ProjectKNuGetProjectBase"/>.
-        /// </summary>
-        XProjProjectJson = 4,
-
-        /// <summary>
         /// Corresponds to <see cref="MSBuildShellOutNuGetProject"/>.
         /// </summary>
         CPSBasedPackageRefs = 5,

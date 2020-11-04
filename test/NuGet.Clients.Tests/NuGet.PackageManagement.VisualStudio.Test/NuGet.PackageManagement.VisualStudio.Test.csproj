@@ -34,7 +34,6 @@
     <Compile Include="Feeds\InstalledPackageFeedTests.cs" />
     <Compile Include="FrameworkAssemblyResolverTests.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceRestoreUtilityTests.cs" />
-    <Compile Include="ProjectSystems\ProjectKNuGetProjectTests.cs" />
     <Compile Include="ProjectSystems\ProjectSystemCacheTests.cs" />
     <Compile Include="ProjectSystems\TestVSProjectAdapter.cs" />
     <Compile Include="Projects\CpsPackageReferenceProjectProviderTests.cs" />
