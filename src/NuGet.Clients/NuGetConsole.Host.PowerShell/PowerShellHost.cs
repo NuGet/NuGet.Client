@@ -1021,7 +1021,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
 
-            // Below emits telemetry in there was no solution was loaded at all, but if there were any solution then this one internally ignored because it's already emitted with solution SolutionClosing event.
+            // Below emits telemetry in there was no solution was loaded at all, but if there were any solution then this one will ignored because actual data already emitted with solution SolutionClosing event previously.
+            // If no solution loaded nor PMC is engaged at then this will be ignored.  Rather than sending separate nugetvssolutionclose telemetry with no data just ignore.
             EmitPowershellUsageTelemetry(false);
         }
 
