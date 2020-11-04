@@ -59,7 +59,6 @@ namespace NuGet.CommandLine
         private const string ContentItemType = "Content";
         private const string ProjectReferenceItemType = "ProjectReference";
         private const string ReferenceOutputAssembly = "ReferenceOutputAssembly";
-        private const string PackagesFolder = "packages";
         private const string TransformFileExtension = ".transform";
 
         [Import]

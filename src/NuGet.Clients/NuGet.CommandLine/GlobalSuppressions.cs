@@ -10,7 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Build", "CA1802:Field 'UserAgent' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.CommandLine.CommandLineConstants.UserAgent")]
 [assembly: SuppressMessage("Build", "CA1802:Field 'CredentialProviderPattern' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.CommandLine.ExtensionLocator.CredentialProviderPattern")]
-[assembly: SuppressMessage("Build", "CA1823:Unused field 'PackagesFolder'.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.CommandLine.ProjectFactory.PackagesFolder")]
 [assembly: SuppressMessage("Build", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.Common.MSBuildUser._frameworkAssembly")]
 [assembly: SuppressMessage("Build", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.Common.MSBuildUser._msbuildAssembly")]
 [assembly: SuppressMessage("Build", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.Common.MSBuildUser._msbuildDirectory")]

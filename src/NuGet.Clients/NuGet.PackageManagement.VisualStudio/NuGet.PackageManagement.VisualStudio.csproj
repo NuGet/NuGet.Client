@@ -84,15 +84,11 @@
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
     <Compile Include="Migrate\ProjectJsonToPackageRefMigrator.cs" />
     <Compile Include="CommonResources.cs" />
-    <Compile Include="Common\AsyncLockAwaiter.cs" />
-    <Compile Include="Common\AsyncLockReleaser.cs" />
-    <Compile Include="Common\IAsyncLockAwaitable.cs" />
     <Compile Include="Common\PackageCollection.cs" />
     <Compile Include="Common\PackageCollectionExtensions.cs" />
     <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
     <Compile Include="PackageFeeds\LoadingStatusExtensionMethods.cs" />
-    <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
     <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
     <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
@@ -121,7 +117,6 @@
     <Compile Include="PackageFeeds\SourceRepositoryExtensions.cs" />
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
     <Compile Include="Services\BrokeredServicesUtilities.cs" />
-    <Compile Include="Services\DeferredProjectWorkspaceService.cs" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
@@ -129,7 +124,6 @@
     <Compile Include="Projects\INuGetProjectProvider.cs" />
     <Compile Include="Projects\MSBuildNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectJsonProjectProvider.cs" />
-    <Compile Include="Projects\ProjectKNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectSystemCache.cs" />
     <Compile Include="Projects\CpsPackageReferenceProjectProvider.cs" />
     <Compile Include="Projects\ProjectProviderContext.cs" />
@@ -152,7 +146,6 @@
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\NativeProjectSystem.cs" />
-    <Compile Include="Projects\ProjectKNuGetProject.cs" />
     <Compile Include="ProjectSystems\WebProjectSystem.cs" />
     <Compile Include="ProjectSystems\WebSiteProjectSystem.cs" />
     <Compile Include="ProjectSystems\WindowsStoreProjectSystem.cs" />
@@ -212,7 +205,6 @@
     <Compile Include="Utility\MicrosoftBuildEvaluationProjectUtility.cs" />
     <Compile Include="IDE\VSSolutionManager.cs" />
     <Compile Include="Services\DefaultProjectThreadingService.cs" />
-    <Compile Include="ProjectServices\DeferredProjectServicesProxy.cs" />
     <Compile Include="Projects\IVsProjectAdapterProvider.cs" />
     <Compile Include="Services\IVsProjectThreadingService.cs" />
     <Compile Include="ProjectServices\VsProjectBuildProperties.cs" />
@@ -220,8 +212,6 @@
     <Compile Include="Projects\VsProjectAdapter.cs" />
     <Compile Include="Projects\VsProjectAdapterProvider.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemServices.cs" />
-    <Compile Include="ProjectServices\WorkspaceProjectBuildProperties.cs" />
-    <Compile Include="ProjectServices\WorkspaceProjectServices.cs" />
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>

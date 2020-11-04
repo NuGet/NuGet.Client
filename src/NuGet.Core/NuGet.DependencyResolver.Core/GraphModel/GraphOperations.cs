@@ -889,7 +889,6 @@ namespace NuGet.DependencyResolver
         // Box Drawing Unicode characters:
         // http://www.unicode.org/charts/PDF/U2500.pdf
         private const char LIGHT_HORIZONTAL = '\u2500';
-        private const char LIGHT_UP_AND_RIGHT = '\u2514';
         private const char LIGHT_VERTICAL_AND_RIGHT = '\u251C';
 
         [Conditional("DEBUG")]

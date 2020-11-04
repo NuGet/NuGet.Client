@@ -17,7 +17,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(NuGetProjectType.Unknown)]
         [InlineData(NuGetProjectType.PackagesConfig)]
         [InlineData(NuGetProjectType.UwpProjectJson)]
-        [InlineData(NuGetProjectType.XProjProjectJson)]
         [InlineData(NuGetProjectType.CPSBasedPackageRefs)]
         [InlineData(NuGetProjectType.LegacyProjectSystemWithPackageRefs)]
         [InlineData(NuGetProjectType.UnconfiguredNuGetType)]
