@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
 
-        public async Task<(PackageCollection, PackageCollection)> GetAllPackagesAsync() => await _allPackagesTask;
+        public async Task<(PackageCollection installedPackages, PackageCollection transitivePackages)> GetAllPackagesAsync() => await _allPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
         public async Task<IList<string>> GetSupportedFrameworksAsync()

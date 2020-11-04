@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageCollection(packages);
         }
 
-        public static async Task<(PackageCollection, PackageCollection)> FromProjectsIncludeTransitiveAsync(
+        public static async Task<(PackageCollection installedPackages, PackageCollection transitivePackages)> FromProjectsIncludeTransitiveAsync(
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
             CancellationToken cancellationToken)
