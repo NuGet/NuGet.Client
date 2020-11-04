@@ -85,6 +85,7 @@ namespace NuGet.ProjectManagement
             }
         }
 
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static bool TryParseDocument(string content, out XDocument document)
         {
             document = null;
