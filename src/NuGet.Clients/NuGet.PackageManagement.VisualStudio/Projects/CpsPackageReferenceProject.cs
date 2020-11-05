@@ -207,7 +207,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 foreach (var projectReference in frameworkInfo.ProjectReferences)
                 {
-                    if (SupportedProjectTypes.IsSupportedProjectExtension(projectReference.ProjectPath))
+                    if (ProjectType.IsSupportedProjectExtension(projectReference.ProjectPath))
                     {
                         projectReferences.Add(projectReference);
                     }

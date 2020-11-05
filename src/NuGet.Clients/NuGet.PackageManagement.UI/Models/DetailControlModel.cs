@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
+using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -45,9 +47,12 @@ namespace NuGet.PackageManagement.UI
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
-        protected DetailControlModel(IEnumerable<IProjectContextInfo> projects)
+        protected DetailControlModel(
+            IServiceBroker serviceBroker,
+            IEnumerable<IProjectContextInfo> projects)
         {
             _nugetProjects = projects;
+            ServiceBroker = serviceBroker;
             _options = new Options();
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
@@ -71,6 +76,8 @@ namespace NuGet.PackageManagement.UI
         public int RecommendedCount { get; private set; }
         public bool RecommendPackages { get; private set; }
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; private set; }
+
+        protected IServiceBroker ServiceBroker { get; }
 
         /// <summary>
         /// Sets the current selection info
@@ -102,6 +109,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(Id));
             OnPropertyChanged(nameof(PackageReader));
             OnPropertyChanged(nameof(IconUrl));
+            OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
 
             var getVersionsTask = searchResultPackage.GetVersionsAsync();
@@ -117,14 +125,19 @@ namespace NuGet.PackageManagement.UI
                 if (project.ProjectKind == NuGetProjectKind.PackagesConfig)
                 {
                     // cache allowed version range for each nuget project for current selected package
-                    var packageReference = (await project.GetInstalledPackagesAsync(CancellationToken.None))
+                    IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
+                        ServiceBroker,
+                        CancellationToken.None);
+                    IPackageReferenceContextInfo packageReference = installedPackages
                         .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, searchResultPackage.Id));
 
                     var range = packageReference?.AllowedVersions;
 
                     if (range != null && !VersionRange.All.Equals(range))
                     {
-                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                            ServiceBroker,
+                            CancellationToken.None);
                         var constraint = new ProjectVersionConstraint()
                         {
                             ProjectName = projectMetadata.Name,
@@ -137,18 +150,23 @@ namespace NuGet.PackageManagement.UI
                 }
                 else if (project.ProjectKind == NuGetProjectKind.PackageReference)
                 {
-                    var packageReferences = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                    IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = await project.GetInstalledPackagesAsync(
+                        ServiceBroker,
+                        CancellationToken.None);
 
                     // First the lowest auto referenced version of this package.
-                    var autoReferenced = packageReferences.Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.Identity.Id)
-                                                                      && e.Identity.Version != null)
-                                                        .Where(e => e.IsAutoReferenced)
-                                                        .OrderBy(e => e.Identity.Version)
-                                                        .FirstOrDefault();
+                    IPackageReferenceContextInfo autoReferenced = packageReferences
+                        .Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.Identity.Id)
+                            && e.Identity.Version != null)
+                        .Where(e => e.IsAutoReferenced)
+                        .OrderBy(e => e.Identity.Version)
+                        .FirstOrDefault();
 
                     if (autoReferenced != null)
                     {
-                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(CancellationToken.None);
+                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                            ServiceBroker,
+                            CancellationToken.None);
 
                         // Add constraint for auto referenced package.
                         var constraint = new ProjectVersionConstraint()
@@ -237,7 +255,10 @@ namespace NuGet.PackageManagement.UI
                         var installedPackages = new List<IPackageReferenceContextInfo>();
                         foreach (var project in _nugetProjects)
                         {
-                            var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
+                                ServiceBroker,
+                                CancellationToken.None);
+
                             installedPackages.AddRange(projectInstalledPackages);
                         }
                         return installedPackages.Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
@@ -266,13 +287,15 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static async Task<IReadOnlyList<PackageDependency>> GetDependencies(IProjectContextInfo project)
+        private async Task<IReadOnlyList<PackageDependency>> GetDependencies(IProjectContextInfo project)
         {
             var results = new List<PackageDependency>();
 
-            var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
+                ServiceBroker,
+                CancellationToken.None);
 
-            foreach (var package in projectInstalledPackages)
+            foreach (IPackageReferenceContextInfo package in projectInstalledPackages)
             {
                 VersionRange range;
 
@@ -311,6 +334,8 @@ namespace NuGet.PackageManagement.UI
         public string Id => _searchResultPackage?.Id;
 
         public Uri IconUrl => _searchResultPackage?.IconUrl;
+
+        public BitmapSource IconBitmap => _searchResultPackage?.IconBitmap;
 
         public bool PrefixReserved => _searchResultPackage?.PrefixReserved ?? false;
 

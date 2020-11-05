@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
@@ -297,6 +298,9 @@ namespace NuGet.SolutionRestoreManager
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
             var projectIds = sortedProjects.Select(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
+            var projectDictionary = sortedProjects
+                .GroupBy(x => x.ProjectStyle)
+                .ToDictionary(x => x.Key, y => y.Count());
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
@@ -308,6 +312,13 @@ namespace NuGet.SolutionRestoreManager
                 packageCount: _packageCount,
                 noOpProjectsCount: _noOpProjectsCount,
                 upToDateProjectsCount: _upToDateProjectCount,
+                unknownProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.Unknown, 0), // appears in DependencyGraphRestoreUtility
+                projectJsonProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.ProjectJson, 0),
+                packageReferenceProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.PackageReference, 0),
+                legacyPackageReferenceProjectsCount: sortedProjects.Where(x => x.ProjectStyle == ProjectStyle.PackageReference && x is LegacyPackageReferenceProject).Count(),
+                cpsPackageReferenceProjectsCount: sortedProjects.Where(x => x.ProjectStyle == ProjectStyle.PackageReference && x is CpsPackageReferenceProject).Count(),
+                dotnetCliToolProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.DotnetCliTool, 0), // appears in DependencyGraphRestoreUtility
+                packagesConfigProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.PackagesConfig, 0),
                 DateTimeOffset.Now,
                 duration,
                 isSolutionLoadRestore: _isSolutionLoadRestore,
@@ -342,7 +353,6 @@ namespace NuGet.SolutionRestoreManager
                     var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
                     if (!Path.IsPathRooted(globalPackagesFolder))
                     {
-
                         var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Resources.RelativeGlobalPackagesFolder,
@@ -712,10 +722,20 @@ namespace NuGet.SolutionRestoreManager
 
                 var dte = await _asyncServiceProvider.GetDTEAsync();
                 var projects = dte.Solution.Projects;
-                return projects
-                    .OfType<EnvDTE.Project>()
-                    .Select(p => new ProjectInfo(p.GetFullPath(), p.Name))
-                    .Any(p => p.CheckPackagesConfig());
+
+                var succeeded = false;
+
+                foreach (var p in projects.OfType<EnvDTE.Project>())
+                {
+                    var pi = new ProjectInfo(await p.GetFullPathAsync(), p.Name);
+                    if (pi.CheckPackagesConfig())
+                    {
+                        succeeded = true;
+                        break;
+                    }
+                }
+
+                return succeeded;
             });
         }
 

@@ -7,6 +7,7 @@ using System.Threading;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Signing;
@@ -14,6 +15,8 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using StreamJsonRpc;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
@@ -54,7 +57,77 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
+        [Fact]
+        public void ShowError_WhenArgumentIsRemoteInvocationExceptionForSignatureException_ShowsError()
+        {
+            var remoteError = new RemoteError(
+                typeName: typeof(SignatureException).FullName,
+                new LogMessage(LogLevel.Error, message: "a", NuGetLogCode.NU3018),
+                new[]
+                {
+                    new LogMessage(LogLevel.Error, message: "b", NuGetLogCode.NU3019),
+                    new LogMessage(LogLevel.Warning, message: "c", NuGetLogCode.NU3027)
+                },
+                projectContextLogMessage: "d",
+                activityLogMessage: "e");
+            var exception = new RemoteInvocationException(
+                message: "f",
+                errorCode: 0,
+                errorData: null,
+                deserializedErrorData: remoteError);
+            var defaultLogger = new Mock<INuGetUILogger>();
+            var projectLogger = new Mock<INuGetUILogger>();
+
+            defaultLogger.Setup(x => x.ReportError(It.Is<ILogMessage>(logMessage => ReferenceEquals(logMessage, remoteError.LogMessage))));
+            defaultLogger.Setup(x => x.ReportError(It.Is<ILogMessage>(logMessage => ReferenceEquals(logMessage, remoteError.LogMessages[0]))));
+            defaultLogger.Setup(x => x.ReportError(It.Is<ILogMessage>(logMessage => ReferenceEquals(logMessage, remoteError.LogMessages[1]))));
+            projectLogger.Setup(x => x.Log(It.Is<ILogMessage>(logMessage => ReferenceEquals(logMessage, remoteError.LogMessage))));
+            projectLogger.Setup(x => x.Log(It.Is<ILogMessage>(logMessage => ReferenceEquals(logMessage, remoteError.LogMessages[0]))));
+            projectLogger.Setup(x => x.Log(It.Is<ILogMessage>(logMessage => ReferenceEquals(logMessage, remoteError.LogMessages[1]))));
+
+            using (NuGetUI ui = CreateNuGetUI(defaultLogger.Object, projectLogger.Object))
+            {
+                ui.ShowError(exception);
+
+                defaultLogger.VerifyAll();
+                projectLogger.VerifyAll();
+            }
+        }
+
+        [Fact]
+        public void ShowError_WhenArgumentIsNotRemoteInvocationException_ShowsError()
+        {
+            var exception = new DivideByZeroException();
+            var defaultLogger = new Mock<INuGetUILogger>();
+            var projectLogger = new Mock<INuGetUILogger>();
+            const bool indent = false;
+
+            defaultLogger.Setup(
+                x => x.ReportError(
+                    It.Is<ILogMessage>(
+                        logMessage => logMessage.Level == LogLevel.Error
+                        && logMessage.Message == ExceptionUtilities.DisplayMessage(exception, indent))));
+            projectLogger.Setup(
+                x => x.Log(
+                    It.Is<ILogMessage>(
+                        logMessage => logMessage.Level == LogLevel.Error
+                        && logMessage.Message == exception.ToString())));
+
+            using (NuGetUI ui = CreateNuGetUI(defaultLogger.Object, projectLogger.Object))
+            {
+                ui.ShowError(exception);
+
+                defaultLogger.VerifyAll();
+                projectLogger.VerifyAll();
+            }
+        }
+
         private NuGetUI CreateNuGetUI()
+        {
+            return CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>());
+        }
+
+        private NuGetUI CreateNuGetUI(INuGetUILogger defaultLogger, INuGetUILogger projectLogger)
         {
             var uiContext = CreateNuGetUIContext();
 
@@ -62,9 +135,9 @@ namespace NuGet.PackageManagement.UI.Test
                 Mock.Of<ICommonOperations>(),
                 new NuGetUIProjectContext(
                     Mock.Of<ICommonOperations>(),
-                    Mock.Of<INuGetUILogger>(),
+                    projectLogger,
                     Mock.Of<ISourceControlManagerProvider>()),
-                Mock.Of<INuGetUILogger>(),
+                defaultLogger,
                 uiContext);
         }
 

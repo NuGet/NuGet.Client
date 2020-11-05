@@ -203,7 +203,7 @@ namespace NuGet.ContentModel.Infrastructure
                                     Path = path
                                 };
                             }
-
+                            item.Properties.Add(_token + "_raw", substring);
                             item.Properties.Add(_token, value);
                         }
                         endIndex = delimiterIndex;

@@ -8,7 +8,7 @@
   - .NET desktop development
   - Visual Studio extension development.
   - Desktop development with C++
-- [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
+- [Windows 10 SDK](https://developer.microsoft.com/windows/downloads/windows-10-sdk/)
 - [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
   - Please note the preview.5 has an issue that's a blocker for our repository [11862](https://github.com/dotnet/sdk/issues/11862). Avoid .NET 5 preview.5
 - Git

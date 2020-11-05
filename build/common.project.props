@@ -49,8 +49,8 @@
     <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
     <MicroBuildDirectory>$(SolutionPackagesFolder)microbuild.core\0.2.0\build\</MicroBuildDirectory>
-    <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\5.0.0-beta.20224.2\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
-    <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.20352.2\tools\netcoreapp3.1\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
+    <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\6.0.0-beta.20528.5\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
+    <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.20528.3\tools\netcoreapp3.1\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
     <NoWarn>$(NoWarn);NU5105;NU5048</NoWarn>
   </PropertyGroup>
 
@@ -143,7 +143,6 @@
 
   <PropertyGroup Condition=" '$(Version)' == '' ">
     <Version>$(SemanticVersion)$(PreReleaseInformationVersion)</Version>
-    <Version Condition="'$(BUILD_SOURCEVERSION)' != '' AND '$(IsCommandLinePackage)' != 'true'">$(SemanticVersion)$(PreReleaseInformationVersion)+$(BUILD_SOURCEVERSION)</Version>
   </PropertyGroup>
 
   <PropertyGroup>

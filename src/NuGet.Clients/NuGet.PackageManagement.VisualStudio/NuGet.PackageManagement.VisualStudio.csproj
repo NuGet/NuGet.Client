@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\IProjectContextInfoExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
@@ -181,6 +182,7 @@
     <Compile Include="Utility\FrameworkAssembly.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
     <Compile Include="Utility\GetPackageReferenceUtility.cs" />
+    <Compile Include="Utility\IProjectContextInfoUtility.cs" />
     <Compile Include="Utility\ProjectInstalledPackage.cs" />
     <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\NuGetProjectUpgradeUtility.cs" />

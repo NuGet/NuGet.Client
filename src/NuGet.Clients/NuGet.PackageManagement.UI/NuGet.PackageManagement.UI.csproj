@@ -73,6 +73,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IPackageItemLoader.cs" />
     <Compile Include="Models\FreeText.cs" />
+    <Compile Include="Models\IconBitmapStatus.cs" />
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="UserInterfaceService\SolutionUserOptions.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgress.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgressDialogSession.cs" />
+    <Compile Include="Utility\IconBitmapStatusUtility.cs" />
     <Compile Include="Utility\ProjectUtility.cs" />
     <Compile Include="Utility\VsUtility.cs" />
     <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
@@ -169,7 +171,6 @@
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
     <Compile Include="Converters\EnumerableToVisibilityConverter.cs" />
     <Compile Include="Converters\FontSizeConverter.cs" />
-    <Compile Include="Converters\IconUrlToVisibilityConverter.cs" />
     <Compile Include="Converters\InstalledVersionsCountConverter.cs" />
     <Compile Include="Converters\InverseNullToVisibilityConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToStringConverter.cs" />
@@ -181,7 +182,6 @@
     <Compile Include="Converters\StyleKeyConverter.cs" />
     <Compile Include="Converters\SummaryToFontStyleConverter.cs" />
     <Compile Include="Converters\SummaryToStringConverter.cs" />
-    <Compile Include="Converters\IconUrlToImageCacheConverter.cs" />
     <Compile Include="Converters\VersionToStringConverter.cs" />
     <Compile Include="Models\DependencyBehaviorItem.cs" />
     <Compile Include="Models\DetailControlModel.cs" />

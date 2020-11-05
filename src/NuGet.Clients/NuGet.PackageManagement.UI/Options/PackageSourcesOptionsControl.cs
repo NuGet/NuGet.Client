@@ -12,13 +12,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 
@@ -154,9 +155,13 @@ namespace NuGet.Options
 
                 _initialized = true;
 
-                var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+                IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
+                IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
+
 #pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-                _nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetServices.SourceProviderService, cancellationToken: cancellationToken);
+                _nugetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
+                    NuGetServices.SourceProviderService,
+                    cancellationToken: cancellationToken);
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
                 Assumes.NotNull(_nugetSourcesService);
 

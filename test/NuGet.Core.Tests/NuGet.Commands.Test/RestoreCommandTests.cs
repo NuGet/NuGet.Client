@@ -1566,7 +1566,7 @@ namespace NuGet.Commands.Test
             Assert.Equal(NuGetLogCode.NU1109, logMessage.Code);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10133")]
         public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency()
         {
             // Arrange
@@ -1980,6 +1980,7 @@ namespace NuGet.Commands.Test
                 Assert.True(targetLib.Dependencies.Where(d => d.Id == packageName).Any());
             }
         }
+
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)
         {
             NuGetFramework nugetFramework = framework ?? new NuGetFramework("net40");

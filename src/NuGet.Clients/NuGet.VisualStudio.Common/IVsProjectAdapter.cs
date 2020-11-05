@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// MSBuildProjectExtensionsPath project property (e.g. c:\projFoo\obj)
         /// </summary>
-        string MSBuildProjectExtensionsPath { get; }
+        Task<string> GetMSBuildProjectExtensionsPathAsync();
 
         IProjectBuildProperties BuildProperties { get; }
 
@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio
 
         bool IsDeferred { get; }
 
-        bool IsSupported { get; }
+        Task<bool> IsSupportedAsync();
 
         /// <summary>
         /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
@@ -58,7 +58,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Full path to a parent directory containing project file.
         /// </summary>
-        string ProjectDirectory { get; }
+        Task<string> GetProjectDirectoryAsync();
 
         string ProjectName { get; }
 
@@ -159,5 +159,10 @@ namespace NuGet.VisualStudio
         /// <param name="metadataNames">The metadata names to read.</param>
         /// <returns>An <see cref="IEnumerable{(string ItemId, string[] ItemMetadata)}"/> containing the itemId and the metadata values.</returns>
         Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames);
+
+        /// <summary>
+        /// See <see cref="Microsoft.VisualStudio.Shell.PackageUtilities.IsCapabilityMatch(IVsHierarchy, string)"/>
+        /// </summary>
+        Task<bool> IsCapabilityMatchAsync(string capabilityExpression);
     }
 }

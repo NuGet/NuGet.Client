@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -35,11 +36,12 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public static async ValueTask<DeprecatedFrameworkModel> GetDeprecatedFrameworkModelAsync(
+            IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> affectedProjects,
             CancellationToken cancellationToken)
         {
             Task<string>[] tasks = affectedProjects
-                .Select(project => project.GetUniqueNameOrNameAsync(cancellationToken).AsTask())
+                .Select(project => project.GetUniqueNameOrNameAsync(serviceBroker, cancellationToken).AsTask())
                 .ToArray();
 
             string[] projectNames = await Task.WhenAll(tasks);

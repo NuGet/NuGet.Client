@@ -46,7 +46,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             CancellationToken cancellationToken);
 
         ValueTask<IReadOnlyList<ProjectAction>> GetUninstallActionsAsync(
-            string projectId,
+            IReadOnlyCollection<string> projectIds,
             PackageIdentity packageIdentity,
             bool removeDependencies,
             bool forceRemove,

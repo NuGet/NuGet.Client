@@ -11,7 +11,6 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -33,10 +32,13 @@ namespace NuGet.PackageManagement.UI
         // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is being updated by code, while false means the state is changed by user clicking the checkbox.
         private bool _updatingSelectCheckBoxState;
         private bool? _selectCheckBoxState;
+        private bool _isInBatchUpdate;
         private List<PackageInstallationInfo> _projects; // List of projects in the solution
 
-        private PackageSolutionDetailControlModel(IEnumerable<IProjectContextInfo> projects)
-            : base(projects)
+        private PackageSolutionDetailControlModel(
+            IServiceBroker serviceBroker,
+            IEnumerable<IProjectContextInfo> projects)
+            : base(serviceBroker, projects)
         {
             IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }
@@ -44,7 +46,6 @@ namespace NuGet.PackageManagement.UI
         private async ValueTask InitializeAsync(
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
-            IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
             _solutionManager = solutionManager;
@@ -64,17 +65,18 @@ namespace NuGet.PackageManagement.UI
 
             _packageManagerProviders = packageManagerProviders;
 
-            await CreateProjectListsAsync(serviceBroker, cancellationToken);
+            await CreateProjectListsAsync(cancellationToken);
         }
 
         public static async ValueTask<PackageSolutionDetailControlModel> CreateAsync(
+            IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(projects);
-            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, packageManagerProviders, serviceBroker: null, cancellationToken);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
+            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, packageManagerProviders, cancellationToken);
             return packageSolutionDetailControlModel;
         }
 
@@ -85,8 +87,8 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(projects);
-            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, packageManagerProviders, serviceBroker, cancellationToken);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
+            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, packageManagerProviders, cancellationToken);
             return packageSolutionDetailControlModel;
         }
 
@@ -183,11 +185,16 @@ namespace NuGet.PackageManagement.UI
         /// This method is called from several methods that are called from properties and LINQ queries
         /// It is likely not called more than once in an action.
         /// </summary>
-        private static async Task<IPackageReferenceContextInfo> GetInstalledPackageAsync(IProjectContextInfo project, string id, CancellationToken cancellationToken)
+        private async Task<IPackageReferenceContextInfo> GetInstalledPackageAsync(
+            IProjectContextInfo project,
+            string packageId,
+            CancellationToken cancellationToken)
         {
-            IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(cancellationToken);
+            IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
+                ServiceBroker,
+                cancellationToken);
             IPackageReferenceContextInfo installedPackage = installedPackages
-                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, id))
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
                 .FirstOrDefault();
             return installedPackage;
         }
@@ -268,7 +275,7 @@ namespace NuGet.PackageManagement.UI
         // The event handler that is called when a project is added, removed or renamed.
         private void SolutionProjectChanged(object sender, IProjectContextInfo project)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateProjectListsAsync(serviceBroker: null, CancellationToken.None))
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateProjectListsAsync(CancellationToken.None))
                 .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(SolutionProjectChanged));
         }
 
@@ -297,7 +304,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Creates the project lists. Also called after a project is added/removed/renamed.
-        private async Task CreateProjectListsAsync(IServiceBroker serviceBroker, CancellationToken cancellationToken)
+        private async Task CreateProjectListsAsync(CancellationToken cancellationToken)
         {
             // unhook event handler
             if (Projects != null)
@@ -310,21 +317,20 @@ namespace NuGet.PackageManagement.UI
 
             IReadOnlyCollection<IProjectContextInfo> projectContexts;
 
-            if (serviceBroker == null)
+            using (INuGetProjectManagerService projectManagerService = await ServiceBroker.GetProxyAsync<INuGetProjectManagerService>(
+                NuGetServices.ProjectManagerService))
             {
-                serviceBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            }
-
-            using (var nugetProjectManagerService = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
-            {
-                Assumes.NotNull(nugetProjectManagerService);
-                projectContexts = await nugetProjectManagerService.GetProjectsAsync(cancellationToken);
+                Assumes.NotNull(projectManagerService);
+                projectContexts = await projectManagerService.GetProjectsAsync(cancellationToken);
             }
 
             var packageInstallationInfos = new List<PackageInstallationInfo>();
             foreach (IProjectContextInfo project in projectContexts)
             {
-                var packageInstallationInfo = await PackageInstallationInfo.CreateAsync(project, cancellationToken);
+                PackageInstallationInfo packageInstallationInfo = await PackageInstallationInfo.CreateAsync(
+                    ServiceBroker,
+                    project,
+                    cancellationToken);
                 packageInstallationInfos.Add(packageInstallationInfo);
             }
 
@@ -383,10 +389,20 @@ namespace NuGet.PackageManagement.UI
 
         private void Project_SelectedChanged(object sender, EventArgs e)
         {
+            if (_isInBatchUpdate)
+            {
+                return;
+            }
+
+            UpdateSelectAllAfterProjectSelectionChanged();
+        }
+
+        private void UpdateSelectAllAfterProjectSelectionChanged()
+        {
             UpdateSelectCheckBoxState();
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAndUpdateInstallUninstallAsync())
-                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(Project_SelectedChanged));
+                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(UpdateSelectAllAfterProjectSelectionChanged));
         }
 
         private async Task CreateVersionsAndUpdateInstallUninstallAsync()
@@ -426,12 +442,15 @@ namespace NuGet.PackageManagement.UI
                     VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
         }
 
-        private async ValueTask<IEnumerable<ProjectVersionConstraint>> GetConstraintsForSelectedProjectsAsync(CancellationToken cancellationToken)
+        private async ValueTask<IEnumerable<ProjectVersionConstraint>> GetConstraintsForSelectedProjectsAsync(
+            CancellationToken cancellationToken)
         {
             var selectedProjectsNames = new List<string>();
             foreach (PackageInstallationInfo project in Projects.Where(p => p.IsSelected).ToList())
             {
-                IProjectMetadataContextInfo projectMetadata = await project.NuGetProject.GetMetadataAsync(cancellationToken);
+                IProjectMetadataContextInfo projectMetadata = await project.NuGetProject.GetMetadataAsync(
+                    ServiceBroker,
+                    cancellationToken);
 
                 selectedProjectsNames.Add(projectMetadata.Name);
             }
@@ -457,11 +476,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            foreach (var project in Projects)
-            {
-                project.IsSelected = select;
-            }
-            await CreateVersionsAndUpdateInstallUninstallAsync();
+            await BatchUpdateIsSelectedAsync(select);
         }
 
         [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD100", Justification = "NuGet/Home#4833 Baseline")]
@@ -497,10 +512,7 @@ namespace NuGet.PackageManagement.UI
             if (_filter == ItemFilter.Consolidate ||
                 _filter == ItemFilter.UpdatesAvailable)
             {
-                foreach (var project in _projects)
-                {
-                    project.IsSelected = project.InstalledVersion != null;
-                }
+                BatchUpdateIsSelectedBasedOnInstalledVersion();
             }
         }
 
@@ -513,10 +525,7 @@ namespace NuGet.PackageManagement.UI
             if ((previousFilter == ItemFilter.Consolidate || previousFilter == ItemFilter.UpdatesAvailable) &&
                 (_filter == ItemFilter.All || _filter == ItemFilter.Installed))
             {
-                foreach (var project in _projects)
-                {
-                    project.IsSelected = false;
-                }
+                BatchUnselectAllProjects();
             }
         }
 
@@ -554,6 +563,63 @@ namespace NuGet.PackageManagement.UI
             }
 
             return selectedProjects;
+        }
+
+        private void BatchUnselectAllProjects()
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = false;
+                }
+
+                UpdateSelectCheckBoxState();
+                UpdateSelectAllAfterProjectSelectionChanged();
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
+        }
+
+        private void BatchUpdateIsSelectedBasedOnInstalledVersion()
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = project.InstalledVersion != null;
+                }
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
+        }
+
+        private async ValueTask BatchUpdateIsSelectedAsync(bool isSelected)
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = isSelected;
+                }
+
+                UpdateSelectCheckBoxState();
+                await CreateVersionsAndUpdateInstallUninstallAsync();
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
         }
     }
 }

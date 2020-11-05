@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -31,25 +32,27 @@ namespace NuGet.VisualStudio
             return projectPath;
         }
 
-        public static bool IsSupported(IVsHierarchy hierarchy, string projectTypeGuid)
+        public static async Task<bool> IsSupportedAsync(IVsHierarchy hierarchy, string projectTypeGuid)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (IsProjectCapabilityCompliant(hierarchy))
+            if (await IsProjectCapabilityCompliantAsync(hierarchy))
             {
                 return true;
             }
 
-            return !string.IsNullOrEmpty(projectTypeGuid) && SupportedProjectTypes.IsSupported(projectTypeGuid) && !HasUnsupportedProjectCapability(hierarchy);
+            return !string.IsNullOrEmpty(projectTypeGuid) && ProjectType.IsSupported(projectTypeGuid) && !HasUnsupportedProjectCapability(hierarchy);
         }
 
-        public static bool IsProjectCapabilityCompliant(IVsHierarchy hierarchy)
+        /// <summary>Check if this project appears to support NuGet.</summary>
+        /// <param name="hierarchy">IVsHierarchy representing the project in the solution.</param>
+        /// <returns>True if NuGet should enable this project, false if NuGet should ignore the project.</returns>
+        /// <remarks>The project may be packages.config or PackageReference. This method does not tell you which.</remarks>
+        public static async Task<bool> IsProjectCapabilityCompliantAsync(IVsHierarchy hierarchy)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // NOTE: (AssemblyReferences + DeclaredSourceItems + UserSourceItems) exists solely for compatibility reasons
             // with existing custom CPS-based projects that existed before "PackageReferences" capability was introduced.
-            return hierarchy.IsCapabilityMatch("(AssemblyReferences + DeclaredSourceItems + UserSourceItems) | PackageReferences");
+            return hierarchy.IsCapabilityMatch(IDE.ProjectCapabilities.SupportsNuGet);
         }
 
         public static bool HasUnsupportedProjectCapability(IVsHierarchy hierarchy)
@@ -80,14 +83,14 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
-        /// Check for CPS capability in IVsHierarchy. All CPS projects will have CPS capability except VisualC projects.
-        /// So checking for VisualC explicitly with a OR flag.
+        /// Check for CPS capability in IVsHierarchy.
         /// </summary>
+        /// <remarks>This does not mean the project also supports PackageReference!</remarks>
         public static bool IsCPSCapabilityCompliant(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            return hierarchy.IsCapabilityMatch("CPS | VisualC");
+            return hierarchy.IsCapabilityMatch(IDE.ProjectCapabilities.Cps);
         }
 
         /// <summary>
@@ -122,7 +125,7 @@ namespace NuGet.VisualStudio
             foreach (var project in projects.Cast<EnvDTE.Project>())
             {
                 var expandedNodes =
-                    GetExpandedProjectHierarchyItems(project);
+                    await GetExpandedProjectHierarchyItemsAsync(project);
                 Debug.Assert(!results.ContainsKey(project.GetUniqueName()));
                 results[project.GetUniqueName()] =
                     new HashSet<VsHierarchyItem>(expandedNodes);
@@ -146,52 +149,49 @@ namespace NuGet.VisualStudio
                     &&
                     expandedNodes != null)
                 {
-                    CollapseProjectHierarchyItems(project, expandedNodes);
+                    await CollapseProjectHierarchyItemsAsync(project, expandedNodes);
                 }
             }
         }
 
-        private static ICollection<VsHierarchyItem> GetExpandedProjectHierarchyItems(EnvDTE.Project project)
+        private static async Task<ICollection<VsHierarchyItem>> GetExpandedProjectHierarchyItemsAsync(EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var projectHierarchyItem = VsHierarchyItem.FromDteProject(project);
+            var projectHierarchyItem = await VsHierarchyItem.FromDteProjectAsync(project);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
             {
                 // If the solution explorer is collapsed since opening VS, this value is null. In such a case, simply exit early.
-                return new VsHierarchyItem[0];
+                return Array.Empty<VsHierarchyItem>();
             }
 
             var expandedItems = new List<VsHierarchyItem>();
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // processCallback return values: 
             //     0   continue, 
             //     1   don't recurse into, 
             //    -1   stop
-            projectHierarchyItem.WalkDepthFirst(
+            await projectHierarchyItem.WalkDepthFirstAsync(
                 fVisible: true,
-                processCallback:
-                    (VsHierarchyItem vsItem, object callerObject, out object newCallerObject) =>
+                processCallbackAsync:
+                    async (VsHierarchyItem vsItem, object callerObject) =>
                     {
-                        newCallerObject = null;
-                        if (IsVsHierarchyItemExpanded(vsItem, solutionExplorerWindow))
+                        if (await IsVsHierarchyItemExpandedAsync(vsItem, solutionExplorerWindow))
                         {
                             expandedItems.Add(vsItem);
                         }
-                        return 0;
+                        return (0, null);
                     },
                 callerObject: null);
 
             return expandedItems;
         }
 
-        private static void CollapseProjectHierarchyItems(EnvDTE.Project project, ISet<VsHierarchyItem> ignoredHierarcyItems)
+        private static async Task CollapseProjectHierarchyItemsAsync(EnvDTE.Project project, ISet<VsHierarchyItem> ignoredHierarcyItems)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var projectHierarchyItem = VsHierarchyItem.FromDteProject(project);
+            var projectHierarchyItem = await VsHierarchyItem.FromDteProjectAsync(project);
             var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
@@ -204,39 +204,35 @@ namespace NuGet.VisualStudio
             //     0   continue, 
             //     1   don't recurse into, 
             //    -1   stop
-            projectHierarchyItem.WalkDepthFirst(
+            await projectHierarchyItem.WalkDepthFirstAsync(
                 fVisible: true,
-                processCallback:
-                    (VsHierarchyItem currentHierarchyItem, object callerObject, out object newCallerObject) =>
+                processCallbackAsync:
+                    async (VsHierarchyItem currentHierarchyItem, object callerObject) =>
                     {
-                        newCallerObject = null;
                         if (!ignoredHierarcyItems.Contains(currentHierarchyItem))
                         {
-                            CollapseVsHierarchyItem(currentHierarchyItem, solutionExplorerWindow);
+                            await CollapseVsHierarchyItemAsync(currentHierarchyItem, solutionExplorerWindow);
                         }
-                        return 0;
+                        return (0, null);
                     },
                 callerObject: null);
         }
 
-        private static void CollapseVsHierarchyItem(VsHierarchyItem vsHierarchyItem, IVsUIHierarchyWindow vsHierarchyWindow)
+        private static async Task CollapseVsHierarchyItemAsync(VsHierarchyItem vsHierarchyItem, IVsUIHierarchyWindow vsHierarchyWindow)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (vsHierarchyItem == null
                 || vsHierarchyWindow == null)
             {
                 return;
             }
 
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             vsHierarchyWindow.ExpandItem(AsVsUIHierarchy(vsHierarchyItem), vsHierarchyItem.VsItemID, EXPANDFLAGS.EXPF_CollapseFolder);
         }
 
-        private static bool IsVsHierarchyItemExpanded(VsHierarchyItem hierarchyItem, IVsUIHierarchyWindow uiWindow)
+        private static async Task<bool> IsVsHierarchyItemExpandedAsync(VsHierarchyItem hierarchyItem, IVsUIHierarchyWindow uiWindow)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (!hierarchyItem.IsExpandable())
+            if (!await hierarchyItem.IsExpandableAsync())
             {
                 return false;
             }
@@ -244,6 +240,7 @@ namespace NuGet.VisualStudio
             const uint expandedStateMask = (uint)__VSHIERARCHYITEMSTATE.HIS_Expanded;
             uint itemState;
 
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             uiWindow.GetItemState(AsVsUIHierarchy(hierarchyItem), hierarchyItem.VsItemID, expandedStateMask, out itemState);
             return ((__VSHIERARCHYITEMSTATE)itemState == __VSHIERARCHYITEMSTATE.HIS_Expanded);
         }

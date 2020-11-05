@@ -55,8 +55,8 @@
     <Content Include="source.extension.vsixmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
-      <Link>Modules\NuGet\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt</Link>
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\about_NuGet.Cmdlets.help.txt">
+      <Link>Modules\NuGet\about_NuGet.Cmdlets.help.txt</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">

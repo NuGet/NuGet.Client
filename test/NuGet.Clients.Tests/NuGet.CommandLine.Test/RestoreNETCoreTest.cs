@@ -1740,7 +1740,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10075")]
         public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersionsAsync()
         {
             // Arrange
@@ -9795,7 +9795,7 @@ namespace NuGet.CommandLine.Test
         ///  P will be accepted (because its parent B is Accepted)
         ///  S will be accepted (because its parent O 300 is Accepted)
         /// </summary>
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10133")]
         public async Task RestoreNetCore_CPVMProject_MultipleLinkedCentralTransitiveDepenencies()
         {
             // Arrange
@@ -10057,6 +10057,80 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Contains("'$(TargetFramework)' == 'net5.0-windows' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
                 Assert.Contains("'$(TargetFramework)' == 'net50-android' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_TransitiveDependenciesAreNotPinned()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var packagesForSource = new List<SimpleTestPackageContext>();
+                var packagesForProject = new List<SimpleTestPackageContext>();
+                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
+
+                SimpleTestPackageContext createTestPackage(string name, string version, List<SimpleTestPackageContext> source)
+                {
+                    var result = new SimpleTestPackageContext()
+                    {
+                        Id = name,
+                        Version = version
+                    };
+                    result.Files.Clear();
+                    source.Add(result);
+                    return result;
+                };
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "projectA",
+                   pathContext.SolutionRoot,
+                   framework);
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+
+                // the package references defined in the project should not have version
+                var packageBNoVersion = createTestPackage("B", null, packagesForProject);
+                var packageB100 = createTestPackage("B", "1.0.0", packagesForSource);
+                var packageC100 = createTestPackage("C", "1.0.0", packagesForSource);
+                var packageC200 = createTestPackage("C", "2.0.0", packagesForSource);
+
+                packageB100.Dependencies.Add(packageC100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packagesForSource.ToArray());
+
+                projectA.AddPackageToAllFrameworks(packagesForProject.ToArray());
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("B", "1.0.0")
+                    .AddPackageVersion("C", "2.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                var assetFileReader = new LockFileFormat();
+                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+
+                var expectedLibraries = new List<string>() { "B.1.0.0", "C.1.0.0" };
+                var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
+                Assert.Equal(expectedLibraries, libraries);
+
+                var centralfileDependencyGroups = assetsFile
+                    .CentralTransitiveDependencyGroups
+                    .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
+
+                Assert.Equal(0, centralfileDependencyGroups.Count);
             }
         }
 

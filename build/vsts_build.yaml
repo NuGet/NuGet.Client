@@ -104,7 +104,7 @@ jobs:
       - msbuild
 
   steps:
-  - template: templates/Build_and_UnitTest.yml  
+  - template: templates/Build_and_UnitTest.yml
 
 - job: Build_and_UnitTest_RTM
   dependsOn: Initialize_Build
@@ -125,7 +125,7 @@ jobs:
       - msbuild
 
   steps:
-  - template: templates/Build_and_UnitTest.yml  
+  - template: templates/Build_and_UnitTest.yml
 
 - job: Functional_Tests_On_Windows
   dependsOn: Initialize_Build
@@ -202,7 +202,7 @@ jobs:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Run Functional Tests (stop on error)"
@@ -212,7 +212,7 @@ jobs:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -224,6 +224,14 @@ jobs:
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Functional Tests On Windows"
     condition: "succeededOrFailed()"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Test Hang Dump"
+    inputs:
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+      ArtifactName: "$(Agent.JobName)"
+      ArtifactType: "Container"
+    condition: "or(failed(), canceled())"
 
   - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
@@ -281,7 +289,7 @@ jobs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: ShellScript@2
     displayName: "Run Tests (stop on error)"
@@ -290,7 +298,7 @@ jobs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -301,6 +309,14 @@ jobs:
       searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
       mergeTestResults: "true"
     condition: "succeededOrFailed()"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Test Hang Dump"
+    inputs:
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+      ArtifactName: "$(Agent.JobName)"
+      ArtifactType: "Container"
+    condition: "or(failed(), canceled())"
 
   - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
@@ -364,7 +380,7 @@ jobs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: ShellScript@2
     displayName: "Run Tests (stop on error)"
@@ -373,7 +389,7 @@ jobs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -384,6 +400,14 @@ jobs:
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Tests On Mac"
     condition: "succeededOrFailed()"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Test Hang Dump"
+    inputs:
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+      ArtifactName: "$(Agent.JobName)"
+      ArtifactType: "Container"
+    condition: "or(failed(), canceled())"
 
   - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
@@ -400,7 +424,7 @@ jobs:
   dependsOn:
   - Build_and_UnitTest_NonRTM
   - Initialize_Build
-  timeoutInMinutes: 150
+  timeoutInMinutes: 100
   variables:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
@@ -410,113 +434,15 @@ jobs:
     demands:
     - DotNetFramework
     - Allow_NuGet_E2E_Tests -equals true
+  strategy:
+    matrix:
+      Part1:
+        Part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1,PackageRestoreTest.ps1"
+      Part2:
+        Part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
 
   steps:
-  - task: PowerShell@1
-    inputs:
-      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
-      arguments: '$(SDKVersionForBuild)'
-    displayName: "Install .NET 5.0 for build"
-
-  - task: PowerShell@1
-    displayName: "Define variables"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-
-  - task: PowerShell@1
-    displayName: "Print Environment Variables"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
-        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
-
-  - task: DownloadBuildArtifacts@0
-    displayName: "Download Build artifacts"
-    inputs:
-      artifactName: "$(VsixPublishDir)"
-      downloadPath: "$(Build.Repository.LocalPath)/artifacts"
-
-  - task: PowerShell@1
-    displayName: "Bootstrap.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-      arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
-
-  - task: PowerShell@1
-    displayName: "SetupFunctionalTests.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-
-  - task: PowerShell@1
-    displayName: "SetupMachine.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupMachine.ps1"
-
-  - task: PowerShell@1
-    displayName: "InstallNuGetVSIX.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-      arguments: "-NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 16.0"
-      failOnStandardError: "false"
-
-  - task: PowerShell@1
-    displayName: "Collect VS Logs"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
-        $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\e2e-collectlogs.zip
-    condition: "failed()"
-
-  - task: PowerShell@1
-    displayName: "RunFunctionalTests.ps1 (continue on error)"
-    timeoutInMinutes: 75
-    continueOnError: "true"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
-      arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
-
-  - task: PowerShell@1
-    displayName: "RunFunctionalTests.ps1 (stop on error)"
-    timeoutInMinutes: 75
-    continueOnError: "false"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
-      arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
-
-  - task: PublishTestResults@2
-    displayName: "Publish Test Results"
-    inputs:
-      testRunner: "JUnit"
-      testResultsFiles: "*.xml"
-      searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
-      mergeTestResults: "true"
-      testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
-    condition: "succeededOrFailed()"
-
-  - task: PowerShell@1
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      scriptType: "inlineScript"
-      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
-      inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "EndToEnd Tests On Windows"
-    condition: "always()"
-
-  - task: PowerShell@1
-    displayName: "Kill running instances of DevEnv"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
-        KillRunningInstancesOfVS
-    condition: "always()"
+  - template: templates/End_To_End_Tests_On_Windows.yml
 
 - job: Apex_Tests_On_Windows
   dependsOn:
@@ -634,7 +560,7 @@ jobs:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
-    condition: "eq(variables['IsOfficialBuild'], 'true')"
+    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Run Apex Tests (stop on error)"
@@ -645,7 +571,7 @@ jobs:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
-    condition: "not(eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"

@@ -169,7 +169,8 @@ function Run-Test {
         }
     }
     else {
-        Get-ChildItem $testPath -Exclude $Exclude | %{
+        $ExcludeList = $Exclude -split ","
+        Get-ChildItem $testPath -Exclude $ExcludeList | %{
         . $_.FullName
         }
     }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -15,6 +16,8 @@ namespace NuGet.PackageManagement.UI
     public interface INuGetUIContext : IDisposable
     {
         event EventHandler<IReadOnlyCollection<string>> ProjectActionsExecuted;
+
+        IServiceBroker ServiceBroker { get; }
 
         ISourceRepositoryProvider SourceProvider { get; }
 

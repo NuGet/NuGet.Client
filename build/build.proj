@@ -385,8 +385,8 @@
       <CoreInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
       <CoreInputTestAssembliesSpaced>$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
 
-      <VsTestLogger>--TestAdapterPath:$(XunitXmlLoggerDirectory) --logger:"xunit;LogFileName=$(TestResultsFileName)-vsts.$(TestResultOutputFormat)" --logger:"console;verbosity=detailed" --settings:$(MSBuildThisFileDirectory)xunit.runsettings</VsTestLogger>
-      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
+      <VsTestLogger>--test-adapter-path:$(XunitXmlLoggerDirectory) --logger:"xunit;LogFileName=$(TestResultsFileName)-vsts.$(TestResultOutputFormat)" --logger:"console;verbosity=detailed" --settings:$(MSBuildThisFileDirectory)xunit.runsettings</VsTestLogger>
+      <VSTestCommand>$(DotnetExePath) test $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
     </PropertyGroup>
 
     <!-- Desktop -->
