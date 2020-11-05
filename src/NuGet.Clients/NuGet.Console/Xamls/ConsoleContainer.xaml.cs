@@ -60,17 +60,6 @@ namespace NuGetConsole
                             Assumes.NotNull(_iVsSolutionManager);
 
                             // Hook up solution events
-                            _iVsSolutionManager.SolutionOpening += (_, __) =>
-                            {
-                                // PMC used before any solution is loaded, let's emit what we have before loading a solution.
-                                // Please note: Here _windowLoadCount is already 1 if PMC reopen since it was last active window last time VS instance close.
-                                if (_windowLoadCount > 0)
-                                {
-                                    EmitPowershellUsageTelemetry();
-                                }
-
-                                //_isTelemetryEmitted = false;
-                            };
                             _iVsSolutionManager.SolutionClosing += (o, e) =>
                             {
                                 EmitPowershellUsageTelemetry();
@@ -116,7 +105,7 @@ namespace NuGetConsole
                 var reopenAtStart = IsLoaded;
                 var telemetryEvent = new TelemetryEvent(PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
                                 {
-                                    { NuGetPMCWindowLoadCount, _windowLoadCount}, // Usefull if PMC used without any solution load at all then VS instance closed.
+                                    { NuGetPMCWindowLoadCount, _windowLoadCount}, // Useful if PMC used without any solution load at all then VS instance closed.
                                     { ReOpenAtStart, reopenAtStart}
                                 });
 

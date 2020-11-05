@@ -22,6 +22,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -33,6 +34,7 @@
       <DependentUpon>CommonResources.cs</DependentUpon>
     </Compile>
     <Compile Include="Common\GlobalSuppressions.cs" />
+    <Compile Include="PowershellTelemetryConsts.cs" />
     <Compile Include="Utils\InstalledPackageEnumerator.cs" />
     <Compile Include="IRunspaceManager.cs" />
     <Compile Include="NativeMethods.cs" />
@@ -183,7 +185,6 @@
       </PowerShellCmdletsHelpFiles>
     </ItemGroup>
   </Target>
-
   <!-- This is called at PackVsix time to get localized files -->
   <Target Name="GetLocalizedPowerShellCmdletHelpFile">
     <ItemGroup>
@@ -201,16 +202,13 @@
       <VSLanguage Include="PTB" Locale="pt-BR" />
       <VSLanguage Include="RUS" Locale="ru" />
       <VSLanguage Include="TRK" Locale="tr" />
-
       <_AllLocalizedXmlFiles Include="$(OutputPath)Scripts\**\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
       <_XmlLocFiles Include="@(_AllLocalizedXmlFiles)">
         <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
       </_XmlLocFiles>
-
       <_TxtLocFiles Include="$(LocalizationRootDirectory)\%(VSLanguage.Identity)\15\about_NuGet.Cmdlets.help.txt">
         <TargetPath>Modules\NuGet\%(VSLanguage.Locale)\about_NuGet.Cmdlets.help.txt</TargetPath>
       </_TxtLocFiles>
-
       <LocalizedFilesForVsix Include="@(_XmlLocFiles);@(_TxtLocFiles)" />
     </ItemGroup>
   </Target>

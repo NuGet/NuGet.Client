@@ -1,0 +1,32 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using System.Linq;
+using NuGet.Common;
+
+namespace NuGet.VisualStudio.Console
+{
+    public abstract class VSInstanceTelemetryConsts
+    {
+        // PMC, PMUI powershell telemetry consts
+        public const string PowerShellExecuteCommand = "PowerShellExecuteCommand";
+        public const string NuGetPMCExecuteCommandCount = "NuGetPMCExecuteCommandCount";
+        public const string NuGetNonPMCExecuteCommandCount = "NuGetNonPMCExecuteCommandCount";
+        public const string LoadedFromPMC = "LoadedFromPMC";
+        public const string FirstTimeLoadedFromPMC = "FirstTimeLoadedFromPMC";
+        public const string LoadedFromPMUI = "LoadedFromPMUI";
+        public const string FirstTimeLoadedFromPMUI = "FirstTimeLoadedFromPMUI";
+        public const string SolutionLoaded = "SolutionLoaded";
+        // PMC UI Console Container telemetry consts
+        public const string NuGetPMCWindowLoadCount = "NuGetPMCWindowLoadCount";
+        public const string ReOpenAtStart = "ReOpenAtStart";
+        // Const name for emitting when VS solution close or VS instance close.
+        public const string NugetPowershellPrefix = "NugetPowershell."; // Using prefix prevent accidental same name property collission from different type telemetry.
+        public const string NugetVSSolutionClose = "NugetVSSolutionClose";
+        public const string NugetVSInstanceClose = "NugetVSInstanceClose";
+        public const string SolutionCount = "SolutionCount";
+        public const string PMCPowershellLoadedSolutionCount = "PMCPowershellLoadedSolutionCount";
+        public const string PMUIPowershellLoadedSolutionCount = "PMUIPowershellLoadedSolutionCount";
+    }
+}

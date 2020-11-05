@@ -29,16 +29,18 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Console;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
-    internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
+    internal abstract class PowerShellHost : VSInstanceTelemetryConsts, IHost, IPathExpansion, IDisposable
     {
         private static readonly string AggregateSourceName = Resources.AggregateSourceName;
         private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
         private static readonly int MaxTasks = 16;
+
         private readonly static object TelemetryLock = new object();
         private static bool IsTelemetryEmitted;
         private static int PmcExecutedCount;
@@ -66,14 +68,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string DTEKey = "DTE";
         private const string CancellationTokenKey = "CancellationTokenKey";
         private const int ExecuteInitScriptsRetriesLimit = 50;
-        private const string PowerShellExecuteCommand = "PowerShellExecuteCommand";
-        private const string NuGetPMCExecuteCommandCount = "NuGetPMCExecuteCommandCount";
-        private const string NuGetNonPMCExecuteCommandCount = "NuGetNonPMCExecuteCommandCount";
-        private const string LoadedFromPMC = "LoadedFromPMC";
-        private const string FirstTimeLoadedFromPMC = "FirstTimeLoadedFromPMC";
-        private const string LoadedFromPMUI = "LoadedFromPMUI";
-        private const string FirstTimeLoadedFromPMUI = "FirstTimeLoadedFromPMUI";
-        private const string SolutionLoaded = "SolutionLoaded";
+
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
@@ -336,15 +331,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
                         }
 
-                        _solutionManager.Value.SolutionOpening += (o, e) =>
-                        {
-                            if (PmcExecutedCount > 0)
-                            {
-                                // PMC used before any solution is loaded, let's emit what we have before loading a solution.
-                                EmitPowershellUsageTelemetry(false);
-                            }
-                        };
-
                         _solutionManager.Value.SolutionClosing += (o, e) =>
                         {
                             EmitPowershellUsageTelemetry(true);
@@ -424,8 +410,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             _scriptExecutor.Value.Reset();
 
-            PmcExecutedCount = 0;
-            NonPmcExecutedCount = 0;
+            if (PmcExecutedCount > 0)
+            {
+                // PMC used before any solution is loaded, let's emit what we have for nugetvsinstanceclose event aggregation before loading a solution.
+                EmitPowershellUsageTelemetry(false);
+            }
+
             IsTelemetryEmitted = false;
 
             // Solution opened event is raised on the UI thread
@@ -548,6 +538,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             request.BuildCommand(),
                             request.BuildInput(),
                             outputResults: true);
+
+                        // Init.ps1 is loaded
+                        PowerShellHostInstances |= 0b10000000;
 
                         return;
                     }
