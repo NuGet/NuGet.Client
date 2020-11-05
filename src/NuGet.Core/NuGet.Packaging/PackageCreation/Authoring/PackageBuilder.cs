@@ -619,6 +619,39 @@ namespace NuGet.Packaging
             }
         }
 
+        /// <summary>Looks for the specified file within the package</summary>
+        /// <param name="filePath">The file path to search for</param>
+        /// <param name="packageFiles">The list of files to search within</param>
+        /// <param name="filePathIncorrectCase">If the file was not found, this will be a path which almost matched but had the incorrect case</param>
+        /// <returns>An <see cref="IPackageFile"/> matching the specified path or <c>null</c></returns>
+        private static IPackageFile FindFileInPackage(string filePath, IEnumerable<IPackageFile> packageFiles, out string filePathIncorrectCase)
+        {
+            filePathIncorrectCase = null;
+            var strippedFilePath = PathUtility.StripLeadingDirectorySeparators(filePath);
+
+            foreach (var packageFile in packageFiles)
+            {
+                var strippedPackageFilePath = PathUtility.StripLeadingDirectorySeparators(packageFile.Path);
+
+                // This must use a case-sensitive string comparison, even on systems where file paths are normally case-sensitive.
+                // This is because Zip files are treated as case-sensitive. (See https://github.com/NuGet/Home/issues/9817)
+                if (strippedPackageFilePath.Equals(strippedFilePath, StringComparison.Ordinal))
+                {
+                    // Found the requested file in the package
+                    filePathIncorrectCase = null;
+                    return packageFile;
+                }
+                // Check for files that exist with the wrong file casing
+                else if (filePathIncorrectCase is null && strippedPackageFilePath.Equals(strippedFilePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    filePathIncorrectCase = strippedPackageFilePath;
+                }
+            }
+
+            // We searched all of the package files and didn't find what we were looking for
+            return null;
+        }
+
         private void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)
         {
             if (!PackageTypes.Contains(PackageType.SymbolsPackage) && licenseMetadata?.Type == LicenseType.File)
@@ -630,11 +663,20 @@ namespace NuGet.Packaging
                 {
                     throw new PackagingException(NuGetLogCode.NU5031, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileExtensionIsInvalid, licenseMetadata.License));
                 }
-                var strippedLicenseFileLocation = PathUtility.StripLeadingDirectorySeparators(licenseMetadata.License);
-                var count = files.Where(e => PathUtility.StripLeadingDirectorySeparators(e.Path).Equals(strippedLicenseFileLocation, PathUtility.GetStringComparisonBasedOnOS())).Count();
-                if (count == 0)
+
+                if (FindFileInPackage(licenseMetadata.License, files, out var licenseFilePathWithIncorrectCase) is null)
                 {
-                    throw new PackagingException(NuGetLogCode.NU5030, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkg, licenseMetadata.License));
+                    string errorMessage;
+                    if (licenseFilePathWithIncorrectCase is null)
+                    {
+                        errorMessage = string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkg, licenseMetadata.License);
+                    }
+                    else
+                    {
+                        errorMessage = string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkgWithHint, licenseMetadata.License, licenseFilePathWithIncorrectCase);
+                    }
+
+                    throw new PackagingException(NuGetLogCode.NU5030, errorMessage);
                 }
             }
         }
@@ -651,21 +693,22 @@ namespace NuGet.Packaging
             if (!PackageTypes.Contains(PackageType.SymbolsPackage) && !string.IsNullOrEmpty(iconPath))
             {
                 // Validate entry
-                var iconPathStripped = PathUtility.StripLeadingDirectorySeparators(iconPath);
+                IPackageFile iconFile = FindFileInPackage(iconPath, files, out var iconPathWithIncorrectCase);
 
-                var iconFileList = files.Where(f =>
-                        iconPathStripped.Equals(
-                            PathUtility.StripLeadingDirectorySeparators(f.Path),
-                            PathUtility.GetStringComparisonBasedOnOS()));
-
-                if (iconFileList.Count() == 0)
+                if (iconFile is null)
                 {
-                    throw new PackagingException(
-                        NuGetLogCode.NU5046,
-                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconNoFileElement, iconPath));
-                }
+                    string errorMessage;
+                    if (iconPathWithIncorrectCase is null)
+                    {
+                        errorMessage = string.Format(CultureInfo.CurrentCulture, NuGetResources.IconNoFileElement, iconPath);
+                    }
+                    else
+                    {
+                        errorMessage = string.Format(CultureInfo.CurrentCulture, NuGetResources.IconNoFileElementWithHint, iconPath, iconPathWithIncorrectCase);
+                    }
 
-                IPackageFile iconFile = iconFileList.First();
+                    throw new PackagingException(NuGetLogCode.NU5046, errorMessage);
+                }
 
                 try
                 {
