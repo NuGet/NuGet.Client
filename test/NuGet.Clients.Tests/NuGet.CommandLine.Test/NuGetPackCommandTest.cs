@@ -5985,6 +5985,42 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Theory]
+        [InlineData(".jpg", null)]
+        [InlineData(".png", null)]
+        [InlineData(".PnG", null)]
+        [InlineData(".jpeg", null)]
+        [InlineData(".JpEg", null)]
+        [InlineData("abc.JpEg", null)]
+        [InlineData(".x", NuGetLogCode.NU5045)]
+        [InlineData(".jpeg.x", NuGetLogCode.NU5045)]
+        [InlineData("", NuGetLogCode.NU5044)]
+        public void PackCommand_PackIcon_InvalidExtension_SucceedOrFail(string fileExtension, NuGetLogCode? logCode)
+        {
+            NuspecBuilder nuspecBuilder = NuspecBuilder.Create();
+            TestDirectoryBuilder testDirBuilder = TestDirectoryBuilder.Create();
+            var rng = new Random();
+
+            var iconFile = $"icon{fileExtension}";
+
+            nuspecBuilder
+                .WithFile(iconFile)
+                .WithIcon(iconFile);
+
+            testDirBuilder
+                .WithNuspec(nuspecBuilder)
+                .WithFile(iconFile, rng.Next(1, 1024));
+
+            if (logCode == null)
+            {
+                TestPackIconSuccess(testDirBuilder, iconFile);
+            }
+            else
+            {
+                TestPackIconFailure(testDirBuilder, logCode.ToString());
+            }
+        }
+
+        [Theory]
         [InlineData(SymbolPackageFormat.Snupkg)]
         [InlineData(SymbolPackageFormat.SymbolsNupkg)]
         public void PackCommand_PackIcon_SymbolsPackage_MustNotHaveIconInfo_Succeed(SymbolPackageFormat symbolPackageFormat)
