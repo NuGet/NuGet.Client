@@ -247,7 +247,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)
                 {
-                    return new NuGetFramework[]{legacyPackageReferenceProject.GetTargetFramework()};
+                    return new NuGetFramework[] { legacyPackageReferenceProject.GetTargetFramework() };
                 }
                 else
                 {
