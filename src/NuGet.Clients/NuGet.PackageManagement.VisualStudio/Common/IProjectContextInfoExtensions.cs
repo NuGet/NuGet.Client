@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public static async ValueTask<(IReadOnlyCollection<IPackageReferenceContextInfo>, IReadOnlyCollection<IPackageReferenceContextInfo>)> GetAllPackagesAsync(
+        public static async ValueTask<NuGetProjectPackages> GetAllPackagesAsync(
             this IProjectContextInfo projectContextInfo,
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)

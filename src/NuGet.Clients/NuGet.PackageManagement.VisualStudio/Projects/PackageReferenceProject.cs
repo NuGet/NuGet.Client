@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return dgSpec;
         }
 
-        public abstract Task<(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)> GetAllPackagesAsync(CancellationToken token);
+        public abstract Task<ProjectPackages> GetAllPackagesAsync(CancellationToken token);
 
         private protected IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, IList<LockFileTarget> targets)
         {

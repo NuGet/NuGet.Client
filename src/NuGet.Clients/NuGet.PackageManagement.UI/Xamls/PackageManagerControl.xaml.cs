@@ -1169,7 +1169,7 @@ namespace NuGet.PackageManagement.UI
 
             var metadataProvider = CreatePackageMetadataProvider(context);
 
-            (var installedPackages, var transitivePackages) = await context.GetAllPackagesAsync();
+            var allPackages = await context.GetAllPackagesAsync();
 
             if (filter == ItemFilter.All)
             {
@@ -1181,8 +1181,8 @@ namespace NuGet.PackageManagement.UI
                     TelemetryActivity.NuGetTelemetryService);
                 packageFeeds.recommenderFeed = new RecommenderPackageFeed(
                     context.SourceRepositories.First(),
-                    installedPackages,
-                    transitivePackages,
+                    allPackages.InstalledPackages,
+                    allPackages.TransitivePackages,
                     targetFrameworks,
                     metadataProvider,
                     logger);
@@ -1191,13 +1191,13 @@ namespace NuGet.PackageManagement.UI
 
             if (filter == ItemFilter.Installed)
             {
-                packageFeeds.mainFeed = new InstalledPackageFeed(installedPackages, metadataProvider, logger);
+                packageFeeds.mainFeed = new InstalledPackageFeed(allPackages.InstalledPackages, metadataProvider, logger);
                 return packageFeeds;
             }
 
             if (filter == ItemFilter.Consolidate)
             {
-                packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackages, metadataProvider, logger);
+                packageFeeds.mainFeed = new ConsolidatePackageFeed(allPackages.TransitivePackages, metadataProvider, logger);
                 return packageFeeds;
             }
 
@@ -1211,7 +1211,7 @@ namespace NuGet.PackageManagement.UI
             {
                 packageFeeds.mainFeed = new UpdatePackageFeed(
                     context.ServiceBroker,
-                    installedPackages,
+                    allPackages.InstalledPackages,
                     metadataProvider,
                     context.Projects,
                     context.CachedPackages,

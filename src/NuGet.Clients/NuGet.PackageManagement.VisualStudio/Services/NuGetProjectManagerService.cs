@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return installedPackages;
         }
 
-        public async ValueTask<(IReadOnlyCollection<IPackageReferenceContextInfo>, IReadOnlyCollection<IPackageReferenceContextInfo>)> GetAllPackagesAsync(
+        public async ValueTask<NuGetProjectPackages> GetAllPackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken)
         {
@@ -171,7 +171,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
-            List<Task<(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)>> prStyleTasks = new List<Task<(IReadOnlyList<PackageReference>, IReadOnlyList<PackageReference>)>>();
+            List<Task<ProjectPackages>> prStyleTasks = new List<Task<ProjectPackages>>();
             List<Task<IEnumerable<PackageReference>>> nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
             foreach (var project in projects)
             {
@@ -184,15 +184,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     nonPrStyleTasks.Add(project.GetInstalledPackagesAsync(cancellationToken));
                 }
             }
-            (IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)[] prStyleReferences = await Task.WhenAll(prStyleTasks);
+            ProjectPackages[] prStyleReferences = await Task.WhenAll(prStyleTasks);
             IEnumerable<PackageReference>[] nonPrStyleReferences = await Task.WhenAll(nonPrStyleTasks);
 
             // combine all of the installed package references
             var installedPackages = nonPrStyleReferences
                     .Concat(prStyleReferences
-                        .Select(p => p.installedPackages));
+                        .Select(p => p.InstalledPackages));
 
-            return (installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray(), prStyleReferences.SelectMany(e => e.Item2).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray());
+            return new NuGetProjectPackages(installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray(), prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray());
         }
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(

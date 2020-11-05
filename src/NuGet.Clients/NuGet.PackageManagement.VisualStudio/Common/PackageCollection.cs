@@ -67,29 +67,29 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageCollection(packages);
         }
 
-        public static async Task<(PackageCollection installedPackages, PackageCollection transitivePackages)> FromProjectsIncludeTransitiveAsync(
+        public static async Task<ProjectPackageCollections> FromProjectsIncludeTransitiveAsync(
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
             CancellationToken cancellationToken)
         {
             // Read installed and transitive package references from all projects.
-            IEnumerable<Task<(IReadOnlyCollection<IPackageReferenceContextInfo>, IReadOnlyCollection<IPackageReferenceContextInfo>)>>? tasks = projects
+            IEnumerable<Task<NuGetProjectPackages>>? tasks = projects
                 .Select(project => project.GetAllPackagesAsync(serviceBroker, cancellationToken).AsTask());
-            (IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages, IReadOnlyCollection<IPackageReferenceContextInfo> transitivePackages)[]? allPackageReferences = await Task.WhenAll(tasks);
+            NuGetProjectPackages[]? allPackageReferences = await Task.WhenAll(tasks);
 
             // Group all installed package references for an id/version into a single item.
             PackageCollectionItem[]? installedPackages = allPackageReferences
-                .SelectMany(e => e.installedPackages)
+                .SelectMany(e => e.InstalledPackages)
                 .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
                 .ToArray();
 
             // Group all transitive package references for an id/version into a single item.
             PackageCollectionItem[]? transitivePackages = allPackageReferences
-                .SelectMany(e => e.transitivePackages)
+                .SelectMany(e => e.TransitivePackages)
                 .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
                 .ToArray();
 
-            return (new PackageCollection(installedPackages), new PackageCollection(transitivePackages));
+            return new ProjectPackageCollections(new PackageCollection(installedPackages), new PackageCollection(transitivePackages));
         }
     }
 }
