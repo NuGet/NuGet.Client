@@ -25,7 +25,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             ILogMessage logMessage;
-            IReadOnlyList<ILogMessage> logMessages = Array.Empty<ILogMessage>();
+            IReadOnlyList<ILogMessage>? logMessages = null;
             string typeName = exception.GetType().FullName;
 
             if (exception is SignatureException signatureException)

@@ -62,10 +62,10 @@ NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo.SupportedFramew
 NuGet.VisualStudio.Internal.Contracts.RemoteError
 NuGet.VisualStudio.Internal.Contracts.RemoteError.ActivityLogMessage.get -> string?
 NuGet.VisualStudio.Internal.Contracts.RemoteError.LogMessage.get -> NuGet.Common.ILogMessage!
-NuGet.VisualStudio.Internal.Contracts.RemoteError.LogMessages.get -> System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>!
+NuGet.VisualStudio.Internal.Contracts.RemoteError.LogMessages.get -> System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>?
 NuGet.VisualStudio.Internal.Contracts.RemoteError.ProjectContextLogMessage.get -> string?
-NuGet.VisualStudio.Internal.Contracts.RemoteError.RemoteError(string! typeName, NuGet.Common.ILogMessage! logMessage, System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>! logMessages) -> void
-NuGet.VisualStudio.Internal.Contracts.RemoteError.RemoteError(string! typeName, NuGet.Common.ILogMessage! logMessage, System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>! logMessages, string? projectContextLogMessage, string? activityLogMessage) -> void
+NuGet.VisualStudio.Internal.Contracts.RemoteError.RemoteError(string! typeName, NuGet.Common.ILogMessage! logMessage, System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>? logMessages) -> void
+NuGet.VisualStudio.Internal.Contracts.RemoteError.RemoteError(string! typeName, NuGet.Common.ILogMessage! logMessage, System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>? logMessages, string? projectContextLogMessage, string? activityLogMessage) -> void
 NuGet.VisualStudio.Internal.Contracts.RemoteError.TypeName.get -> string!
 NuGet.VisualStudio.Internal.Contracts.RemoteErrorCode
 NuGet.VisualStudio.Internal.Contracts.RemoteErrorCode.RemoteError = -31999 -> NuGet.VisualStudio.Internal.Contracts.RemoteErrorCode

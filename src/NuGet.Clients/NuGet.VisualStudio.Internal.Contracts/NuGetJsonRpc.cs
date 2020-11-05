@@ -17,12 +17,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         protected override Type? GetErrorDetailsDataType(JsonRpcError error)
         {
-            if ((int?)error.Error?.Code == (int)RemoteErrorCode.RemoteError)
+            if ((int?)error?.Error?.Code == (int)RemoteErrorCode.RemoteError)
             {
                 return typeof(RemoteError);
             }
 
+#pragma warning disable CS8604 // Possible null reference argument.
             return base.GetErrorDetailsDataType(error);
+#pragma warning restore CS8604 // Possible null reference argument.
         }
     }
 }
