@@ -25,7 +25,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             ILogMessage logMessage;
-            IReadOnlyList<ILogMessage> logMessages = null;
+            IReadOnlyList<ILogMessage> logMessages = Array.Empty<ILogMessage>();
             string typeName = exception.GetType().FullName;
 
             if (exception is SignatureException signatureException)
@@ -38,8 +38,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             logMessage = new LogMessage(LogLevel.Error, ExceptionUtilities.DisplayMessage(exception, indent: false));
-            string projectContextLogMessage = null;
-            string activityLogMessage = null;
+            string? projectContextLogMessage = null;
+            string? activityLogMessage = null;
 
             if (exception is NuGetResolverConstraintException
                 || exception is PackageAlreadyInstalledException

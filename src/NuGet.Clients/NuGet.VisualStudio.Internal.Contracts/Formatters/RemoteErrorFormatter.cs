@@ -39,7 +39,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 string? activityLogMessage = null;
                 ILogMessage? logMessage = null;
-                List<ILogMessage>? logMessages = null;
+                List<ILogMessage> logMessages = new List<ILogMessage>();
                 string? projectContextLogMessage = null;
                 string? typeName = null;
 

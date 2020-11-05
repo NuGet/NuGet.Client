@@ -11,8 +11,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
     {
         public ILogMessage LogMessage { get; }
         public IReadOnlyList<ILogMessage> LogMessages { get; }
-        public string ProjectContextLogMessage { get; }
-        public string ActivityLogMessage { get; }
+        public string? ProjectContextLogMessage { get; }
+        public string? ActivityLogMessage { get; }
         public string TypeName { get; }
 
         public RemoteError(string typeName, ILogMessage logMessage, IReadOnlyList<ILogMessage> logMessages)
@@ -31,8 +31,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             string typeName,
             ILogMessage logMessage,
             IReadOnlyList<ILogMessage> logMessages,
-            string projectContextLogMessage,
-            string activityLogMessage)
+            string? projectContextLogMessage,
+            string? activityLogMessage)
             : this(typeName, logMessage, logMessages)
         {
             ProjectContextLogMessage = projectContextLogMessage;
