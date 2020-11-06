@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 solutionManager: solMgr.Object,
                 projects: new List<IProjectContextInfo>());
 
-            _testInstance.SetCurrentPackage(
+            _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();
@@ -129,7 +129,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
-            await model.SetCurrentPackage(
+            await model.SetCurrentPackageAsync(
                 new PackageItemListViewModel()
                 {
                     InstalledVersion = installedVersion,
@@ -157,7 +157,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
-            await model.SetCurrentPackage(
+            await model.SetCurrentPackageAsync(
                 new PackageItemListViewModel()
                 {
                     InstalledVersion = installedVersion,
@@ -201,7 +201,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     CancellationToken.None);
             });
 
-            _testInstance.SetCurrentPackage(
+            _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();
