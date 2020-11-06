@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
             _solutionManager.ProjectUpdated += ProjectChanged;
         }
 
-        public async override Task SetCurrentPackage(
+        public async override Task SetCurrentPackageAsync(
             PackageItemListViewModel searchResultPackage,
             ItemFilter filter,
             Func<PackageItemListViewModel> getPackageItemListViewModel)
@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
             // Set InstalledVersion before fetching versions list.
             InstalledVersion = searchResultPackage.InstalledVersion;
 
-            await base.SetCurrentPackage(searchResultPackage, filter, getPackageItemListViewModel);
+            await base.SetCurrentPackageAsync(searchResultPackage, filter, getPackageItemListViewModel);
 
             // SetCurrentPackage can take long time to return, user might changed selected package.
             // Check selected package.
@@ -93,8 +93,6 @@ namespace NuGet.PackageManagement.UI
         public override void CleanUp()
         {
             _solutionManager.ProjectUpdated -= ProjectChanged;
-
-            Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
         }
 
         protected override Task CreateVersionsAsync(CancellationToken cancellationToken)
