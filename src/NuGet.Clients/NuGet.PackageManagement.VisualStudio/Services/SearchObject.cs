@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 List<string> recommendedIds = recommenderFeedResults.Items.Select(item => item.Identity.Id).ToList();
                 var recommendedPackageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>();
 
-                foreach (var recommendedFeedResultItem in recommenderFeedResults.Items)
+                foreach (IPackageSearchMetadata recommendedFeedResultItem in recommenderFeedResults.Items)
                 {
                     CacheBackgroundData(recommendedFeedResultItem, filter.IncludePrerelease);
                     recommendedPackageSearchMetadataContextInfo.Add(
@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             recommenderVersion: (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo));
                 }
 
-                foreach (var mainFeedResultItem in mainFeedResult.Items)
+                foreach (IPackageSearchMetadata mainFeedResultItem in mainFeedResult.Items)
                 {
                     if (!recommendedIds.Contains(mainFeedResultItem.Identity.Id))
                     {
