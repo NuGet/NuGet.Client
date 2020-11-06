@@ -5993,7 +5993,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         [InlineData("abc.JpEg", null)]
         [InlineData(".x", NuGetLogCode.NU5045)]
         [InlineData(".jpeg.x", NuGetLogCode.NU5045)]
-        [InlineData("", NuGetLogCode.NU5044)]
+        [InlineData("", NuGetLogCode.NU5045)]
         public void PackCommand_PackIcon_InvalidExtension_SucceedOrFail(string fileExtension, NuGetLogCode? logCode)
         {
             NuspecBuilder nuspecBuilder = NuspecBuilder.Create();

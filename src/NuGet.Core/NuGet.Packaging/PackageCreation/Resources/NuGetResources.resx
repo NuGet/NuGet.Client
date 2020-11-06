@@ -221,7 +221,7 @@
     <comment>0 - the license file, 1 - hint to guessed licensed file</comment>
   </data>
   <data name="IconInvalidExtension" xml:space="preserve">
-    <value>The 'icon' element {0} has an invalid file extension. Valid options are .png, .jpg or .jpeg.</value>
+    <value>The 'icon' element '{0}' has an invalid file extension. Valid options are .png, .jpg or .jpeg.</value>
     <comment>0 - Icon entry in the nuspec</comment>
   </data>
 </root>

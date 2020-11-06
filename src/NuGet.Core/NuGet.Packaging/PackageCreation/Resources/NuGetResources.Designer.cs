@@ -106,7 +106,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;icon&apos; element {0} has an invalid file extension. Valid options are .png, .jpg or .jpeg..
+        ///   Looks up a localized string similar to The &apos;icon&apos; element &apos;{0}&apos; has an invalid file extension. Valid options are .png, .jpg or .jpeg..
         /// </summary>
         internal static string IconInvalidExtension {
             get {

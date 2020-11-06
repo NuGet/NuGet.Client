@@ -693,10 +693,10 @@ namespace NuGet.Packaging
             if (!PackageTypes.Contains(PackageType.SymbolsPackage) && !string.IsNullOrEmpty(iconPath))
             {
                 var ext = Path.GetExtension(iconPath);
-                if (!string.IsNullOrEmpty(ext) &&
+                if (string.IsNullOrEmpty(ext) || (
                         !ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) &&
                         !ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) &&
-                        !ext.Equals(".png", StringComparison.OrdinalIgnoreCase))
+                        !ext.Equals(".png", StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new PackagingException(
                         NuGetLogCode.NU5045,
