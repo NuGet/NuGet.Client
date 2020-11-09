@@ -5603,7 +5603,8 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                var source = Path.Combine(pathContext.WorkingDirectory, "valid");
+                var relativeSourceName = "valid";
+                var source = Path.Combine(pathContext.WorkingDirectory, relativeSourceName);
 
                 // X is only in the source
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -5612,7 +5613,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, 0, "-Source", source);
+                var r = Util.RestoreSolution(pathContext, 0, "-Source", relativeSourceName);
 
                 // Assert
                 r.Success.Should().BeTrue();
