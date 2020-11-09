@@ -1,0 +1,127 @@
+#nullable enable
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.BeginOperationAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.EndOperationAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.ExecuteActionsAsync(System.Collections.Generic.IReadOnlyList<NuGet.VisualStudio.Internal.Contracts.ProjectAction!>! actions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetInstallActionsAsync(System.Collections.Generic.IReadOnlyCollection<string!>! projectIds, NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.PackageManagement.VersionConstraints versionConstraints, bool includePrelease, NuGet.Resolver.DependencyBehavior dependencyBehavior, System.Collections.Generic.IReadOnlyList<string!>! packageSourceNames, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<NuGet.VisualStudio.Internal.Contracts.ProjectAction!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetInstalledPackagesAsync(System.Collections.Generic.IReadOnlyCollection<string!>! projectIds, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetInstalledPackagesDependencyInfoAsync(string! projectId, bool includeUnresolved, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Core.PackageDependencyInfo!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetMetadataAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<NuGet.VisualStudio.Internal.Contracts.IProjectMetadataContextInfo!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetProjectAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetProjectsAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetProjectsWithDeprecatedDotnetFrameworkAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetUninstallActionsAsync(System.Collections.Generic.IReadOnlyCollection<string!>! projectIds, NuGet.Packaging.Core.PackageIdentity! packageIdentity, bool removeDependencies, bool forceRemove, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<NuGet.VisualStudio.Internal.Contracts.ProjectAction!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetUpdateActionsAsync(System.Collections.Generic.IReadOnlyCollection<string!>! projectIds, System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Core.PackageIdentity!>! packageIdentities, NuGet.PackageManagement.VersionConstraints versionConstraints, bool includePrelease, NuGet.Resolver.DependencyBehavior dependencyBehavior, System.Collections.Generic.IReadOnlyList<string!>! packageSourceNames, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<NuGet.VisualStudio.Internal.Contracts.ProjectAction!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.TryGetInstalledPackageFilePathAsync(string! projectId, NuGet.Packaging.Core.PackageIdentity! packageIdentity, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<(bool, string?)>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerServiceState
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerServiceState.AsyncSemaphore.get -> Microsoft.VisualStudio.Threading.AsyncSemaphore!
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerServiceState.PackageIdentity.get -> NuGet.Packaging.Core.PackageIdentity?
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerServiceState.PackageIdentity.set -> void
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerServiceState.Reset() -> void
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerServiceState.ResolvedActions.get -> System.Collections.Generic.Dictionary<string!, NuGet.PackageManagement.ResolvedAction!>!
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerServiceState.SourceCacheContext.get -> NuGet.Protocol.Core.Types.SourceCacheContext?
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerServiceState.SourceCacheContext.set -> void
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.BackupProjectAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<string!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.GetUpgradeableProjectsAsync(System.Collections.Generic.IReadOnlyCollection<string!>! projectIds, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.InstallPackagesAsync(string! projectId, System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageIdentity!>! packageIdentities, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.IsProjectUpgradeableAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.SaveProjectAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.UninstallPackagesAsync(string! projectId, System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageIdentity!>! packageIdentities, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.UpgradeProjectToPackageReferenceAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionManagerService.AfterNuGetCacheUpdated -> System.EventHandler<string!>!
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionManagerService.AfterProjectRenamed -> System.EventHandler<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>!
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionManagerService.GetSolutionDirectoryAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<string!>
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionManagerService.ProjectAdded -> System.EventHandler<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>!
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionManagerService.ProjectRemoved -> System.EventHandler<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>!
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionManagerService.ProjectRenamed -> System.EventHandler<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>!
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionManagerService.ProjectUpdated -> System.EventHandler<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>!
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionService.RestoreSolutionAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+NuGet.VisualStudio.Internal.Contracts.INuGetSourcesService.GetPackageSourcesAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<NuGet.Configuration.PackageSource!>!>
+NuGet.VisualStudio.Internal.Contracts.INuGetSourcesService.SavePackageSourcesAsync(System.Collections.Generic.IReadOnlyList<NuGet.Configuration.PackageSource!>! sources, NuGet.Configuration.PackageSourceUpdateOptions! packageSourceUpdateOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.Framework.get -> NuGet.Frameworks.NuGetFramework!
+NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.Identity.get -> NuGet.Packaging.Core.PackageIdentity!
+NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo.ProjectId.get -> string!
+NuGet.VisualStudio.Internal.Contracts.IProjectMetadataContextInfo.SupportedFrameworks.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.Frameworks.NuGetFramework!>?
+NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.Equals(NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction? other) -> bool
+NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.Id.get -> string!
+NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.ImplicitProjectAction(string! id, NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.PackageManagement.NuGetProjectActionType projectActionType) -> void
+NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.PackageIdentity.get -> NuGet.Packaging.Core.PackageIdentity!
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.Framework.get -> NuGet.Frameworks.NuGetFramework!
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.Identity.get -> NuGet.Packaging.Core.PackageIdentity!
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.PackageReferenceContextInfo(NuGet.Packaging.Core.PackageIdentity! identity, NuGet.Frameworks.NuGetFramework! framework) -> void
+NuGet.VisualStudio.Internal.Contracts.ProjectAction.Equals(NuGet.VisualStudio.Internal.Contracts.ProjectAction? other) -> bool
+NuGet.VisualStudio.Internal.Contracts.ProjectAction.Id.get -> string!
+NuGet.VisualStudio.Internal.Contracts.ProjectAction.ImplicitActions.get -> System.Collections.Generic.IReadOnlyList<NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction!>!
+NuGet.VisualStudio.Internal.Contracts.ProjectAction.PackageIdentity.get -> NuGet.Packaging.Core.PackageIdentity!
+NuGet.VisualStudio.Internal.Contracts.ProjectAction.ProjectAction(string! id, string! projectId, NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.PackageManagement.NuGetProjectActionType projectActionType, System.Collections.Generic.IReadOnlyList<NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction!>? implicitActions) -> void
+NuGet.VisualStudio.Internal.Contracts.ProjectAction.ProjectId.get -> string!
+NuGet.VisualStudio.Internal.Contracts.ProjectContextInfo.ProjectContextInfo(string! projectId, NuGet.ProjectModel.ProjectStyle projectStyle, NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind projectKind) -> void
+NuGet.VisualStudio.Internal.Contracts.ProjectContextInfo.ProjectId.get -> string!
+NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo.SupportedFrameworks.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.Frameworks.NuGetFramework!>?
+NuGet.VisualStudio.Internal.Contracts.RemoteError
+NuGet.VisualStudio.Internal.Contracts.RemoteError.ActivityLogMessage.get -> string?
+NuGet.VisualStudio.Internal.Contracts.RemoteError.LogMessage.get -> NuGet.Common.ILogMessage!
+NuGet.VisualStudio.Internal.Contracts.RemoteError.LogMessages.get -> System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>?
+NuGet.VisualStudio.Internal.Contracts.RemoteError.ProjectContextLogMessage.get -> string?
+NuGet.VisualStudio.Internal.Contracts.RemoteError.RemoteError(string! typeName, NuGet.Common.ILogMessage! logMessage, System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>? logMessages) -> void
+NuGet.VisualStudio.Internal.Contracts.RemoteError.RemoteError(string! typeName, NuGet.Common.ILogMessage! logMessage, System.Collections.Generic.IReadOnlyList<NuGet.Common.ILogMessage!>? logMessages, string? projectContextLogMessage, string? activityLogMessage) -> void
+NuGet.VisualStudio.Internal.Contracts.RemoteError.TypeName.get -> string!
+NuGet.VisualStudio.Internal.Contracts.RemoteErrorCode
+NuGet.VisualStudio.Internal.Contracts.RemoteErrorCode.RemoteError = -31999 -> NuGet.VisualStudio.Internal.Contracts.RemoteErrorCode
+NuGet.VisualStudio.Internal.Contracts.RemoteErrorUtility
+override NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.Equals(object! obj) -> bool
+override NuGet.VisualStudio.Internal.Contracts.ProjectAction.Equals(object! obj) -> bool
+static NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.Create(NuGet.Packaging.Core.PackageIdentity! identity, NuGet.Frameworks.NuGetFramework! framework) -> NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo!
+static NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.Create(NuGet.Packaging.PackageReference! packageReference) -> NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo!
+static NuGet.VisualStudio.Internal.Contracts.ProjectContextInfo.CreateAsync(NuGet.ProjectManagement.NuGetProject! nugetProject, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>
+static NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo.Create(System.Collections.Generic.IReadOnlyDictionary<string!, object!>! projectMetadata) -> NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo!
+static NuGet.VisualStudio.Internal.Contracts.RemoteErrorUtility.ToRemoteError(System.Exception! exception) -> NuGet.VisualStudio.Internal.Contracts.RemoteError!
+static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.ProjectManagerService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
+static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.ProjectUpgraderService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
+static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.SolutionManagerService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
+static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.SolutionService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
+static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.SourceProviderService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionManagerService
+NuGet.VisualStudio.Internal.Contracts.INuGetSolutionService
+NuGet.VisualStudio.Internal.Contracts.INuGetSourcesService
+NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo
+NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.AllowedVersions.get -> NuGet.Versioning.VersionRange?
+NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.IsAutoReferenced.get -> bool
+NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.IsDevelopmentDependency.get -> bool
+NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.IsUserInstalled.get -> bool
+NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo
+NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo.ProjectKind.get -> NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind
+NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo.ProjectStyle.get -> NuGet.ProjectModel.ProjectStyle
+NuGet.VisualStudio.Internal.Contracts.IProjectMetadataContextInfo
+NuGet.VisualStudio.Internal.Contracts.IProjectMetadataContextInfo.FullPath.get -> string?
+NuGet.VisualStudio.Internal.Contracts.IProjectMetadataContextInfo.Name.get -> string?
+NuGet.VisualStudio.Internal.Contracts.IProjectMetadataContextInfo.ProjectId.get -> string?
+NuGet.VisualStudio.Internal.Contracts.IProjectMetadataContextInfo.TargetFramework.get -> NuGet.Frameworks.NuGetFramework?
+NuGet.VisualStudio.Internal.Contracts.IProjectMetadataContextInfo.UniqueName.get -> string?
+NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction
+NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.ProjectActionType.get -> NuGet.PackageManagement.NuGetProjectActionType
+NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind
+NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind.PackageReference = 2 -> NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind
+NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind.PackagesConfig = 1 -> NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind
+NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind.ProjectK = 3 -> NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind
+NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind.Unknown = 0 -> NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind
+NuGet.VisualStudio.Internal.Contracts.NuGetServices
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.AllowedVersions.get -> NuGet.Versioning.VersionRange?
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.IsAutoReferenced.get -> bool
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.IsDevelopmentDependency.get -> bool
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.IsUserInstalled.get -> bool
+NuGet.VisualStudio.Internal.Contracts.ProjectAction
+NuGet.VisualStudio.Internal.Contracts.ProjectAction.ProjectActionType.get -> NuGet.PackageManagement.NuGetProjectActionType
+NuGet.VisualStudio.Internal.Contracts.ProjectContextInfo
+NuGet.VisualStudio.Internal.Contracts.ProjectContextInfo.ProjectKind.get -> NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind
+NuGet.VisualStudio.Internal.Contracts.ProjectContextInfo.ProjectStyle.get -> NuGet.ProjectModel.ProjectStyle
+NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo
+NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo.FullPath.get -> string?
+NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo.Name.get -> string?
+NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo.ProjectId.get -> string?
+NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo.TargetFramework.get -> NuGet.Frameworks.NuGetFramework?
+NuGet.VisualStudio.Internal.Contracts.ProjectMetadataContextInfo.UniqueName.get -> string?
+override NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.GetHashCode() -> int
+override NuGet.VisualStudio.Internal.Contracts.ProjectAction.GetHashCode() -> int
