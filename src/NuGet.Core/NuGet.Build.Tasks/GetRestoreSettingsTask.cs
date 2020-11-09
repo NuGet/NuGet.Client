@@ -94,6 +94,13 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
+#if DEBUG
+            var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
+            if (!string.IsNullOrEmpty(debugRestoreTask) && debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                System.Diagnostics.Debugger.Launch();
+            }
+#endif
             var log = new MSBuildLogger(Log);
 
             // Log Inputs
@@ -159,6 +166,7 @@ namespace NuGet.Build.Tasks
 
                 // Sources
                 OutputSources = BuildTasksUtility.GetSources(
+                    MSBuildStartupDirectory,
                     Path.GetDirectoryName(ProjectUniqueName),
                     RestoreSources,
                     RestoreSourcesOverride,
@@ -167,6 +175,7 @@ namespace NuGet.Build.Tasks
 
                 // Fallback folders
                 OutputFallbackFolders = BuildTasksUtility.GetFallbackFolders(
+                    MSBuildStartupDirectory,
                     Path.GetDirectoryName(ProjectUniqueName),
                     RestoreFallbackFolders, RestoreFallbackFoldersOverride,
                     GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFolders"),

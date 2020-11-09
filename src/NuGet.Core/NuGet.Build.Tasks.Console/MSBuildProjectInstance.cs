@@ -50,5 +50,17 @@ namespace NuGet.Build.Tasks.Console
 
         /// <inheritdoc cref="MSBuildItemBase.GetPropertyValue(string)" />
         protected override string GetPropertyValue(string name) => _projectInstance.GetPropertyValue(name);
+
+        public string GetGlobalProperty(string property)
+        {
+            string value = GetPropertyValue(property).Trim();
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return value;
+        }
     }
 }

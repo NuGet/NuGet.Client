@@ -219,10 +219,14 @@ namespace NuGet.Build.Tasks.Console.Test
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var project = new MockMSBuildProject(testDirectory, new Dictionary<string, string>
+                var project = new MockMSBuildProject(testDirectory,
+                properties: new Dictionary<string, string>
                 {
-                    ["RestorePackagesPathOverride"] = packagesPathOverride,
                     ["RestorePackagesPath"] = packagesPath
+                },
+                globalProperties: new Dictionary<string, string>
+                {
+                    ["RestorePackagesPath"] = packagesPathOverride,
                 });
 
                 var settings = new MockSettings
@@ -502,11 +506,15 @@ namespace NuGet.Build.Tasks.Console.Test
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var project = new MockMSBuildProject(testDirectory, new Dictionary<string, string>
+                var project = new MockMSBuildProject(testDirectory,
+                properties: new Dictionary<string, string>
                 {
                     ["RestoreRepositoryPath"] = restoreRepositoryPath,
-                    ["RestoreRepositoryPathOverride"] = repositoryPathOverride,
                     ["SolutionPath"] = solutionPath == null || solutionPath == "*Undefined*" ? solutionPath : UriUtility.GetAbsolutePath(testDirectory, solutionPath)
+                },
+                globalProperties: new Dictionary<string, string>
+                {
+                    ["RestoreRepositoryPath"] = repositoryPathOverride,
                 });
 
                 var settings = new MockSettings
@@ -604,10 +612,14 @@ namespace NuGet.Build.Tasks.Console.Test
         [Fact]
         public void GetSources_WhenRestoreSourcesAndRestoreSourcesOverrideSpecified_CorrectSourcesDetected()
         {
-            var project = new MockMSBuildProject(new Dictionary<string, string>
+            var project = new MockMSBuildProject(
+            properties: new Dictionary<string, string>
             {
                 ["RestoreSources"] = "https://source1;https://source2",
-                ["RestoreSourcesOverride"] = "https://source3"
+            },
+            globalProperties: new Dictionary<string, string>
+            {
+                ["RestoreSources"] = "https://source3"
             });
 
             var settings = new MockSettings

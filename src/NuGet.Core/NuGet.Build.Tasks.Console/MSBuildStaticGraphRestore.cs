@@ -247,7 +247,7 @@ namespace NuGet.Build.Tasks.Console
         internal static string GetPackagesPath(IMSBuildProject project, ISettings settings)
         {
             return RestoreSettingsUtils.GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPathOverride")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestorePackagesPath")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPath")),
                 () => SettingsUtility.GetGlobalPackagesFolder(settings));
         }
@@ -405,7 +405,7 @@ namespace NuGet.Build.Tasks.Console
         internal static string GetRepositoryPath(IMSBuildProject project, ISettings settings)
         {
             return RestoreSettingsUtils.GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreRepositoryPathOverride")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestoreRepositoryPath")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreRepositoryPath")),
                 () => SettingsUtility.GetRepositoryPath(settings),
                 () =>
@@ -442,9 +442,10 @@ namespace NuGet.Build.Tasks.Console
         internal static List<PackageSource> GetSources(IMSBuildProject project, IReadOnlyCollection<IMSBuildProject> innerNodes, ISettings settings)
         {
             return BuildTasksUtility.GetSources(
+                project.GetGlobalProperty("OriginalMSBuildStartupDirectory"),
                 project.Directory,
                 project.SplitPropertyValueOrNull("RestoreSources"),
-                project.SplitPropertyValueOrNull("RestoreSourcesOverride"),
+                project.SplitGlobalPropertyValueOrNull("RestoreSources"),
                 innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectSources"))),
                 settings)
                 .Select(i => new PackageSource(i))
@@ -606,6 +607,8 @@ namespace NuGet.Build.Tasks.Console
                     // Get the PackageSpecs in parallel because creating each one is relatively expensive so parallelism speeds things up
                     Parallel.ForEach(projects, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, project =>
                     {
+                        MSBuildLogger.LogMinimal($"For {project.OuterProject.FullPath}," +
+                            $" the value of MSBuildStartupDirectory:{project.OuterProject.GetProperty("MSBuildStartupDirectory")}");
                         var packageSpec = GetPackageSpec(project.OuterProject, project);
 
                         if (packageSpec != null)
@@ -623,7 +626,6 @@ namespace NuGet.Build.Tasks.Console
                                 projectPathLookup.TryAdd(projectPath, projectPath);
                             }
 
-                            // TODO: Remove this lock once https://github.com/NuGet/Home/issues/9002 is fixed
                             lock (dependencyGraphSpec)
                             {
                                 dependencyGraphSpec.AddProject(packageSpec);
@@ -765,9 +767,10 @@ namespace NuGet.Build.Tasks.Console
                     CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && (
                         projectsByTargetFramework.Count > 1 || !string.IsNullOrWhiteSpace(project.GetProperty("TargetFrameworks"))),
                     FallbackFolders = BuildTasksUtility.GetFallbackFolders(
+                        project.GetProperty("MSBuildStartupDirectory"),
                         project.Directory,
                         project.SplitPropertyValueOrNull("RestoreFallbackFolders"),
-                        project.SplitPropertyValueOrNull("RestoreFallbackFoldersOverride"),
+                        project.SplitGlobalPropertyValueOrNull("RestoreFallbackFolders"),
                         innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFolders"))),
                         innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
                         settings),
