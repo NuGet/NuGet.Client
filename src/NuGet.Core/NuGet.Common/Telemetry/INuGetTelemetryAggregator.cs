@@ -4,9 +4,9 @@
 namespace NuGet.Common.Telemetry
 {
     // This one used for emitting aggregated telemetry at VS solution close or VS instance close.
-    public interface INuGetSolutionTelemetry
+    public interface INuGetTelemetryAggregator
     {
-        /// <summary> Send a <see cref="TelemetryEvent"/> to telemetry. </summary>
+        /// <summary> Add a <see cref="TelemetryEvent"/> to telemetry list which will be aggregated and sent later. </summary>
         /// <param name="telemetryData"> Telemetry event to send. </param>
         void AddSolutionTelemetryEvent(TelemetryEvent telemetryData);
     }

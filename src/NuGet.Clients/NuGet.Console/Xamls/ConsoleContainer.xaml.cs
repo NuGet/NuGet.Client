@@ -28,7 +28,7 @@ namespace NuGetConsole
     {
         private INuGetSolutionManagerService _solutionManager;
         private IVsSolutionManager _iVsSolutionManager;
-        private INuGetSolutionTelemetry _nugetSolutionTelemetry;
+        private INuGetTelemetryAggregator _nugetSolutionTelemetry;
         private int _windowLoadCount;
         private bool _isTelemetryEmitted;
 
@@ -69,7 +69,7 @@ namespace NuGetConsole
                             var packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
                             var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
                             var shell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
-                            _nugetSolutionTelemetry = ServiceLocator.GetInstanceSafe<INuGetSolutionTelemetry>();
+                            _nugetSolutionTelemetry = ServiceLocator.GetInstanceSafe<INuGetTelemetryAggregator>();
 
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

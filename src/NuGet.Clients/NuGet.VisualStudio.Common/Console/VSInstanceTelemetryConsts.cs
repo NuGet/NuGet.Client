@@ -12,7 +12,11 @@ namespace NuGet.VisualStudio.Console
         // PMC, PMUI powershell telemetry consts
         public const string PowerShellExecuteCommand = "PowerShellExecuteCommand";
         public const string NuGetPMCExecuteCommandCount = "NuGetPMCExecuteCommandCount";
-        public const string NuGetNonPMCExecuteCommandCount = "NuGetNonPMCExecuteCommandCount";
+        public const string NuGetPMUIExecuteCommandCount = "NuGetPMUIExecuteCommandCount";
+        public const string NuGetPowerShellLoaded = "NuGetPowerShellLoaded";
+        public const string LoadFromPMC = "LoadFromPMC";
+        public const string NuGetCommandUsed = "NuGetCommandUsed";
+        public const string InitPs1Loaded = "InitPs1Loaded";
         public const string LoadedFromPMC = "LoadedFromPMC";
         public const string FirstTimeLoadedFromPMC = "FirstTimeLoadedFromPMC";
         public const string LoadedFromPMUI = "LoadedFromPMUI";

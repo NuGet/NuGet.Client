@@ -45,6 +45,16 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private static bool IsTelemetryEmitted;
         private static int PmcExecutedCount;
         private static int NonPmcExecutedCount;
+
+        // There are 8 bit in byte.
+        // 0 - not used
+        // 1 - not used
+        // 2 - If nuget command used during current VS solution session.
+        // 3 - If init.ps1 is loaded during current VS solution session.
+        // 4 - First time load from PMUI
+        // 5 - First time load PMC
+        // 6 - LoadedFromPMUI: Indicates powershell host for PMUI already created, and stays that way until VS close.
+        // 7 - LoadedFromPMC: Indicates powershell host for PMC already created, and stays that way until VS close.
         private static byte PowerShellHostInstances;
 
         private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
@@ -59,7 +69,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<ISourceControlManagerProvider> _sourceControlManagerProvider;
         private readonly Lazy<ICommonOperations> _commonOperations;
-        private readonly Lazy<INuGetSolutionTelemetry> _nugetSolutionTelemetry;
+        private readonly Lazy<INuGetTelemetryAggregator> _nugetTelemetryAggregate;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
         private const string ActivePackageSourceKey = "activePackageSource";
@@ -124,7 +134,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
                 () => ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>());
             _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetInstanceSafe<ICommonOperations>());
-            _nugetSolutionTelemetry = new Lazy<INuGetSolutionTelemetry>(() => ServiceLocator.GetInstanceSafe<INuGetSolutionTelemetry>());
+            _nugetTelemetryAggregate = new Lazy<INuGetTelemetryAggregator>(() => ServiceLocator.GetInstanceSafe<INuGetTelemetryAggregator>());
             _name = name;
             IsCommandEnabled = true;
 
@@ -323,6 +333,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         UpdateWorkingDirectory();
                         await ExecuteInitScriptsAsync();
+
+                        // Emit first time Powershell load event to find out later how many VS instance crash after loading powershell.
+                        EmitPowerShellLoadedTelemetry(console is IWpfConsole);
 
                         // check if PMC console is actually opened, then only hook to solution load events.
                         if (console is IWpfConsole)
@@ -526,23 +539,27 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     AddPathToEnvironment(toolsPath);
 
                     var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
-                    if (File.Exists(scriptPath) &&
-                        _scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
+                    if (File.Exists(scriptPath))
                     {
-                        // always execute init script on a background thread
-                        await TaskScheduler.Default;
-
-                        var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
-
-                        Runspace.Invoke(
-                            request.BuildCommand(),
-                            request.BuildInput(),
-                            outputResults: true);
-
                         // Init.ps1 is loaded
-                        PowerShellHostInstances |= 0b10000000;
+                        PowerShellHostInstances |= 0b00010000;
 
-                        return;
+                        if (_scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
+                        {
+                            // always execute init script on a background thread
+                            await TaskScheduler.Default;
+
+                            var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
+
+                            Runspace.Invoke(
+                                request.BuildCommand(),
+                                request.BuildInput(),
+                                outputResults: true);
+
+
+
+                            return;
+                        }
                     }
                 }
 
@@ -591,6 +608,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 lock (TelemetryLock)
                 {
+                    // Please note: Direct PMC and PMUI don't share same code path for installing packages with *.ps1 files
+                    // For PMC all installation done in one pass so no double counting.
                     PmcExecutedCount++;
                 }
             }
@@ -598,6 +617,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 lock (TelemetryLock)
                 {
+                    // Please note: Direct PMC and PMUI don't share same code path for installing packages with *.ps1 files
+                    // This one is called for both init.ps1 and install.ps1 seperately.
+                    // For MSBuildNuGetProject projects install.ps1 can event furthure duplicate counted: MSBuildNuGetProject.cs#L377 - L396
+                    // Also this concern valid for dependent packages with *.ps1 files.
                     NonPmcExecutedCount++;
                 }
             }
@@ -611,6 +634,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
             ActiveConsole = console;
+
+            // Check and log if command is NugetCommand
+            IsNugetCommand(command);
 
             string fullCommand;
             if (ComplexCommand.AddLine(command, out fullCommand)
@@ -901,6 +927,23 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return await doneTask;
         }
 
+        private void EmitPowerShellLoadedTelemetry(bool isPMC)
+        {
+            lock (TelemetryLock)
+            {
+                // This is PowerShellHost load first time.
+                if ((PowerShellHostInstances & 0b00000011) == 0)
+                {
+                    var telemetryEvent = new TelemetryEvent(NuGetPowerShellLoaded, new Dictionary<string, object>
+                                    {
+                                        { NugetPowershellPrefix + LoadFromPMC, isPMC}
+                                    });
+
+                    TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+                }
+            }
+        }
+
         private void EmitPowershellUsageTelemetry(bool withSolution)
         {
             lock (TelemetryLock)
@@ -910,21 +953,54 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     var telemetryEvent = new TelemetryEvent(PowerShellExecuteCommand, new Dictionary<string, object>
                                     {
                                         { NuGetPMCExecuteCommandCount, PmcExecutedCount},
-                                        { NuGetNonPMCExecuteCommandCount, NonPmcExecutedCount},
-                                        { LoadedFromPMC, (PowerShellHostInstances & 0b00000001) == 0b00000001},
-                                        { LoadedFromPMUI, (PowerShellHostInstances & 0b00000010) == 0b00000010},
-                                        { FirstTimeLoadedFromPMC, (PowerShellHostInstances & 0b00000100) == 0b00000100},
+                                        { NuGetPMUIExecuteCommandCount, NonPmcExecutedCount},
+                                        { NuGetCommandUsed, (PowerShellHostInstances & 0b00100000) == 0b00100000},
+                                        { InitPs1Loaded, (PowerShellHostInstances & 0b00010000) == 0b00010000},
                                         { FirstTimeLoadedFromPMUI, (PowerShellHostInstances & 0b00001000) == 0b00001000},
+                                        { FirstTimeLoadedFromPMC, (PowerShellHostInstances & 0b00000100) == 0b00000100},
+                                        { LoadedFromPMUI, (PowerShellHostInstances & 0b00000010) == 0b00000010},
+                                        { LoadedFromPMC, (PowerShellHostInstances & 0b00000001) == 0b00000001},
                                         { SolutionLoaded, withSolution}
                                     });
-                    _nugetSolutionTelemetry.Value.AddSolutionTelemetryEvent(telemetryEvent);
+                    _nugetTelemetryAggregate.Value.AddSolutionTelemetryEvent(telemetryEvent);
 
                     PmcExecutedCount = 0;
                     NonPmcExecutedCount = 0;
                     IsTelemetryEmitted = true;
 
-                    //Reset first time load powershell flag bits, but keep other 2 flags for origin of powershell load.
+                    // Keep other 2 flags for powershell host are created flags, reset all others.
                     PowerShellHostInstances &= 0b00000011;
+                }
+            }
+        }
+
+        private void IsNugetCommand(string commandStr)
+        {
+            if (!string.IsNullOrWhiteSpace(commandStr))
+            {
+                string command = commandStr.Trim().ToUpperInvariant();
+                string[] commandParts = command.Split(' ');
+
+                if (commandParts.Count() > 1)
+                {
+                    command = commandParts[0];
+                }
+
+                switch (command)
+                {
+                    case "GET-HELP":
+                    case "FIND-PACKAGE":
+                    case "GET-PACKAGE":
+                    case "INSTALL-PACKAGE":
+                    case "UNINSTALL-PACKAGE":
+                    case "UPDATE-PACKAGE":
+                    case "SYNC-PACKAGE":
+                    case "ADD-BINDINGREDIRECT":
+                    case "GET-PROJECT":
+                    case "REGISTER-TABEXPANSION":
+                        // NugetCommand executed
+                        PowerShellHostInstances |= 0b00100000;
+                        break;
                 }
             }
         }

@@ -10,10 +10,10 @@ using NuGet.Common.Telemetry;
 
 namespace NuGet.VisualStudio.Console
 {
-    [Export(typeof(INuGetSolutionTelemetry))]
+    [Export(typeof(INuGetTelemetryAggregator))]
     [Export(typeof(VSIntanceTelemetryEmit))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSIntanceTelemetryEmit : VSInstanceTelemetryConsts, INuGetSolutionTelemetry
+    public sealed class VSIntanceTelemetryEmit : VSInstanceTelemetryConsts, INuGetTelemetryAggregator
     {
         // _solutionTelemetryEvents hold telemetry for current VS solution session.
         private List<TelemetryEvent> _vsSolutionTelemetryEvents;
@@ -82,12 +82,13 @@ namespace NuGet.VisualStudio.Console
             if (vsSolutionPowershellTelemetry == null)
             {
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMCExecuteCommandCount, 0);
-                _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetNonPMCExecuteCommandCount, 0);
+                _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMUIExecuteCommandCount, 0);
+                _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetCommandUsed, false);
+                _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + InitPs1Loaded, false);
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + LoadedFromPMC, false);
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + LoadedFromPMUI, false);
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + FirstTimeLoadedFromPMC, false);
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + FirstTimeLoadedFromPMUI, false);
-                //_vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + SolutionLoaded, _solutionCount > 0); // If 'false' : PMC used before any solution is loaded.
             }
             else
             {
@@ -98,12 +99,13 @@ namespace NuGet.VisualStudio.Console
                 }
 
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMCExecuteCommandCount, vsSolutionPowershellTelemetry[NuGetPMCExecuteCommandCount]);
-                _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetNonPMCExecuteCommandCount, vsSolutionPowershellTelemetry[NuGetNonPMCExecuteCommandCount]);
+                _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMUIExecuteCommandCount, vsSolutionPowershellTelemetry[NuGetPMUIExecuteCommandCount]);
+                _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetCommandUsed, vsSolutionPowershellTelemetry[NuGetCommandUsed]);
+                _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + InitPs1Loaded, vsSolutionPowershellTelemetry[InitPs1Loaded]);
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + LoadedFromPMC, vsSolutionPowershellTelemetry[LoadedFromPMC]);
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + LoadedFromPMUI, vsSolutionPowershellTelemetry[LoadedFromPMUI]);
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + FirstTimeLoadedFromPMC, vsSolutionPowershellTelemetry[FirstTimeLoadedFromPMC]);
                 _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + FirstTimeLoadedFromPMUI, vsSolutionPowershellTelemetry[FirstTimeLoadedFromPMUI]);
-                //_vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + SolutionLoaded, _solutionCount > 0); // If 'false' : PMC used before any solution is loaded.
             }
 
             _vsSolutionTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMCWindowLoadCount, _vsSolutionTelemetryEvents.Where(e => e[NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[NuGetPMCWindowLoadCount]));
@@ -130,7 +132,7 @@ namespace NuGet.VisualStudio.Console
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + ReOpenAtStart, _vsInstanceTelemetryEvents.Where(e => e[ReOpenAtStart] != null).Any()); // Whether PMC window re-open at start by default next time VS open?
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMCWindowLoadCount, _vsInstanceTelemetryEvents.Where(e => e[NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[NuGetPMCWindowLoadCount])); // PMC Window load count
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMCExecuteCommandCount, _vsInstanceTelemetryEvents.Where(e => e[NuGetPMCExecuteCommandCount] is int).Sum(e => (int)e[NuGetPMCExecuteCommandCount])); // PMC number of commands executed.
-            _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetNonPMCExecuteCommandCount, _vsInstanceTelemetryEvents.Where(e => e[NuGetNonPMCExecuteCommandCount] is int).Sum(e => (int)e[NuGetNonPMCExecuteCommandCount])); // PMUI number of powershell commands executed.
+            _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMUIExecuteCommandCount, _vsInstanceTelemetryEvents.Where(e => e[NuGetPMUIExecuteCommandCount] is int).Sum(e => (int)e[NuGetPMUIExecuteCommandCount])); // PMUI number of powershell commands executed.
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + SolutionCount, _solutionCount);
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + PMCPowershellLoadedSolutionCount, _vsInstanceTelemetryEvents.Where(e => e[SolutionLoaded] is bool && (bool)e[SolutionLoaded] && e[LoadedFromPMC] is bool).Count(e => (bool)e[LoadedFromPMC] == true)); // SolutionLoaded used here to remove edge case : PMC used before any solution is loaded 
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + PMUIPowershellLoadedSolutionCount, _vsInstanceTelemetryEvents.Where(e => e[LoadedFromPMUI] is bool).Count(e => (bool)e[LoadedFromPMUI] == true));
