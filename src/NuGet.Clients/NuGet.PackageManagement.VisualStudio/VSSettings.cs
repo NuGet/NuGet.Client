@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
-using NuGet.Common.Telemetry;
 using NuGet.Configuration;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Console;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -20,7 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string NuGetSolutionSettingsFolder = ".nuget";
         // to initialize SolutionSettings first time outside MEF constructor
         private Tuple<string, Microsoft.VisualStudio.Threading.AsyncLazy<ISettings>> _solutionSettings;
-        private VSIntanceTelemetryEmit _vSIntanceTelemetryEmit;
+        private VsIntanceTelemetryEmit _vSIntanceTelemetryEmit;
 
         private ISettings SolutionSettings
         {
@@ -42,13 +40,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler SettingsChanged;
 
-        public VSSettings(ISolutionManager solutionManager, VSIntanceTelemetryEmit vsIntanceTelemetryEmit)
+        public VSSettings(ISolutionManager solutionManager, VsIntanceTelemetryEmit vsIntanceTelemetryEmit)
             : this(solutionManager, vsIntanceTelemetryEmit, machineWideSettings: null)
         {
         }
 
         [ImportingConstructor]
-        public VSSettings(ISolutionManager solutionManager, VSIntanceTelemetryEmit vsIntanceTelemetryEmit, IMachineWideSettings machineWideSettings)
+        public VSSettings(ISolutionManager solutionManager, VsIntanceTelemetryEmit vsIntanceTelemetryEmit, IMachineWideSettings machineWideSettings)
         {
             SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             MachineWideSettings = machineWideSettings;

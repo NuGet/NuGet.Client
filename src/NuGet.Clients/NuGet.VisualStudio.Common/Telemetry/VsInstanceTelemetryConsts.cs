@@ -1,13 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.Linq;
-using NuGet.Common;
-
-namespace NuGet.VisualStudio.Console
+namespace NuGet.VisualStudio.Telemetry
 {
-    public abstract class VSInstanceTelemetryConsts
+    public abstract class VsInstanceTelemetryConsts
     {
         // PMC, PMUI powershell telemetry consts
         public const string PowerShellExecuteCommand = "PowerShellExecuteCommand";

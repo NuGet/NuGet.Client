@@ -8,12 +8,12 @@ using System.Linq;
 using NuGet.Common;
 using NuGet.Common.Telemetry;
 
-namespace NuGet.VisualStudio.Console
+namespace NuGet.VisualStudio.Telemetry
 {
     [Export(typeof(INuGetTelemetryAggregator))]
-    [Export(typeof(VSIntanceTelemetryEmit))]
+    [Export(typeof(VsIntanceTelemetryEmit))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSIntanceTelemetryEmit : VSInstanceTelemetryConsts, INuGetTelemetryAggregator
+    public sealed class VsIntanceTelemetryEmit : VsInstanceTelemetryConsts, INuGetTelemetryAggregator
     {
         // _solutionTelemetryEvents hold telemetry for current VS solution session.
         private List<TelemetryEvent> _vsSolutionTelemetryEvents;
@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio.Console
 
         private int _solutionCount;
 
-        public VSIntanceTelemetryEmit()
+        public VsIntanceTelemetryEmit()
         {
             _vsSolutionTelemetryEvents = new List<TelemetryEvent>();
             _vsSolutionTelemetryEmitQueue = new Dictionary<string, object>();
@@ -42,7 +42,7 @@ namespace NuGet.VisualStudio.Console
         {
             // PMC used before any solution is loaded, let's emit what we have before loading a solution.
             // Used means at least one powershell command executed, otherwise telemetry(NuGetPMCWindowLoadCount and FirstTimeLoadedFromPMC) is merged with first opened solution metric rather than sending separate nugetvssolutionclose telemetry with no data.
-            if (_solutionCount == 0 && _vsSolutionTelemetryEvents.Any(e => e[VSInstanceTelemetryConsts.NuGetPMCExecuteCommandCount] is int && (int)e[NuGetPMCExecuteCommandCount] > 0))
+            if (_solutionCount == 0 && _vsSolutionTelemetryEvents.Any(e => e[VsInstanceTelemetryConsts.NuGetPMCExecuteCommandCount] is int && (int)e[NuGetPMCExecuteCommandCount] > 0))
             {
                 EmitVSSolutionTelemetry();
             }
