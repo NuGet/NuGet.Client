@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using NuGet.Common;
-using NuGet.Common.Telemetry;
 
 namespace NuGet.VisualStudio.Telemetry
 {
