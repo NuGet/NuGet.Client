@@ -17,7 +17,7 @@ namespace NuGet.VisualStudio.Telemetry
         private bool _isTelemetryEmitted;
         private int _pmcExecutedCount;
         private int _nonPmcExecutedCount;
-        private readonly Lazy<INuGetTelemetryAggregator> _nugetTelemetryAggregate;
+        private readonly Lazy<INuGetTelemetryCollector> _nugetTelemetryAggregate;
 
         // There are 8 bit in byte.
         // 0 - not used
@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio.Telemetry
 
         public VsPowerShellHostTelemetryEmit()
         {
-            _nugetTelemetryAggregate = new Lazy<INuGetTelemetryAggregator>(() => ServiceLocator.GetInstanceSafe<INuGetTelemetryAggregator>());
+            _nugetTelemetryAggregate = new Lazy<INuGetTelemetryCollector>(() => ServiceLocator.GetInstanceSafe<INuGetTelemetryCollector>());
         }
 
         public void CheckInitOrigin(bool isPMC)

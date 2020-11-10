@@ -28,7 +28,7 @@ namespace NuGetConsole
     {
         private INuGetSolutionManagerService _solutionManager;
         private IVsSolutionManager _iVsSolutionManager;
-        private INuGetTelemetryAggregator _nugetSolutionTelemetry;
+        private INuGetTelemetryCollector _nugetSolutionTelemetry;
         private int _windowLoadCount;
         private bool _isTelemetryEmitted;
 
@@ -65,7 +65,7 @@ namespace NuGetConsole
                             var packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
                             var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
                             var shell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
-                            _nugetSolutionTelemetry = ServiceLocator.GetInstanceSafe<INuGetTelemetryAggregator>();
+                            _nugetSolutionTelemetry = ServiceLocator.GetInstance<INuGetTelemetryCollector>();
 
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -101,7 +101,7 @@ namespace NuGetConsole
                 var reopenAtStart = IsLoaded;
                 var telemetryEvent = new TelemetryEvent(VsInstanceTelemetryConsts.PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
                                 {
-                                    { VsInstanceTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount}, // Useful if PMC used without any solution load at all then VS instance closed.
+                                    { VsInstanceTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount},
                                     { VsInstanceTelemetryConsts.ReOpenAtStart, reopenAtStart}
                                 });
 

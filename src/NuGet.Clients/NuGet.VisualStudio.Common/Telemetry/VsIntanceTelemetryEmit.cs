@@ -9,10 +9,10 @@ using NuGet.Common;
 
 namespace NuGet.VisualStudio.Telemetry
 {
-    [Export(typeof(INuGetTelemetryAggregator))]
+    [Export(typeof(INuGetTelemetryCollector))]
     [Export(typeof(VsIntanceTelemetryEmit))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VsIntanceTelemetryEmit : VsInstanceTelemetryConsts, INuGetTelemetryAggregator
+    public sealed class VsIntanceTelemetryEmit : VsInstanceTelemetryConsts, INuGetTelemetryCollector
     {
         // _solutionTelemetryEvents hold telemetry for current VS solution session.
         private List<TelemetryEvent> _vsSolutionTelemetryEvents;
