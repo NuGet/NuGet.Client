@@ -88,6 +88,16 @@ namespace NuGet.Protocol
         /// </summary>
         private async Task<Uri> GetDownloadUrl(PackageIdentity identity, ILogger log, CancellationToken token)
         {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (identity.Version == null)
+            {
+                throw new ArgumentException("The package identity must have a non-null version.", nameof(identity));
+            }
+
             Uri downloadUri = null;
             var sourcePackage = identity as SourcePackageDependencyInfo;
 
