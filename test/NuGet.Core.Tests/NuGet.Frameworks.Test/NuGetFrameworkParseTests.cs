@@ -226,6 +226,9 @@ namespace NuGet.Test
         [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
         [InlineData("netcoreapp2.0", ".NetCoreApp,Version=v2.0")]
         [InlineData("netcoreapp3.0", ".NetCoreApp,Version=v3.0")]
+        [InlineData("net5.0", "netcoreapp5.0")]
+        [InlineData("net5.0-windows", "netcoreapp5.0-windows")]
+        [InlineData("net5.0-windows10.0", "netcoreapp5.0-windows10.0")]
         [InlineData("net5.0-android", "net5.0-android")]
         [InlineData("net5.0-android", "net5.0-android0.0")]
         [InlineData("net5.0-android10.0", "net5.0-android10")]
@@ -251,7 +254,6 @@ namespace NuGet.Test
         // Net5.0 ERA
         [InlineData("net5.0", ".NETCoreApp,Version=v5.0", "")]
         [InlineData("net10.1.2.3", ".NETCoreApp,Version=v10.1.2.3", "")]
-        [InlineData("netcoreapp5.0", ".NETCoreApp,Version=v5.0", "")]
         [InlineData("net5.0-android", ".NETCoreApp,Version=v5.0", "android,Version=0.0")]
         [InlineData("net5.0-ios14.0", ".NETCoreApp,Version=v5.0", "ios,Version=14.0")]
 
