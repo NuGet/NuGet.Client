@@ -60,7 +60,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string DTEKey = "DTE";
         private const string CancellationTokenKey = "CancellationTokenKey";
         private const int ExecuteInitScriptsRetriesLimit = 50;
-
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
@@ -324,24 +323,21 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         {
                             // Hook up solution events
                             _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
-                        }
 
-                        _solutionManager.Value.SolutionClosing += (o, e) =>
-                        {
-                            // Hook up solution events
-                            _vsPowerShellHostTelemetryEmit.Value.EmitPowershellUsageTelemetry(true);
-                        };
-
-                        _solutionManager.Value.SolutionClosed += (o, e) =>
-                        {
-                            if (console is IWpfConsole)
+                            _solutionManager.Value.SolutionClosed += (o, e) =>
                             {
                                 UpdateWorkingDirectory();
 
                                 DefaultProject = null;
 
                                 NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
-                            }
+                            };
+                        }
+
+                        _solutionManager.Value.SolutionClosing += (o, e) =>
+                        {
+                            // Hook up solution events, we emit telemetry data from current VS solution session.
+                            _vsPowerShellHostTelemetryEmit.Value.EmitPowershellUsageTelemetry(true);
                         };
 
                         _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
@@ -557,7 +553,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException(nameof(command));
             }
 
-            // Command can come here from both PMC and PM UI.
+            // Increase command execution counters for PMC/PMUI
             _vsPowerShellHostTelemetryEmit.Value.IncreaseCommandCounter(console is IWpfConsole);
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
@@ -570,7 +566,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
             ActiveConsole = console;
 
-            // Check and log if command is NugetCommand
+            // Check and add to telemetery if a command is NugetCommand like 'install-package' etc.
             _vsPowerShellHostTelemetryEmit.Value.IsNugetCommand(command);
 
             string fullCommand;
@@ -947,8 +943,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
 
-            // Below emits telemetry in there was no solution was loaded at all, but if there were any solution then this one will ignored because actual data already emitted with solution SolutionClosing event previously.
-            // If no solution loaded nor PMC is engaged at then this will be ignored.  Rather than sending separate nugetvssolutionclose telemetry with no data just ignore.
+            // Below emits telemetry in case there was no solution was loaded at all.
+            // But in case there were any solution then this one will ignored because actual data already emitted with solution SolutionClosing event previously.
+            // If no solution loaded nor PMC is engaged at then this will be ignored internally.  Rather than sending separate nugetvssolutionclose telemetry with no data just ignore then.
             _vsPowerShellHostTelemetryEmit.Value.EmitPowershellUsageTelemetry(false);
         }
 

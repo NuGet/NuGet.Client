@@ -34,7 +34,6 @@
       <DependentUpon>CommonResources.cs</DependentUpon>
     </Compile>
     <Compile Include="Common\GlobalSuppressions.cs" />
-    <Compile Include="PowershellTelemetryConsts.cs" />
     <Compile Include="Utils\InstalledPackageEnumerator.cs" />
     <Compile Include="IRunspaceManager.cs" />
     <Compile Include="NativeMethods.cs" />

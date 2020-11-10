@@ -26,7 +26,7 @@ namespace NuGet.VisualStudio.Telemetry
         public const string NugetVSSolutionClose = "NugetVSSolutionClose";
         public const string NugetVSInstanceClose = "NugetVSInstanceClose";
         public const string SolutionCount = "SolutionCount";
-        public const string PMCPowershellLoadedSolutionCount = "PMCPowershellLoadedSolutionCount";
-        public const string PMUIPowershellLoadedSolutionCount = "PMUIPowershellLoadedSolutionCount";
+        public const string PMCPowerShellLoadedSolutionCount = "PMCPowerShellLoadedSolutionCount";
+        public const string PMUIPowerShellLoadedSolutionCount = "PMUIPowerShellLoadedSolutionCount";
     }
 }

@@ -124,7 +124,9 @@ namespace NuGet.VisualStudio.Telemetry
                 CombineAndEmitTelemetry(_vsInstanceTelemetryEmitQueue, NugetVSInstanceClose);
             }
             catch (Exception)
-            { }
+            {
+                // Currently do nothing.
+            }
         }
 
         private void EnqueueVSInstancePowershellTelemetry()
@@ -134,8 +136,8 @@ namespace NuGet.VisualStudio.Telemetry
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMCExecuteCommandCount, _vsInstanceTelemetryEvents.Where(e => e[NuGetPMCExecuteCommandCount] is int).Sum(e => (int)e[NuGetPMCExecuteCommandCount])); // PMC number of commands executed.
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + NuGetPMUIExecuteCommandCount, _vsInstanceTelemetryEvents.Where(e => e[NuGetPMUIExecuteCommandCount] is int).Sum(e => (int)e[NuGetPMUIExecuteCommandCount])); // PMUI number of powershell commands executed.
             _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + SolutionCount, _solutionCount);
-            _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + PMCPowershellLoadedSolutionCount, _vsInstanceTelemetryEvents.Where(e => e[SolutionLoaded] is bool && (bool)e[SolutionLoaded] && e[LoadedFromPMC] is bool).Count(e => (bool)e[LoadedFromPMC] == true)); // SolutionLoaded used here to remove edge case : PMC used before any solution is loaded 
-            _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + PMUIPowershellLoadedSolutionCount, _vsInstanceTelemetryEvents.Where(e => e[LoadedFromPMUI] is bool).Count(e => (bool)e[LoadedFromPMUI] == true));
+            _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + PMCPowerShellLoadedSolutionCount, _vsInstanceTelemetryEvents.Where(e => e[SolutionLoaded] is bool && (bool)e[SolutionLoaded] && e[LoadedFromPMC] is bool).Count(e => (bool)e[LoadedFromPMC] == true)); // SolutionLoaded used here to remove edge case : PMC used before any solution is loaded 
+            _vsInstanceTelemetryEmitQueue.Add(NugetPowershellPrefix + PMUIPowerShellLoadedSolutionCount, _vsInstanceTelemetryEvents.Where(e => e[LoadedFromPMUI] is bool).Count(e => (bool)e[LoadedFromPMUI] == true));
         }
 
         // Instead of emitting one by one we combine them into single event and each event is a property of this single event.

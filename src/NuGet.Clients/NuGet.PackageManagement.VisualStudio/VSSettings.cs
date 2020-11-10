@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
@@ -16,9 +17,10 @@ namespace NuGet.PackageManagement.VisualStudio
     public sealed class VSSettings : ISettings, IDisposable
     {
         private const string NuGetSolutionSettingsFolder = ".nuget";
+
         // to initialize SolutionSettings first time outside MEF constructor
-        private Tuple<string, Microsoft.VisualStudio.Threading.AsyncLazy<ISettings>> _solutionSettings;
-        private VsIntanceTelemetryEmit _vSIntanceTelemetryEmit;
+        private Tuple<string, AsyncLazy<ISettings>> _solutionSettings;
+        private VsIntanceTelemetryEmit _vsIntanceTelemetryEmit;
 
         private ISettings SolutionSettings
         {
@@ -53,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager.SolutionOpening += OnSolutionOpening;
             SolutionManager.SolutionOpened += OnSolutionOpened;
             SolutionManager.SolutionClosed += OnSolutionClosed;
-            _vSIntanceTelemetryEmit = vsIntanceTelemetryEmit;
+            _vsIntanceTelemetryEmit = vsIntanceTelemetryEmit;
         }
 
         private bool ResetSolutionSettingsIfNeeded()
@@ -78,9 +80,9 @@ namespace NuGet.PackageManagement.VisualStudio
             // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
             if (_solutionSettings == null || !string.Equals(root, _solutionSettings.Item1))
             {
-                _solutionSettings = new Tuple<string, Microsoft.VisualStudio.Threading.AsyncLazy<ISettings>>(
+                _solutionSettings = new Tuple<string, AsyncLazy<ISettings>>(
                     item1: root,
-                    item2: new Microsoft.VisualStudio.Threading.AsyncLazy<ISettings>(async () =>
+                    item2: new AsyncLazy<ISettings>(async () =>
                         {
                             ISettings settings = null;
                             try
@@ -103,6 +105,22 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
+        private void OnSolutionOpening(object sender, EventArgs e)
+        {
+            DetectSolutionSettingChange();
+        }
+
+        private void OnSolutionOpened(object sender, EventArgs e)
+        {
+            _vsIntanceTelemetryEmit.SolutionOpenedEmit();
+        }
+
+        private void OnSolutionClosed(object sender, EventArgs e)
+        {
+            _vsIntanceTelemetryEmit.EmitVSSolutionTelemetry();
+            DetectSolutionSettingChange();
+        }
+
         private void DetectSolutionSettingChange()
         {
             var hasChanged = ResetSolutionSettingsIfNeeded();
@@ -111,22 +129,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 SettingsChanged?.Invoke(this, EventArgs.Empty);
             }
-        }
-
-        private void OnSolutionOpening(object sender, EventArgs e)
-        {
-            DetectSolutionSettingChange();
-        }
-
-        private void OnSolutionOpened(object sender, EventArgs e)
-        {
-            _vSIntanceTelemetryEmit.SolutionOpenedEmit();
-        }
-
-        private void OnSolutionClosed(object sender, EventArgs e)
-        {
-            _vSIntanceTelemetryEmit.EmitVSSolutionTelemetry();
-            DetectSolutionSettingChange();
         }
 
         public SettingSection GetSection(string sectionName)
@@ -167,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager.SolutionOpening -= OnSolutionOpening;
             SolutionManager.SolutionOpened -= OnSolutionOpened;
             SolutionManager.SolutionClosed -= OnSolutionClosed;
-            _vSIntanceTelemetryEmit.EmitVSInstanceTelemetry();
+            _vsIntanceTelemetryEmit.EmitVSInstanceTelemetry();
         }
 
         // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
