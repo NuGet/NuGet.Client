@@ -18,6 +18,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGetConsole
 {
@@ -31,10 +32,6 @@ namespace NuGetConsole
         private INuGetTelemetryAggregator _nugetSolutionTelemetry;
         private int _windowLoadCount;
         private bool _isTelemetryEmitted;
-
-        private const string PackageManagerConsoleWindowsLoad = "PackageManagerConsoleWindowsLoad";
-        private const string NuGetPMCWindowLoadCount = "NuGetPMCWindowLoadCount";
-        private const string ReOpenAtStart = "ReOpenAtStart";
 
         public ConsoleContainer()
         {
@@ -103,10 +100,10 @@ namespace NuGetConsole
             {
                 // Work around to detect if PMC loaded automatically because it was last focused window.
                 var reopenAtStart = IsLoaded;
-                var telemetryEvent = new TelemetryEvent(PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
+                var telemetryEvent = new TelemetryEvent(VsInstanceTelemetryConsts.PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
                                 {
-                                    { NuGetPMCWindowLoadCount, _windowLoadCount}, // Useful if PMC used without any solution load at all then VS instance closed.
-                                    { ReOpenAtStart, reopenAtStart}
+                                    { VsInstanceTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount}, // Useful if PMC used without any solution load at all then VS instance closed.
+                                    { VsInstanceTelemetryConsts.ReOpenAtStart, reopenAtStart}
                                 });
 
                 _nugetSolutionTelemetry.AddSolutionTelemetryEvent(telemetryEvent);
@@ -132,9 +129,9 @@ namespace NuGetConsole
 
         private void EmitPowershellUsageTelemetry()
         {
-            var telemetryEvent = new TelemetryEvent(PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
+            var telemetryEvent = new TelemetryEvent(VsInstanceTelemetryConsts.PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
                                 {
-                                    { NuGetPMCWindowLoadCount, _windowLoadCount},
+                                    { VsInstanceTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount},
                                 });
             _nugetSolutionTelemetry.AddSolutionTelemetryEvent(telemetryEvent);
 

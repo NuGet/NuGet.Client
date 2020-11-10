@@ -19,6 +19,7 @@ namespace NuGet.VisualStudio.Telemetry
         public const string FirstTimeLoadedFromPMUI = "FirstTimeLoadedFromPMUI";
         public const string SolutionLoaded = "SolutionLoaded";
         // PMC UI Console Container telemetry consts
+        public const string PackageManagerConsoleWindowsLoad = "PackageManagerConsoleWindowsLoad";
         public const string NuGetPMCWindowLoadCount = "NuGetPMCWindowLoadCount";
         public const string ReOpenAtStart = "ReOpenAtStart";
         // Const name for emitting when VS solution close or VS instance close.
