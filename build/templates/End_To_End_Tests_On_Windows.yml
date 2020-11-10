@@ -63,7 +63,7 @@ steps:
 - task: PowerShell@1
   displayName: "RunFunctionalTests.ps1 (stop on error)"
   timeoutInMinutes: 75
-  continueOnError: "true"
+  continueOnError: "false"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
     arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
