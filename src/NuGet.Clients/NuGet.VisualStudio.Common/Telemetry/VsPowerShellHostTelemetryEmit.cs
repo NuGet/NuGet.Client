@@ -39,7 +39,6 @@ namespace NuGet.VisualStudio.Telemetry
         {
             lock (_telemetryLock)
             {
-                //There is edge case where PMC is opened but user doesn't execute any command on it.
                 if (isPMC)
                 {
                     if ((PowerShellHostInstances & 0b00000001) == 0)
@@ -105,12 +104,12 @@ namespace NuGet.VisualStudio.Telemetry
         {
             lock (_telemetryLock)
             {
-                // This is PowerShellHost load first time.
+                // This is PowerShellHost load first time, let's emit this to find out later how many VS instance crash after loading powershell.
                 if ((PowerShellHostInstances & 0b00000011) == 0)
                 {
                     var telemetryEvent = new TelemetryEvent(NuGetPowerShellLoaded, new Dictionary<string, object>
                                     {
-                                        { NugetPowershellPrefix + LoadFromPMC, isPMC}
+                                        { NuGetPowershellPrefix + LoadFromPMC, isPMC}
                                     });
 
                     TelemetryActivity.EmitTelemetryEvent(telemetryEvent);

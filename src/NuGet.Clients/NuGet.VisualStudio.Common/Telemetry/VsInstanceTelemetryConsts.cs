@@ -6,7 +6,7 @@ namespace NuGet.VisualStudio.Telemetry
     public abstract class VsInstanceTelemetryConsts
     {
         // PMC, PMUI powershell telemetry consts
-        public const string PowerShellExecuteCommand = "PowerShellExecuteCommand";
+        public const string PowerShellExecuteCommand = "PowerShellExecuteCommand"; 
         public const string NuGetPMCExecuteCommandCount = "NuGetPMCExecuteCommandCount";
         public const string NuGetPMUIExecuteCommandCount = "NuGetPMUIExecuteCommandCount";
         public const string NuGetPowerShellLoaded = "NuGetPowerShellLoaded";
@@ -23,9 +23,9 @@ namespace NuGet.VisualStudio.Telemetry
         public const string NuGetPMCWindowLoadCount = "NuGetPMCWindowLoadCount";
         public const string ReOpenAtStart = "ReOpenAtStart";
         // Const name for emitting when VS solution close or VS instance close.
-        public const string NugetPowershellPrefix = "NugetPowershell."; // Using prefix prevent accidental same name property collission from different type telemetry.
-        public const string NugetVSSolutionClose = "NugetVSSolutionClose";
-        public const string NugetVSInstanceClose = "NugetVSInstanceClose";
+        public const string NuGetPowershellPrefix = "NuGetPowershellPrefix."; // Using prefix prevent accidental same name property collission from different type telemetry.
+        public const string NuGetVSSolutionClose = "NuGetVSSolutionClose";
+        public const string NuGetVSInstanceClose = "NuGetVSInstanceClose";
         public const string SolutionCount = "SolutionCount";
         public const string PMCPowerShellLoadedSolutionCount = "PMCPowerShellLoadedSolutionCount";
         public const string PMUIPowerShellLoadedSolutionCount = "PMUIPowerShellLoadedSolutionCount";
