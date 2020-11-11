@@ -297,6 +297,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         private NuGetPackageSearchService SetupSearchService()
         {
+            ClearSearchCache();
+
             var packageSourceProvider = new Mock<IPackageSourceProvider>();
             packageSourceProvider.Setup(x => x.LoadPackageSources()).Returns(new List<PackageSource> { _sourceRepository.PackageSource });
             var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
@@ -332,6 +334,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 #pragma warning restore ISB001 // Dispose of proxies
 
             return new NuGetPackageSearchService(serviceActivationOptions, serviceBroker.Object, authorizationService, sharedState);
+        }
+
+        private static void ClearSearchCache()
+        {
+            List<string> searchCacheKeys = NuGetPackageSearchService.PackageSearchMetadataMemoryCache.Select(kvp => kvp.Key).ToList();
+            foreach (string cacheKey in searchCacheKeys)
+            {
+                NuGetPackageSearchService.PackageSearchMetadataMemoryCache.Remove(cacheKey);
+            }
         }
     }
 }
