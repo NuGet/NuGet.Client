@@ -338,7 +338,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         private static void ClearSearchCache()
         {
-            var searchCacheKeys = NuGetPackageSearchService.PackageSearchMetadataMemoryCache.Select(kvp => kvp.Key).ToList();
+            List<string> searchCacheKeys = NuGetPackageSearchService.PackageSearchMetadataMemoryCache.Select(kvp => kvp.Key).ToList();
             foreach (string cacheKey in searchCacheKeys)
             {
                 NuGetPackageSearchService.PackageSearchMetadataMemoryCache.Remove(cacheKey);
