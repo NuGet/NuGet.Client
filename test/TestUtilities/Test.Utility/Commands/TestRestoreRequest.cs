@@ -153,6 +153,10 @@ namespace NuGet.Commands.Test
                 clientPolicyContext,
                 log)
         {
+            // We need the dependency graph spec to go through the proper no-op code paths
+            DependencyGraphSpec = new DependencyGraphSpec();
+            DependencyGraphSpec.AddProject(project);
+            DependencyGraphSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
         }
     }
 }
