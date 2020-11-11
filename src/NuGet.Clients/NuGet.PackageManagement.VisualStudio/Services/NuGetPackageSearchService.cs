@@ -33,7 +33,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly ISharedServiceState _sharedServiceState;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<SourceRepository> _packagesFolderLocalRepositoryLazy;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IReadOnlyList<SourceRepository>> _globalPackageFolderRepositoriesLazy;
-        private readonly static MemoryCache PackageSearchMetadataMemoryCache = new MemoryCache("PackageSearchMetadata",
+        // internal for testing purposes only
+        internal readonly static MemoryCache PackageSearchMetadataMemoryCache = new MemoryCache("PackageSearchMetadata",
             new NameValueCollection
             {
                 { "cacheMemoryLimitMegabytes", "4" },
