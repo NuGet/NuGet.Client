@@ -342,7 +342,10 @@ namespace NuGet.Frameworks
                             var profileShort = parts.Item3;
 
                             if (version.Major >= 5
-                                && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework))
+                                && (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework)
+                                    || StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, framework)
+                                   )
+                                )
                             {
                                 // net should be treated as netcoreapp in 5.0 and later
                                 framework = FrameworkConstants.FrameworkIdentifiers.NetCoreApp;
