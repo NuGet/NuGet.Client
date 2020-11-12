@@ -90,7 +90,7 @@ namespace NuGet.CommandLine
 
             return new SignArgs()
             {
-                PackagePath = Arguments[0],
+                PackagePaths = new[] { Arguments[0] },
                 OutputDirectory = OutputDirectory,
                 CertificatePath = CertificatePath,
                 CertificateStoreName = storeName,

@@ -141,7 +141,7 @@ namespace NuGet.Commands.Test
 
                 var packagesFilePath = Path.Combine(test.Directory, "*.nupkg");
 
-                test.Args.PackagePath = packagesFilePath;
+                test.Args.PackagePaths = new string[] { packagesFilePath };
                 test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
                 test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
 
@@ -201,7 +201,7 @@ namespace NuGet.Commands.Test
                 {
                     Logger = logger,
                     NonInteractive = true,
-                    PackagePath = packageFilePath
+                    PackagePaths = new string[] { packageFilePath }
                 };
 
                 return new Test(args, directory, certificate, logger);
