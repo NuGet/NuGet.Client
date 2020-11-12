@@ -313,14 +313,17 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         }
 
                         UpdateWorkingDirectory();
-                        await ExecuteInitScriptsAsync();
 
                         // Emit first time Powershell load event to find out later how many VS instance crash after loading powershell.
                         _vsPowerShellHostTelemetryEmit.Value.EmitPowerShellLoadedTelemetry(console is IWpfConsole);
+                        // Record if PowerShellHost initiated from PMC or PMUI
+                        _vsPowerShellHostTelemetryEmit.Value.RecordPSHostInitializeOrigin(console is IWpfConsole);
+
+                        await ExecuteInitScriptsAsync();
 
                         _solutionManager.Value.SolutionOpening += (o, e) =>
                         {
-                            // Check if PMC is used before without any solution.
+                            // Hook up solution events, check if PMC is used before without any solution.
                             _vsPowerShellHostTelemetryEmit.Value.HandleSolutionOpenedEmit();
                         };
 
@@ -329,7 +332,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         {
                             // Hook up solution events
                             _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
-
                             _solutionManager.Value.SolutionClosed += (o, e) =>
                             {
                                 UpdateWorkingDirectory();
@@ -363,9 +365,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         SetPrivateDataOnHost(false);
 
                         StartAsyncDefaultProjectUpdate();
-
-                        // Record if PowerShellHost initiated from PMC or PMUI
-                        _vsPowerShellHostTelemetryEmit.Value.RecordPSHostInitializeOrigin(console is IWpfConsole);
                     }
                     catch (Exception ex)
                     {

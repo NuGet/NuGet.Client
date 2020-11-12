@@ -2,7 +2,7 @@
 
 <helpItems schema="maml">
 
-  <!-- Please note below command names are hard coded in emitting telemetry in PowerShellHost.cs. If you add/remove command here then please update it too. -->
+  <!-- Please note below command names are hard coded in emitting telemetry in VsPowerShellHostTelemetryEmit.cs. If you add/remove command here then please update it there too. -->
   <!-- Install-Package command -->
   <command:command
       xmlns:maml="http://schemas.microsoft.com/maml/2004/10"

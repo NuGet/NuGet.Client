@@ -78,7 +78,7 @@ namespace NuGet.VisualStudio.Telemetry
                 {
                     // Please note: Direct PMC and PMUI don't share same code path for installing packages with *.ps1 files
                     // This one is called for both init.ps1 and install.ps1 seperately.
-                    // For MSBuildNuGetProject projects install.ps1 can event furthure duplicate counted: MSBuildNuGetProject.cs#L377 - L396
+                    // For MSBuildNuGetProject projects install.ps1 can even furthure increase duplicate counting: See MSBuildNuGetProject.cs#L377 - L396
                     // Also this concern valid for dependent packages with *.ps1 files.
                     _nonPmcExecutedCount++;
                 }
@@ -181,7 +181,6 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 PowerShellHostInstances |= 0b01000000;
             }
-
         }
 
         public void IsNuGetCommand(string commandStr)
