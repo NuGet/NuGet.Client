@@ -1,0 +1,2 @@
+NuGet.Commands.SignArgs.PackagePaths.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.Commands.SignArgs.PackagePaths.set -> void

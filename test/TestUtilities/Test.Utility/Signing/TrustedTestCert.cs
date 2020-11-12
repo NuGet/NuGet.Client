@@ -66,15 +66,19 @@ namespace Test.Utility.Signing
                 throw new InvalidOperationException($"The certificate used is valid for more than {maximumValidityPeriod}.");
             }
 #endif
-            if (RuntimeEnvironmentHelper.IsMacOSX)
+            StoreName = storeName;
+            StoreLocation = storeLocation;
+
+            // According to https://github.com/dotnet/runtime/blob/master/docs/design/features/cross-platform-cryptography.md#x509store,
+            // on macOS, when StoreName = My, StoreLocation = CurrentUser, the X509Store is read/write. 
+            // For other cases, the X509Store is read-only, writing will throw CryptographicException.
+            if ((RuntimeEnvironmentHelper.IsMacOSX && storeName.Equals(StoreName.My) && storeLocation.Equals(StoreLocation.CurrentUser)) || !RuntimeEnvironmentHelper.IsMacOSX)
             {
-                AddCertificateToStoreForMacOSX();
+                AddCertificateToStore();
             }
             else
             {
-                StoreName = storeName;
-                StoreLocation = storeLocation;
-                AddCertificateToStore();
+                AddCertificateToStoreForMacOSX();
             }
 
             ExportCrl();
@@ -193,16 +197,16 @@ namespace Test.Utility.Signing
         {
             if (!_isDisposed)
             {
-                if (RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    RemoveTrustedCert();
-                }
-                else
+                if ((RuntimeEnvironmentHelper.IsMacOSX && StoreName.Equals(StoreName.My) && StoreLocation.Equals(StoreLocation.CurrentUser)) || !RuntimeEnvironmentHelper.IsMacOSX)
                 {
                     using (_store)
                     {
                         _store.Remove(TrustedCert);
                     }
+                }
+                else
+                {
+                    RemoveTrustedCert();
                 }
 
                 DisposeCrl();

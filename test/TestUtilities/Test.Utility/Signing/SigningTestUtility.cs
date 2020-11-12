@@ -119,6 +119,25 @@ namespace Test.Utility.Signing
         }
 
         /// <summary>
+        /// Modification generator that can be passed to TestCertificate.Generate().
+        /// The generator will create a certificate that is only valid for a specified short period.
+        /// </summary>
+        public static Action<TestCertificateGenerator> CertificateModificationGeneratorForCertificateThatOnlyValidInSpecifiedPeriod(DateTimeOffset notBefore, DateTimeOffset notAfter)
+        {
+            return (TestCertificateGenerator gen) =>
+            {
+                var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
+
+                gen.Extensions.Add(
+                    new X509EnhancedKeyUsageExtension(
+                        usages,
+                        critical: true));
+
+                gen.NotBefore = notBefore;
+                gen.NotAfter = notAfter;
+            };
+        }
+        /// <summary>
         /// Generates a list of certificates representing a chain of certificates.
         /// The first certificate is the root certificate stored in StoreName.Root and StoreLocation.LocalMachine.
         /// The last certificate is the leaf certificate stored in StoreName.TrustedPeople and StoreLocation.LocalMachine.
@@ -128,11 +147,13 @@ namespace Test.Utility.Signing
         /// <param name="crlServerUri">Uri for crl server</param>
         /// <param name="crlLocalUri">Uri for crl local</param>
         /// <param name="configureLeafCrl">Indicates if leaf crl should be configured</param>
+        /// <param name="leafCertificateActionGenerator">Specify actionGenerator for the leaf certificate of the chain</param>
         /// <returns>List of certificates representing a chain of certificates.</returns>
-        public static IList<TrustedTestCert<TestCertificate>> GenerateCertificateChain(int length, string crlServerUri, string crlLocalUri, bool configureLeafCrl = true)
+        public static IList<TrustedTestCert<TestCertificate>> GenerateCertificateChain(int length, string crlServerUri, string crlLocalUri, bool configureLeafCrl = true, Action<TestCertificateGenerator> leafCertificateActionGenerator = null)
         {
             var certChain = new List<TrustedTestCert<TestCertificate>>();
             var actionGenerator = CertificateModificationGeneratorForCodeSigningEkuCert;
+            var leafGenerator = leafCertificateActionGenerator ?? actionGenerator;
             TrustedTestCert<TestCertificate> issuer = null;
             TrustedTestCert<TestCertificate> cert = null;
 
@@ -162,7 +183,7 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrustForIntermediateCertificateAuthority();
                     issuer = cert;
                 }
                 else // leaf cert
@@ -176,7 +197,7 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.My);
+                    cert = TestCertificate.Generate(leafGenerator, chainCertificateRequest).WithPrivateKeyAndTrustForLeafOrSelfIssued();
                 }
 
                 certChain.Add(cert);

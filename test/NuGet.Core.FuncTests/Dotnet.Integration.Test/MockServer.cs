@@ -17,13 +17,13 @@ using NuGet.Protocol;
 using NuGet.Test.Server;
 using Test.Utility;
 
-namespace NuGet.CommandLine.Test
+namespace Dotnet.Integration.Test
 {
     /// <summary>
     /// A Mock Server that is used to mimic a NuGet Server.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
-    public class MockServer : IDisposable
+    internal class MockServer : IDisposable
     {
         private Task _listenerTask;
         private bool _disposed = false;
@@ -365,71 +365,6 @@ namespace NuGet.CommandLine.Test
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Creates OData feed from the list of packages.
-        /// </summary>
-        /// <param name="packages">The list of packages.</param>
-        /// <param name="title">The title of the feed.</param>
-        /// <returns>The string representation of the created OData feed.</returns>
-        public string ToODataFeed(IEnumerable<IPackage> packages, string title)
-        {
-            string nsAtom = "http://www.w3.org/2005/Atom";
-            var id = string.Format(CultureInfo.InvariantCulture, "{0}{1}", Uri, title);
-            XDocument doc = new XDocument(
-                new XElement(XName.Get("feed", nsAtom),
-                    new XElement(XName.Get("id", nsAtom), id),
-                    new XElement(XName.Get("title", nsAtom), title)));
-
-            foreach (var p in packages)
-            {
-                doc.Root.Add(ToODataEntryXElement(p));
-            }
-
-            return doc.ToString();
-        }
-
-        /// <summary>
-        /// Creates an OData entry XElement representation of the package.
-        /// </summary>
-        /// <param name="package">The package.</param>
-        /// <returns>The OData entry XElement.</returns>
-        private XElement ToODataEntryXElement(IPackage package)
-        {
-            string nsAtom = "http://www.w3.org/2005/Atom";
-            XNamespace nsDataService = "http://schemas.microsoft.com/ado/2007/08/dataservices";
-            string nsMetadata = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
-            string downloadUrl = string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}package/{1}/{2}", Uri, package.Id, package.Version);
-            string entryId = string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}Packages(Id='{1}',Version='{2}')",
-                Uri, package.Id, package.Version);
-
-            var entry = new XElement(XName.Get("entry", nsAtom),
-                new XAttribute(XNamespace.Xmlns + "d", nsDataService.ToString()),
-                new XAttribute(XNamespace.Xmlns + "m", nsMetadata.ToString()),
-                new XElement(XName.Get("id", nsAtom), entryId),
-                new XElement(XName.Get("title", nsAtom), package.Id),
-                new XElement(XName.Get("content", nsAtom),
-                    new XAttribute("type", "application/zip"),
-                    new XAttribute("src", downloadUrl)),
-                new XElement(XName.Get("properties", nsMetadata),
-                    new XElement(nsDataService + "Version", package.Version),
-                    new XElement(nsDataService + "PackageHash", package.GetHash("SHA512")),
-                    new XElement(nsDataService + "PackageHashAlgorithm", "SHA512"),
-                    new XElement(nsDataService + "Description", package.Description),
-                    new XElement(nsDataService + "Listed", package.Listed),
-                    new XElement(nsDataService + "Published", package.Published)));
-            return entry;
-        }
-
-        public string ToOData(IPackage package)
-        {
-            XDocument doc = new XDocument(ToODataEntryXElement(package));
-            return doc.ToString();
         }
 
         public void AddServerWarnings(string[] messages)
