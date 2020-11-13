@@ -17,7 +17,7 @@ namespace NuGet.VisualStudio.Telemetry
         private bool _isTelemetryEmitted;
         private int _pmcExecutedCount;
         private int _nonPmcExecutedCount;
-        private readonly Lazy<INuGetTelemetryCollector> _nugetTelemetryAggregate;
+        private readonly INuGetTelemetryCollector _nugetTelemetryAggregate;
 
         // There are 8 bits in byte which used as boolean flags.
         // 0 - Did any nuget command execute during current VS solution session?
@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio.Telemetry
 
         public VsPowerShellHostTelemetryEmit()
         {
-            _nugetTelemetryAggregate = new Lazy<INuGetTelemetryCollector>(() => ServiceLocator.GetInstanceSafe<INuGetTelemetryCollector>());
+            _nugetTelemetryAggregate = ServiceLocator.GetInstance<INuGetTelemetryCollector>();
         }
 
         public void RecordPSHostInitializeOrigin(bool isPMC)
@@ -125,7 +125,7 @@ namespace NuGet.VisualStudio.Telemetry
                     }
                     else
                     {
-                        _nugetTelemetryAggregate.Value.AddSolutionTelemetryEvent(telemetryEvent);
+                        _nugetTelemetryAggregate.AddSolutionTelemetryEvent(telemetryEvent);
                     }
                 }
             }
@@ -151,7 +151,7 @@ namespace NuGet.VisualStudio.Telemetry
                                         { LoadedFromPMC, TestAllBitsSet(PowerShellHostInstances, 0b00000001) },
                                         { SolutionLoaded, withSolution}
                                     });
-                    _nugetTelemetryAggregate.Value.AddSolutionTelemetryEvent(telemetryEvent);
+                    _nugetTelemetryAggregate.AddSolutionTelemetryEvent(telemetryEvent);
 
                     _pmcExecutedCount = 0;
                     _nonPmcExecutedCount = 0;
