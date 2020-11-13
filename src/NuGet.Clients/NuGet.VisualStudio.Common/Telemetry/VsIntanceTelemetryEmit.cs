@@ -107,12 +107,13 @@ namespace NuGet.VisualStudio.Telemetry
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + NuGetPMCExecuteCommandCount, 0);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + NuGetPMUIExecuteCommandCount, 0);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + NuGetCommandUsed, false);
-                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + InitPs1LoadedFromPMCFirst, false);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + InitPs1LoadPMC, false);
-                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + LoadedFromPMC, false);
-                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + LoadedFromPMUI, false);
-                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + FirstTimeLoadedFromPMC, false);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + InitPs1LoadPMUI, false);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + InitPs1LoadedFromPMCFirst, false);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + FirstTimeLoadedFromPMUI, false);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + FirstTimeLoadedFromPMC, false);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + LoadedFromPMUI, false);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + LoadedFromPMC, false);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + SolutionLoaded, true);
             }
             else
@@ -126,12 +127,13 @@ namespace NuGet.VisualStudio.Telemetry
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + NuGetPMCExecuteCommandCount, vsSolutionPowershellTelemetry[NuGetPMCExecuteCommandCount]);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + NuGetPMUIExecuteCommandCount, vsSolutionPowershellTelemetry[NuGetPMUIExecuteCommandCount]);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + NuGetCommandUsed, vsSolutionPowershellTelemetry[NuGetCommandUsed]);
-                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + InitPs1LoadedFromPMCFirst, vsSolutionPowershellTelemetry[InitPs1LoadedFromPMCFirst]);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + InitPs1LoadPMC, vsSolutionPowershellTelemetry[InitPs1LoadPMC]);
-                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + LoadedFromPMC, vsSolutionPowershellTelemetry[LoadedFromPMC]);
-                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + LoadedFromPMUI, vsSolutionPowershellTelemetry[LoadedFromPMUI]);
-                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + FirstTimeLoadedFromPMC, vsSolutionPowershellTelemetry[FirstTimeLoadedFromPMC]);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + InitPs1LoadPMUI, vsSolutionPowershellTelemetry[InitPs1LoadPMUI]);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + InitPs1LoadedFromPMCFirst, vsSolutionPowershellTelemetry[InitPs1LoadedFromPMCFirst]);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + FirstTimeLoadedFromPMUI, vsSolutionPowershellTelemetry[FirstTimeLoadedFromPMUI]);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + FirstTimeLoadedFromPMC, vsSolutionPowershellTelemetry[FirstTimeLoadedFromPMC]);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + LoadedFromPMUI, vsSolutionPowershellTelemetry[LoadedFromPMUI]);
+                _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + LoadedFromPMC, vsSolutionPowershellTelemetry[LoadedFromPMC]);
                 _vsSolutionTelemetryEmitQueue.Add(NuGetPowershellPrefix + SolutionLoaded, vsSolutionPowershellTelemetry[SolutionLoaded]);
             }
 
