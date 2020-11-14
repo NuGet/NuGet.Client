@@ -67,6 +67,7 @@ namespace NuGet.PackageManagement.UI
         private bool _loadedAndInitialized = false;
         private bool _recommendPackages = false;
         private (string modelVersion, string vsixVersion)? _recommenderVersion;
+        private string _settingsKey;
 
         private PackageManagerControl()
         {
@@ -132,7 +133,8 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.CreateAndAddConsolidateTab();
             }
 
-            var settings = await LoadSettingsAsync(CancellationToken.None);
+            _settingsKey = await GetSettingsKeyAsync(CancellationToken.None);
+            UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
             InitSourceRepoList(settings);
             ApplySettings(settings, Settings);
@@ -233,6 +235,8 @@ namespace NuGet.PackageManagement.UI
 
             if (currentProjectMetadata.FullPath == renamedProjectMetadata.FullPath)
             {
+                _settingsKey = GetProjectSettingsKey(renamedProjectMetadata.Name);
+
                 await SetTitleAsync(currentProjectMetadata);
             }
         }
@@ -495,11 +499,10 @@ namespace NuGet.PackageManagement.UI
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             ResetTabDataLoadFlags();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => Sources_PackageSourcesChangedAsync(timeSpan))
-                .PostOnFailure(nameof(PackageManagerControl), nameof(Sources_PackageSourcesChanged));
+            Sources_PackageSourcesChanged(timeSpan);
         }
 
-        private async Task Sources_PackageSourcesChangedAsync(TimeSpan timeSpan)
+        private void Sources_PackageSourcesChanged(TimeSpan timeSpan)
         {
             try
             {
@@ -513,7 +516,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    await SaveSettingsAsync(CancellationToken.None);
+                    SaveSettings();
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
                     EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success);
                 }
@@ -528,38 +531,46 @@ namespace NuGet.PackageManagement.UI
         {
             string key;
 
-            if (!Model.IsSolution)
+            if (Model.IsSolution)
+            {
+                key = "solution";
+            }
+            else
             {
                 IProjectContextInfo project = Model.Context.Projects.First();
                 IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
                     Model.Context.ServiceBroker,
                     cancellationToken);
-                string projectName;
 
-                if (string.IsNullOrEmpty(projectMetadata.Name))
-                {
-                    projectName = "unknown";
-                }
-                else
-                {
-                    projectName = projectMetadata.Name;
-                }
-
-                key = "project:" + projectName;
-            }
-            else
-            {
-                key = "solution";
+                return GetProjectSettingsKey(projectMetadata.Name);
             }
 
             return key;
         }
 
+        private static string GetProjectSettingsKey(string projectName)
+        {
+            string value;
+
+            if (string.IsNullOrEmpty(projectName))
+            {
+                value = "unknown";
+            }
+            else
+            {
+                value = projectName;
+            }
+
+            return "project:" + value;
+        }
+
         // Save the settings of this doc window in the UIContext. Note that the settings
         // are not guaranteed to be persisted. We need to call Model.Context.SaveSettings()
         // to persist the settings.
-        public async Task SaveSettingsAsync(CancellationToken cancellationToken)
+        public void SaveSettings()
         {
+            Assumes.NotNullOrEmpty(_settingsKey);
+
             var settings = new UserSettings
             {
                 SourceRepository = SelectedSource?.SourceName,
@@ -575,14 +586,14 @@ namespace NuGet.PackageManagement.UI
             };
             _packageDetail._solutionView.SaveSettings(settings);
 
-            string settingsKey = await GetSettingsKeyAsync(cancellationToken);
-            Model.Context.UserSettingsManager.AddSettings(settingsKey, settings);
+            Model.Context.UserSettingsManager.AddSettings(_settingsKey, settings);
         }
 
-        private async Task<UserSettings> LoadSettingsAsync(CancellationToken cancellationToken)
+        private UserSettings LoadSettings()
         {
-            string settingsKey = await GetSettingsKeyAsync(cancellationToken);
-            var settings = Model.Context.UserSettingsManager.GetSettings(settingsKey);
+            Assumes.NotNullOrEmpty(_settingsKey);
+
+            UserSettings settings = Model.Context.UserSettingsManager.GetSettings(_settingsKey);
 
             if (PreviewWindow.IsDoNotShowPreviewWindowEnabled())
             {
@@ -1192,16 +1203,10 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.SourceToolTip.Visibility = Visibility.Visible;
                 _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SourceRepoList_SelectionChangedAsync(timeSpan))
-                    .PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
+                SaveSettings();
+                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success);
             }
-        }
-
-        private async Task SourceRepoList_SelectionChangedAsync(TimeSpan timeSpan)
-        {
-            await SaveSettingsAsync(CancellationToken.None);
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-            EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success);
         }
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
