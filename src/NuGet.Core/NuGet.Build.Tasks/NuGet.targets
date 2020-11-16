@@ -493,7 +493,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <!--_GetRestoreTargetFrameworksOutput
+  <!--
     ============================================================
     _GetRestoreTargetFrameworksOutput
     Read target frameworks from the project.

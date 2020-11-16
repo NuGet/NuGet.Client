@@ -547,8 +547,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 new FileInfo(projectA.NuGetLockFileOutputPath).Exists.Should().BeFalse();
 
                 // Write expected lock file
-                var templateLockFile = GetResource("NuGet.CommandLine.FuncTest.compiler.resources.pc.packages.lock.json");
-
                 var packagePath = LocalFolderUtility.GetPackagesV3(pathContext.PackageSource, NullLogger.Instance).Single().Path;
 
                 string contentHash = null;
@@ -557,7 +555,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     contentHash = reader.GetContentHash(CancellationToken.None);
                 }
 
-                var expectedLockFile = templateLockFile.Replace("TEMPLATE", contentHash);
+                var expectedLockFile = GetResource("NuGet.CommandLine.FuncTest.compiler.resources.pc.packages.lock.json").Replace("TEMPLATE", contentHash);
                 File.WriteAllText(projectA.NuGetLockFileOutputPath, expectedLockFile);
 
                 // Run lockedmode restore.
