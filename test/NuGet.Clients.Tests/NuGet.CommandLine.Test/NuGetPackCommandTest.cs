@@ -5986,12 +5986,9 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
         [Theory]
         [InlineData(".jpg")]
-        [InlineData(".png")]
         [InlineData(".PnG")]
-        [InlineData(".jpeg")]
-        [InlineData(".JpEg")]
-        [InlineData("abc.JpEg")]
-        public void PackCommand_PackIcon_InvalidExtension_Succeeds(string fileExtension)
+        [InlineData(".jpEg")]
+        public void PackCommand_PackIcon_ValidExtension_Succeeds(string fileExtension)
         {
             NuspecBuilder nuspecBuilder = NuspecBuilder.Create();
             TestDirectoryBuilder testDirBuilder = TestDirectoryBuilder.Create();
