@@ -33,6 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.NotNull(serviceBroker);
             Assumes.NotNull(authorizationServiceClient);
+            Assumes.NotNull(state);
 
             _options = options;
             _serviceBroker = serviceBroker;
