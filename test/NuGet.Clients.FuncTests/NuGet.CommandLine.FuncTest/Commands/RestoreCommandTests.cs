@@ -4,11 +4,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.CommandLine.Test;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -501,6 +506,66 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
+        public async Task RestorePackagesConfig_WithExistingLockFile_LockedMode_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/x.dll");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""x"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Preconditions, regular restore
+                var result = RunRestore(pathContext, _successExitCode);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                new FileInfo(projectA.NuGetLockFileOutputPath).Exists.Should().BeFalse();
+
+                // Write expected lock file
+                var packagePath = LocalFolderUtility.GetPackagesV3(pathContext.PackageSource, NullLogger.Instance).Single().Path;
+
+                string contentHash = null;
+                using (var reader = new PackageArchiveReader(packagePath))
+                {
+                    contentHash = reader.GetContentHash(CancellationToken.None);
+                }
+
+                var expectedLockFile = GetResource("NuGet.CommandLine.FuncTest.compiler.resources.pc.packages.lock.json").Replace("TEMPLATE", contentHash);
+                File.WriteAllText(projectA.NuGetLockFileOutputPath, expectedLockFile);
+
+                // Run lockedmode restore.
+                result = RunRestore(pathContext, _successExitCode, "-LockedMode");
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                new FileInfo(projectA.NuGetLockFileOutputPath).Exists.Should().BeTrue();
+            }
+        }
+
+        [Fact]
         public async Task Restore_LegacyPackageReference_EmbedInteropPackage()
         {
             // Arrange
@@ -837,6 +902,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
             Assert.True(expectedExitCode == r.ExitCode, r.AllOutput);
 
             return r;
+        }
+
+        public static string GetResource(string name)
+        {
+            using (var reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(name)))
+            {
+                return reader.ReadToEnd();
+            }
         }
     }
 }
