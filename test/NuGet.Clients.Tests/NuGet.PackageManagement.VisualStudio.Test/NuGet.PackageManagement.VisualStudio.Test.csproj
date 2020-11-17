@@ -40,6 +40,7 @@
     <Compile Include="Projects\CpsPackageReferenceProjectProviderTests.cs" />
     <Compile Include="Services\NuGetLockServiceTests.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceTests.cs" />
+    <Compile Include="Services\NuGetSourcesServiceTests.cs" />
     <Compile Include="Services\TestSharedServiceState.cs" />
     <Compile Include="Services\NuGetPackageSearchServiceTests.cs" />
     <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
