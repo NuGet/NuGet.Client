@@ -1,16 +1,15 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
-using NuGetConsole.Implementation;
 using System.ComponentModel.Design;
-using NuGetConsole.Implementation.PowerConsole;
-using Microsoft.VisualStudio.Threading;
-using Microsoft.VisualStudio.ComponentModelHost;
-using NuGet.VisualStudio;
 using System.Runtime.InteropServices;
+using Microsoft;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio;
+using NuGetConsole.Implementation;
+using NuGetConsole.Implementation.PowerConsole;
 
 namespace NuGetConsole
 {
