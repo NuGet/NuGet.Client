@@ -1323,13 +1323,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
                 var packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
-                File.Delete(lockFilePath);
+                var lastWriteTime = File.GetLastWriteTimeUtc(lockFilePath);
+                File.WriteAllText(lockFilePath, "** replaced file content to test cache **");
+                File.SetLastWriteTimeUtc(lockFilePath, lastWriteTime);
                 var cache_packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 cache_packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
                 cache_packages.TransitivePackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageB", new NuGetVersion("1.0.0"))));
-                Assert.False(File.Exists(lockFilePath));
+                Assert.True(lastWriteTime == File.GetLastWriteTimeUtc(lockFilePath));
             }
         }
 
