@@ -2629,7 +2629,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         [Theory]
         [InlineData(".txt")]
         [InlineData("")]
-        public void Icon_IconInvalidExtension_ThrowsException(string fileExtension)
+        public void Icon_InvalidExtension_ThrowsException(string fileExtension)
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
             var nuspecBuilder = NuspecBuilder.Create();
@@ -2646,7 +2646,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 .WithFile(iconFile, rng.Next(1, PackageBuilder.MaxIconFileSize))
                 .WithNuspec(nuspecBuilder);
 
-            AssertPackageSaveException(
+            SavePackageAndAssertException(
                 testDirBuilder: testDirBuilder,
                 exceptionMessage: errorMessage);
         }
@@ -2659,7 +2659,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         [InlineData(".PNG")]
         [InlineData(".jPG")]
         [InlineData(".jpEG")]
-        public void Icon_IconInvalidExtension_Succeeds(string fileExtension)
+        public void Icon_ValidExtension_Succeeds(string fileExtension)
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
             var nuspecBuilder = NuspecBuilder.Create();
@@ -2675,7 +2675,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 .WithFile(iconFile, rng.Next(1, PackageBuilder.MaxIconFileSize))
                 .WithNuspec(nuspecBuilder);
 
-            SaveTestPackage(testDirBuilder);
+            SavePackageAndAssertIcon(testDirBuilder, iconFile);
         }
 
         [Fact]
@@ -2692,7 +2692,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 .WithFile("icon.jpg", PackageBuilder.MaxIconFileSize + 1)
                 .WithNuspec(nuspecBuilder);
 
-            AssertPackageSaveException(
+            SavePackageAndAssertException(
                 testDirBuilder: testDirBuilder,
                 exceptionMessage: "The icon file size must not exceed 1 megabyte.");
         }
@@ -2711,7 +2711,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 .WithFile("icono.jpg", 100)
                 .WithNuspec(nuspecBuilder);
 
-            AssertPackageSaveException(
+            SavePackageAndAssertException(
                 testDirBuilder: testDirBuilder,
                 exceptionMessage: "The icon file 'icon.jpg' does not exist in the package.");
         }
@@ -2721,16 +2721,18 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
             var nuspecBuilder = NuspecBuilder.Create();
+            var iconFile = "icon.jpg";
+            var rng = new Random();
 
             nuspecBuilder
-                .WithIcon("icon.jpg")
-                .WithFile("icon.jpg");
+                .WithIcon(iconFile)
+                .WithFile(iconFile);
 
             testDirBuilder
-                .WithFile("icon.jpg", 400)
+                .WithFile(iconFile, rng.Next(1, 1024))
                 .WithNuspec(nuspecBuilder);
 
-            SaveTestPackage(testDirBuilder);
+            SavePackageAndAssertIcon(testDirBuilder, iconFile);
         }
 
         [Fact(Skip = "Need to solve https://github.com/NuGet/Home/issues/6941 to run this test case")]
@@ -2753,13 +2755,13 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 .WithFile($"folder2{dirSep}file.txt", 2)
                 .WithNuspec(nuspecBuilder);
 
-            AssertPackageSaveException(
+            SavePackageAndAssertException(
                 testDirBuilder: testDirBuilder,
                 exceptionMessage: "Multiple files resolved as the embedded icon.");
         }
 
 
-        private void SaveTestPackage(TestDirectoryBuilder testDirBuilder)
+        private void SavePackageAndAssertIcon(TestDirectoryBuilder testDirBuilder, string iconFileEntry)
         {
             using (var sourceDir = testDirBuilder.Build())
             using (var nuspecStream = File.OpenRead(testDirBuilder.NuspecPath)) //sourceDir.NuspecPath
@@ -2768,10 +2770,17 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 PackageBuilder pkgBuilder = new PackageBuilder(nuspecStream, testDirBuilder.BaseDir); //sourceDir.BaseDir
 
                 pkgBuilder.Save(outputNuPkgStream);
+
+                outputNuPkgStream.Seek(0, SeekOrigin.Begin);
+
+                using (var par = new PackageArchiveReader(outputNuPkgStream))
+                {
+                    Assert.Equal(iconFileEntry, par.NuspecReader.GetIcon());
+                }
             }
         }
 
-        private void AssertPackageSaveException(TestDirectoryBuilder testDirBuilder, string exceptionMessage)
+        private void SavePackageAndAssertException(TestDirectoryBuilder testDirBuilder, string exceptionMessage)
         {
             using (var sourceDir = testDirBuilder.Build())
             using (var nuspecStream = File.OpenRead(testDirBuilder.NuspecPath)) //sourceDir.NuspecPath
@@ -2779,7 +2788,8 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             {
                 PackageBuilder pkgBuilder = new PackageBuilder(nuspecStream, testDirBuilder.BaseDir); //sourceDir.BaseDir
 
-                ExceptionAssert.Throws<PackagingException>(() => pkgBuilder.Save(outputNuPkgStream), exceptionMessage);
+                var ex = Assert.Throws<PackagingException>(() => pkgBuilder.Save(outputNuPkgStream));
+                Assert.Equal(exceptionMessage, ex.Message);
             }
         }
 
