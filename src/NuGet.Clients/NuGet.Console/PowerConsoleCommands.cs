@@ -26,7 +26,7 @@ namespace NuGetConsole
         /// </summary>
         private IComponentModel ComponentModel
         {
-            get; 
+            get;
         }
 
         private PowerConsoleWindow PowerConsoleWindow

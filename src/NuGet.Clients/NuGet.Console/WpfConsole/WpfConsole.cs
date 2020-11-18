@@ -616,7 +616,7 @@ namespace NuGetConsole.Implementation.Console
             }
 
             // assume inProgress
-            int inProgress = 1; 
+            int inProgress = 1;
             string label = operation;
 
             if (percentComplete < 0)

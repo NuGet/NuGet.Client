@@ -24,6 +24,12 @@ namespace NuGetConsole
 
         private static async Task<Action> GetInitializeTaskAsync()
         {
+            var comSvc = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
+            if (comSvc == null)
+            {
+                throw new InvalidOperationException();
+            }
+
             try
             {
                 // HACK: Short cut to set the Powershell execution policy for this process to RemoteSigned.
@@ -37,14 +43,18 @@ namespace NuGetConsole
                 // which is very rare.
             }
 
-            var comSvc = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
             var initializer = comSvc.GetService<IHostInitializer>();
-            if (initializer != null)
+            return await System.Threading.Tasks.Task.Factory.StartNew(state =>
             {
-                initializer.Start();
-                return initializer.SetDefaultRunspace;
-            }
-            return delegate { };
+                var hostInitializer = (IHostInitializer)state;
+                if (hostInitializer != null)
+                {
+                    hostInitializer.Start();
+                    return (Action)hostInitializer.SetDefaultRunspace;
+                }
+                return delegate { };
+            },
+            initializer);
         }
     }
 }
