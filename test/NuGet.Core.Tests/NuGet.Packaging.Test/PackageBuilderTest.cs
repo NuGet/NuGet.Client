@@ -2659,7 +2659,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         [InlineData(".PNG")]
         [InlineData(".jPG")]
         [InlineData(".jpEG")]
-        public void Icon_IconInvalidExtension_Suceeds(string fileExtension)
+        public void Icon_IconInvalidExtension_Succeeds(string fileExtension)
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
             var nuspecBuilder = NuspecBuilder.Create();
@@ -2717,7 +2717,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         [Fact]
-        public void Icon_HappyPath_Suceeds()
+        public void Icon_HappyPath_Succeeds()
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
             var nuspecBuilder = NuspecBuilder.Create();
