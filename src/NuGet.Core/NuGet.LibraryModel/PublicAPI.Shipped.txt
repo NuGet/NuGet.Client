@@ -149,6 +149,7 @@ override NuGet.LibraryModel.CentralPackageVersion.ToString() -> string
 override NuGet.LibraryModel.DownloadDependency.Equals(object obj) -> bool
 override NuGet.LibraryModel.DownloadDependency.GetHashCode() -> int
 override NuGet.LibraryModel.DownloadDependency.ToString() -> string
+override NuGet.LibraryModel.FrameworkDependency.GetHashCode() -> int
 override NuGet.LibraryModel.Library.ToString() -> string
 override NuGet.LibraryModel.LibraryDependency.Equals(object obj) -> bool
 override NuGet.LibraryModel.LibraryDependency.GetHashCode() -> int

@@ -56,6 +56,8 @@ NuGet.Versioning.SemanticVersion.SemanticVersion(int major, int minor, int patch
 NuGet.Versioning.SemanticVersion.SemanticVersion(int major, int minor, int patch, string releaseLabel) -> void
 NuGet.Versioning.SemanticVersion.SemanticVersion(int major, int minor, int patch, string releaseLabel, string metadata) -> void
 NuGet.Versioning.SemanticVersion.TryFormatter(string format, System.IFormatProvider formatProvider, out string formattedString) -> bool
+NuGet.Versioning.SemanticVersionConverter
+NuGet.Versioning.SemanticVersionConverter.SemanticVersionConverter() -> void
 NuGet.Versioning.VersionComparer
 NuGet.Versioning.VersionComparer.Compare(NuGet.Versioning.SemanticVersion x, NuGet.Versioning.SemanticVersion y) -> int
 NuGet.Versioning.VersionComparer.Equals(NuGet.Versioning.SemanticVersion x, NuGet.Versioning.SemanticVersion y) -> bool
@@ -123,6 +125,10 @@ override NuGet.Versioning.NuGetVersion.ToString() -> string
 override NuGet.Versioning.SemanticVersion.Equals(object obj) -> bool
 override NuGet.Versioning.SemanticVersion.GetHashCode() -> int
 override NuGet.Versioning.SemanticVersion.ToString() -> string
+override NuGet.Versioning.SemanticVersionConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool
+override NuGet.Versioning.SemanticVersionConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
+override NuGet.Versioning.SemanticVersionConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
+override NuGet.Versioning.SemanticVersionConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
 override NuGet.Versioning.VersionRange.Equals(object obj) -> bool
 override NuGet.Versioning.VersionRange.GetHashCode() -> int
 override NuGet.Versioning.VersionRange.ToString() -> string

@@ -1,2 +1,1 @@
-override NuGet.LibraryModel.FrameworkDependency.GetHashCode() -> int
 static NuGet.LibraryModel.LibraryDependency.ApplyCentralVersionInformation(System.Collections.Generic.IList<NuGet.LibraryModel.LibraryDependency> packageReferences, System.Collections.Generic.IDictionary<string, NuGet.LibraryModel.CentralPackageVersion> centralPackageVersions) -> void
