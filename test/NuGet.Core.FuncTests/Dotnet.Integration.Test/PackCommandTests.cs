@@ -3961,6 +3961,54 @@ namespace ClassLibrary
         }
 
         [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackLicense_PackBasicLicenseFile_FileIncorrectCasing()
+        {
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                // Set up
+                var realLicenseFileName = "LICENSE.txt";
+                var nuspecLicenseFileName = "License.txt";
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var licenseFile = Path.Combine(workingDirectory, realLicenseFileName);
+
+                var licenseText = "Random licenseFile";
+                File.WriteAllText(licenseFile, licenseText);
+                Assert.True(File.Exists(licenseFile));
+
+                // Setup LicenseFile
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "PackageLicenseFile", nuspecLicenseFileName);
+
+                    var attributes = new Dictionary<string, string>();
+                    attributes["Pack"] = "true";
+                    attributes["PackagePath"] = realLicenseFileName;
+                    var properties = new Dictionary<string, string>();
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "None",
+                        realLicenseFileName,
+                        NuGetFramework.AnyFramework,
+                        properties,
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+
+                Assert.False(result.Success);
+                Assert.Contains(NuGetLogCode.NU5030.ToString(), result.Output);
+                Assert.Contains($"'{realLicenseFileName}'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'LICENSE.txt'?"
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_PackBasicLicenseFile_FileExtensionNotValid()
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
@@ -4555,6 +4603,56 @@ namespace ClassLibrary
 
                 Assert.NotEqual(0, result.ExitCode);
                 Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageIcon_IncorrectCasing_Fails()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\icon.jpg", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageIcon("ICON.JPG")
+                .WithItem(itemType: "None", itemPath: "icon.jpg", packagePath: "icon.jpg", pack: "true");
+
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+
+                Assert.NotEqual(0, result.ExitCode);
+                Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
+                Assert.Contains("'icon.jpg'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'icon.jpg'?"
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageIcon_IncorrectFolderCasing_Fails()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\icon.jpg", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageIcon("FOLDER\\icon.jpg")
+                .WithItem(itemType: "None", itemPath: "icon.jpg", packagePath: "folder\\icon.jpg", pack: "true");
+
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+
+                Assert.NotEqual(0, result.ExitCode);
+                Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
+                Assert.Contains("'folder/icon.jpg'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'folder/icon.jpg'?"
             }
         }
 
