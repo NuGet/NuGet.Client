@@ -98,6 +98,7 @@ NuGet.Protocol.Core.Types.IPackageSearchMetadata.RequireLicenseAcceptance.get ->
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.Summary.get -> string
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.Tags.get -> string
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.Title.get -> string
+NuGet.Protocol.Core.Types.IPackageSearchMetadata.Vulnerabilities.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>
 NuGet.Protocol.Core.Types.ISourceRepositoryProvider
 NuGet.Protocol.Core.Types.ISourceRepositoryProvider.CreateRepository(NuGet.Configuration.PackageSource source) -> NuGet.Protocol.Core.Types.SourceRepository
 NuGet.Protocol.Core.Types.ISourceRepositoryProvider.CreateRepository(NuGet.Configuration.PackageSource source, NuGet.Protocol.FeedType type) -> NuGet.Protocol.Core.Types.SourceRepository
@@ -196,6 +197,8 @@ NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetada
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Tags.set -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Title.get -> string
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Title.set -> void
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Vulnerabilities.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Vulnerabilities.set -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.WithDeprecation(NuGet.Common.AsyncLazy<NuGet.Protocol.PackageDeprecationMetadata> lazyDeprecationFactory) -> NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.WithVersions(NuGet.Common.AsyncLazy<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.VersionInfo>> lazyVersionsFactory) -> NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder
 NuGet.Protocol.Core.Types.PackageSearchMetadataExtensions
@@ -630,6 +633,7 @@ NuGet.Protocol.LocalPackageSearchMetadata.RequireLicenseAcceptance.get -> bool
 NuGet.Protocol.LocalPackageSearchMetadata.Summary.get -> string
 NuGet.Protocol.LocalPackageSearchMetadata.Tags.get -> string
 NuGet.Protocol.LocalPackageSearchMetadata.Title.get -> string
+NuGet.Protocol.LocalPackageSearchMetadata.Vulnerabilities.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>
 NuGet.Protocol.LocalPackageSearchResource
 NuGet.Protocol.LocalPackageSearchResource.LocalPackageSearchResource(NuGet.Protocol.FindLocalPackagesResource localResource) -> void
 NuGet.Protocol.LocalPackageSearchResourceProvider
@@ -737,6 +741,7 @@ NuGet.Protocol.PackageSearchMetadata.Summary.get -> string
 NuGet.Protocol.PackageSearchMetadata.Tags.get -> string
 NuGet.Protocol.PackageSearchMetadata.Title.get -> string
 NuGet.Protocol.PackageSearchMetadata.Version.get -> NuGet.Versioning.NuGetVersion
+NuGet.Protocol.PackageSearchMetadata.Vulnerabilities.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>
 NuGet.Protocol.PackageSearchMetadataRegistration
 NuGet.Protocol.PackageSearchMetadataRegistration.CatalogUri.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadataRegistration.PackageSearchMetadataRegistration() -> void
@@ -769,6 +774,7 @@ NuGet.Protocol.PackageSearchMetadataV2Feed.Summary.get -> string
 NuGet.Protocol.PackageSearchMetadataV2Feed.Tags.get -> string
 NuGet.Protocol.PackageSearchMetadataV2Feed.Title.get -> string
 NuGet.Protocol.PackageSearchMetadataV2Feed.Version.get -> NuGet.Versioning.NuGetVersion
+NuGet.Protocol.PackageSearchMetadataV2Feed.Vulnerabilities.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>
 NuGet.Protocol.PackageSearchResourceV2Feed
 NuGet.Protocol.PackageSearchResourceV2Feed.PackageSearchResourceV2Feed(NuGet.Protocol.HttpSourceResource httpSourceResource, string baseAddress, NuGet.Configuration.PackageSource packageSource) -> void
 NuGet.Protocol.PackageSearchResourceV2FeedProvider
@@ -781,6 +787,10 @@ NuGet.Protocol.PackageUpdateResourceV2Provider
 NuGet.Protocol.PackageUpdateResourceV2Provider.PackageUpdateResourceV2Provider() -> void
 NuGet.Protocol.PackageUpdateResourceV3Provider
 NuGet.Protocol.PackageUpdateResourceV3Provider.PackageUpdateResourceV3Provider() -> void
+NuGet.Protocol.PackageVulnerabilityMetadata
+NuGet.Protocol.PackageVulnerabilityMetadata.AdvisoryUrl.get -> System.Uri
+NuGet.Protocol.PackageVulnerabilityMetadata.PackageVulnerabilityMetadata() -> void
+NuGet.Protocol.PackageVulnerabilityMetadata.Severity.get -> int
 NuGet.Protocol.PluginFindPackageByIdResourceProvider
 NuGet.Protocol.PluginFindPackageByIdResourceProvider.PluginFindPackageByIdResourceProvider() -> void
 NuGet.Protocol.Plugins.AutomaticProgressReporter
@@ -1517,6 +1527,7 @@ const NuGet.Protocol.Core.Types.NuGetResourceProviderPositions.First = "First" -
 const NuGet.Protocol.Core.Types.NuGetResourceProviderPositions.Last = "Last" -> string
 const NuGet.Protocol.Core.Types.NuGetTestMode.NuGetTestClientName = "NuGet Test Client" -> string
 const NuGet.Protocol.JsonExtensions.JsonSerializationMaxDepth = 512 -> int
+const NuGet.Protocol.JsonProperties.AdvisoryUrl = "advisoryUrl" -> string
 const NuGet.Protocol.JsonProperties.AllRepositorySigned = "allRepositorySigned" -> string
 const NuGet.Protocol.JsonProperties.AlternatePackage = "alternatePackage" -> string
 const NuGet.Protocol.JsonProperties.Authors = "authors" -> string
@@ -1551,6 +1562,7 @@ const NuGet.Protocol.JsonProperties.ProjectUrl = "projectUrl" -> string
 const NuGet.Protocol.JsonProperties.Published = "published" -> string
 const NuGet.Protocol.JsonProperties.Range = "range" -> string
 const NuGet.Protocol.JsonProperties.RequireLicenseAcceptance = "requireLicenseAcceptance" -> string
+const NuGet.Protocol.JsonProperties.Severity = "severity" -> string
 const NuGet.Protocol.JsonProperties.SigningCertificates = "signingCertificates" -> string
 const NuGet.Protocol.JsonProperties.Subject = "subject" -> string
 const NuGet.Protocol.JsonProperties.SubjectId = "@id" -> string
@@ -1561,6 +1573,7 @@ const NuGet.Protocol.JsonProperties.Title = "title" -> string
 const NuGet.Protocol.JsonProperties.Type = "@type" -> string
 const NuGet.Protocol.JsonProperties.Version = "version" -> string
 const NuGet.Protocol.JsonProperties.Versions = "versions" -> string
+const NuGet.Protocol.JsonProperties.Vulnerabilities = "vulnerabilities" -> string
 const NuGet.Protocol.StsAuthenticationHandler.STSEndPointHeader = "X-NuGet-STS-EndPoint" -> string
 const NuGet.Protocol.StsAuthenticationHandler.STSRealmHeader = "X-NuGet-STS-Realm" -> string
 const NuGet.Protocol.StsAuthenticationHandler.STSTokenHeader = "X-NuGet-STS-Token" -> string
