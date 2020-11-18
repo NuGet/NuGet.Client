@@ -73,6 +73,7 @@ NuGet.Frameworks.FrameworkNameProvider.TryGetCompatibilityMappings(NuGet.Framewo
 NuGet.Frameworks.FrameworkNameProvider.TryGetEquivalentFrameworks(NuGet.Frameworks.FrameworkRange range, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> bool
 NuGet.Frameworks.FrameworkNameProvider.TryGetEquivalentFrameworks(NuGet.Frameworks.NuGetFramework framework, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> bool
 NuGet.Frameworks.FrameworkNameProvider.TryGetIdentifier(string framework, out string identifier) -> bool
+NuGet.Frameworks.FrameworkNameProvider.TryGetPlatformVersion(string versionString, out System.Version version) -> bool
 NuGet.Frameworks.FrameworkNameProvider.TryGetPortableCompatibilityMappings(int profile, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.FrameworkRange> supportedFrameworkRanges) -> bool
 NuGet.Frameworks.FrameworkNameProvider.TryGetPortableFrameworks(int profile, bool includeOptional, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> bool
 NuGet.Frameworks.FrameworkNameProvider.TryGetPortableFrameworks(int profile, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> bool
@@ -151,6 +152,7 @@ NuGet.Frameworks.IFrameworkNameProvider.TryGetCompatibilityMappings(NuGet.Framew
 NuGet.Frameworks.IFrameworkNameProvider.TryGetEquivalentFrameworks(NuGet.Frameworks.FrameworkRange range, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> bool
 NuGet.Frameworks.IFrameworkNameProvider.TryGetEquivalentFrameworks(NuGet.Frameworks.NuGetFramework framework, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> bool
 NuGet.Frameworks.IFrameworkNameProvider.TryGetIdentifier(string identifierShortName, out string identifier) -> bool
+NuGet.Frameworks.IFrameworkNameProvider.TryGetPlatformVersion(string versionString, out System.Version version) -> bool
 NuGet.Frameworks.IFrameworkNameProvider.TryGetPortableCompatibilityMappings(int profile, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.FrameworkRange> supportedFrameworkRanges) -> bool
 NuGet.Frameworks.IFrameworkNameProvider.TryGetPortableFrameworks(int profile, bool includeOptional, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> bool
 NuGet.Frameworks.IFrameworkNameProvider.TryGetPortableFrameworks(int profile, out System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> bool
@@ -174,6 +176,7 @@ NuGet.Frameworks.IPortableFrameworkMappings.ProfileOptionalFrameworks.get -> Sys
 NuGet.Frameworks.NuGetFramework
 NuGet.Frameworks.NuGetFramework.AllFrameworkVersions.get -> bool
 NuGet.Frameworks.NuGetFramework.DotNetFrameworkName.get -> string
+NuGet.Frameworks.NuGetFramework.DotNetPlatformName.get -> string
 NuGet.Frameworks.NuGetFramework.Equals(NuGet.Frameworks.NuGetFramework other) -> bool
 NuGet.Frameworks.NuGetFramework.Framework.get -> string
 NuGet.Frameworks.NuGetFramework.GetDotNetFrameworkName(NuGet.Frameworks.IFrameworkNameProvider mappings) -> string
@@ -189,8 +192,8 @@ NuGet.Frameworks.NuGetFramework.IsUnsupported.get -> bool
 NuGet.Frameworks.NuGetFramework.NuGetFramework(NuGet.Frameworks.NuGetFramework framework) -> void
 NuGet.Frameworks.NuGetFramework.NuGetFramework(string framework) -> void
 NuGet.Frameworks.NuGetFramework.NuGetFramework(string framework, System.Version version) -> void
-NuGet.Frameworks.NuGetFramework.NuGetFramework(string frameworkIdentifier, System.Version frameworkVersion, string platform, System.Version platformVersion) -> void
 NuGet.Frameworks.NuGetFramework.NuGetFramework(string frameworkIdentifier, System.Version frameworkVersion, string frameworkProfile) -> void
+NuGet.Frameworks.NuGetFramework.NuGetFramework(string frameworkIdentifier, System.Version frameworkVersion, string platform, System.Version platformVersion) -> void
 NuGet.Frameworks.NuGetFramework.Platform.get -> string
 NuGet.Frameworks.NuGetFramework.PlatformVersion.get -> System.Version
 NuGet.Frameworks.NuGetFramework.Profile.get -> string
@@ -278,6 +281,7 @@ static NuGet.Frameworks.FrameworkRuntimePair.GetName(NuGet.Frameworks.NuGetFrame
 static NuGet.Frameworks.FrameworkRuntimePair.GetTargetGraphName(NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier) -> string
 static NuGet.Frameworks.NuGetFramework.Parse(string folderName) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Frameworks.NuGetFramework.Parse(string folderName, NuGet.Frameworks.IFrameworkNameProvider mappings) -> NuGet.Frameworks.NuGetFramework
+static NuGet.Frameworks.NuGetFramework.ParseComponents(string targetFrameworkMoniker, string targetPlatformMoniker) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Frameworks.NuGetFramework.ParseFolder(string folderName) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Frameworks.NuGetFramework.ParseFolder(string folderName, NuGet.Frameworks.IFrameworkNameProvider mappings) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Frameworks.NuGetFramework.ParseFrameworkName(string frameworkName, NuGet.Frameworks.IFrameworkNameProvider mappings) -> NuGet.Frameworks.NuGetFramework
