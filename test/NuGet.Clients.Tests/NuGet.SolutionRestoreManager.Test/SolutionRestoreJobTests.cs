@@ -2,15 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
@@ -74,6 +78,75 @@ namespace NuGet.SolutionRestoreManager.Test
 
             Assert.Equal(NuGetOperationStatus.NoOp, job.Status);
         }
+
+        [Fact]
+        public async Task SpecialProjects_Counts_Succeeds_Async()
+        {
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var restoreMan = Mock.Of<IPackageRestoreManager>();
+                _globalProvider.AddService(typeof(IPackageRestoreManager), restoreMan);
+
+                var slnMan = Mock.Of<IVsSolutionManager>();
+
+                Mock.Get(slnMan)
+                    .Setup(x => x.GetNuGetProjectsAsync())
+                    .ReturnsAsync(() =>
+                    {
+                        var projectList = new List<NuGetProject>();
+
+                        var dict = new Dictionary<string, object>
+                        {
+                        { NuGetProjectMetadataKeys.Name, "a" },
+                        { NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse("net472") }
+                        };
+                        var pcProject = new PackagesConfigNuGetProject(randomTestFolder, dict);
+                        projectList.Add(pcProject);
+
+                        return projectList;
+                    });
+
+                _globalProvider.AddService(typeof(IVsSolutionManager), slnMan);
+                ISourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+                _globalProvider.AddService(typeof(ISourceRepositoryProvider), sourceRepositoryProvider);
+
+                var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
+                var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
+                var settings = Mock.Of<ISettings>();
+
+                Mock.Get(settings)
+                    .Setup(x => x.GetSection("packageRestore"))
+                    .Returns(() => new VirtualSettingSection("packageRestore",
+                        new AddItem("automatic", bool.TrueString)));
+
+                var consoleProvider = Mock.Of<IOutputConsoleProvider>();
+                var logger = new RestoreOperationLogger(new Lazy<IOutputConsoleProvider>(() => consoleProvider));
+
+                var job = new SolutionRestoreJob(
+                    asyncServiceProvider: AsyncServiceProvider.GlobalProvider,
+                    packageRestoreManager: restoreMan,
+                    solutionManager: slnMan,
+                    sourceRepositoryProvider: sourceRepositoryProvider,
+                    restoreEventsPublisher: eventsPublisher,
+                    settings: settings,
+                    solutionRestoreChecker: restoreChecker);
+
+                var restoreRequest = new SolutionRestoreRequest(
+                    forceRestore: true,
+                    RestoreOperationSource.OnBuild);
+                var restoreJobContext = new SolutionRestoreJobContext();
+
+                await job.ExecuteAsync(
+                    request: restoreRequest,
+                    jobContext: restoreJobContext,
+                    logger: logger,
+                    isSolutionLoadRestore: true,
+                    token: CancellationToken.None);
+
+                Assert.Equal(NuGetOperationStatus.NoOp, job.Status);
+            }
+        }
+
 
         [Fact]
         public async Task Simple_WhenCancelled_Reports_Cancelled_Async()
