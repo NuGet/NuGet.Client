@@ -133,6 +133,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The icon file &apos;{0}&apos; does not exist in the package. (Did you mean &apos;{1}&apos;?).
+        /// </summary>
+        internal static string IconNoFileElementWithHint {
+            get {
+                return ResourceManager.GetString("IconNoFileElementWithHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The schema version of &apos;{0}&apos; is incompatible with version {1} of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942..
         /// </summary>
         internal static string IncompatibleSchema {
@@ -219,6 +228,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         internal static string Manifest_LicenseFileIsNotInNupkg {
             get {
                 return ResourceManager.GetString("Manifest_LicenseFileIsNotInNupkg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license file &apos;{0}&apos; does not exist in the package. (Did you mean &apos;{1}&apos;?).
+        /// </summary>
+        internal static string Manifest_LicenseFileIsNotInNupkgWithHint {
+            get {
+                return ResourceManager.GetString("Manifest_LicenseFileIsNotInNupkgWithHint", resourceCulture);
             }
         }
         
