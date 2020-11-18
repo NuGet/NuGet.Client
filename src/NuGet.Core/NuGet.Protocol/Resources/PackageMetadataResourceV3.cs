@@ -51,7 +51,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            return await GetMetadataAsync(packageId, includePrerelease, includeUnlisted, range: VersionRange.All, sourceCacheContext, log, token);
+            return await GetMetadataAsync(packageId, includePrerelease, includeUnlisted, range: VersionRange.All, sourceCacheContext, log, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             var range = new VersionRange(package.Version, includeMinVersion: true, package.Version, includeMaxVersion: true);
-            var packageMetaDatas = await GetMetadataAsync(package.Id, includePrerelease: true, includeUnlisted: true, range, sourceCacheContext, log, token);
+            var packageMetaDatas = await GetMetadataAsync(package.Id, includePrerelease: true, includeUnlisted: true, range, sourceCacheContext, log, token).ConfigureAwait(false);
 
             return packageMetaDatas.SingleOrDefault();
         }
@@ -94,7 +94,7 @@ namespace NuGet.Protocol
                 sourceCacheContext,
                 httpSourceResult => DeserializeStreamDataAsync<RegistrationIndex>(httpSourceResult.Stream, token),
                 log,
-                token);
+                token).ConfigureAwait(false);
 
             if (registrationIndex == null)
             {
@@ -119,7 +119,7 @@ namespace NuGet.Protocol
                     if (registrationPage.Items == null)
                     {
                         var rangeUri = registrationPage.Url;
-                        var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
+                        var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token).ConfigureAwait(false);
 
                         if (registrationPage == null)
                         {
@@ -160,7 +160,7 @@ namespace NuGet.Protocol
                 var registrationIndex = JsonExtensions.JsonObjectSerializer
                     .Deserialize<T>(jsonReader);
 
-                return await Task.FromResult(registrationIndex);
+                return await Task.FromResult(registrationIndex).ConfigureAwait(false);
             }
         }
 
@@ -197,9 +197,9 @@ namespace NuGet.Protocol
                 {
                     IgnoreNotFounds = true,
                 },
-                async httpSourceResult => await processAsync(httpSourceResult),
+                async httpSourceResult => await processAsync(httpSourceResult).ConfigureAwait(false),
                 log,
-                token);
+                token).ConfigureAwait(false);
 
             return new ValueTuple<RegistrationIndex, HttpSourceCacheContext>(index, httpSourceCacheContext);
         }

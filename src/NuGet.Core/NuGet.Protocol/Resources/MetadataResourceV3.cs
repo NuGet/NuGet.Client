@@ -46,7 +46,7 @@ namespace NuGet.Protocol
                 IEnumerable<NuGetVersion> allVersions;
                 try
                 {
-                    var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+                    var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token).ConfigureAwait(false);
                     allVersions = catalogEntries.Select(p => NuGetVersion.Parse(p["version"].ToString()));
                 }
                 catch (Exception ex)
@@ -71,7 +71,7 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             // TODO: get the url and just check the headers?
-            var metadata = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+            var metadata = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token).ConfigureAwait(false);
 
             // TODO: listed check
             return metadata != null;
@@ -85,7 +85,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var entries = await GetVersions(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+            var entries = await GetVersions(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token).ConfigureAwait(false);
 
             return entries != null && entries.Any();
         }
@@ -100,7 +100,7 @@ namespace NuGet.Protocol
         {
             var results = new List<NuGetVersion>();
 
-            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, sourceCacheContext, log, token);
+            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, sourceCacheContext, log, token).ConfigureAwait(false);
 
             foreach (var catalogEntry in entries)
             {

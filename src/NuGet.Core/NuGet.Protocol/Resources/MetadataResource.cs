@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
-            return await GetVersions(packageId, true, false, sourceCacheContext, log, token);
+            return await GetVersions(packageId, true, false, sourceCacheContext, log, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public async Task<bool> Exists(PackageIdentity identity, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
-            return await Exists(identity, true, sourceCacheContext, log, token);
+            return await Exists(identity, true, sourceCacheContext, log, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace NuGet.Protocol.Core.Types
 
         public async Task<bool> Exists(string packageId, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
-            return await Exists(packageId, true, false, sourceCacheContext, log, token);
+            return await Exists(packageId, true, false, sourceCacheContext, log, token).ConfigureAwait(false);
         }
 
         public abstract Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token);
@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Core.Types
 
         public async Task<NuGetVersion> GetLatestVersion(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
-            var results = await GetLatestVersions(new string[] { packageId }, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+            var results = await GetLatestVersions(new string[] { packageId }, includePrerelease, includeUnlisted, sourceCacheContext, log, token).ConfigureAwait(false);
             var result = results.SingleOrDefault();
 
             if (!result.Equals(default(KeyValuePair<string, bool>)))

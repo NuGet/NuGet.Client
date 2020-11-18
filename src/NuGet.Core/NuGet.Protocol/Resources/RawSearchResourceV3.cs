@@ -86,7 +86,7 @@ namespace NuGet.Protocol
                     searchJson = await _client.GetJObjectAsync(
                         new HttpSourceRequest(queryUrl.Uri, log),
                         log,
-                        cancellationToken);
+                        cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -118,7 +118,7 @@ namespace NuGet.Protocol
         [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
         public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
-            var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken);
+            var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken).ConfigureAwait(false);
 
             var data = results[JsonProperties.Data] as JArray ?? Enumerable.Empty<JToken>();
             return data.OfType<JObject>();

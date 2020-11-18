@@ -53,7 +53,7 @@ namespace NuGet.Protocol
             var results = await _client.GetJObjectAsync(
                 new HttpSourceRequest(queryUri, Common.NullLogger.Instance),
                 Common.NullLogger.Instance,
-                token);
+                token).ConfigureAwait(false);
             token.ThrowIfCancellationRequested();
             if (results == null)
             {
@@ -87,7 +87,7 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ?
-            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, Common.NullLogger.Instance, token);
+            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, Common.NullLogger.Instance, token).ConfigureAwait(false);
             var versions = new List<NuGetVersion>();
             foreach (var package in packages)
             {

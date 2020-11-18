@@ -80,7 +80,7 @@ namespace NuGet.Protocol.Core.Types
                     if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
                     {
                         await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate,
-                            requestTimeout, log, tokenSource.Token);
+                            requestTimeout, log, tokenSource.Token).ConfigureAwait(false);
 
                         //Since this was not a snupkg push (probably .nupkg), when we try pushing symbols later, don't error if there are no snupkg files found.
                         explicitSnupkgPush = false;
@@ -95,7 +95,7 @@ namespace NuGet.Protocol.Core.Types
 
                         await PushSymbols(packagePath, symbolSource, symbolApiKey,
                             noServiceEndpoint, skipDuplicate, symbolPackageUpdateResource,
-                            requestTimeout, log, explicitSnupkgPush, tokenSource.Token);
+                            requestTimeout, log, explicitSnupkgPush, tokenSource.Token).ConfigureAwait(false);
                     }
                 }
             }
@@ -139,7 +139,7 @@ namespace NuGet.Protocol.Core.Types
                 noServiceEndpoint,
                 skipDuplicate: false,
                 symbolPackageUpdateResource: null,
-                log: log);
+                log: log).ConfigureAwait(false);
         }
 
         public async Task Delete(string packageId,
@@ -166,7 +166,7 @@ namespace NuGet.Protocol.Core.Types
                     packageVersion,
                     sourceDisplayName
                     ));
-                await DeletePackage(_source, apiKey, packageId, packageVersion, noServiceEndpoint, log, CancellationToken.None);
+                await DeletePackage(_source, apiKey, packageId, packageVersion, noServiceEndpoint, log, CancellationToken.None).ConfigureAwait(false);
                 log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.DeleteCommandDeletedPackage,
                     packageId,
@@ -220,7 +220,7 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, packagesToPush: symbolsToPush, token);
+                await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, packagesToPush: symbolsToPush, token).ConfigureAwait(false);
             }
         }
 
@@ -251,14 +251,14 @@ namespace NuGet.Protocol.Core.Types
                     GetSourceDisplayName(source)));
             }
 
-            await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, packagesToPush: nupkgsToPush, token);
+            await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, packagesToPush: nupkgsToPush, token).ConfigureAwait(false);
         }
 
         private async Task PushAll(string source, string apiKey, bool noServiceEndpoint, bool skipDuplicate, TimeSpan requestTimeout, ILogger log, IEnumerable<string> packagesToPush, CancellationToken token)
         {
             foreach (var packageToPush in packagesToPush)
             {
-                await PushPackageCore(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
+                await PushPackageCore(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, log, token).ConfigureAwait(false);
             }
         }
 
@@ -283,13 +283,13 @@ namespace NuGet.Protocol.Core.Types
 
             if (sourceUri.IsFile)
             {
-                await PushPackageToFileSystem(sourceUri, packageToPush, skipDuplicate, log, token);
+                await PushPackageToFileSystem(sourceUri, packageToPush, skipDuplicate, log, token).ConfigureAwait(false);
             }
             else
             {
                 var length = new FileInfo(packageToPush).Length;
                 showPushCommandPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, length, noServiceEndpoint, skipDuplicate
-                                                    , requestTimeout, log, token);
+                                                    , requestTimeout, log, token).ConfigureAwait(false);
 
             }
 
@@ -366,7 +366,7 @@ namespace NuGet.Protocol.Core.Types
                             retry++;
                             success = true;
                             // If user push to https://nuget.smbsrc.net/, use temp api key.
-                            var tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token);
+                            var tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token).ConfigureAwait(false);
 
                             await _httpSource.ProcessResponseAsync(
                                 new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, tmpApiKey, logger))
@@ -384,7 +384,7 @@ namespace NuGet.Protocol.Core.Types
                                     return Task.FromResult(0);
                                 },
                                 logger,
-                                token);
+                                token).ConfigureAwait(false);
                         }
                         catch (OperationCanceledException)
                         {
@@ -426,7 +426,7 @@ namespace NuGet.Protocol.Core.Types
                         return Task.FromResult(0);
                     },
                     logger,
-                    token);
+                    token).ConfigureAwait(false);
             }
 
             return showPushCommandPackagePushed;
@@ -623,7 +623,7 @@ namespace NuGet.Protocol.Core.Types
                     throwIfPackageExists: !skipDuplicate,
                     extractionContext: packageExtractionContext);
 
-                await OfflineFeedUtility.AddPackageToSource(context, token);
+                await OfflineFeedUtility.AddPackageToSource(context, token).ConfigureAwait(false);
             }
         }
 
@@ -643,7 +643,7 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                await DeletePackageFromServer(source, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
+                await DeletePackageFromServer(source, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token).ConfigureAwait(false);
             }
         }
 
@@ -688,7 +688,7 @@ namespace NuGet.Protocol.Core.Types
                     return Task.FromResult(0);
                 },
                 logger,
-                token);
+                token).ConfigureAwait(false);
         }
 
         // Deletes a package from a FileSystem.
@@ -840,7 +840,7 @@ namespace NuGet.Protocol.Core.Types
                         MaxTries = 1
                     },
                    logger,
-                   token);
+                   token).ConfigureAwait(false);
 
                 return result.Value<string>("Key") ?? InvalidApiKey;
             }

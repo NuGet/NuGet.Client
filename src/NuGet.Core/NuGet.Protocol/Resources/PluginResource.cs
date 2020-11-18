@@ -82,7 +82,7 @@ namespace NuGet.Protocol.Core.Types
                     await result.PluginMulticlientUtilities.DoOncePerPluginLifetimeAsync(
                         key,
                         () => SetPackageSourceCredentialsAsync(result.Plugin, cancellationToken),
-                        cancellationToken);
+                        cancellationToken).ConfigureAwait(false);
 
                     return new GetPluginResult(result.Plugin, result.PluginMulticlientUtilities);
                 }
@@ -98,7 +98,7 @@ namespace NuGet.Protocol.Core.Types
             await plugin.Connection.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
                 MessageMethod.SetCredentials,
                 payload,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         private SetCredentialsRequest CreateRequest()

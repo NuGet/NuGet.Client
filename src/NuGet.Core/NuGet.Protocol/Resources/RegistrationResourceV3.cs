@@ -97,7 +97,7 @@ namespace NuGet.Protocol
         /// <remarks>The inlined entries are potentially going away soon</remarks>
         public virtual async Task<JObject> GetPackageMetadata(PackageIdentity identity, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
-            return (await GetPackageMetadata(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, cacheContext, log, token)).SingleOrDefault();
+            return (await GetPackageMetadata(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, cacheContext, log, token).ConfigureAwait(false)).SingleOrDefault();
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace NuGet.Protocol
         /// <remarks>The inlined entries are potentially going away soon</remarks>
         public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
-            return await GetPackageMetadata(packageId, VersionRange.All, includePrerelease, includeUnlisted, cacheContext, log, token);
+            return await GetPackageMetadata(packageId, VersionRange.All, includePrerelease, includeUnlisted, cacheContext, log, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace NuGet.Protocol
 
             var registrationUri = GetUri(packageId);
 
-            var ranges = await RegistrationUtility.LoadRanges(_client, registrationUri, packageId, range, cacheContext, log, token);
+            var ranges = await RegistrationUtility.LoadRanges(_client, registrationUri, packageId, range, cacheContext, log, token).ConfigureAwait(false);
 
             foreach (var rangeObj in ranges)
             {

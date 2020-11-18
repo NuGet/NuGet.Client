@@ -62,12 +62,12 @@ namespace NuGet.Protocol
                     skip,
                     take,
                     log,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
             }
             else
             {
 #pragma warning disable CS0618
-                var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
+                var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken).ConfigureAwait(false);
 #pragma warning restore CS0618
                 searchResultMetadata = searchResultJsonObjects
                     .Select(s => s.FromJToken<PackageSearchMetadata>());
@@ -155,7 +155,7 @@ namespace NuGet.Protocol
                 {
                     log.LogVerbose($"Querying {queryUrl.Uri}");
 
-                    searchResult = await getResultAsync(queryUrl.Uri);
+                    searchResult = await getResultAsync(queryUrl.Uri).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -200,7 +200,7 @@ namespace NuGet.Protocol
                 skip,
                 take,
                 log,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace NuGet.Protocol
                 skip,
                 take,
                 log,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
@@ -243,7 +243,7 @@ namespace NuGet.Protocol
                 return Enumerable.Empty<PackageSearchMetadata>();
             }
 
-            return (await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, (uint)take, token)).Data;
+            return (await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, (uint)take, token).ConfigureAwait(false)).Data;
         }
 
         private async Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
@@ -256,7 +256,7 @@ namespace NuGet.Protocol
             var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
             _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
 
-            using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
+            using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))
             using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
             {

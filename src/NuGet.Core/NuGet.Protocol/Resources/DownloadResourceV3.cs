@@ -110,7 +110,7 @@ namespace NuGet.Protocol
                 using (var sourceCacheContext = new SourceCacheContext())
                 {
                     // Read the url from the registration information
-                    var blob = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+                    var blob = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token).ConfigureAwait(false);
 
                     if (blob != null
                         && blob["packageContent"] != null)
@@ -148,7 +148,7 @@ namespace NuGet.Protocol
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                var uri = await GetDownloadUrl(identity, logger, token);
+                var uri = await GetDownloadUrl(identity, logger, token).ConfigureAwait(false);
 
                 if (uri != null)
                 {
@@ -159,7 +159,7 @@ namespace NuGet.Protocol
                         downloadContext,
                         globalPackagesFolder,
                         logger,
-                        token);
+                        token).ConfigureAwait(false);
                 }
 
                 return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);

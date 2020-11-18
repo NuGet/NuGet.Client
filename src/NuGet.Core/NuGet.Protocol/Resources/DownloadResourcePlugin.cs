@@ -110,12 +110,12 @@ namespace NuGet.Protocol
                 await _utilities.DoOncePerPluginLifetimeAsync(
                     MessageMethod.SetLogLevel.ToString(),
                     () => SetLogLevelAsync(logger, cancellationToken),
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
                 var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
                     MessageMethod.PrefetchPackage,
                     new PrefetchPackageRequest(_packageSource.Source, identity.Id, identity.Version.ToNormalizedString()),
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
                 if (response != null)
                 {
@@ -169,7 +169,7 @@ namespace NuGet.Protocol
             await _plugin.Connection.SendRequestAndReceiveResponseAsync<SetLogLevelRequest, SetLogLevelResponse>(
                 MessageMethod.SetLogLevel,
                 new SetLogLevelRequest(logLevel),
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
     }
 }
