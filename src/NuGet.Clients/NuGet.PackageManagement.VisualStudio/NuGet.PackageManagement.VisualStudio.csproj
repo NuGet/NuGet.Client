@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -79,7 +79,8 @@
     <Compile Include="Services\NuGetProjectManagerService.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceState.cs" />
     <Compile Include="Services\NuGetProjectUpgraderService.cs" />
-    <Compile Include="Services\PackageSearchMetadataCacheObject.cs" />
+    <Compile Include="Services\PackageSearchMetadataCacheItem.cs" />
+    <Compile Include="Services\PackageSearchMetadataCacheItemEntry.cs" />
     <Compile Include="Services\SearchObject.cs" />
     <Compile Include="Services\SharedServiceState.cs" />
     <Compile Include="Services\NuGetSolutionManagerService.cs" />
