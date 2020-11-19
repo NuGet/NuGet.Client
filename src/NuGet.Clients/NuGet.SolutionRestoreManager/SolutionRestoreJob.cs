@@ -385,18 +385,8 @@ namespace NuGet.SolutionRestoreManager
                 {
                     // Run solution based up to date check.
                     var projectsNeedingRestore = _solutionUpToDateChecker.PerformUpToDateCheck(originalDgSpec, _logger).AsList();
-                    var specialProjectsCount = originalDgSpec.Projects
-                        .Where(x => {
-                            switch (x.RestoreMetadata.ProjectStyle)
-                            {
-                                case ProjectStyle.PackageReference:
-                                case ProjectStyle.PackagesConfig:
-                                case ProjectStyle.ProjectJson:
-                                    return false;
-                                default:
-                                    return true;
-                            }
-                        })
+                    var specialReferencesCount = originalDgSpec.Projects
+                        .Where(x => x.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference && x.RestoreMetadata.ProjectStyle != ProjectStyle.PackagesConfig && x.RestoreMetadata.ProjectStyle != ProjectStyle.ProjectJson)
                         .Count();
                     dgSpec = originalDgSpec;
                     // Only use the optimization results if the restore is not `force`.
@@ -410,7 +400,7 @@ namespace NuGet.SolutionRestoreManager
                             dgSpec.AddRestore(uniqueProjectId); // Fill DGSpec copy only with restore-needed projects
                         }
                         // Calculate the number of up to date projects
-                        _upToDateProjectCount = originalDgSpec.Restore.Count - specialProjectsCount - projectsNeedingRestore.Count;
+                        _upToDateProjectCount = originalDgSpec.Restore.Count - specialReferencesCount - projectsNeedingRestore.Count;
                         _noOpProjectsCount = _upToDateProjectCount;
                     }
                 }
