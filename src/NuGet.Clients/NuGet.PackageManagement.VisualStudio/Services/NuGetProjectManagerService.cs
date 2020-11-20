@@ -188,12 +188,12 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<PackageReference>[] nonPrStyleReferences = await Task.WhenAll(nonPrStyleTasks);
 
             // combine all of the installed package references
-            var installedPackages = nonPrStyleReferences
+            IEnumerable<IEnumerable<PackageReference>>? installedPackages = nonPrStyleReferences
                     .Concat(prStyleReferences
                         .Select(p => p.InstalledPackages));
 
-            var installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
-            var transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            PackageReferenceContextInfo[]? installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            PackageReferenceContextInfo[]? transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
             return new NuGetProjectPackages(installedPackagesContextInfos, transitivePackageContextInfos);
         }
 
@@ -254,9 +254,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 else
                 {
                     var dgcContext = new DependencyGraphCacheContext();
-                    var packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
+                    IReadOnlyList<ProjectModel.PackageSpec>? packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
 
-                    var targetFrameworks = packageSpecs
+                    IEnumerable<NuGetFramework>? targetFrameworks = packageSpecs
                         .SelectMany(spec => spec.TargetFrameworks)
                         .Select(f => f.FrameworkName);
 

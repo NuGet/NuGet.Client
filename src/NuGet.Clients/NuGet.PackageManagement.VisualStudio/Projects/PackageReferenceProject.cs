@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
-            var (dgSpec, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);
+            (IReadOnlyList<PackageSpec> dgSpec, IReadOnlyList<IAssetsLogMessage> _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);
             return dgSpec;
         }
 

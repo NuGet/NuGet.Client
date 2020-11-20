@@ -87,8 +87,8 @@ namespace NuGet.PackageManagement.UI
                 if (project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                 {
                     // get the target frameworks for Package Reference style projects
-                    var targetFrameworks = await project.GetTargetFrameworksAsync(ServiceBroker, CancellationToken.None);
-                    foreach (var targetFramework in targetFrameworks)
+                    IReadOnlyCollection<NuGetFramework> targetFrameworks = await project.GetTargetFrameworksAsync(ServiceBroker, CancellationToken.None);
+                    foreach (NuGetFramework targetFramework in targetFrameworks)
                     {
                         frameworks.Add(targetFramework.ToString());
                     }
@@ -121,14 +121,14 @@ namespace NuGet.PackageManagement.UI
 
                         if (supportedFrameworks != null && supportedFrameworks.Count > 0)
                         {
-                            foreach (var f in supportedFrameworks)
+                            foreach (NuGetFramework supportedFramework in supportedFrameworks)
                             {
-                                if (f.IsAny)
+                                if (supportedFramework.IsAny)
                                 {
                                     return new List<string>();
                                 }
 
-                                frameworks.Add(f.ToString());
+                                frameworks.Add(supportedFramework.ToString());
                             }
                         }
                     }

@@ -3015,18 +3015,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Setup
                 var projectName = "project1";
-                var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
+                string projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
 
                 // Project
                 var projectCache = new ProjectSystemCache();
                 IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                var packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+                ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+                PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
-                var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
@@ -3056,9 +3056,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
-                var packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await project.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -3074,18 +3074,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Setup
                 var projectName = "project1";
-                var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
+                string projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
 
                 // Project
                 var projectCache = new ProjectSystemCache();
                 IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                var packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+                ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+                PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
-                var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
@@ -3123,9 +3123,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
-                var packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await project.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -3142,18 +3142,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Setup
                 var projectName = "project1";
-                var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
+                string projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
 
                 // Project
                 var projectCache = new ProjectSystemCache();
                 IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                var packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+                ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+                PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
-                var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
@@ -3175,9 +3175,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
-                var packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await project.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -3193,18 +3193,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Setup
                 var projectName = "project1";
-                var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
+                string projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
 
                 // Project
                 var projectCache = new ProjectSystemCache();
                 IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
-                var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                var packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+                ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+                PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
-                var projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
@@ -3215,7 +3215,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packagesDir.Create();
                 packageSource.Create();
                 sources.Add(new PackageSource(packageSource.FullName));
-                var lockFilePath = Path.Combine(testDirectory, "project.assets.json");
+                string lockFilePath = Path.Combine(testDirectory, "project.assets.json");
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
@@ -3235,13 +3235,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
-                var packages = await project.GetAllPackagesAsync(CancellationToken.None);
-                var lastWriteTime = File.GetLastWriteTimeUtc(lockFilePath);
+                ProjectPackages packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                DateTime lastWriteTime = File.GetLastWriteTimeUtc(lockFilePath);
                 File.WriteAllText(lockFilePath, "** replaced file content to test cache **");
                 File.SetLastWriteTimeUtc(lockFilePath, lastWriteTime);
-                var cache_packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages cache_packages = await project.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);

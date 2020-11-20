@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            var targetFramework = await vsProjectAdapter.GetTargetFrameworkAsync();
+            Frameworks.NuGetFramework targetFramework = await vsProjectAdapter.GetTargetFrameworkAsync();
 
             return new LegacyPackageReferenceProject(
                 vsProjectAdapter,

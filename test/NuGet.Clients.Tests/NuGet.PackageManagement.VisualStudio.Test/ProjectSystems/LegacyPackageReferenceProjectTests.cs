@@ -1136,10 +1136,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Setup
                 LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
 
-                var settings = NullSettings.Instance;
+                NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
 
-                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+                IReadOnlyList<PackageSpec> packageSpecs = await testProject.GetPackageSpecsAsync(context);
 
                 // Package directories
                 var sources = new List<PackageSource>();
@@ -1167,10 +1167,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
-                var packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
@@ -1186,7 +1186,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Setup
                 LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
 
-                var settings = NullSettings.Instance;
+                NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
 
                 var packageSpecs = await testProject.GetPackageSpecsAsync(context);
@@ -1225,10 +1225,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
-                var packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
@@ -1245,10 +1245,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Setup
                 LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
 
-                var settings = NullSettings.Instance;
+                NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
 
-                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+                IReadOnlyList<PackageSpec> packageSpecs = await testProject.GetPackageSpecsAsync(context);
 
                 // Package directories
                 var sources = new List<PackageSource>();
@@ -1268,10 +1268,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
-                var packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
@@ -1287,10 +1287,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Setup
                 LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
 
-                var settings = NullSettings.Instance;
+                NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
 
-                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+                IReadOnlyList<PackageSpec> packageSpecs = await testProject.GetPackageSpecsAsync(context);
 
                 // Package directories
                 var sources = new List<PackageSource>();
@@ -1299,7 +1299,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packagesDir.Create();
                 packageSource.Create();
                 sources.Add(new PackageSource(packageSource.FullName));
-                var lockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json");
+                string lockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json");
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
@@ -1319,14 +1319,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
-                var packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
-                var lastWriteTime = File.GetLastWriteTimeUtc(lockFilePath);
+                ProjectPackages packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
+                DateTime lastWriteTime = File.GetLastWriteTimeUtc(lockFilePath);
                 File.WriteAllText(lockFilePath, "** replaced file content to test cache **");
                 File.SetLastWriteTimeUtc(lockFilePath, lastWriteTime);
-                var cache_packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages cache_packages = await testProject.GetAllPackagesAsync(CancellationToken.None);
 
                 // Assert
                 cache_packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));

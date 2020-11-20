@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            var packages = await GetAllPackagesAsync(token);
+            ProjectPackages packages = await GetAllPackagesAsync(token);
             return packages.InstalledPackages;
         }
 
@@ -200,14 +200,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // get the installed packages
-            var installedPackages = packageSpec
+            IEnumerable<PackageReference> installedPackages = packageSpec
                .TargetFrameworks
                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, targets))
                .GroupBy(p => p.PackageIdentity)
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             // get the transitive packages, excluding any already contained in the installed packages
-            var transitivePackages = packageSpec
+            IEnumerable<PackageReference> transitivePackages = packageSpec
                .TargetFrameworks
                .SelectMany(f => GetTransitivePackageReferences(f.FrameworkName, _installedPackages, _transitivePackages, targets))
                .GroupBy(p => p.PackageIdentity)
