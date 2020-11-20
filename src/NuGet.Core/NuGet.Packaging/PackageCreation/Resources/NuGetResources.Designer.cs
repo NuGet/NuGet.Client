@@ -106,6 +106,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The &apos;icon&apos; element &apos;{0}&apos; has an invalid file extension. Valid options are .png, .jpg or .jpeg..
+        /// </summary>
+        internal static string IconInvalidExtension {
+            get {
+                return ResourceManager.GetString("IconInvalidExtension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The icon file size must not exceed 1 megabyte..
         /// </summary>
         internal static string IconMaxFileSizeExceeded {
