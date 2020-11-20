@@ -47,11 +47,11 @@ namespace NuGet.PackageManagement.VisualStudio
             Common.ILogger logger)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
-            if (installedPackages == null)
+            if (installedPackages is null)
             {
                 throw new ArgumentNullException(nameof(installedPackages));
             }
-            if (transitivePackages == null)
+            if (transitivePackages is null)
             {
                 throw new ArgumentNullException(nameof(transitivePackages));
             }
@@ -90,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<SearchResult<IPackageSearchMetadata>> RecommendPackagesAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             var searchToken = continuationToken as RecommendSearchToken;
-            if (searchToken == null)
+            if (searchToken is null)
             {
                 throw new ArgumentException("Invalid continuation token", nameof(continuationToken));
             }
@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // get recommender service and version info
-            if (NuGetRecommender == null)
+            if (NuGetRecommender is null)
             {
                 try
                 {
@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, _topPackages, _depPackages, cancellationToken);
             }
 
-            if (recommendIds == null || !recommendIds.Any())
+            if (recommendIds is null || !recommendIds.Any())
             {
                 return SearchResult.Empty<IPackageSearchMetadata>();
             }
@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // first we try and load the metadata from a local package
             var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-            if (packageMetadata == null)
+            if (packageMetadata is null)
             {
                 // and failing that we go to the network
                 packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);

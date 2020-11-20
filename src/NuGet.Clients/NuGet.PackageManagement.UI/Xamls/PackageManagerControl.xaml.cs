@@ -1169,7 +1169,7 @@ namespace NuGet.PackageManagement.UI
 
             var metadataProvider = CreatePackageMetadataProvider(context);
 
-            ProjectPackageCollections allPackages = await context.GetAllPackagesAsync();
+            InstalledAndTransitivePackageCollections allPackages = await context.GetAllPackagesAsync();
 
             if (filter == ItemFilter.All)
             {

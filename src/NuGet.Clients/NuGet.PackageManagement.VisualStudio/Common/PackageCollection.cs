@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageCollection(packages);
         }
 
-        public static async Task<ProjectPackageCollections> FromProjectsIncludeTransitiveAsync(
+        public static async Task<InstalledAndTransitivePackageCollections> FromProjectsIncludeTransitiveAsync(
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
             CancellationToken cancellationToken)
@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
                 .ToArray();
 
-            return new ProjectPackageCollections(new PackageCollection(installedPackages), new PackageCollection(transitivePackages));
+            return new InstalledAndTransitivePackageCollections(new PackageCollection(installedPackages), new PackageCollection(transitivePackages));
         }
     }
 }

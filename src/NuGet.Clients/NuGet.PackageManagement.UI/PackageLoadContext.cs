@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI
     internal class PackageLoadContext
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
-        private readonly JoinableTask<ProjectPackageCollections> _allPackagesTask;
+        private readonly JoinableTask<InstalledAndTransitivePackageCollections> _allPackagesTask;
 
         public PackageLoadContext(bool isSolution, INuGetUIContext uiContext)
         {
@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
 
-        public async Task<ProjectPackageCollections> GetAllPackagesAsync() => await _allPackagesTask;
+        public async Task<InstalledAndTransitivePackageCollections> GetAllPackagesAsync() => await _allPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
         public async Task<IReadOnlyCollection<string>> GetSupportedFrameworksAsync()

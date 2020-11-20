@@ -3011,7 +3011,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetTransitivePackagesAsync_WithTransitivePackageReferences_ReturnsPackageIdentities()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
                 var projectName = "project1";
@@ -3070,7 +3070,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetTransitivePackagesAsync_WithNestedTransitivePackageReferences_ReturnsPackageIdentities()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
                 var projectName = "project1";
@@ -3138,7 +3138,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetTransitivePackagesAsync_WithNoTransitivePackageReferences_ReturnsOnlyInstalledPackageIdentities()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
                 var projectName = "project1";
@@ -3189,7 +3189,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetTransitivePackagesAsync_WithTransitivePackageReferences_ReturnsPackageIdentitiesFromCache()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
                 var projectName = "project1";

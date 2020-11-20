@@ -179,11 +179,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public override async Task<ProjectPackages> GetAllPackagesAsync(CancellationToken token)
         {
-            var packageSpec = await GetPackageSpecAsync(NullSettings.Instance);
+            PackageSpec packageSpec = await GetPackageSpecAsync(NullSettings.Instance);
 
             var frameworkSorter = new NuGetFrameworkSorter();
 
-            var assetsFilePath = await GetAssetsFilePathAsync();
+            string assetsFilePath = await GetAssetsFilePathAsync();
             var fileInfo = new FileInfo(assetsFilePath);
             IList<LockFileTarget> targets = default;
 
