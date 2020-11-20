@@ -42,6 +42,8 @@
     <Compile Include="RestoreManagerPackage.cs" />
     <Compile Include="RestoreOperationLogger.cs" />
     <Compile Include="RestoreOperationProgressUI.cs" />
+    <Compile Include="RestoreNominationEvent.cs" />
+    <Compile Include="RestoreStartEvent.cs" />
     <Compile Include="SolutionRestoreBuildHandler.cs" />
     <Compile Include="SolutionRestoreCommand.cs" />
     <Compile Include="Resources.Designer.cs">
