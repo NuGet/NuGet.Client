@@ -148,7 +148,7 @@ namespace NuGetVSExtension
             // Add our command handlers for menu (commands must exist in the .vsct file)
             await AddMenuCommandHandlersAsync();
 
-            await PowerConsoleCommands.InitializeAsync(this);
+            await PowerConsoleCommands.Instance.InitializeAsync(this);
 
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
             UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(this);

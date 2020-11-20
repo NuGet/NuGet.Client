@@ -4,8 +4,6 @@
 using System;
 using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
-using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
 using NuGetConsole.Implementation;
@@ -15,23 +13,13 @@ namespace NuGetConsole
 {
     public class PowerConsoleCommands
     {
-        public static PowerConsoleCommands Instance
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Get VS IComponentModel service.
-        /// </summary>
-        private IComponentModel ComponentModel
-        {
-            get;
-        }
+        private static readonly Lazy<PowerConsoleCommands> Lazy = new Lazy<PowerConsoleCommands>(() => new PowerConsoleCommands());
+        public static PowerConsoleCommands Instance => Lazy.Value;
 
         private PowerConsoleWindow PowerConsoleWindow
         {
             get;
+            set;
         }
 
         private HostInfo ActiveHostInfo => PowerConsoleWindow.ActiveHostInfo;
@@ -39,30 +27,23 @@ namespace NuGetConsole
         private IWpfConsole WpfConsole
         {
             get;
+            set;
         }
 
-        public static async System.Threading.Tasks.Task InitializeAsync(AsyncPackage package)
+        public async System.Threading.Tasks.Task InitializeAsync(AsyncPackage package)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
-            var cmdSvc = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            var comSvc = await package.GetComponentModelAsync();
+            var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+            var componentModel = await package.GetComponentModelAsync();
 
-            Instance = new PowerConsoleCommands(cmdSvc, comSvc);
-        }
-
-        private PowerConsoleCommands(OleMenuCommandService commandService, IComponentModel comModelSvc)
-        {
-            if (commandService == null)
-            {
-                throw new ArgumentNullException(nameof(commandService));
-            }
-
-            // init services
-            ComponentModel = comModelSvc;
-            PowerConsoleWindow = ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow;
+            PowerConsoleWindow = componentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow;
             WpfConsole = ActiveHostInfo.WpfConsole;
 
             InitCommands(commandService);
+        }
+
+        private PowerConsoleCommands()
+        {
         }
 
         public void InitCommands(OleMenuCommandService mcs)
