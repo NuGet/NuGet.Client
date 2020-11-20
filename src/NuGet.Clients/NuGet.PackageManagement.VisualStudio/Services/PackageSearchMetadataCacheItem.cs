@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -21,17 +22,20 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private IPackageSearchMetadata _packageSearchMetadata;
         private readonly IPackageMetadataProvider _packageMetadataProvider;
-        private readonly Dictionary<NuGetVersion, PackageSearchMetadataCacheItemEntry> _cachedItemEntries;
+        private readonly ConcurrentDictionary<NuGetVersion, PackageSearchMetadataCacheItemEntry> _cachedItemEntries;
 
         public PackageSearchMetadataCacheItem(IPackageSearchMetadata packageSearchMetadata, IPackageMetadataProvider packageMetadataProvider)
         {
-            _cachedItemEntries = new Dictionary<NuGetVersion, PackageSearchMetadataCacheItemEntry>
+            Assumes.NotNull(packageSearchMetadata);
+            Assumes.NotNull(packageMetadataProvider);
+
+            _cachedItemEntries = new ConcurrentDictionary<NuGetVersion, PackageSearchMetadataCacheItemEntry>
             {
                 [packageSearchMetadata.Identity.Version] = new PackageSearchMetadataCacheItemEntry(packageSearchMetadata, packageMetadataProvider)
             };
 
-            _packageSearchMetadata = packageSearchMetadata;
             _packageMetadataProvider = packageMetadataProvider;
+            _packageSearchMetadata = packageSearchMetadata;
             AllVersionsContextInfo = GetVersionInfoContextInfoAsync();
         }
 
@@ -43,7 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (!_cachedItemEntries.TryGetValue(packageIdentity.Version, out PackageSearchMetadataCacheItemEntry cacheItemEntry))
             {
-                IPackageSearchMetadata packageSearchMetadata = await _packageMetadataProvider.GetPackageMetadataAsync(packageIdentity, true, cancellationToken);
+                IPackageSearchMetadata packageSearchMetadata = await _packageMetadataProvider.GetPackageMetadataAsync(packageIdentity, includePrerelease: true, cancellationToken);
                 cacheItemEntry = new PackageSearchMetadataCacheItemEntry(packageSearchMetadata, _packageMetadataProvider);
                 _cachedItemEntries[packageIdentity.Version] = cacheItemEntry;
             }
@@ -51,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return cacheItemEntry;
         }
 
-        public void RefreshVersionInfoAsync(IPackageSearchMetadata packageSearchMetadata)
+        public void UpdateSearchMetadata(IPackageSearchMetadata packageSearchMetadata)
         {
             _packageSearchMetadata = packageSearchMetadata;
             AllVersionsContextInfo = GetVersionInfoContextInfoAsync();

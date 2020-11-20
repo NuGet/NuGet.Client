@@ -231,7 +231,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var memoryCacheItem = cacheObject as PackageSearchMetadataCacheItem;
             if (memoryCacheItem != null)
             {
-                memoryCacheItem.RefreshVersionInfoAsync(packageSearchMetadata);
+                memoryCacheItem.UpdateSearchMetadata(packageSearchMetadata);
             }
         }
     }
