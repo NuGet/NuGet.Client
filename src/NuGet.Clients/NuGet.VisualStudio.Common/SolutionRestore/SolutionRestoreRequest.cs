@@ -24,16 +24,12 @@ namespace NuGet.VisualStudio
 
         public Guid OperationId => Guid.NewGuid();
 
-        public string Project { get; }
-
         public SolutionRestoreRequest(
             bool forceRestore,
-            RestoreOperationSource restoreSource,
-            string project)
+            RestoreOperationSource restoreSource)
         {
             ForceRestore = forceRestore;
             RestoreSource = restoreSource;
-            Project = project;
         }
 
         /// <summary>
@@ -46,8 +42,7 @@ namespace NuGet.VisualStudio
         {
             return new SolutionRestoreRequest(
                 forceRestore: forceRestore,
-                restoreSource: RestoreOperationSource.OnBuild,
-                project: "Build");
+                restoreSource: RestoreOperationSource.OnBuild);
         }
 
         /// <summary>
@@ -59,8 +54,7 @@ namespace NuGet.VisualStudio
         {
             return new SolutionRestoreRequest(
                 forceRestore: false,
-                restoreSource: RestoreOperationSource.Explicit,
-                project: "Explicit" );
+                restoreSource: RestoreOperationSource.Explicit);
         }
 
         /// <summary>
@@ -68,12 +62,11 @@ namespace NuGet.VisualStudio
         /// background restore.
         /// </summary>
         /// <returns>New instance of <see cref="SolutionRestoreRequest"/></returns>
-        public static SolutionRestoreRequest OnUpdate(string project)
+        public static SolutionRestoreRequest OnUpdate()
         {
             return new SolutionRestoreRequest(
                 forceRestore: false,
-                restoreSource: RestoreOperationSource.Implicit,
-                project);
+                restoreSource: RestoreOperationSource.Implicit);
         }
     }
 }

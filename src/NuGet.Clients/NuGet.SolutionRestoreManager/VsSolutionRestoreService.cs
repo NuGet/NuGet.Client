@@ -76,14 +76,9 @@ namespace NuGet.SolutionRestoreManager
         {
             Assumes.NotNullOrEmpty(projectUniqueName);
 
-            TelemetryActivity.EmitTelemetryEvent(
-                new RestoreNominationEvent(
-                    "restoreNomination",
-                    projectUniqueName));
-
             // returned task completes when scheduled restore operation completes.
             var restoreTask = _restoreWorker.ScheduleRestoreAsync(
-                SolutionRestoreRequest.OnUpdate(projectUniqueName),
+                SolutionRestoreRequest.OnUpdate(),
                 token);
 
             return restoreTask;
@@ -177,14 +172,9 @@ namespace NuGet.SolutionRestoreManager
 
                 _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, nominationErrors);
 
-                TelemetryActivity.EmitTelemetryEvent(
-                    new RestoreNominationEvent(
-                        "restoreNomination",
-                        projectUniqueName));
-
                 // returned task completes when scheduled restore operation completes.
                 var restoreTask = _restoreWorker.ScheduleRestoreAsync(
-                    SolutionRestoreRequest.OnUpdate(projectUniqueName),
+                    SolutionRestoreRequest.OnUpdate(),
                     token);
 
                 return await restoreTask;
