@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly SourceRepository _sourceRepository;
         private readonly List<string> _topPackages;
         private readonly List<string> _depPackages;
-        private readonly IList<string> _targetFrameworks;
+        private readonly IReadOnlyCollection<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
 
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SourceRepository sourceRepository,
             PackageCollection installedPackages,
             PackageCollection transitivePackages,
-            IList<string> targetFrameworks,
+            IReadOnlyCollection<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
         {
@@ -59,7 +59,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            // get lists of only the package ids to send to the recommender
             _topPackages = installedPackages.Select(item => item.Id).ToList();
             _depPackages = transitivePackages.Select(item => item.Id).ToList();
 

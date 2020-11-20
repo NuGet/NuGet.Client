@@ -78,19 +78,18 @@ namespace NuGet.PackageManagement.UI
         public async Task<ProjectPackageCollections> GetAllPackagesAsync() => await _allPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
-        public async Task<IList<string>> GetSupportedFrameworksAsync()
+        public async Task<IReadOnlyCollection<string>> GetSupportedFrameworksAsync()
         {
-            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var frameworks = new HashSet<NuGetFramework>();
 
             foreach (IProjectContextInfo project in Projects)
             {
                 if (project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                 {
-                    // get the target frameworks for Package Reference style projects
                     IReadOnlyCollection<NuGetFramework> targetFrameworks = await project.GetTargetFrameworksAsync(ServiceBroker, CancellationToken.None);
                     foreach (NuGetFramework targetFramework in targetFrameworks)
                     {
-                        frameworks.Add(targetFramework.ToString());
+                        frameworks.Add(targetFramework);
                     }
                 }
                 else
@@ -100,23 +99,8 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                     NuGetFramework framework = projectMetadata.TargetFramework;
 
-                    if (framework != null)
+                    if (framework is null)
                     {
-                        if (framework.IsAny)
-                        {
-                            // One of the project's target framework is AnyFramework. In this case,
-                            // we don't need to pass the framework filter to the server.
-                            return new List<string>();
-                        }
-
-                        if (framework.IsSpecificFramework)
-                        {
-                            frameworks.Add(framework.ToString());
-                        }
-                    }
-                    else
-                    {
-                        // we also need to process SupportedFrameworks
                         IReadOnlyCollection<NuGetFramework> supportedFrameworks = projectMetadata.SupportedFrameworks;
 
                         if (supportedFrameworks != null && supportedFrameworks.Count > 0)
@@ -125,17 +109,30 @@ namespace NuGet.PackageManagement.UI
                             {
                                 if (supportedFramework.IsAny)
                                 {
-                                    return new List<string>();
+                                    return Array.Empty<string>();
                                 }
 
-                                frameworks.Add(supportedFramework.ToString());
+                                frameworks.Add(supportedFramework);
                             }
+                        }
+                    }
+                    else
+                    {
+                        if (framework.IsAny)
+                        {
+                            return Array.Empty<string>();
+                        }
+
+                        if (framework.IsSpecificFramework)
+                        {
+                            frameworks.Add(framework);
                         }
                     }
                 }
             }
 
-            return frameworks.ToList();
+            return frameworks.Select(framework => framework.ToString())
+                .ToArray();
         }
     }
 }

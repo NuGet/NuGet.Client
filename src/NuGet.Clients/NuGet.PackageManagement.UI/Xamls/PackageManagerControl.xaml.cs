@@ -1174,7 +1174,7 @@ namespace NuGet.PackageManagement.UI
             if (filter == ItemFilter.All)
             {
                 // if we get here, recommendPackages == true
-                var targetFrameworks = await context.GetSupportedFrameworksAsync();
+                IReadOnlyCollection<string> targetFrameworks = await context.GetSupportedFrameworksAsync();
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(
                     context.SourceRepositories,
                     uiLogger,
