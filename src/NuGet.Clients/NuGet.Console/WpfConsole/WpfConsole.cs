@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -52,6 +53,7 @@ namespace NuGetConsole.Implementation.Console
         private IReadOnlyRegion _readOnlyRegionBegin;
         private IReadOnlyRegion _readOnlyRegionBody;
         private IVsTextView _view;
+        private IVsStatusbar _vsStatusBar;
         private IWpfTextView _wpfTextView;
         private bool _startedWritingOutput;
         private List<Tuple<string, Color?, Color?>> _outputCache = new List<Tuple<string, Color?, Color?>>();
@@ -88,33 +90,35 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        [Obsolete]
         public IVsUIShell VsUIShell
+        {
+            get { return ServiceProvider.GetService<IVsUIShell>(typeof(SVsUIShell)); }
+        }
+
+        private IVsStatusbar VsStatusBar
         {
             get
             {
-                IVsUIShell svc = null;
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                if (_vsStatusBar == null)
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    svc = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
-                });
-                return svc;
+                    _vsStatusBar = ServiceProvider.GetService<IVsStatusbar>(typeof(SVsStatusbar));
+                }
+                return _vsStatusBar;
             }
+        }
+
+        private async Task<IVsStatusbar> VsStatusBarAsync()
+        {
+            if (_vsStatusBar == null)
+            {
+                _vsStatusBar = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsStatusbar>();
+            }
+            return _vsStatusBar;
         }
 
         private IOleServiceProvider OleServiceProvider
         {
-            get
-            {
-                IOleServiceProvider svc = null;
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    svc = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IOleServiceProvider>();
-                });
-                return svc;
-            }
+            get { return ServiceProvider.GetService<IOleServiceProvider>(typeof(IOleServiceProvider)); }
         }
 
         private IContentType ContentType
@@ -606,37 +610,62 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        private async Task WriteProgressAsync(string operation, uint percentComplete)
+        private async Task WriteProgress(string operation, int percentComplete)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (operation == null)
             {
-                throw new ArgumentNullException(nameof(operation));
+                throw new ArgumentNullException("operation");
             }
-
-            // assume inProgress
-            int inProgress = 1;
-            string label = operation;
 
             if (percentComplete < 0)
             {
                 percentComplete = 0;
             }
-            else if (percentComplete >= 100)
+
+            if (percentComplete > 100)
             {
                 percentComplete = 100;
-                inProgress = 0; // completed
-                label = string.Empty;
             }
 
-            var vsStatusBar = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsStatusbar>();
+            if (percentComplete == 100)
+            {
+                await HideProgressAsync();
+            }
+            else
+            {
+                var vsStatusBar = await VsStatusBarAsync();
+                vsStatusBar.Progress(
+                    ref _pdwCookieForStatusBar,
+                    1 /* in progress */,
+                    operation,
+                    (uint)percentComplete,
+                    (uint)100);
+            }
+        }
+
+        private void HideProgress()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            VsStatusBar.Progress(
+                ref _pdwCookieForStatusBar,
+                0 /* completed */,
+                string.Empty,
+                (uint)100,
+                (uint)100);
+        }
+
+        private async Task HideProgressAsync()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var vsStatusBar = await VsStatusBarAsync();
             vsStatusBar.Progress(
-                pdwCookie: ref _pdwCookieForStatusBar,
-                fInProgress: inProgress,
-                pwszLabel: label,
-                nComplete: percentComplete,
-                nTotal: 100);
+                ref _pdwCookieForStatusBar,
+                0 /* completed */,
+                string.Empty,
+                (uint)100,
+                (uint)100);
         }
 
         public void SetExecutionMode(bool isExecuting)
@@ -647,12 +676,9 @@ namespace NuGetConsole.Implementation.Console
 
             if (!isExecuting)
             {
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await WriteProgressAsync(string.Empty, 100);
-                    var vsUiShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
-                    vsUiShell.UpdateCommandUI(fImmediateUpdate: 0 /* false = update UI asynchronously */);
-                });
+                HideProgress();
+
+                VsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
             }
         }
 
@@ -847,7 +873,7 @@ namespace NuGetConsole.Implementation.Console
             public async Task WriteProgressAsync(string operation, int percentComplete)
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                await _impl.WriteProgressAsync(operation, (uint)percentComplete);
+                await _impl.WriteProgress(operation, percentComplete);
             }
 
             public object VsTextView

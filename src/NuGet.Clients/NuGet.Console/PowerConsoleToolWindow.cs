@@ -36,15 +36,12 @@ namespace NuGetConsole.Implementation
         private JoinableTask _loadTask;
         private const string F1KeywordValuePmc = "VS.NuGet.PackageManager.Console";
 
-        private AsyncLazy<IComponentModel> _componentModelAsyncLazy = new AsyncLazy<IComponentModel>(
-            async delegate { return await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync(); }, ThreadHelper.JoinableTaskFactory);
-
         /// <summary>
         /// Get VS IComponentModel service.
         /// </summary>
         private IComponentModel ComponentModel
         {
-            get { return ComponentModelAsyncLazy.GetValue(); }
+            get { return this.GetService<IComponentModel>(typeof(SComponentModel)); }
         }
 
         private PowerConsoleWindow PowerConsoleWindow
@@ -597,8 +594,6 @@ namespace NuGetConsole.Implementation
                 return _consoleStatus;
             }
         }
-
-        public AsyncLazy<IComponentModel> ComponentModelAsyncLazy { get => _componentModelAsyncLazy; set => _componentModelAsyncLazy = value; }
 
         #endregion
     }
