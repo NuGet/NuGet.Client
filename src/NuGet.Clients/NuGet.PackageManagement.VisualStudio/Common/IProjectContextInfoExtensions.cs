@@ -73,6 +73,9 @@ namespace NuGet.PackageManagement.VisualStudio
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
+            Assumes.NotNull(projectContextInfo);
+            Assumes.NotNull(serviceBroker);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken))
