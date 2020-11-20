@@ -3,51 +3,30 @@
 
 #nullable enable
 
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal sealed class PackageSearchMetadataCacheObject
+    internal sealed class PackageSearchMetadataCacheItemEntry
     {
         private readonly IPackageSearchMetadata _packageSearchMetadata;
         private readonly IPackageMetadataProvider _packageMetadataProvider;
 
-        public PackageSearchMetadataCacheObject(IPackageSearchMetadata packageSearchMetadata, IPackageMetadataProvider packageMetadataProvider)
+        public PackageSearchMetadataCacheItemEntry(IPackageSearchMetadata packageSearchMetadata, IPackageMetadataProvider packageMetadataProvider)
         {
             _packageSearchMetadata = packageSearchMetadata;
             _packageMetadataProvider = packageMetadataProvider;
-            AllVersionsContextInfo = GetVersionInfoContextInfoAsync();
+
             PackageDeprecationMetadataContextInfo = GetPackageDeprecationMetadataContextInfoAsync();
             DetailedPackageSearchMetadataContextInfo = GetDetailedPackageSearchMetadataContextInfoAsync();
         }
 
-        public ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> AllVersionsContextInfo { get; }
         public ValueTask<PackageDeprecationMetadataContextInfo?> PackageDeprecationMetadataContextInfo { get; }
         public ValueTask<PackageSearchMetadataContextInfo> DetailedPackageSearchMetadataContextInfo { get; }
-
-        public static string GetCacheId(string packageId, bool includePrerelease, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
-        {
-            var hashCodeCombiner = new HashCodeCombiner();
-            hashCodeCombiner.AddSequence(packageSources);
-            hashCodeCombiner.AddStringIgnoreCase(packageId);
-            hashCodeCombiner.AddObject(includePrerelease.GetHashCode());
-            return hashCodeCombiner.CombinedHash.ToString(CultureInfo.InvariantCulture);
-        }
-
-        private async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoContextInfoAsync()
-        {
-            IEnumerable<VersionInfo> versions = await _packageSearchMetadata.GetVersionsAsync();
-            IEnumerable<Task<VersionInfoContextInfo>> versionContextInfoTasks = versions.Select(async v => await VersionInfoContextInfo.CreateAsync(v));
-            return await Task.WhenAll(versionContextInfoTasks);
-        }
 
         private async ValueTask<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationMetadataContextInfoAsync()
         {

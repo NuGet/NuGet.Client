@@ -66,11 +66,5 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken);
-
-        ValueTask<PackageSearchMetadataContextInfo> GetDetailedPackageSearchMetadataContextInfoAsync(
-            PackageIdentity identity,
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease,
-            CancellationToken cancellationToken);
     }
 }

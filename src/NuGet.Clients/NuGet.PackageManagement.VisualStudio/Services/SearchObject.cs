@@ -222,10 +222,17 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            _ = _inMemoryObjectCache.AddOrGetExisting(
-                    PackageSearchMetadataCacheObject.GetCacheId(packageSearchMetadata.Identity.Id, includesPrerelease, _packageSources),
-                    new PackageSearchMetadataCacheObject(packageSearchMetadata, _packageMetadataProvider),
+            // If nothing is in the cache this will return null
+            object? cacheObject = _inMemoryObjectCache.AddOrGetExisting(
+                    PackageSearchMetadataCacheItem.GetCacheId(packageSearchMetadata.Identity.Id, includesPrerelease, _packageSources),
+                    new PackageSearchMetadataCacheItem(packageSearchMetadata, _packageMetadataProvider),
                     _cacheItemPolicy);
+
+            var memoryCacheItem = cacheObject as PackageSearchMetadataCacheItem;
+            if (memoryCacheItem != null)
+            {
+                memoryCacheItem.UpdateSearchMetadata(packageSearchMetadata);
+            }
         }
     }
 }

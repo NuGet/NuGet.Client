@@ -100,11 +100,12 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
 
-            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
-            if (PackageSearchMetadataMemoryCache.Get(cacheId) is PackageSearchMetadataCacheObject backgroundDataCache)
+            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
+            if (PackageSearchMetadataMemoryCache.Get(cacheId) is PackageSearchMetadataCacheItem backgroundDataCache)
             {
-                PackageSearchMetadataContextInfo packageSearchData = await backgroundDataCache.DetailedPackageSearchMetadataContextInfo;
-                PackageDeprecationMetadataContextInfo? deprecatedData = await backgroundDataCache.PackageDeprecationMetadataContextInfo;
+                PackageSearchMetadataCacheItemEntry cacheItem = await backgroundDataCache.GetPackageSearchMetadataCacheVersionedItemAsync(identity, cancellationToken);
+                PackageSearchMetadataContextInfo packageSearchData = await cacheItem.DetailedPackageSearchMetadataContextInfo;
+                PackageDeprecationMetadataContextInfo? deprecatedData = await cacheItem.PackageDeprecationMetadataContextInfo;
                 return (packageSearchData, deprecatedData);
             }
 
@@ -146,27 +147,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageMetadata.Select(package => PackageSearchMetadataContextInfo.Create(package)).ToList();
         }
 
-        public async ValueTask<PackageSearchMetadataContextInfo> GetDetailedPackageSearchMetadataContextInfoAsync(
-            PackageIdentity identity,
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease,
-            CancellationToken cancellationToken)
-        {
-            Assumes.NotNull(identity);
-            Assumes.NotNullOrEmpty(packageSources);
-
-            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
-            PackageSearchMetadataCacheObject? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheObject;
-            if (backgroundDataCache != null)
-            {
-                return await backgroundDataCache.DetailedPackageSearchMetadataContextInfo;
-            }
-
-            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
-            IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-            return PackageSearchMetadataContextInfo.Create(packageMetadata);
-        }
-
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
             PackageIdentity identity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
@@ -176,8 +156,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
 
-            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
-            PackageSearchMetadataCacheObject? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheObject;
+            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
+            PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
             if (backgroundDataCache != null)
             {
                 return await backgroundDataCache.AllVersionsContextInfo;
@@ -199,11 +179,12 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
 
-            string cacheId = PackageSearchMetadataCacheObject.GetCacheId(identity.Id, includePrerelease, packageSources);
-            PackageSearchMetadataCacheObject? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheObject;
+            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
+            PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
             if (backgroundDataCache != null)
             {
-                return await backgroundDataCache.PackageDeprecationMetadataContextInfo;
+                PackageSearchMetadataCacheItemEntry cacheItem = await backgroundDataCache.GetPackageSearchMetadataCacheVersionedItemAsync(identity, cancellationToken);
+                return await cacheItem.PackageDeprecationMetadataContextInfo;
             }
 
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
@@ -375,8 +356,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 packageFeeds.mainFeed = new UpdatePackageFeed(
                     _serviceBroker,
-                    installedPackageCollection, 
-                    metadataProvider, 
+                    installedPackageCollection,
+                    metadataProvider,
                     projectContextInfos.ToArray());
 
                 return packageFeeds;
