@@ -58,6 +58,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _initialized;
         private bool _cacheInitialized;
+        private static readonly SemaphoreSlim SemaphoreLock = new SemaphoreSlim(1, 1);
 
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
@@ -771,9 +772,23 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 // If already initialized, need not be on the UI thread
-                if (!_initialized)
+                if (_initialized)
                 {
-                    _initialized = true;
+                    // Check if the cache is initialized.
+                    // It is possible that the cache is not initialized, since,
+                    // the solution was not saved and/or there were no projects in the solution
+                    if (!_cacheInitialized && _solutionOpenedRaised)
+                    {
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        await EnsureNuGetAndVsProjectAdapterCacheAsync();
+                    }
+
+                    return;
+                }
+
+                try
+                {
+                    await SemaphoreLock.WaitAsync();
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -784,17 +799,16 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         await OnSolutionExistsAndFullyLoadedAsync();
                     }
+
+                    _initialized = true;
                 }
-                else
+                catch (Exception)
                 {
-                    // Check if the cache is initialized.
-                    // It is possible that the cache is not initialized, since,
-                    // the solution was not saved and/or there were no projects in the solution
-                    if (!_cacheInitialized && _solutionOpenedRaised)
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        await EnsureNuGetAndVsProjectAdapterCacheAsync();
-                    }
+                    throw;
+                }
+                finally
+                {
+                    SemaphoreLock.Release();
                 }
             }
             catch (Exception e)
