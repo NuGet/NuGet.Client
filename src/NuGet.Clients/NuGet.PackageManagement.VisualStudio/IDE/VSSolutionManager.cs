@@ -788,7 +788,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 try
                 {
+                    // Ensure all initialization finished when needed, it still runs as async but only prevents _initialized set true too early.
+                    // Getting null value in GetVSSolutionProperty randomly for _vSolution made this change.
                     await SemaphoreLock.WaitAsync();
+
+                    if (_initialized)
+                    {
+                        // Only time you come here is another attemp of initialization was waiting to enter Semaphore lock.
+                        return;
+                    }
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
