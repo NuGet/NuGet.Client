@@ -696,7 +696,8 @@ namespace NuGet.Packaging
                 if (string.IsNullOrEmpty(ext) || (
                         !ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) &&
                         !ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) &&
-                        !ext.Equals(".png", StringComparison.OrdinalIgnoreCase)))
+                        !ext.Equals(".png", StringComparison.OrdinalIgnoreCase))) &&
+                        !ext.Equals(".svg", StringComparison.OrdinalIgnoreCase))) &&
                 {
                     throw new PackagingException(
                         NuGetLogCode.NU5045,
