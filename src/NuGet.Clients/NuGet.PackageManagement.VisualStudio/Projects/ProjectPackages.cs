@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using NuGet.Packaging;
-using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -13,10 +14,10 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public struct ProjectPackages
     {
-        public IReadOnlyList<PackageReference> InstalledPackages { get; set; }
-        public IReadOnlyList<PackageReference> TransitivePackages { get; set; }
+        public IReadOnlyList<PackageReference> InstalledPackages { get; }
+        public IReadOnlyList<PackageReference> TransitivePackages { get; }
 
-        public ProjectPackages(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages) : this()
+        public ProjectPackages(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages) 
         {
             InstalledPackages = installedPackages;
             TransitivePackages = transitivePackages;

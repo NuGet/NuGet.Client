@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return targets
                     .SelectMany(target => target.Libraries)
-                    .Where(library => library.Type == "package")
+                    .Where(library => library.Type == LibraryType.Package)
                     .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, installedPackages, transitivePackages))
                     .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
                     .ToList();

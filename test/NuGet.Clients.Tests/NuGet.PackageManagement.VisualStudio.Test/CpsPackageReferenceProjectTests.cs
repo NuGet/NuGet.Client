@@ -3019,7 +3019,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Project
                 var projectCache = new ProjectSystemCache();
-                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
                 CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                 ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
@@ -3078,7 +3078,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Project
                 var projectCache = new ProjectSystemCache();
-                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
                 CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                 ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
@@ -3146,7 +3146,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Project
                 var projectCache = new ProjectSystemCache();
-                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
                 CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                 ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
@@ -3197,7 +3197,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Project
                 var projectCache = new ProjectSystemCache();
-                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
                 CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                 ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);

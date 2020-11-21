@@ -119,7 +119,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            List<string> recommendIds = new List<string>();
+            List<string> recommendIds = null;
             if (NuGetRecommender != null)
             {
                 // call the recommender to get package recommendations
@@ -134,11 +134,10 @@ namespace NuGet.PackageManagement.VisualStudio
             // get PackageIdentity info for the top 5 recommended packages
             int index = 0;
             List<PackageIdentity> recommendPackages = new List<PackageIdentity>();
+            MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
+            PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
             while (index < recommendIds.Count && recommendPackages.Count < MaxRecommended)
             {
-                MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
-                PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-
                 Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], includePrerelease: false, includeUnlisted: false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
                 if (ver != null)
                 {

@@ -36,9 +36,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
 
-        private Dictionary<string, ProjectInstalledPackage> _installedPackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-        private Dictionary<string, ProjectInstalledPackage> _transitivePackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-        private NuGetFramework _targetFramework;
+        private readonly Dictionary<string, ProjectInstalledPackage> _installedPackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ProjectInstalledPackage> _transitivePackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
+        public NuGetFramework TargetFramework { get; }
 
         public LegacyPackageReferenceProject(
             IVsProjectAdapter vsProjectAdapter,
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectServices,
                 threadingService)
         {
-            _targetFramework = targetFramework;
+            TargetFramework = targetFramework;
         }
 
 
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var frameworkSorter = new NuGetFrameworkSorter();
 
-            string assetsFilePath = await GetAssetsFilePathAsync();
+        string assetsFilePath = await GetAssetsFilePathAsync();
             var fileInfo = new FileInfo(assetsFilePath);
             IList<LockFileTarget> targets = default;
 
@@ -196,7 +196,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
 
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
-                _transitivePackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
+                _transitivePackages.Clear();
             }
 
             // get the installed packages
@@ -214,11 +214,6 @@ namespace NuGet.PackageManagement.VisualStudio
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             return new ProjectPackages(installedPackages.ToList(), transitivePackages.ToList());
-        }
-
-        public NuGetFramework GetTargetFramework()
-        {
-            return _targetFramework;
         }
 
         public override async Task<bool> InstallPackageAsync(
