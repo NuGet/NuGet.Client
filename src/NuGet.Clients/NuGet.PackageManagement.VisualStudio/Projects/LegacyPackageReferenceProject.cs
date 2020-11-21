@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -283,7 +284,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return UriUtility.GetAbsolutePathFromFile(_projectFullPath, packagePath);
         }
 
-        private IList<PackageSource> GetSources(ISettings settings, bool shouldThrow = true)
+        private IList<PackageSource> GetSources(ISettings settings)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

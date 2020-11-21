@@ -15,7 +15,6 @@ using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using VSLangProj150;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
-using ProjectSystem = Microsoft.VisualStudio.ProjectSystem;
 
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -89,10 +88,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var componentModel = await _componentModel.GetValueAsync();
 
-            // Check for RestoreProjectStyle property
-            var restoreProjectStyle = await vsProjectAdapter.BuildProperties.GetPropertyValueAsync(
-                ProjectBuildProperties.RestoreProjectStyle);
-
             var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
 
             // A legacy CSProj must cast to VSProject4 to manipulate package references
@@ -101,22 +96,27 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
+            // Check for RestoreProjectStyle property
+            var restoreProjectStyle = await vsProjectAdapter.BuildProperties.GetPropertyValueAsync(
+                ProjectBuildProperties.RestoreProjectStyle);
+
             // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
             // project has atleast one package dependency defined as PackageReference
             if (forceCreate
                 || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
                 || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
             {
-                return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel);
+                var nominatesOnSolutionLoad = await vsProjectAdapter.IsCapabilityMatchAsync(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences);
+                return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad);
             }
 
             return null;
         }
 
         private INuGetProjectServices CreateCoreProjectSystemServices(
-                IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel)
+                IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel, bool nominatesOnSolutionLoad)
         {
-            return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, componentModel);
+            return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad);
         }
     }
 }
