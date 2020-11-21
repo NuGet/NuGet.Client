@@ -304,6 +304,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to EmitRequireLicenseAcceptance must not be set to false if RequireLicenseAcceptance is set to true..
+        /// </summary>
+        internal static string Manifest_RequireLicenseAcceptanceRequiresEmit {
+            get {
+                return ResourceManager.GetString("Manifest_RequireLicenseAcceptanceRequiresEmit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enabling license acceptance requires a license or a licenseUrl to be specified. The licenseUrl will be deprecated, consider using the license metadata..
         /// </summary>
         internal static string Manifest_RequireLicenseAcceptanceRequiresLicenseUrl {

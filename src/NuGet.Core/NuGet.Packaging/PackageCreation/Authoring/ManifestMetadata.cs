@@ -350,9 +350,17 @@ namespace NuGet.Packaging
                 yield return NuGetResources.IconMissingRequiredValue;
             }
 
-            if (RequireLicenseAcceptance && (string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))
+            if (RequireLicenseAcceptance)
             {
-                yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
+                if ((string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))
+                {
+                    yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
+                }
+
+                if (!EmitRequireLicenseAcceptance)
+                {
+                    yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresEmit;
+                }
             }
 
             if (_licenseUrl != null && LicenseMetadata != null && (string.IsNullOrWhiteSpace(_licenseUrl) || !LicenseUrl.Equals(LicenseMetadata.LicenseUrl)))

@@ -13,6 +13,8 @@ using System.Xml.Linq;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
+using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -2929,6 +2931,92 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
             }
+        }
+
+        [Fact]
+        public void EmitRequireLicenseAcceptance_ShouldNotEmitElement()
+        {
+            var builder = CreateEmitRequireLicenseAcceptancePackageBuilder(
+                emitRequireLicenseAcceptance: false,
+                requireLicenseAcceptance: false);
+
+            using (SaveToTestDirectory(builder, out var reader, out var nuspecContent))
+            {
+                Assert.False(reader.NuspecReader.GetRequireLicenseAcceptance());
+
+                Assert.DoesNotContain("<requireLicenseAcceptance>", nuspecContent);
+            }
+        }
+
+        [Theory, InlineData(false), InlineData(true)]
+        public void EmitRequireLicenseAcceptance_ShouldEmitElement(bool requireLicenseAcceptance)
+        {
+            var builder = CreateEmitRequireLicenseAcceptancePackageBuilder(
+                emitRequireLicenseAcceptance: true,
+                requireLicenseAcceptance);
+
+            using (SaveToTestDirectory(builder, out var reader, out var nuspecContent))
+            {
+                Assert.Equal(requireLicenseAcceptance, reader.NuspecReader.GetRequireLicenseAcceptance());
+
+                Assert.Contains(
+                    requireLicenseAcceptance
+                        ? "<requireLicenseAcceptance>true</requireLicenseAcceptance>"
+                        : "<requireLicenseAcceptance>false</requireLicenseAcceptance>",
+                    nuspecContent);
+            }
+        }
+
+        [Fact]
+        public void EmitRequireLicenseAcceptance_ShouldThrow()
+        {
+            var builder = CreateEmitRequireLicenseAcceptancePackageBuilder(
+                emitRequireLicenseAcceptance: false,
+                requireLicenseAcceptance: true);
+
+            var ex = Assert.Throws<Exception>(() => builder.Save(Stream.Null));
+            Assert.Equal(NuGetResources.Manifest_RequireLicenseAcceptanceRequiresEmit, ex.Message);
+        }
+
+        private static PackageBuilder CreateEmitRequireLicenseAcceptancePackageBuilder(bool emitRequireLicenseAcceptance, bool requireLicenseAcceptance)
+        {
+            return new PackageBuilder
+            {
+                Id = "test",
+                Version = new NuGetVersion("0.0.1"),
+                Authors = { "TestAuthors" },
+                Description = "Test package for EmitRequireLicenseAcceptance",
+                EmitRequireLicenseAcceptance = emitRequireLicenseAcceptance,
+                RequireLicenseAcceptance = requireLicenseAcceptance,
+                LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), warningsAndErrors: null, LicenseMetadata.EmptyVersion),
+                DependencyGroups =
+                {
+                    new PackageDependencyGroup(
+                        NuGetFramework.Parse("netstandard1.4"),
+                        new[] { new PackageDependency("another.dep", VersionRange.Parse("0.0.1")) }),
+                },
+            };
+        }
+
+        private static IDisposable SaveToTestDirectory(PackageBuilder builder, out PackageArchiveReader reader, out string nuspecContent)
+        {
+            var testDir = TestDirectory.Create();
+
+            var packagePath = Path.Combine(testDir, "test.0.0.1.nupkg");
+
+            using (var nupkgStream = File.Create(packagePath))
+            {
+                builder.Save(nupkgStream);
+            }
+
+            reader = new PackageArchiveReader(packagePath);
+
+            using (var nureader = new StreamReader(reader.GetNuspec()))
+            {
+                nuspecContent = nureader.ReadToEnd();
+            }
+
+            return testDir;
         }
 
         private static IPackageFile CreatePackageFile(string name)
