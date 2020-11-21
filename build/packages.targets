@@ -1,13 +1,13 @@
 <Project>
     <PropertyGroup>
-        <MicrosoftBuildPackageVersion Condition="'$(MicrosoftBuildPackageVersion)' == ''">16.6.0</MicrosoftBuildPackageVersion>
+        <MicrosoftBuildPackageVersion Condition="'$(MicrosoftBuildPackageVersion)' == ''">16.8.0</MicrosoftBuildPackageVersion>
         <NewtonsoftJsonPackageVersion Condition="$(NewtonsoftJsonPackageVersion) == ''">9.0.1</NewtonsoftJsonPackageVersion>
         <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
         <VSComponentsVersion>16.6.255</VSComponentsVersion>
         <VSFrameworkVersion>16.6.30107.105</VSFrameworkVersion>
         <VSServicesVersion>16.153.0</VSServicesVersion>
         <VSThreadingVersion>16.7.56</VSThreadingVersion>
-        <PatchedSystemPackagesVersion>5.0.0-preview.3.20214.6</PatchedSystemPackagesVersion>
+        <CryptographyPackagesVersion>5.0.0</PatchedSystemPackagesVersion>
     </PropertyGroup>
 
     <!-- Test and package versions -->

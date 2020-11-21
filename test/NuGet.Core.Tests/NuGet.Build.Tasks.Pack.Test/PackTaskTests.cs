@@ -372,9 +372,9 @@ namespace NuGet.Build.Tasks.Pack.Test
             var jsonModelBefore = JObject.FromObject(target, JsonSerializer.Create(settings));
 
             // Exclude properties on the build task but not used for the pack task request.
-            var excludedBuildEngineProperty = new List<string> (
-                jsonModelBefore.Properties().Where(p => p.Name.StartsWith("BuildEngine", StringComparison.OrdinalIgnoreCase))
-                .Select(p => p.Name));
+            var excludedBuildEngineProperty = new List<string>(jsonModelBefore.Properties().
+                Where(p => p.Name.StartsWith("BuildEngine", StringComparison.OrdinalIgnoreCase)).
+                Select(p => p.Name));
 
             var excludedOtherProperties = new[]
             {
