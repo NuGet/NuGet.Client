@@ -53,7 +53,6 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("", "", LogLevel.Information)]
         [InlineData("--verbosity", "q", LogLevel.Warning)]
         [InlineData("-v", "quiet", LogLevel.Warning)]
         [InlineData("--verbosity", "m", LogLevel.Minimal)]
