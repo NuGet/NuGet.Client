@@ -112,7 +112,7 @@ namespace Dotnet.Integration.Test
         }
 
         [CIOnlyFact]
-        public void Verify_MultipleSignedPackagesWithWildCardAndDetailedVerbosity_MixedResults()
+        public void Verify_MultipleSignedPackagesWithWildCard_MixedResults()
         {
             // Arrange
             using (var testDirectory1 = TestDirectory.Create())
@@ -130,7 +130,7 @@ namespace Dotnet.Integration.Test
                     //Act
                     var result = _msbuildFixture.RunDotnet(
                         testDirectory1,
-                        $"nuget verify {packagX.FullName} {Path.Combine(testDirectory2, "*.nupkg")} -v d",
+                        $"nuget verify {packagX.FullName} {Path.Combine(testDirectory2, "*.nupkg")}",
                         ignoreExitCode: true);
 
                     result.Success.Should().BeFalse(because: result.AllOutput);
