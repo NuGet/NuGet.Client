@@ -57,6 +57,33 @@ namespace Test.Utility.Signing
             return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
         }
 
+        /// <summary>
+        /// Trust the PublicCert cert as intermediate CA certificate.
+        /// </summary>
+        /// <remarks>Dispose of the object returned!</remarks>
+        /// On MacOs, there is no StoreName.CertificateAuthority, so add to LocalMachine\My instead.
+        internal TrustedTestCert<TestCertificate> WithPrivateKeyAndTrustForIntermediateCertificateAuthority()
+        {
+            StoreName storeName = CertificateStoreUtilities.GetCertificateAuthorityStoreName();
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+
+            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
+        }
+
+        /// <summary>
+        /// Trust the PublicCert cert as leaf or self-issued.
+        /// </summary>
+        /// <remarks>Dispose of the object returned!</remarks>
+        /// On MacOs, if we add the leaf or self-issued certificate into LocalMachine\Root, the private key will not be accessed. So the dotnet signing command tests will fail for:
+        ///  "Object contains only the public half of a key pair. A private key must also be provided."
+        internal TrustedTestCert<TestCertificate> WithPrivateKeyAndTrustForLeafOrSelfIssued()
+        {
+            StoreName storeName = CertificateStoreUtilities.GetTrustedCertificateStoreNameForLeafOrSelfIssued();
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocatioinForLeafOrSelfIssued();
+
+            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
+        }
+
         public static string GenerateCertificateName()
         {
             return "NuGetTest-" + Guid.NewGuid().ToString();

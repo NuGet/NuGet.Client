@@ -152,7 +152,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static void WarnIfNoTimestamper(ILogger logger, CommandOption timeStamper)
         {
-            if (timeStamper.HasValue() && string.IsNullOrEmpty(timeStamper.Value()))
+            if (!timeStamper.HasValue())
             {
                 logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3002, Strings.SignCommandNoTimestamperWarning));
             }
