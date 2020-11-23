@@ -58,7 +58,7 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     dir,
-                    $"nuget sign {packagePath} --certificate-fingerprint {_trustedTestCert.Source.Cert.Thumbprint} --certificate-store-name {_trustedTestCert.StoreName} --certificate-store-location {_trustedTestCert.StoreLocation} -v d",
+                    $"nuget sign {packagePath} --certificate-fingerprint {_trustedTestCert.Source.Cert.Thumbprint} --certificate-store-name {_trustedTestCert.StoreName} --certificate-store-location {_trustedTestCert.StoreLocation}",
                     ignoreExitCode: true);
 
                 // Assert
