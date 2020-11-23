@@ -9,6 +9,7 @@ using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
@@ -18,19 +19,29 @@ namespace NuGet.VisualStudio
         private readonly Configuration.ISettings _settings;
         private readonly ISolutionManager _solutionManager;
         private readonly IPackageRestoreManager _restoreManager;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
-        public VsPackageRestorer(Configuration.ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager)
+        public VsPackageRestorer(Configuration.ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager, INuGetTelemetryProvider telemetryProvider)
         {
             _settings = settings;
             _solutionManager = solutionManager;
             _restoreManager = restoreManager;
+            _telemetryProvider = telemetryProvider;
         }
 
         public bool IsUserConsentGranted()
         {
-            var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
-            return packageRestoreConsent.IsGranted;
+            try
+            {
+                var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
+                return packageRestoreConsent.IsGranted;
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(IVsPackageRestorer).FullName);
+                throw;
+            }
         }
 
         public void RestorePackages(Project project)
@@ -51,9 +62,9 @@ namespace NuGet.VisualStudio
                     NullLogger.Instance,
                     CancellationToken.None));
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                ExceptionHelper.WriteErrorToActivityLog(ex);
+                    _telemetryProvider.PostFault(exception, typeof(VsPackageInstallerServices).FullName);
             }
         }
     }

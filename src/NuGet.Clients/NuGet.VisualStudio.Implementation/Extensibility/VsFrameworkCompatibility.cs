@@ -9,6 +9,7 @@ using System.Runtime.Versioning;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.VisualStudio.Implementation.Resources;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
@@ -17,12 +18,28 @@ namespace NuGet.VisualStudio
     [Export(typeof(IVsFrameworkCompatibility3))]
     public class VsFrameworkCompatibility : IVsFrameworkCompatibility2, IVsFrameworkCompatibility3
     {
+        private INuGetTelemetryProvider _telemetryProvider;
+
+        [ImportingConstructor]
+        public VsFrameworkCompatibility(INuGetTelemetryProvider telemetryProvider)
+        {
+            _telemetryProvider = telemetryProvider;
+        }
+
         public IEnumerable<FrameworkName> GetNetStandardFrameworks()
         {
-            return DefaultFrameworkNameProvider
-                .Instance
-                .GetNetStandardVersions()
-                .Select(framework => new FrameworkName(framework.DotNetFrameworkName));
+            try
+            {
+                return DefaultFrameworkNameProvider
+                    .Instance
+                    .GetNetStandardVersions()
+                    .Select(framework => new FrameworkName(framework.DotNetFrameworkName));
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
+                throw;
+            }
         }
 
         public IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName)
@@ -32,21 +49,29 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(frameworkName));
             }
 
-            var nuGetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
-
-            if (!StringComparer.OrdinalIgnoreCase.Equals(
-                nuGetFramework.Framework,
-                FrameworkConstants.FrameworkIdentifiers.NetStandard))
+            try
             {
-                throw new ArgumentException(string.Format(
-                    VsResources.InvalidNetStandardFramework,
-                    frameworkName));
-            }
+                var nuGetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
 
-            return CompatibilityListProvider
-                .Default
-                .GetFrameworksSupporting(nuGetFramework)
-                .Select(framework => new FrameworkName(framework.DotNetFrameworkName));
+                if (!StringComparer.OrdinalIgnoreCase.Equals(
+                    nuGetFramework.Framework,
+                    FrameworkConstants.FrameworkIdentifiers.NetStandard))
+                {
+                    throw new ArgumentException(string.Format(
+                        VsResources.InvalidNetStandardFramework,
+                        frameworkName));
+                }
+
+                return CompatibilityListProvider
+                    .Default
+                    .GetFrameworksSupporting(nuGetFramework)
+                    .Select(framework => new FrameworkName(framework.DotNetFrameworkName));
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
+                throw;
+            }
         }
 
         public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> frameworks)
@@ -71,34 +96,50 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(frameworks));
             }
 
-            var nuGetTargetFramework = NuGetFramework.ParseFrameworkName(targetFramework.ToString(), DefaultFrameworkNameProvider.Instance);
-
-            var nuGetFallbackTargetFrameworks = fallbackTargetFrameworks
-                .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance))
-                .ToList();
-
-            if (nuGetFallbackTargetFrameworks.Any())
+            try
             {
-                nuGetTargetFramework = new FallbackFramework(nuGetTargetFramework, nuGetFallbackTargetFrameworks);
+                var nuGetTargetFramework = NuGetFramework.ParseFrameworkName(targetFramework.ToString(), DefaultFrameworkNameProvider.Instance);
+
+                var nuGetFallbackTargetFrameworks = fallbackTargetFrameworks
+                    .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance))
+                    .ToList();
+
+                if (nuGetFallbackTargetFrameworks.Any())
+                {
+                    nuGetTargetFramework = new FallbackFramework(nuGetTargetFramework, nuGetFallbackTargetFrameworks);
+                }
+
+                var nuGetFrameworks = frameworks
+                    .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance));
+
+                var reducer = new FrameworkReducer();
+                var nearest = reducer.GetNearest(nuGetTargetFramework, nuGetFrameworks);
+
+                if (nearest == null)
+                {
+                    return null;
+                }
+
+                return new FrameworkName(nearest.DotNetFrameworkName);
             }
-
-            var nuGetFrameworks = frameworks
-                .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance));
-
-            var reducer = new FrameworkReducer();
-            var nearest = reducer.GetNearest(nuGetTargetFramework, nuGetFrameworks);
-
-            if (nearest == null)
+            catch (Exception exception)
             {
-                return null;
+                _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
+                throw;
             }
-
-            return new FrameworkName(nearest.DotNetFrameworkName);
         }
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> frameworks)
         {
-            return GetNearest(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
+            try
+            {
+                return GetNearest(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
+                throw;
+            }
         }
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)
@@ -118,57 +159,65 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(frameworks));
             }
 
-            var inputFrameworks = new Dictionary<NuGetFramework, IVsNuGetFramework>();
-
-            NuGetFramework ToNuGetFramework(IVsNuGetFramework framework, string paramName)
+            try
             {
-                NuGetFramework nugetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
-                    projectFilePath: null,
-                    targetFrameworkMoniker: framework.TargetFrameworkMoniker,
-                    targetPlatformMoniker: framework.TargetPlatformMoniker,
-                    targetPlatformMinVersion: framework.TargetPlatformMinVersion);
-                if (!nugetFramework.IsSpecificFramework)
-                {
-                    throw new ArgumentException($"Framework '{framework}' could not be parsed", paramName);
-                }
-                inputFrameworks[nugetFramework] = framework;
-                return nugetFramework;
-            }
+                var inputFrameworks = new Dictionary<NuGetFramework, IVsNuGetFramework>();
 
-            List<NuGetFramework> ToNuGetFrameworks(IEnumerable<IVsNuGetFramework> enumerable, string paramName)
-            {
-                var list = new List<NuGetFramework>();
-                foreach (var framework in enumerable)
+                NuGetFramework ToNuGetFramework(IVsNuGetFramework framework, string paramName)
                 {
-                    if (framework == null)
+                    NuGetFramework nugetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                        projectFilePath: null,
+                        targetFrameworkMoniker: framework.TargetFrameworkMoniker,
+                        targetPlatformMoniker: framework.TargetPlatformMoniker,
+                        targetPlatformMinVersion: framework.TargetPlatformMinVersion);
+                    if (!nugetFramework.IsSpecificFramework)
                     {
-                        throw new ArgumentException("Enumeration contains a null value", paramName);
+                        throw new ArgumentException($"Framework '{framework}' could not be parsed", paramName);
                     }
-                    NuGetFramework nugetFramework = ToNuGetFramework(framework, paramName);
-                    list.Add(nugetFramework);
+                    inputFrameworks[nugetFramework] = framework;
+                    return nugetFramework;
                 }
-                return list;
+
+                List<NuGetFramework> ToNuGetFrameworks(IEnumerable<IVsNuGetFramework> enumerable, string paramName)
+                {
+                    var list = new List<NuGetFramework>();
+                    foreach (var framework in enumerable)
+                    {
+                        if (framework == null)
+                        {
+                            throw new ArgumentException("Enumeration contains a null value", paramName);
+                        }
+                        NuGetFramework nugetFramework = ToNuGetFramework(framework, paramName);
+                        list.Add(nugetFramework);
+                    }
+                    return list;
+                }
+
+                NuGetFramework targetNuGetFramework = ToNuGetFramework(targetFramework, nameof(targetFramework));
+                List<NuGetFramework> nugetFallbackTargetFrameworks = ToNuGetFrameworks(fallbackTargetFrameworks, nameof(fallbackTargetFrameworks));
+                List<NuGetFramework> nugetFrameworks = ToNuGetFrameworks(frameworks, nameof(frameworks));
+
+                if (nugetFallbackTargetFrameworks.Count > 0)
+                {
+                    targetNuGetFramework = new FallbackFramework(targetNuGetFramework, nugetFallbackTargetFrameworks);
+                }
+
+                var reducer = new FrameworkReducer();
+                var nearest = reducer.GetNearest(targetNuGetFramework, nugetFrameworks);
+
+                if (nearest == null)
+                {
+                    return null;
+                }
+
+                var originalFrameworkString = inputFrameworks[nearest];
+                return originalFrameworkString;
             }
-
-            NuGetFramework targetNuGetFramework = ToNuGetFramework(targetFramework, nameof(targetFramework));
-            List<NuGetFramework> nugetFallbackTargetFrameworks = ToNuGetFrameworks(fallbackTargetFrameworks, nameof(fallbackTargetFrameworks));
-            List<NuGetFramework> nugetFrameworks = ToNuGetFrameworks(frameworks, nameof(frameworks));
-
-            if (nugetFallbackTargetFrameworks.Count > 0)
+            catch (Exception exception)
             {
-                targetNuGetFramework = new FallbackFramework(targetNuGetFramework, nugetFallbackTargetFrameworks);
+                _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
+                throw;
             }
-
-            var reducer = new FrameworkReducer();
-            var nearest = reducer.GetNearest(targetNuGetFramework, nugetFrameworks);
-
-            if (nearest == null)
-            {
-                return null;
-            }
-
-            var originalFrameworkString = inputFrameworks[nearest];
-            return originalFrameworkString;
         }
     }
 }

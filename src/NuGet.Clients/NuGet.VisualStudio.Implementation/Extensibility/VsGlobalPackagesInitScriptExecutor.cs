@@ -7,23 +7,21 @@ using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
     [Export(typeof(IVsGlobalPackagesInitScriptExecutor))]
     public class VsGlobalPackagesInitScriptExecutor : IVsGlobalPackagesInitScriptExecutor
     {
-        private IScriptExecutor ScriptExecutor { get; }
+        private readonly IScriptExecutor _scriptExecutor;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
-        public VsGlobalPackagesInitScriptExecutor(IScriptExecutor scriptExecutor)
+        public VsGlobalPackagesInitScriptExecutor(IScriptExecutor scriptExecutor, INuGetTelemetryProvider telemetryProvider)
         {
-            if (scriptExecutor == null)
-            {
-                throw new ArgumentNullException(nameof(scriptExecutor));
-            }
-
-            ScriptExecutor = scriptExecutor;
+            _scriptExecutor = scriptExecutor ?? throw new ArgumentNullException(nameof(scriptExecutor));
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
         public Task<bool> ExecuteInitScriptAsync(string packageId, string packageVersion)
@@ -38,9 +36,19 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersion));
             }
 
+            // Exceptions from parsing package id or version should not be logged as faults
             var version = new NuGetVersion(packageVersion);
             var packageIdentity = new PackageIdentity(packageId, version);
-            return ScriptExecutor.ExecuteInitScriptAsync(packageIdentity);
+
+            try
+            {
+                return _scriptExecutor.ExecuteInitScriptAsync(packageIdentity);
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsGlobalPackagesInitScriptExecutor).FullName);
+                throw;
+            }
         }
     }
 }

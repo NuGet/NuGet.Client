@@ -1,17 +1,25 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Linq;
 using System.Runtime.Versioning;
+using Moq;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 {
     public class VsFrameworkCompatibilityTests
     {
+        // known/expected errors should not be reported to telemetry, hence use MockBehavior.Strict
+        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
+
         [Fact]
         public void VsFrameworkCompatibility_GetNearestRejectsNullTargetFramework()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             FrameworkName targetFramework = null;
             var frameworks = new[]
             {
@@ -27,7 +35,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkCompatibility_GetNearestRejectsNullFrameworks()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             var targetFramework = new FrameworkName(".NETFramework,Version=v4.5");
             FrameworkName[] frameworks = null;
 
@@ -39,7 +47,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkCompatibility_GetNearestRejectsNullFallbackFrameworks()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             var targetFramework = new FrameworkName(".NETFramework,Version=v4.5");
             FrameworkName[] fallbackTargetFrameworks = null;
             var frameworks = new[]
@@ -56,7 +64,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkCompatibility_GetNearestWithNoneCompatible()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             var targetFramework = new FrameworkName(".NETFramework,Version=v4.5");
             var frameworks = new[]
             {
@@ -75,7 +83,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkCompatibility_GetNearestWithMultipleCompatible()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             var targetFramework = new FrameworkName(".NETFramework,Version=v4.5.1");
             var frameworks = new[]
             {
@@ -96,7 +104,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkCompatibility_GetNearestWithCompatibleFallback()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             var targetFramework = new FrameworkName(".NETFramework,Version=v4.5");
             var fallbackTargetFrameworks = new[]
             {
@@ -119,7 +127,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkCompatibility_GetNearestWithIncompatibleFallback()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             var targetFramework = new FrameworkName(".NETFramework,Version=v4.5");
             var fallbackTargetFrameworks = new[]
             {
@@ -142,7 +150,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkCompatibility_GetNearestWithWithEmptyFallbackList()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             var targetFramework = new FrameworkName(".NETFramework,Version=v4.5.1");
             var fallbackTargetFrameworks = new FrameworkName[0];
             var frameworks = new[]
@@ -164,7 +172,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkCompatibility_GetNetStandardVersions()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
 
             // Act
             var actual = target.GetNetStandardFrameworks().ToArray();
@@ -187,7 +195,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void IVsFrameworkCompatibility3_GetNearest_WithCompatibleFramework_Succeeds()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
             var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
             var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
             var netcoreapp31 = new VsNuGetFramework(".NETCoreApp,Version=v3.1", targetPlatformMoniker: null, targetPlatformMinVersion: null);
@@ -204,7 +212,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void IVsFrameworkCompatibility3_GetNearest_WithFallbackTfm_Succeeds()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
 
             var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
             var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
@@ -222,7 +230,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void IVsFrameworkCompatibility3_GetNearest_NoCompatibleFramework_ReturnsNull()
         {
             // Arrange
-            var target = new VsFrameworkCompatibility();
+            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
 
             var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
             var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
