@@ -5,7 +5,7 @@ using NuGet.Common;
 
 namespace NuGet.VisualStudio.Telemetry
 {
-    // This one used for emitting aggregated telemetry at VS solution close or VS instance close.
+    // Emit aggregated telemetry at VS solution close or VS instance close.
     public interface INuGetTelemetryCollector
     {
         /// <summary> Add a <see cref="TelemetryEvent"/> to telemetry list which will be aggregated and emitted later. </summary>
