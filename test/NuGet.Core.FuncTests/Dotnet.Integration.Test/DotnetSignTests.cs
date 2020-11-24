@@ -62,7 +62,7 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
