@@ -794,7 +794,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     if (_initialized)
                     {
-                        // Only time you come here is another attemp of initialization was waiting to enter Semaphore lock.
+                        // Only time you come here is another attempt of initialization was waiting to enter Semaphore lock.
                         return;
                     }
 

@@ -95,7 +95,7 @@ namespace NuGetConsole.Implementation.Console
             get { return ServiceProvider.GetService<IVsUIShell>(typeof(SVsUIShell)); }
         }
 
-        private IVsStatusbar VsStatusBar
+        private IVsStatusbar GetVsStatusBar
         {
             get
             {
@@ -107,7 +107,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        private async Task<IVsStatusbar> VsStatusBarAsync()
+        private async Task<IVsStatusbar> GetVsStatusBarAsync()
         {
             if (_vsStatusBar == null)
             {
@@ -635,7 +635,7 @@ namespace NuGetConsole.Implementation.Console
             }
             else
             {
-                var vsStatusBar = await VsStatusBarAsync();
+                var vsStatusBar = await GetVsStatusBarAsync();
                 vsStatusBar.Progress(
                     ref _pdwCookieForStatusBar,
                     1 /* in progress */,
@@ -648,7 +648,7 @@ namespace NuGetConsole.Implementation.Console
         private void HideProgress()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            VsStatusBar.Progress(
+            GetVsStatusBar.Progress(
                 ref _pdwCookieForStatusBar,
                 0 /* completed */,
                 string.Empty,
@@ -658,8 +658,8 @@ namespace NuGetConsole.Implementation.Console
 
         private async Task HideProgressAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var vsStatusBar = await VsStatusBarAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var vsStatusBar = await GetVsStatusBarAsync();
             vsStatusBar.Progress(
                 ref _pdwCookieForStatusBar,
                 0 /* completed */,
