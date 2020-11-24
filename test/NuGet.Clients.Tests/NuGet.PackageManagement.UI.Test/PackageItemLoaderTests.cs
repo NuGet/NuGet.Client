@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Pending https://github.com/NuGet/Home/issues/10151")]
         public async Task PackageReader_NotNull()
         {
             // Prepare
