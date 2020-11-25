@@ -41,9 +41,6 @@ namespace Dotnet.Integration.Test
 
             var sdkPath = Directory.EnumerateDirectories(Path.Combine(_cliDirectory, "sdk")).Single();
 
-            // TODO - remove when shipping. See https://github.com/NuGet/Home/issues/8952
-            PatchSDKWithCryptographyDlls(sdkPath);
-
             MsBuildSdksPath = Path.Combine(sdkPath, "Sdks");
 
             _templateDirectory = new SimpleTestPathContext();
@@ -651,113 +648,6 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
             {
 
             }
-        }
-
-        // Temporary added methods for processing deps.json files for patching
-
-        /// <summary>
-        /// Temporary patching process to bring in Cryptography DLLs for testing while SDK gets around to including them in 5.0.
-        /// See also: https://github.com/NuGet/Home/issues/8508
-        /// </summary>
-        private void PatchSDKWithCryptographyDlls(string sdkPath)
-        {
-            var assemblyNames = new string[1] { "System.Security.Cryptography.Pkcs.dll" };
-            PatchDepsJsonFiles(assemblyNames, sdkPath);
-
-            string userProfilePath = Environment.GetEnvironmentVariable(RuntimeEnvironmentHelper.IsWindows ? "USERPROFILE" : "HOME");
-            string globalPackagesPath = Path.Combine(userProfilePath, ".nuget", "packages");
-
-            CopyNewlyAddedDlls(assemblyNames, Directory.GetCurrentDirectory(), sdkPath);
-        }
-
-        private void PatchDepsJsonFiles(string[] assemblyNames, string patchDir)
-        {
-            string[] fileNames = new string[3] { "dotnet.deps.json", "MSBuild.deps.json", "NuGet.CommandLine.XPlat.deps.json" };
-            string[] fullNames = fileNames.Select(filename => Path.Combine(patchDir, filename)).ToArray();
-            PatchDepsJsonWithNewlyAddedDlls(assemblyNames, fullNames);
-        }
-
-        private void CopyNewlyAddedDlls(string[] assemblyNames, string copyFromPath, string copyToPath)
-        {
-            foreach (var assemblyName in assemblyNames)
-            {
-                File.Copy(
-                    Path.Combine(copyFromPath, assemblyName),
-                    Path.Combine(copyToPath, assemblyName)
-                );
-            }
-        }
-
-        private void PatchDepsJsonWithNewlyAddedDlls(string[] assemblyNames, string[] filePaths)
-        {
-            foreach (string assemblyName in assemblyNames)
-            {
-                foreach (string filePath in filePaths)
-                {
-                    JObject jsonFile = GetJson(filePath);
-
-                    JObject targets = jsonFile.GetJObjectProperty<JObject>("targets");
-
-                    JObject netcoreapp50 = targets.GetJObjectProperty<JObject>(".NETCoreApp,Version=v5.0");
-
-                    JProperty nugetBuildTasksProperty = netcoreapp50.Properties().
-                        FirstOrDefault(prop => prop.Name.StartsWith("NuGet.Build.Tasks/", StringComparison.OrdinalIgnoreCase));
-
-                    JObject nugetBuildTasks = nugetBuildTasksProperty.Value.FromJToken<JObject>();
-
-                    JObject runtime = nugetBuildTasks.GetJObjectProperty<JObject>("runtime");
-
-                    var assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), assemblyName);
-                    var assemblyVersion = Assembly.LoadFile(assemblyPath).GetName().Version.ToString();
-                    var assemblyFileVersion = FileVersionInfo.GetVersionInfo(assemblyPath).FileVersion;
-                    var jproperty = new JProperty("lib/netcoreapp5.0/" + assemblyName,
-                        new JObject
-                        {
-                            new JProperty("assemblyVersion", assemblyVersion),
-                            new JProperty("fileVersion", assemblyFileVersion),
-                        }
-                    );
-                    runtime.Add(jproperty);
-                    nugetBuildTasks["runtime"] = runtime;
-                    netcoreapp50[nugetBuildTasksProperty.Name] = nugetBuildTasks;
-                    targets[".NETCoreApp,Version=v5.0"] = netcoreapp50;
-                    jsonFile["targets"] = targets;
-                    SaveJson(jsonFile, filePath);
-                }
-            }
-        }
-
-        private JObject GetJson(string jsonFilePath)
-        {
-            try
-            {
-                return FileUtility.SafeRead(jsonFilePath, (stream, filePath) =>
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        return JObject.Parse(reader.ReadToEnd());
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    string.Format("Failed to read json file at {0}: {1}", jsonFilePath, ex.Message),
-                    ex
-                );
-            }
-        }
-
-        private void SaveJson(JObject json, string jsonFilePath)
-        {
-            FileUtility.Replace((outputPath) =>
-            {
-                using (var writer = new StreamWriter(outputPath, append: false, encoding: Encoding.UTF8))
-                {
-                    writer.Write(json.ToString());
-                }
-            },
-            jsonFilePath);
         }
     }
 }
