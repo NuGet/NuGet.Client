@@ -741,7 +741,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task TestPackageManager_UpgradePackageFor_TopParentProject_Success()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = new SimpleTestPathContext())
             using (var testSolutionManager = new TestSolutionManager())
             {
                 // Set up Package Source
@@ -752,16 +752,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var packageA = packageA_Version100.Identity;
                 var packageB = packageB_Version100.Identity;
                 var packageB_UpgradeVersion = packageB_Version200.Identity;
-                var packageSource = Path.Combine(testDirectory, "packageSource");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    packageSource,
+                    testDirectory.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageA_Version100,
                     packageB_Version100,
                     packageB_Version200
                     );
 
-                sources.Add(new PackageSource(packageSource));
+                sources.Add(new PackageSource(testDirectory.PackageSource));
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
 
                 // Project
@@ -787,7 +786,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 for (var i = numberOfProjects - 1; i >= 0; i--)
                 {
                     var projectName = $"project{i}";
-                    var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                    var projectFullPath = Path.Combine(testDirectory.SolutionRoot, projectName, projectName + ".csproj");
                     var project = CreateTestNetCorePackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
