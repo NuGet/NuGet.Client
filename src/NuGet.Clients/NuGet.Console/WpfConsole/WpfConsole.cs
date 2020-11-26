@@ -610,7 +610,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        private async Task WriteProgress(string operation, int percentComplete)
+        private async Task WriteProgressAsync(string operation, int percentComplete)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -873,7 +873,7 @@ namespace NuGetConsole.Implementation.Console
             public async Task WriteProgressAsync(string operation, int percentComplete)
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                await _impl.WriteProgress(operation, percentComplete);
+                await _impl.WriteProgressAsync(operation, percentComplete);
             }
 
             public object VsTextView
