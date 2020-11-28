@@ -28,7 +28,7 @@ namespace NuGet.VisualStudio.Telemetry
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await TelemetryUtility.PostFaultAsync(e, callerClassName, callerMemberName, extraProperties);
+                await PostFaultAsync(e, callerClassName, callerMemberName, extraProperties);
             });
         }
     }
