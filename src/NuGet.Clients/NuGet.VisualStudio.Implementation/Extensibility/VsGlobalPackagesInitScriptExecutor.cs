@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio
             _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
-        public Task<bool> ExecuteInitScriptAsync(string packageId, string packageVersion)
+        public async Task<bool> ExecuteInitScriptAsync(string packageId, string packageVersion)
         {
             if (string.IsNullOrEmpty(packageId))
             {
@@ -42,11 +42,11 @@ namespace NuGet.VisualStudio
 
             try
             {
-                return _scriptExecutor.ExecuteInitScriptAsync(packageIdentity);
+                return await _scriptExecutor.ExecuteInitScriptAsync(packageIdentity);
             }
             catch (Exception exception)
             {
-                _telemetryProvider.PostFault(exception, typeof(VsGlobalPackagesInitScriptExecutor).FullName);
+                await _telemetryProvider.PostFaultAsync(exception, typeof(VsGlobalPackagesInitScriptExecutor).FullName);
                 throw;
             }
         }

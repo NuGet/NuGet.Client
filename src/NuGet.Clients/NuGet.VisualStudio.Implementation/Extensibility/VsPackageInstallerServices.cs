@@ -35,6 +35,7 @@ namespace NuGet.VisualStudio
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private readonly ISettings _settings;
+        private readonly IVsProjectThreadingService _threadingService;
         private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
@@ -43,12 +44,14 @@ namespace NuGet.VisualStudio
             ISourceRepositoryProvider sourceRepositoryProvider,
             ISettings settings,
             IDeleteOnRestartManager deleteOnRestartManager,
+            IVsProjectThreadingService threadingService,
             INuGetTelemetryProvider telemetryProvider)
         {
             _solutionManager = solutionManager;
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _deleteOnRestartManager = deleteOnRestartManager;
             _settings = settings;
+            _threadingService = threadingService;
             _telemetryProvider = telemetryProvider;
         }
 
@@ -58,7 +61,7 @@ namespace NuGet.VisualStudio
             {
                 var packages = new HashSet<IVsPackageMetadata>(new VsPackageMetadataComparer());
 
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                return _threadingService.JoinableTaskFactory.Run(async delegate
                     {
                         // Calls may occur in the template wizard before the solution is actually created,
                         // in that case return no projects
@@ -179,7 +182,7 @@ namespace NuGet.VisualStudio
 
             try
             {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                return _threadingService.JoinableTaskFactory.Run(async delegate
                     {
                         var packages = new List<IVsPackageMetadata>();
 
@@ -286,15 +289,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(VsResources.InvalidNuGetVersionString, "versionString");
             }
 
-            try
-            {
-                return IsPackageInstalled(project, packageId, version);
-            }
-            catch (Exception exception)
-            {
-                _telemetryProvider.PostFault(exception, typeof(VsPackageInstallerServices).FullName);
-                throw;
-            }
+            return IsPackageInstalled(project, packageId, version);
         }
 
         public bool IsPackageInstalled(Project project, string packageId, SemanticVersion version)
@@ -302,15 +297,7 @@ namespace NuGet.VisualStudio
             NuGetVersion nugetVersion;
             if (NuGetVersion.TryParse(version.ToString(), out nugetVersion))
             {
-                try
-                {
-                    return IsPackageInstalled(project, packageId, nugetVersion);
-                }
-                catch (Exception exception)
-                {
-                    _telemetryProvider.PostFault(exception, typeof(VsPackageInstallerServices).FullName);
-                    throw;
-                }
+                return IsPackageInstalled(project, packageId, nugetVersion);
             }
             else
             {
@@ -335,11 +322,19 @@ namespace NuGet.VisualStudio
             // as part of the operations performed below. Powershell scripts need to be executed on the
             // pipeline execution thread and they might try to access DTE. Doing that under
             // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            return _threadingService.JoinableTaskFactory.Run(async delegate
             {
-                IEnumerable<PackageReference> installedPackageReferences = await GetInstalledPackageReferencesAsync(project);
+                try
+                {
+                    IEnumerable<PackageReference> installedPackageReferences = await GetInstalledPackageReferencesAsync(project);
 
-                return PackageServiceUtilities.IsPackageInList(installedPackageReferences, packageId, nugetVersion);
+                    return PackageServiceUtilities.IsPackageInList(installedPackageReferences, packageId, nugetVersion);
+                }
+                catch (Exception exception)
+                {
+                    await _telemetryProvider.PostFaultAsync(exception, typeof(VsPackageInstallerServices).FullName);
+                    throw;
+                }
             });
         }
     }

@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
@@ -58,6 +60,28 @@ namespace NuGet.VisualStudio.Implementation.Test
             var executor = new VsGlobalPackagesInitScriptExecutor(scriptExecutor.Object, _telemetryProvider.Object);
             await Assert.ThrowsAsync<ArgumentException>(async ()
                 => await executor.ExecuteInitScriptAsync("A", "1.abc.0"));
+        }
+
+        [Fact]
+        public async Task ExecuteInitScriptAsync_ImplementationBug_PostsFault()
+        {
+            // Arrange
+            var scriptExecutor = new Mock<IScriptExecutor>();
+            // Pretend that there's an implementation bug that throws a ArgumentException. This specific exception type
+            // is interesting, because it should not be recorded as a fault for API customer inputs, only for internal
+            // implementation bugs.
+            var expectedException = new ArgumentException("internal bug");
+            scriptExecutor.Setup(se => se.ExecuteInitScriptAsync(It.IsAny<PackageIdentity>()))
+                .Throws(expectedException);
+            var telemetry = new Mock<INuGetTelemetryProvider>();
+
+            // Act
+            var target = new VsGlobalPackagesInitScriptExecutor(scriptExecutor.Object, telemetry.Object);
+            var actualException = await Assert.ThrowsAsync<ArgumentException>(() => target.ExecuteInitScriptAsync("A", "1.2.3"));
+
+            // Assert
+            telemetry.Verify(t => t.PostFaultAsync(expectedException, typeof(VsGlobalPackagesInitScriptExecutor).FullName, nameof(VsGlobalPackagesInitScriptExecutor.ExecuteInitScriptAsync), It.IsAny<IDictionary<string, object>>()));
+            Assert.Equal(expectedException, actualException);
         }
     }
 }

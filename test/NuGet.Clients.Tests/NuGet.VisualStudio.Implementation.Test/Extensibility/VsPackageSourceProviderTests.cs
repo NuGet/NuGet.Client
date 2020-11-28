@@ -14,17 +14,6 @@ namespace NuGet.VisualStudio.Implementation.Test
 {
     public class VsPackageSourceProviderTests
     {
-        // known/expected errors should not be reported to telemetry, hence use MockBehavior.Strict
-        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
-
-        [Fact]
-        public void Constructor_WhenSourceRepositoryProviderIsNull_Throws()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(() => new VsPackageSourceProvider(sourceRepositoryProvider: null, _telemetryProvider.Object));
-
-            Assert.Equal("sourceRepositoryProvider", exception.ParamName);
-        }
-
         [Theory]
         [InlineData(typeof(ArgumentException))]
         [InlineData(typeof(ArgumentNullException))]
@@ -32,6 +21,7 @@ namespace NuGet.VisualStudio.Implementation.Test
         [InlineData(typeof(InvalidOperationException))]
         public void GetSources_WhenKnownExceptionIsThrown_ThrowsThatException(Type exceptionType)
         {
+            // Arrange
             var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
             var packageSourceProvider = new Mock<IPackageSourceProvider>();
 
@@ -43,14 +33,15 @@ namespace NuGet.VisualStudio.Implementation.Test
             packageSourceProvider.Setup(x => x.LoadPackageSources())
                 .Throws(expectedException);
 
-            var vsPackageSourceProvider = new VsPackageSourceProvider(sourceRepositoryProvider.Object, _telemetryProvider.Object);
-
+            // Act & Assert
+            var vsPackageSourceProvider = CreateTarget(sourceRepositoryProvider: sourceRepositoryProvider.Object);
             Assert.Throws(exceptionType, () => vsPackageSourceProvider.GetSources(includeUnOfficial: true, includeDisabled: true));
         }
 
         [Fact]
         public void GetSources_WhenUnknownExceptionIsThrown_ThrowsKnownException()
         {
+            // Arrange
             var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
             var packageSourceProvider = new Mock<IPackageSourceProvider>();
             var telemetryProvider = new Mock<INuGetTelemetryProvider>();
@@ -63,14 +54,33 @@ namespace NuGet.VisualStudio.Implementation.Test
             packageSourceProvider.Setup(x => x.LoadPackageSources())
                 .Throws(originalException);
 
-            var vsPackageSourceProvider = new VsPackageSourceProvider(sourceRepositoryProvider.Object, telemetryProvider.Object);
-
+            // Act
+            VsPackageSourceProvider vsPackageSourceProvider = CreateTarget(sourceRepositoryProvider: sourceRepositoryProvider.Object, telemetryProvider: telemetryProvider.Object);
             var actualException = Assert.Throws<InvalidOperationException>(() => vsPackageSourceProvider.GetSources(includeUnOfficial: true, includeDisabled: true));
+
+            // Assert
+            telemetryProvider.Verify(p => p.PostFault(originalException, typeof(VsPackageSourceProvider).FullName, nameof(VsPackageSourceProvider.GetSources), It.IsAny<IDictionary<string, object>>()));
 
             Assert.Equal(originalException.Message, actualException.Message);
             Assert.Same(originalException, actualException.InnerException);
+        }
 
-            telemetryProvider.Verify(p => p.PostFault(originalException, typeof(VsPackageSourceProvider).FullName, nameof(VsPackageSourceProvider.GetSources), It.IsAny<IDictionary<string, object>>()));
+        private VsPackageSourceProvider CreateTarget(
+            ISourceRepositoryProvider sourceRepositoryProvider = null,
+            INuGetTelemetryProvider telemetryProvider = null)
+        {
+            if (sourceRepositoryProvider == null)
+            {
+                sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>().Object;
+            }
+
+            if (telemetryProvider == null)
+            {
+                // Use strict mode, as known/expected exceptions should not be logged as faults
+                telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict).Object;
+            }
+
+            return new VsPackageSourceProvider(sourceRepositoryProvider, telemetryProvider);
         }
     }
 }

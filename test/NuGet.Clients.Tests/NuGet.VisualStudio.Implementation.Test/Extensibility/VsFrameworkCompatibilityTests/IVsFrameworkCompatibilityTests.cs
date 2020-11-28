@@ -8,9 +8,9 @@ using Moq;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
-namespace NuGet.VisualStudio.Implementation.Test.Extensibility
+namespace NuGet.VisualStudio.Implementation.Test.Extensibility.VsFrameworkCompatibilityTests
 {
-    public class VsFrameworkCompatibilityTests
+    public class IVsFrameworkCompatibilityTests
     {
         // known/expected errors should not be reported to telemetry, hence use MockBehavior.Strict
         private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
@@ -41,23 +41,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => target.GetNearest(targetFramework, frameworks));
-        }
-
-        [Fact]
-        public void VsFrameworkCompatibility_GetNearestRejectsNullFallbackFrameworks()
-        {
-            // Arrange
-            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
-            var targetFramework = new FrameworkName(".NETFramework,Version=v4.5");
-            FrameworkName[] fallbackTargetFrameworks = null;
-            var frameworks = new[]
-            {
-                new FrameworkName(".NETFramework,Version=v4.5.1"),
-                new FrameworkName(".NETFramework,Version=v4.5.2"),
-            };
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => target.GetNearest(targetFramework, fallbackTargetFrameworks, frameworks));
         }
 
         [Fact]
@@ -98,52 +81,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             // Assert
             Assert.Equal(".NETFramework,Version=v4.5", actual.ToString());
-        }
-
-        [Fact]
-        public void VsFrameworkCompatibility_GetNearestWithCompatibleFallback()
-        {
-            // Arrange
-            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
-            var targetFramework = new FrameworkName(".NETFramework,Version=v4.5");
-            var fallbackTargetFrameworks = new[]
-            {
-                new FrameworkName(".NETFramework,Version=v4.5.2")
-            };
-            var frameworks = new[]
-            {
-                new FrameworkName(".NETFramework,Version=v4.5.1"),
-                new FrameworkName(".NETFramework,Version=v4.6.1"),
-            };
-
-            // Act
-            var actual = target.GetNearest(targetFramework, fallbackTargetFrameworks, frameworks);
-
-            // Assert
-            Assert.Equal(".NETFramework,Version=v4.5.1", actual.ToString());
-        }
-
-        [Fact]
-        public void VsFrameworkCompatibility_GetNearestWithIncompatibleFallback()
-        {
-            // Arrange
-            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
-            var targetFramework = new FrameworkName(".NETFramework,Version=v4.5");
-            var fallbackTargetFrameworks = new[]
-            {
-                new FrameworkName(".NETFramework,Version=v4.5.2")
-            };
-            var frameworks = new[]
-            {
-                new FrameworkName(".NETFramework,Version=v4.6"),
-                new FrameworkName(".NETFramework,Version=v4.6.1"),
-            };
-
-            // Act
-            var actual = target.GetNearest(targetFramework, fallbackTargetFrameworks, frameworks);
-
-            // Assert
-            Assert.Null(actual);
         }
 
         [Fact]
@@ -189,58 +126,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             Assert.Equal(".NETStandard,Version=v2.0", actual[8].ToString());
             Assert.Equal(".NETStandard,Version=v2.1", actual[9].ToString());
             Assert.Equal(10, actual.Length);
-        }
-
-        [Fact]
-        public void IVsFrameworkCompatibility3_GetNearest_WithCompatibleFramework_Succeeds()
-        {
-            // Arrange
-            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
-            var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
-            var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
-            var netcoreapp31 = new VsNuGetFramework(".NETCoreApp,Version=v3.1", targetPlatformMoniker: null, targetPlatformMinVersion: null);
-            var frameworks = new IVsNuGetFramework[] { net472, netcoreapp31 };
-
-            // Act
-            var actual = target.GetNearest(net5, frameworks);
-
-            // Assert
-            Assert.Equal(netcoreapp31, actual);
-        }
-
-        [Fact]
-        public void IVsFrameworkCompatibility3_GetNearest_WithFallbackTfm_Succeeds()
-        {
-            // Arrange
-            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
-
-            var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
-            var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
-            var fallbackFrameworks = new IVsNuGetFramework[] { net472 };
-            var frameworks = new IVsNuGetFramework[] { net472 };
-
-            // Act
-            var actual = target.GetNearest(net5, fallbackFrameworks, frameworks);
-
-            // Assert
-            Assert.Equal(net472, actual);
-        }
-
-        [Fact]
-        public void IVsFrameworkCompatibility3_GetNearest_NoCompatibleFramework_ReturnsNull()
-        {
-            // Arrange
-            var target = new VsFrameworkCompatibility(_telemetryProvider.Object);
-
-            var net5 = new VsNuGetFramework(".NETCoreApp,Version=v5.0", targetPlatformMoniker: null, targetPlatformMinVersion: null);
-            var net472 = new VsNuGetFramework(".NETFramework,Version=v4.7.2", targetPlatformMoniker: null, targetPlatformMinVersion: null);
-            var frameworks = new IVsNuGetFramework[] { net472 };
-
-            // Act
-            var actual = target.GetNearest(net5, frameworks);
-
-            // Assert
-            Assert.Null(actual);
         }
     }
 }

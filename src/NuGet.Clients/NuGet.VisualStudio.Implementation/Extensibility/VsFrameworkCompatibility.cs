@@ -96,21 +96,30 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(frameworks));
             }
 
+            IEnumerable<NuGetFramework> ParseAllFrameworks(IEnumerable<FrameworkName> frameworks, string argumentName)
+            {
+                foreach (FrameworkName frameworkName in frameworks)
+                {
+                    if (frameworkName == null)
+                    {
+                        throw new ArgumentException("null item in " + argumentName);
+                    }
+
+                    NuGetFramework nugetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
+                    yield return nugetFramework;
+                }
+            }
+
+            var nuGetTargetFramework = NuGetFramework.ParseFrameworkName(targetFramework.ToString(), DefaultFrameworkNameProvider.Instance);
+            var nuGetFallbackTargetFrameworks = ParseAllFrameworks(fallbackTargetFrameworks, nameof(fallbackTargetFrameworks)).ToList();
+            var nuGetFrameworks = ParseAllFrameworks(frameworks, nameof(frameworks)).ToList();
+
             try
             {
-                var nuGetTargetFramework = NuGetFramework.ParseFrameworkName(targetFramework.ToString(), DefaultFrameworkNameProvider.Instance);
-
-                var nuGetFallbackTargetFrameworks = fallbackTargetFrameworks
-                    .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance))
-                    .ToList();
-
                 if (nuGetFallbackTargetFrameworks.Any())
                 {
                     nuGetTargetFramework = new FallbackFramework(nuGetTargetFramework, nuGetFallbackTargetFrameworks);
                 }
-
-                var nuGetFrameworks = frameworks
-                    .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance));
 
                 var reducer = new FrameworkReducer();
                 var nearest = reducer.GetNearest(nuGetTargetFramework, nuGetFrameworks);
@@ -131,15 +140,7 @@ namespace NuGet.VisualStudio
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> frameworks)
         {
-            try
-            {
-                return GetNearest(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
-            }
-            catch (Exception exception)
-            {
-                _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
-                throw;
-            }
+            return GetNearest(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
         }
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)
@@ -159,44 +160,44 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(frameworks));
             }
 
+            var inputFrameworks = new Dictionary<NuGetFramework, IVsNuGetFramework>();
+
+            NuGetFramework ToNuGetFramework(IVsNuGetFramework framework, string paramName)
+            {
+                NuGetFramework nugetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                    projectFilePath: null,
+                    targetFrameworkMoniker: framework.TargetFrameworkMoniker,
+                    targetPlatformMoniker: framework.TargetPlatformMoniker,
+                    targetPlatformMinVersion: framework.TargetPlatformMinVersion);
+                if (!nugetFramework.IsSpecificFramework)
+                {
+                    throw new ArgumentException($"Framework '{framework}' could not be parsed", paramName);
+                }
+                inputFrameworks[nugetFramework] = framework;
+                return nugetFramework;
+            }
+
+            List<NuGetFramework> ToNuGetFrameworks(IEnumerable<IVsNuGetFramework> enumerable, string paramName)
+            {
+                var list = new List<NuGetFramework>();
+                foreach (var framework in enumerable)
+                {
+                    if (framework == null)
+                    {
+                        throw new ArgumentException("Enumeration contains a null value", paramName);
+                    }
+                    NuGetFramework nugetFramework = ToNuGetFramework(framework, paramName);
+                    list.Add(nugetFramework);
+                }
+                return list;
+            }
+
+            NuGetFramework targetNuGetFramework = ToNuGetFramework(targetFramework, nameof(targetFramework));
+            List<NuGetFramework> nugetFallbackTargetFrameworks = ToNuGetFrameworks(fallbackTargetFrameworks, nameof(fallbackTargetFrameworks));
+            List<NuGetFramework> nugetFrameworks = ToNuGetFrameworks(frameworks, nameof(frameworks));
+
             try
             {
-                var inputFrameworks = new Dictionary<NuGetFramework, IVsNuGetFramework>();
-
-                NuGetFramework ToNuGetFramework(IVsNuGetFramework framework, string paramName)
-                {
-                    NuGetFramework nugetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
-                        projectFilePath: null,
-                        targetFrameworkMoniker: framework.TargetFrameworkMoniker,
-                        targetPlatformMoniker: framework.TargetPlatformMoniker,
-                        targetPlatformMinVersion: framework.TargetPlatformMinVersion);
-                    if (!nugetFramework.IsSpecificFramework)
-                    {
-                        throw new ArgumentException($"Framework '{framework}' could not be parsed", paramName);
-                    }
-                    inputFrameworks[nugetFramework] = framework;
-                    return nugetFramework;
-                }
-
-                List<NuGetFramework> ToNuGetFrameworks(IEnumerable<IVsNuGetFramework> enumerable, string paramName)
-                {
-                    var list = new List<NuGetFramework>();
-                    foreach (var framework in enumerable)
-                    {
-                        if (framework == null)
-                        {
-                            throw new ArgumentException("Enumeration contains a null value", paramName);
-                        }
-                        NuGetFramework nugetFramework = ToNuGetFramework(framework, paramName);
-                        list.Add(nugetFramework);
-                    }
-                    return list;
-                }
-
-                NuGetFramework targetNuGetFramework = ToNuGetFramework(targetFramework, nameof(targetFramework));
-                List<NuGetFramework> nugetFallbackTargetFrameworks = ToNuGetFrameworks(fallbackTargetFrameworks, nameof(fallbackTargetFrameworks));
-                List<NuGetFramework> nugetFrameworks = ToNuGetFrameworks(frameworks, nameof(frameworks));
-
                 if (nugetFallbackTargetFrameworks.Count > 0)
                 {
                     targetNuGetFramework = new FallbackFramework(targetNuGetFramework, nugetFallbackTargetFrameworks);

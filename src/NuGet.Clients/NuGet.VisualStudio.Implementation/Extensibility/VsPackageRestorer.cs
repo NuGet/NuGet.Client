@@ -19,14 +19,21 @@ namespace NuGet.VisualStudio
         private readonly Configuration.ISettings _settings;
         private readonly ISolutionManager _solutionManager;
         private readonly IPackageRestoreManager _restoreManager;
+        private readonly IVsProjectThreadingService _threadingService;
         private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
-        public VsPackageRestorer(Configuration.ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager, INuGetTelemetryProvider telemetryProvider)
+        public VsPackageRestorer(
+            Configuration.ISettings settings,
+            ISolutionManager solutionManager,
+            IPackageRestoreManager restoreManager,
+            IVsProjectThreadingService threadingService,
+            INuGetTelemetryProvider telemetryProvider)
         {
             _settings = settings;
             _solutionManager = solutionManager;
             _restoreManager = restoreManager;
+            _threadingService = threadingService;
             _telemetryProvider = telemetryProvider;
         }
 
@@ -56,7 +63,7 @@ namespace NuGet.VisualStudio
                 // as part of the operations performed below. Powershell scripts need to be executed on the
                 // pipeline execution thread and they might try to access DTE. Doing that under
                 // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
+                _threadingService.JoinableTaskFactory.Run(() =>
                     _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
                     nuGetProjectContext,
                     NullLogger.Instance,
@@ -64,7 +71,7 @@ namespace NuGet.VisualStudio
             }
             catch (Exception exception)
             {
-                    _telemetryProvider.PostFault(exception, typeof(VsPackageInstallerServices).FullName);
+                    _telemetryProvider.PostFault(exception, typeof(VsPackageRestorer).FullName);
             }
         }
     }
