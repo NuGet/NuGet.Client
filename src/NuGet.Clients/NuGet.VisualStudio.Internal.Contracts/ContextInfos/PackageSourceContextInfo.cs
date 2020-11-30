@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using Microsoft;
 using NuGet.Configuration;
@@ -51,7 +49,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             return Name.Equals(other.Name, StringComparison.CurrentCultureIgnoreCase) &&
-                   Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase);
+                Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
