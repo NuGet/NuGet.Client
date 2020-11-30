@@ -25,7 +25,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public PackageCollectionItem(string id, NuGetVersion version, IEnumerable<IPackageReferenceContextInfo> installedReferences)
             : base(id, version)
         {
-            PackageReferences = installedReferences?.ToArray() ?? Array.Empty<IPackageReferenceContextInfo>();
+            PackageReferences = installedReferences?.ToList()
+                ?? (IReadOnlyCollection<IPackageReferenceContextInfo>)Array.Empty<IPackageReferenceContextInfo>();
         }
     }
 }
