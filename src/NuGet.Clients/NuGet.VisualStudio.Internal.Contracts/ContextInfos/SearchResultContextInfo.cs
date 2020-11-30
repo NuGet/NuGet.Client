@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -37,9 +35,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public SearchResultContextInfo(Guid? operationId)
             : this(Array.Empty<PackageSearchMetadataContextInfo>(),
-                  ImmutableDictionary<string, LoadingStatus>.Empty,
-                  hasMoreItems: false,
-                  operationId: operationId)
+                ImmutableDictionary<string, LoadingStatus>.Empty,
+                hasMoreItems: false,
+                operationId: operationId)
         {
         }
 
