@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging.Core;
@@ -19,12 +20,12 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Installed package references.
         /// </summary>
-        public List<IPackageReferenceContextInfo> PackageReferences { get; }
+        public IReadOnlyCollection<IPackageReferenceContextInfo> PackageReferences { get; }
 
         public PackageCollectionItem(string id, NuGetVersion version, IEnumerable<IPackageReferenceContextInfo> installedReferences)
             : base(id, version)
         {
-            PackageReferences = installedReferences?.ToList() ?? new List<IPackageReferenceContextInfo>();
+            PackageReferences = installedReferences?.ToArray() ?? Array.Empty<IPackageReferenceContextInfo>();
         }
     }
 }
