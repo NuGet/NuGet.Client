@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -10,6 +10,10 @@
     <Description>Unit tests for NuGet.Versioning.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj" />
   </ItemGroup>
