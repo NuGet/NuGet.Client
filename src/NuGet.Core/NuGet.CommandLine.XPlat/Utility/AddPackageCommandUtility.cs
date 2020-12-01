@@ -101,17 +101,6 @@ namespace NuGet.CommandLine.XPlat.Utility
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 IEnumerable<PackageSource> packageProviderSources = packageSourceProvider.LoadPackageSources();
 
-                if (additionalSources?.Any() ?? false)
-                {
-                    foreach (string additionalSource in additionalSources)
-                    {
-                        if (!string.IsNullOrWhiteSpace(additionalSource))
-                        {
-                            packageSources.Add(new PackageSource(additionalSource));
-                        }
-                    }
-                }
-
                 for (int i = 0; i < requestedSources.Count; i++)
                 {
                     PackageSource matchedSource = packageProviderSources.FirstOrDefault(e => e.Source == requestedSources[i].Source);
@@ -122,6 +111,32 @@ namespace NuGet.CommandLine.XPlat.Utility
                     else
                     {
                         packageSources.Add(matchedSource);
+                    }
+                }
+
+                HashSet<string> currentPackagesSources = packageSources.Select(p => p.Source).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                if (additionalSources?.Any() ?? false)
+                {
+                    foreach (string additionalSource in additionalSources)
+                    {
+                        if (string.IsNullOrWhiteSpace(additionalSource) || currentPackagesSources.Contains(additionalSource))
+                        {
+                            continue;
+                        }
+
+                        PackageSource matchedSource = packageProviderSources.FirstOrDefault(e => e.Source == additionalSource);
+
+                        if (matchedSource == null)
+                        {
+                            packageSources.Add(new PackageSource(additionalSource));
+                        }
+                        else
+                        {
+                            packageSources.Add(matchedSource);
+                        }
+
+                        currentPackagesSources.Add(additionalSource);
                     }
                 }
 
