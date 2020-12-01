@@ -37,10 +37,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Default comparer
         /// </summary>
-        public static PackageDependencyInfoComparer Default
-        {
-            get { return new PackageDependencyInfoComparer(); }
-        }
+        public static PackageDependencyInfoComparer Default { get; } = new PackageDependencyInfoComparer();
 
         public bool Equals(PackageDependencyInfo x, PackageDependencyInfo y)
         {
@@ -55,29 +52,29 @@ namespace NuGet.Packaging.Core
                 return false;
             }
 
-            var result = _identityComparer.Equals(x, y);
+            bool areEqual = _identityComparer.Equals(x, y);
 
-            if (result)
+            if (areEqual)
             {
                 // counts must match
-                result = x.Dependencies.Count() == y.Dependencies.Count();
+                areEqual = x.Dependencies.Count() == y.Dependencies.Count();
             }
 
-            if (result)
+            if (areEqual)
             {
                 var dependencies = new HashSet<PackageDependency>(_dependencyComparer);
 
                 dependencies.UnionWith(x.Dependencies);
 
-                var before = dependencies.Count;
+                int before = dependencies.Count;
 
                 dependencies.UnionWith(y.Dependencies);
 
                 // verify all dependencies are the same
-                result = dependencies.Count == before;
+                areEqual = dependencies.Count == before;
             }
 
-            return result;
+            return areEqual;
         }
 
         public int GetHashCode(PackageDependencyInfo obj)
@@ -92,7 +89,7 @@ namespace NuGet.Packaging.Core
             combiner.AddObject(PackageIdentityComparer.Default.GetHashCode(obj));
 
             // order the dependencies by hash code to make this consistent
-            foreach (var hash in obj.Dependencies.Select(e => _dependencyComparer.GetHashCode(e)).OrderBy(h => h))
+            foreach (int hash in obj.Dependencies.Select(e => _dependencyComparer.GetHashCode(e)).OrderBy(h => h))
             {
                 combiner.AddObject(hash);
             }
