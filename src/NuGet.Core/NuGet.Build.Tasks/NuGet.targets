@@ -199,8 +199,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     CollectFrameworkReferences
     ============================================================
   -->
-  <Target Name="CollectFrameworkReferences" Returns="@(FrameworkReference)" />
-
+  <Target Name="CollectFrameworkReferences" Returns="@(_FrameworkReferenceForRestore)">
+      <ItemGroup>
+          <_FrameworkReferenceForRestore 
+            Include="@(FrameworkReference)"
+            Condition="'%(FrameworkReference.IsTransitiveFrameworkReference)' != 'true'"/>
+      </ItemGroup>
+  </Target>
   <!--
     ============================================================
     _LoadRestoreGraphEntryPoints
