@@ -105,13 +105,13 @@ namespace NuGet.CommandLine.XPlat
             PackageDependency packageDependency = default;
             if (packageReferenceArgs.NoVersion)
             {
-                var latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, packageReferenceArgs.Prerelease);
+                var latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.Sources, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, packageReferenceArgs.Prerelease);
 
                 if (latestVersion == null)
                 {
                     if (!packageReferenceArgs.Prerelease)
                     {
-                        latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, !packageReferenceArgs.Prerelease);
+                        latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.Sources, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, !packageReferenceArgs.Prerelease);
                         if (latestVersion != null)
                         {
                             throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.PrereleaseVersionsAvailable, latestVersion));
@@ -232,9 +232,9 @@ namespace NuGet.CommandLine.XPlat
             return spec.TargetFrameworks.Where(e => e.FrameworkName.Equals(framework)).FirstOrDefault()?.TargetAlias;
         }
 
-        public static async Task<NuGetVersion> GetLatestVersionAsync(PackageSpec originalPackageSpec, string packageId, ILogger logger, bool prerelease)
+        public static async Task<NuGetVersion> GetLatestVersionAsync(PackageSpec originalPackageSpec, string[] additionalSources, string packageId, ILogger logger, bool prerelease)
         {
-            IList<PackageSource> sources = AddPackageCommandUtility.EvaluateSources(originalPackageSpec.RestoreMetadata.Sources, originalPackageSpec.RestoreMetadata.ConfigFilePaths);
+            IList<PackageSource> sources = AddPackageCommandUtility.EvaluateSources(originalPackageSpec.RestoreMetadata.Sources, additionalSources, originalPackageSpec.RestoreMetadata.ConfigFilePaths);
 
             return await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, packageId, prerelease);
         }

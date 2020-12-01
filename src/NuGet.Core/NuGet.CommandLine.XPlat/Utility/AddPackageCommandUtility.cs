@@ -88,9 +88,10 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// Returns the PackageSource with its credentials if available
         /// </summary>
         /// <param name="requestedSources">Sources to match</param>
+        /// <param name="additionalSources">Additional user supplied source feeds as argument</param>
         /// <param name="configFilePaths">Config to use for credentials</param>
         /// <returns>Return a list of package sources</returns>
-        public static List<PackageSource> EvaluateSources(IList<PackageSource> requestedSources, IList<string> configFilePaths)
+        public static List<PackageSource> EvaluateSources(IList<PackageSource> requestedSources, string[] additionalSources, IList<string> configFilePaths)
         {
             using (var settingsLoadingContext = new SettingsLoadingContext())
             {
@@ -99,6 +100,17 @@ namespace NuGet.CommandLine.XPlat.Utility
 
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 IEnumerable<PackageSource> packageProviderSources = packageSourceProvider.LoadPackageSources();
+
+                if (additionalSources?.Any() ?? false)
+                {
+                    foreach (string additionalSource in additionalSources)
+                    {
+                        if (!string.IsNullOrWhiteSpace(additionalSource))
+                        {
+                            packageSources.Add(new PackageSource(additionalSource));
+                        }
+                    }
+                }
 
                 for (int i = 0; i < requestedSources.Count; i++)
                 {
