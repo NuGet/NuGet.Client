@@ -959,10 +959,15 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                // Assert
+                // Assert correct projects were restored.
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.False(File.Exists(projectB.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectC.AssetsFileOutputPath));
+
+                // Assert transitivity is applied across non PackageReference projects.
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectB.ProjectName);
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectC.ProjectName);
             }
         }
 
@@ -10132,6 +10137,96 @@ namespace NuGet.CommandLine.Test
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
                 Assert.Equal(0, centralfileDependencyGroups.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestorePackageReference_WithPackagesConfigProjectReference_IncludesTransitivePackageReferenceProjects()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var projectB = SimpleTestProjectContext.CreateNonNuGet(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var packageX100 = new SimpleTestPackageContext("X", "1.0.0");
+                var packageX110 = new SimpleTestPackageContext("X", "1.1.0");
+                var packageY = new SimpleTestPackageContext("Y", "1.0.0");
+
+                projectA.AddPackageToAllFrameworks(packageX100);
+                projectC.AddPackageToAllFrameworks(packageY);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageX110,
+                    packageY);
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                // B -> packages.config
+                Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""X"" version=""1.1.0"" targetFramework=""net472"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                var args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed",
+                    "-Recursive"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert correct projects were restored.
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.False(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectC.AssetsFileOutputPath));
+
+                // Assert transitivity is applied across non PackageReference projects.
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectB.ProjectName);
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectC.ProjectName);
+                ridlessTarget.Libraries.Should().Contain(e => e.Name == "X");
+                ridlessTarget.Libraries.Should().Contain(e => e.Name == "Y");
             }
         }
 
