@@ -10187,7 +10187,7 @@ namespace NuGet.CommandLine.Test
                 // B -> packages.config
                 Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
 @"<packages>
-  <package id=""X"" version=""1.1.0"" targetFramework=""NETStandard1.5"" />
+  <package id=""X"" version=""1.1.0"" targetFramework=""net472"" />
 </packages>");
 
                 solution.Projects.Add(projectA);
