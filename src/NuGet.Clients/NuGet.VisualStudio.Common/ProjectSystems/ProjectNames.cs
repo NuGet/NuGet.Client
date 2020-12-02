@@ -84,7 +84,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="dteProject">DTE project to get project names for.</param>
         /// <returns>New instance of <see cref="ProjectNames"/>.</returns>
-        public static async Task<ProjectNames> FromDTEProjectAsync(EnvDTE.Project dteProject, IVsSolution5 vsSolution5)
+        public static async Task<ProjectNames> FromDTEProjectAsync(EnvDTE.Project dteProject, SVsSolution vsSolution)
         {
             Assumes.Present(dteProject);
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -93,7 +93,7 @@ namespace NuGet.VisualStudio
             string uniqueName = dteProject.GetUniqueName();
             string shortName = dteProject.GetName();
             string customUniqueName = await dteProject.GetCustomUniqueNameAsync();
-            string projectId = GetProjectGuid(fullname, vsSolution5);
+            string projectId = GetProjectGuid(dteProject, vsSolution);
 
             return new ProjectNames(
                 fullName: fullname,
@@ -103,11 +103,73 @@ namespace NuGet.VisualStudio
                 projectId: projectId);
         }
 
-        private static string GetProjectGuid(string fullname, IVsSolution5 vsSolution5)
+        private static string GetProjectGuid(EnvDTE.Project dteProject, SVsSolution vsSolution)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var guid = vsSolution5.GetGuidOfProjectFile(fullname);
-            return guid.ToString();
+
+            // Each project system needs to implement its own DTE project implementation. Hence, custom project types
+            // have the potential to not implement everything. Therefore, we need to try multiple ways to maximise the
+            // chance we find one way that actually works.
+
+            if (TryGetProjectGuidFromUniqueName(dteProject, (IVsSolution2)vsSolution, out Guid guid))
+            {
+                return guid.ToString();
+            }
+
+            if (TryGetProjectGuidFromFullName(dteProject, (IVsSolution5)vsSolution, out guid))
+            {
+                return guid.ToString();
+            }
+
+            throw new ArgumentException("Unable to find project guid");
+
+            bool TryGetProjectGuidFromUniqueName(EnvDTE.Project project, IVsSolution2 vsSolution2, out Guid projectGuid)
+            {
+                try
+                {
+                    var uniqueName = project.UniqueName;
+                    if (string.IsNullOrEmpty(uniqueName))
+                    {
+                        projectGuid = default(Guid);
+                        return false;
+                    }
+
+                    ErrorHandler.ThrowOnFailure(vsSolution2.GetProjectOfUniqueName(uniqueName, out IVsHierarchy hierarchy));
+                    ErrorHandler.ThrowOnFailure(vsSolution2.GetGuidOfProject(hierarchy, out projectGuid));
+
+                    return true;
+                }
+                catch
+                {
+                    projectGuid = default(Guid);
+                    return false;
+                }
+            }
+
+            bool TryGetProjectGuidFromFullName(EnvDTE.Project project, IVsSolution5 vsSolution5, out Guid projectGuid)
+            {
+                try
+                {
+                    var fullName = project.FullName;
+                    if (string.IsNullOrEmpty(fullName))
+                    {
+                        fullName = project.FileName;
+                        if (string.IsNullOrEmpty(fullName))
+                        {
+                            projectGuid = default(Guid);
+                            return false;
+                        }
+                    }
+
+                    projectGuid = vsSolution5.GetGuidOfProjectFile(fullName);
+                    return true;
+                }
+                catch
+                {
+                    projectGuid = default(Guid);
+                    return false;
+                }
+            }
         }
 
         /// <summary>
