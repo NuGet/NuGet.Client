@@ -781,7 +781,8 @@ namespace NuGet.XPlat.FuncTest
                 File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
 
                 // Remove packageXPath directory to prove we're not using nuget package structured folders.
-                XPlatTestUtils.DeleteDirectory(packageXPath);
+                var failedDeletes = new List<string>();
+                LocalResourceUtils.DeleteDirectoryTree(packageXPath, failedDeletes);
 
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, "*",
@@ -796,6 +797,7 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 Assert.Equal(0, result);
+                Assert.True(failedDeletes.Count() == 0);
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX.Id);
@@ -838,7 +840,8 @@ namespace NuGet.XPlat.FuncTest
                 File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
 
                 // Remove packageXPath directory to prove we're not using nuget package structured folders.
-                XPlatTestUtils.DeleteDirectory(packageXPath);
+                var failedDeletes = new List<string>();
+                LocalResourceUtils.DeleteDirectoryTree(packageXPath, failedDeletes);
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version,
                     projectA,
@@ -852,6 +855,7 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 Assert.Equal(0, result);
+                Assert.True(failedDeletes.Count() == 0);
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX.Id);
