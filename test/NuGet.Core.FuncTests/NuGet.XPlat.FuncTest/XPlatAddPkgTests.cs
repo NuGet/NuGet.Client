@@ -755,23 +755,24 @@ namespace NuGet.XPlat.FuncTest
                 var packageFrameworks = "net472; netcoreapp2.0";
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "packageX");
                 var mySourcePath = Path.Combine(pathContext.WorkingDirectory, "MySource");
 
-                TestDirectory.Create(mySourcePath);
+                Directory.CreateDirectory(mySourcePath);
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    mySourcePath,
+                    packageXPath,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                string originalPackageXNupkg = Path.Combine(mySourcePath, packageX.Id, packageX.Version, $"{packageX.Id}.{ packageX.Version}.nupkg");
+                string originalPackageXNupkg = Path.Combine(packageXPath, packageX.Id, packageX.Version, $"{packageX.Id}.{ packageX.Version}.nupkg");
                 string mySourcePackageXNupkg = Path.Combine(mySourcePath, $"{packageX.Id}.{ packageX.Version}.nupkg");
 
                 if (!File.Exists(originalPackageXNupkg))
                 {
-                    // On linux it's created different place.
-                    string[] nupkgFiles = Directory.GetFiles(mySourcePath, $"*.nupkg", SearchOption.AllDirectories);
+                    // On linux it's created in different place.
+                    string[] nupkgFiles = Directory.GetFiles(packageXPath, $"*.nupkg", SearchOption.AllDirectories);
                     Assert.True(nupkgFiles.Count() == 1);
                     originalPackageXNupkg = nupkgFiles[0];
                 }
@@ -779,8 +780,8 @@ namespace NuGet.XPlat.FuncTest
                 // We're testing case we have only Nupkg file created at top.
                 File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
 
-                // Remove other files from source
-                XPlatTestUtils.DeleteDirectory(Path.Combine(mySourcePath, packageX.Id));
+                // Remove packageXPath directory to prove we're not using nuget package structured folders.
+                XPlatTestUtils.DeleteDirectory(packageXPath);
 
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, "*",
@@ -811,23 +812,24 @@ namespace NuGet.XPlat.FuncTest
                 var packageFrameworks = "net472; netcoreapp2.0";
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "packageX");
                 var mySourcePath = Path.Combine(pathContext.WorkingDirectory, "MySource");
 
-                TestDirectory.Create(mySourcePath);
+                Directory.CreateDirectory(mySourcePath);
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    mySourcePath,
+                    packageXPath,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                string originalPackageXNupkg = Path.Combine(mySourcePath, packageX.Id, packageX.Version, $"{packageX.Id}.{ packageX.Version}.nupkg");
+                string originalPackageXNupkg = Path.Combine(packageXPath, packageX.Id, packageX.Version, $"{packageX.Id}.{ packageX.Version}.nupkg");
                 string mySourcePackageXNupkg = Path.Combine(mySourcePath, $"{packageX.Id}.{ packageX.Version}.nupkg");
 
                 if (!File.Exists(originalPackageXNupkg))
                 {
-                    // On linux it's created different place.
-                    string[] nupkgFiles = Directory.GetFiles(mySourcePath, $"*.nupkg", SearchOption.AllDirectories);
+                    // On linux it's created in different place.
+                    string[] nupkgFiles = Directory.GetFiles(packageXPath, $"*.nupkg", SearchOption.AllDirectories);
                     Assert.True(nupkgFiles.Count() == 1);
                     originalPackageXNupkg = nupkgFiles[0];
                 }
@@ -835,8 +837,8 @@ namespace NuGet.XPlat.FuncTest
                 // We're testing case we have only Nupkg file created at top.
                 File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
 
-                // Remove other files from source
-                XPlatTestUtils.DeleteDirectory(Path.Combine(mySourcePath, packageX.Id));
+                // Remove packageXPath directory to prove we're not using nuget package structured folders.
+                XPlatTestUtils.DeleteDirectory(packageXPath);
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version,
                     projectA,
