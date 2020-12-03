@@ -768,8 +768,16 @@ namespace NuGet.XPlat.FuncTest
                 string originalPackageXNupkg = Path.Combine(mySourcePath, packageX.Id, packageX.Version, $"{packageX.Id}.{ packageX.Version}.nupkg");
                 string mySourcePackageXNupkg = Path.Combine(mySourcePath, $"{packageX.Id}.{ packageX.Version}.nupkg");
 
+                if (!File.Exists(originalPackageXNupkg))
+                {
+                    // On linux it's created different place.
+                    string[] nupkgFiles = Directory.GetFiles(mySourcePath, $"*.nupkg", SearchOption.AllDirectories);
+                    Assert.True(nupkgFiles.Count() == 1);
+                    originalPackageXNupkg = nupkgFiles[0];
+                }
+
                 // We're testing case we have only Nupkg file created at top.
-                File.Copy(originalPackageXNupkg, mySourcePackageXNupkg);
+                File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
 
                 // Remove other files from source
                 XPlatTestUtils.DeleteDirectory(Path.Combine(mySourcePath, packageX.Id));
@@ -816,8 +824,16 @@ namespace NuGet.XPlat.FuncTest
                 string originalPackageXNupkg = Path.Combine(mySourcePath, packageX.Id, packageX.Version, $"{packageX.Id}.{ packageX.Version}.nupkg");
                 string mySourcePackageXNupkg = Path.Combine(mySourcePath, $"{packageX.Id}.{ packageX.Version}.nupkg");
 
+                if (!File.Exists(originalPackageXNupkg))
+                {
+                    // On linux it's created different place.
+                    string[] nupkgFiles = Directory.GetFiles(mySourcePath, $"*.nupkg", SearchOption.AllDirectories);
+                    Assert.True(nupkgFiles.Count() == 1);
+                    originalPackageXNupkg = nupkgFiles[0];
+                }
+
                 // We're testing case we have only Nupkg file created at top.
-                File.Copy(originalPackageXNupkg, mySourcePackageXNupkg);
+                File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
 
                 // Remove other files from source
                 XPlatTestUtils.DeleteDirectory(Path.Combine(mySourcePath, packageX.Id));
