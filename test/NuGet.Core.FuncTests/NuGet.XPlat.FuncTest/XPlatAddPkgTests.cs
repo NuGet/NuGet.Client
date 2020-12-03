@@ -769,7 +769,7 @@ namespace NuGet.XPlat.FuncTest
                 string mySourcePackageXNupkg = Path.Combine(mySourcePath, $"{packageX.Id}.{ packageX.Version}.nupkg");
 
                 // We're testing case we have only Nupkg file created at top.
-                File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
+                File.Copy(originalPackageXNupkg, mySourcePackageXNupkg);
 
                 // Remove other files from source
                 XPlatTestUtils.DeleteDirectory(Path.Combine(mySourcePath, packageX.Id));
@@ -817,7 +817,7 @@ namespace NuGet.XPlat.FuncTest
                 string mySourcePackageXNupkg = Path.Combine(mySourcePath, $"{packageX.Id}.{ packageX.Version}.nupkg");
 
                 // We're testing case we have only Nupkg file created at top.
-                File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
+                File.Copy(originalPackageXNupkg, mySourcePackageXNupkg);
 
                 // Remove other files from source
                 XPlatTestUtils.DeleteDirectory(Path.Combine(mySourcePath, packageX.Id));
