@@ -429,5 +429,11 @@ namespace NuGet.XPlat.FuncTest
 
             return referenceType;
         }
+
+        public static void DeleteDirectory(string path)
+        {
+            DirectoryInfo di = new DirectoryInfo(path);
+            di.Delete(true);
+        }
     }
 }

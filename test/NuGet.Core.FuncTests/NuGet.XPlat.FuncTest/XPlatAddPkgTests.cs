@@ -7,16 +7,17 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
-using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -742,6 +743,101 @@ namespace NuGet.XPlat.FuncTest
                     Assert.NotNull(itemGroup);
                     Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
                 }
+            }
+        }
+
+        [Fact]
+        public async Task AddPkg_WithAdditionalSourceFeed_NoVersionSpecified_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectFrameworks = "net472";
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
+                var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
+                var mySourcePath = Path.Combine(pathContext.WorkingDirectory, "MySource");
+
+                TestDirectory.Create(mySourcePath);
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    mySourcePath,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                string originalPackageXNupkg = Path.Combine(mySourcePath, packageX.Id, packageX.Version, $"{packageX.Id}.{ packageX.Version}.nupkg");
+                string mySourcePackageXNupkg = Path.Combine(mySourcePath, $"{packageX.Id}.{ packageX.Version}.nupkg");
+
+                // We're testing case we have only Nupkg file created at top.
+                File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
+
+                // Remove other files from source
+                XPlatTestUtils.DeleteDirectory(Path.Combine(mySourcePath, packageX.Id));
+
+                // Since user is not inputing a version, it is converted to a " * " in the command
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, "*",
+                    projectA,
+                    sources: mySourcePath);
+
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
+                    .Result;
+
+                // Assert
+                Assert.Equal(0, result);
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX.Id);
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(NuGetVersion.Parse(packageX.Version)));
+            }
+        }
+
+        [Fact]
+        public async Task AddPkg_WithAdditionalSourceFeed_VersionSpecified_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectFrameworks = "net472";
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
+                var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
+                var mySourcePath = Path.Combine(pathContext.WorkingDirectory, "MySource");
+
+                TestDirectory.Create(mySourcePath);
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    mySourcePath,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                string originalPackageXNupkg = Path.Combine(mySourcePath, packageX.Id, packageX.Version, $"{packageX.Id}.{ packageX.Version}.nupkg");
+                string mySourcePackageXNupkg = Path.Combine(mySourcePath, $"{packageX.Id}.{ packageX.Version}.nupkg");
+
+                // We're testing case we have only Nupkg file created at top.
+                File.Move(originalPackageXNupkg, mySourcePackageXNupkg);
+
+                // Remove other files from source
+                XPlatTestUtils.DeleteDirectory(Path.Combine(mySourcePath, packageX.Id));
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version,
+                    projectA,
+                    sources: mySourcePath);
+
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
+                    .Result;
+
+                // Assert
+                Assert.Equal(0, result);
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX.Id);
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(NuGetVersion.Parse(packageX.Version)));
             }
         }
 
