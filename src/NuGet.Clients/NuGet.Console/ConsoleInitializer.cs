@@ -44,17 +44,14 @@ namespace NuGetConsole
             }
 
             var initializer = comSvc.GetService<IHostInitializer>();
-            return await System.Threading.Tasks.Task.Factory.StartNew(state =>
+
+            if (initializer != null)
             {
-                var hostInitializer = (IHostInitializer)state;
-                if (hostInitializer != null)
-                {
-                    hostInitializer.Start();
-                    return (Action)hostInitializer.SetDefaultRunspace;
-                }
-                return delegate { };
-            },
-            initializer);
+                initializer.Start();
+                return initializer.SetDefaultRunspace;
+            }
+
+            return delegate { };
         }
     }
 }
