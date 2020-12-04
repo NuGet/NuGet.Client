@@ -12,10 +12,11 @@ namespace NuGet.Packaging
 {
     public class NupkgMetadataFileFormat
     {
-        public static readonly int Version = 1;
+        public static readonly int Version = 2;
 
         private const string VersionProperty = "version";
         private const string HashProperty = "contentHash";
+        private const string SourceProperty = "source";
 
         private static readonly JsonLoadSettings DefaultLoadSettings = new JsonLoadSettings()
         {
@@ -84,6 +85,7 @@ namespace NuGet.Packaging
             {
                 Version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue),
                 ContentHash = ReadProperty<string>(cursor, HashProperty),
+                Source = ReadProperty<string>(cursor, SourceProperty)
             };
 
             return hashFile;
@@ -149,7 +151,8 @@ namespace NuGet.Packaging
             var json = new JObject
             {
                 [VersionProperty] = new JValue(hashFile.Version),
-                [HashProperty] = hashFile.ContentHash
+                [HashProperty] = hashFile.ContentHash,
+                [SourceProperty] = hashFile.Source
             };
 
             return json;
