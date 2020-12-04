@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     // if the recommender service is not available, NuGetRecommender remains null and we show only the default package list
                 }
-                if (NuGetRecommender != null)
+                if (!(NuGetRecommender is null))
                 {
                     var VersionDict = NuGetRecommender.GetVersionInfo();
                     VersionInfo = (modelVersion: VersionDict.ContainsKey("Model") ? VersionDict["Model"] : (string)null,
@@ -120,7 +120,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             List<string> recommendIds = null;
-            if (NuGetRecommender != null)
+            if (!(NuGetRecommender is null))
             {
                 // call the recommender to get package recommendations
                 recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, _topPackages, _depPackages, cancellationToken);
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio
             while (index < recommendIds.Count && recommendPackages.Count < MaxRecommended)
             {
                 Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], includePrerelease: false, includeUnlisted: false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
-                if (ver != null)
+                if (!(ver is null))
                 {
                     var pid = new PackageIdentity(recommendIds[index], ver);
                     recommendPackages.Add(pid);
