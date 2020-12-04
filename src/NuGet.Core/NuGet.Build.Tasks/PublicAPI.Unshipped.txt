@@ -2,7 +2,6 @@ NuGet.Build.Tasks.GenerateRestoreGraphFileTask
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Cancel() -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Dispose() -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.GenerateRestoreGraphFileTask() -> void
-NuGet.Build.Tasks.GenerateRestoreGraphFileTask.GetGlobalProperties() -> System.Collections.Generic.Dictionary<string, string>
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildBinPath.get -> string
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildBinPath.set -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildStartupDirectory.get -> string
@@ -11,6 +10,8 @@ NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProcessFileName.get -> string
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProcessFileName.set -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProjectFullPath.get -> string
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProjectFullPath.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Recursive.get -> bool
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Recursive.set -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.get -> string
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.get -> string

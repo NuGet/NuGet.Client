@@ -44,6 +44,11 @@ namespace NuGet.Build.Tasks
         public string ProjectFullPath { get; set; }
 
         /// <summary>
+        /// Get or sets a value indicating whether or not the restore should restore all projects or just the entry project.
+        /// </summary>
+        public bool Recursive { get; set; }
+
+        /// <summary>
         /// Gets or sets the full path to the solution file (if any) that is being built.
         /// </summary>
         public string SolutionPath { get; set; }
@@ -150,6 +155,7 @@ namespace NuGet.Build.Tasks
             var options = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
             {
                 ["GenerateRestoreGraphFile"] = true,
+                [nameof(Recursive)] = Recursive,
             };
             // Semicolon delimited list of options
             yield return string.Join(";", options.Where(i => i.Value).Select(i => $"{i.Key}={i.Value}"));
