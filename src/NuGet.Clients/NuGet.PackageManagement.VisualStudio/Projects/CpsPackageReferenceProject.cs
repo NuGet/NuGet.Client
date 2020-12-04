@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public async override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            ProjectPackages packages = await GetAllPackagesAsync(token);
+            ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(token);
             return packages.InstalledPackages;
         }
 
@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Gets the both the installed (top level) and transitive package references for this project.
         /// Returns the package reference as two separate lists (installed and transitive).
         /// </summary>
-        public override async Task<ProjectPackages> GetAllPackagesAsync(CancellationToken token)
+        public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
             var packageSpec = GetPackageSpec();
 

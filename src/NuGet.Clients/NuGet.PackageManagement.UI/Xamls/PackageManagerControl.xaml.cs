@@ -1033,9 +1033,10 @@ namespace NuGet.PackageManagement.UI
 
             _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount);
 
+            // Update updates tab count
             Model.CachedUpdates = new PackageSearchMetadataCache
             {
-                Packages = await loader.GetAllPackagesAsync(refreshCts.Token),
+                Packages = await loader.GetInstalledAndTransitivePackagesAsync(refreshCts.Token),
                 IncludePrerelease = IncludePrerelease
             };
 
@@ -1169,7 +1170,7 @@ namespace NuGet.PackageManagement.UI
 
             var metadataProvider = CreatePackageMetadataProvider(context);
 
-            InstalledAndTransitivePackageCollections allPackages = await context.GetAllPackagesAsync();
+            InstalledAndTransitivePackageCollections allPackages = await context.GetInstalledAndTransitivePackagesAsync();
 
             if (filter == ItemFilter.All)
             {

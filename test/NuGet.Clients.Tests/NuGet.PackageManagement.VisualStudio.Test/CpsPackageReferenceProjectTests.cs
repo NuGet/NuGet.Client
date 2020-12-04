@@ -3058,7 +3058,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var command = new RestoreCommand(request);
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
-                ProjectPackages packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -3125,7 +3125,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var command = new RestoreCommand(request);
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
-                ProjectPackages packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -3177,7 +3177,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var command = new RestoreCommand(request);
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
-                ProjectPackages packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -3237,11 +3237,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var command = new RestoreCommand(request);
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
-                ProjectPackages packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
                 DateTime lastWriteTime = File.GetLastWriteTimeUtc(lockFilePath);
                 File.WriteAllText(lockFilePath, "** replaced file content to test cache **");
                 File.SetLastWriteTimeUtc(lockFilePath, lastWriteTime);
-                ProjectPackages cache_packages = await project.GetAllPackagesAsync(CancellationToken.None);
+                ProjectPackages cache_packages = await project.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);

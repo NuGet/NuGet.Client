@@ -76,9 +76,9 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(projects);
 
             // Read installed and transitive package references from all projects.
-            IEnumerable<Task<NuGetProjectPackages>> tasks = projects
-                .Select(project => project.GetAllPackagesAsync(serviceBroker, cancellationToken).AsTask());
-            NuGetProjectPackages[] allPackageReferences = await Task.WhenAll(tasks);
+            IEnumerable<Task<IInstalledAndTransitivePackages>> tasks = projects
+                .Select(project => project.GetInstalledAndTransitivePackagesAsync(serviceBroker, cancellationToken).AsTask());
+            IInstalledAndTransitivePackages[] allPackageReferences = await Task.WhenAll(tasks);
 
             // Group all installed package references for an id/version into a single item.
             PackageCollectionItem[] installedPackages = allPackageReferences

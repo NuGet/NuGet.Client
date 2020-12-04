@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.UI
             return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
         }
 
-        public async Task<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<IPackageSearchMetadata>> GetInstalledAndTransitivePackagesAsync(CancellationToken cancellationToken)
         {
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;

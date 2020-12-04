@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return installedPackages;
         }
 
-        public async ValueTask<NuGetProjectPackages> GetAllPackagesAsync(
+        public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken)
         {
@@ -177,7 +177,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (project is PackageReferenceProject packageReferenceProject)
                 {
-                    prStyleTasks.Add(packageReferenceProject.GetAllPackagesAsync(cancellationToken));
+                    prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(cancellationToken));
                 }
                 else
                 {
@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             PackageReferenceContextInfo[] installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
             PackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
-            return new NuGetProjectPackages(installedPackagesContextInfos, transitivePackageContextInfos);
+            return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
         }
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(

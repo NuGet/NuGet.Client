@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public static async ValueTask<NuGetProjectPackages> GetAllPackagesAsync(
+        public static async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             this IProjectContextInfo projectContextInfo,
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken))
             {
-                return await projectManager.GetAllPackagesAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
+                return await projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
             }
         }
 
