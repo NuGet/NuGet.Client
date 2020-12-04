@@ -130,6 +130,34 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
+        /// Restores the specified projects.
+        /// </summary>
+        /// <param name="entryProjectFilePath">The main project to restore.  This can be a project for a Visual Studio© Solution File.</param>
+        /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
+        /// <param name="options">The set of options to use when restoring.  These options come from the main MSBuild process and control how restore functions.</param>
+        /// <returns><code>true</code> if the restore succeeded, otherwise <code>false</code>.</returns>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
+        {
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties);
+
+            try
+            {
+                // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
+                if (dependencyGraphSpec != null && options.TryGetValue("path", out var path))
+                {
+                    dependencyGraphSpec.Save(path);
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Gets the framework references per target framework for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get framework references for.</param>
