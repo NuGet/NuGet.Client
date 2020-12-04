@@ -190,13 +190,16 @@ namespace NuGet.PackageManagement.VisualStudio
             if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified)
             {
                 await TaskScheduler.Default;
-                var lockFile = new LockFileFormat().Read(assetsFilePath);
-                targets = lockFile.Targets;
+                var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                if (!(lockFile is null))
+                {
+                    targets = lockFile.Targets;
 
-                _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
+                    _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
 
-                // clear the transitive packages cache, since we don't know when a dependency has been removed
-                _transitivePackages.Clear();
+                    // clear the transitive packages cache, since we don't know when a dependency has been removed
+                    _transitivePackages.Clear();
+                }
             }
 
             // get the installed packages
