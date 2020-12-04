@@ -68,42 +68,14 @@ namespace NuGet.PackageManagement.Telemetry
         public static async Task<ProjectTelemetryEvent> GetProjectTelemetryEventAsync(NuGetProject nuGetProject)
         {
             // Get the project details.
-            var projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+            string projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
 
             // Emit the project information.
             try
             {
-                var projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
-
-                // Get project type.
-                var projectType = NuGetProjectType.Unknown;
-                if (nuGetProject is MSBuildNuGetProject)
-                {
-                    var msbuildProject = nuGetProject as MSBuildNuGetProject;
-
-                    if (msbuildProject?.DoesPackagesConfigExists() == true)
-                    {
-                        projectType = NuGetProjectType.PackagesConfig;
-                    }
-                    else
-                    {
-                        projectType = NuGetProjectType.UnconfiguredNuGetType;
-                    }
-                }
-                else if (nuGetProject is CpsPackageReferenceProject)
-                {
-                    projectType = NuGetProjectType.CPSBasedPackageRefs;
-                }
-                else if (nuGetProject is LegacyPackageReferenceProject)
-                {
-                    projectType = NuGetProjectType.LegacyProjectSystemWithPackageRefs;
-                }
-                else if (nuGetProject is ProjectJsonNuGetProject)
-                {
-                    projectType = NuGetProjectType.UwpProjectJson;
-                }
-
-                var isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
+                string projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                NuGetProjectType projectType = GetProjectType(nuGetProject);
+                bool isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
 
                 return new ProjectTelemetryEvent(
                     NuGetVersion.Value,
@@ -113,7 +85,7 @@ namespace NuGet.PackageManagement.Telemetry
             }
             catch (Exception ex)
             {
-                var message =
+                string message =
                     $"Failed to emit project information for project '{projectUniqueName}'. Exception:" +
                     Environment.NewLine +
                     ex.ToString();
@@ -122,6 +94,37 @@ namespace NuGet.PackageManagement.Telemetry
                 Debug.Fail(message);
                 return null;
             }
+        }
+
+        public static NuGetProjectType GetProjectType(NuGetProject nuGetProject)
+        {
+            NuGetProjectType projectType = NuGetProjectType.Unknown;
+
+            if (nuGetProject is MSBuildNuGetProject msbuildProject)
+            {
+                if (msbuildProject?.DoesPackagesConfigExists() == true)
+                {
+                    projectType = NuGetProjectType.PackagesConfig;
+                }
+                else
+                {
+                    projectType = NuGetProjectType.UnconfiguredNuGetType;
+                }
+            }
+            else if (nuGetProject is CpsPackageReferenceProject)
+            {
+                projectType = NuGetProjectType.CPSBasedPackageRefs;
+            }
+            else if (nuGetProject is LegacyPackageReferenceProject)
+            {
+                projectType = NuGetProjectType.LegacyProjectSystemWithPackageRefs;
+            }
+            else if (nuGetProject is ProjectJsonNuGetProject)
+            {
+                projectType = NuGetProjectType.UwpProjectJson;
+            }
+
+            return projectType;
         }
     }
 }

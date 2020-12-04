@@ -14,6 +14,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -106,11 +107,55 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
-            // Read package references from all projects.
-            IEnumerable<Task<IEnumerable<PackageReference>>> tasks = projects.Select(project => project.GetInstalledPackagesAsync(cancellationToken));
-            IEnumerable<PackageReference>[] packageReferences = await Task.WhenAll(tasks);
+            Dictionary<NuGetProject, Task<IEnumerable<PackageReference>>> projectsAndInstalledPackages = projects
+                .ToDictionary(
+                    project => project,
+                    project => project.GetInstalledPackagesAsync(cancellationToken));
+            await Task.WhenAll(projectsAndInstalledPackages.Values);
 
-            return packageReferences.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            var installedPackages = new List<PackageReferenceContextInfo>();
+            GetInstalledPackagesAsyncTelemetryEvent? telemetryEvent = null;
+
+            foreach (KeyValuePair<NuGetProject, Task<IEnumerable<PackageReference>>> projectAndInstalledPackages in projectsAndInstalledPackages)
+            {
+                NuGetProject project = projectAndInstalledPackages.Key;
+                IEnumerable<PackageReference> packageReferences = projectAndInstalledPackages.Value.Result;
+                int totalCount = 0;
+                int nullCount = 0;
+
+                foreach (PackageReference? packageReference in packageReferences)
+                {
+                    ++totalCount;
+
+                    if (packageReference is null)
+                    {
+                        ++nullCount;
+
+                        continue;
+                    }
+
+                    PackageReferenceContextInfo installedPackage = PackageReferenceContextInfo.Create(packageReference);
+
+                    installedPackages.Add(installedPackage);
+                }
+
+                if (nullCount > 0)
+                {
+                    telemetryEvent ??= new GetInstalledPackagesAsyncTelemetryEvent();
+
+                    string projectId = project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                    NuGetProjectType projectType = VSTelemetryServiceUtility.GetProjectType(project);
+
+                    telemetryEvent.AddProject(projectType, projectId, nullCount, totalCount);
+                }
+            }
+
+            if (telemetryEvent is object)
+            {
+                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+            }
+
+            return installedPackages;
         }
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
