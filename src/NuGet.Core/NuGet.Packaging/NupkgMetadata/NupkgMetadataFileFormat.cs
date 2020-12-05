@@ -85,7 +85,7 @@ namespace NuGet.Packaging
             {
                 Version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue),
                 ContentHash = ReadProperty<string>(cursor, HashProperty),
-                Source = ReadProperty<string>(cursor, SourceProperty)
+                Source = ReadProperty<string>(cursor, SourceProperty),
             };
 
             return hashFile;
@@ -152,7 +152,7 @@ namespace NuGet.Packaging
             {
                 [VersionProperty] = new JValue(hashFile.Version),
                 [HashProperty] = hashFile.ContentHash,
-                [SourceProperty] = hashFile.Source
+                [SourceProperty] = hashFile.Source,
             };
 
             return json;

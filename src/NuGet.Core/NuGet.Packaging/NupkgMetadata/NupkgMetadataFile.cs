@@ -42,10 +42,7 @@ namespace NuGet.Packaging
 
             combiner.AddObject(Version);
             combiner.AddSequence(ContentHash);
-            if (Source != null)
-            {
-                combiner.AddSequence(Source);
-            }
+            combiner.AddSequence(Source);
 
             return combiner.CombinedHash;
         }
