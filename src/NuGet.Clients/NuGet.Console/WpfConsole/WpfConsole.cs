@@ -99,14 +99,11 @@ namespace NuGetConsole.Implementation.Console
         {
             get
             {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    return await VsStatusBarAsync();
-                });
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetVsStatusBarAsync);
             }
         }
 
-        private async Task<IVsStatusbar> VsStatusBarAsync()
+        private async Task<IVsStatusbar> GetVsStatusBarAsync()
         {
             if (_vsStatusBar == null)
             {
@@ -634,7 +631,7 @@ namespace NuGetConsole.Implementation.Console
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var vsStatusBar = await VsStatusBarAsync();
+                var vsStatusBar = await GetVsStatusBarAsync();
                 vsStatusBar.Progress(
                     ref _pdwCookieForStatusBar,
                     1 /* in progress */,
@@ -658,7 +655,7 @@ namespace NuGetConsole.Implementation.Console
         private async Task HideProgressAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var vsStatusBar = await VsStatusBarAsync();
+            var vsStatusBar = await GetVsStatusBarAsync();
             vsStatusBar.Progress(
                 ref _pdwCookieForStatusBar,
                 0 /* completed */,
@@ -869,9 +866,9 @@ namespace NuGetConsole.Implementation.Console
                 get { return Invoke(() => _impl.Content); }
             }
 
-            public async Task WriteProgressAsync(string operation, int percentComplete)
+            public Task WriteProgressAsync(string operation, int percentComplete)
             {
-                await _impl.WriteProgressAsync(operation, percentComplete);
+                return _impl.WriteProgressAsync(operation, percentComplete);
             }
 
             public object VsTextView

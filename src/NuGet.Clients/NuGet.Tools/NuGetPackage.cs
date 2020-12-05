@@ -215,8 +215,8 @@ namespace NuGetVSExtension
                 await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
             }
 
-            IVsTrackProjectRetargeting vsTrackProjectRetargeting = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
-            IVsMonitorSelection vsMonitorSelection = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsMonitorSelection>();
+            IVsTrackProjectRetargeting vsTrackProjectRetargeting = await this.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
+            IVsMonitorSelection vsMonitorSelection = await this.GetServiceAsync<IVsMonitorSelection>();
             ProjectRetargetingHandler = new ProjectRetargetingHandler(
                     _dte,
                     SolutionManager.Value,
@@ -225,7 +225,7 @@ namespace NuGetVSExtension
                     vsTrackProjectRetargeting,
                     vsMonitorSelection);
 
-            IVsSolution2 vsSolution2 = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsSolution, IVsSolution2>();
+            IVsSolution2 vsSolution2 = await this.GetServiceAsync<SVsSolution, IVsSolution2>();
             ProjectUpgradeHandler = new ProjectUpgradeHandler(
                 SolutionManager.Value,
                 vsSolution2);
