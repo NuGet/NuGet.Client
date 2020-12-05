@@ -499,7 +499,8 @@ namespace NuGet.Packaging
                                         // write the new hash file
                                         var hashFile = new NupkgMetadataFile()
                                         {
-                                            ContentHash = contentHash
+                                            ContentHash = contentHash,
+                                            Source = source
                                         };
 
                                         NupkgMetadataFileFormat.Write(tempNupkgMetadataPath, hashFile);
@@ -786,7 +787,8 @@ namespace NuGet.Packaging
                             // write the new hash file
                             var hashFile = new NupkgMetadataFile()
                             {
-                                ContentHash = contentHash
+                                ContentHash = contentHash,
+                                Source = packageDownloader.Source
                             };
 
                             NupkgMetadataFileFormat.Write(tempNupkgMetadataFilePath, hashFile);

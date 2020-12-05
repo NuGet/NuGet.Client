@@ -11,29 +11,59 @@ namespace NuGet.Packaging.Test
     public class NupkgMetadataFileFormatTests
     {
         [Fact]
-        public void NupkgMetadataFileFormat_Read()
+        public void Read_V1FileContents_ReturnsCorrectObject()
         {
+            // Arrange
             var nupkgMetadataFileContent = @"{
                 ""version"": 1,
                 ""contentHash"": ""NhfNp80eWq5ms7fMrjuRqpwhL1H56IVzXF9d+OIDcEfQ92m1DyE0c+ufUE1ogB09+sYLd58IO4eJ8jyn7AifbA==""
             }";
 
+            // Act
+            NupkgMetadataFile file;
             using (var reader = new StringReader(nupkgMetadataFileContent))
             {
-                var file = NupkgMetadataFileFormat.Read(reader, NullLogger.Instance, string.Empty);
-
-                Assert.NotNull(file);
-                Assert.Equal(1, file.Version);
-                Assert.Equal("NhfNp80eWq5ms7fMrjuRqpwhL1H56IVzXF9d+OIDcEfQ92m1DyE0c+ufUE1ogB09+sYLd58IO4eJ8jyn7AifbA==", file.ContentHash);
+                file = NupkgMetadataFileFormat.Read(reader, NullLogger.Instance, string.Empty);
             }
+
+            // Assert
+            Assert.NotNull(file);
+            Assert.Equal(1, file.Version);
+            Assert.Equal("NhfNp80eWq5ms7fMrjuRqpwhL1H56IVzXF9d+OIDcEfQ92m1DyE0c+ufUE1ogB09+sYLd58IO4eJ8jyn7AifbA==", file.ContentHash);
+            Assert.Null(file.Source);
+        }
+
+        [Fact]
+        public void Read_V2FileContents_ReturnsCorrectObject()
+        {
+            // Arrange
+            var nupkgMetadataFileContent = @"{
+                ""version"": 2,
+                ""contentHash"": ""NhfNp80eWq5ms7fMrjuRqpwhL1H56IVzXF9d+OIDcEfQ92m1DyE0c+ufUE1ogB09+sYLd58IO4eJ8jyn7AifbA=="",
+                ""source"": ""https://source/v3/index.json""
+            }";
+
+            // Act
+            NupkgMetadataFile file;
+            using (var reader = new StringReader(nupkgMetadataFileContent))
+            {
+                file = NupkgMetadataFileFormat.Read(reader, NullLogger.Instance, string.Empty);
+            }
+
+            // Assert
+            Assert.NotNull(file);
+            Assert.Equal(2, file.Version);
+            Assert.Equal("NhfNp80eWq5ms7fMrjuRqpwhL1H56IVzXF9d+OIDcEfQ92m1DyE0c+ufUE1ogB09+sYLd58IO4eJ8jyn7AifbA==", file.ContentHash);
+            Assert.Equal("https://source/v3/index.json", file.Source);
         }
 
         [Fact]
         public void NupkgMetadataFileFormat_Write()
         {
             var nupkgMetadataFileContent = @"{
-                ""version"": 1,
-                ""contentHash"": ""NhfNp80eWq5ms7fMrjuRqpwhL1H56IVzXF9d+OIDcEfQ92m1DyE0c+ufUE1ogB09+sYLd58IO4eJ8jyn7AifbA==""
+                ""version"": 2,
+                ""contentHash"": ""NhfNp80eWq5ms7fMrjuRqpwhL1H56IVzXF9d+OIDcEfQ92m1DyE0c+ufUE1ogB09+sYLd58IO4eJ8jyn7AifbA=="",
+                ""source"": ""https://source/v3/index.json""
             }";
 
             NupkgMetadataFile metadataFile = null;
