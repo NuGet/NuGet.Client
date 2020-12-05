@@ -1,3 +1,5 @@
+NuGet.Packaging.NupkgMetadataFile.Source.get -> string
+NuGet.Packaging.NupkgMetadataFile.Source.set -> void
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInDependencyGroupsWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFilesWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning.get -> string
