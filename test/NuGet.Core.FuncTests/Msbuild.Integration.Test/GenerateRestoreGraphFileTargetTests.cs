@@ -46,14 +46,6 @@ namespace Msbuild.Integration.Test
                 projectA.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(projectA);
 
-                var projectB = SimpleTestProjectContext.CreateNETCore(
-                    "b",
-                    pathContext.SolutionRoot,
-                    net461);
-
-                projectB.AddPackageToAllFrameworks(packageX);
-                solution.Projects.Add(projectB);
-
                 solution.Create(pathContext.SolutionRoot);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -62,8 +54,8 @@ namespace Msbuild.Integration.Test
 
                 var regularDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "regular.dgspec.json");
                 var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
-                var targetPath = solution.SolutionPath;
-                //_msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{regularDgSpecFile}\" {targetPath}");
+                var targetPath = projectA.ProjectPath;
+                _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{regularDgSpecFile}\" {targetPath} /bl");
                 _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation=true {targetPath}");
 
                 var regularDgSpec = File.ReadAllText(regularDgSpecFile);

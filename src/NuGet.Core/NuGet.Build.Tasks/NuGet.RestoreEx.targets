@@ -41,7 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Writes the output the dg spec generation by static graph restore.
     ============================================================
   -->
-  <Target Name="GenerateRestoreGraphFile" DependsOnTargets="_GenerateRestoreGraph">
+  <Target Name="GenerateRestoreGraphFile">
     <Error Condition="$(RestoreGraphOutputPath) == ''" Text="Missing RestoreGraphOutputPath property!" />
       <GenerateRestoreGraphFileTask
         MSBuildBinPath="$(MSBuildBinPath)"

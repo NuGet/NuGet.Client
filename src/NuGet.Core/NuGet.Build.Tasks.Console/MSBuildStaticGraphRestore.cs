@@ -142,6 +142,11 @@ namespace NuGet.Build.Tasks.Console
 
             try
             {
+                if(dependencyGraphSpec == null)
+                {
+                    LoggingQueue.TaskLoggingHelper.LogError("Cannot write the dependency graph spec as the generation failed");
+                    return false;
+                }
                 // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
                 if (dependencyGraphSpec != null && options.TryGetValue("RestoreGraphOutputPath", out var path))
                 {
