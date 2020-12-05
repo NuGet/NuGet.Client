@@ -136,7 +136,6 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
         /// <param name="options">The set of options to use when restoring.  These options come from the main MSBuild process and control how restore functions.</param>
         /// <returns><code>true</code> if the restore succeeded, otherwise <code>false</code>.</returns>
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
             var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties);
@@ -144,10 +143,14 @@ namespace NuGet.Build.Tasks.Console
             try
             {
                 // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
-                if (dependencyGraphSpec != null && options.TryGetValue("path", out var path))
+                if (dependencyGraphSpec != null && options.TryGetValue("RestoreGraphOutputPath", out var path))
                 {
                     dependencyGraphSpec.Save(path);
                     return true;
+                }
+                else
+                {
+                    LoggingQueue.TaskLoggingHelper.LogError("Cannot write the dependency graph spec as RestoreGraphOutputPath is missing");
                 }
             }
             catch (Exception e)
@@ -532,7 +535,7 @@ namespace NuGet.Build.Tasks.Console
             if (string.Equals(Path.GetExtension(entryProjectPath), ".sln", StringComparison.OrdinalIgnoreCase))
             {
                 var solutionFile = SolutionFile.Parse(entryProjectPath);
-
+                // TODO NK - the problem is here.
                 return solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat).Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
             }
 

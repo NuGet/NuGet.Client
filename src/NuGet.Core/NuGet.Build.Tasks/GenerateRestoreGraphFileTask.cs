@@ -63,6 +63,12 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public string MSBuildStartupDirectory { get; set; }
 
+        /// <summary>
+        /// RestoreGraphOutputPath - The location to write the output to.
+        /// </summary>
+        [Required]
+        public string RestoreGraphOutputPath { get; set; }
+
         /// <inheritdoc cref="ICancelableTask.Cancel" />
         public void Cancel() => _cancellationTokenSource.Cancel();
 
@@ -152,13 +158,14 @@ namespace NuGet.Build.Tasks
             yield return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll"));
 #endif
 
-            var options = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+            var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["GenerateRestoreGraphFile"] = true,
-                [nameof(Recursive)] = Recursive,
+                ["GenerateRestoreGraphFile"] = true.ToString(),
+                [nameof(Recursive)] = Recursive.ToString(),
+                [nameof(RestoreGraphOutputPath)] = RestoreGraphOutputPath,
             };
             // Semicolon delimited list of options
-            yield return string.Join(";", options.Where(i => i.Value).Select(i => $"{i.Key}={i.Value}"));
+            yield return string.Join(";", options.Select(i => $"{i.Key}={i.Value}"));
 
             // Full path to MSBuild.exe or MSBuild.dll
 #if IS_CORECLR
@@ -238,7 +245,7 @@ namespace NuGet.Build.Tasks
             {
                 msBuildGlobalProperties["SolutionPath"] = SolutionPath;
             }
-
+            
             return msBuildGlobalProperties;
         }
     }

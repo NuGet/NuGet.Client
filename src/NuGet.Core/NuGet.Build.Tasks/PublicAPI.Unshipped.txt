@@ -12,6 +12,8 @@ NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProjectFullPath.get -> string
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProjectFullPath.set -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Recursive.get -> bool
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Recursive.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.RestoreGraphOutputPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.RestoreGraphOutputPath.set -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.get -> string
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.get -> string
