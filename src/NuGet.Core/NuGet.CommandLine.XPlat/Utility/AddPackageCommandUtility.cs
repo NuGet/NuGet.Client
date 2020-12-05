@@ -116,7 +116,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 
                 HashSet<string> currentPackagesSources = packageSources.Select(p => p.Source).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                if (additionalSources?.Any() ?? false)
+                if (additionalSources?.Any() == true)
                 {
                     foreach (string additionalSource in additionalSources)
                     {
