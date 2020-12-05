@@ -12,6 +12,8 @@ namespace NuGet.Packaging
 
         public string ContentHash { get; set; }
 
+        public string Source { get; set; }
+
         public bool Equals(NupkgMetadataFile other)
         {
             if (other == null)
@@ -25,7 +27,8 @@ namespace NuGet.Packaging
             }
 
             return Version == other.Version &&
-                ContentHash.Equals(other.ContentHash);
+                StringComparer.Ordinal.Equals(ContentHash, other.ContentHash) &&
+                StringComparer.Ordinal.Equals(Source, other.Source);
         }
 
         public override bool Equals(object obj)
@@ -39,6 +42,7 @@ namespace NuGet.Packaging
 
             combiner.AddObject(Version);
             combiner.AddSequence(ContentHash);
+            combiner.AddSequence(Source);
 
             return combiner.CombinedHash;
         }
