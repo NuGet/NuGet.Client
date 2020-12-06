@@ -1,0 +1,1 @@
+static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileStillValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> (bool, string)

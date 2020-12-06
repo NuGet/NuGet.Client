@@ -74,7 +74,7 @@ namespace NuGet.ProjectModel
             // Current tools know how to read only previous formats including the current
             if (PackagesLockFileFormat.PackagesLockFileVersion < nuGetLockFile.Version)
             {
-                return false;
+                return (false, "Previous Version");
             }
 
             var uniqueName = dgSpec.Restore.First();
@@ -130,7 +130,7 @@ namespace NuGet.ProjectModel
                 if (HasProjectTransitiveDependencyChanged(framework.CentralPackageVersions, transitiveDependenciesEnforcedByCentralVersions, transitiveDependencies))
                 {
                     // lock file is out of sync
-                    return false;
+                    return (false, "lock file is out of sync");
                 }
             }
 
