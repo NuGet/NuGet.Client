@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec packageSpec = CreatePackageSpec(
                     project.ProjectName,
                     Path.Combine(testDirectory, "package.spec"));
-                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectRestoreInfo.AddProject(packageSpec);
                 var projectNames = new ProjectNames(
                     fullName: projectFullPath,
