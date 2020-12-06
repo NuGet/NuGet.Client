@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -230,7 +232,7 @@ namespace NuGet.Commands.Test
                 dgSpec.AddProject(spec);
             }
 
-            var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgSpec, projectToRestore.Name).AsList();
+            var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgSpec, projectToRestore.Name).ToList();
 
             return new TestRestoreRequest(projectToRestore, sources, pathContext.UserPackagesFolder, logger)
             {
