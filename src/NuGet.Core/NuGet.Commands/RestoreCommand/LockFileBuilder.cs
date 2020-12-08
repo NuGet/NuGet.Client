@@ -148,6 +148,7 @@ namespace NuGet.Commands
                 }
             }
 
+            ValidateLockFileLibrary(lockFile.Libraries);
             var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
@@ -270,6 +271,7 @@ namespace NuGet.Commands
                     }
                 }
 
+                ValidateLockFileTargetLibrary(target.Libraries);
                 lockFile.Targets.Add(target);
             }
 
@@ -281,6 +283,62 @@ namespace NuGet.Commands
             lockFile.PackageSpec = project;
 
             return lockFile;
+        }
+
+        private void ValidateLockFileLibrary(IList<LockFileLibrary> libraries)
+        {
+            ILookup<Tuple<string, Versioning.NuGetVersion>, LockFileLibrary> librariesByNameAndVersion = libraries.ToLookup(lib => Tuple.Create(lib.Name, lib.Version));
+
+            foreach (var item in librariesByNameAndVersion)
+            {
+                int count = item.Count();
+
+                if (count == 2)
+                {
+                    var first = item.First();
+                    var second = item.Last();
+
+                    if (first.Type == second.Type)
+                    {
+                        throw new Exception($"Duplicate conflicting references detected for {first.Name} {first.Version}");
+                    }
+
+                    // Prefer project reference over package reference, so remove the the package reference.
+                    libraries.Remove(first.Type == "project" ? second : first);
+                }
+                else if (count > 2)
+                {
+                    throw new Exception($"Multiple conflicting references detected for {item.First().Name} {item.First().Version}");
+                }
+            }
+        }
+
+        private void ValidateLockFileTargetLibrary(IList<LockFileTargetLibrary> libraries)
+        {
+            ILookup<Tuple<string, Versioning.NuGetVersion>, LockFileTargetLibrary> librariesByNameAndVersion = libraries.ToLookup(lib => Tuple.Create(lib.Name, lib.Version));
+
+            foreach (var item in librariesByNameAndVersion)
+            {
+                int count = item.Count();
+
+                if (count == 2)
+                {
+                    var first = item.First();
+                    var second = item.Last();
+
+                    if (first.Type == second.Type)
+                    {
+                        throw new Exception($"Duplicate conflicting references detected for {first.Name} {first.Version}");
+                    }
+
+                    // Prefer project reference over package reference, so remove the the package reference.
+                    libraries.Remove(first.Type == "project" ? second : first);
+                }
+                else if (count > 2)
+                {
+                    throw new Exception($"Multiple conflicting references detected for {item.First().Name} {item.First().Version}");
+                }
+            }
         }
 
         private static string GetFallbackFrameworkString(NuGetFramework framework)
