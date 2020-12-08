@@ -582,7 +582,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     fileInfo.LastWriteTimeUtc.Should().Be(projectOutputTimestamps[asset]);
                 }
 
-                result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile {project.ProjectPath}", ignoreExitCode: true);
+                result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {project.ProjectPath}", ignoreExitCode: true);
                 result.Success.Should().BeTrue(result.AllOutput);
             }
         }

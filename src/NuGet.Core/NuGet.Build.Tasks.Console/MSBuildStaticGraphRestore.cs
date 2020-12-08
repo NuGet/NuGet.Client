@@ -130,12 +130,12 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Restores the specified projects.
+        /// Generates a dependency graph spec for the given properties.
         /// </summary>
-        /// <param name="entryProjectFilePath">The main project to restore.  This can be a project for a Visual Studio© Solution File.</param>
+        /// <param name="entryProjectFilePath">The main project to generate that graph for.  This can be a project for a Visual Studio© Solution File.</param>
         /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
-        /// <param name="options">The set of options to use when restoring.  These options come from the main MSBuild process and control how restore functions.</param>
-        /// <returns><code>true</code> if the restore succeeded, otherwise <code>false</code>.</returns>
+        /// <param name="options">The set of options to use to generate the graph, including the restore graph output path.</param>
+        /// <returns><code>true</code> if the dependency graph spec was generated and written, otherwise <code>false</code>.</returns>
         public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
             var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties);
@@ -144,18 +144,18 @@ namespace NuGet.Build.Tasks.Console
             {
                 if(dependencyGraphSpec == null)
                 {
-                    LoggingQueue.TaskLoggingHelper.LogError("Cannot write the dependency graph spec as the generation failed");
+                    LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_DgSpecGenerationFailed);
                     return false;
                 }
-                // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
-                if (dependencyGraphSpec != null && options.TryGetValue("RestoreGraphOutputPath", out var path))
+
+                if (options.TryGetValue("RestoreGraphOutputPath", out var path))
                 {
                     dependencyGraphSpec.Save(path);
                     return true;
                 }
                 else
                 {
-                    LoggingQueue.TaskLoggingHelper.LogError("Cannot write the dependency graph spec as RestoreGraphOutputPath is missing");
+                    LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_MissingRestoreGraphOutputPath);
                 }
             }
             catch (Exception e)
@@ -540,7 +540,7 @@ namespace NuGet.Build.Tasks.Console
             if (string.Equals(Path.GetExtension(entryProjectPath), ".sln", StringComparison.OrdinalIgnoreCase))
             {
                 var solutionFile = SolutionFile.Parse(entryProjectPath);
-                // TODO NK - the problem is here.
+
                 return solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat).Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
             }
 

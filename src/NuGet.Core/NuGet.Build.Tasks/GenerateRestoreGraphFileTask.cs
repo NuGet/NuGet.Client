@@ -24,7 +24,7 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets the full path to this assembly.
         /// </summary>
-        private static readonly Lazy<FileInfo> ThisAssemblyLazy = new Lazy<FileInfo>(() => new FileInfo(typeof(RestoreTaskEx).Assembly.Location));
+        private static readonly Lazy<FileInfo> ThisAssemblyLazy = new Lazy<FileInfo>(() => new FileInfo(typeof(GenerateRestoreGraphFileTask).Assembly.Location));
 
         /// <summary>
         /// Gets a value indicating whether or not <see cref="SolutionPath" /> contains a value.

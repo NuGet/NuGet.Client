@@ -21,7 +21,7 @@ namespace Msbuild.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task GenerateRestoreGraphFile_WithMixedProjectSolution_BothStaticGraphAndRegular_AreEqual()
+        public async Task GenerateRestoreGraphFile_WithMixedProjectSolution_BothStaticGraphAndStandard_AreEqual()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -52,13 +52,13 @@ namespace Msbuild.Integration.Test
                     pathContext.PackageSource,
                     packageX);
 
-                var regularDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "regular.dgspec.json");
+                var standardDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "standard.dgspec.json");
                 var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
                 var targetPath = projectA.ProjectPath;
-                _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{regularDgSpecFile}\" {targetPath} /bl");
+                _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{standardDgSpecFile}\" {targetPath}");
                 _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation=true {targetPath}");
 
-                var regularDgSpec = File.ReadAllText(regularDgSpecFile);
+                var regularDgSpec = File.ReadAllText(standardDgSpecFile);
                 var staticGraphDgSpec = File.ReadAllText(staticGraphDgSpecFile);
 
                 regularDgSpec.Should().BeEquivalentTo(staticGraphDgSpec);

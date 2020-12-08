@@ -30,7 +30,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 string msbuildBinPath = Path.Combine(testDirectory, "MSBuild", "Current", "Bin");
                 string projectPath = Path.Combine(testDirectory, "src", "project1", "project1.csproj");
-
+                string restoreGraphOutputPath = Path.Combine(testDirectory, "out.dgspec.json");
                 var globalProperties = new Dictionary<string, string>
                 {
                     ["Property1"] = "Value1",
@@ -46,6 +46,7 @@ namespace NuGet.Build.Tasks.Test
                     ProjectFullPath = projectPath,
                     Recursive = true,
                     MSBuildStartupDirectory = testDirectory,
+                    RestoreGraphOutputPath = restoreGraphOutputPath,
                 })
                 {
                     var arguments = task.GetCommandLineArguments().ToList();
@@ -53,7 +54,7 @@ namespace NuGet.Build.Tasks.Test
 #if IS_CORECLR
                     Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
 #endif
-                    "GenerateRestoreGraphFile=True;Recursive=True",
+                    $"GenerateRestoreGraphFile=True;Recursive=True;RestoreGraphOutputPath={restoreGraphOutputPath}",
 #if IS_CORECLR
                     Path.Combine(msbuildBinPath, "MSBuild.dll"),
 #else
