@@ -18,8 +18,10 @@ namespace NuGet.Protocol
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             FindLocalPackagesResource curResource = null;
+            var feedType = await source.GetFeedType(token);
 
-            if (await source.GetFeedType(token) == FeedType.FileSystemV3)
+            if (feedType == FeedType.FileSystemV3
+                || feedType == FeedType.FileSystemUnknown)
             {
                 curResource = new FindLocalPackagesResourceV3(source.PackageSource.Source);
             }
