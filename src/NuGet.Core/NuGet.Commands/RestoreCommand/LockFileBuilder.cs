@@ -304,7 +304,7 @@ namespace NuGet.Commands
                     }
 
                     // Prefer project reference over package reference, so remove the the package reference.
-                    libraries.Remove(first.Type == "project" ? second : first);
+                    libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
                 }
                 else if (count > 2)
                 {
@@ -332,13 +332,36 @@ namespace NuGet.Commands
                     }
 
                     // Prefer project reference over package reference, so remove the the package reference.
-                    libraries.Remove(first.Type == "project" ? second : first);
+                    libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
                 }
                 else if (count > 2)
                 {
                     throw new Exception($"Multiple conflicting references detected for {item.First().Name} {item.First().Version}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Prefer projects over packages
+        /// </summary>
+        /// <param name="referenceType"></param>
+        /// <returns></returns>
+        private static int RankReferences(string referenceType)
+        {
+            if (referenceType == "project")
+            {
+                return 0;
+            }
+            else if (referenceType == "externalProject")
+            {
+                return 1;
+            }
+            else if (referenceType == "package")
+            {
+                return 2;
+            }
+
+            return 5;
         }
 
         private static string GetFallbackFrameworkString(NuGetFramework framework)
