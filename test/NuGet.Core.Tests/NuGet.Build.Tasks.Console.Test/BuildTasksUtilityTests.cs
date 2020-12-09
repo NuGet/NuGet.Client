@@ -33,7 +33,7 @@ namespace NuGet.Build.Tasks.Console.Test
                      );
 
                 // Assert
-                effectiveSources.ShouldBeEquivalentTo(new[] { Path.Combine(projectDirectory, relativePath) });
+                effectiveSources.Should().BeEquivalentTo(new[] { Path.Combine(projectDirectory, relativePath) });
             }
         }
 
@@ -58,7 +58,7 @@ namespace NuGet.Build.Tasks.Console.Test
                      );
 
                 // Assert
-                effectiveSources.ShouldBeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
+                effectiveSources.Should().BeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
             }
         }
     }
