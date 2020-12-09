@@ -514,8 +514,8 @@ namespace NuGet.Commands.Test
 
             var logs = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project);
 
-            logs.Select(e => e.Code).Should().BeEquivalentTo(NuGetLogCode.NU1604);
-            logs.Select(e => e.Level).Should().BeEquivalentTo(LogLevel.Warning);
+            logs.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1604);
+            logs.Select(e => e.Level).Should().AllBeEquivalentTo(LogLevel.Warning);
             logs.Select(e => e.Message)
                 .Should().BeEquivalentTo(new[]
                 {
