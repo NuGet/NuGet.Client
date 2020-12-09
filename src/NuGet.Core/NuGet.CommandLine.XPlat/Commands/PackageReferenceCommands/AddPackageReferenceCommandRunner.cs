@@ -102,6 +102,17 @@ namespace NuGet.CommandLine.XPlat
 
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
+            // Convert relative path to absolute path if there is any
+            if (packageReferenceArgs.Sources?.Any() == true)
+            {
+                var projectDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath);
+
+                for (int i = 0; i < packageReferenceArgs.Sources.Length; i++)
+                {
+                    packageReferenceArgs.Sources[i] = UriUtility.GetAbsolutePath(projectDirectory, packageReferenceArgs.Sources[i]);
+                }
+            }
+
             PackageDependency packageDependency = default;
             if (packageReferenceArgs.NoVersion)
             {
