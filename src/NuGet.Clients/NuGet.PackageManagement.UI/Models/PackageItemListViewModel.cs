@@ -30,7 +30,8 @@ namespace NuGet.PackageManagement.UI
     {
         private static readonly Common.AsyncLazy<IReadOnlyCollection<VersionInfoContextInfo>> LazyEmptyVersionInfo =
             AsyncLazy.New((IReadOnlyCollection<VersionInfoContextInfo>)Array.Empty<VersionInfoContextInfo>());
-
+        private static readonly Common.AsyncLazy<PackageDeprecationMetadataContextInfo> LazyNullDeprecationMetadata =
+            AsyncLazy.New((PackageDeprecationMetadataContextInfo)null);
         private static readonly Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> LazyNullDetailedPackageSearchMetadata =
             AsyncLazy.New(((PackageSearchMetadataContextInfo)null, (PackageDeprecationMetadataContextInfo)null));
 
@@ -470,6 +471,9 @@ namespace NuGet.PackageManagement.UI
         public Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>> Versions { get; set; }
         public Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
 
+        public Lazy<Task<PackageDeprecationMetadataContextInfo>> DeprecationMetadata { private get; set; }
+        public Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
+
         public Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> DetailedPackageSearchMetadata { get; set; }
         public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync() => (DetailedPackageSearchMetadata ?? LazyNullDetailedPackageSearchMetadata).Value;
 
@@ -755,7 +759,7 @@ namespace NuGet.PackageManagement.UI
 
         private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
         {
-            var result = await _backgroundDeprecationMetadataLoader.Value;
+            PackageDeprecationMetadataContextInfo result = await _backgroundDeprecationMetadataLoader.Value;
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -798,9 +802,7 @@ namespace NuGet.PackageManagement.UI
             _backgroundDeprecationMetadataLoader = AsyncLazy.New(
                 async () =>
                 {
-                    (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
-                        await GetDetailedPackageSearchMetadataAsync();
-                    return packageDeprecationMetadata;
+                    return await GetPackageDeprecationMetadataAsync();
                 });
 
             OnPropertyChanged(nameof(Status));

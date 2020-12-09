@@ -20,13 +20,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _packageSearchMetadata = packageSearchMetadata;
             _packageMetadataProvider = packageMetadataProvider;
-
-            PackageDeprecationMetadataContextInfo = GetPackageDeprecationMetadataContextInfoAsync();
-            DetailedPackageSearchMetadataContextInfo = GetDetailedPackageSearchMetadataContextInfoAsync();
         }
 
-        public ValueTask<PackageDeprecationMetadataContextInfo?> PackageDeprecationMetadataContextInfo { get; }
-        public ValueTask<PackageSearchMetadataContextInfo> DetailedPackageSearchMetadataContextInfo { get; }
+        public ValueTask<PackageDeprecationMetadataContextInfo?> PackageDeprecationMetadataContextInfo => GetPackageDeprecationMetadataContextInfoAsync();
+        public ValueTask<PackageSearchMetadataContextInfo> DetailedPackageSearchMetadataContextInfo => GetDetailedPackageSearchMetadataContextInfoAsync();
 
         private async ValueTask<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationMetadataContextInfoAsync()
         {

@@ -272,6 +272,7 @@ namespace NuGet.PackageManagement.UI
                     AllowedVersions = allowedVersions,
                     PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
                     Versions = AsyncLazy.New(() => { return GetVersionInfoAsync(metadata.Identity); }),
+                    DeprecationMetadata = AsyncLazy.New(() => { return GetDeprecationMetadataAsync(metadata.Identity); }),
                     DetailedPackageSearchMetadata = AsyncLazy.New(() => { return GetDetailedPackageSearchMetadataContextInfoAsync(metadata.Identity); }),
                     Recommended = metadata.IsRecommended,
                     RecommenderVersion = metadata.RecommenderVersion,
