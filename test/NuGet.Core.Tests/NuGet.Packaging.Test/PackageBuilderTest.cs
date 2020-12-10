@@ -2857,6 +2857,62 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             }
         }
 
+        [Fact]
+        public void PackageBuilderCorrectLastWriteTimeForZipfileBefore1980()
+        {
+            // https://github.com/NuGet/Home/issues/7001
+            // Act
+            DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var lastWriteTime = new DateTimeOffset(1979, 11, 15, 23, 59, 0, TimeSpan.Zero);
+            int numberOfDateCorrectedFiles = 0;
+            int numberOfDateNotCorrectedFiles = 0;
+
+            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime))
+            {
+                var builder = new PackageBuilder { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                builder.Authors.Add("test");
+
+                // Create a file that is modified after 1980 and it shouldn't be modified.
+                string after1980File = Path.Combine(directory.Path, "After1980.txt");
+                File.WriteAllText(after1980File, string.Empty);
+                File.SetLastWriteTime(after1980File, ZipFormatMinDate.AddMinutes(1));
+
+                builder.AddFiles(directory.Path, "**", "Content");
+
+                using (var stream = new MemoryStream())
+                {
+                    builder.Save(stream);
+
+                    // Assert
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                    {
+                        foreach (var entry in archive.Entries)
+                        {
+                            var path = directory.Path + Path.DirectorySeparatorChar + entry.Name;
+                            // Only checks the entries that originated from files in test directory
+                            if (File.Exists(path))
+                            {
+                                if (path == after1980File)
+                                {
+                                    Assert.Equal(entry.LastWriteTime.DateTime, ZipFormatMinDate.AddMinutes(1));
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else
+                                {
+                                    Assert.NotEqual(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
+                                    Assert.Equal(entry.LastWriteTime.DateTime, ZipFormatMinDate);
+                                    numberOfDateCorrectedFiles++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Assert.True(numberOfDateNotCorrectedFiles == 1);
+                Assert.True(numberOfDateCorrectedFiles > 0);
+            }
+        }
+
         private static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();
