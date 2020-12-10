@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var fault = new FaultEvent($"{VSTelemetrySession.VSEventNamePrefix}Fault", description, FaultSeverity.General, e, gatherEventDetails: null);
+            var fault = new FaultEvent(VSTelemetrySession.VSEventNamePrefix + "Fault", description, FaultSeverity.General, e, gatherEventDetails: null);
             fault.Properties[$"{VSTelemetrySession.VSPropertyNamePrefix}Fault.Caller"] = caller;
             if (extraProperties != null)
             {
