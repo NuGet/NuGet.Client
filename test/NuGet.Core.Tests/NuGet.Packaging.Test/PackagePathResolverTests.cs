@@ -290,6 +290,24 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("", actualFilePath);
             }
         }
+
+        [Fact]
+        public void GetInstalledPackageFilePath_ThrowsForNullVersion()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var target = new PackagePathResolver(testDirectory.Path);
+
+                PackageIdentity nullVersionPackageIdentity = new PackageIdentity("PackageA", null);
+
+                // Act
+                var exception = Assert.Throws<ArgumentException>(paramName: "packageIdentity",
+                    () => target.GetInstalledPackageFilePath(nullVersionPackageIdentity));
+
+                Assert.Contains("'Version' cannot be null.", exception.Message);
+            }
+        }
+
     }
 
     internal class PackagePathResolverExtended : PackagePathResolver

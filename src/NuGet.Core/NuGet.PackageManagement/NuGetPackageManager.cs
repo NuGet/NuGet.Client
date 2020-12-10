@@ -2807,7 +2807,9 @@ namespace NuGet.PackageManagement
                 {
                     if (primarySources == null || primarySources.Count == 0)
                     {
-                        throw new ArgumentNullException(nameof(primarySources), $"Should have value in {nameof(primarySources)} if there is value for {nameof(packageIdentity)}");
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
+                        throw new ArgumentNullException($"Should have value in {nameof(primarySources)} if there is value for {nameof(packageIdentity)}");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
                     }
 
                     var nugetAction = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);

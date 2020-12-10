@@ -859,4 +859,8 @@ Valid from:</comment>
     <value>Some framework assembly reference TFMs are missing a platform version: {0}</value>
     <comment>0 - comma-separated list of reference group TFMs</comment>
   </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>'{0}' cannot be null.</value>
+    <comment>0 - property name</comment>
+  </data>
 </root>
