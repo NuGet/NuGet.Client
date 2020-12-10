@@ -10,7 +10,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Xml.Linq;
 using NuGet.Client;
 using NuGet.Common;
@@ -18,7 +17,6 @@ using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
-using NuGet.Packaging.Rules;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -893,7 +891,7 @@ namespace NuGet.Packaging
         private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel)
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
-            entry.LastWriteTime = timeOffset;
+            entry.LastWriteTime = timeOffset < ZipFormatMinDate ? ZipFormatMinDate : timeOffset;
             return entry;
         }
 
