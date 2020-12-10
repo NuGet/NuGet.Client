@@ -24,8 +24,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public bool IsMultiSource => false;
 
         private readonly SourceRepository _sourceRepository;
-        private readonly List<string> _topPackages;
-        private readonly List<string> _depPackages;
+        private readonly List<string> _installedPackages;
+        private readonly List<string> _transitivePackages;
         private readonly IReadOnlyCollection<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
@@ -59,8 +59,8 @@ namespace NuGet.PackageManagement.VisualStudio
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _topPackages = installedPackages.Select(item => item.Id).ToList();
-            _depPackages = transitivePackages.Select(item => item.Id).ToList();
+            _installedPackages = installedPackages.Select(item => item.Id).ToList();
+            _transitivePackages = transitivePackages.Select(item => item.Id).ToList();
 
             _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
                 async () =>
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!(NuGetRecommender is null))
             {
                 // call the recommender to get package recommendations
-                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, _topPackages, _depPackages, cancellationToken);
+                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, _installedPackages, _transitivePackages, cancellationToken);
             }
 
             if (recommendIds is null || !recommendIds.Any())

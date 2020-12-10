@@ -12,26 +12,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
     {
         public InstalledAndTransitivePackages(IReadOnlyCollection<IPackageReferenceContextInfo>? installedPackages, IReadOnlyCollection<IPackageReferenceContextInfo>? transitivePackages)
         {
-            if (installedPackages is null)
-            {
-                InstalledPackages = Array.Empty<IPackageReferenceContextInfo>();
-            }
-            else
-            {
-                InstalledPackages = installedPackages;
-            }
-            if (transitivePackages is null)
-            {
-                TransitivePackages = Array.Empty<IPackageReferenceContextInfo>();
-            }
-            else
-            {
-                TransitivePackages = transitivePackages;
-            }
+            InstalledPackages = installedPackages ?? Array.Empty<IPackageReferenceContextInfo>();
+            TransitivePackages = transitivePackages ?? Array.Empty<IPackageReferenceContextInfo>();
         }
 
         public IReadOnlyCollection<IPackageReferenceContextInfo> InstalledPackages { get; }
         public IReadOnlyCollection<IPackageReferenceContextInfo> TransitivePackages { get; }
-
     }
 }

@@ -19,8 +19,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public ProjectPackages(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages) 
         {
-            InstalledPackages = installedPackages;
-            TransitivePackages = transitivePackages;
+            InstalledPackages = installedPackages ?? Array.Empty<PackageReference>();
+            TransitivePackages = transitivePackages ?? Array.Empty<PackageReference>();
         }
 
         public override bool Equals(object obj)

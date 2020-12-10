@@ -44,31 +44,13 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             foreach (IPackageReferenceContextInfo expectedPackage in expectedResult.InstalledPackages)
             {
                 IPackageReferenceContextInfo actualPackage = actualResult.InstalledPackages.FirstOrDefault(p => p.Identity.Equals(expectedPackage.Identity));
-                Assert.NotNull(actualPackage);
-                if (!(actualPackage is null))
-                {
-                    Assert.Equal(expectedPackage.Identity, actualPackage.Identity);
-                    Assert.Equal(expectedPackage.Framework, actualPackage.Framework);
-                    Assert.Equal(expectedPackage.AllowedVersions, actualPackage.AllowedVersions);
-                    Assert.Equal(expectedPackage.IsAutoReferenced, actualPackage.IsAutoReferenced);
-                    Assert.Equal(expectedPackage.IsUserInstalled, actualPackage.IsUserInstalled);
-                    Assert.Equal(expectedPackage.IsDevelopmentDependency, actualPackage.IsDevelopmentDependency);
-                }
+                CheckPackageReferencesContextInfoAreEqual(actualPackage, expectedPackage);
             }
 
             foreach (IPackageReferenceContextInfo expectedPackage in expectedResult.TransitivePackages)
             {
                 IPackageReferenceContextInfo actualPackage = actualResult.TransitivePackages.FirstOrDefault(p => p.Identity.Equals(expectedPackage.Identity));
-                Assert.NotNull(actualPackage);
-                if (!(actualPackage is null))
-                {
-                    Assert.Equal(expectedPackage.Identity, actualPackage.Identity);
-                    Assert.Equal(expectedPackage.Framework, actualPackage.Framework);
-                    Assert.Equal(expectedPackage.AllowedVersions, actualPackage.AllowedVersions);
-                    Assert.Equal(expectedPackage.IsAutoReferenced, actualPackage.IsAutoReferenced);
-                    Assert.Equal(expectedPackage.IsUserInstalled, actualPackage.IsUserInstalled);
-                    Assert.Equal(expectedPackage.IsDevelopmentDependency, actualPackage.IsDevelopmentDependency);
-                }
+                CheckPackageReferencesContextInfoAreEqual(actualPackage, expectedPackage);
             }
         }
 
@@ -78,5 +60,17 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             { new InstalledAndTransitivePackages(DirectPackages, Array.Empty<IPackageReferenceContextInfo>()) },
             { new InstalledAndTransitivePackages(Array.Empty<IPackageReferenceContextInfo>(), Array.Empty<IPackageReferenceContextInfo>()) }
         };
+
+        private static void CheckPackageReferencesContextInfoAreEqual(IPackageReferenceContextInfo packageA, IPackageReferenceContextInfo packageB)
+        {
+            Assert.NotNull(packageA);
+            Assert.NotNull(packageB);
+            Assert.Equal(packageA.Identity, packageB.Identity);
+            Assert.Equal(packageA.Framework, packageB.Framework);
+            Assert.Equal(packageA.AllowedVersions, packageB.AllowedVersions);
+            Assert.Equal(packageA.IsAutoReferenced, packageB.IsAutoReferenced);
+            Assert.Equal(packageA.IsUserInstalled, packageB.IsUserInstalled);
+            Assert.Equal(packageA.IsDevelopmentDependency, packageB.IsDevelopmentDependency);
+        }
     }
 }

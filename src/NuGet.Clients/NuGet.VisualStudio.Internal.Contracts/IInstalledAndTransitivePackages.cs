@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace NuGet.VisualStudio.Internal.Contracts
 {
     /// <summary>
-    /// Contains information installed and transitive packages
+    /// Contains information about installed and transitive packages
     /// </summary>
     public interface IInstalledAndTransitivePackages
     {

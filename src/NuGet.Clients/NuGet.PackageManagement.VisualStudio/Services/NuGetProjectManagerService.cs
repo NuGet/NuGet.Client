@@ -171,8 +171,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
-            List<Task<ProjectPackages>> prStyleTasks = new List<Task<ProjectPackages>>();
-            List<Task<IEnumerable<PackageReference>>> nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
+            var prStyleTasks = new List<Task<ProjectPackages>>();
+            var nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
             foreach (var project in projects)
             {
                 if (project is PackageReferenceProject packageReferenceProject)
@@ -189,8 +189,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // combine all of the installed package references
             IEnumerable<IEnumerable<PackageReference>>? installedPackages = nonPrStyleReferences
-                    .Concat(prStyleReferences
-                        .Select(p => p.InstalledPackages));
+                .Concat(prStyleReferences
+                    .Select(p => p.InstalledPackages));
 
             PackageReferenceContextInfo[] installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
             PackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
@@ -229,7 +229,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return results.ToArray();
         }
 
-        // Get target framework information for BuildIntegratedNuGetProjects
         public async ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
             string projectId,
             CancellationToken cancellationToken)

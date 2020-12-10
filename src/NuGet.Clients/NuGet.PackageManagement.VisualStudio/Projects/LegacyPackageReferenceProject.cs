@@ -45,6 +45,9 @@ namespace NuGet.PackageManagement.VisualStudio
             string projectId,
             INuGetProjectServices projectServices,
             IVsProjectThreadingService threadingService)
+            : base(vsProjectAdapter.ProjectName,
+                vsProjectAdapter.UniqueName,
+                vsProjectAdapter.FullProjectPath)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.NotNullOrEmpty(projectId);
@@ -53,10 +56,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _vsProjectAdapter = vsProjectAdapter;
             _threadingService = threadingService;
-
-            _projectName = _vsProjectAdapter.ProjectName;
-            _projectUniqueName = _vsProjectAdapter.UniqueName;
-            _projectFullPath = _vsProjectAdapter.FullProjectPath;
 
             ProjectStyle = ProjectStyle.PackageReference;
 
@@ -82,16 +81,12 @@ namespace NuGet.PackageManagement.VisualStudio
             TargetFramework = targetFramework;
         }
 
-
         #region BuildIntegratedNuGetProject
-
-
 
         public override async Task<string> GetCacheFilePathAsync()
         {
             return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: await GetMSBuildProjectExtensionsPathAsync());
         }
-
 
         private protected override async Task<string> GetAssetsFilePathAsync(bool shouldThrow)
         {
@@ -190,7 +185,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified)
             {
                 await TaskScheduler.Default;
-                var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
                 if (!(lockFile is null))
                 {
                     targets = lockFile.Targets;

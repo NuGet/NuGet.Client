@@ -20,8 +20,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             var formatters = new IMessagePackFormatter[]
             {
                 FloatRangeFormatter.Instance,
-                IPackageReferenceContextInfoFormatter.Instance,
                 IInstalledAndTransitivePackagesFormatter.Instance,
+                IPackageReferenceContextInfoFormatter.Instance,
                 IProjectContextInfoFormatter.Instance,
                 IProjectMetadataContextInfoFormatter.Instance,
                 NuGetFrameworkFormatter.Instance,

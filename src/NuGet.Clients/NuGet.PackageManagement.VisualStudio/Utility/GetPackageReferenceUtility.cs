@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         /// <summary>
         /// Gets the dependencies of a top level package and caches these if the assets file has changed
         /// </summary>
-        /// <param name="projectLibrary">Library from the project file.</param>
+        /// <param name="library">Library from the project file.</param>
         /// <param name="targetFramework">Target framework from the project file.</param>
         /// <param name="targets">Target assets file with the package information.</param>
         /// <param name="installedPackages">Cached installed package information</param>
@@ -69,14 +69,14 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         {
             NuGetVersion resolvedVersion = default;
 
-            IList<PackageIdentity> packageIdentities = new List<PackageIdentity>();
+            var packageIdentities = new List<PackageIdentity>();
 
             // get the dependencies for this target framework
-            var transitiveDependencies = GetTransitivePackagesForLibrary(library, targetFramework, targets);
+            IReadOnlyList<PackageDependency> transitiveDependencies = GetTransitivePackagesForLibrary(library, targetFramework, targets);
 
             if (transitiveDependencies != null)
             {
-                foreach (var package in transitiveDependencies)
+                foreach (PackageDependency package in transitiveDependencies)
                 {
                     // don't add transitive packages if they are also top level packages
                     if (!installedPackages.ContainsKey(package.Id))
@@ -88,17 +88,14 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                             resolvedVersion = package.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
                         }
 
-                        // Add or update the the version of the package in transitivePackages
                         transitivePackages[package.Id] = new ProjectInstalledPackage(package.VersionRange, new PackageIdentity(package.Id, resolvedVersion));
-
-                        // add to list of packages to return
-                        PackageIdentity packageIdentity = new PackageIdentity(package.Id, resolvedVersion);
+                        var packageIdentity = new PackageIdentity(package.Id, resolvedVersion);
                         packageIdentities.Add(packageIdentity);
                     }
                 }
             }
 
-            return (IReadOnlyList<PackageIdentity>)packageIdentities;
+            return packageIdentities;
         }
 
         private static NuGetVersion GetInstalledVersion(string libraryName, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets)

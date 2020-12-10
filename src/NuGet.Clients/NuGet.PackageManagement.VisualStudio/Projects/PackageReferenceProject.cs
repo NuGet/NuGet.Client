@@ -22,11 +22,21 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
     {
-        private protected string _projectName;
-        private protected string _projectUniqueName;
-        private protected string _projectFullPath;
+        private readonly protected string _projectName;
+        private readonly protected string _projectUniqueName;
+        private readonly protected string _projectFullPath;
 
         private protected DateTime _lastTimeAssetsModified;
+
+        protected PackageReferenceProject(
+            string projectName,
+            string projectUniqueName,
+            string projectFullPath)
+        {
+            _projectName = projectName;
+            _projectUniqueName = projectUniqueName;
+            _projectFullPath = projectFullPath;
+        }
 
         public override async Task<string> GetAssetsFilePathAsync()
         {
@@ -76,6 +86,5 @@ namespace NuGet.PackageManagement.VisualStudio
                     .ToList();
             }
         }
-
     }
 }

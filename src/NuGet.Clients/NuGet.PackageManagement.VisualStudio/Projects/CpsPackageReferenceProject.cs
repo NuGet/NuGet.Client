@@ -53,14 +53,13 @@ namespace NuGet.PackageManagement.VisualStudio
             UnconfiguredProject unconfiguredProject,
             INuGetProjectServices projectServices,
             string projectId)
+            : base(projectName,
+                projectUniqueName,
+                projectFullPath)
         {
             Assumes.Present(projectFullPath);
             Assumes.Present(projectSystemCache);
             Assumes.Present(projectServices);
-
-            _projectName = projectName;
-            _projectUniqueName = projectUniqueName;
-            _projectFullPath = projectFullPath;
 
             ProjectStyle = ProjectStyle.PackageReference;
 
@@ -264,10 +263,13 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<PackageReference>());
             }
-
         }
 
-        private IEnumerable<PackageReference> GetPackageReferencesForFramework(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> installedPackages, IList<LockFileTarget> targets)
+        private IEnumerable<PackageReference> GetPackageReferencesForFramework(
+            IEnumerable<LibraryDependency> libraries,
+            NuGetFramework targetFramework,
+            List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> installedPackages,
+            IList<LockFileTarget> targets)
         {
             (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
 
@@ -281,7 +283,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        private IReadOnlyList<PackageReference> GetTransitivePackageReferencesForFramework(NuGetFramework targetFramework, List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> installedPackages, List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> transitivePackages, IList<LockFileTarget> targets)
+        private IReadOnlyList<PackageReference> GetTransitivePackageReferencesForFramework(
+            NuGetFramework targetFramework,
+            List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> installedPackages,
+            List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> transitivePackages,
+            IList<LockFileTarget> targets)
         {
             (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
             (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));

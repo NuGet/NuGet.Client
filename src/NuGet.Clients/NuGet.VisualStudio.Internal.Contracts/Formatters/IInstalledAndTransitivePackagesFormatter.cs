@@ -51,9 +51,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
                                 for (int i = 0; i < installedPackagesCount; ++i)
                                 {
-                                    IPackageReferenceContextInfo? packageReverenceContextInfo = IPackageReferenceContextInfoFormatter.Instance.Deserialize(ref reader, options);
-                                    Assumes.NotNull(packageReverenceContextInfo);
-                                    installedPackages.Add(packageReverenceContextInfo);
+                                    IPackageReferenceContextInfo? packageReferenceContextInfo = IPackageReferenceContextInfoFormatter.Instance.Deserialize(ref reader, options);
+                                    Assumes.NotNull(packageReferenceContextInfo);
+                                    installedPackages.Add(packageReferenceContextInfo);
                                 }
                             }
                             break;
@@ -87,7 +87,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
                 reader.Depth--;
             }
-
         }
 
         public void Serialize(ref MessagePackWriter writer, IInstalledAndTransitivePackages? value, MessagePackSerializerOptions options)
