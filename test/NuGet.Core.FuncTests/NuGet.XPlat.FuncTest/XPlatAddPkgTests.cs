@@ -1064,7 +1064,7 @@ namespace NuGet.XPlat.FuncTest
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: "..\\..\\Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1103,7 +1103,7 @@ namespace NuGet.XPlat.FuncTest
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: "..\\..\\Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1135,7 +1135,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, packageX_V1.Version.ToString(),
                     projectA,
-                    sources: "..\\..\\Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1173,7 +1173,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V3.Id, packageX_V3.Version.ToString(),
                     projectA,
-                    sources: "..\\..\\Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1210,7 +1210,7 @@ namespace NuGet.XPlat.FuncTest
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: "..\\..\\Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1251,7 +1251,7 @@ namespace NuGet.XPlat.FuncTest
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX, "*",
                     projectA,
-                    sources: "..\\..\\Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1287,7 +1287,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, packageX_V1.Version.ToString(),
                     projectA,
-                    sources: "..\\..\\Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1329,7 +1329,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V3.Id, packageX_V3.Version.ToString(),
                     projectA,
-                    sources: "..\\..\\Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
