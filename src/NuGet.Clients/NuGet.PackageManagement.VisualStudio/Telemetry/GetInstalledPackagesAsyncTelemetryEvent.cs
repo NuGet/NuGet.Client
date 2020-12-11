@@ -7,9 +7,12 @@ namespace NuGet.PackageManagement.Telemetry
 {
     public sealed class GetInstalledPackagesAsyncTelemetryEvent : DiagnosticTelemetryEvent
     {
+        private const string Data = "Data";
+
         private static readonly string EventName = $"{DiagnosticEventName}/GetInstalledPackagesAsync";
 
-        public GetInstalledPackagesAsyncTelemetryEvent() : base(EventName)
+        public GetInstalledPackagesAsyncTelemetryEvent()
+            : base(EventName)
         {
         }
 
@@ -17,7 +20,7 @@ namespace NuGet.PackageManagement.Telemetry
         {
             ProjectTypeAndData projectTypeAndData;
 
-            if (ComplexData.TryGetValue("Data", out object value) && value is ProjectTypeAndData data)
+            if (ComplexData.TryGetValue(Data, out object value) && value is ProjectTypeAndData data)
             {
                 projectTypeAndData = data;
             }
@@ -25,7 +28,7 @@ namespace NuGet.PackageManagement.Telemetry
             {
                 projectTypeAndData = new ProjectTypeAndData(projectType.ToString());
 
-                ComplexData["Data"] = projectTypeAndData;
+                ComplexData[Data] = projectTypeAndData;
             }
 
             projectTypeAndData.Projects.Add(new ProjectData(projectId, nullCount, totalCount));

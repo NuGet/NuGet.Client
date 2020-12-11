@@ -107,19 +107,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
-            Dictionary<NuGetProject, Task<IEnumerable<PackageReference>>> projectsAndInstalledPackages = projects
-                .ToDictionary(
-                    project => project,
-                    project => project.GetInstalledPackagesAsync(cancellationToken));
-            await Task.WhenAll(projectsAndInstalledPackages.Values);
+            List<Task<IEnumerable<PackageReference>>> tasks = projects
+                .Select(project => project.GetInstalledPackagesAsync(cancellationToken))
+                .ToList();
+            IEnumerable<PackageReference>[] results = await Task.WhenAll(tasks);
 
             var installedPackages = new List<PackageReferenceContextInfo>();
             GetInstalledPackagesAsyncTelemetryEvent? telemetryEvent = null;
 
-            foreach (KeyValuePair<NuGetProject, Task<IEnumerable<PackageReference>>> projectAndInstalledPackages in projectsAndInstalledPackages)
+            for (var i = 0; i < results.Length; ++i)
             {
-                NuGetProject project = projectAndInstalledPackages.Key;
-                IEnumerable<PackageReference> packageReferences = projectAndInstalledPackages.Value.Result;
+                IEnumerable<PackageReference> packageReferences = results[i];
                 int totalCount = 0;
                 int nullCount = 0;
 
@@ -142,6 +140,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (nullCount > 0)
                 {
                     telemetryEvent ??= new GetInstalledPackagesAsyncTelemetryEvent();
+
+                    NuGetProject project = projects[i];
 
                     string projectId = project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
                     NuGetProjectType projectType = VSTelemetryServiceUtility.GetProjectType(project);

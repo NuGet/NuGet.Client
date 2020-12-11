@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
@@ -102,7 +101,7 @@ namespace NuGet.PackageManagement.Telemetry
 
             if (nuGetProject is MSBuildNuGetProject msbuildProject)
             {
-                if (msbuildProject?.DoesPackagesConfigExists() == true)
+                if (msbuildProject.DoesPackagesConfigExists())
                 {
                     projectType = NuGetProjectType.PackagesConfig;
                 }
