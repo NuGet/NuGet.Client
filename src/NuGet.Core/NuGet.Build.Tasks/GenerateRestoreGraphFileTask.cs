@@ -245,7 +245,7 @@ namespace NuGet.Build.Tasks
             {
                 msBuildGlobalProperties["SolutionPath"] = SolutionPath;
             }
-            
+
             return msBuildGlobalProperties;
         }
     }
