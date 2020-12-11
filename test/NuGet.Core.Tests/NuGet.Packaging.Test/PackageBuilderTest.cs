@@ -84,7 +84,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CreatePackageWithFiles()
+        public void CreatePackageWithDifferentFileKinds()
         {
             // Arrange
             PackageBuilder builder = new PackageBuilder()
@@ -107,14 +107,21 @@ namespace NuGet.Packaging.Test
             var set = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
             builder.DependencyGroups.Add(set);
 
-            builder.Files.Add(CreatePackageFile(@"build" + Path.DirectorySeparatorChar + "foo.props"));
-            builder.Files.Add(CreatePackageFile(@"content" + Path.DirectorySeparatorChar + "foo.jpg"));
-            builder.Files.Add(CreatePackageFile(@"contentFiles" + Path.DirectorySeparatorChar + "any" + Path.DirectorySeparatorChar + "any" + Path.DirectorySeparatorChar + "foo.png"));
-            builder.Files.Add(CreatePackageFile(@"lib" + Path.DirectorySeparatorChar + "net5.0" + Path.DirectorySeparatorChar + "foo.dll"));
-            builder.Files.Add(CreatePackageFile(@"native" + Path.DirectorySeparatorChar + "net5.0" + Path.DirectorySeparatorChar + "foo"));
-            builder.Files.Add(CreatePackageFile(@"ref" + Path.DirectorySeparatorChar + "net5.0" + Path.DirectorySeparatorChar + "foo.dll"));
-            builder.Files.Add(CreatePackageFile(@"runtimes" + Path.DirectorySeparatorChar + "net5.0" + Path.DirectorySeparatorChar + "foo.dll"));
-            builder.Files.Add(CreatePackageFile(@"tools" + Path.DirectorySeparatorChar + "foo.dll"));
+            var sep = Path.DirectorySeparatorChar;
+
+            builder.Files.Add(CreatePackageFile(@"build" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"buildCrossTargeting" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"buildMultiTargeting" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"buildTransitive" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"buildTransitive" + sep + "net5.0" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"content" + sep + "foo.jpg"));
+            builder.Files.Add(CreatePackageFile(@"contentFiles" + sep + "any" + sep + "any" + sep + "foo.png"));
+            builder.Files.Add(CreatePackageFile(@"contentFiles" + sep + "cs" + sep + "net5.0" + sep + "foo.cs"));
+            builder.Files.Add(CreatePackageFile(@"embed" + sep + "net5.0" + sep + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"lib" + sep + "net5.0" + sep + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"ref" + sep + "net5.0" + sep + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"runtimes" + sep + "win" + sep + "native" + sep + "foo.o"));
+            builder.Files.Add(CreatePackageFile(@"tools" + sep + "foo.dll"));
 
             using (var ms = new MemoryStream())
             {
@@ -132,15 +139,20 @@ namespace NuGet.Packaging.Test
                         .ToArray();
 
                     // Assert
-                    Assert.Equal(8, files.Length);
                     Assert.Equal(@"build/foo.props", files[0]);
-                    Assert.Equal(@"content/foo.jpg", files[1]);
-                    Assert.Equal(@"contentFiles/any/any/foo.png", files[2]);
-                    Assert.Equal(@"lib/net5.0/foo.dll", files[3]);
-                    Assert.Equal(@"native/net5.0/foo", files[4]);
-                    Assert.Equal(@"ref/net5.0/foo.dll", files[5]);
-                    Assert.Equal(@"runtimes/net5.0/foo.dll", files[6]);
-                    Assert.Equal(@"tools/foo.dll", files[7]);
+                    Assert.Equal(@"buildCrossTargeting/foo.props", files[1]);
+                    Assert.Equal(@"buildMultiTargeting/foo.props", files[2]);
+                    Assert.Equal(@"buildTransitive/foo.props", files[3]);
+                    Assert.Equal(@"buildTransitive/net5.0/foo.props", files[4]);
+                    Assert.Equal(@"content/foo.jpg", files[5]);
+                    Assert.Equal(@"contentFiles/any/any/foo.png", files[6]);
+                    Assert.Equal(@"contentFiles/cs/net5.0/foo.cs", files[7]);
+                    Assert.Equal(@"embed/net5.0/foo.dll", files[8]);
+                    Assert.Equal(@"lib/net5.0/foo.dll", files[9]);
+                    Assert.Equal(@"ref/net5.0/foo.dll", files[10]);
+                    Assert.Equal(@"runtimes/win/native/foo.o", files[11]);
+                    Assert.Equal(@"tools/foo.dll", files[12]);
+                    Assert.Equal(13, files.Length);
                 }
             }
         }
