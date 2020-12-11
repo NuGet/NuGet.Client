@@ -1477,14 +1477,18 @@ namespace NuGet.PackageManagement
             var packageIdentity = packages.FirstOrDefault(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             if (packageIdentity == null)
             {
-                throw new ArgumentException("packages");
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PackageNotFound, id),
+                    paramName: nameof(packages));
             }
 
             // now look up the dependencies of this exact package identity
             var sourceDepInfo = available.SingleOrDefault(p => packageIdentity.Equals(p));
             if (sourceDepInfo == null)
             {
-                throw new ArgumentException("available");
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PackageNotFound, id),
+                    paramName: nameof(available));
             }
 
             // iterate through all the dependencies and call recursively to collect dependencies
@@ -1659,12 +1663,16 @@ namespace NuGet.PackageManagement
 
             if (!primarySources.Any())
             {
-                throw new ArgumentException(nameof(primarySources));
+                throw new ArgumentException(
+                    message: Strings.Argument_Cannot_Be_Null_Or_Empty,
+                    paramName: nameof(primarySources));
             }
 
             if (packageIdentity.Version == null)
             {
-                throw new ArgumentNullException("packageIdentity.Version");
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(packageIdentity.Version)),
+                    paramName: nameof(packageIdentity));
             }
 
             if (nuGetProject is INuGetIntegratedProject)

@@ -510,4 +510,8 @@
     <value>File {0} does not exist.</value>
     <comment>{0} is the filename.</comment>
   </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>'{0}' cannot be null.</value>
+    <comment>0 - property name</comment>
+  </data>
 </root>
