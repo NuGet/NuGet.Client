@@ -286,7 +286,7 @@ namespace NuGet.CommandLine
                 var resolutionContext = new ResolutionContext(
                 dependencyBehavior,
                 includePrelease: allowPrerelease,
-                includeUnlisted: true,
+                includeUnlisted: false,
                 versionConstraints: VersionConstraints.None,
                 gatherCache: new GatherCache(),
                 sourceCacheContext: sourceCacheContext);

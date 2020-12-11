@@ -128,6 +128,30 @@ namespace NuGet.CommandLine.Test
                         });
                     }
                 }
+                else if (path.StartsWith("/packages/"))
+                {
+                    var file = new FileInfo(Path.Combine(_packageDirectory, parts.Last()));
+
+                    if (file.Exists)
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.ContentType = "application/zip";
+                            using (var stream = file.OpenRead())
+                            {
+                                var content = stream.ReadAllBytes();
+                                MockServer.SetResponseContent(response, content);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 404;
+                        });
+                    }
+                }
                 else
                 {
                     throw new Exception("This test needs to be updated to support: " + path);
