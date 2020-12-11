@@ -303,7 +303,138 @@ namespace NuGetVSExtension
                 var generalSettingsCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdGeneralSettings);
                 var generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
+
+                var updatePackageDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpdatePackage);
+                var updatePackageDialogCommand = new OleMenuCommand(ShowUpdatePackageDialog, changeHandler: null, BeforeQueryStatusForUpdatePackageDialog, updatePackageDialogCommandID);
+                updatePackageDialogCommand.ParametersDescription = "$";
+                _mcs.AddCommand(updatePackageDialogCommand);
             }
+        }
+
+        private void BeforeQueryStatusForUpdatePackageDialog(object sender, EventArgs e)
+        {
+            var command = (OleMenuCommand)sender;
+            command.Visible = true;
+            command.Enabled = true;
+        }
+
+        private string[] GetSelectedPackages()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IntPtr hierarchyPtr = IntPtr.Zero;
+            IntPtr selectionContainerPtr = IntPtr.Zero;
+            try
+            {
+                ErrorHandler.ThrowOnFailure(VsMonitorSelection.GetCurrentSelection(out hierarchyPtr, out uint itemId, out IVsMultiItemSelect multiItemSelect, out selectionContainerPtr));
+                if (itemId == VSConstants.VSITEMID_NIL && hierarchyPtr != IntPtr.Zero)
+                {
+                    return null;
+                }
+
+                var packages = new List<string>();
+                if (itemId != VSConstants.VSITEMID_SELECTION)
+                {
+                    // This is a single selection. Compare hirarchy with our hierarchy and get node from itemid
+
+                    IVsHierarchy hierarchy = Marshal.GetTypedObjectForIUnknown(hierarchyPtr, typeof(IVsHierarchy)) as IVsHierarchy;
+                    if (hierarchy != null)
+                    {
+                        object treeCapabilities;
+                        if (hierarchy.GetProperty(itemId, (int)__VSHPROPID7.VSHPROPID_ProjectTreeCapabilities, out treeCapabilities) >= 0)
+                        {
+                            packages.Add(ParsePackageNameFromTreeCapabilities(treeCapabilities?.ToString()));
+                        }
+                    }
+                }
+                else if (multiItemSelect != null)
+                {
+                    // This is a multiple item selection.
+
+                    uint numberOfSelectedItems;
+                    int isSingleHierarchyInt;
+                    if (ErrorHandler.Succeeded(multiItemSelect.GetSelectionInfo(out numberOfSelectedItems, out isSingleHierarchyInt)))
+                    {
+                        bool isSingleHierarchy = (isSingleHierarchyInt != 0);
+
+                        VSITEMSELECTION[] vsItemSelections = new VSITEMSELECTION[numberOfSelectedItems];
+                        //uint flags = (isSingleHierarchy) ? (uint)__VSGSIFLAGS.GSI_fOmitHierPtrs : 0;
+                        uint flags = 0;
+                        ErrorHandler.ThrowOnFailure(multiItemSelect.GetSelectedItems(flags, numberOfSelectedItems, vsItemSelections));
+
+                        foreach (VSITEMSELECTION sel in vsItemSelections)
+                        {
+                            if (isSingleHierarchy && sel.pHier != null)
+                            {
+                                if (ErrorHandler.Succeeded(sel.pHier.GetProperty(sel.itemid, (int)__VSHPROPID7.VSHPROPID_ProjectTreeCapabilities, out object treeCapabilities)))
+                                {
+                                    packages.Add(ParsePackageNameFromTreeCapabilities(treeCapabilities?.ToString()));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return packages.ToArray();
+            }
+            finally
+            {
+                if (hierarchyPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(hierarchyPtr);
+                }
+                if (selectionContainerPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(selectionContainerPtr);
+                }
+            }
+        }
+
+        private string ParsePackageNameFromTreeCapabilities(string treeCapabilities)
+        {
+            const string packageNamePrefix = "$ID:";
+
+            string[] capabilities = treeCapabilities?.Split(' ');
+            string packageName = capabilities?.SingleOrDefault(p => p.StartsWith(packageNamePrefix, StringComparison.Ordinal));
+            return packageName?.Substring(packageNamePrefix.Length);
+        }
+
+        private void ShowUpdatePackageDialog(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            string[] packages = GetSelectedPackages();
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (ShouldMEFBeInitialized())
+                {
+                    await InitializeMEFAsync();
+                }
+
+                var windowFrame = await FindExistingSolutionWindowFrameAsync();
+                if (windowFrame == null)
+                {
+                    // Create the window frame
+                    windowFrame = await CreateDocWindowForSolutionAsync();
+                }
+
+                if (windowFrame != null)
+                {
+                    // process search string
+                    string parameterString = null;
+                    var args = e as OleMenuCmdEventArgs;
+                    if (args != null)
+                    {
+                        parameterString = args.InValue as string;
+                    }
+                    var searchText = GetSearchText(parameterString);
+                    Search(windowFrame, searchText);
+
+                    windowFrame.Show();
+                }
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
         }
 
         private void ExecutePowerConsoleCommand(object sender, EventArgs e)
