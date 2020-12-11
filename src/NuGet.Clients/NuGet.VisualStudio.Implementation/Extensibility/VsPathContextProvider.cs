@@ -151,8 +151,8 @@ namespace NuGet.VisualStudio
                     {
                         var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
 
-                    // It's possible the project isn't a NuGet-compatible project at all.
-                    if (nuGetProject == null)
+                        // It's possible the project isn't a NuGet-compatible project at all.
+                        if (nuGetProject == null)
                         {
                             return null;
                         }

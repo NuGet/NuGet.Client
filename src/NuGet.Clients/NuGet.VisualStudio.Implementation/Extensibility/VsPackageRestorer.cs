@@ -71,7 +71,7 @@ namespace NuGet.VisualStudio
             }
             catch (Exception exception)
             {
-                    _telemetryProvider.PostFault(exception, typeof(VsPackageRestorer).FullName);
+                _telemetryProvider.PostFault(exception, typeof(VsPackageRestorer).FullName);
             }
         }
     }
