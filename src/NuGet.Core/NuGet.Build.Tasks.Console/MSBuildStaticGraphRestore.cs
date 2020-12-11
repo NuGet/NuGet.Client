@@ -142,7 +142,7 @@ namespace NuGet.Build.Tasks.Console
 
             try
             {
-                if(dependencyGraphSpec == null)
+                if (dependencyGraphSpec == null)
                 {
                     LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_DgSpecGenerationFailed);
                     return false;
