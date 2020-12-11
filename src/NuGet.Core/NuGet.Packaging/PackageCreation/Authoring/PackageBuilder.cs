@@ -891,7 +891,8 @@ namespace NuGet.Packaging
         private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel)
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
-            entry.LastWriteTime = timeOffset < ZipFormatMinDate ? ZipFormatMinDate : timeOffset;
+            // Here added 3 days just in case avoid TimeZone issue, otherwise we hit this when repackaging the files.
+            entry.LastWriteTime = timeOffset < ZipFormatMinDate.AddDays(3) ? ZipFormatMinDate.AddDays(3) : timeOffset;
             return entry;
         }
 

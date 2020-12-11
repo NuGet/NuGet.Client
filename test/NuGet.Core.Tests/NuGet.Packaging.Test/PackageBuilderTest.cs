@@ -2863,6 +2863,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             // https://github.com/NuGet/Home/issues/7001
             // Act
             DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime Year2017Date = new DateTime(2017, 1, 15, 23, 59, 0, DateTimeKind.Utc);
             var lastWriteTime = new DateTimeOffset(1979, 11, 15, 23, 59, 0, TimeSpan.Zero);
             int numberOfDateCorrectedFiles = 0;
             int numberOfDateNotCorrectedFiles = 0;
@@ -2873,9 +2874,12 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 builder.Authors.Add("test");
 
                 // Create a file that is modified after 1980 and it shouldn't be modified.
-                string after1980File = Path.Combine(directory.Path, "After1980.txt");
-                File.WriteAllText(after1980File, string.Empty);
-                File.SetLastWriteTime(after1980File, ZipFormatMinDate.AddMinutes(1));
+                string after1980File1 = Path.Combine(directory.Path, "After1980.txt");
+                string after1980File2 = Path.Combine(directory.Path, "After1980_2.txt");
+                File.WriteAllText(after1980File1, string.Empty);
+                File.WriteAllText(after1980File2, string.Empty);
+                File.SetLastWriteTime(after1980File1, ZipFormatMinDate.AddDays(3).AddHours(1));
+                File.SetLastWriteTime(after1980File2, Year2017Date);
 
                 builder.AddFiles(directory.Path, "**", "Content");
 
@@ -2886,21 +2890,26 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     // Assert
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
                     {
-                        foreach (var entry in archive.Entries)
+                        foreach (ZipArchiveEntry entry in archive.Entries)
                         {
-                            var path = directory.Path + Path.DirectorySeparatorChar + entry.Name;
+                            string path = Path.Combine(directory.Path, entry.Name);
                             // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
                             {
-                                if (path == after1980File)
+                                if (path == after1980File1)
                                 {
-                                    Assert.Equal(entry.LastWriteTime.DateTime, ZipFormatMinDate.AddMinutes(1));
+                                    Assert.Equal(entry.LastWriteTime.DateTime, ZipFormatMinDate.AddDays(3).AddHours(1));
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else if (path == after1980File2)
+                                {
+                                    Assert.Equal(entry.LastWriteTime.DateTime, Year2017Date);
                                     numberOfDateNotCorrectedFiles++;
                                 }
                                 else
                                 {
                                     Assert.NotEqual(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
-                                    Assert.Equal(entry.LastWriteTime.DateTime, ZipFormatMinDate);
+                                    Assert.Equal(entry.LastWriteTime.DateTime, ZipFormatMinDate.AddDays(3));
                                     numberOfDateCorrectedFiles++;
                                 }
                             }
@@ -2908,7 +2917,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
 
-                Assert.True(numberOfDateNotCorrectedFiles == 1);
+                Assert.True(numberOfDateNotCorrectedFiles == 2);
                 Assert.True(numberOfDateCorrectedFiles > 0);
             }
         }
