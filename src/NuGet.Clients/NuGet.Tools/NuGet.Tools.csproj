@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
@@ -127,10 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" ExcludeAssets="build" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Embeddable" ExcludeAssets="build" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.1.DesignTime" />
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="NuGetTools.vsct">
