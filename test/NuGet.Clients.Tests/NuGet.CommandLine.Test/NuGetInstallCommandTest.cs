@@ -1719,7 +1719,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "Mono has issues if the MockServer has anything else running in the same process https://github.com/NuGet/Home/issues/8594")]
         public async Task InstallCommand_DoNotSpecifyVersion_IgnoresUnlistedPackagesAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -1759,7 +1759,7 @@ namespace NuGet.CommandLine.Test
                 var a2Nupkg = pathResolver.GetInstalledPackageFilePath(a2.Identity);
                 var b1Nupkg = pathResolver.GetInstalledPackageFilePath(b1.Identity);
                 var b2Nupkg = pathResolver.GetInstalledPackageFilePath(b2.Identity);
-   
+
                 r1.Success.Should().BeTrue();
                 r2.Success.Should().BeTrue();
                 File.Exists(a1Nupkg).Should().BeTrue();
@@ -1769,7 +1769,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "Mono has issues if the MockServer has anything else running in the same process https://github.com/NuGet/Home/issues/8594")]
         public async Task InstallCommand_SpecifyUnlistedVersion_InstallUnlistedPackagesAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
