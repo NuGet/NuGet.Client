@@ -84,6 +84,80 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void CreatePackageWithDifferentFileKinds()
+        {
+            // Arrange
+            PackageBuilder builder = new PackageBuilder()
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Descriptions",
+            };
+
+            builder.Authors.Add("testAuthor");
+
+            var dependencies = new List<PackageDependency>();
+            dependencies.Add(new PackageDependency("packageB", VersionRange.Parse("1.0.0"), null, new[] { "z" }));
+            dependencies.Add(new PackageDependency(
+                "packageC",
+                VersionRange.Parse("1.0.0"),
+                new[] { "a", "b", "c" },
+                new[] { "b", "c" }));
+
+            var set = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
+            builder.DependencyGroups.Add(set);
+
+            var sep = Path.DirectorySeparatorChar;
+
+            builder.Files.Add(CreatePackageFile(@"build" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"buildCrossTargeting" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"buildMultiTargeting" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"buildTransitive" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"buildTransitive" + sep + "net5.0" + sep + "foo.props"));
+            builder.Files.Add(CreatePackageFile(@"content" + sep + "foo.jpg"));
+            builder.Files.Add(CreatePackageFile(@"contentFiles" + sep + "any" + sep + "any" + sep + "foo.png"));
+            builder.Files.Add(CreatePackageFile(@"contentFiles" + sep + "cs" + sep + "net5.0" + sep + "foo.cs"));
+            builder.Files.Add(CreatePackageFile(@"embed" + sep + "net5.0" + sep + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"lib" + sep + "net5.0" + sep + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"ref" + sep + "net5.0" + sep + "foo.dll"));
+            builder.Files.Add(CreatePackageFile(@"runtimes" + sep + "win" + sep + "native" + sep + "foo.o"));
+            builder.Files.Add(CreatePackageFile(@"tools" + sep + "foo.dll"));
+
+            using (var ms = new MemoryStream())
+            {
+                // Act
+                builder.Save(ms);
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                using (var archive = new ZipArchive(ms, ZipArchiveMode.Read, leaveOpen: true))
+                {
+                    var files = archive.Entries
+                        .Where(file => file.Name.StartsWith("foo"))
+                        .Select(file => file.FullName)
+                        .OrderBy(s => s)
+                        .ToArray();
+
+                    // Assert
+                    Assert.Equal(@"build/foo.props", files[0]);
+                    Assert.Equal(@"buildCrossTargeting/foo.props", files[1]);
+                    Assert.Equal(@"buildMultiTargeting/foo.props", files[2]);
+                    Assert.Equal(@"buildTransitive/foo.props", files[3]);
+                    Assert.Equal(@"buildTransitive/net5.0/foo.props", files[4]);
+                    Assert.Equal(@"content/foo.jpg", files[5]);
+                    Assert.Equal(@"contentFiles/any/any/foo.png", files[6]);
+                    Assert.Equal(@"contentFiles/cs/net5.0/foo.cs", files[7]);
+                    Assert.Equal(@"embed/net5.0/foo.dll", files[8]);
+                    Assert.Equal(@"lib/net5.0/foo.dll", files[9]);
+                    Assert.Equal(@"ref/net5.0/foo.dll", files[10]);
+                    Assert.Equal(@"runtimes/win/native/foo.o", files[11]);
+                    Assert.Equal(@"tools/foo.dll", files[12]);
+                    Assert.Equal(13, files.Length);
+                }
+            }
+        }
+
+        [Fact]
         public void CreatePackageWithNuspecIncludeExcludeAnyGroup()
         {
             // Arrange

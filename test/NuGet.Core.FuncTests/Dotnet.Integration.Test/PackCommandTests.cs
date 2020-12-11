@@ -29,6 +29,54 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void CreatePackageWithFiles()
+        {
+            // Arrange
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "hello world");
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.props"), "<project />");
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.dll"), "");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var itemGroup = @"<ItemGroup>
+                    <None Include=""abc.props"" Pack=""True""  PackagePath=""build"" />
+                    <None Include=""abc.dll"" Pack=""True""  PackagePath=""lib"" />
+                    <Content Include=""abc.txt"" Pack=""True"" />
+</ItemGroup>";
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net5.0");
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, itemGroup);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles();
+                    Assert.Contains($"content/abc.txt", files);
+                    Assert.Contains($"build/abc.props", files);
+                    Assert.Contains($"lib/abc.dll", files);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_NewProject_OutputsInDefaultPaths()
         {
             // Arrange
