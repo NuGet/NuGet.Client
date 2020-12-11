@@ -235,6 +235,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Projects that have their packages managed centrally will not have Version metadata on PackageReference items.
                 return null;
             }
+            else if (string.IsNullOrEmpty(version))
+            {
+                // https://github.com/NuGet/Home/issues/9289
+                // Below is equalant as version doesn't have an inclusive lower bound.
+                return VersionRange.All;
+            }
 
             return VersionRange.Parse(version);
         }
