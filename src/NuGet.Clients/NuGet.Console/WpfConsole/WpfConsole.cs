@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -98,12 +99,17 @@ namespace NuGetConsole.Implementation.Console
         {
             get
             {
-                if (_vsStatusBar == null)
-                {
-                    _vsStatusBar = ServiceProvider.GetService<IVsStatusbar>(typeof(SVsStatusbar));
-                }
-                return _vsStatusBar;
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetVsStatusBarAsync);
             }
+        }
+
+        private async Task<IVsStatusbar> GetVsStatusBarAsync()
+        {
+            if (_vsStatusBar == null)
+            {
+                _vsStatusBar = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsStatusbar>();
+            }
+            return _vsStatusBar;
         }
 
         private IOleServiceProvider OleServiceProvider
@@ -600,13 +606,11 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        private void WriteProgress(string operation, int percentComplete)
+        private async Task WriteProgressAsync(string operation, int percentComplete)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (operation == null)
             {
-                throw new ArgumentNullException("operation");
+                throw new ArgumentNullException(nameof(operation));
             }
 
             if (percentComplete < 0)
@@ -621,11 +625,14 @@ namespace NuGetConsole.Implementation.Console
 
             if (percentComplete == 100)
             {
-                HideProgress();
+                await HideProgressAsync();
             }
             else
             {
-                VsStatusBar.Progress(
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var vsStatusBar = await GetVsStatusBarAsync();
+                vsStatusBar.Progress(
                     ref _pdwCookieForStatusBar,
                     1 /* in progress */,
                     operation,
@@ -637,8 +644,19 @@ namespace NuGetConsole.Implementation.Console
         private void HideProgress()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
             VsStatusBar.Progress(
+                ref _pdwCookieForStatusBar,
+                0 /* completed */,
+                string.Empty,
+                (uint)100,
+                (uint)100);
+        }
+
+        private async Task HideProgressAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var vsStatusBar = await GetVsStatusBarAsync();
+            vsStatusBar.Progress(
                 ref _pdwCookieForStatusBar,
                 0 /* completed */,
                 string.Empty,
@@ -848,10 +866,9 @@ namespace NuGetConsole.Implementation.Console
                 get { return Invoke(() => _impl.Content); }
             }
 
-            public async Task WriteProgressAsync(string operation, int percentComplete)
+            public Task WriteProgressAsync(string operation, int percentComplete)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _impl.WriteProgress(operation, percentComplete);
+                return _impl.WriteProgressAsync(operation, percentComplete);
             }
 
             public object VsTextView
