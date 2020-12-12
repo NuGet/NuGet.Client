@@ -44,8 +44,10 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void CreateCommitmentTypeIndication_WithUnknownSignature_Throws()
         {
-            Assert.Throws<ArgumentException>(
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(
                 () => AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Unknown));
+
+            Assert.Contains("signatureType", exception.Message);
         }
 
         [Fact]
