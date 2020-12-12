@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -20,7 +21,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (_asyncServiceProvider == null)
             {
-                throw new ArgumentNullException(nameof(_asyncServiceProvider));
+                throw new NullReferenceException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(_asyncServiceProvider)));
             }
 
             _settings = new AsyncLazy<Configuration.ISettings>(async () =>
