@@ -27,8 +27,8 @@
     <Compile Include="Feeds\SourceRepositoryCreator.cs" />
     <Compile Include="Feeds\SourceRepositoryExtensionsTests.cs" />
     <Compile Include="CpsPackageReferenceProjectTests.cs" />
+    <Compile Include="MockedVS.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
-    <Compile Include="DispatcherThreadCollection.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
     <Compile Include="Feeds\UpdatePackageFeedTests.cs" />
     <Compile Include="Feeds\InstalledPackageFeedTests.cs" />
@@ -37,6 +37,7 @@
     <Compile Include="ProjectSystems\ProjectSystemCacheTests.cs" />
     <Compile Include="ProjectSystems\TestVSProjectAdapter.cs" />
     <Compile Include="Projects\CpsPackageReferenceProjectProviderTests.cs" />
+    <Compile Include="Services\MockedVSCollectionTests.cs" />
     <Compile Include="Services\NuGetLockServiceTests.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceTests.cs" />
     <Compile Include="Services\TestSharedServiceState.cs" />
@@ -61,6 +62,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 

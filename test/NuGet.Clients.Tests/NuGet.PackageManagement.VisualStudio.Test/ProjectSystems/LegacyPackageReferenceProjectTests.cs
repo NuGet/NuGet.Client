@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -25,22 +25,22 @@ using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
-using Test.Utility.Threading;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
-    public class LegacyPackageReferenceProjectTests
+    [Collection(MockedVS.Collection)]
+    public class LegacyPackageReferenceProjectTests : MockedVSCollectionTests
     {
         private readonly IVsProjectThreadingService _threadingService;
 
-        public LegacyPackageReferenceProjectTests(DispatcherThreadFixture fixture)
+        public LegacyPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
         {
-            Assumes.Present(fixture);
+            globalServiceProvider.Reset();
 
-            _threadingService = new TestProjectThreadingService(fixture.JoinableTaskFactory);
+            _threadingService = new TestProjectThreadingService(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         [Fact]
