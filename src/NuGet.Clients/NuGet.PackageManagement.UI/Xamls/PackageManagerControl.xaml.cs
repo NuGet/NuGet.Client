@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -1406,6 +1407,50 @@ namespace NuGet.PackageManagement.UI
                 _windowSearchHost.Activate();
                 _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
             });
+        }
+
+        public void ShowUpdatePackages(string[] updatePackages)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (updatePackages == null)
+            {
+                return;
+            }
+
+            _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
+
+            // TODO: Can't depend on this variable. It will be false when Browse or Tab are selected yet somehow the list is still being refreshed.
+            if (_loadedAndInitialized)
+            {
+                SelectMatchingUpdatePackages(updatePackages);
+            }
+            else
+            {
+                EventHandler handler = null;
+                handler = (s, e) =>
+                {
+                    _packageList.LoadItemsCompleted -= handler;
+                    SelectMatchingUpdatePackages(updatePackages);
+                };
+                _packageList.LoadItemsCompleted += handler;
+            }
+        }
+
+        private void SelectMatchingUpdatePackages(string[] updatePackages)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (updatePackages == null)
+            {
+                return;
+            }
+
+            var packagesToSelect = new HashSet<string>(updatePackages);
+            foreach (var packageItem in _packageList.PackageItems)
+            {
+                packageItem.Selected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
+            }
         }
 
         public void CleanUp()

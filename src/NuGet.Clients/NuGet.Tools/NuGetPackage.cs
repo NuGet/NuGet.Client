@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Globalization;
@@ -402,39 +403,13 @@ namespace NuGetVSExtension
         private void ShowUpdatePackageDialog(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string[] packages = GetSelectedPackages();
+            string[] updatePackages = GetSelectedPackages();
 
+            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                if (ShouldMEFBeInitialized())
-                {
-                    await InitializeMEFAsync();
-                }
-
-                var windowFrame = await FindExistingSolutionWindowFrameAsync();
-                if (windowFrame == null)
-                {
-                    // Create the window frame
-                    windowFrame = await CreateDocWindowForSolutionAsync();
-                }
-
-                if (windowFrame != null)
-                {
-                    // process search string
-                    string parameterString = null;
-                    var args = e as OleMenuCmdEventArgs;
-                    if (args != null)
-                    {
-                        parameterString = args.InValue as string;
-                    }
-                    var searchText = GetSearchText(parameterString);
-                    Search(windowFrame, searchText);
-
-                    windowFrame.Show();
-                }
-            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
+                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString), updatePackages);
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowUpdatePackageDialog));
         }
 
         private void ExecutePowerConsoleCommand(object sender, EventArgs e)
@@ -721,56 +696,55 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
+            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                if (ShouldMEFBeInitialized())
-                {
-                    await InitializeMEFAsync();
-                }
-
-                string parameterString = null;
-                var args = e as OleMenuCmdEventArgs;
-                if (null != args)
-                {
-                    parameterString = args.InValue as string;
-                }
-                var searchText = GetSearchText(parameterString);
-
-                // *** temp code
-                var project = VsMonitorSelection.GetActiveProject();
-
-                if (project != null
-                    &&
-                    !project.IsUnloaded()
-                    &&
-                    await EnvDTEProjectUtility.IsSupportedAsync(project))
-                {
-                    var windowFrame = await FindExistingWindowFrameAsync(project);
-                    if (windowFrame == null)
-                    {
-                        windowFrame = await CreateNewWindowFrameAsync(project);
-                    }
-
-                    if (windowFrame != null)
-                    {
-                        Search(windowFrame, searchText);
-                        windowFrame.Show();
-                    }
-                }
-                else
-                {
-                    // show error message when no supported project is selected.
-                    var projectName = project != null ? project.Name : string.Empty;
-
-                    var errorMessage = string.IsNullOrEmpty(projectName)
-                        ? Resources.NoProjectSelected
-                        : string.Format(CultureInfo.CurrentCulture, Resources.DTE_ProjectUnsupported, projectName);
-
-                    MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
-                }
+                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString));
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
+        }
+
+        private async Task ShowManageLibraryPackageDialogAsync(string searchText, string[] updatePackages = null)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (ShouldMEFBeInitialized())
+            {
+                await InitializeMEFAsync();
+            }
+
+            // *** temp code
+            var project = VsMonitorSelection.GetActiveProject();
+
+            if (project != null
+                &&
+                !project.IsUnloaded()
+                &&
+                await EnvDTEProjectUtility.IsSupportedAsync(project))
+            {
+                var windowFrame = await FindExistingWindowFrameAsync(project);
+                if (windowFrame == null)
+                {
+                    windowFrame = await CreateNewWindowFrameAsync(project);
+                }
+
+                if (windowFrame != null)
+                {
+                    ShowUpdatePackages(windowFrame, updatePackages);
+                    Search(windowFrame, searchText);
+                    windowFrame.Show();
+                }
+            }
+            else
+            {
+                // show error message when no supported project is selected.
+                var projectName = project != null ? project.Name : string.Empty;
+
+                var errorMessage = string.IsNullOrEmpty(projectName)
+                    ? Resources.NoProjectSelected
+                    : string.Format(CultureInfo.CurrentCulture, Resources.DTE_ProjectUnsupported, projectName);
+
+                MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
+            }
         }
 
         private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
@@ -972,6 +946,19 @@ namespace NuGetVSExtension
             {
                 packageManagerControl.Search(searchText);
             }
+        }
+
+        private void ShowUpdatePackages(IVsWindowFrame windowFrame, string[] updatePackages)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (updatePackages == null)
+            {
+                return;
+            }
+
+            var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
+            packageManagerControl?.ShowUpdatePackages(updatePackages);
         }
 
         // For PowerShell, it's okay to query from the worker thread.

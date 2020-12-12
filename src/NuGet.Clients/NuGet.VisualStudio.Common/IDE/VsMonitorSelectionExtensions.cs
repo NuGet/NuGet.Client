@@ -34,7 +34,47 @@ namespace NuGet.VisualStudio
                 // multiple items are selected.
                 if (pitemid == (uint)VSConstants.VSITEMID.Selection)
                 {
-                    return null;
+                    uint numberOfSelectedItems;
+                    int isSingleHierarchyInt;
+                    if (ErrorHandler.Succeeded(ppMIS.GetSelectionInfo(out numberOfSelectedItems, out isSingleHierarchyInt)))
+                    {
+                        bool isSingleHierarchy = (isSingleHierarchyInt != 0);
+
+                        VSITEMSELECTION[] vsItemSelections = new VSITEMSELECTION[numberOfSelectedItems];
+                        uint flags = 0; // No flags, which will give us back a hierarchy for each item
+                        ErrorHandler.ThrowOnFailure(ppMIS.GetSelectedItems(flags, numberOfSelectedItems, vsItemSelections));
+
+                        if (isSingleHierarchy)
+                        {
+                            EnvDTE.Project lastProject = null;
+                            foreach (VSITEMSELECTION sel in vsItemSelections)
+                            {
+                                if (sel.pHier != null)
+                                {
+                                    IVsHierarchy selHierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
+                                    if (selHierarchy != null)
+                                    {
+                                        object project;
+                                        if (selHierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out project) >= 0)
+                                        {
+                                            var thisProject = project as EnvDTE.Project;
+                                            if (lastProject == null)
+                                            {
+                                                lastProject = thisProject;
+                                            }
+
+                                            if (thisProject != lastProject)
+                                            {
+                                                return null;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            return lastProject;
+                        }
+                    }
                 }
 
                 IVsHierarchy hierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
