@@ -210,7 +210,7 @@ namespace NuGet
             SemanticVersion other = obj as SemanticVersion;
             if (other == null)
             {
-                throw new ArgumentException("obj");
+                throw new ArgumentException("Argument must be of type 'SemanticVersion'.", nameof(obj));
             }
             return CompareTo(other);
         }
