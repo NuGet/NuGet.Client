@@ -2045,7 +2045,9 @@ namespace NuGet.PackageManagement
             {
                 if (project == null)
                 {
-                    throw new ArgumentNullException(nameof(project));
+                    throw new ArgumentException(
+                        message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(project)),
+                        paramName: nameof(nuGetProjects));
                 }
 
                 if (project is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
@@ -2076,7 +2078,9 @@ namespace NuGet.PackageManagement
             {
                 if (project == null)
                 {
-                    throw new ArgumentNullException(nameof(project));
+                    throw new ArgumentException(
+                        message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(project)),
+                        paramName: nameof(nuGetProjects));
                 }
 
                 // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
