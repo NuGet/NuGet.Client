@@ -412,6 +412,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        public static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
         /// </summary>
         public static string SolutionIsNotSaved {
