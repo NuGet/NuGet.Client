@@ -13,35 +13,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class NuGetServiceMessagePackRpcDescriptor : ServiceJsonRpcDescriptor
     {
-        private static readonly MessagePackSerializerOptions MessagePackSerializerOptions;
-
-        static NuGetServiceMessagePackRpcDescriptor()
-        {
-            var formatters = new IMessagePackFormatter[]
-            {
-                FloatRangeFormatter.Instance,
-                IInstalledAndTransitivePackagesFormatter.Instance,
-                IPackageReferenceContextInfoFormatter.Instance,
-                IProjectContextInfoFormatter.Instance,
-                IProjectMetadataContextInfoFormatter.Instance,
-                NuGetFrameworkFormatter.Instance,
-                NuGetVersionFormatter.Instance,
-                PackageDependencyFormatter.Instance,
-                PackageDependencyInfoFormatter.Instance,
-                PackageIdentityFormatter.Instance,
-                PackageReferenceFormatter.Instance,
-                PackageSourceFormatter.Instance,
-                PackageSourceUpdateOptionsFormatter.Instance,
-                ProjectActionFormatter.Instance,
-                RemoteErrorFormatter.Instance,
-                VersionRangeFormatter.Instance
-            };
-            var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
-
-            MessagePackSerializerOptions = MessagePackSerializerOptions.Standard
-                .WithSecurity(MessagePackSecurity.UntrustedData)
-                .WithResolver(CompositeResolver.Create(formatters, resolvers));
-        }
+        private static readonly Lazy<MessagePackSerializerOptions> MessagePackSerializerOptions =
+            new Lazy<MessagePackSerializerOptions>(CreateMessagePackSerializerOptions);
 
         internal NuGetServiceMessagePackRpcDescriptor(ServiceMoniker serviceMoniker)
             : base(serviceMoniker, Formatters.MessagePack, MessageDelimiters.BigEndianInt32LengthHeader)
