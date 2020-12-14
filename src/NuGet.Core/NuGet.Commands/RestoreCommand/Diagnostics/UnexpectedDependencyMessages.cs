@@ -32,7 +32,7 @@ namespace NuGet.Commands
             var indexedGraphs = graphList.Select(IndexedRestoreTargetGraph.Create).ToList();
 
             // Detect project dependency does not have a version.
-            var projectMissingVersions = GetProjectDependenciesMissingVersion(project);
+            var projectMissingVersions = GetProjectDependenciesHasNullVersion(project);
             ignoreIds.UnionWith(projectMissingVersions.Select(e => e.LibraryId));
             await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(projectMissingVersions));
 
@@ -175,16 +175,16 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Warn for project dependencies that do not have a version.
+        /// Warn for project dependencies that do has a null version.
         /// </summary>
-        public static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingVersion(PackageSpec project)
+        public static IEnumerable<RestoreLogMessage> GetProjectDependenciesHasNullVersion(PackageSpec project)
         {
             return project.GetAllPackageDependencies()
                    .Where(e => e.LibraryRange.VersionRange == null)
                    .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
                    .Select(e => RestoreLogMessage.CreateWarning(
                        code: NuGetLogCode.NU1609,
-                       message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingVersion,
+                       message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyHasNullVersion,
                                               DiagnosticUtility.FormatDependency(e.Name, e.LibraryRange.VersionRange)),
                        libraryId: e.Name,
                        targetGraphs: GetDependencyTargetGraphs(project, e)));

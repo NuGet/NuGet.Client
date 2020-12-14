@@ -617,10 +617,10 @@ namespace NuGet.Commands.Test
                 Name = "proj"
             };
 
-            var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingVersion(project).Single();
+            var log = UnexpectedDependencyMessages.GetProjectDependenciesHasNullVersion(project).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1609);
-            log.Message.Should().Be("Project dependency x has no declared version. Declare a version for the dependency to ensure consistent restore results.");
+            log.Message.Should().Be("Project dependency x has a null version. Include a non-null version for the dependency to ensure consistent restore results.");
         }
 
         [Fact]
@@ -885,6 +885,12 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void GivenTheAllRangeVerifyLowerBoundMissingIsTrue()
+        {
+            UnexpectedDependencyMessages.HasMissingLowerBound(VersionRange.All).Should().BeTrue();
+        }
+
+        [Fact]
         public async Task GivenAProjectHasPackageWithEmptyVersionRangeLogNullVersionWarning()
         {
             var testLogger = new TestLogger();
@@ -917,12 +923,6 @@ namespace NuGet.Commands.Test
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1602);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1603);
-        }
-
-        [Fact]
-        public void GivenTheAllRangeVerifyLowerBoundMissingIsTrue()
-        {
-            UnexpectedDependencyMessages.HasMissingLowerBound(VersionRange.All).Should().BeTrue();
         }
 
         private static List<LibraryDependency> GetDependencyList(LibraryRange range)
