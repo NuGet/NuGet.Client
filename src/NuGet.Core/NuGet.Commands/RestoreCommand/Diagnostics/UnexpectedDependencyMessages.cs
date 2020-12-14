@@ -179,7 +179,7 @@ namespace NuGet.Commands
                    .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
                    .Select(e => RestoreLogMessage.CreateWarning(
                        code: NuGetLogCode.NU1604,
-                       message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissing_Version_LowerBound,
+                       message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingLowerBound,
                                               DiagnosticUtility.FormatDependency(e.Name, e.LibraryRange.VersionRange)),
                        libraryId: e.Name,
                        targetGraphs: GetDependencyTargetGraphs(project, e)));

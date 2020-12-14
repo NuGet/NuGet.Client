@@ -258,7 +258,7 @@ namespace NuGet.Common
         NU1603 = 1603,
 
         /// <summary>
-        /// Project dependency has no resolved version or does not include a lower bound.
+        /// Project dependency does not include a lower bound.
         /// </summary>
         NU1604 = 1604,
 
