@@ -31,6 +31,11 @@ namespace NuGet.Commands
             // Index the flattened graph for faster lookups.
             var indexedGraphs = graphList.Select(IndexedRestoreTargetGraph.Create).ToList();
 
+            // Detect project dependency does not have a version.
+            var projectMissingVersions = GetProjectDependenciesMissingVersion(project);
+            ignoreIds.UnionWith(projectMissingVersions.Select(e => e.LibraryId));
+            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(projectMissingVersions));
+
             // 1. Detect project dependency authoring issues in the current project.
             //    The user can fix these themselves.
             var projectMissingLowerBounds = GetProjectDependenciesMissingLowerBounds(project);
@@ -170,6 +175,22 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Warn for project dependencies that do not have a version.
+        /// </summary>
+        public static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingVersion(PackageSpec project)
+        {
+            return project.GetAllPackageDependencies()
+                   .Where(e => e.LibraryRange.VersionRange == null)
+                   .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                   .Select(e => RestoreLogMessage.CreateWarning(
+                       code: NuGetLogCode.NU1609,
+                       message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingVersion,
+                                              DiagnosticUtility.FormatDependency(e.Name, e.LibraryRange.VersionRange)),
+                       libraryId: e.Name,
+                       targetGraphs: GetDependencyTargetGraphs(project, e)));
+        }
+
+        /// <summary>
         /// Warn for project dependencies that do not include a lower bound on the version range.
         /// </summary>
         public static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingLowerBounds(PackageSpec project)
@@ -210,9 +231,10 @@ namespace NuGet.Commands
         /// </summary>
         public static bool HasMissingLowerBound(VersionRange range)
         {
+            // Ignore version null
             if (range == null)
             {
-                return true;
+                return false;
             }
 
             // Ignore floating

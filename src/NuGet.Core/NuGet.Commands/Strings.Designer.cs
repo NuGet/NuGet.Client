@@ -2654,6 +2654,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project dependency {0} has no a version. Include a version for the dependency to ensure consistent restore results..
+        /// </summary>
+        internal static string Warning_ProjectDependencyMissingVersion {
+            get {
+                return ResourceManager.GetString("Warning_ProjectDependencyMissingVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; was included in the project but the path could not be resolved. Skipping....
         /// </summary>
         internal static string Warning_UnresolvedFilePath {

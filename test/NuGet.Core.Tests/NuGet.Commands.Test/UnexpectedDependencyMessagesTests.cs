@@ -287,6 +287,7 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1609);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
             testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1601);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1602);
@@ -321,6 +322,7 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1609);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
             testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1602);
@@ -355,6 +357,7 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1609);
             testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1604);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1602);
@@ -614,10 +617,10 @@ namespace NuGet.Commands.Test
                 Name = "proj"
             };
 
-            var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
+            var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingVersion(project).Single();
 
-            log.Code.Should().Be(NuGetLogCode.NU1604);
-            log.Message.Should().Be("Project dependency x does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.");
+            log.Code.Should().Be(NuGetLogCode.NU1609);
+            log.Message.Should().Be("Project dependency x has no declared version. Declare a version for the dependency to ensure consistent restore results.");
         }
 
         [Fact]
@@ -807,6 +810,7 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1609);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
             testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1603);
@@ -847,6 +851,7 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1609);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1603);
@@ -873,11 +878,48 @@ namespace NuGet.Commands.Test
             UnexpectedDependencyMessages.HasMissingLowerBound(VersionRange.Parse(s)).Should().BeFalse();
         }
 
-        public void GivenANullRangeVerifyLowerBoundMissingIsTrue()
+        [Fact]
+        public void GivenANullRangeVerifyLowerBoundMissingIsFalse()
         {
-            UnexpectedDependencyMessages.HasMissingLowerBound(range: null).Should().BeTrue();
+            UnexpectedDependencyMessages.HasMissingLowerBound(range: null).Should().BeFalse();
         }
 
+        [Fact]
+        public async Task GivenAProjectHasPackageWithEmptyVersionRangeLogNullVersionWarning()
+        {
+            var testLogger = new TestLogger();
+            VersionRange emptyVersionRange = null;
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", emptyVersionRange, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>
+            {
+                new GraphItem<RemoteResolveResult>(new LibraryIdentity("X", NuGetVersion.Parse("2.0.0"), LibraryType.Package))
+            };
+            var targetGraph = new Mock<IRestoreTargetGraph>();
+            targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
+            var parent = new LibraryIdentity("z", NuGetVersion.Parse("9.0.0"), LibraryType.Package);
+            var child = new LibraryIdentity("x", NuGetVersion.Parse("2.5.0"), LibraryType.Package);
+            var dependency = new ResolvedDependencyKey(parent, emptyVersionRange, child);
+            var dependencySet = new HashSet<ResolvedDependencyKey>() { dependency };
+            targetGraph.SetupGet(e => e.ResolvedDependencies).Returns(dependencySet);
+            var targetGraphs = new[] { targetGraph.Object };
+            var ignore = new HashSet<string>();
+
+            await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
+
+            testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1609);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1602);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1603);
+        }
+
+        [Fact]
         public void GivenTheAllRangeVerifyLowerBoundMissingIsTrue()
         {
             UnexpectedDependencyMessages.HasMissingLowerBound(VersionRange.All).Should().BeTrue();

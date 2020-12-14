@@ -277,6 +277,11 @@ namespace NuGet.Common
         NU1608 = 1608,
 
         /// <summary>
+        /// Null/Empty version.
+        /// </summary>
+        NU1609 = 1609,
+
+        /// <summary>
         /// Fallback framework used for a package reference.
         /// </summary>
         NU1701 = 1701,
