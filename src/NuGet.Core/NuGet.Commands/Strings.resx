@@ -555,8 +555,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Warning_MinVersionNonInclusive" xml:space="preserve">
     <value>{0} does not provide an inclusive lower bound for dependency {1}. An approximate best match of {2} was resolved.</value>
   </data>
-  <data name="Warning_ProjectDependencyMissingLowerBound" xml:space="preserve">
-    <value>Project dependency {0} does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.</value>
+  <data name="Warning_ProjectDependencyMissing_Version_LowerBound" xml:space="preserve">
+    <value>Project dependency {0} does not have version specified or does not contain an inclusive lower bound. Specify version or include a lower bound in the dependency version to ensure consistent restore results.</value>
   </data>
   <data name="Error_NoPackageVersionsExist" xml:space="preserve">
     <value>Unable to find package {0}. No packages exist with this id in source(s): {1}</value>
