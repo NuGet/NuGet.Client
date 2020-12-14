@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken))
             {
-                return await projectManager.GetTargetFrameworksAsync(projectContextInfo.ProjectId, cancellationToken);
+                return await projectManager.GetTargetFrameworksAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
             }
         }
 

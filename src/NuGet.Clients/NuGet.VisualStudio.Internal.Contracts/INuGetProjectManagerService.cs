@@ -21,7 +21,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
-            string projectId,
+            IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
             string projectId,

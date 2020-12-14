@@ -88,8 +88,8 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                             resolvedVersion = package.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
                         }
 
-                        transitivePackages[package.Id] = new ProjectInstalledPackage(package.VersionRange, new PackageIdentity(package.Id, resolvedVersion));
                         var packageIdentity = new PackageIdentity(package.Id, resolvedVersion);
+                        transitivePackages[package.Id] = new ProjectInstalledPackage(package.VersionRange, packageIdentity);
                         packageIdentities.Add(packageIdentity);
                     }
                 }

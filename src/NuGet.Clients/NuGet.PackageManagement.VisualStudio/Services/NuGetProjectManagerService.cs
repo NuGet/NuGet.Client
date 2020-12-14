@@ -230,40 +230,42 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public async ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
-            string projectId,
+            IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken)
         {
-            Assumes.NotNullOrEmpty(projectId);
+            Assumes.NotNullOrEmpty(projectIds);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
-                _sharedState.SolutionManager,
-                projectId,
-                cancellationToken);
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
-            Assumes.NotNull(project);
-
-            if (project is BuildIntegratedNuGetProject buildIntegratedProject)
-            {
-                if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)
+            HashSet<NuGetFramework> targetFrameworks = new HashSet<NuGetFramework>();
+            foreach (NuGetProject project in projects)
+            { 
+                if (project is BuildIntegratedNuGetProject buildIntegratedProject)
                 {
-                    return new NuGetFramework[] { legacyPackageReferenceProject.TargetFramework };
-                }
-                else
-                {
-                    var dgcContext = new DependencyGraphCacheContext();
-                    IReadOnlyList<ProjectModel.PackageSpec>? packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
+                    if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)
+                    {
+                        targetFrameworks.Add(legacyPackageReferenceProject.TargetFramework);
+                    }
+                    else
+                    {
+                        var dgcContext = new DependencyGraphCacheContext();
+                        IReadOnlyList<ProjectModel.PackageSpec>? packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
 
-                    IEnumerable<NuGetFramework>? targetFrameworks = packageSpecs
-                        .SelectMany(spec => spec.TargetFrameworks)
-                        .Select(f => f.FrameworkName);
+                        IEnumerable<NuGetFramework>? frameworks = packageSpecs
+                            .SelectMany(spec => spec.TargetFrameworks)
+                            .Select(f => f.FrameworkName);
 
-                    return targetFrameworks.ToArray();
+                        if (!(frameworks is null))
+                        {
+                            targetFrameworks.UnionWith(frameworks);
+                        }
+                    }
                 }
             }
 
-            return Array.Empty<NuGetFramework>();
+            return targetFrameworks;
         }
 
         public async ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken)
