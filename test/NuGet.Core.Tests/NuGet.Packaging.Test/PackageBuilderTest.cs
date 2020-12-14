@@ -2924,7 +2924,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
                 Assert.True(numberOfDateNotCorrectedFiles == 2);
                 Assert.True(numberOfDateCorrectedFiles > 0);
-                Assert.Equal(innerLogger.LogMessages.Count(l => l.Message.StartsWith("Content/file1.txt file lastwritetime(modified) timestamp changed from")), innerLogger.LogMessages.Count());
+                Assert.Equal(innerLogger.LogMessages.Count(l => l.Message.Contains("file lastwritetime(modified) timestamp changed from")), innerLogger.LogMessages.Count());
             }
         }
 
