@@ -228,7 +228,7 @@ namespace NuGet.CommandLine
                         Path.GetFullPath(Path.GetDirectoryName(TargetPath))), LogLevel.Minimal));
             }
 
-            builder = new Packaging.PackageBuilder();
+            builder = new Packaging.PackageBuilder(Logger);
 
             try
             {

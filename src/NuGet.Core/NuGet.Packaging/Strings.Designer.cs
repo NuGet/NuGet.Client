@@ -1949,5 +1949,14 @@ namespace NuGet.Packaging {
                 return ResourceManager.GetString("VerifyError_TimestampVerifyChainBuildingIssue", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} file lastwritetime(modified) timestamp changed from {1} to {2} due to zip file doesn&apos;t support timestamp before 01/01/1980 limitation..
+        /// </summary>
+        internal static string ZipFileTimeStampeModified {
+            get {
+                return ResourceManager.GetString("ZipFileTimeStampeModified", resourceCulture);
+            }
+        }
     }
 }

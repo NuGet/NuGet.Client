@@ -29,6 +29,7 @@ namespace NuGet.Packaging
         private readonly bool _includeEmptyDirectories;
         private readonly bool _deterministic;
         private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private readonly ILogger _logger = NullLogger.Instance;
 
         /// <summary>
         /// Maximum Icon file size: 1 megabyte
@@ -45,9 +46,21 @@ namespace NuGet.Packaging
         {
         }
 
+        public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, ILogger logger)
+            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories, deterministic)
+        {
+            _logger = logger;
+        }
+
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, basePath, propertyProvider, includeEmptyDirectories, deterministic: false)
         {
+        }
+
+        public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, ILogger logger)
+            : this(path, basePath, propertyProvider, includeEmptyDirectories, deterministic)
+        {
+            _logger = logger;
         }
 
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic)
@@ -86,6 +99,12 @@ namespace NuGet.Packaging
         public PackageBuilder()
             : this(includeEmptyDirectories: false, deterministic: false)
         {
+        }
+
+        public PackageBuilder(ILogger logger)
+            : this(includeEmptyDirectories: false, deterministic: false)
+        {
+            _logger = logger;
         }
 
         private PackageBuilder(bool includeEmptyDirectories, bool deterministic)
@@ -891,8 +910,24 @@ namespace NuGet.Packaging
         private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel)
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
-            // Here added 3 days just in case avoid TimeZone issue, otherwise we hit this when repackaging the files.
-            entry.LastWriteTime = timeOffset < ZipFormatMinDate.AddDays(3) ? ZipFormatMinDate.AddDays(3) : timeOffset;
+
+            // Here added 3 days, just in case to avoid any possible TimeZone issue, otherwise we hit this when repackaging the files.
+            if (timeOffset < ZipFormatMinDate.AddDays(3))
+            {
+                _logger.Log(
+                    PackagingLogMessage.CreateMessage(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ZipFileTimeStampeModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.AddDays(3).ToShortDateString()),
+                        LogLevel.Information));
+
+                entry.LastWriteTime = ZipFormatMinDate.AddDays(3);
+            }
+            else
+            {
+                entry.LastWriteTime = timeOffset;
+            }
+
             return entry;
         }
 

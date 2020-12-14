@@ -11,8 +11,11 @@ using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using Moq;
+using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -2867,10 +2870,12 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             var lastWriteTime = new DateTimeOffset(1979, 11, 15, 23, 59, 0, TimeSpan.Zero);
             int numberOfDateCorrectedFiles = 0;
             int numberOfDateNotCorrectedFiles = 0;
+            TestLogger innerLogger = new TestLogger();
+            ILogger logger = new PackCollectorLogger(innerLogger, new WarningProperties());
 
             using (var directory = new TestLastWriteTimeDirectory(lastWriteTime))
             {
-                var builder = new PackageBuilder { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                var builder = new PackageBuilder(logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
                 builder.Authors.Add("test");
 
                 // Create a file that is modified after 1980 and it shouldn't be modified.
@@ -2919,6 +2924,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
                 Assert.True(numberOfDateNotCorrectedFiles == 2);
                 Assert.True(numberOfDateCorrectedFiles > 0);
+                Assert.Equal(innerLogger.LogMessages.Count(l => l.Message.StartsWith("Content/file1.txt file lastwritetime(modified) timestamp changed from")), innerLogger.LogMessages.Count());
             }
         }
 
