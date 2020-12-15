@@ -33,12 +33,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static bool operator ==(ProjectPackages left, ProjectPackages right)
         {
-            return left.Equals(right);
+            throw new NotImplementedException();
         }
 
         public static bool operator !=(ProjectPackages left, ProjectPackages right)
         {
-            return !(left == right);
+            throw new NotImplementedException();
         }
     }
 }

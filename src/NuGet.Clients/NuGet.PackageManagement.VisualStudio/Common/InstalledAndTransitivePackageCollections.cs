@@ -31,12 +31,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static bool operator ==(InstalledAndTransitivePackageCollections left, InstalledAndTransitivePackageCollections right)
         {
-            return left.Equals(right);
+            throw new NotImplementedException();
         }
 
         public static bool operator !=(InstalledAndTransitivePackageCollections left, InstalledAndTransitivePackageCollections right)
         {
-            return !(left == right);
+            throw new NotImplementedException();
         }
     }
 }
