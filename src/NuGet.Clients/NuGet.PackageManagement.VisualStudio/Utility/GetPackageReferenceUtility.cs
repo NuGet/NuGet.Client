@@ -103,7 +103,8 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             return targets
                 ?.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
                 ?.Libraries
-                .FirstOrDefault(a => a.Name.Equals(libraryName, StringComparison.OrdinalIgnoreCase))?.Version;
+                ?.FirstOrDefault(a => a.Name.Equals(libraryName, StringComparison.OrdinalIgnoreCase))
+                ?.Version;
         }
 
         private static IReadOnlyList<PackageDependency> GetTransitivePackagesForLibrary(LockFileTargetLibrary library, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets)
@@ -111,9 +112,9 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             return targets
                 ?.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
                 ?.Libraries
-                .Where(lib => lib.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
+                ?.Where(lib => lib.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
                 ?.SelectMany(lib => lib.Dependencies)
-                .ToList();
+                ?.ToList();
         }
     }
 }

@@ -78,6 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectServices,
                 threadingService)
         {
+            Assumes.NotNull(targetFramework);
             TargetFramework = targetFramework;
         }
 

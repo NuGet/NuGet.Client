@@ -188,7 +188,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<PackageReference>[] nonPrStyleReferences = await Task.WhenAll(nonPrStyleTasks);
 
             // combine all of the installed package references
-            IEnumerable<IEnumerable<PackageReference>>? installedPackages = nonPrStyleReferences
+            IEnumerable<IEnumerable<PackageReference>> installedPackages = nonPrStyleReferences
                 .Concat(prStyleReferences
                     .Select(p => p.InstalledPackages));
 
