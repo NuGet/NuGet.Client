@@ -21,7 +21,7 @@
         <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" version="[16.7.156-pre]" />
         <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed" version="[16.7.0-beta1-65318-02]" />
         <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" version="[16.7.0-beta1-65318-02]" />
-        <PackageDownload Include="Microsoft.Web.Xdt" version="[2.1.2]" />
+        <PackageDownload Include="Microsoft.Web.Xdt" version="[3.0.0]" />
         <PackageDownload Include="Newtonsoft.Json" version="[9.0.1]" />
         <PackageDownload Include="NuGet.Build.Tasks.Pack" version="[5.8.0]" />
         <PackageDownload Include="NuGet.Client.EndToEnd.TestData" version="[1.0.0]" />
