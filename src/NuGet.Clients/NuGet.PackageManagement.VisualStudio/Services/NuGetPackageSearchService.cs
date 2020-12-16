@@ -367,10 +367,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedFeedType, itemFilter));
         }
 
-        private Task<IReadOnlyList<SourceRepository>> GetGlobalPackageFolderRepositoriesAsync()
+        private async Task<IReadOnlyList<SourceRepository>> GetGlobalPackageFolderRepositoriesAsync()
         {
             var settings = ServiceLocator.GetInstance<ISettings>();
-            return Task.FromResult(NuGetPackageManager.GetGlobalPackageFolderRepositories(_sharedServiceState.SourceRepositoryProvider, settings));
+            NuGetPackageManager packageManager = await _sharedServiceState.PackageManager.GetValueAsync();
+            return packageManager.GlobalPackageFolderRepositories;
         }
 
         private async Task<SourceRepository> GetPackagesFolderSourceRepositoryAsync()
