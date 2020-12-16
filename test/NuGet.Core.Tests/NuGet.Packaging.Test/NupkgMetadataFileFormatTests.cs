@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -58,7 +61,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void NupkgMetadataFileFormat_Write()
+        public void Write_WithObject_RoundTrips()
         {
             var nupkgMetadataFileContent = @"{
                 ""version"": 2,
@@ -81,6 +84,65 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(expected.ToString(), output.ToString());
             }
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("1")]
+        [InlineData("[]")]
+        public void Read_ContentsNotAnObject_ThrowsException(string contents)
+        {
+            // Arrange
+            var logger = new TestLogger();
+
+            // Act
+            using (var stringReader = new StringReader(contents))
+            {
+                Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
+            }
+
+            // Assert
+            Assert.Equal(1, logger.Messages.Count);
+        }
+
+        [Fact]
+        public void Read_ContentsInvalidJson_ThrowsJsonReaderException()
+        {
+            // Arrange
+            var logger = new TestLogger();
+
+            // Act
+            using (var stringReader = new StringReader(@"{""version"":"))
+            {
+                Assert.Throws<JsonReaderException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
+            }
+
+            // Assert
+            Assert.Equal(1, logger.Messages.Count);
+        }
+
+        [Fact]
+        public void Read_ContentsWithUnexpectedValues_IgnoresUnexpectedValues()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var nupkgMetadataFileContent = @"{
+                ""version"": 2,
+                ""contentHash"": ""NhfNp80eWq5ms7fMrjuRqpwhL1H56IVzXF9d+OIDcEfQ92m1DyE0c+ufUE1ogB09+sYLd58IO4eJ8jyn7AifbA=="",
+                ""source"": ""https://source/v3/index.json"",
+                ""number"": 1,
+                ""array"": [],
+                ""object"": {}
+            }";
+
+            // Act
+            using (var stringReader = new StringReader(nupkgMetadataFileContent))
+            {
+                NupkgMetadataFileFormat.Read(stringReader, logger, "from memory");
+            }
+
+            // Assert
+            Assert.Equal(0, logger.Messages.Count);
         }
     }
 }
