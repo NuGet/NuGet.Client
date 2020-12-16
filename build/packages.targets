@@ -59,9 +59,10 @@
         <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="$(VSThreadingVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="16.6.55-preview-0003" />
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.Web.Xdt" Version="2.1.2" />
+        <PackageReference Update="Microsoft.Web.Xdt" Version="3.0.0" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
         <PackageReference Update="System.Collections.Immutable" Version="1.7.1" />
+        <PackageReference Update="System.ComponentModel.Composition" Version="4.5.0" />
         <PackageReference Update="System.Diagnostics.Debug" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Cng" Version="$(CryptographyPackagesVersion)" />
