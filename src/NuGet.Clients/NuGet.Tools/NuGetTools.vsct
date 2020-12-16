@@ -151,7 +151,7 @@
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <CommandName>cmdidUpdatePackage</CommandName>
+          <CommandName>cmdidUpdatePackages</CommandName>
           <ButtonText>U&amp;pdate...</ButtonText>
         </Strings>
       </Button>
