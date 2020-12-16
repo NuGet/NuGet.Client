@@ -912,7 +912,7 @@ namespace NuGet.Packaging
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
 
-            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has, most likely bug on their side.
             if (timeOffset.UtcDateTime < ZipFormatMinDate)
             {
                 _logger.Log(

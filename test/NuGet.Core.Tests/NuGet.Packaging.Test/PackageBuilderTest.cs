@@ -2981,7 +2981,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                         {
                             string path = Path.Combine(directory.Path, entry.Name);
 
-                            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+                            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has, most likely bug on their side.
                             // That is why you see this datetime interval instead of actual == of datetimes.
                             // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
@@ -2994,7 +2994,6 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                                 }
                                 else if (path == before2107File3)
                                 {
-                                    // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
                                     Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMaxDate.AddSeconds(-2) && entry.LastWriteTime.DateTime <= ZipFormatMaxDate.AddSeconds(-1));
                                 }
                                 else
