@@ -136,27 +136,23 @@
 
       <Button guid="guidDialogCmdSet" id="cmdidUpdatePackage" priority="0x0100" type="Button">
         <Parent guid="guidPackageManagementCmdSet" id="idPackageUpdateGroup" />
-        <Icon guid="ImageCatalogGuid" id="StatusAlert" />
-        <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>AllowParams</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <CommandName>cmdidUpdatePackage</CommandName>
-          <ButtonText>&amp;Update...</ButtonText>
+          <ButtonText>U&amp;pdate...</ButtonText>
         </Strings>
       </Button>
 
       <Button guid="guidDialogCmdSet" id="cmdidUpdatePackages" priority="0x0100" type="Button">
         <Parent guid="guidPackageManagementCmdSet" id="idPackageManagementGroup" />
-        <Icon guid="ImageCatalogGuid" id="StatusAlert" />
-        <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>AllowParams</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <CommandName>cmdidUpdatePackage</CommandName>
-          <ButtonText>U&amp;pdate All...</ButtonText>
+          <ButtonText>U&amp;pdate...</ButtonText>
         </Strings>
       </Button>
     </Buttons>
