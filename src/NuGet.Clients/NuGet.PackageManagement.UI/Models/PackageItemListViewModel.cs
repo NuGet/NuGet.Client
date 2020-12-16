@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string Id  { get; set; }
+        public string Id { get; set; }
 
         public NuGetVersion Version { get; set; }
 
