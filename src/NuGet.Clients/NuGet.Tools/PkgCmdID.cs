@@ -16,5 +16,6 @@ namespace NuGetVSExtension
         public const int cmdIdVisualizer = 0x0310;
         public const int cmdidDebugConsole = 0x0900;
         public const int cmdidUpdatePackage = 0x0500;
+        public const int cmdidUpdatePackages = 0x0600;
     }
 }

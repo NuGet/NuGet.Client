@@ -24,8 +24,9 @@ namespace NuGet.VisualStudio
 
             try
             {
-                vsMonitorSelection.GetCurrentSelection(out ppHier, out pitemid, out ppMIS, out ppSC);
+                IVsHierarchy hierarchy = null;
 
+                vsMonitorSelection.GetCurrentSelection(out ppHier, out pitemid, out ppMIS, out ppSC);
                 if (ppHier == IntPtr.Zero)
                 {
                     return null;
@@ -44,40 +45,18 @@ namespace NuGet.VisualStudio
                         uint flags = 0; // No flags, which will give us back a hierarchy for each item
                         ErrorHandler.ThrowOnFailure(ppMIS.GetSelectedItems(flags, numberOfSelectedItems, vsItemSelections));
 
-                        if (isSingleHierarchy)
+                        if (isSingleHierarchy && vsItemSelections.Length > 0)
                         {
-                            EnvDTE.Project lastProject = null;
-                            foreach (VSITEMSELECTION sel in vsItemSelections)
-                            {
-                                if (sel.pHier != null)
-                                {
-                                    IVsHierarchy selHierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
-                                    if (selHierarchy != null)
-                                    {
-                                        object project;
-                                        if (selHierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out project) >= 0)
-                                        {
-                                            var thisProject = project as EnvDTE.Project;
-                                            if (lastProject == null)
-                                            {
-                                                lastProject = thisProject;
-                                            }
-
-                                            if (thisProject != lastProject)
-                                            {
-                                                return null;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            return lastProject;
+                            VSITEMSELECTION sel = vsItemSelections[0];
+                            hierarchy = sel.pHier;
                         }
                     }
                 }
+                else
+                {
+                    hierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
+                }
 
-                IVsHierarchy hierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
                 if (hierarchy != null)
                 {
                     object project;

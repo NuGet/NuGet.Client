@@ -396,9 +396,9 @@ namespace NuGet.PackageManagement.UI
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            // Do not trigger a refresh if the browse tab is open and this is not the first load of the control.
+            // Do not trigger a refresh if this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
-            if (!(_loadedAndInitialized && _topPanel.Filter == ItemFilter.All))
+            if (!(_loadedAndInitialized))
             {
                 _loadedAndInitialized = true;
                 ResetTabDataLoadFlags();
@@ -1418,15 +1418,18 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
-
-            // TODO: Can't depend on this variable. It will be false when Browse or Tab are selected yet somehow the list is still being refreshed.
-            if (_loadedAndInitialized)
+            if (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabDataIsLoaded)
             {
+                SelectMatchingUpdatePackages(updatePackages);
+            }
+            else if (_topPanel.Filter == ItemFilter.Installed && _updatesTabDataIsLoaded)
+            {
+                _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
                 SelectMatchingUpdatePackages(updatePackages);
             }
             else
             {
+                _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
                 EventHandler handler = null;
                 handler = (s, e) =>
                 {
@@ -1446,10 +1449,21 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            var packagesToSelect = new HashSet<string>(updatePackages);
-            foreach (var packageItem in _packageList.PackageItems)
+            // The sentinal * was passed in as the list of update packages which indicates to select all
+            if ("*".Equals(updatePackages[0], StringComparison.Ordinal))
             {
-                packageItem.Selected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
+                foreach (var packageItem in _packageList.PackageItems)
+                {
+                    packageItem.Selected = true;
+                }
+            }
+            else
+            {
+                var packagesToSelect = new HashSet<string>(updatePackages);
+                foreach (var packageItem in _packageList.PackageItems)
+                {
+                    packageItem.Selected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
+                }
             }
         }
 

@@ -309,6 +309,11 @@ namespace NuGetVSExtension
                 var updatePackageDialogCommand = new OleMenuCommand(ShowUpdatePackageDialog, changeHandler: null, BeforeQueryStatusForUpdatePackageDialog, updatePackageDialogCommandID);
                 updatePackageDialogCommand.ParametersDescription = "$";
                 _mcs.AddCommand(updatePackageDialogCommand);
+
+                var updatePackagesDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpdatePackages);
+                var updatePackagesDialogCommand = new OleMenuCommand(ShowUpdatePackagesDialog, changeHandler: null, BeforeQueryStatusForUpdatePackageDialog, updatePackagesDialogCommandID);
+                updatePackageDialogCommand.ParametersDescription = "$";
+                _mcs.AddCommand(updatePackagesDialogCommand);
             }
         }
 
@@ -341,10 +346,13 @@ namespace NuGetVSExtension
                     IVsHierarchy hierarchy = Marshal.GetTypedObjectForIUnknown(hierarchyPtr, typeof(IVsHierarchy)) as IVsHierarchy;
                     if (hierarchy != null)
                     {
-                        object treeCapabilities;
-                        if (hierarchy.GetProperty(itemId, (int)__VSHPROPID7.VSHPROPID_ProjectTreeCapabilities, out treeCapabilities) >= 0)
+                        if (ErrorHandler.Succeeded(hierarchy.GetProperty(itemId, (int)__VSHPROPID7.VSHPROPID_ProjectTreeCapabilities, out object treeCapabilities)))
                         {
-                            packages.Add(ParsePackageNameFromTreeCapabilities(treeCapabilities?.ToString()));
+                            string packageName = ParsePackageNameFromTreeCapabilities(treeCapabilities?.ToString());
+                            if (packageName != null)
+                            {
+                                packages.Add(packageName);
+                            }
                         }
                     }
                 }
@@ -391,13 +399,41 @@ namespace NuGetVSExtension
             }
         }
 
+        private bool IsPackageDependencyGroup(string treeCapabilities)
+        {
+            const string packageDependencyGroup = "PackageDependencyGroup";
+
+            if (treeCapabilities == null)
+            {
+                return false;
+            }
+
+            return treeCapabilities.Split(' ').Contains(packageDependencyGroup);
+        }
+
         private string ParsePackageNameFromTreeCapabilities(string treeCapabilities)
         {
             const string packageNamePrefix = "$ID:";
 
-            string[] capabilities = treeCapabilities?.Split(' ');
-            string packageName = capabilities?.SingleOrDefault(p => p.StartsWith(packageNamePrefix, StringComparison.Ordinal));
+            if (treeCapabilities == null)
+            {
+                return null;
+            }
+
+            string[] capabilities = treeCapabilities.Split(' ');
+            string packageName = capabilities.SingleOrDefault(p => p.StartsWith(packageNamePrefix, StringComparison.Ordinal));
             return packageName?.Substring(packageNamePrefix.Length);
+        }
+
+        private void ShowUpdatePackagesDialog(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                var updatePackages = new string[1] { "*" };
+                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString), updatePackages);
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowUpdatePackageDialog));
         }
 
         private void ShowUpdatePackageDialog(object sender, EventArgs e)
