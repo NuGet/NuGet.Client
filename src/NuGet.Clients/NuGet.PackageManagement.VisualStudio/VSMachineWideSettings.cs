@@ -15,15 +15,15 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VsMachineWideSettings : Configuration.IMachineWideSettings
     {
         private readonly AsyncLazy<Configuration.ISettings> _settings;
-        private readonly IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
 
         public VsMachineWideSettings()
+            : this(AsyncServiceProvider.GlobalProvider)
+        { }
+
+        private VsMachineWideSettings(IAsyncServiceProvider asyncServiceProvider)
         {
-            if (_asyncServiceProvider == null)
-            {
-                throw new NullReferenceException(
-                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(_asyncServiceProvider)));
-            }
+            _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
 
             _settings = new AsyncLazy<Configuration.ISettings>(async () =>
                 {
