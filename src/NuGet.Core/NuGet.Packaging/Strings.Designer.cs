@@ -1951,11 +1951,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} file lastwritetime(modified) timestamp changed from {1} to {2} due to zip file doesn&apos;t support timestamp before 01/01/1980 limitation..
+        ///   Looks up a localized string similar to Last write timestamp for &apos;{0}&apos; changed from &apos;{1}&apos; to &apos;{2}&apos; because the zip file format does not support timestamp values before 01/01/1980 or after 12/31/2107..
         /// </summary>
-        internal static string ZipFileTimeStampeModified {
+        internal static string ZipFileTimeStampModified {
             get {
-                return ResourceManager.GetString("ZipFileTimeStampeModified", resourceCulture);
+                return ResourceManager.GetString("ZipFileTimeStampModified", resourceCulture);
             }
         }
     }

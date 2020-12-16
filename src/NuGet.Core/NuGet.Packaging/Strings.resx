@@ -859,8 +859,8 @@ Valid from:</comment>
     <value>Some framework assembly reference TFMs are missing a platform version: {0}</value>
     <comment>0 - comma-separated list of reference group TFMs</comment>
   </data>
-  <data name="ZipFileTimeStampeModified" xml:space="preserve">
-    <value>{0} file lastwritetime(modified) timestamp changed from {1} to {2} due to zip file doesn't support timestamp before 01/01/1980 limitation.</value>
+  <data name="ZipFileTimeStampModified" xml:space="preserve">
+    <value>Last write timestamp for '{0}' changed from '{1}' to '{2}' because the zip file format does not support timestamp values before 01/01/1980 or after 12/31/2107.</value>
     <comment>0 - Entry name
 1 - original modified timestamp
 2 - new modified timestamp</comment>

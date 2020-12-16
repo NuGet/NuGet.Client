@@ -24,6 +24,9 @@ namespace NuGet.Packaging.Test
 {
     public class PackageBuilderTest
     {
+        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime ZipFormatMaxDate = new DateTime(2107, 12, 31, 23, 59, 58, DateTimeKind.Utc);
+
         [Fact]
         public void CreatePackageWithEmptyFoldersForV3Folders()
         {
@@ -2865,26 +2868,28 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         {
             // https://github.com/NuGet/Home/issues/7001
             // Act
-            DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            DateTime Year2017Date = new DateTime(2017, 1, 15, 23, 59, 0, DateTimeKind.Utc);
-            var lastWriteTime = new DateTimeOffset(1979, 11, 15, 23, 59, 0, TimeSpan.Zero);
+            DateTime Year2020Date = new DateTime(2020, 12, 14, 23, 59, 7, DateTimeKind.Utc);
+            DateTimeOffset lastWriteTime = ZipFormatMinDate.AddSeconds(-1);
             int numberOfDateCorrectedFiles = 0;
             int numberOfDateNotCorrectedFiles = 0;
             TestLogger innerLogger = new TestLogger();
             ILogger logger = new PackCollectorLogger(innerLogger, new WarningProperties());
 
-            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime))
+            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime.LocalDateTime))
             {
                 var builder = new PackageBuilder(logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
                 builder.Authors.Add("test");
 
-                // Create a file that is modified after 1980 and it shouldn't be modified.
+                // Create a file that is modified after 01/01/1980 0:00:00 UTC (midnight) and it shouldn't be modified.
                 string after1980File1 = Path.Combine(directory.Path, "After1980.txt");
                 string after1980File2 = Path.Combine(directory.Path, "After1980_2.txt");
+                string after1980File3 = Path.Combine(directory.Path, "After1980_3.txt");
                 File.WriteAllText(after1980File1, string.Empty);
                 File.WriteAllText(after1980File2, string.Empty);
-                File.SetLastWriteTime(after1980File1, ZipFormatMinDate.AddDays(3).AddHours(1));
-                File.SetLastWriteTime(after1980File2, Year2017Date);
+                File.WriteAllText(after1980File3, string.Empty);
+                File.SetLastWriteTime(after1980File1, Year2020Date);
+                File.SetLastWriteTime(after1980File2, ZipFormatMinDate);
+                File.SetLastWriteTime(after1980File3, ZipFormatMinDate.AddSeconds(1));
 
                 builder.AddFiles(directory.Path, "**", "Content");
 
@@ -2898,23 +2903,29 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                         foreach (ZipArchiveEntry entry in archive.Entries)
                         {
                             string path = Path.Combine(directory.Path, entry.Name);
+
+                            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+                            // That is why you see this datetime interval instead of actual == of datetimes.
                             // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
                             {
                                 if (path == after1980File1)
                                 {
-                                    Assert.Equal(entry.LastWriteTime.DateTime, ZipFormatMinDate.AddDays(3).AddHours(1));
+                                    // File from 2020
+                                    // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+                                    Assert.True(entry.LastWriteTime.DateTime >= Year2020Date.AddSeconds(-1) && entry.LastWriteTime.DateTime <= Year2020Date);
                                     numberOfDateNotCorrectedFiles++;
                                 }
-                                else if (path == after1980File2)
+                                else if (path == after1980File3)
                                 {
-                                    Assert.Equal(entry.LastWriteTime.DateTime, Year2017Date);
-                                    numberOfDateNotCorrectedFiles++;
+                                    // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMinDate && entry.LastWriteTime.DateTime <= ZipFormatMinDate.AddSeconds(1));
                                 }
                                 else
                                 {
-                                    Assert.NotEqual(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
-                                    Assert.Equal(entry.LastWriteTime.DateTime, ZipFormatMinDate.AddDays(3));
+                                    // Files on 1/1/1980 00:00:01 UTC timestamp and before that.
+                                    // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMinDate.AddSeconds(-1) && entry.LastWriteTime.DateTime <= ZipFormatMinDate);
                                     numberOfDateCorrectedFiles++;
                                 }
                             }
@@ -2922,9 +2933,84 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
 
-                Assert.True(numberOfDateNotCorrectedFiles == 2);
+                Assert.True(numberOfDateNotCorrectedFiles == 1);
                 Assert.True(numberOfDateCorrectedFiles > 0);
-                Assert.Equal(innerLogger.LogMessages.Count(l => l.Message.Contains("file lastwritetime(modified) timestamp changed from")), innerLogger.LogMessages.Count());
+                Assert.Equal(innerLogger.LogMessages.Count(l => l.Message.Contains("because the zip file format does not support timestamp values before")), innerLogger.LogMessages.Count());
+            }
+        }
+
+        [Fact]
+        public void PackageBuilderCorrectLastWriteTimeForZipfileAfter2107()
+        {
+            // https://github.com/NuGet/Home/issues/7001
+            // Act
+            DateTime Year2020Date = new DateTime(2020, 12, 14, 23, 59, 2, DateTimeKind.Utc);
+            // Exact midnight of 12/31/2107, 23:59:59 UTC
+            DateTimeOffset lastSecondOf2107 = ZipFormatMaxDate.AddSeconds(1);
+            int numberOfDateCorrectedFiles = 0;
+            int numberOfDateNotCorrectedFiles = 0;
+            TestLogger innerLogger = new TestLogger();
+            ILogger logger = new PackCollectorLogger(innerLogger, new WarningProperties());
+
+            using (var directory = new TestLastWriteTimeDirectory(lastSecondOf2107))
+            {
+                var builder = new PackageBuilder(logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                builder.Authors.Add("test");
+
+                // Create a file that is modified before 12/31/2107 23:59:58 UTC and it shouldn't be modified.
+                string before2107File1 = Path.Combine(directory.Path, "Before2107_1.txt");
+                string before2107File2 = Path.Combine(directory.Path, "Before2107_2.txt");
+                string before2107File3 = Path.Combine(directory.Path, "Before2107_3.txt");
+                File.WriteAllText(before2107File1, string.Empty);
+                File.WriteAllText(before2107File2, string.Empty);
+                File.WriteAllText(before2107File3, string.Empty);
+                File.SetLastWriteTime(before2107File1, Year2020Date);
+                File.SetLastWriteTime(before2107File2, ZipFormatMaxDate);
+                File.SetLastWriteTime(before2107File3, ZipFormatMaxDate.AddSeconds(-1));
+
+                builder.AddFiles(directory.Path, "**", "Content");
+
+                using (var stream = new MemoryStream())
+                {
+                    builder.Save(stream);
+
+                    // Assert
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                    {
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            string path = Path.Combine(directory.Path, entry.Name);
+
+                            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+                            // That is why you see this datetime interval instead of actual == of datetimes.
+                            // Only checks the entries that originated from files in test directory
+                            if (File.Exists(path))
+                            {
+                                if (path == before2107File1)
+                                {
+                                    // File from 2020
+                                    Assert.True(entry.LastWriteTime.DateTime >= Year2020Date.AddSeconds(-1) && entry.LastWriteTime.DateTime <= Year2020Date);
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else if (path == before2107File3)
+                                {
+                                    // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMaxDate.AddSeconds(-2) && entry.LastWriteTime.DateTime <= ZipFormatMaxDate.AddSeconds(-1));
+                                }
+                                else
+                                {
+                                    // File from 12/31/2107, 23:59:58 UTC and after that
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMaxDate.AddSeconds(-1) && entry.LastWriteTime.DateTime <= ZipFormatMaxDate);
+                                    numberOfDateCorrectedFiles++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Assert.True(numberOfDateNotCorrectedFiles == 1);
+                Assert.True(numberOfDateCorrectedFiles > 0);
+                Assert.Equal(innerLogger.LogMessages.Count(l => l.Message.Contains("because the zip file format does not support timestamp values before")), innerLogger.LogMessages.Count());
             }
         }
 

@@ -29,6 +29,7 @@ namespace NuGet.Packaging
         private readonly bool _includeEmptyDirectories;
         private readonly bool _deterministic;
         private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime ZipFormatMaxDate = new DateTime(2107, 12, 31, 23, 59, 58, DateTimeKind.Utc);
         private readonly ILogger _logger = NullLogger.Instance;
 
         /// <summary>
@@ -911,17 +912,28 @@ namespace NuGet.Packaging
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
 
-            // Here added 3 days, just in case to avoid any possible TimeZone issue, otherwise we hit this when repackaging the files.
-            if (timeOffset < ZipFormatMinDate.AddDays(3))
+            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+            if (timeOffset.UtcDateTime < ZipFormatMinDate)
             {
                 _logger.Log(
                     PackagingLogMessage.CreateMessage(
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.ZipFileTimeStampeModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.AddDays(3).ToShortDateString()),
+                            Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()),
                         LogLevel.Information));
 
-                entry.LastWriteTime = ZipFormatMinDate.AddDays(3);
+                entry.LastWriteTime = ZipFormatMinDate;
+            }
+            else if (timeOffset.UtcDateTime > ZipFormatMaxDate)
+            {
+                _logger.Log(
+                    PackagingLogMessage.CreateMessage(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
+                        LogLevel.Information));
+
+                entry.LastWriteTime = ZipFormatMaxDate;
             }
             else
             {
