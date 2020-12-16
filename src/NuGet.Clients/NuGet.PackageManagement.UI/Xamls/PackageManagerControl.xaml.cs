@@ -1430,6 +1430,9 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
+
+                // Hook up an event handler to delay selecting packages until they've all loaded, then unhook
+                // the event handler so it doesn't keep happening on every refresh, only the initial load.
                 EventHandler handler = null;
                 handler = (s, e) =>
                 {
@@ -1449,7 +1452,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            // The sentinal * was passed in as the list of update packages which indicates to select all
+            // Select all packages if the sentinal * is the first item of the update packages list
             if ("*".Equals(updatePackages[0], StringComparison.Ordinal))
             {
                 foreach (var packageItem in _packageList.PackageItems)
