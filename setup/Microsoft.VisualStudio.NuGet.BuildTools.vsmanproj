@@ -34,7 +34,7 @@
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(DropFolder)" />
   </Target>
 
-  <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets" />
+  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
 
   <Target Name="ValidateManifest" Condition="'$(IsVsixBuild)' == 'true'"/>
 </Project>
