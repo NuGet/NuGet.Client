@@ -466,6 +466,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null or empty..
+        /// </summary>
+        public static string ArgumentNullOrEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Building project &apos;{0}&apos; for target framework &apos;{1}&apos;..
         /// </summary>
         public static string BuildingProjectTargetingFramework {
