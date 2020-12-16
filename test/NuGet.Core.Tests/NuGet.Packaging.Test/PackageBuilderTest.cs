@@ -2904,7 +2904,9 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                         {
                             string path = Path.Combine(directory.Path, entry.Name);
 
-                            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what entry.LastWriteTime has, most likely bug on their what we specified here.
+                            // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
+                            // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
+                            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.The ZIP format has no notion of time zone, so timestamps are only meaningful if it is known what time zone they were created in.
                             // That is why you see this datetime interval instead of actual == of datetimes.
                             // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
@@ -2934,8 +2936,9 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 }
 
                 Assert.True(numberOfDateNotCorrectedFiles == 1);
-                Assert.True(numberOfDateCorrectedFiles > 0);
-                Assert.Equal(innerLogger.LogMessages.Count(l => l.Message.Contains("because the zip file format does not support timestamp values before")), innerLogger.LogMessages.Count());
+                Assert.True(numberOfDateCorrectedFiles > 1);
+                Assert.Equal(innerLogger.LogMessages.Count, 1);
+                Assert.True(innerLogger.LogMessages.First().Message.Contains("because the zip file format does not support timestamp values before"));
             }
         }
 
@@ -2981,7 +2984,9 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                         {
                             string path = Path.Combine(directory.Path, entry.Name);
 
-                            // Please note: ZipArchive stream reader randomly changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has, most likely bug on their side.
+                            // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
+                            // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
+                            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.The ZIP format has no notion of time zone, so timestamps are only meaningful if it is known what time zone they were created in.
                             // That is why you see this datetime interval instead of actual == of datetimes.
                             // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
@@ -3008,8 +3013,9 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 }
 
                 Assert.True(numberOfDateNotCorrectedFiles == 1);
-                Assert.True(numberOfDateCorrectedFiles > 0);
-                Assert.Equal(innerLogger.LogMessages.Count(l => l.Message.Contains("because the zip file format does not support timestamp values before")), innerLogger.LogMessages.Count());
+                Assert.True(numberOfDateCorrectedFiles > 1);
+                Assert.Equal(innerLogger.LogMessages.Count, 1);
+                Assert.True(innerLogger.LogMessages.First().Message.Contains("because the zip file format does not support timestamp values before"));
             }
         }
 
