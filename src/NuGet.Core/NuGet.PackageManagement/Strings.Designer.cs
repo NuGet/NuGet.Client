@@ -1024,6 +1024,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Either should have value in {0} for {1} or {2} &amp; {3}..
+        /// </summary>
+        internal static string UnableToFindPathInLookupOrList {
+            get {
+                return ResourceManager.GetString("UnableToFindPathInLookupOrList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to gather dependency information for package &apos;{0}&apos;.
         /// </summary>
         internal static string UnableToGatherDependencyInfo {

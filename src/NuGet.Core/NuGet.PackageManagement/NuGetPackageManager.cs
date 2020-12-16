@@ -2752,7 +2752,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Run project actions for build integrated many projects.
         /// </summary>
-        private async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
+        internal async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
             IReadOnlyCollection<BuildIntegratedNuGetProject> buildIntegratedProjects,
             Dictionary<string, NuGetProjectAction[]> nugetProjectActionsLookup,
             PackageIdentity packageIdentity,
@@ -2825,7 +2825,9 @@ namespace NuGet.PackageManagement
                 {
                     if (!nugetProjectActionsLookup.ContainsKey(buildIntegratedProject.MSBuildProjectPath))
                     {
-                        throw new ArgumentNullException($"Either should have value in {nameof(nugetProjectActionsLookup)} for {buildIntegratedProject.MSBuildProjectPath} or {nameof(packageIdentity)} & {nameof(primarySources)}");
+                        throw new ArgumentException(
+                            message: string.Format(CultureInfo.CurrentCulture, Strings.UnableToFindPathInLookupOrList, nameof(nugetProjectActionsLookup), buildIntegratedProject.MSBuildProjectPath, nameof(packageIdentity), nameof(primarySources)),
+                            paramName: nameof(nugetProjectActionsLookup));
                     }
 
                     nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath];
