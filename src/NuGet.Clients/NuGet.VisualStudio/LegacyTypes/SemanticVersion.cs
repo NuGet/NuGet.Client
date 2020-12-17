@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using NuGet.VisualStudio;
 
 namespace NuGet
 {
@@ -41,7 +42,7 @@ namespace NuGet
         }
 
         public SemanticVersion(Version version)
-            : this(version, String.Empty)
+            : this(version, string.Empty)
         {
         }
 
@@ -57,8 +58,8 @@ namespace NuGet
                 throw new ArgumentNullException("version");
             }
             Version = NormalizeVersionValue(version);
-            SpecialVersion = specialVersion ?? String.Empty;
-            _originalString = String.IsNullOrEmpty(originalString) ? version.ToString() + (!String.IsNullOrEmpty(specialVersion) ? '-' + specialVersion : null) : originalString;
+            SpecialVersion = specialVersion ?? string.Empty;
+            _originalString = string.IsNullOrEmpty(originalString) ? version.ToString() + (!string.IsNullOrEmpty(specialVersion) ? '-' + specialVersion : null) : originalString;
         }
 
         internal SemanticVersion(SemanticVersion semVer)
@@ -88,7 +89,7 @@ namespace NuGet
 
         public string[] GetOriginalVersionComponents()
         {
-            if (!String.IsNullOrEmpty(_originalString))
+            if (!string.IsNullOrEmpty(_originalString))
             {
                 string original;
 
@@ -134,7 +135,7 @@ namespace NuGet
         /// </summary>
         public static SemanticVersion Parse(string version)
         {
-            if (String.IsNullOrEmpty(version))
+            if (string.IsNullOrEmpty(version))
             {
                 throw new ArgumentException("Value cannot be null or an empty string.", "version");
             }
@@ -142,7 +143,7 @@ namespace NuGet
             SemanticVersion semVer;
             if (!TryParse(version, out semVer))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, "'{0}' is not a valid version string.", version), "version");
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "'{0}' is not a valid version string.", version), "version");
             }
             return semVer;
         }
@@ -166,7 +167,7 @@ namespace NuGet
         private static bool TryParseInternal(string version, Regex regex, out SemanticVersion semVer)
         {
             semVer = null;
-            if (String.IsNullOrEmpty(version))
+            if (string.IsNullOrEmpty(version))
             {
                 return false;
             }
@@ -210,7 +211,9 @@ namespace NuGet
             SemanticVersion other = obj as SemanticVersion;
             if (other == null)
             {
-                throw new ArgumentException("obj");
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.ArgumentTypeExceptionMessage, nameof(SemanticVersion)),
+                    paramName: nameof(obj));
             }
             return CompareTo(other);
         }
@@ -229,8 +232,8 @@ namespace NuGet
                 return result;
             }
 
-            bool empty = String.IsNullOrEmpty(SpecialVersion);
-            bool otherEmpty = String.IsNullOrEmpty(other.SpecialVersion);
+            bool empty = string.IsNullOrEmpty(SpecialVersion);
+            bool otherEmpty = string.IsNullOrEmpty(other.SpecialVersion);
             if (empty && otherEmpty)
             {
                 return 0;

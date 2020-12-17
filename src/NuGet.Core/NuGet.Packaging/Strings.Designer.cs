@@ -1195,6 +1195,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        internal static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Arguments {0} and {1} were out of bounds for the array..
         /// </summary>
         internal static string RangeOutOfBoundsForArray {
