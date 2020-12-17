@@ -12,7 +12,7 @@
     <ItemGroup>
         <PackageDownload Include="ILMerge" version="[3.0.21]" />
         <PackageDownload Include="Lucene.Net" version="[3.0.3]" />
-        <PackageDownload Include="MicroBuild.Core" version="[0.2.0]" />
+        <PackageDownload Include="Microsoft.VisualStudioEng.MicroBuild.Core" version="[0.4.1]" />
         <PackageDownload Include="Microsoft.Build" version="[15.1.262-preview5]" />
         <PackageDownload Include="Microsoft.DotNet.Build.Tasks.Feed" version="[6.0.0-beta.20528.5]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
         <PackageDownload Include="Microsoft.DotNet.Maestro.Tasks" version="[1.1.0-beta.20528.3]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
@@ -21,7 +21,7 @@
         <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" version="[16.7.156-pre]" />
         <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed" version="[16.7.0-beta1-65318-02]" />
         <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" version="[16.7.0-beta1-65318-02]" />
-        <PackageDownload Include="Microsoft.Web.Xdt" version="[2.1.2]" />
+        <PackageDownload Include="Microsoft.Web.Xdt" version="[3.0.0]" />
         <PackageDownload Include="Newtonsoft.Json" version="[9.0.1]" />
         <PackageDownload Include="NuGet.Build.Tasks.Pack" version="[5.8.0]" />
         <PackageDownload Include="NuGet.Client.EndToEnd.TestData" version="[1.0.0]" />

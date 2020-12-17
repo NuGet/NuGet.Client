@@ -80,7 +80,9 @@ namespace NuGet.Commands
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
             {
                 Debug.Fail($"Lock file version {_request.LockFileVersion} is not supported.");
-                throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
+                throw new ArgumentOutOfRangeException(
+                    paramName: nameof(request),
+                    message: nameof(request.LockFileVersion));
             }
 
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors

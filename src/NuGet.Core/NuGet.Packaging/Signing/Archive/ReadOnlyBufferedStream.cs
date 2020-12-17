@@ -263,7 +263,7 @@ namespace NuGet.Packaging.Signing
                     break;
 
                 default:
-                    throw new ArgumentException();
+                    throw new ArgumentOutOfRangeException(nameof(origin));
             }
 
             if (newOffset < 0)
