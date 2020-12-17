@@ -3803,7 +3803,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
-                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source}");
+                    var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
+                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}");
                 }
             }
         }
@@ -3897,7 +3898,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
-                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source}");
+                    var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
+                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}");
                 }
             }
         }
