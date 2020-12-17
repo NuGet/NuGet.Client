@@ -15,5 +15,5 @@
     <MergeManifest Include="$(VsixPublishDestination)Microsoft.VisualStudio.NuGet.Core.json" />
   </ItemGroup>
 
-  <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets"/>
+  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets"/>
 </Project>
