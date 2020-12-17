@@ -70,7 +70,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var solutionManager = new Mock<IVsSolutionManager>();
             solutionManager.SetupGet(x => x.SolutionDirectory).Returns("z:\\SomeRandomPath");
             var settings = new Mock<ISettings>();
+            var deleteOnRestartManager = new Mock<IDeleteOnRestartManager>();
 
+            AddService<IDeleteOnRestartManager>(Task.FromResult<object>(deleteOnRestartManager.Object));
             AddService<IVsSolutionManager>(Task.FromResult<object>(solutionManager.Object));
             AddService<ISettings>(Task.FromResult<object>(settings.Object));
             AddService<ISourceRepositoryProvider>(Task.FromResult<object>(sourceRepository));
@@ -279,7 +281,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var solutionManager = new Mock<IVsSolutionManager>();
             solutionManager.SetupGet(x => x.SolutionDirectory).Returns("z:\\SomeRandomPath");
             var settings = new Mock<ISettings>();
+            var deleteOnRestartManager = new Mock<IDeleteOnRestartManager>();
 
+            AddService<IDeleteOnRestartManager>(Task.FromResult<object>(deleteOnRestartManager.Object));
             AddService<IVsSolutionManager>(Task.FromResult<object>(solutionManager.Object));
             AddService<ISourceRepositoryProvider>(Task.FromResult<object>(sourceRepositoryProvider.Object));
             AddService<ISettings>(Task.FromResult<object>(settings.Object));
