@@ -22,7 +22,7 @@
 1. Follow the instructions in [Code](#code)
 1. Make your change. Please name your branch `dev-<userid>-<very-short-title>`.
 1. Add tests.
-    * [.NET Core Testing Overview](https://docs.microsoft.com/en-us/dotnet/core/testing/)
+    * [Testing in .NET](https://docs.microsoft.com/en-us/dotnet/core/testing/)
     * [Testing tools in Visual Studio](https://docs.microsoft.com/visualstudio/test/?view=vs-2019)
 1. Create a [pull request](https://github.com/NuGet/NuGet.Client/pulls).
     * Create a new issue if you cannot find an existing one [NuGet/Home](https://github.com/NuGet/Home/issues). 
