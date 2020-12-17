@@ -11,9 +11,9 @@ namespace NuGet.Packaging
     {
         public FrameworkAssemblyReference(string assemblyName, IEnumerable<NuGetFramework> supportedFrameworks)
         {
-            if (String.IsNullOrEmpty(assemblyName))
+            if (string.IsNullOrEmpty(assemblyName))
             {
-                throw new ArgumentException(nameof(assemblyName));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(assemblyName));
             }
 
             if (supportedFrameworks == null)

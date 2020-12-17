@@ -155,7 +155,7 @@ namespace NuGet.Protocol
         {
             if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(id));
             }
 
             if (log == null)

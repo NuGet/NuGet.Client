@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using NuGet.ProjectManagement;
@@ -237,7 +238,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (projectNames.FullName == null)
             {
-                throw new ArgumentNullException(nameof(projectNames.FullName));
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(projectNames.FullName)),
+                    paramName: nameof(projectNames));
             }
 
             _readerWriterLock.EnterWriteLock();
@@ -279,7 +282,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (projectNames.FullName == null)
             {
-                throw new ArgumentNullException(nameof(projectNames.FullName));
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(projectNames.FullName)),
+                    paramName: nameof(projectNames));
             }
 
             _readerWriterLock.EnterWriteLock();

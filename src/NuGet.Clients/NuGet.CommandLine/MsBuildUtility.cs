@@ -848,7 +848,7 @@ namespace NuGet.CommandLine
         {
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException(nameof(value));
+                throw new ArgumentException(NuGetResources.ArgumentNullOrEmpty, nameof(value));
             }
 
             AddPropertyIfHasValue(args, property, value);

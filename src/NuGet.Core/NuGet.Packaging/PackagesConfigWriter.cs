@@ -45,7 +45,7 @@ namespace NuGet.Packaging
         {
             if (fullPath == null)
             {
-                throw new ArgumentException(nameof(fullPath));
+                throw new ArgumentNullException(nameof(fullPath));
             }
 
             _frameworkMappings = frameworkMappings;
@@ -93,7 +93,7 @@ namespace NuGet.Packaging
         {
             if (stream == null)
             {
-                throw new ArgumentException(nameof(stream));
+                throw new ArgumentNullException(nameof(stream));
             }
 
             _stream = stream;

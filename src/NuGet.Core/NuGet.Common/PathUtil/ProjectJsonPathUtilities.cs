@@ -30,9 +30,9 @@ namespace NuGet.Common
         /// <returns>Returns the full path to the project.json file.</returns>
         public static string GetProjectConfigPath(string directoryPath, string projectName)
         {
-            if (String.IsNullOrEmpty(projectName))
+            if (string.IsNullOrEmpty(projectName))
             {
-                throw new ArgumentException(nameof(projectName));
+                throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(projectName));
             }
 
             // Check for the project name based file first
@@ -52,9 +52,9 @@ namespace NuGet.Common
         /// </summary>
         public static string GetProjectConfigWithProjectName(string projectName)
         {
-            if (String.IsNullOrEmpty(projectName))
+            if (string.IsNullOrEmpty(projectName))
             {
-                throw new ArgumentException(nameof(projectName));
+                throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(projectName));
             }
 
             return $"{projectName}.{ProjectConfigFileName}";
@@ -65,9 +65,9 @@ namespace NuGet.Common
         /// </summary>
         public static string GetProjectLockFileNameWithProjectName(string projectName)
         {
-            if (String.IsNullOrEmpty(projectName))
+            if (string.IsNullOrEmpty(projectName))
             {
-                throw new ArgumentException(nameof(projectName));
+                throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(projectName));
             }
 
             return $"{projectName}.{ProjectLockFileName}";
