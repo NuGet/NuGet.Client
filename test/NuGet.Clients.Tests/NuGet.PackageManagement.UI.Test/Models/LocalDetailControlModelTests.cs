@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Packaging;
@@ -18,15 +19,17 @@ using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models
 {
-    public abstract class LocalDetailControlModelTestBase : IClassFixture<LocalPackageSearchMetadataFixture>, IDisposable
+    [Collection(MockedVS.Collection)]
+    public abstract class LocalDetailControlModelTestBase : IClassFixture<LocalPackageSearchMetadataFixture>
     {
         protected readonly LocalPackageSearchMetadataFixture _testData;
         protected readonly PackageItemListViewModel _testViewModel;
         protected readonly JoinableTaskContext _joinableTaskContext;
         protected bool disposedValue = false;
 
-        public LocalDetailControlModelTestBase(LocalPackageSearchMetadataFixture testData)
+        public LocalDetailControlModelTestBase(GlobalServiceProvider sp, LocalPackageSearchMetadataFixture testData)
         {
+            sp.Reset();
             _testData = testData;
             var testVersion = new NuGetVersion(0, 0, 1);
             _testViewModel = new PackageItemListViewModel()
@@ -35,31 +38,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 Version = testVersion,
                 InstalledVersion = testVersion,
             };
-
-#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-            _joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
-#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_joinableTaskContext.Factory);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _joinableTaskContext?.Dispose();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
         }
     }
 
@@ -67,8 +45,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
     {
         private readonly PackageDetailControlModel _testInstance;
 
-        public LocalPackageDetailControlModelTests(LocalPackageSearchMetadataFixture testData)
-            : base(testData)
+        public LocalPackageDetailControlModelTests(GlobalServiceProvider sp, LocalPackageSearchMetadataFixture testData)
+            : base(sp, testData)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
             _testInstance = new PackageDetailControlModel(
@@ -76,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 solutionManager: solMgr.Object,
                 projects: new List<IProjectContextInfo>());
 
-            _testInstance.SetCurrentPackage(
+            _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();
@@ -151,7 +129,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
-            await model.SetCurrentPackage(
+            await model.SetCurrentPackageAsync(
                 new PackageItemListViewModel()
                 {
                     InstalledVersion = installedVersion,
@@ -179,7 +157,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
-            await model.SetCurrentPackage(
+            await model.SetCurrentPackageAsync(
                 new PackageItemListViewModel()
                 {
                     InstalledVersion = installedVersion,
@@ -200,8 +178,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
     {
         private PackageSolutionDetailControlModel _testInstance;
 
-        public LocalPackageSolutionDetailControlModelTests(LocalPackageSearchMetadataFixture testData)
-            : base(testData)
+        public LocalPackageSolutionDetailControlModelTests(GlobalServiceProvider sp, LocalPackageSearchMetadataFixture testData)
+            : base(sp, testData)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
             var serviceBroker = new Mock<IServiceBroker>();
@@ -223,7 +201,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     CancellationToken.None);
             });
 
-            _testInstance.SetCurrentPackage(
+            _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();

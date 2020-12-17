@@ -7,179 +7,159 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Threading;
+using Microsoft.VisualStudio.Sdk.TestFramework;
+using Microsoft.VisualStudio.Shell;
 using Moq;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI.Test.Models
 {
-    public abstract class V3DetailControlModelTestBase : IClassFixture<V3PackageSearchMetadataFixture>, IDisposable
+    [Collection(MockedVS.Collection)]
+    public abstract class V3DetailControlModelTestBase : IClassFixture<V3PackageSearchMetadataFixture>
     {
         protected readonly V3PackageSearchMetadataFixture _testData;
         protected readonly PackageItemListViewModel _testViewModel;
-        protected readonly JoinableTaskContext _joinableTaskContext;
-        protected readonly MultiSourcePackageMetadataProvider _metadataProvider;
-        protected bool disposedValue = false;
 
-        public V3DetailControlModelTestBase(V3PackageSearchMetadataFixture testData)
+        public V3DetailControlModelTestBase(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
         {
+            sp.Reset();
             _testData = testData;
 
             // The versions pre-baked into the view model provide data for the first step of metadata extraction
             // which fails (null) in a V3 scenario--they need to be extracted using a metadata provider (below)
             var testVersion = new NuGetVersion(0, 0, 1);
-            var testVersions = new List<VersionInfo>() {
-                new VersionInfo(new NuGetVersion(0, 0, 1)),
-                new VersionInfo(new NuGetVersion(0, 0, 2))
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion(0, 0, 1)),
+                new VersionInfoContextInfo(new NuGetVersion(0, 0, 2))
             };
+
             _testViewModel = new PackageItemListViewModel()
             {
+                Id = "nuget.psm",
                 Version = testVersion,
-                Versions = new Lazy<Task<IEnumerable<VersionInfo>>>(() => Task.FromResult<IEnumerable<VersionInfo>>(testVersions)),
+                Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions)),
                 InstalledVersion = testVersion,
+                Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("nuget.psm.test") },
             };
-
-            var resourceProvider = new MockNuGetResourceProvider();
-            var metadataResource = new MockPackageMetadataResource(_testData.TestData);
-            var repository = new MockSourceRepository<PackageMetadataResource>(
-                new PackageSource("nuget.psm.test"),
-                new List<INuGetResourceProvider>() { resourceProvider },
-                metadataResource);
-            var repositories = new List<SourceRepository>() { repository };
-            _metadataProvider = new MultiSourcePackageMetadataProvider(
-                repositories,
-                optionalLocalRepository: null,
-                optionalGlobalLocalRepositories: null,
-                logger: new Mock<ILogger>().Object);
-
-#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-            _joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
-#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_joinableTaskContext.Factory);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _joinableTaskContext?.Dispose();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
         }
     }
 
-    public class V3PackageDetailControlModelTests : V3DetailControlModelTestBase
+    public class V3PackageDetailControlModelTests : V3DetailControlModelTestBase, IAsyncServiceProvider
     {
+        private readonly Dictionary<Type, Task<object>> _services = new Dictionary<Type, Task<object>>(TypeEquivalenceComparer.Instance);
         private readonly PackageDetailControlModel _testInstance;
-
-        public V3PackageDetailControlModelTests(V3PackageSearchMetadataFixture testData)
-            : base(testData)
+        public V3PackageDetailControlModelTests(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
+            : base(sp, testData)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
+
+            var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
+            {
+                PackageSearchMetadataContextInfo.Create(_testData.TestData)
+            };
+
+            var mockSearchService = new Mock<INuGetSearchService>();
+            mockSearchService.Setup(x =>
+                x.GetPackageMetadataListAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>>(packageSearchMetadata));
+
+            mockSearchService.Setup(x =>
+                x.GetDeprecationMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(null);
+
+            mockSearchService.Setup(x => x.GetPackageMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>((packageSearchMetadata[0], null)));
+
+            var mockServiceBroker = new Mock<IServiceBroker>();
+#pragma warning disable ISB001 // Dispose of proxies
+            mockServiceBroker.Setup(
+                x => x.GetProxyAsync<INuGetSearchService>(
+                    NuGetServices.SearchService,
+                    It.IsAny<ServiceActivationOptions>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<INuGetSearchService>(mockSearchService.Object));
+#pragma warning restore ISB001 // Dispose of proxies
+
+            ServiceLocator.InitializePackageServiceProvider(this);
+
             _testInstance = new PackageDetailControlModel(
-                Mock.Of<IServiceBroker>(),
+                mockServiceBroker.Object,
                 solutionManager: solMgr.Object,
                 Array.Empty<IProjectContextInfo>());
-            _testInstance.SetCurrentPackage(
+            _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();
         }
 
         [Fact]
-        public async void ViewModelMarkedVulnerableWhenMetadataHasVulnerability_Flagged()
+        public void ViewModelMarkedVulnerableWhenMetadataHasVulnerability_Flagged()
         {
-            await _testInstance.LoadPackageMetadataAsync(_metadataProvider, CancellationToken.None);
             Assert.True(_testInstance.IsPackageVulnerable);
         }
 
         [Fact]
-        public async void MaxVulnerabilitySeverityWhenMetadataHasVulnerability_Calculated()
+        public void MaxVulnerabilitySeverityWhenMetadataHasVulnerability_Calculated()
         {
-            await _testInstance.LoadPackageMetadataAsync(_metadataProvider, CancellationToken.None);
             Assert.Equal(_testInstance.PackageVulnerabilityMaxSeverity, _testData.TestData.Vulnerabilities.Max(v => v.Severity));
         }
-    }
 
-    internal class MockNuGetResourceProvider : INuGetResourceProvider
-    {
-        public Type ResourceType => typeof(PackageMetadataResource);
-
-        public string Name => "TestPackageMetadataResourceProvider";
-
-        public IEnumerable<string> Before => new List<string>() { "ccc" };
-
-        public IEnumerable<string> After => new List<string>() { "aaa" };
-
-        public Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public Task<object> GetServiceAsync(Type serviceType)
         {
-            throw new NotImplementedException();
-        }
-    }
-
-    internal class MockPackageMetadataResource : PackageMetadataResource
-    {
-        IEnumerable<IPackageSearchMetadata> _metadata;
-
-        public MockPackageMetadataResource(IPackageSearchMetadata metadata)
-        {
-            _metadata = new List<IPackageSearchMetadata> { metadata };
-        }
-
-        public override Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(string packageId,
-            bool includePrerelease,
-            bool includeUnlisted,
-            SourceCacheContext sourceCacheContext,
-            ILogger log,
-            CancellationToken token)
-        {
-            return Task.FromResult(_metadata);
-        }
-
-        public override Task<IPackageSearchMetadata> GetMetadataAsync(PackageIdentity package, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    internal class MockSourceRepository<T> : SourceRepository
-    {
-        T _metadataResource;
-
-        public MockSourceRepository(PackageSource source, IEnumerable<INuGetResourceProvider> providers, T metadataReource)
-            : base(source, providers)
-        {
-            _metadataResource = metadataReource;
-        }
-
-        public override Task<TResource> GetResourceAsync<TResource>(CancellationToken token)
-        {
-            if (typeof(TResource) == typeof(T))
+            if (_services.TryGetValue(serviceType, out Task<object> task))
             {
-                return Task.FromResult(_metadataResource as TResource);
+                return task;
             }
 
-            return Task.FromResult(default(TResource));
+            return Task.FromResult<object>(null);
+        }
+
+        /// <summary>
+        /// We need an interface that implements both: SVsBrokeredServiceContainer and IBrokeredServiceContainer so we can add it to the service host
+        /// </summary>
+        public interface IBrokeredServiceContainerMock : SVsBrokeredServiceContainer, IBrokeredServiceContainer
+        {
+        }
+
+        /// <summary>
+        /// Due to embedding the types we need to compare based on IsEquivalentTo
+        /// </summary>
+        private class TypeEquivalenceComparer : IEqualityComparer<Type>
+        {
+            public static readonly TypeEquivalenceComparer Instance = new TypeEquivalenceComparer();
+
+            private TypeEquivalenceComparer()
+            {
+            }
+
+            public bool Equals(Type x, Type y)
+            {
+                return x.IsEquivalentTo(y);
+            }
+
+            public int GetHashCode(Type obj)
+            {
+                return obj.GUID.GetHashCode();
+            }
         }
     }
 }
