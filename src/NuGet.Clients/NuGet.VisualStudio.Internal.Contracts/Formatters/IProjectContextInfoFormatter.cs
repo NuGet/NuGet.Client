@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using MessagePack;
 using MessagePack.Formatters;
 using Microsoft;
@@ -10,7 +8,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal sealed class IProjectContextInfoFormatter : IMessagePackFormatter<IProjectContextInfo?>
+    internal sealed class IProjectContextInfoFormatter : NuGetMessagePackFormatter<IProjectContextInfo>
     {
         private const string ProjectIdPropertyName = "projectid";
         private const string ProjectKindPropertyName = "projectkind";
@@ -22,61 +20,39 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public IProjectContextInfo? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override IProjectContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
+            ProjectStyle projectStyle = ProjectStyle.Unknown;
+            string? projectId = null;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
-                ProjectStyle projectStyle = ProjectStyle.Unknown;
-                string? projectId = null;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case ProjectIdPropertyName:
-                            projectId = reader.ReadString();
-                            break;
-                        case ProjectKindPropertyName:
-                            projectKind = options.Resolver.GetFormatter<NuGetProjectKind>().Deserialize(ref reader, options);
-                            break;
-                        case ProjectStylePropertyName:
-                            projectStyle = options.Resolver.GetFormatter<ProjectStyle>().Deserialize(ref reader, options);
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case ProjectIdPropertyName:
+                        projectId = reader.ReadString();
+                        break;
+                    case ProjectKindPropertyName:
+                        projectKind = options.Resolver.GetFormatter<NuGetProjectKind>().Deserialize(ref reader, options);
+                        break;
+                    case ProjectStylePropertyName:
+                        projectStyle = options.Resolver.GetFormatter<ProjectStyle>().Deserialize(ref reader, options);
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNull(projectId);
-
-                return new ProjectContextInfo(projectId, projectStyle, projectKind);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.NotNull(projectId);
+
+            return new ProjectContextInfo(projectId, projectStyle, projectKind);
         }
 
-        public void Serialize(ref MessagePackWriter writer, IProjectContextInfo? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, IProjectContextInfo value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 3);
             writer.Write(ProjectIdPropertyName);
             writer.Write(value.ProjectId);

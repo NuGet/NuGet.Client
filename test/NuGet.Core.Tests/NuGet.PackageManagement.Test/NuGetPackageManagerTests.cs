@@ -32,6 +32,7 @@ using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
+using ExceptionUtility = NuGet.PackageManagement.ExceptionUtility;
 
 namespace NuGet.Test
 {

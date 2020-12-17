@@ -45,6 +45,7 @@
     <Compile Include="Models\DetailedPackageMetadataTests.cs" />
     <Compile Include="NuGetSettingsSerializerTests.cs" />
     <Compile Include="NuGetSolutionManagerServiceWrapperTests.cs" />
+    <Compile Include="NuGetSourcesServiceWrapperTests.cs" />
     <Compile Include="PackageItemLoaderTests.cs" />
     <Compile Include="PackageLicenseUtilitiesTests.cs" />
     <Compile Include="PackageManagerListItemsTest.cs" />
@@ -94,5 +95,6 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

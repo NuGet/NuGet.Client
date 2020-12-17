@@ -320,18 +320,18 @@ namespace NuGet.PackageManagement.UI
 
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
 
-        public IEnumerable<SourceRepository> ActiveSources
+        public PackageSourceMoniker ActivePackageSourceMoniker
         {
             get
             {
-                IEnumerable<SourceRepository> sources = null;
+                PackageSourceMoniker source = null;
 
                 if (PackageManagerControl != null)
                 {
-                    InvokeOnUIThread(() => { sources = PackageManagerControl.ActiveSources; });
+                    InvokeOnUIThread(() => { source = PackageManagerControl.SelectedSource; });
                 }
 
-                return sources;
+                return source;
             }
         }
 

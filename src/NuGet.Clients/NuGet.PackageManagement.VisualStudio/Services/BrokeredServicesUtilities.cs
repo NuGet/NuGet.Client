@@ -21,12 +21,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public const string SourceProviderServiceName = "Microsoft.VisualStudio.NuGet.SourceProviderService";
         public const string SourceProviderServiceVersion = "1.0.0";
+        public const string SourceProviderServiceVersion_1_0_1 = "1.0.1";
 
         public const string ProjectManagerServiceName = "Microsoft.VisualStudio.NuGet.ProjectManagerService";
         public const string ProjectManagerServiceVersion = "1.0.0";
 
         public const string ProjectUpgraderServiceName = "Microsoft.VisualStudio.NuGet.ProjectUpgraderService";
         public const string ProjectUpgraderServiceVersion = "1.0.0";
+
+        public const string SearchServiceName = "Microsoft.VisualStudio.NuGet.PackageSearchService";
+        public const string SearchServiceVersion = "1.0.0";
 
         public static async ValueTask<IServiceBroker> GetRemoteServiceBrokerAsync()
         {

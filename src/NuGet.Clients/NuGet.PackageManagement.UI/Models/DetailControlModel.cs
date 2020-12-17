@@ -12,9 +12,6 @@ using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -27,8 +24,10 @@ namespace NuGet.PackageManagement.UI
     /// The base class of PackageDetailControlModel and PackageSolutionDetailControlModel.
     /// When user selects an action, this triggers version list update.
     /// </summary>
-    public abstract class DetailControlModel : INotifyPropertyChanged
+    public abstract class DetailControlModel : INotifyPropertyChanged, IDisposable
     {
+        private CancellationTokenSource _selectedVersionCancellationTokenSource = new CancellationTokenSource();
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected IEnumerable<IProjectContextInfo> _nugetProjects;
 
@@ -45,7 +44,7 @@ namespace NuGet.PackageManagement.UI
         // Project constraints on the allowed package versions.
         protected List<ProjectVersionConstraint> _projectVersionConstraints;
 
-        private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
+        private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
 
         protected DetailControlModel(
             IServiceBroker serviceBroker,
@@ -57,6 +56,9 @@ namespace NuGet.PackageManagement.UI
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
             _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig);
+
+            // hook event handler for dependency behavior changed
+            _options.SelectedChanged += DependencyBehavior_SelectedChanged;
         }
 
         /// <summary>
@@ -64,7 +66,22 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public virtual void CleanUp()
         {
-            Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _selectedVersionCancellationTokenSource.Dispose();
+                Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
+                CleanUp();
+            }
         }
 
         /// <summary>
@@ -99,11 +116,15 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="searchResultPackage">The package to be displayed.</param>
         /// <param name="filter">The current filter. This will used to select the default action.</param>
-        public async virtual Task SetCurrentPackage(
+        public async virtual Task SetCurrentPackageAsync(
             PackageItemListViewModel searchResultPackage,
             ItemFilter filter,
             Func<PackageItemListViewModel> getPackageItemListViewModel)
         {
+            // Clear old data
+            PackageMetadata = null;
+            _metadataDict.Clear();
+
             _searchResultPackage = searchResultPackage;
             _filter = filter;
             OnPropertyChanged(nameof(Id));
@@ -114,7 +135,6 @@ namespace NuGet.PackageManagement.UI
 
             var getVersionsTask = searchResultPackage.GetVersionsAsync();
 
-            var cacheContext = new DependencyGraphCacheContext();
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
 
             // Filter out projects that are not managed by NuGet.
@@ -131,7 +151,7 @@ namespace NuGet.PackageManagement.UI
                     IPackageReferenceContextInfo packageReference = installedPackages
                         .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, searchResultPackage.Id));
 
-                    var range = packageReference?.AllowedVersions;
+                    VersionRange range = packageReference?.AllowedVersions;
 
                     if (range != null && !VersionRange.All.Equals(range))
                     {
@@ -154,7 +174,7 @@ namespace NuGet.PackageManagement.UI
                         ServiceBroker,
                         CancellationToken.None);
 
-                    // First the lowest auto referenced version of this package.
+                    // Find the lowest auto referenced version of this package.
                     IPackageReferenceContextInfo autoReferenced = packageReferences
                         .Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.Identity.Id)
                             && e.Identity.Version != null)
@@ -205,24 +225,42 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Get the list of available versions, ignoring null versions
-            _allPackageVersions = (await Task.WhenAll(versions
+            _allPackageVersions = versions
                 .Where(v => v?.Version != null)
-                .Select(GetVersion)))
+                .Select(GetVersion)
                 .ToList();
-
-            // hook event handler for dependency behavior changed
-            Options.SelectedChanged += DependencyBehavior_SelectedChanged;
 
             await CreateVersionsAsync(CancellationToken.None);
             OnCurrentPackageChanged();
+
+            (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
+                await searchResultPackage.GetDetailedPackageSearchMetadataAsync();
+
+            if (packageSearchMetadata != null)
+            {
+                // Getting the metadata can take awhile, check to see if its still selected
+                if (getPackageItemListViewModel() != searchResultPackage)
+                {
+                    return;
+                }
+
+                var detailedPackageMetadata = new DetailedPackageMetadata(
+                    packageSearchMetadata,
+                    packageDeprecationMetadata,
+                    packageSearchMetadata.DownloadCount);
+
+                _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
+
+                PackageMetadata = detailedPackageMetadata;
+            }
         }
 
-        private async Task<(NuGetVersion version, bool isDeprecated)> GetVersion(VersionInfo versionInfo)
+        private (NuGetVersion version, bool isDeprecated) GetVersion(VersionInfoContextInfo versionInfo)
         {
             var isDeprecated = false;
             if (versionInfo.PackageSearchMetadata != null)
             {
-                isDeprecated = await versionInfo.PackageSearchMetadata.GetDeprecationMetadataAsync() != null;
+                isDeprecated = versionInfo.PackageDeprecationMetadata != null;
             }
 
             return (versionInfo.Version, isDeprecated);
@@ -269,7 +307,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Get all installed packages across all projects (distinct)
         /// </summary>
-        public virtual IEnumerable<Packaging.Core.PackageDependency> InstalledPackageDependencies
+        public virtual IEnumerable<PackageDependency> InstalledPackageDependencies
         {
             get
             {
@@ -469,14 +507,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadata alternatePackageMetadata)
+        private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadataContextInfo alternatePackageMetadata)
         {
             if (alternatePackageMetadata == null)
             {
                 return null;
             }
 
-            var versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.Range, VersionRangeFormatter.Instance);
+            var versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.VersionRange, VersionRangeFormatter.Instance);
             return $"{alternatePackageMetadata.PackageId} {versionString}";
         }
 
@@ -504,22 +542,71 @@ namespace NuGet.PackageManagement.UI
                 {
                     _selectedVersion = value;
 
-                    DetailedPackageMetadata packageMetadata;
-                    if (_metadataDict != null &&
-                        _selectedVersion != null &&
-                        _metadataDict.TryGetValue(_selectedVersion.Version, out packageMetadata))
-                    {
-                        PackageMetadata = packageMetadata;
-                    }
-                    else
-                    {
-                        PackageMetadata = null;
-                    }
+                    // Clear detailed view
+                    PackageMetadata = null;
 
-                    OnPropertyChanged(nameof(SelectedVersion));
-                    OnSelectedVersionChanged();
+                    if (_selectedVersion != null)
+                    {
+                        var loadCts = new CancellationTokenSource();
+                        var oldCts = Interlocked.Exchange(ref _selectedVersionCancellationTokenSource, loadCts);
+                        oldCts?.Cancel();
+                        oldCts?.Dispose();
+
+                        if (_metadataDict.TryGetValue(_selectedVersion.Version, out DetailedPackageMetadata detailedPackageMetadata))
+                        {
+                            PackageMetadata = detailedPackageMetadata;
+                        }
+
+                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask());
+                    }
                 }
             }
+        }
+
+        private async ValueTask SelectedVersionChangedAsync(PackageItemListViewModel packageItemListViewModel, NuGetVersion nugetVersion, CancellationToken cancellationToken)
+        {
+            // Load the detailed metadata that we already have and check to see if this matches what is selected, we cannot use the _metadataDict here unfortunately as it won't be populated yet
+            (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
+                await packageItemListViewModel.GetDetailedPackageSearchMetadataAsync();
+            if (packageSearchMetadata != null && packageSearchMetadata.Identity.Version.Equals(nugetVersion))
+            {
+                if (_searchResultPackage != packageItemListViewModel)
+                {
+                    return;
+                }
+
+                PackageMetadata = new DetailedPackageMetadata(
+                    packageSearchMetadata,
+                    packageDeprecationMetadata,
+                    packageItemListViewModel.DownloadCount);
+            }
+            else
+            {
+                // We don't have the data readily available, we need to query the server
+                using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
+                {
+                    var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, nugetVersion);
+                    (PackageSearchMetadataContextInfo searchMetadata, PackageDeprecationMetadataContextInfo deprecationData) =
+                        await searchService.GetPackageMetadataAsync(packageIdentity, packageItemListViewModel.Sources, includePrerelease: true, cancellationToken);
+
+                    if (cancellationToken.IsCancellationRequested || _searchResultPackage != packageItemListViewModel)
+                    {
+                        return;
+                    }
+
+                    var detailedPackageMetadata = new DetailedPackageMetadata(
+                        searchMetadata,
+                        deprecationData,
+                        searchMetadata.DownloadCount);
+
+                    _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
+
+                    PackageMetadata = detailedPackageMetadata;
+                }
+            }
+
+            OnPropertyChanged(nameof(SelectedVersion));
+            OnSelectedVersionChanged();
         }
 
         // Calculate the version to select among _versions and select it
@@ -547,92 +634,6 @@ namespace NuGet.PackageManagement.UI
                     possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
                     ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
             }
-        }
-
-        internal async Task LoadPackageMetadataAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)
-        {
-            var versions = await GetVersionsWithExtendedMetadataAsync();
-
-            // First try to load the metadata from the version info. This will happen if we already fetched metadata
-            // about each version at the same time as fetching the version list (that is, V2). This also acts as a
-            // means to cache version metadata.
-            _metadataDict = versions
-                .Where(v => v.versionInfo.PackageSearchMetadata != null)
-                .ToDictionary(
-                    v => v.versionInfo.Version,
-                    v => new DetailedPackageMetadata(v.versionInfo.PackageSearchMetadata,
-                        v.deprecationMetadata,
-                        v.versionInfo.DownloadCount));
-
-            // If we are missing any metadata, go to the metadata provider and fetch all of the data again.
-            if (versions.Select(v => v.versionInfo.Version).Except(_metadataDict.Keys).Any())
-            {
-                try
-                {
-                    // Load up the full details for each version.
-                    var packages = await metadataProvider?.GetPackageMetadataListAsync(
-                        Id,
-                        includePrerelease: true,
-                        includeUnlisted: false,
-                        cancellationToken: token);
-
-                    var packagesWithExtendedMetadata = await Task.WhenAll(
-                        packages.Select(async searchMetadata =>
-                        {
-                            var deprecationMetadata = await searchMetadata.GetDeprecationMetadataAsync();
-                            return (searchMetadata, deprecationMetadata);
-                        }));
-
-                    var uniquePackages = packagesWithExtendedMetadata
-                        .GroupBy(
-                            m => m.searchMetadata.Identity.Version,
-                            (v, ms) => ms.First());
-
-                    _metadataDict = uniquePackages
-                        .GroupJoin(
-                            versions,
-                            m => m.searchMetadata.Identity.Version,
-                            d => d.versionInfo.Version,
-                            (m, d) =>
-                            {
-                                var (versionInfo, deprecationMetadata) = d
-                                    .OrderByDescending(v => v.versionInfo.DownloadCount ?? 0)
-                                    .FirstOrDefault();
-
-                                return new DetailedPackageMetadata(
-                                    m.searchMetadata ?? versionInfo.PackageSearchMetadata,
-                                    m.deprecationMetadata,
-                                    m.searchMetadata?.DownloadCount ?? versionInfo?.DownloadCount);
-                            })
-                         .ToDictionary(m => m.Version);
-                }
-                catch (InvalidOperationException)
-                {
-                    // Ignore failures.
-                }
-            }
-
-            DetailedPackageMetadata p;
-            if (SelectedVersion != null
-                && _metadataDict.TryGetValue(SelectedVersion.Version, out p))
-            {
-                PackageMetadata = p;
-            }
-        }
-
-        private async Task<IEnumerable<(VersionInfo versionInfo,
-            PackageDeprecationMetadata deprecationMetadata)>> GetVersionsWithExtendedMetadataAsync()
-        {
-            var versions = await _searchResultPackage.GetVersionsAsync();
-            return await Task.WhenAll(
-                versions.Select(async version =>
-                {
-                    var deprecationMetadata = version?.PackageSearchMetadata != null
-                        ? await version.PackageSearchMetadata.GetDeprecationMetadataAsync()
-                        : null;
-
-                    return (version, deprecationMetadata);
-                }));
         }
 
         public abstract bool IsSolution { get; }

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -19,7 +18,20 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
 
-        public IEnumerable<SourceRepository> SourceRepositories { get; }
+        public PackageLoadContext(bool isSolution, INuGetUIContext uiContext)
+        {
+            IsSolution = isSolution;
+            PackageManager = uiContext.PackageManager;
+            Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
+            PackageManagerProviders = uiContext.PackageManagerProviders;
+            SolutionManager = uiContext.SolutionManagerService;
+            ServiceBroker = uiContext.ServiceBroker;
+
+            _installedPackagesTask = PackageCollection.FromProjectsAsync(
+                ServiceBroker,
+                Projects,
+                CancellationToken.None);
+        }
 
         public NuGetPackageManager PackageManager { get; }
 
@@ -35,25 +47,6 @@ namespace NuGet.PackageManagement.UI
         public INuGetSolutionManagerService SolutionManager { get; }
 
         internal IServiceBroker ServiceBroker { get; }
-
-        public PackageLoadContext(
-            IEnumerable<SourceRepository> sourceRepositories,
-            bool isSolution,
-            INuGetUIContext uiContext)
-        {
-            SourceRepositories = sourceRepositories;
-            IsSolution = isSolution;
-            PackageManager = uiContext.PackageManager;
-            Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
-            PackageManagerProviders = uiContext.PackageManagerProviders;
-            SolutionManager = uiContext.SolutionManagerService;
-            ServiceBroker = uiContext.ServiceBroker;
-
-            _installedPackagesTask = PackageCollection.FromProjectsAsync(
-                ServiceBroker,
-                Projects,
-                CancellationToken.None);
-        }
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
 
