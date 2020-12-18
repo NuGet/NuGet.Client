@@ -656,7 +656,7 @@ namespace NuGetVSExtension
         private void ShowUpdatePackageDialog(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var updatePackages = new ShowUpdatePackageOptions(packagesToUpdate: GetSelectedPackages());
+            var updatePackages = ShowUpdatePackageOptions.UpdatePackages(GetSelectedPackages());
 
             string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
@@ -671,7 +671,7 @@ namespace NuGetVSExtension
             string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString), new ShowUpdatePackageOptions(shouldUpdateAllPackages: true));
+                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString), ShowUpdatePackageOptions.UpdateAllPackages());
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowUpdatePackagesDialog));
         }
 
@@ -728,6 +728,7 @@ namespace NuGetVSExtension
         /// A string array containing the list of selected packages in the same hierarchy.
         /// If only one package is selected, the array will contain one package name, otherwise, it will be a list of package names.
         /// If the selected packages are across multiple hierarchies or if no packages are selected, an empty array will be returned.
+        /// This method will return <c>null</c> if it fails to retrieve the selected hierarchy.
         /// </returns>
         private string[] GetSelectedPackages()
         {

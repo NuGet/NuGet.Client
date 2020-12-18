@@ -8,10 +8,27 @@ namespace NuGet.PackageManagement.UI
 {
     public class ShowUpdatePackageOptions
     {
-        public ShowUpdatePackageOptions(bool shouldUpdateAllPackages = false, IEnumerable<string> packagesToUpdate = null)
+        private static ShowUpdatePackageOptions UpdateAllPackagesInstance;
+
+        private ShowUpdatePackageOptions(bool shouldUpdateAllPackages = false, IEnumerable<string> packagesToUpdate = null)
         {
             ShouldUpdateAllPackages = shouldUpdateAllPackages;
             PackagesToUpdate = packagesToUpdate ?? Enumerable.Empty<string>();
+        }
+
+        public static ShowUpdatePackageOptions UpdateAllPackages()
+        {
+            if (UpdateAllPackagesInstance == null)
+            {
+                UpdateAllPackagesInstance = new ShowUpdatePackageOptions(shouldUpdateAllPackages: true);
+            }
+
+            return UpdateAllPackagesInstance;
+        }
+
+        public static ShowUpdatePackageOptions UpdatePackages(IEnumerable<string> packagesToUpdate)
+        {
+            return new ShowUpdatePackageOptions(shouldUpdateAllPackages: false, packagesToUpdate);
         }
 
         public bool ShouldUpdateAllPackages { get; }
