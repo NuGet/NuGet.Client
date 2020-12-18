@@ -1681,7 +1681,8 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData(LibraryIncludeFlags.All, null, 0)]
         [InlineData(null, LibraryIncludeFlags.All, 0)]
         [InlineData(LibraryIncludeFlags.All, LibraryIncludeFlags.All, 0)]
-        public async Task PrivateAssetsAll_VersionConflicts(LibraryIncludeFlags? privateAssets1, LibraryIncludeFlags? privateAssets2, int expectedConflicts)
+        public async Task PrivateAssetsAll_VersionConflicts(LibraryIncludeFlags? privateAssets1,
+            LibraryIncludeFlags? privateAssets2, int expectedConflicts)
         {
             var framework = NuGetFramework.Parse("net45");
 
@@ -1693,10 +1694,10 @@ namespace NuGet.DependencyResolver.Tests
                 .DependsOn("C", "1.0.0");
 
             provider.Package("B", "1.0.0")
-                   .DependsOn("D", "[1.0.0]", privateAssets:privateAssets1);
+                .DependsOn("D", "[1.0.0]", privateAssets: privateAssets1);
 
             provider.Package("C", "1.0.0")
-                .DependsOn("D", "[2.0.0]", privateAssets:privateAssets2);
+                .DependsOn("D", "[2.0.0]", privateAssets: privateAssets2);
 
             provider.Package("D", "1.0.0");
             provider.Package("D", "2.0.0");
@@ -1711,6 +1712,12 @@ namespace NuGet.DependencyResolver.Tests
             // Assert
             Assert.Equal(expectedConflicts, result.VersionConflicts.Count);
             Assert.Empty(result.Downgrades);
+
+            if (expectedConflicts == 1)
+            {
+                AssertPath(result.VersionConflicts[0].Conflicting, "A 1.0.0", "B 1.0.0", "D 1.0.0");
+                AssertPath(result.VersionConflicts[0].Selected, "A 1.0.0", "C 1.0.0", "D 2.0.0");
+            }
         }
 
         /// <summary>
@@ -1734,10 +1741,10 @@ namespace NuGet.DependencyResolver.Tests
 
             provider.Package("B", "1.0.0")
                    .DependsOn("C", "1.0.0")
-                   .DependsOn("D", "[1.0.0]", privateAssets:privateAssets1);
+                   .DependsOn("D", "1.0.0", privateAssets:privateAssets1);
 
             provider.Package("C", "1.0.0")
-                .DependsOn("D", "[2.0.0]", privateAssets:privateAssets2);
+                .DependsOn("D", "2.0.0", privateAssets:privateAssets2);
 
             provider.Package("D", "1.0.0");
             provider.Package("D", "2.0.0");
@@ -1752,6 +1759,63 @@ namespace NuGet.DependencyResolver.Tests
             // Assert
             Assert.Equal(expectedDowngrades, result.Downgrades.Count);
             Assert.Empty(result.VersionConflicts);
+
+            if (expectedDowngrades == 1)
+            {
+                var downgraded = result.Downgrades[0].DowngradedFrom;
+                var downgradedBy = result.Downgrades[0].DowngradedTo;
+
+                AssertPath(downgraded, "A 1.0.0", "B 1.0.0", "C 1.0.0", "D 2.0.0");
+                AssertPath(downgradedBy, "A 1.0.0", "B 1.0.0", "D 1.0.0");
+            }
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 (PrivateAssets=?) -> C 2.0.0
+        ///   -> C 1.0.0
+        /// </summary>
+        [Theory]
+        [InlineData(null, 1)]
+        [InlineData(LibraryIncludeFlags.All, 1)]
+        public async Task PrivateAssetsAll_DowngradesForTransitiveDependenciesAtRootNode(LibraryIncludeFlags? privateAssets, int expectedDowngrades)
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("A", "1.0.0")
+                .DependsOn("B", "2.0.0", privateAssets:privateAssets)
+                .DependsOn("D", "1.0.0");
+
+            provider.Package("B", "2.0.0")
+                .DependsOn("C", "2.0.0");
+
+            provider.Package("C", "2.0.0")
+                .DependsOn("D", "2.0.0");
+
+            provider.Package("D", "1.0.0");
+            provider.Package("D", "2.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+            var result = rootNode.Analyze();
+
+            // Assert
+            Assert.Equal(expectedDowngrades, result.Downgrades.Count);
+            Assert.Empty(result.VersionConflicts);
+
+            if (expectedDowngrades == 1)
+            {
+                var downgraded = result.Downgrades[0].DowngradedFrom;
+                var downgradedBy = result.Downgrades[0].DowngradedTo;
+
+                AssertPath(downgraded, "A 1.0.0", "B 2.0.0", "C 2.0.0", "D 2.0.0");
+                AssertPath(downgradedBy, "A 1.0.0", "D 1.0.0");
+            }
         }
 
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
