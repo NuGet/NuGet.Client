@@ -46,7 +46,7 @@ namespace NuGet.XPlat.FuncTest
                 var settingsLoadContext = new SettingsLoadingContext();
 
                 var settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configPath }, settingsLoadContext);
-                var result = AddPackageCommandUtility.EvaluateSources(source, null, settings.GetConfigFilePaths());
+                var result = AddPackageCommandUtility.EvaluateSources(source, settings.GetConfigFilePaths());
 
                 // Asert
                 Assert.Equal(2, result.Count);

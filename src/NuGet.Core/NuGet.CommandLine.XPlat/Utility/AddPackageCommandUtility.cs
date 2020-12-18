@@ -88,10 +88,9 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// Returns the PackageSource with its credentials if available
         /// </summary>
         /// <param name="requestedSources">Sources to match</param>
-        /// <param name="additionalSources">Additional user supplied source feeds as argument</param>
         /// <param name="configFilePaths">Config to use for credentials</param>
         /// <returns>Return a list of package sources</returns>
-        public static List<PackageSource> EvaluateSources(IList<PackageSource> requestedSources, string[] additionalSources, IList<string> configFilePaths)
+        public static List<PackageSource> EvaluateSources(IList<PackageSource> requestedSources, IList<string> configFilePaths)
         {
             using (var settingsLoadingContext = new SettingsLoadingContext())
             {
@@ -111,32 +110,6 @@ namespace NuGet.CommandLine.XPlat.Utility
                     else
                     {
                         packageSources.Add(matchedSource);
-                    }
-                }
-
-                HashSet<string> currentPackagesSources = packageSources.Select(p => p.Source).ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-                if (additionalSources?.Any() == true)
-                {
-                    foreach (string additionalSource in additionalSources)
-                    {
-                        if (string.IsNullOrWhiteSpace(additionalSource) || currentPackagesSources.Contains(additionalSource))
-                        {
-                            continue;
-                        }
-
-                        PackageSource matchedSource = packageProviderSources.FirstOrDefault(e => e.Source == additionalSource);
-
-                        if (matchedSource == null)
-                        {
-                            packageSources.Add(new PackageSource(additionalSource));
-                        }
-                        else
-                        {
-                            packageSources.Add(matchedSource);
-                        }
-
-                        currentPackagesSources.Add(additionalSource);
                     }
                 }
 
