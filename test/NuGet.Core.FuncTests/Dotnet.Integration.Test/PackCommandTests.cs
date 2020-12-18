@@ -748,7 +748,7 @@ namespace Dotnet.Integration.Test
                 // Base Package
                 var basePackageProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <PackageOutputPath>$(MSBuildThisFileDirectory)..\pkgs</PackageOutputPath>
   </PropertyGroup>
   <ItemGroup>
@@ -806,7 +806,6 @@ namespace Dotnet.Integration.Test
                 }
             }
         }
-
 
         [PlatformTheory(Platform.Windows)]
         [InlineData(null, null, null, true, "", "Analyzers,Build")]
