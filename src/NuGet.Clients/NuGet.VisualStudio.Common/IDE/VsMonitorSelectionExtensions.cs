@@ -35,21 +35,11 @@ namespace NuGet.VisualStudio
                 // multiple items are selected.
                 if (pitemid == (uint)VSConstants.VSITEMID.Selection)
                 {
-                    uint numberOfSelectedItems;
-                    int isSingleHierarchyInt;
-                    if (ErrorHandler.Succeeded(ppMIS.GetSelectionInfo(out numberOfSelectedItems, out isSingleHierarchyInt)))
+                    VSITEMSELECTION[] vsItemSelections = ppMIS.GetSelectedItemsInSingleHierachy();
+                    if (vsItemSelections != null && vsItemSelections.Length > 0)
                     {
-                        bool isSingleHierarchy = (isSingleHierarchyInt != 0);
-
-                        VSITEMSELECTION[] vsItemSelections = new VSITEMSELECTION[numberOfSelectedItems];
-                        uint flags = 0; // No flags, which will give us back a hierarchy for each item
-                        ErrorHandler.ThrowOnFailure(ppMIS.GetSelectedItems(flags, numberOfSelectedItems, vsItemSelections));
-
-                        if (isSingleHierarchy && vsItemSelections.Length > 0)
-                        {
-                            VSITEMSELECTION sel = vsItemSelections[0];
-                            hierarchy = sel.pHier;
-                        }
+                        VSITEMSELECTION sel = vsItemSelections[0];
+                        hierarchy = sel.pHier;
                     }
                 }
                 else

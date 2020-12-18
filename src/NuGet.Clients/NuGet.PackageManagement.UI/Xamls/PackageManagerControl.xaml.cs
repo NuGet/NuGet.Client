@@ -397,7 +397,7 @@ namespace NuGet.PackageManagement.UI
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not trigger a refresh if this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
-            if (!(_loadedAndInitialized))
+            if (!_loadedAndInitialized)
             {
                 _loadedAndInitialized = true;
                 ResetTabDataLoadFlags();
@@ -1408,23 +1408,23 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        public void ShowUpdatePackages(string[] updatePackages)
+        public void ShowUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (updatePackages == null)
+            if (updatePackageOptions == null)
             {
                 return;
             }
 
             if (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabDataIsLoaded)
             {
-                SelectMatchingUpdatePackages(updatePackages);
+                SelectMatchingUpdatePackages(updatePackageOptions);
             }
             else if (_topPanel.Filter == ItemFilter.Installed && _updatesTabDataIsLoaded)
             {
                 _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
-                SelectMatchingUpdatePackages(updatePackages);
+                SelectMatchingUpdatePackages(updatePackageOptions);
             }
             else
             {
@@ -1436,32 +1436,31 @@ namespace NuGet.PackageManagement.UI
                 handler = (s, e) =>
                 {
                     _packageList.LoadItemsCompleted -= handler;
-                    SelectMatchingUpdatePackages(updatePackages);
+                    SelectMatchingUpdatePackages(updatePackageOptions);
                 };
                 _packageList.LoadItemsCompleted += handler;
             }
         }
 
-        private void SelectMatchingUpdatePackages(string[] updatePackages)
+        private void SelectMatchingUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (updatePackages == null)
+            if (updatePackageOptions == null)
             {
                 return;
             }
 
-            // Select all packages if the sentinal * is the first item of the update packages list
-            if ("*".Equals(updatePackages[0], StringComparison.Ordinal))
+            if (updatePackageOptions.ShouldUpdateAllPackages)
             {
                 foreach (var packageItem in _packageList.PackageItems)
                 {
                     packageItem.Selected = true;
                 }
             }
-            else
+            else if (updatePackageOptions.PackagesToUpdate.Any())
             {
-                var packagesToSelect = new HashSet<string>(updatePackages);
+                var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate);
                 foreach (var packageItem in _packageList.PackageItems)
                 {
                     packageItem.Selected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);

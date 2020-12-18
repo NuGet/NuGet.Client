@@ -609,7 +609,7 @@ namespace NuGetVSExtension
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
         }
 
-        private async Task ShowManageLibraryPackageDialogAsync(string searchText, string[] updatePackages = null)
+        private async Task ShowManageLibraryPackageDialogAsync(string searchText, ShowUpdatePackageOptions updatePackageOptions = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -635,7 +635,7 @@ namespace NuGetVSExtension
 
                 if (windowFrame != null)
                 {
-                    ShowUpdatePackages(windowFrame, updatePackages);
+                    ShowUpdatePackages(windowFrame, updatePackageOptions);
                     Search(windowFrame, searchText);
                     windowFrame.Show();
                 }
@@ -656,7 +656,7 @@ namespace NuGetVSExtension
         private void ShowUpdatePackageDialog(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string[] updatePackages = GetSelectedPackages();
+            var updatePackages = new ShowUpdatePackageOptions(packagesToUpdate: GetSelectedPackages());
 
             string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
@@ -671,8 +671,7 @@ namespace NuGetVSExtension
             string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                var updatePackages = new string[1] { "*" }; // Sentinal value indicating to select all packages for update.
-                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString), updatePackages);
+                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString), new ShowUpdatePackageOptions(shouldUpdateAllPackages: true));
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowUpdatePackagesDialog));
         }
 
@@ -722,6 +721,14 @@ namespace NuGetVSExtension
             return parameterString.Substring(0, lastIndexOfSearchInSwitch);
         }
 
+        /// <summary>
+        /// Gets the names of the package or packages that are selected in the VsHierarchy.
+        /// </summary>
+        /// <returns>
+        /// A string array containing the list of selected packages in the same hierarchy.
+        /// If only one package is selected, the array will contain one package name, otherwise, it will be a list of package names.
+        /// If the selected packages are across multiple hierarchies or if no packages are selected, an empty array will be returned.
+        /// </returns>
         private string[] GetSelectedPackages()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -741,43 +748,24 @@ namespace NuGetVSExtension
                 {
                     // This is a single item selection.
 
-                    IVsHierarchy hierarchy = Marshal.GetTypedObjectForIUnknown(hierarchyPtr, typeof(IVsHierarchy)) as IVsHierarchy;
-                    if (hierarchy != null)
+                    if (Marshal.GetTypedObjectForIUnknown(hierarchyPtr, typeof(IVsHierarchy)) is IVsHierarchy hierarchy
+                        && TryGetPackageNameFromHierarchy(hierarchy, itemId, out string packageName))
                     {
-                        if (ErrorHandler.Succeeded(hierarchy.GetProperty(itemId, (int)__VSHPROPID7.VSHPROPID_ProjectTreeCapabilities, out object treeCapabilities)))
-                        {
-                            string packageName = ParsePackageNameFromTreeCapabilities(treeCapabilities?.ToString());
-                            if (packageName != null)
-                            {
-                                packages.Add(packageName);
-                            }
-                        }
+                        packages.Add(packageName);
                     }
                 }
                 else if (multiItemSelect != null)
                 {
                     // This is a multiple item selection.
 
-                    uint numberOfSelectedItems;
-                    int isSingleHierarchyInt;
-                    if (ErrorHandler.Succeeded(multiItemSelect.GetSelectionInfo(out numberOfSelectedItems, out isSingleHierarchyInt)))
+                    VSITEMSELECTION[] vsItemSelections = multiItemSelect.GetSelectedItemsInSingleHierachy();
+                    if (vsItemSelections != null)
                     {
-                        bool isSingleHierarchy = isSingleHierarchyInt != 0;
-
-                        VSITEMSELECTION[] vsItemSelections = new VSITEMSELECTION[numberOfSelectedItems];
-                        uint flags = 0; // No flags, which will give us back a hierarchy for each item
-                        if (ErrorHandler.Succeeded(multiItemSelect.GetSelectedItems(flags, numberOfSelectedItems, vsItemSelections)) && isSingleHierarchy)
+                        foreach (VSITEMSELECTION sel in vsItemSelections)
                         {
-                            foreach (VSITEMSELECTION sel in vsItemSelections)
+                            if (sel.pHier != null && TryGetPackageNameFromHierarchy(sel.pHier, sel.itemid, out string packageName))
                             {
-                                if (sel.pHier != null && ErrorHandler.Succeeded(sel.pHier.GetProperty(sel.itemid, (int)__VSHPROPID7.VSHPROPID_ProjectTreeCapabilities, out object treeCapabilities)))
-                                {
-                                    string packageName = ParsePackageNameFromTreeCapabilities(treeCapabilities?.ToString());
-                                    if (packageName != null)
-                                    {
-                                        packages.Add(packageName);
-                                    }
-                                }
+                                packages.Add(packageName);
                             }
                         }
                     }
@@ -796,6 +784,16 @@ namespace NuGetVSExtension
                     Marshal.Release(selectionContainerPtr);
                 }
             }
+        }
+
+        private static bool TryGetPackageNameFromHierarchy(IVsHierarchy hierarchy, uint itemId, out string packageName)
+        {
+            Assumes.NotNull(hierarchy);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            int hr = hierarchy.GetProperty(itemId, (int)__VSHPROPID7.VSHPROPID_ProjectTreeCapabilities, out object treeCapabilities);
+            packageName = ParsePackageNameFromTreeCapabilities(treeCapabilities as string);
+            return hr == VSConstants.S_OK && packageName != null;
         }
 
         private static string ParsePackageNameFromTreeCapabilities(string treeCapabilities)
@@ -967,17 +965,17 @@ namespace NuGetVSExtension
             }
         }
 
-        private void ShowUpdatePackages(IVsWindowFrame windowFrame, string[] updatePackages)
+        private void ShowUpdatePackages(IVsWindowFrame windowFrame, ShowUpdatePackageOptions updatePackageOptions)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (updatePackages == null)
+            if (updatePackageOptions == null)
             {
                 return;
             }
 
             var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
-            packageManagerControl?.ShowUpdatePackages(updatePackages);
+            packageManagerControl?.ShowUpdatePackages(updatePackageOptions);
         }
 
         // For PowerShell, it's okay to query from the worker thread.
