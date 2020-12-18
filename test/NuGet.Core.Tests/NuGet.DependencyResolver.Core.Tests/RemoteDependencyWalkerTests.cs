@@ -1741,10 +1741,10 @@ namespace NuGet.DependencyResolver.Tests
 
             provider.Package("B", "1.0.0")
                    .DependsOn("C", "1.0.0")
-                   .DependsOn("D", "1.0.0", privateAssets:privateAssets1);
+                   .DependsOn("D", "1.0.0", privateAssets: privateAssets1);
 
             provider.Package("C", "1.0.0")
-                .DependsOn("D", "2.0.0", privateAssets:privateAssets2);
+                .DependsOn("D", "2.0.0", privateAssets: privateAssets2);
 
             provider.Package("D", "1.0.0");
             provider.Package("D", "2.0.0");
@@ -1785,7 +1785,7 @@ namespace NuGet.DependencyResolver.Tests
             var provider = new DependencyProvider();
 
             provider.Package("A", "1.0.0")
-                .DependsOn("B", "2.0.0", privateAssets:privateAssets)
+                .DependsOn("B", "2.0.0", privateAssets: privateAssets)
                 .DependsOn("D", "1.0.0");
 
             provider.Package("B", "2.0.0")
