@@ -10230,6 +10230,60 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        /// <summary>
+        /// A -> B (PrivateAssets)-> C
+        /// A has packages lock file enabled. Locked should succeed and ignore `C`.
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public void RestoreWithPackagesLockFile_ProjectToProjectWithPrivateAssets_SucceedsInLockedMode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                   "b",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                   "c",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                // A -> B
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C with PrivateAssets
+                projectC.PrivateAssets = LibraryIncludeFlags.All.ToString();
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                // Solution
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Pre-Conditions, Act & Assert.
+                Util.RestoreSolution(pathContext).Success.Should().BeTrue();
+
+                // Second Restore
+                var r = Util.RestoreSolution(pathContext, additionalArgs: "-LockedMode");
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
