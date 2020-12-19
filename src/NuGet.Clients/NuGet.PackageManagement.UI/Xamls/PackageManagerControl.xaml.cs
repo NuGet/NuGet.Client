@@ -406,9 +406,9 @@ namespace NuGet.PackageManagement.UI
         private async Task PackageManagerLoadedAsync()
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            // Do not trigger a refresh if the browse tab is open and this is not the first load of the control.
+            // Do not trigger a refresh if this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
-            if (!(_loadedAndInitialized && _topPanel.Filter == ItemFilter.All))
+            if (!_loadedAndInitialized)
             {
                 _loadedAndInitialized = true;
                 ResetTabDataLoadFlags();
