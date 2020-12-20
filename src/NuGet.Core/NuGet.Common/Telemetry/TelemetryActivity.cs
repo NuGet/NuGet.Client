@@ -9,7 +9,7 @@ namespace NuGet.Common
 {
     /// <summary> Represents telemetry activity which spans a time interval. </summary>
     /// <remarks> Always dispose the activity at the end of interval covered. </remarks>
-    public class TelemetryActivity : IDisposable
+    public sealed class TelemetryActivity : IDisposable
     {
         private readonly DateTime _startTime;
         private readonly Stopwatch _stopwatch;

@@ -16,7 +16,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// Writes the packages.config XML file to a stream
     /// </summary>
-    public class PackagesConfigWriter : IDisposable
+    public sealed class PackagesConfigWriter : IDisposable
     {
         private readonly Stream _stream;
         private readonly string _filePath;
@@ -191,7 +191,7 @@ namespace NuGet.Packaging
             XElement package;
             if (PackagesConfig.HasAttributeValue(packagesNode, PackagesConfig.IdAttributeName, entry.PackageIdentity.Id, out package))
             {
-                throw new PackagesConfigWriterException(String.Format(CultureInfo.CurrentCulture,
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.PackageEntryAlreadyExist, entry.PackageIdentity.Id));
             }
             else
@@ -233,7 +233,7 @@ namespace NuGet.Packaging
 
             if (matchingNode == null)
             {
-                throw new PackagesConfigWriterException(String.Format(CultureInfo.CurrentCulture,
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.PackageEntryNotExist, oldEntry.PackageIdentity.Id, oldEntry.PackageIdentity.Version));
             }
             else
@@ -348,7 +348,7 @@ namespace NuGet.Packaging
 
             if (matchingNode == null)
             {
-                throw new PackagesConfigWriterException(String.Format(CultureInfo.CurrentCulture,
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.PackageEntryNotExist, entry.PackageIdentity.Id, entry.PackageIdentity.Version));
             }
             else
@@ -370,7 +370,7 @@ namespace NuGet.Packaging
             {
                 var frameworkShortName = entry.TargetFramework.GetShortFolderName(_frameworkMappings);
 
-                if (!String.IsNullOrEmpty(frameworkShortName))
+                if (!string.IsNullOrEmpty(frameworkShortName))
                 {
                     node.Add(new XAttribute(XName.Get(PackagesConfig.TargetFrameworkAttributeName), frameworkShortName));
                 }

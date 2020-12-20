@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace NuGet.Packaging.Signing
 {
-    public class KeyPairFileReader : IDisposable
+    public sealed class KeyPairFileReader : IDisposable
     {
         private static readonly Regex NamePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$", RegexOptions.CultureInvariant);
 

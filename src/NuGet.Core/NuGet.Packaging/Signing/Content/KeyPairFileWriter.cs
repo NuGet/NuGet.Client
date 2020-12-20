@@ -7,7 +7,7 @@ using System.Text;
 
 namespace NuGet.Packaging.Signing
 {
-    public class KeyPairFileWriter : IDisposable
+    public sealed class KeyPairFileWriter : IDisposable
     {
         private readonly StreamWriter _writer;
 
