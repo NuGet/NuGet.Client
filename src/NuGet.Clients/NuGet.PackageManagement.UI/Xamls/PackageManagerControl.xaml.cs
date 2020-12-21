@@ -1353,6 +1353,66 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
+        public void ShowUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (updatePackageOptions == null)
+            {
+                return;
+            }
+
+            if (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabDataIsLoaded)
+            {
+                SelectMatchingUpdatePackages(updatePackageOptions);
+            }
+            else if (_topPanel.Filter == ItemFilter.Installed && _updatesTabDataIsLoaded)
+            {
+                _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
+                SelectMatchingUpdatePackages(updatePackageOptions);
+            }
+            else
+            {
+                _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
+
+                // Hook up an event handler to delay selecting packages until they've all loaded, then unhook
+                // the event handler so it doesn't keep happening on every refresh, only the initial load.
+                EventHandler handler = null;
+                handler = (s, e) =>
+                {
+                    _packageList.LoadItemsCompleted -= handler;
+                    SelectMatchingUpdatePackages(updatePackageOptions);
+                };
+                _packageList.LoadItemsCompleted += handler;
+            }
+        }
+
+        private void SelectMatchingUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (updatePackageOptions == null)
+            {
+                return;
+            }
+
+            if (updatePackageOptions.ShouldUpdateAllPackages)
+            {
+                foreach (var packageItem in _packageList.PackageItems)
+                {
+                    packageItem.Selected = true;
+                }
+            }
+            else if (updatePackageOptions.PackagesToUpdate.Any())
+            {
+                var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate);
+                foreach (var packageItem in _packageList.PackageItems)
+                {
+                    packageItem.Selected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
+                }
+            }
+        }
+
         public void CleanUp()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>

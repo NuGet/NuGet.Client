@@ -130,6 +130,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" ExcludeAssets="build" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Embeddable" ExcludeAssets="build" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.1.DesignTime" />
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="NuGetTools.vsct">

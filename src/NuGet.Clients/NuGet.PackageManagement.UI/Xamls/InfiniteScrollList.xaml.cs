@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
         /// <summary>
-        /// This exists only to facilitate unit testing.
+        /// Fires when the items in the list have finished loading.
         /// It is triggered at <see cref="RepopulatePackageList(PackageItemListViewModel, IPackageItemLoader, CancellationToken) " />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
