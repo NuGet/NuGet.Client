@@ -16,6 +16,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -777,6 +778,11 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 Assert.Equal(0, result);
 
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
                 // Should resolve to highest available version.
@@ -847,6 +853,11 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 Assert.Equal(0, result);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -922,6 +933,11 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 Assert.Equal(0, result);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1000,6 +1016,11 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 Assert.Equal(0, result);
 
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
                 // Should resolve to specified version.
@@ -1075,6 +1096,11 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 Assert.Equal(0, result);
 
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
                 // Should resolve to highest available version.
@@ -1145,6 +1171,11 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 Assert.Equal(0, result);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1220,6 +1251,11 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 Assert.Equal(0, result);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1298,6 +1334,11 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 Assert.Equal(0, result);
 
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
                 // Should resolve to specified version.
@@ -1339,6 +1380,80 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 Assert.Equal(1, result);
+            }
+        }
+
+        [Fact]
+        public async Task AddPkg_WithMixed_V2_V3_AdditionalSourceFeeds_AbsolutePath_NoVersionSpecified_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectFrameworks = "net472";
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
+                var packageX = "packageX";
+                var packageY = "packageY";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageY_V1 = new PackageIdentity(packageY, new NuGetVersion("1.0.0"));
+                var packageY_V2 = new PackageIdentity(packageY, new NuGetVersion("2.0.0"));
+                var packageY_V1_Context = XPlatTestUtils.CreatePackage(packageY_V1.Id, packageY_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageY_V2_Context = XPlatTestUtils.CreatePackage(packageY_V2.Id, packageY_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "CustompackagesX");
+                var packageYPath = Path.Combine(pathContext.WorkingDirectory, "CustompackagesY");
+
+                // Generate V2 Package
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(
+                    packageXPath, //not using solution source folder
+                    new PackageIdentity[] { packageX_V1, packageX_V2 });
+
+                // Generate V3 Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageYPath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageY_V1_Context, packageY_V2_Context });
+
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Single source
+                // Since user is not inputing a version, it is converted to a " * " in the command
+                var packageArgsX = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
+                    projectA,
+                    sources: packageXPath);
+
+                // Act
+                var resultX = commandRunner.ExecuteCommand(packageArgsX, MsBuild)
+                    .Result;
+
+                // Multiple sources
+                // Since user is not inputing a version, it is converted to a " * " in the command
+                PackageReferenceArgs packageArgsY = XPlatTestUtils.GetPackageReferenceArgs(packageY_V1.Id, "*",
+                    projectA,
+                    sources: $"{packageXPath};{packageYPath}",
+                    dgFilePath: Path.Combine(projectA.ProjectExtensionsPath, $"{projectA.ProjectName}.csproj.nuget.dgspec.json")
+                    );
+
+                var resultY = commandRunner.ExecuteCommand(packageArgsY, MsBuild)
+                    .Result;
+
+                // Assert
+                Assert.Equal(0, resultX);
+                Assert.Equal(0, resultY);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
+                Assert.Equal(packageSpecs.Count(), 1);
+                string[] sources = packageSpecs[0].RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.Equal(sources.Count(), 2);
+                sources.Should().Contain(e => e.Contains("CustompackagesX"));
+                sources.Should().Contain(e => e.Contains("CustompackagesY"));
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageY);
+                // Should resolve to highest available version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V2.Version));
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageY_V2.Version));
             }
         }
 

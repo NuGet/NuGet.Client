@@ -219,14 +219,15 @@ namespace NuGet.XPlat.FuncTest
         }
 
         internal static PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
-            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false)
+            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false, string dgFilePath = "")
         {
             var logger = new TestCommandOutputLogger();
-            var dgFilePath = string.Empty;
-            if (!noRestore)
+
+            if (string.IsNullOrEmpty(dgFilePath) && !noRestore)
             {
                 dgFilePath = CreateDGFileForProject(project);
             }
+
             return new PackageReferenceArgs(project.ProjectPath, logger)
             {
                 Frameworks = MSBuildStringUtility.Split(frameworks),
@@ -428,6 +429,17 @@ namespace NuGet.XPlat.FuncTest
             }
 
             return referenceType;
+        }
+
+        internal static PackageSpec[] GetPackageSpecs(SimpleTestProjectContext project)
+        {
+            DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(Path.Combine(project.ProjectExtensionsPath, $"{project.ProjectName}.csproj.nuget.dgspec.json"));
+
+            return dgSpec
+                .Projects
+                .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference &&
+                PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFullPath(p.RestoreMetadata.ProjectPath), project.ProjectPath))
+                .ToArray();
         }
     }
 }

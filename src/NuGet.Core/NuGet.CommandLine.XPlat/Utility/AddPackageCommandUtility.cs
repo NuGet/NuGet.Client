@@ -125,25 +125,11 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="newSources">New user supplied source feeds as argument</param>
         public static void UpdateSourceFeeds(PackageSpec packageSpec, string[] newSources)
         {
-            HashSet<string> currentPackagesSources = packageSpec.RestoreMetadata.Sources.Select(p => p.Source).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            List<string> newUniqueSources = new List<string>();
-
             if (newSources?.Any() == true)
             {
-                foreach (string newSource in newSources)
-                {
-                    if (string.IsNullOrWhiteSpace(newSource) || currentPackagesSources.Contains(newSource))
-                    {
-                        continue;
-                    }
-
-                    newUniqueSources.Add(newSource);
-                }
+                packageSpec.RestoreMetadata.Sources =
+                    newSources.Where(ns => !string.IsNullOrEmpty(ns)).ToHashSet(StringComparer.OrdinalIgnoreCase).Select(ns => new PackageSource(ns)).ToList();
             }
-
-            List<PackageSource> updatedSources = new List<PackageSource>(packageSpec.RestoreMetadata.Sources);
-            updatedSources.AddRange(newUniqueSources.Select(ns => new PackageSource(ns)));
-            packageSpec.RestoreMetadata.Sources = updatedSources;
         }
     }
 }
