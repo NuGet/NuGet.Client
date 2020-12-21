@@ -1705,8 +1705,8 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
 
             // Act
-            var rootNode = await DoWalkAsync(walker, "A", framework);
-            var result = rootNode.Analyze();
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             // Assert
             Assert.Equal(expectedConflicts, result.VersionConflicts.Count);
@@ -1748,8 +1748,8 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
 
             // Act
-            var rootNode = await DoWalkAsync(walker, "A", framework);
-            var result = rootNode.Analyze();
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             // Assert
             Assert.Equal(expectedDowngrades, result.Downgrades.Count);
@@ -1757,8 +1757,8 @@ namespace NuGet.DependencyResolver.Tests
 
             if (expectedDowngrades == 1)
             {
-                var downgraded = result.Downgrades[0].DowngradedFrom;
-                var downgradedBy = result.Downgrades[0].DowngradedTo;
+                GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+                GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
 
                 AssertPath(downgraded, "A 1.0.0", "B 1.0.0", "C 2.0.0");
                 AssertPath(downgradedBy, "A 1.0.0", "C 1.0.0");
@@ -1766,7 +1766,7 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         /// <summary>
-        /// A -> B 2.0.0 (PrivateAssets) -> C 2.0.0
+        /// A -> B 1.0.0 (PrivateAssets) -> C 2.0.0
         ///   -> C 1.0.0
         /// </summary>
         [Theory]
@@ -1779,10 +1779,10 @@ namespace NuGet.DependencyResolver.Tests
             var provider = new DependencyProvider();
 
             provider.Package("A", "1.0.0")
-                .DependsOn("B", "2.0.0", privateAssets: privateAssets)
+                .DependsOn("B", "1.0.0", privateAssets: privateAssets)
                 .DependsOn("C", "1.0.0");
 
-            provider.Package("B", "2.0.0")
+            provider.Package("B", "1.0.0")
                 .DependsOn("C", "2.0.0");
 
             provider.Package("C", "1.0.0");
@@ -1792,8 +1792,8 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
 
             // Act
-            var rootNode = await DoWalkAsync(walker, "A", framework);
-            var result = rootNode.Analyze();
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             // Assert
             Assert.Equal(expectedDowngrades, result.Downgrades.Count);
@@ -1801,10 +1801,10 @@ namespace NuGet.DependencyResolver.Tests
 
             if (expectedDowngrades == 1)
             {
-                var downgraded = result.Downgrades[0].DowngradedFrom;
-                var downgradedBy = result.Downgrades[0].DowngradedTo;
+                GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+                GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
 
-                AssertPath(downgraded, "A 1.0.0", "B 2.0.0", "C 2.0.0");
+                AssertPath(downgraded, "A 1.0.0", "B 1.0.0", "C 2.0.0");
                 AssertPath(downgradedBy, "A 1.0.0", "C 1.0.0");
             }
         }
