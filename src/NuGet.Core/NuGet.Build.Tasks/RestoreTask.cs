@@ -15,7 +15,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// .NET Core compatible restore task for PackageReference and UWP project.json projects.
     /// </summary>
-    public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
+    public sealed class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 

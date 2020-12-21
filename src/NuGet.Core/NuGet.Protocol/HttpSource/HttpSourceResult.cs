@@ -6,7 +6,7 @@ using System.IO;
 
 namespace NuGet.Protocol
 {
-    public class HttpSourceResult : IDisposable
+    public sealed class HttpSourceResult : IDisposable
     {
         public Stream Stream { get; private set; }
         public HttpSourceResultStatus Status { get; }

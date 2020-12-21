@@ -14,7 +14,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
-    public class PackagePreFetcherResult : IDisposable
+    public sealed class PackagePreFetcherResult : IDisposable
     {
         private readonly Task<DownloadResourceResult> _downloadTask;
         private readonly string _nupkgPath;
