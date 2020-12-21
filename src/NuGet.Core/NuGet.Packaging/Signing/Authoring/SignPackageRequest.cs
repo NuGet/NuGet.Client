@@ -78,7 +78,7 @@ namespace NuGet.Packaging.Signing
 
         /// <summary>
         /// Disposes of this instance.
-        /// </summary>        
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
