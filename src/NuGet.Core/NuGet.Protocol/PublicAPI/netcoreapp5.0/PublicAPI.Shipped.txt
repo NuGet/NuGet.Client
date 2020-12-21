@@ -1778,10 +1778,8 @@ override NuGet.Protocol.Plugins.PluginPackageReader.IsSignedAsync(System.Threadi
 override NuGet.Protocol.Plugins.PluginPackageReader.NuspecReader.get -> NuGet.Packaging.NuspecReader
 override NuGet.Protocol.Plugins.PluginPackageReader.ValidateIntegrityAsync(NuGet.Packaging.Signing.SignatureContent signatureContent, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
 override NuGet.Protocol.Plugins.StandardInputReceiver.Connect() -> void
-override NuGet.Protocol.Plugins.StandardInputReceiver.Dispose() -> void
 override NuGet.Protocol.Plugins.StandardOutputReceiver.Close() -> void
 override NuGet.Protocol.Plugins.StandardOutputReceiver.Connect() -> void
-override NuGet.Protocol.Plugins.StandardOutputReceiver.Dispose() -> void
 override NuGet.Protocol.Plugins.UnixAndMonoPlatformsEmbeddedSignatureVerifier.IsValid(string filePath) -> bool
 override NuGet.Protocol.Plugins.WindowsEmbeddedSignatureVerifier.IsValid(string filePath) -> bool
 override NuGet.Protocol.ProxyAuthenticationHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
