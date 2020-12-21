@@ -1772,7 +1772,7 @@ namespace NuGet.DependencyResolver.Tests
         [Theory]
         [InlineData(null, 1)]
         [InlineData(LibraryIncludeFlags.All, 1)]
-        public async Task PrivateAssetsAll_DowngradesForTransitiveDependenciesAtRootNode(LibraryIncludeFlags? privateAssets, int expectedDowngrades)
+        public async Task PrivateAssetsAll_VersionDowngradesForTransitiveDependencies(LibraryIncludeFlags? privateAssets, int expectedDowngrades)
         {
             var framework = NuGetFramework.Parse("net45");
             var context = new TestRemoteWalkContext();
