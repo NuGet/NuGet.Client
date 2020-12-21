@@ -61,6 +61,17 @@ namespace NuGet.CommandLine.XPlat
                 return 0;
             }
 
+            // Convert relative path to absolute path if there is any
+            if (packageReferenceArgs.Sources?.Any() == true)
+            {
+                var projectDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath);
+
+                for (int i = 0; i < packageReferenceArgs.Sources.Length; i++)
+                {
+                    packageReferenceArgs.Sources[i] = UriUtility.GetAbsolutePath(projectDirectory, packageReferenceArgs.Sources[i]);
+                }
+            }
+
             // 1. Get project dg file
             packageReferenceArgs.Logger.LogDebug("Reading project Dependency Graph");
             var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
@@ -102,16 +113,7 @@ namespace NuGet.CommandLine.XPlat
 
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
-            // Convert relative path to absolute path if there is any
-            if (packageReferenceArgs.Sources?.Any() == true)
-            {
-                var projectDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath);
-
-                for (int i = 0; i < packageReferenceArgs.Sources.Length; i++)
-                {
-                    packageReferenceArgs.Sources[i] = UriUtility.GetAbsolutePath(projectDirectory, packageReferenceArgs.Sources[i]);
-                }
-            }
+            AddPackageCommandUtility.UpdateSourceFeeds(originalPackageSpec, packageReferenceArgs.Sources);
 
             PackageDependency packageDependency = default;
             if (packageReferenceArgs.NoVersion)
