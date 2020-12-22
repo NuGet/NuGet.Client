@@ -217,7 +217,7 @@ namespace NuGet.Commands
                             restoreGraphs: new List<RestoreTargetGraph>(),
                             compatibilityCheckResults: new List<CompatibilityCheckResult>(),
                             msbuildFiles: new List<MSBuildOutputFile>(),
-                            lockFile: _request.ExistingLockFile,
+                            lockFile: _request.ExistingLockFile, // The lock file needs updated.
                             previousLockFile: _request.ExistingLockFile,
                             lockFilePath: _request.ExistingLockFile?.Path,
                             cacheFile: cacheFile,

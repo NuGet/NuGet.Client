@@ -291,6 +291,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 Assert.Contains("NU1004:", result.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 

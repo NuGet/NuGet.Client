@@ -8581,6 +8581,8 @@ namespace NuGet.CommandLine.Test
                 // No change expected in the lock file.
                 intitialRuntimes.ShouldBeEquivalentTo(lockRuntimes);
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -8637,6 +8639,8 @@ namespace NuGet.CommandLine.Test
                 // The frameworks should not chnage in the lock file.
                 lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -8729,6 +8733,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -8829,6 +8835,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -8884,6 +8892,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
