@@ -92,7 +92,7 @@ NuGet members may contribute directly to the main remote.
 
     * You can use the dotnet CLI tool (https://github.com/dotnet/format):
 
-      `dotnet format --check --exclude submodules`
+      `dotnet format --check --exclude cli packages submodules`
 
 1. Run unit and functional tests if inside Microsoft corpnet with
 
