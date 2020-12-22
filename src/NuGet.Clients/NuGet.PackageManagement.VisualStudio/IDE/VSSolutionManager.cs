@@ -278,7 +278,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<bool> IsAllProjectsNominatedAsync()
         {
-            var netCoreProjects = (await GetNuGetProjectsAsync()).OfType<CpsPackageReferenceProject>().ToList();
+            var netCoreProjects = (await GetNuGetProjectsAsync())
+                            .Where(e => IsRestoredOnSolutionLoad(e))
+                            .Cast<BuildIntegratedNuGetProject>()
+                            .ToList();
 
             foreach (var project in netCoreProjects)
             {
@@ -294,6 +297,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // return true if all the net core projects have been nominated.
             return true;
+        }
+
+
+        private static bool IsRestoredOnSolutionLoad(NuGetProject nuGetProject)
+        {
+            if (nuGetProject is CpsPackageReferenceProject)
+            {
+                return true;
+            }
+            if (nuGetProject is LegacyPackageReferenceProject legacyPackageReferenceProject)
+            {
+                return legacyPackageReferenceProject.ProjectServices.Capabilities.NominatesOnSolutionLoad;
+            }
+            return false;
         }
 
         /// <summary>

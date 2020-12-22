@@ -22,6 +22,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool SupportsPackageReferences => false;
 
+        public bool NominatesOnSolutionLoad => false;
+
         #region INuGetProjectServices
 
         public IProjectBuildProperties BuildProperties => _vsProjectAdapter.BuildProperties;
