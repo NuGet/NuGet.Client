@@ -61,17 +61,6 @@ namespace NuGet.CommandLine.XPlat
                 return 0;
             }
 
-            // Convert relative path to absolute path if there is any
-            if (packageReferenceArgs.Sources?.Any() == true)
-            {
-                var projectDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath);
-
-                for (int i = 0; i < packageReferenceArgs.Sources.Length; i++)
-                {
-                    packageReferenceArgs.Sources[i] = UriUtility.GetAbsolutePath(projectDirectory, packageReferenceArgs.Sources[i]);
-                }
-            }
-
             // 1. Get project dg file
             packageReferenceArgs.Logger.LogDebug("Reading project Dependency Graph");
             var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
@@ -113,7 +102,28 @@ namespace NuGet.CommandLine.XPlat
 
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
-            AddPackageCommandUtility.UpdateSourceFeeds(originalPackageSpec, packageReferenceArgs.Sources);
+            // Convert relative path to absolute path if there is any
+            List<string> sourcePaths;
+
+            if (packageReferenceArgs.Sources?.Any() == true)
+            {
+                sourcePaths = new List<string>();
+                string projectDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath);
+
+                foreach (string source in packageReferenceArgs.Sources)
+                {
+                    sourcePaths.Add(UriUtility.GetAbsolutePath(projectDirectory, source));
+                }
+
+                originalPackageSpec.RestoreMetadata.Sources =
+                                    sourcePaths.Where(ns => !string.IsNullOrEmpty(ns))
+                                    .Select(ns => new PackageSource(ns))
+                                    .ToList();
+            }
+            else
+            {
+                sourcePaths = packageReferenceArgs.Sources?.ToList();
+            }
 
             PackageDependency packageDependency = default;
             if (packageReferenceArgs.NoVersion)
@@ -162,7 +172,7 @@ namespace NuGet.CommandLine.XPlat
             packageReferenceArgs.Logger.LogDebug("Running Restore preview");
 
             var restorePreviewResult = await PreviewAddPackageReferenceAsync(packageReferenceArgs,
-                updatedDgSpec);
+                updatedDgSpec, sourcePaths);
 
             packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
@@ -321,7 +331,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private static async Task<RestoreResultPair> PreviewAddPackageReferenceAsync(PackageReferenceArgs packageReferenceArgs,
-            DependencyGraphSpec dgSpec)
+            DependencyGraphSpec dgSpec, List<string> sourcePaths)
         {
             // Set user agent and connection settings.
             XPlatUtility.ConfigureProtocol();
@@ -347,7 +357,7 @@ namespace NuGet.CommandLine.XPlat
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
                     PreLoadedRequestProviders = providers,
-                    Sources = packageReferenceArgs.Sources?.ToList()
+                    Sources = sourcePaths
                 };
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.

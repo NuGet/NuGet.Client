@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -115,20 +114,6 @@ namespace NuGet.CommandLine.XPlat.Utility
                 }
 
                 return packageSources;
-            }
-        }
-
-        /// <summary>
-        /// Updates package sources
-        /// </summary>
-        /// <param name="packageSpec">Package spec which may need update source feed</param>
-        /// <param name="newSources">New user supplied source feeds as argument</param>
-        public static void UpdateSourceFeeds(PackageSpec packageSpec, string[] newSources)
-        {
-            if (newSources?.Any() == true)
-            {
-                packageSpec.RestoreMetadata.Sources =
-                    newSources.Where(ns => !string.IsNullOrEmpty(ns)).ToHashSet(StringComparer.OrdinalIgnoreCase).Select(ns => new PackageSource(ns)).ToList();
             }
         }
     }
