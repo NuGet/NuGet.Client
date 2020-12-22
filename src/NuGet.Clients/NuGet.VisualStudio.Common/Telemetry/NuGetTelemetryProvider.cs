@@ -13,10 +13,9 @@ namespace NuGet.VisualStudio.Telemetry
     [Export(typeof(INuGetTelemetryProvider))]
     internal class NuGetTelemetryProvider : INuGetTelemetryProvider
     {
-        public Task EmitEventAsync(TelemetryEvent telemetryEvent)
+        public void EmitEvent(TelemetryEvent telemetryEvent)
         {
             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
-            return Task.CompletedTask;
         }
 
         public async Task PostFaultAsync(Exception e, string callerClassName, [CallerMemberName] string callerMemberName = null, IDictionary<string, object> extraProperties = null)

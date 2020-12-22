@@ -33,7 +33,8 @@ namespace NuGet.VisualStudio
                 return DefaultFrameworkNameProvider
                     .Instance
                     .GetNetStandardVersions()
-                    .Select(framework => new FrameworkName(framework.DotNetFrameworkName));
+                    .Select(framework => new FrameworkName(framework.DotNetFrameworkName))
+                    .ToList();
             }
             catch (Exception exception)
             {
@@ -65,7 +66,8 @@ namespace NuGet.VisualStudio
                 return CompatibilityListProvider
                     .Default
                     .GetFrameworksSupporting(nuGetFramework)
-                    .Select(framework => new FrameworkName(framework.DotNetFrameworkName));
+                    .Select(framework => new FrameworkName(framework.DotNetFrameworkName))
+                    .ToList();
             }
             catch (Exception exception)
             {

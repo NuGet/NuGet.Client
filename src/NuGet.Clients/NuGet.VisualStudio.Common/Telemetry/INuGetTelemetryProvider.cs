@@ -11,7 +11,7 @@ namespace NuGet.VisualStudio.Telemetry
 {
     public interface INuGetTelemetryProvider
     {
-        Task EmitEventAsync(TelemetryEvent telemetryEvent);
+        void EmitEvent(TelemetryEvent telemetryEvent);
         Task PostFaultAsync(Exception e, string callerClassName, [CallerMemberName] string callerMemberName = null, IDictionary<string, object> extraProperties = null);
         void PostFault(Exception e, string callerClassName, [CallerMemberName] string callerMemberName = null, IDictionary<string, object> extraProperties = null);
     }
