@@ -555,7 +555,7 @@ namespace NuGet.Commands
 
                 // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
                 // be skipped for netcore projects.
-                await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
 
                 return (success, isLockFileValid, packagesLockFile);
             }
@@ -595,7 +595,7 @@ namespace NuGet.Commands
                         // bail restore since it's the locked mode but required to update the lock file.
                         // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
                         // be skipped for netcore projects.
-                        await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
+                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
                     }
                 }
             }
