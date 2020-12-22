@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
@@ -74,17 +72,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 string requestedRange =
                     packageReference.AllowedVersions.OriginalString // most packages
                     ?? packageReference.AllowedVersions.ToShortString();
-
-                if (versionRange.MinVersion == null)
-                {
-                    RestoreLogMessage nug1604Msg = RestoreLogMessage.CreateWarning(
-                       code: NuGetLogCode.NU1604,
-                       message: string.Format(CultureInfo.CurrentCulture, Resources.VsResources.Warning_ProjectDependencyMissingLowerBound,
-                                              id));
-
-                    throw new InvalidOperationException($"{nug1604Msg.Code}: {nug1604Msg.Message}");
-                }
-
                 string version = versionRange.MinVersion.OriginalVersion ?? versionRange.MinVersion.ToNormalizedString();
                 var installPath = pathResolver.GetPackageDirectory(id, version);
                 bool directDependency = true;

@@ -322,7 +322,4 @@ The string representation of the user's input framework name.</comment>
   <data name="PackageFrameworkAssemblyGroupName" xml:space="preserve">
     <value>Framework Assemblies</value>
   </data>
-  <data name="Warning_ProjectDependencyMissingLowerBound" xml:space="preserve">
-    <value>Project dependency {0} does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.</value>
-  </data>
 </root>
