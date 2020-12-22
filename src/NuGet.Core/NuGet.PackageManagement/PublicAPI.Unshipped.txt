@@ -1,1 +1,2 @@
 NuGet.PackageManagement.NuGetPackageManager.PreviewProjectsUninstallPackageAsync(System.Collections.Generic.IReadOnlyCollection<NuGet.ProjectManagement.NuGetProject> nuGetProjects, string packageId, NuGet.PackageManagement.UninstallationContext uninstallationContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.NuGetProjectAction>>
+NuGet.ProjectManagement.IProjectSystemCapabilities.NominatesOnSolutionLoad.get -> bool

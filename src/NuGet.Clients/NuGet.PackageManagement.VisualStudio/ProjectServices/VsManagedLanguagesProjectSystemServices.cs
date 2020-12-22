@@ -41,6 +41,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool SupportsPackageReferences => true;
 
+        public bool NominatesOnSolutionLoad { get; private set; } = false;
+
         #region INuGetProjectServices
 
         public IProjectBuildProperties BuildProperties => _vsProjectAdapter.BuildProperties;
@@ -70,7 +72,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public VsManagedLanguagesProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
-            IComponentModel componentModel)
+            IComponentModel componentModel,
+            bool nominatesOnSolutionLoad)
             : base(componentModel)
         {
             Assumes.Present(vsProjectAdapter);
@@ -83,6 +86,8 @@ namespace NuGet.PackageManagement.VisualStudio
             _asVSProject4 = new Lazy<VSProject4>(() => vsProjectAdapter.Project.Object as VSProject4);
 
             ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
+
+            NominatesOnSolutionLoad = nominatesOnSolutionLoad;
         }
 
         public async Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(
@@ -130,7 +135,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
-            Common.ILogger _, CancellationToken __)
+            ILogger _, CancellationToken __)
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
