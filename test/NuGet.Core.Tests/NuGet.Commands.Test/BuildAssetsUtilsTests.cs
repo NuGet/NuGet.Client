@@ -61,7 +61,8 @@ namespace NuGet.Commands.Test
         public void AddNuGetProperty_WithPackageFolders_AddsSourceRootItem()
         {
             // Arrange
-            var packageFolders = @"/tmp/gpf;/tmp/fallbackFolder";
+            var separator = Path.DirectorySeparatorChar;
+            var packageFolders = $"{separator}tmp{separator}gpf;{separator}tmp{separator}fallbackFolder";
 
             var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
 
@@ -76,11 +77,14 @@ namespace NuGet.Commands.Test
 
             var props = TargetsUtility.GetMSBuildProperties(doc);
             var items = TargetsUtility.GetMSBuildItems(doc);
+            var sourceRootItems = items.Where(e => e.Item1.Equals("SourceRoot")).Select(e => e.Item2).ToList();
 
             // Assert
             Assert.Equal(packageFolders, props["NuGetPackageFolders"]);
-            Assert.Equal(1, items.Count);
-            Assert.Equal("$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))", items["SourceRoot"]["Include"]);
+            Assert.Equal(2, items.Count);
+            Assert.Equal(2, sourceRootItems.Count);
+            Assert.Equal($"{separator}tmp{separator}gpf{separator}", sourceRootItems[0]["Include"]);
+            Assert.Equal($"{separator}tmp{separator}fallbackFolder{separator}", sourceRootItems[1]["Include"]);
         }
 
         [Fact]
