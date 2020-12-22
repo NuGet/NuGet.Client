@@ -200,35 +200,7 @@ namespace NuGet.Commands
                     lockFileTelemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
                     lockFileTelemetry.TelemetryEvent[LockFileEvaluationResult] = result;
 
-                    if (!result)
-                    {
-                        _success = result;
-
-                        // Replay Warnings and Errors from an existing lock file
-                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
-
-                        if (cacheFile != null)
-                        {
-                            cacheFile.Success = _success;
-                        }
-
-                        return new RestoreResult(
-                            success: _success,
-                            restoreGraphs: new List<RestoreTargetGraph>(),
-                            compatibilityCheckResults: new List<CompatibilityCheckResult>(),
-                            msbuildFiles: new List<MSBuildOutputFile>(),
-                            lockFile: _request.ExistingLockFile, // The lock file needs updated.
-                            previousLockFile: _request.ExistingLockFile,
-                            lockFilePath: _request.ExistingLockFile?.Path,
-                            cacheFile: cacheFile,
-                            cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
-                            packagesLockFilePath: packagesLockFilePath,
-                            packagesLockFile: packagesLockFile,
-                            dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
-                            dependencyGraphSpec: _request.DependencyGraphSpec,
-                            projectStyle: _request.ProjectStyle,
-                            elapsedTime: restoreTime.Elapsed);
-                    }
+                    _success &= result;
                 }
 
                 IEnumerable<RestoreTargetGraph> graphs = null;
@@ -956,9 +928,6 @@ namespace NuGet.Commands
             // with the RestoreRequest spec.
             var updatedExternalProjects = GetProjectReferences(context);
 
-            // Determine if the targets and props files should be written out.
-            context.IsMsBuildBased = _request.ProjectStyle != ProjectStyle.DotnetCliTool;
-
             // Load repositories
             // the external project provider is specific to the current restore project
             context.ProjectLibraryProviders.Add(
@@ -1174,6 +1143,9 @@ namespace NuGet.Commands
             {
                 context.RemoteLibraryProviders.Add(provider);
             }
+
+            // Determine if the targets and props files should be written out.
+            context.IsMsBuildBased = request.ProjectStyle != ProjectStyle.DotnetCliTool;
 
             return context;
         }
