@@ -748,7 +748,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2AdditionalSourceFeed_AbsolutePath_NoVersionSpecified_Success()
+        public async Task AddPkg_WithV2AdditionalSource_AbsolutePath_NoVersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -772,16 +772,15 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -791,7 +790,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2AdditionalSourceFeed_AbsolutePath_NoVersionSpecified_Fail()
+        public async Task AddPkg_WithV2AdditionalSource_AbsolutePath_NoVersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -816,8 +815,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(1, result);
@@ -825,7 +823,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2AdditionalSourceFeed_AbsolutePath_VersionSpecified_Success()
+        public async Task AddPkg_WithV2AdditionalSource_AbsolutePath_VersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -848,16 +846,15 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -867,7 +864,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2AdditionalSourceFeed_AbsolutePath_VersionSpecified_Fail()
+        public async Task AddPkg_WithV2AdditionalSource_AbsolutePath_VersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -891,8 +888,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(1, result);
@@ -900,7 +896,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3AdditionalSourceFeed_AbsolutePath_NoVersionSpecified_Success()
+        public async Task AddPkg_WithV3AdditionalSource_AbsolutePath_NoVersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -928,16 +924,15 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -947,7 +942,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3AdditionalSourceFeed_AbsolutePath_NoVersionSpecified_Fail()
+        public async Task AddPkg_WithV3AdditionalSource_AbsolutePath_NoVersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -974,8 +969,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(1, result);
@@ -983,7 +977,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3AdditionalSourceFeed_AbsolutePath_VersionSpecified_Success()
+        public async Task AddPkg_WithV3AdditionalSource_AbsolutePath_VersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1010,16 +1004,15 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1029,7 +1022,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3AdditionalSourceFeed_AbsolutePath_VersionSpecified_Fail()
+        public async Task AddPkg_WithV3AdditionalSource_AbsolutePath_VersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1057,8 +1050,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(1, result);
@@ -1066,7 +1058,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2AdditionalSourceFeed_RelativePath_NoVersionSpecified_Success()
+        public async Task AddPkg_WithV2AdditionalSource_RelativePath_NoVersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1090,16 +1082,15 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1109,7 +1100,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2AdditionalSourceFeed_RelativePath_NoVersionSpecified_Fail()
+        public async Task AddPkg_WithV2AdditionalSource_RelativePath_NoVersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1134,8 +1125,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(1, result);
@@ -1143,7 +1133,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2AdditionalSourceFeed_RelativePath_VersionSpecified_Success()
+        public async Task AddPkg_WithV2AdditionalSource_RelativePath_VersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1166,16 +1156,15 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1185,7 +1174,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2AdditionalSourceFeed_RelativePath_VersionSpecified_Fail()
+        public async Task AddPkg_WithV2AdditionalSource_RelativePath_VersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1209,8 +1198,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(1, result);
@@ -1218,7 +1206,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3AdditionalSourceFeed_RelativePath_NoVersionSpecified_Success()
+        public async Task AddPkg_WithV3AdditionalSource_RelativePath_NoVersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1246,16 +1234,15 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1265,7 +1252,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3AdditionalSourceFeed_RelativePath_NoVersionSpecified_Fail()
+        public async Task AddPkg_WithV3AdditionalSource_RelativePath_NoVersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1292,8 +1279,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(1, result);
@@ -1301,7 +1287,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3AdditionalSourceFeed_RelativePath_VersionSpecified_Success()
+        public async Task AddPkg_WithV3AdditionalSource_RelativePath_VersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1328,16 +1314,15 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                Assert.True(packageSpecs[0].RestoreMetadata.Sources[0].Name.Contains("Custompackages"));
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1347,7 +1332,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3AdditionalSourceFeed_RelativePath_VersionSpecified_Fail()
+        public async Task AddPkg_WithV3AdditionalSource_RelativePath_VersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1375,8 +1360,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
 
                 // Assert
                 Assert.Equal(1, result);
@@ -1384,7 +1368,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithMixed_V2_V3_AdditionalSourceFeeds_AbsolutePath_NoVersionSpecified_Success()
+        public async Task AddPkg_WithMixed_V2_V3_AdditionalSources_AbsolutePath_NoVersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1422,8 +1406,7 @@ namespace NuGet.XPlat.FuncTest
                     sources: packageXPath);
 
                 // Act
-                var resultX = commandRunner.ExecuteCommand(packageArgsX, MsBuild)
-                    .Result;
+                var resultX = await commandRunner.ExecuteCommand(packageArgsX, MsBuild);
 
                 // Multiple sources
                 // Since user is not inputing a version, it is converted to a " * " in the command
@@ -1433,17 +1416,15 @@ namespace NuGet.XPlat.FuncTest
                     dgFilePath: Path.Combine(projectA.ProjectExtensionsPath, $"{projectA.ProjectName}.csproj.nuget.dgspec.json")
                     );
 
-                var resultY = commandRunner.ExecuteCommand(packageArgsY, MsBuild)
-                    .Result;
+                var resultY = await commandRunner.ExecuteCommand(packageArgsY, MsBuild);
 
                 // Assert
                 Assert.Equal(0, resultX);
                 Assert.Equal(0, resultY);
 
                 // Make sure source is replaced in generated dgSpec file.
-                PackageSpec[] packageSpecs = XPlatTestUtils.GetPackageSpecs(projectA);
-                Assert.Equal(packageSpecs.Count(), 1);
-                string[] sources = packageSpecs[0].RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
                 Assert.Equal(sources.Count(), 2);
                 sources.Should().Contain(e => e.Contains("CustompackagesX"));
                 sources.Should().Contain(e => e.Contains("CustompackagesY"));

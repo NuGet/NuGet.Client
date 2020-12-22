@@ -430,16 +430,5 @@ namespace NuGet.XPlat.FuncTest
 
             return referenceType;
         }
-
-        internal static PackageSpec[] GetPackageSpecs(SimpleTestProjectContext project)
-        {
-            DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(Path.Combine(project.ProjectExtensionsPath, $"{project.ProjectName}.csproj.nuget.dgspec.json"));
-
-            return dgSpec
-                .Projects
-                .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference &&
-                PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFullPath(p.RestoreMetadata.ProjectPath), project.ProjectPath))
-                .ToArray();
-        }
     }
 }
