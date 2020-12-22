@@ -41,7 +41,7 @@ To get started:
 
 1. Fork the repo.
 
-2. From a git enable terminal, run (replacing _[user-name]_ with your GitHub user name):
+2. From a git enabled terminal, run (replacing _[user-name]_ with your GitHub user name):
 
 ```console
 \> git clone https://github.com/[user-name]/NuGet.Client
@@ -84,6 +84,15 @@ NuGet members may contribute directly to the main remote.
    `.\build.ps1`
 
     > Note: You have to to run .\configure.ps1 and .\build.ps1 at least once in order for your build to succeed.
+
+1. Run dotnet code formatters and correct any errors.
+    * You can use `Format Document` in VS: 
+
+       `Ctrl+K, Ctrl+D` or Edit > Advanced > Format Document (https://docs.microsoft.com/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=vs-2019#text-editor)
+
+    * You can use the dotnet CLI tool (https://github.com/dotnet/format):
+
+      `dotnet format --check --exclude submodules`
 
 1. Run unit and functional tests if inside Microsoft corpnet with
 
