@@ -527,7 +527,7 @@ namespace NuGet.Commands
 
                 // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
                 // be skipped for netcore projects.
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
+                await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
 
                 return (success, isLockFileValid, packagesLockFile);
             }
