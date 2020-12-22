@@ -179,15 +179,13 @@ namespace NuGetVSExtension
             return new NuGetProjectService(solutionManager, settings, telemetryProvider);
         }
 
-        private Task InitializeAsync()
+        private async Task InitializeAsync()
         {
             _lazySettings = new AsyncLazy<ISettings>(ServiceLocator.GetInstanceAsync<ISettings>, ThreadHelper.JoinableTaskFactory);
             _lazySolutionManager = new AsyncLazy<IVsSolutionManager>(ServiceLocator.GetInstanceAsync<IVsSolutionManager>, ThreadHelper.JoinableTaskFactory);
             _projectManagerServiceSharedState = new NuGetProjectManagerServiceState();
             _sharedServiceState = await SharedServiceState.CreateAsync(CancellationToken.None);
             _lazyTelemetryProvider = new AsyncLazy<INuGetTelemetryProvider>(ServiceLocator.GetInstanceAsync<INuGetTelemetryProvider>, ThreadHelper.JoinableTaskFactory);
-
-            return Task.CompletedTask;
         }
     }
 }
