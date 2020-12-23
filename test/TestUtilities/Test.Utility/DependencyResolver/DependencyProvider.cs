@@ -149,7 +149,9 @@ namespace Test.Utility
                     LibraryRange =
                         new LibraryRange
                         {
-                            Name = id, VersionRange = VersionRange.Parse(version), TypeConstraint = target
+                            Name = id,
+                            VersionRange = VersionRange.Parse(version),
+                            TypeConstraint = target
                         },
                     VersionCentrallyManaged = versionCentrallyManaged,
                 };
