@@ -66,12 +66,12 @@ namespace NuGet.Test.Utility
                 {
                     var key = item.Name.LocalName;
 
-                        var attributeValues = new Dictionary<string, string>();
-                        foreach (var attribute in item.Attributes())
-                        {
-                            attributeValues.Add(attribute.Name.LocalName, attribute.Value);
-                        }
-                        result.Add((key, attributeValues));
+                    var attributeValues = new Dictionary<string, string>();
+                    foreach (var attribute in item.Attributes())
+                    {
+                        attributeValues.Add(attribute.Name.LocalName, attribute.Value);
+                    }
+                    result.Add((key, attributeValues));
                 }
             }
 
