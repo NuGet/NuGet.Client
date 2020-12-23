@@ -8621,7 +8621,7 @@ namespace NuGet.CommandLine.Test
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
                 var lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName).Distinct().ToList();
                 _output.WriteLine($"PackageLockFrameworks First Evaluation: {string.Join(",", lockFrameworks)}");
-                lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
+                lockFrameworks.ShouldBeEquivalentTo(lockFrameworkTransformed);
 
                 // Setup - change frameworks
                 projectA.Properties.Add("RestoreLockedMode", "true");
@@ -8636,8 +8636,8 @@ namespace NuGet.CommandLine.Test
                 lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
                 lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName).Distinct().ToList();
                 _output.WriteLine($"PackageLockFrameworks Second Evaluation: {string.Join(",", lockFrameworks)}");
-                // The frameworks should not chnage in the lock file.
-                lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
+                // The frameworks should not change in the lock file.
+                lockFrameworks.ShouldBeEquivalentTo(lockFrameworkTransformed);
                 Assert.Contains("NU1004", r.Errors);
                 var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
                 Assert.Contains(NuGetLogCode.NU1004, logCodes);

@@ -189,6 +189,7 @@ namespace NuGet.Commands
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
                 var isLockFileValid = false;
                 PackagesLockFile packagesLockFile = null;
+                var regenerateLockFile = true;
 
                 using (var lockFileTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: RestoreLockFileInformation))
                 {
@@ -200,6 +201,10 @@ namespace NuGet.Commands
                     lockFileTelemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
                     lockFileTelemetry.TelemetryEvent[LockFileEvaluationResult] = result;
 
+                    if (!isLockFileValid && !result)
+                    {
+                        regenerateLockFile = false; // Ensure that the lock file *does not* get rewritten, when the lock file is out of date and the status is false.
+                    }
                     _success &= result;
                 }
 
@@ -315,9 +320,16 @@ namespace NuGet.Commands
                     }
                     else if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project))
                     {
-                        // generate packages.lock.json file if enabled
-                        packagesLockFile = new PackagesLockFileBuilder()
-                            .CreateNuGetLockFile(assetsFile);
+                        if (regenerateLockFile)
+                        {
+                            // generate packages.lock.json file if enabled
+                            packagesLockFile = new PackagesLockFileBuilder()
+                                .CreateNuGetLockFile(assetsFile);
+                        }
+                        else
+                        {
+                            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingPackagesLockFileGeneration, packagesLockFilePath));
+                        }
                     }
 
                     // Write the logs into the assets file
