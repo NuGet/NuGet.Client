@@ -738,7 +738,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10208")]
         public async Task TestPackageManager_UpgradePackageFor_TopParentProject_Success()
         {
             using (var testDirectory = new SimpleTestPathContext())
