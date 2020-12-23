@@ -5424,4 +5424,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_UpdateSelf_Source" xml:space="preserve">
     <value>The `update -self` command only accepts one source as an argument. If the source option is not specified, the default NuGet source will be used.</value>
   </data>
+  <data name="ArgumentNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
 </root>

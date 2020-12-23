@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Experimentation;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -23,8 +24,6 @@ using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -44,6 +43,7 @@ namespace NuGet.PackageManagement.UI
         internal event EventHandler _actionCompleted;
         internal DetailControlModel _detailModel;
         internal CancellationTokenSource _loadCts;
+        private CancellationTokenSource _cancelSelectionChangedSource;
         private bool _initialized;
         private IVsWindowSearchHost _windowSearchHost;
         private IVsWindowSearchHostFactory _windowSearchHostFactory;
@@ -66,8 +66,8 @@ namespace NuGet.PackageManagement.UI
         private bool _missingPackageStatus;
         private bool _loadedAndInitialized = false;
         private bool _recommendPackages = false;
-        private (string modelVersion, string vsixVersion)? _recommenderVersion;
         private string _settingsKey;
+        private IServiceBroker _serviceBroker;
 
         private PackageManagerControl()
         {
@@ -93,6 +93,7 @@ namespace NuGet.PackageManagement.UI
             Settings = await ServiceLocator.GetInstanceAsync<ISettings>();
 
             _windowSearchHostFactory = await ServiceLocator.GetGlobalServiceAsync<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
+            _serviceBroker = model.Context.ServiceBroker;
 
             if (Model.IsSolution)
             {
@@ -136,7 +137,7 @@ namespace NuGet.PackageManagement.UI
             _settingsKey = await GetSettingsKeyAsync(CancellationToken.None);
             UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
-            InitSourceRepoList(settings);
+            await InitSourceRepoListAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
 
@@ -162,7 +163,7 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.ProjectActionsExecuted += OnProjectActionsExecuted;
 
-            Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
+            Model.Context.SourceService.PackageSourcesChanged += PackageSourcesChanged;
 
             Unloaded += PackageManagerUnloaded;
 
@@ -200,8 +201,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
-
-        internal IEnumerable<SourceRepository> ActiveSources => SelectedSource?.SourceRepositories ?? Enumerable.Empty<SourceRepository>();
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
 
@@ -258,7 +257,10 @@ namespace NuGet.PackageManagement.UI
                 IEnumerable<IProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
                 Model.Context.Projects = projects;
 
-                RefreshWhenNotExecutingAction(RefreshOperationSource.ProjectsChanged, timeSpan);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
             }
             else
             {
@@ -272,14 +274,17 @@ namespace NuGet.PackageManagement.UI
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
             if (IsVisible)
             {
-                if (Model.IsSolution)
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
-                }
-                else
-                {
-                    RefreshProjectAfterAction(timeSpan, projectIds);
-                }
+                    if (Model.IsSolution)
+                    {
+                        await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ActionsExecuted, timeSpan);
+                    }
+                    else
+                    {
+                        await RefreshProjectAfterActionAsync(timeSpan, projectIds);
+                    }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectActionsExecuted));
             }
             else
             {
@@ -287,14 +292,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void RefreshProjectAfterAction(TimeSpan timeSpan, IReadOnlyCollection<string> projectIds)
+        private async ValueTask RefreshProjectAfterActionAsync(TimeSpan timeSpan, IReadOnlyCollection<string> projectIds)
         {
             // this is a project package manager, so there is one and only one project.
             var project = Model.Context.Projects.First();
 
             if (projectIds.Contains(project.ProjectId, StringComparer.OrdinalIgnoreCase))
             {
-                RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
+                await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ActionsExecuted, timeSpan);
             }
             else
             {
@@ -308,16 +313,9 @@ namespace NuGet.PackageManagement.UI
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
             if (IsVisible)
             {
-                if (Model.IsSolution)
-                {
-                    RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated, timeSpan);
-                }
-                else
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory
-                        .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e))
-                        .PostOnFailure(nameof(PackageManagerControl), nameof(OnNuGetCacheUpdated));
-                }
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e))
+                    .PostOnFailure(nameof(PackageManagerControl), nameof(OnNuGetCacheUpdated));
             }
             else
             {
@@ -327,25 +325,32 @@ namespace NuGet.PackageManagement.UI
 
         private async Task SolutionManager_CacheUpdatedAsync(TimeSpan timeSpan, string eventProjectFullName)
         {
-            // This is a project package manager, so there is one and only one project.
-            IProjectContextInfo project = Model.Context.Projects.First();
-            IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
-                Model.Context.ServiceBroker,
-                CancellationToken.None);
-
-            // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
-            // We also refresh the UI if projectFullPath is not present.
-            if (projectMetadata.FullPath == eventProjectFullName)
+            if (Model.IsSolution)
             {
-                RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated, timeSpan);
+                await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.CacheUpdated, timeSpan);
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NotApplicable);
+                // This is a project package manager, so there is one and only one project.
+                IProjectContextInfo project = Model.Context.Projects.First();
+                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                    Model.Context.ServiceBroker,
+                    CancellationToken.None);
+
+                // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
+                // We also refresh the UI if projectFullPath is not present.
+                if (projectMetadata.FullPath == eventProjectFullName)
+                {
+                    await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.CacheUpdated, timeSpan);
+                }
+                else
+                {
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NotApplicable);
+                }
             }
         }
 
-        private void RefreshWhenNotExecutingAction(RefreshOperationSource source, TimeSpan timeSpanSinceLastRefresh)
+        private async ValueTask RefreshWhenNotExecutingActionAsync(RefreshOperationSource source, TimeSpan timeSpanSinceLastRefresh)
         {
             // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
             if (_isExecutingAction)
@@ -355,7 +360,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                Refresh();
+                await RefreshAsync();
                 EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success);
             }
         }
@@ -394,6 +399,12 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageManagerLoadedAsync())
+                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageManagerLoaded));
+        }
+
+        private async Task PackageManagerLoadedAsync()
+        {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not trigger a refresh if the browse tab is open and this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
@@ -401,14 +412,14 @@ namespace NuGet.PackageManagement.UI
             {
                 _loadedAndInitialized = true;
                 ResetTabDataLoadFlags();
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success);
             }
             else
             {
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp);
             }
-            RefreshConsolidatablePackagesCount();
+            await RefreshConsolidatablePackagesCountAsync();
         }
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
@@ -421,8 +432,7 @@ namespace NuGet.PackageManagement.UI
             return RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName);
         }
 
-        protected static DependencyBehavior? GetDependencyBehaviorFromConfig(
-            Configuration.ISettings nugetSettings)
+        protected static DependencyBehavior? GetDependencyBehaviorFromConfig(ISettings nugetSettings)
         {
             if (nugetSettings != null)
             {
@@ -460,9 +470,7 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.ShowDeprecatedFrameworkWindow = show;
         }
 
-        private void ApplySettings(
-            UserSettings settings,
-            Configuration.ISettings nugetSettings)
+        private void ApplySettings(UserSettings settings, ISettings nugetSettings)
         {
             var dependencySetting = GetDependencyBehaviorFromConfig(nugetSettings);
             if (settings == null)
@@ -490,24 +498,30 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void Sources_PackageSourcesChanged(object sender, EventArgs e)
+        private void PackageSourcesChanged(object sender, IReadOnlyCollection<PackageSourceContextInfo> e)
         {
             // Set _dontStartNewSearch to true to prevent a new search started in
             // _sourceRepoList_SelectionChanged(). This method will start the new
             // search when needed by itself.
             _dontStartNewSearch = true;
-            var timeSpan = GetTimeSinceLastRefreshAndRestart();
+            TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
             ResetTabDataLoadFlags();
 
-            Sources_PackageSourcesChanged(timeSpan);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
+                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageSourcesChanged));
         }
 
-        private void Sources_PackageSourcesChanged(TimeSpan timeSpan)
+        private async Task PackageSourcesChangedAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, TimeSpan timeSpan)
         {
             try
             {
-                var prevSelectedItem = SelectedSource;
-                PopulateSourceRepoList();
+                IReadOnlyCollection<PackageSourceMoniker> list = await PackageSourceMoniker.PopulateListAsync(packageSources, CancellationToken.None);
+
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                // We access UI components in these calls
+                PackageSourceMoniker prevSelectedItem = SelectedSource;
+
+                await PopulateSourceRepoListAsync(list, optionalSelectSourceName: null, cancellationToken: CancellationToken.None);
 
                 // force a new search explicitly only if active source has changed
                 if (prevSelectedItem == SelectedSource)
@@ -517,7 +531,7 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     SaveSettings();
-                    SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
                     EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success);
                 }
             }
@@ -679,7 +693,7 @@ namespace NuGet.PackageManagement.UI
                 // only when package is missing last time and is not missing this time, we need to refresh
                 if (!e.PackagesMissing && _missingPackageStatus)
                 {
-                    UpdateAfterPackagesMissingStatusChanged();
+                    await UpdateAfterPackagesMissingStatusChangedAsync();
                 }
 
                 _missingPackageStatus = e.PackagesMissing;
@@ -689,11 +703,11 @@ namespace NuGet.PackageManagement.UI
         // Refresh the UI after packages are restored.
         // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
         // the VsSolutionManager.Init() method, which is scheduled on the thread pool.
-        private void UpdateAfterPackagesMissingStatusChanged()
+        private async ValueTask UpdateAfterPackagesMissingStatusChangedAsync()
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
             var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
-            Refresh();
+            await RefreshAsync();
             EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
             _packageDetail.Refresh();
         }
@@ -736,7 +750,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void InitSourceRepoList(UserSettings settings)
+        private async Task InitSourceRepoListAsync(UserSettings settings, CancellationToken cancellationToken)
         {
             // get active source name.
             string activeSourceName;
@@ -749,27 +763,23 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 // no user settings found. Then use the active source from PackageSourceProvider.
-                activeSourceName = Model.Context.SourceProvider.PackageSourceProvider.ActivePackageSourceName;
+                activeSourceName = await Model.Context.SourceService.GetActivePackageSourceNameAsync(cancellationToken);
             }
 
-            PopulateSourceRepoList(activeSourceName);
+            await PopulateSourceRepoListAsync(activeSourceName, cancellationToken);
         }
 
-        private IEnumerable<SourceRepository> GetEnabledSources()
+        private ValueTask PopulateSourceRepoListAsync(IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers, string optionalSelectSourceName, CancellationToken cancellationToken)
         {
-            return Model.Context.SourceProvider.GetRepositories().Where(s => s.PackageSource.IsEnabled);
-        }
-
-        private void PopulateSourceRepoList(string optionalSelectSourceName = null)
-        {
-            var selectedSourceName = optionalSelectSourceName ?? SelectedSource?.SourceName;
-
             // init source repo list
             _topPanel.SourceRepoList.Items.Clear();
 
-            PackageSourceMoniker
-                .PopulateList(Model.Context.SourceProvider)
-                .ForEach(s => _topPanel.SourceRepoList.Items.Add(s));
+            var selectedSourceName = optionalSelectSourceName ?? SelectedSource?.SourceName;
+
+            foreach (PackageSourceMoniker packageSourceMoniker in packageSourceMonikers)
+            {
+                _topPanel.SourceRepoList.Items.Add(packageSourceMoniker);
+            }
 
             if (selectedSourceName != null)
             {
@@ -785,73 +795,41 @@ namespace NuGet.PackageManagement.UI
                 // use the first enabled source as the active source by default, but do not choose "All sources"!
                 SelectedSource = PackageSources.FirstOrDefault(psm => !psm.IsAggregateSource);
             }
+
+            return new ValueTask();
         }
 
-        /// <summary>
-        /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
-        /// </summary>
-        private void SearchPackagesAndRefreshUpdateCount(bool useCacheForUpdates)
+        private async ValueTask PopulateSourceRepoListAsync(string optionalSelectSourceName, CancellationToken cancellationToken)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers = await PackageSourceMoniker.PopulateListAsync(
+                _serviceBroker,
+                cancellationToken);
 
-                // Set a new cancellation token source which will be used to cancel this task in case
-                // new loading task starts or manager ui is closed while loading packages.
-                var loadCts = new CancellationTokenSource();
-                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
-                oldCts?.Cancel();
-                oldCts?.Dispose();
+            await PopulateSourceRepoListAsync(packageSourceMonikers, optionalSelectSourceName, cancellationToken);
+        }
 
-                await SearchPackagesAndRefreshUpdateCountAsync(
-                    searchText: _windowSearchHost.SearchQuery.SearchString,
-                    useCachedPackageMetadata: useCacheForUpdates,
-                    pSearchCallback: null,
-                    searchTask: null);
-            })
-            .PostOnFailure(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount));
+        private async ValueTask SearchPackagesAndRefreshUpdateCountAsync(bool useCacheForUpdates)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // Set a new cancellation token source which will be used to cancel this task in case
+            // new loading task starts or manager ui is closed while loading packages.
+            var loadCts = new CancellationTokenSource();
+            var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+            oldCts?.Cancel();
+            oldCts?.Dispose();
+
+            await SearchPackagesAndRefreshUpdateCountAsync(
+                searchText: _windowSearchHost.SearchQuery.SearchString,
+                useCachedPackageMetadata: useCacheForUpdates,
+                pSearchCallback: null,
+                searchTask: null);
         }
 
         // Check if user has environment variable of NUGET_RECOMMEND_PACKAGES set to 1 or is in A/B experiment.
         public bool IsRecommenderFlightEnabled()
         {
             return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
-        }
-
-        private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
-        {
-            var project = Model.Context.Projects.First();
-
-            // only make recommendations when
-            //   one of the source repositories is nuget.org,
-            //   the package manager was opened for a project, not a solution,
-            //   this is the Browse tab,
-            //   and the search text is an empty string
-            _recommendPackages = false;
-            if (loadContext.IsSolution == false
-                && _topPanel.Filter == ItemFilter.All
-                && searchText == string.Empty
-                // also check if this is a PC-style project. We will not provide recommendations for PR-style
-                // projects until we have a way to get dependent packages without negatively impacting perf.
-                && project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
-                && loadContext.SourceRepositories.Any(item => TelemetryUtility.IsNuGetOrg(item.PackageSource)))
-            {
-                _recommendPackages = true;
-            }
-
-            // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages
-            var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
-            if (IsRecommenderFlightEnabled())
-            {
-                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
-                _recommenderVersion = ((RecommenderPackageFeed)packageFeeds.recommenderFeed)?.VersionInfo;
-            }
-            else
-            {
-                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, recommendPackages: false);
-            }
-
-            return packageFeeds;
         }
 
         /// <summary>
@@ -863,7 +841,7 @@ namespace NuGet.PackageManagement.UI
 
             ItemFilter filterToRender = _topPanel.Filter;
 
-            var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+            var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
 
             if (useCachedPackageMetadata)
             {
@@ -875,12 +853,18 @@ namespace NuGet.PackageManagement.UI
                 FlagTabDataAsLoaded(filterToRender, isLoaded: false);
             }
 
-            var packageFeeds = await GetPackageFeedsAsync(searchText, loadContext);
-
             try
             {
-                var loader = new PackageItemLoader(
-                    loadContext, packageFeeds.mainFeed, searchText, IncludePrerelease, packageFeeds.recommenderFeed);
+                bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
+                var loader = await PackageItemLoader.CreateAsync(
+                    Model.Context.ServiceBroker,
+                    loadContext,
+                    SelectedSource.PackageSources,
+                    (NuGet.VisualStudio.Internal.Contracts.ItemFilter)_topPanel.Filter,
+                    searchText: searchText,
+                    includePrerelease: IncludePrerelease,
+                    useRecommender: useRecommender);
+
                 var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                     ? Resx.Resources.Text_Loading
                     : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
@@ -890,20 +874,20 @@ namespace NuGet.PackageManagement.UI
                 _loadCts = new CancellationTokenSource();
 
                 // start SearchAsync task for initial loading of packages
-                var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
+                var searchResultTask = loader.SearchAsync(cancellationToken: _loadCts.Token);
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
                 if (pSearchCallback != null && searchTask != null)
                 {
                     var searchResult = await searchResultTask;
-                    pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
+                    pSearchCallback.ReportComplete(searchTask, (uint)searchResult.PackageSearchItems.Count);
                 }
 
                 // When not using Cache, refresh all Counts.
                 if (!useCachedPackageMetadata)
                 {
-                    RefreshInstalledAndUpdatesTabs();
+                    await RefreshInstalledAndUpdatesTabsAsync();
                 }
 
                 FlagTabDataAsLoaded(filterToRender);
@@ -920,6 +904,37 @@ namespace NuGet.PackageManagement.UI
                 // Invalidate cache.
                 Model.CachedUpdates = null;
                 FlagTabDataAsLoaded(filterToRender, isLoaded: false);
+            }
+        }
+
+        private bool GetUseRecommendedPackages(PackageLoadContext loadContext, string searchText)
+        {
+            // only make recommendations when
+            //   the single source repository is nuget.org,
+            //   the package manager was opened for a project, not a solution,
+            //   this is the Browse tab,
+            //   and the search text is an empty string
+            _recommendPackages = false;
+            if (loadContext.IsSolution == false
+                && _topPanel.Filter == ItemFilter.All
+                && searchText == string.Empty
+                && SelectedSource.PackageSources.Count() == 1
+                // also check if this is a PC-style project. We will not provide recommendations for PR-style
+                // projects until we have a way to get dependent packages without negatively impacting perf.
+                && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
+                && TelemetryUtility.IsNuGetOrg(SelectedSource.PackageSources.First()?.Source))
+            {
+                _recommendPackages = true;
+            }
+
+            // Check for A/B experiment here. For control group, return false instead of _recommendPackages
+            if (IsRecommenderFlightEnabled())
+            {
+                return _recommendPackages;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -960,88 +975,82 @@ namespace NuGet.PackageManagement.UI
             _updatesTabDataIsLoaded = false;
         }
 
-        private void RefreshInstalledAndUpdatesTabs()
+        private async ValueTask RefreshInstalledAndUpdatesTabsAsync()
         {
             // clear existing caches
             Model.CachedUpdates = null;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
+            _topPanel.UpdateCountOnUpdatesTab(count: 0);
+            var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
+            var loader = await PackageItemLoader.CreateAsync(
+                Model.Context.ServiceBroker,
+                loadContext,
+                SelectedSource.PackageSources,
+                NuGet.VisualStudio.Internal.Contracts.ItemFilter.UpdatesAvailable,
+                includePrerelease: IncludePrerelease,
+                useRecommender: false);
+
+            // cancel previous refresh tabs task, if any and start a new one.
+            var refreshCts = new CancellationTokenSource();
+            Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
+
+            // Update installed tab warning icon
+            var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(loadContext, refreshCts.Token);
+
+            _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount);
+
+            Model.CachedUpdates = new PackageSearchMetadataCache
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                Packages = await loader.GetAllPackagesAsync(refreshCts.Token),
+                IncludePrerelease = IncludePrerelease
+            };
 
-                _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
-                _topPanel.UpdateCountOnUpdatesTab(count: 0);
-                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger, recommendPackages: false);
-                var loader = new PackageItemLoader(
-                    loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
-                var metadataProvider = CreatePackageMetadataProvider(loadContext);
-
-                // cancel previous refresh tabs task, if any
-                // and start a new one.
-                var refreshCts = new CancellationTokenSource();
-                Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
-
-                // Update installed tab warning icon
-                var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(
-                loadContext, metadataProvider, refreshCts.Token);
-
-                var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
-                _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount);
-
-                // Update updates tab count
-                Model.CachedUpdates = new PackageSearchMetadataCache
-                {
-                    Packages = await loader.GetAllPackagesAsync(refreshCts.Token),
-                    IncludePrerelease = IncludePrerelease
-                };
-
-                _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
-            })
-            .PostOnFailure(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs));
+            // Update updates tab count
+            _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
         }
 
-        private static async Task<int> GetInstalledDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IPackageMetadataProvider metadataProvider, CancellationToken token)
+        private async Task<int> GetInstalledDeprecatedPackagesCountAsync(PackageLoadContext loadContext, CancellationToken token)
         {
             // Switch off the UI thread before fetching installed packages and deprecation metadata.
             await TaskScheduler.Default;
 
-            var installedPackages = await loadContext.GetInstalledPackagesAsync();
+            PackageCollection installedPackages = await loadContext.GetInstalledPackagesAsync();
 
             var installedPackageDeprecationMetadata = await Task.WhenAll(
-                installedPackages.Select(p => GetPackageDeprecationMetadataAsync(p, metadataProvider, token)));
+                installedPackages.Select(p => GetPackageDeprecationMetadataAsync(p, token)));
 
             return installedPackageDeprecationMetadata.Count(d => d != null);
         }
 
-        private static async Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync(
-            PackageCollectionItem package, IPackageMetadataProvider metadataProvider, CancellationToken refreshToken)
+        private async Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync(PackageCollectionItem package, CancellationToken cancellationToken)
         {
-            var metadata = await metadataProvider.GetPackageMetadataAsync(package, includePrerelease: true, refreshToken);
-            if (metadata == null)
+            using (INuGetSearchService searchService = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken: cancellationToken))
             {
-                return null;
+                Assumes.NotNull(searchService);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return await searchService.GetDeprecationMetadataAsync(package, SelectedSource.PackageSources, true, cancellationToken);
             }
-
-            return await metadata.GetDeprecationMetadataAsync();
         }
 
-        private void RefreshConsolidatablePackagesCount()
+        private async ValueTask RefreshConsolidatablePackagesCountAsync()
         {
             if (Model.IsSolution)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    _topPanel.UpdateCountOnConsolidateTab(count: 0);
-                    var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                    var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger, recommendPackages: false);
-                    var loader = new PackageItemLoader(
-                        loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _topPanel.UpdateCountOnConsolidateTab(count: 0);
+                var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
+                var loader = await PackageItemLoader.CreateAsync(
+                    Model.Context.ServiceBroker,
+                    loadContext,
+                    SelectedSource.PackageSources,
+                    NuGet.VisualStudio.Internal.Contracts.ItemFilter.Consolidate,
+                    includePrerelease: IncludePrerelease,
+                    useRecommender: false);
 
-                    _topPanel.UpdateCountOnConsolidateTab(await loader.GetTotalCountAsync(maxCount: 100, CancellationToken.None));
-                })
-                .PostOnFailure(nameof(PackageManagerControl), nameof(RefreshConsolidatablePackagesCount));
+                _topPanel.UpdateCountOnConsolidateTab(await loader.GetTotalCountAsync(maxCount: 100, CancellationToken.None));
             }
         }
 
@@ -1052,20 +1061,27 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var loadCts = new CancellationTokenSource();
+            var oldCts = Interlocked.Exchange(ref _cancelSelectionChangedSource, loadCts);
+            oldCts?.Cancel();
+            oldCts?.Dispose();
+
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(UpdateDetailPaneAsync)
+                .RunAsync(async () => await UpdateDetailPaneAsync(loadCts.Token))
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
         }
 
         /// <summary>
         /// Updates the detail pane based on the selected package
         /// </summary>
-        internal async Task UpdateDetailPaneAsync()
+        internal async Task UpdateDetailPaneAsync(CancellationToken cancellationToken)
         {
-            var selectedPackage = _packageList.SelectedItem;
-            var selectedIndex = _packageList.SelectedIndex;
-            var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
-            if (selectedPackage == null)
+            PackageItemListViewModel selectedItem = _packageList.SelectedItem;
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
+            int selectedIndex = _packageList.SelectedIndex;
+            int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+
+            if (selectedItem == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
             }
@@ -1074,16 +1090,17 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.Visibility = Visibility.Visible;
                 _packageDetail.DataContext = _detailModel;
 
-                EmitSearchSelectionTelemetry(selectedPackage);
+                EmitSearchSelectionTelemetry(selectedItem);
 
-                await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
-                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, _recommenderVersion);
+                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
 
                 _packageDetail.ScrollToHome();
 
-                var context = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var metadataProvider = CreatePackageMetadataProvider(context);
-                await _detailModel.LoadPackageMetadataAsync(metadataProvider, CancellationToken.None);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
             }
         }
 
@@ -1105,88 +1122,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger, bool recommendPackages)
-        {
-            var logger = new VisualStudioActivityLogger();
-            var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
-
-            if (filter == ItemFilter.All && recommendPackages == false)
-            {
-                packageFeeds.mainFeed = new MultiSourcePackageFeed(
-                    context.SourceRepositories,
-                    uiLogger,
-                    TelemetryActivity.NuGetTelemetryService);
-                return packageFeeds;
-            }
-
-            var metadataProvider = CreatePackageMetadataProvider(context);
-            var installedPackages = await context.GetInstalledPackagesAsync();
-
-            if (filter == ItemFilter.All)
-            {
-                // if we get here, recommendPackages == true
-                // for now, we are only making recommendations for PC-style projects, and for these the dependent packages are
-                // already included in the installedPackages list. When we implement PR-style projects, we'll need to also pass
-                // the dependent packages to RecommenderPackageFeed.
-                var targetFrameworks = await context.GetSupportedFrameworksAsync();
-
-                packageFeeds.mainFeed = new MultiSourcePackageFeed(
-                    context.SourceRepositories,
-                    uiLogger,
-                    TelemetryActivity.NuGetTelemetryService);
-                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
-                    context.SourceRepositories.First(),
-                    installedPackages,
-                    targetFrameworks,
-                    metadataProvider,
-                    logger);
-                return packageFeeds;
-            }
-
-            if (filter == ItemFilter.Installed)
-            {
-                packageFeeds.mainFeed = new InstalledPackageFeed(installedPackages, metadataProvider, logger);
-                return packageFeeds;
-            }
-
-            if (filter == ItemFilter.Consolidate)
-            {
-                packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackages, metadataProvider, logger);
-                return packageFeeds;
-            }
-
-            // Search all / updates available cannot work without a source repo
-            if (context.SourceRepositories == null)
-            {
-                return packageFeeds;
-            }
-
-            if (filter == ItemFilter.UpdatesAvailable)
-            {
-                packageFeeds.mainFeed = new UpdatePackageFeed(
-                    context.ServiceBroker,
-                    installedPackages,
-                    metadataProvider,
-                    context.Projects,
-                    context.CachedPackages,
-                    logger);
-                return packageFeeds;
-            }
-
-            throw new InvalidOperationException("Unsupported feed type");
-        }
-
-        private static IPackageMetadataProvider CreatePackageMetadataProvider(PackageLoadContext context)
-        {
-            var logger = new VisualStudioActivityLogger();
-
-            return new MultiSourcePackageMetadataProvider(
-                context.SourceRepositories,
-                context.PackageManager?.PackagesFolderSourceRepository,
-                context.PackageManager?.GlobalPackageFolderRepositories,
-                logger);
-        }
-
         private void SourceRepoList_SelectionChanged(object sender, EventArgs e)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
@@ -1203,10 +1138,16 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.SourceToolTip.Visibility = Visibility.Visible;
                 _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
-                SaveSettings();
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SourceRepoList_SelectionChangedAsync(timeSpan))
+                    .PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
             }
+        }
+
+        private async Task SourceRepoList_SelectionChangedAsync(TimeSpan timeSpan)
+        {
+            SaveSettings();
+            await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+            EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success);
         }
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
@@ -1234,59 +1175,57 @@ namespace NuGet.PackageManagement.UI
 
                 var isUiFiltering = switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabDataLoaded;
 
-                //Installed and Updates tabs don't need to be refreshed when switching between the two, if they're both loaded.
-                if (isUiFiltering)
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    //UI can apply filtering.
-                    _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
-                }
-                else //Refresh tab from Cache.
-                {
-                    //If we came from a tab outside Installed/Updates, then they need to be Refreshed before UI filtering can take place.
-                    if (!switchedFromInstalledOrUpdatesTab)
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    // Installed and Updates tabs don't need to be refreshed when switching between the two, if they're both loaded.
+                    if (isUiFiltering)
                     {
-                        ResetTabDataLoadFlags();
+                        // UI can apply filtering.
+                        _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
                     }
+                    else // Refresh tab from Cache.
+                    {
+                        // If we came from a tab outside Installed/Updates, then they need to be Refreshed before UI filtering can take place.
+                        if (!switchedFromInstalledOrUpdatesTab)
+                        {
+                            ResetTabDataLoadFlags();
+                        }
 
-                    SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
-                }
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUiFiltering);
-
-                _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
+                        await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                    }
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUiFiltering);
+                    _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
             }
         }
 
         /// <summary>
         /// Refreshes the control after packages are installed or uninstalled.
         /// </summary>
-        private void Refresh()
+        private async ValueTask RefreshAsync()
         {
             ResetTabDataLoadFlags();
 
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
             }
             else
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                PackageCollection installedPackages = await PackageCollection.FromProjectsAsync(
+                    Model.Context.ServiceBroker,
+                    Model.Context.Projects,
+                    CancellationToken.None);
+                _packageList.UpdatePackageStatus(installedPackages.ToArray());
 
-                    PackageCollection installedPackages = await PackageCollection.FromProjectsAsync(
-                        Model.Context.ServiceBroker,
-                        Model.Context.Projects,
-                        CancellationToken.None);
-
-                    _packageList.UpdatePackageStatus(installedPackages.ToArray());
-                })
-                .PostOnFailure(nameof(PackageManagerControl), nameof(Refresh));
-
-                RefreshInstalledAndUpdatesTabs();
+                await RefreshInstalledAndUpdatesTabsAsync();
             }
 
-            RefreshConsolidatablePackagesCount();
+            await RefreshConsolidatablePackagesCountAsync();
 
             _packageDetail?.Refresh();
         }
@@ -1297,13 +1236,16 @@ namespace NuGet.PackageManagement.UI
             {
                 return;
             }
+
             ResetTabDataLoadFlags();
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            RegistrySettingUtility.SetBooleanSetting(
-                Constants.IncludePrereleaseRegistryName,
-                _topPanel.CheckboxPrerelease.IsChecked == true);
+            RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
             EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
         }
 
         internal class SearchQuery : IVsSearchQuery
@@ -1330,7 +1272,10 @@ namespace NuGet.PackageManagement.UI
         {
             ResetTabDataLoadFlags();
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success);
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(ClearSearch));
         }
 
         public IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
@@ -1408,6 +1353,66 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
+        public void ShowUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (updatePackageOptions == null)
+            {
+                return;
+            }
+
+            if (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabDataIsLoaded)
+            {
+                SelectMatchingUpdatePackages(updatePackageOptions);
+            }
+            else if (_topPanel.Filter == ItemFilter.Installed && _updatesTabDataIsLoaded)
+            {
+                _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
+                SelectMatchingUpdatePackages(updatePackageOptions);
+            }
+            else
+            {
+                _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
+
+                // Hook up an event handler to delay selecting packages until they've all loaded, then unhook
+                // the event handler so it doesn't keep happening on every refresh, only the initial load.
+                EventHandler handler = null;
+                handler = (s, e) =>
+                {
+                    _packageList.LoadItemsCompleted -= handler;
+                    SelectMatchingUpdatePackages(updatePackageOptions);
+                };
+                _packageList.LoadItemsCompleted += handler;
+            }
+        }
+
+        private void SelectMatchingUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (updatePackageOptions == null)
+            {
+                return;
+            }
+
+            if (updatePackageOptions.ShouldUpdateAllPackages)
+            {
+                foreach (var packageItem in _packageList.PackageItems)
+                {
+                    packageItem.Selected = true;
+                }
+            }
+            else if (updatePackageOptions.PackagesToUpdate.Any())
+            {
+                var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate);
+                foreach (var packageItem in _packageList.PackageItems)
+                {
+                    packageItem.Selected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
+                }
+            }
+        }
+
         public void CleanUp()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -1429,19 +1434,21 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
 
-            Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
+            Model.Context.SourceService.PackageSourcesChanged -= PackageSourcesChanged;
 
             Model.Dispose();
 
             // make sure to cancel currently running load or refresh tasks
             _loadCts?.Cancel();
             _refreshCts?.Cancel();
+            _cancelSelectionChangedSource?.Cancel();
 
             // make sure to dispose cancellation token source
             _loadCts?.Dispose();
             _refreshCts?.Dispose();
+            _cancelSelectionChangedSource?.Dispose();
 
-            _detailModel.CleanUp();
+            _detailModel.Dispose();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;
         }
 
@@ -1496,7 +1503,7 @@ namespace NuGet.PackageManagement.UI
                     if (_isRefreshRequired)
                     {
                         var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
-                        Refresh();
+                        await RefreshAsync();
                         EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success);
                         _isRefreshRequired = false;
                     }
@@ -1558,8 +1565,14 @@ namespace NuGet.PackageManagement.UI
         {
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
             ResetTabDataLoadFlags();
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-            RefreshConsolidatablePackagesCount();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecuteRestartSearchCommandAsync())
+                .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
+        }
+
+        private async Task ExecuteRestartSearchCommandAsync()
+        {
+            await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+            await RefreshConsolidatablePackagesCountAsync();
         }
 
         internal void InstallPackage(string packageId, NuGetVersion version)

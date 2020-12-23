@@ -32,6 +32,7 @@ using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
+using ExceptionUtility = NuGet.PackageManagement.ExceptionUtility;
 
 namespace NuGet.Test
 {
@@ -6918,6 +6919,59 @@ namespace NuGet.Test
                         Assert.Equal(NuGetProjectActionType.Install, result.NuGetProjectActionType);
                         Assert.Equal(new PackageIdentity("a", new NuGetVersion(2, 0, 0)), result.PackageIdentity);
                     });
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_MissingPath_Throws()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            var nugetProjectContext = new TestNuGetProjectContext();
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager())
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var buildIntegratedProjectA = solutionManager.AddBuildIntegratedProject("projectA") as BuildIntegratedNuGetProject;
+
+                // Act
+                var primarySources = sourceRepositoryProvider.GetRepositories() as IReadOnlyCollection<SourceRepository>;
+                var target = _packageWithDependents[0];
+                IReadOnlyList<BuildIntegratedNuGetProject> projects = new List<BuildIntegratedNuGetProject>()
+                {
+                    buildIntegratedProjectA
+                };
+
+                var nugetAction = NuGetProjectAction.CreateInstallProjectAction(target, primarySources.First(), buildIntegratedProjectA);
+                NuGetProjectAction[] actions = new NuGetProjectAction[] { nugetAction };
+
+                Dictionary<string, NuGetProjectAction[]> nugetProjectActionsLookup =
+                    new Dictionary<string, NuGetProjectAction[]>(PathUtility.GetStringComparerBasedOnOS())
+                {
+                    { "wrong path", actions }
+                };
+
+                var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
+                {
+                    await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                        projects,
+                        nugetProjectActionsLookup,
+                        packageIdentity: null,
+                        primarySources,
+                        nugetProjectContext,
+                        CancellationToken.None);
+                });
+
+                // Assert
+                Assert.Contains("Either should have value in", ex.Message);
+                Assert.Contains(buildIntegratedProjectA.MSBuildProjectPath, ex.Message);
             }
         }
 

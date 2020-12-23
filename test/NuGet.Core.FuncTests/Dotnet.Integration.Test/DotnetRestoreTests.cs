@@ -278,8 +278,10 @@ EndGlobal";
         }
 #endif //IS_SIGNING_SUPPORTED
 
-        [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_OneLinePerRestore()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_OneLinePerRestore(bool useStaticGraphRestore)
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -340,14 +342,15 @@ EndGlobal";
                 File.WriteAllText(slnPath, slnContents);
 
                 // Act
-                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
+                var arguments = $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}" + (useStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty);
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, arguments, ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
                 Assert.True(2 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
                 // Act - make sure no-op does the same thing.
-                result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
+                result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, arguments, ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);

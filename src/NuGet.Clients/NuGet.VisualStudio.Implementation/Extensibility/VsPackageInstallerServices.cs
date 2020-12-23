@@ -278,7 +278,7 @@ namespace NuGet.VisualStudio
             }
             else
             {
-                throw new ArgumentException(VsResources.InvalidNuGetVersionString, "versionString");
+                throw new ArgumentException(VsResources.InvalidNuGetVersionString, nameof(version));
             }
         }
 

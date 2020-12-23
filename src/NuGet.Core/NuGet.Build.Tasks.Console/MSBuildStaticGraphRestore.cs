@@ -607,8 +607,6 @@ namespace NuGet.Build.Tasks.Console
                     // Get the PackageSpecs in parallel because creating each one is relatively expensive so parallelism speeds things up
                     Parallel.ForEach(projects, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, project =>
                     {
-                        MSBuildLogger.LogMinimal($"For {project.OuterProject.FullPath}," +
-                            $" the value of MSBuildStartupDirectory:{project.OuterProject.GetProperty("MSBuildStartupDirectory")}");
                         var packageSpec = GetPackageSpec(project.OuterProject, project);
 
                         if (packageSpec != null)

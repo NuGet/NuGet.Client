@@ -10,7 +10,6 @@
   - Desktop development with C++
 - [Windows 10 SDK](https://developer.microsoft.com/windows/downloads/windows-10-sdk/)
 - [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
-  - Please note the preview.5 has an issue that's a blocker for our repository [11862](https://github.com/dotnet/sdk/issues/11862). Avoid .NET 5 preview.5
 - Git
 - Windows Powershell v3.0+
 
@@ -20,7 +19,10 @@
 
 1. [Open an issue here](https://github.com/NuGet/Home/issues) and get some feedback from the NuGet team.
 1. Follow the instructions in [Code](#code)
-1. Make your change, and add tests. Please name your branch `dev-<userid>-<very-short-title>`.
+1. Make your change. Please name your branch `dev-<userid>-<very-short-title>`.
+1. Add tests.
+    * [Testing in .NET](https://docs.microsoft.com/en-us/dotnet/core/testing/)
+    * [Testing tools in Visual Studio](https://docs.microsoft.com/visualstudio/test/?view=vs-2019)
 1. Create a [pull request](https://github.com/NuGet/NuGet.Client/pulls).
     * Create a new issue if you cannot find an existing one [NuGet/Home](https://github.com/NuGet/Home/issues). 
     * Keep the pull request template, and link to an issue. 

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
@@ -20,10 +21,8 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGetVSExtension
 {
-    // The disposables live for the duration of the process.
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable
-    internal sealed class NuGetBrokeredServiceFactory
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable
+    // The disposables live for the duration of the Visual Studio process.
+    internal sealed class NuGetBrokeredServiceFactory : IDisposable
     {
         private readonly AsyncLazyInitializer _lazyInitializer;
         private AsyncLazy<ISettings> _lazySettings;
@@ -36,13 +35,16 @@ namespace NuGetVSExtension
             _lazyInitializer = new AsyncLazyInitializer(InitializeAsync, ThreadHelper.JoinableTaskFactory);
         }
 
-        internal static async ValueTask ProfferServicesAsync(IAsyncServiceProvider serviceProvider)
+        // This returns a disposable for test purposes only.
+        internal static async ValueTask<IDisposable> ProfferServicesAsync(IAsyncServiceProvider serviceProvider)
         {
             Assumes.NotNull(serviceProvider);
 
             IBrokeredServiceContainer brokeredServiceContainer = await serviceProvider.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var factory = new NuGetBrokeredServiceFactory();
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             // This service descriptor reference will cause NuGet.VisualStudio.Contracts.dll to load.
             brokeredServiceContainer.Proffer(ContractsNuGetServices.NuGetProjectServiceV1, factory.CreateNuGetProjectServiceV1);
@@ -52,18 +54,35 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(NuGetServices.SolutionManagerService, factory.CreateSolutionManagerServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.ProjectManagerService, factory.CreateProjectManagerServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.ProjectUpgraderService, factory.CreateProjectUpgraderServiceAsync);
+            brokeredServiceContainer.Proffer(NuGetServices.SearchService, factory.CreatePackageSearchServiceAsync);
+
+            return factory;
         }
 
-        private ValueTask<object> CreateSourceProviderServiceAsync(
+        public void Dispose()
+        {
+            _projectManagerServiceSharedState?.Dispose();
+            _sharedServiceState?.Dispose();
+        }
+
+        private async ValueTask<object> CreateSourceProviderServiceAsync(
             ServiceMoniker moniker,
             ServiceActivationOptions options,
             IServiceBroker serviceBroker,
             AuthorizationServiceClient authorizationServiceClient,
             CancellationToken cancellationToken)
         {
+            await _lazyInitializer.InitializeAsync(cancellationToken);
+
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            return new ValueTask<object>(new NuGetSourcesService(options, serviceBroker, authorizationServiceClient));
+            var service = new NuGetSourcesService(
+                options,
+                serviceBroker,
+                authorizationServiceClient,
+                _sharedServiceState);
 #pragma warning restore CA2000 // Dispose objects before losing scope
+
+            return service;
         }
 
         private async ValueTask<object> CreateSolutionManagerServiceAsync(
@@ -123,6 +142,26 @@ namespace NuGetVSExtension
             return service;
         }
 
+        private async ValueTask<object> CreatePackageSearchServiceAsync(
+            ServiceMoniker moniker,
+            ServiceActivationOptions options,
+            IServiceBroker serviceBroker,
+            AuthorizationServiceClient authorizationServiceClient,
+            CancellationToken cancellationToken)
+        {
+            await _lazyInitializer.InitializeAsync(cancellationToken);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var service = new NuGetPackageSearchService(
+                options,
+                serviceBroker,
+                authorizationServiceClient,
+                _sharedServiceState);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            return service;
+        }
+
         private async ValueTask<object> CreateNuGetProjectServiceV1(
             ServiceMoniker moniker,
             ServiceActivationOptions options,
@@ -137,14 +176,12 @@ namespace NuGetVSExtension
             return new NuGetProjectService(solutionManager, settings);
         }
 
-        private Task InitializeAsync()
+        private async Task InitializeAsync()
         {
             _lazySettings = new AsyncLazy<ISettings>(ServiceLocator.GetInstanceAsync<ISettings>, ThreadHelper.JoinableTaskFactory);
             _lazySolutionManager = new AsyncLazy<IVsSolutionManager>(ServiceLocator.GetInstanceAsync<IVsSolutionManager>, ThreadHelper.JoinableTaskFactory);
             _projectManagerServiceSharedState = new NuGetProjectManagerServiceState();
-            _sharedServiceState = new SharedServiceState();
-
-            return Task.CompletedTask;
+            _sharedServiceState = await SharedServiceState.CreateAsync(CancellationToken.None);
         }
     }
 }

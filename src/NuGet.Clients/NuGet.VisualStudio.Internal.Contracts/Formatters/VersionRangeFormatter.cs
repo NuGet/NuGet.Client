@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using MessagePack;
 using MessagePack.Formatters;
 using Microsoft;
@@ -10,7 +8,7 @@ using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal sealed class VersionRangeFormatter : IMessagePackFormatter<VersionRange?>
+    internal sealed class VersionRangeFormatter : NuGetMessagePackFormatter<VersionRange>
     {
         private const string FloatRangePropertyName = "floatrange";
         private const string IsMaxInclusivePropertyName = "ismaxinclusive";
@@ -25,87 +23,65 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public VersionRange? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override VersionRange? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            FloatRange? floatRange = null;
+            bool? isMaxInclusive = null;
+            bool? isMinInclusive = null;
+            NuGetVersion? maxVersion = null;
+            NuGetVersion? minVersion = null;
+            string? originalString = null;
+
+            int propertyCount = reader.ReadMapHeader();
+
+            for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                FloatRange? floatRange = null;
-                bool? isMaxInclusive = null;
-                bool? isMinInclusive = null;
-                NuGetVersion? maxVersion = null;
-                NuGetVersion? minVersion = null;
-                string? originalString = null;
-
-                int propertyCount = reader.ReadMapHeader();
-
-                for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case FloatRangePropertyName:
-                            floatRange = FloatRangeFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case FloatRangePropertyName:
+                        floatRange = FloatRangeFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        case IsMaxInclusivePropertyName:
-                            isMaxInclusive = reader.ReadBoolean();
-                            break;
+                    case IsMaxInclusivePropertyName:
+                        isMaxInclusive = reader.ReadBoolean();
+                        break;
 
-                        case IsMinInclusivePropertyName:
-                            isMinInclusive = reader.ReadBoolean();
-                            break;
+                    case IsMinInclusivePropertyName:
+                        isMinInclusive = reader.ReadBoolean();
+                        break;
 
-                        case MaxVersionPropertyName:
-                            maxVersion = NuGetVersionFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case MaxVersionPropertyName:
+                        maxVersion = NuGetVersionFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        case MinVersionPropertyName:
-                            minVersion = NuGetVersionFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case MinVersionPropertyName:
+                        minVersion = NuGetVersionFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        case OriginalStringPropertyName:
-                            originalString = reader.ReadString();
-                            break;
+                    case OriginalStringPropertyName:
+                        originalString = reader.ReadString();
+                        break;
 
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.True(isMinInclusive.HasValue);
-                Assumes.True(isMaxInclusive.HasValue);
-
-                return new VersionRange(
-                    minVersion,
-                    isMinInclusive.Value,
-                    maxVersion,
-                    isMaxInclusive.Value,
-                    floatRange,
-                    originalString);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.True(isMinInclusive.HasValue);
+            Assumes.True(isMaxInclusive.HasValue);
+
+            return new VersionRange(
+                minVersion,
+                isMinInclusive.Value,
+                maxVersion,
+                isMaxInclusive.Value,
+                floatRange,
+                originalString);
         }
 
-        public void Serialize(ref MessagePackWriter writer, VersionRange? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, VersionRange value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 6);
             writer.Write(MinVersionPropertyName);
             NuGetVersionFormatter.Instance.Serialize(ref writer, value.MinVersion, options);

@@ -38,6 +38,7 @@
       <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="VSLangProj140">
       <HintPath>$(SolutionPackagesFolder)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -74,9 +75,13 @@
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
     <Compile Include="Services\ISharedServiceState.cs" />
+    <Compile Include="Services\NuGetPackageSearchService.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceState.cs" />
     <Compile Include="Services\NuGetProjectUpgraderService.cs" />
+    <Compile Include="Services\PackageSearchMetadataCacheItem.cs" />
+    <Compile Include="Services\PackageSearchMetadataCacheItemEntry.cs" />
+    <Compile Include="Services\SearchObject.cs" />
     <Compile Include="Services\SharedServiceState.cs" />
     <Compile Include="Services\NuGetSolutionManagerService.cs" />
     <Compile Include="Services\NuGetSourcesService.cs" />
@@ -105,7 +110,6 @@
     <Compile Include="PackageFeeds\InstalledPackageFeed.cs" />
     <Compile Include="PackageFeeds\IPackageFeed.cs" />
     <Compile Include="PackageFeeds\IPackageMetadataProvider.cs" />
-    <Compile Include="PackageFeeds\LoadingStatus.cs" />
     <Compile Include="PackageFeeds\MultiSourceAutoCompleteProvider.cs" />
     <Compile Include="PackageFeeds\MultiSourcePackageFeed.cs" />
     <Compile Include="PackageFeeds\MultiSourcePackageMetadataProvider.cs" />

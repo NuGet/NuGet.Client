@@ -839,4 +839,8 @@ Valid from:</comment>
     <value>The timestamp service responded with HTTP status code '{0}' ('{1}').</value>
     <comment>{0} is the httpResponse.StatusCode, {1} is the httpResponse.ReasonPhrase.</comment>
   </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>'{0}' cannot be null.</value>
+    <comment>0 - property name</comment>
+  </data>
 </root>

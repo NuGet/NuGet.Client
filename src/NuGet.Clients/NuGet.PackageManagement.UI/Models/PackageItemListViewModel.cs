@@ -17,10 +17,9 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
@@ -29,11 +28,12 @@ namespace NuGet.PackageManagement.UI
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
     public class PackageItemListViewModel : INotifyPropertyChanged
     {
-        private static readonly Common.AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
-            Common.AsyncLazy.New(Enumerable.Empty<VersionInfo>());
-
-        private static readonly Common.AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
-            Common.AsyncLazy.New((PackageDeprecationMetadata)null);
+        private static readonly Common.AsyncLazy<IReadOnlyCollection<VersionInfoContextInfo>> LazyEmptyVersionInfo =
+            AsyncLazy.New((IReadOnlyCollection<VersionInfoContextInfo>)Array.Empty<VersionInfoContextInfo>());
+        private static readonly Common.AsyncLazy<PackageDeprecationMetadataContextInfo> LazyNullDeprecationMetadata =
+            AsyncLazy.New((PackageDeprecationMetadataContextInfo)null);
+        private static readonly Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> LazyNullDetailedPackageSearchMetadata =
+            AsyncLazy.New(((PackageSearchMetadataContextInfo)null, (PackageDeprecationMetadataContextInfo)null));
 
         internal const int DecodePixelWidth = 32;
 
@@ -60,6 +60,8 @@ namespace NuGet.PackageManagement.UI
         public NuGetVersion Version { get; set; }
 
         public VersionRange AllowedVersions { get; set; }
+
+        public IReadOnlyCollection<PackageSourceContextInfo> Sources { get; set; }
 
         private string _author;
         public string Author
@@ -320,6 +322,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private (string modelVersion, string vsixVersion)? _recommenderVersion;
+        public (string modelVersion, string vsixVersion)? RecommenderVersion
+        {
+            get { return _recommenderVersion; }
+            set
+            {
+                _recommenderVersion = value;
+                OnPropertyChanged(nameof(RecommenderVersion));
+            }
+        }
+
         private bool _providersLoaderStarted;
 
         private AlternativePackageManagerProviders _providers;
@@ -455,16 +468,19 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Lazy<Task<IEnumerable<VersionInfo>>> Versions { private get; set; }
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
+        public Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>> Versions { get; set; }
+        public Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
 
-        public Lazy<Task<PackageDeprecationMetadata>> DeprecationMetadata { private get; set; }
-        public Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
+        public Lazy<Task<PackageDeprecationMetadataContextInfo>> DeprecationMetadata { private get; set; }
+        public Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
 
-        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
+        public Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> DetailedPackageSearchMetadata { get; set; }
+        public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync() => (DetailedPackageSearchMetadata ?? LazyNullDetailedPackageSearchMetadata).Value;
+
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
-        private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
+        private Lazy<Task<PackageDeprecationMetadataContextInfo>> _backgroundDeprecationMetadataLoader;
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
         {
@@ -743,7 +759,7 @@ namespace NuGet.PackageManagement.UI
 
         private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
         {
-            var result = await _backgroundDeprecationMetadataLoader.Value;
+            PackageDeprecationMetadataContextInfo result = await _backgroundDeprecationMetadataLoader.Value;
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -772,10 +788,10 @@ namespace NuGet.PackageManagement.UI
             _backgroundLatestVersionLoader = AsyncLazy.New(
                 async () =>
                 {
-                    var packageVersions = await GetVersionsAsync();
+                    IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
 
                     // filter package versions based on allowed versions in packages.config
-                    packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version));
+                    packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
                     var latestAvailableVersion = packageVersions
                         .Select(p => p.Version)
                         .MaxOrDefault();
@@ -783,7 +799,11 @@ namespace NuGet.PackageManagement.UI
                     return latestAvailableVersion;
                 });
 
-            _backgroundDeprecationMetadataLoader = AsyncLazy.New(GetPackageDeprecationMetadataAsync);
+            _backgroundDeprecationMetadataLoader = AsyncLazy.New(
+                async () =>
+                {
+                    return await GetPackageDeprecationMetadataAsync();
+                });
 
             OnPropertyChanged(nameof(Status));
         }

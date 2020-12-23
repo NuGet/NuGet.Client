@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using MessagePack;
 using MessagePack.Formatters;
 using Microsoft;
@@ -13,7 +11,7 @@ using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class PackageReferenceFormatter : IMessagePackFormatter<PackageReference?>
+    internal sealed class PackageReferenceFormatter : NuGetMessagePackFormatter<PackageReference>
     {
         private const string AllowedVersionsPropertyName = "allowedversions";
         private const string IsDevelopmentDependencyPropertyName = "isdevelopmentdependency";
@@ -28,87 +26,65 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public PackageReference? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override PackageReference? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            VersionRange? allowedVersions = null;
+            bool isDevelopmentDependency = false;
+            bool isUserInstalled = true;
+            bool requireReinstallation = false;
+            PackageIdentity? identity = null;
+            NuGetFramework? framework = null;
+
+            int propertyCount = reader.ReadMapHeader();
+
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                VersionRange? allowedVersions = null;
-                bool isDevelopmentDependency = false;
-                bool isUserInstalled = true;
-                bool requireReinstallation = false;
-                PackageIdentity? identity = null;
-                NuGetFramework? framework = null;
-
-                int propertyCount = reader.ReadMapHeader();
-
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case AllowedVersionsPropertyName:
-                            allowedVersions = VersionRangeFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case AllowedVersionsPropertyName:
+                        allowedVersions = VersionRangeFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        case IsDevelopmentDependencyPropertyName:
-                            isDevelopmentDependency = reader.ReadBoolean();
-                            break;
+                    case IsDevelopmentDependencyPropertyName:
+                        isDevelopmentDependency = reader.ReadBoolean();
+                        break;
 
-                        case IsUserInstalledPropertyName:
-                            isUserInstalled = reader.ReadBoolean();
-                            break;
+                    case IsUserInstalledPropertyName:
+                        isUserInstalled = reader.ReadBoolean();
+                        break;
 
-                        case PackageIdentityPropertyName:
-                            identity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case PackageIdentityPropertyName:
+                        identity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        case RequireReinstallationPropertyName:
-                            requireReinstallation = reader.ReadBoolean();
-                            break;
+                    case RequireReinstallationPropertyName:
+                        requireReinstallation = reader.ReadBoolean();
+                        break;
 
-                        case TargetFrameworkPropertyName:
-                            framework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case TargetFrameworkPropertyName:
+                        framework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNull(identity);
-                Assumes.NotNull(framework);
-
-                return new PackageReference(
-                    identity,
-                    framework,
-                    isUserInstalled,
-                    isDevelopmentDependency,
-                    requireReinstallation,
-                    allowedVersions);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.NotNull(identity);
+            Assumes.NotNull(framework);
+
+            return new PackageReference(
+                identity,
+                framework,
+                isUserInstalled,
+                isDevelopmentDependency,
+                requireReinstallation,
+                allowedVersions);
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageReference? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, PackageReference value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 6);
             writer.Write(PackageIdentityPropertyName);
             PackageIdentityFormatter.Instance.Serialize(ref writer, value.PackageIdentity, options);
