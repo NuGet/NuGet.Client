@@ -104,7 +104,7 @@ namespace NuGet.VisualStudio
                 {
                     if (frameworkName == null)
                     {
-                        throw new ArgumentException("null item in " + argumentName);
+                        throw new ArgumentException(message: VsResourcesFormat.PropertyCannotBeNull(nameof(FrameworkName)), paramName: nameof(frameworks));
                     }
 
                     NuGetFramework nugetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
