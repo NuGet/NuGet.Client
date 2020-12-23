@@ -676,7 +676,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                             .WithId("C")
                             .WithType(PackageDependencyType.Project)
                             .WithRequestedVersion(VersionRange.Parse("1.0.0"))
-                            .WithDependency(new PackageDependency("packageC",VersionRange.Parse("2.0.0"))))
+                            .WithDependency(new PackageDependency("packageC", VersionRange.Parse("2.0.0"))))
                         .WithDependency(dep => dep
                             .WithId("D")
                             .WithType(PackageDependencyType.Project)
