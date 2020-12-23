@@ -9,11 +9,13 @@ using System.Text.RegularExpressions;
 
 namespace NuGet.Packaging.Signing
 {
-    public sealed class KeyPairFileReader : IDisposable
+    public class KeyPairFileReader : IDisposable
     {
         private static readonly Regex NamePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$", RegexOptions.CultureInvariant);
 
         private readonly StreamReader _reader;
+        // To detect redundant calls
+        private bool _disposed;
 
         public KeyPairFileReader(Stream stream, Encoding encoding)
         {
@@ -104,7 +106,23 @@ namespace NuGet.Packaging.Signing
 
         public void Dispose()
         {
-            _reader.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _reader.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

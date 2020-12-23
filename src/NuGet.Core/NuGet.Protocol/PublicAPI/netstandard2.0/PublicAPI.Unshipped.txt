@@ -2,3 +2,4 @@ NuGet.Protocol.Core.Types.PackageUpdateResource.Push(System.Collections.Generic.
 NuGet.Protocol.Plugins.Receiver.Dispose() -> void
 abstract NuGet.Protocol.Plugins.Receiver.Dispose(bool disposing) -> void
 virtual NuGet.Protocol.HttpSource.Dispose(bool disposing) -> void
+virtual NuGet.Protocol.HttpSourceResult.Dispose(bool disposing) -> void

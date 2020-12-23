@@ -14,7 +14,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
-    public sealed class PackagePreFetcherResult : IDisposable
+    public class PackagePreFetcherResult : IDisposable
     {
         private readonly Task<DownloadResourceResult> _downloadTask;
         private readonly string _nupkgPath;
@@ -23,6 +23,8 @@ namespace NuGet.PackageManagement
         private readonly DateTimeOffset _downloadStartTime;
         private DateTimeOffset _packageFetchTime;
         private DateTimeOffset _taskReturnTime;
+        // To detect redundant calls
+        private bool _disposed = false;
 
         /// <summary>
         /// True if the result came from the packages folder.
@@ -156,11 +158,28 @@ namespace NuGet.PackageManagement
 
         public void Dispose()
         {
-            // The task should be awaited before calling dispose
-            if (_result != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        // Protected implementation of Dispose pattern.
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                _result.Dispose();
+                return;
             }
+
+            if (disposing)
+            {
+                // The task should be awaited before calling dispose
+                if (_result != null)
+                {
+                    _result.Dispose();
+                }
+            }
+
+            _disposed = true;
         }
 
         public void EmitTelemetryEvent(Guid parentId)
