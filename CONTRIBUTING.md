@@ -84,6 +84,12 @@ NuGet members may contribute directly to the main remote.
    `.\build.ps1`
 
     > Note: You have to to run .\configure.ps1 and .\build.ps1 at least once in order for your build to succeed.
+    
+    > In case you have build issues try cleaning the local repository using `git clean -xdf` and retry steps 3 and 4.
+
+1. Run unit and functional tests if inside Microsoft corpnet with
+
+    `.\runTests.ps1`
 
 1. Run dotnet code formatters and correct any errors.
     * You can use `Format Document` in VS: 
@@ -93,12 +99,6 @@ NuGet members may contribute directly to the main remote.
     * You can use the dotnet CLI tool (https://github.com/dotnet/format):
 
       `dotnet format --check --exclude cli packages submodules`
-
-1. Run unit and functional tests if inside Microsoft corpnet with
-
-    `.\runTests.ps1`
-
-> In case you have build issues try cleaning the local repository using `git clean -xdf` and retry steps 3 and 4.
 
 ### Notable `build.ps1` switches
 
