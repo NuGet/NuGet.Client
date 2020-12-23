@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands.Test
@@ -100,6 +101,11 @@ namespace NuGet.Commands.Test
 
         public static PackageSpec WithTestProjectReference(this PackageSpec parent, PackageSpec child, params NuGetFramework[] frameworks)
         {
+            return parent.WithTestProjectReference(child, privateAssets: LibraryIncludeFlagUtils.DefaultSuppressParent, frameworks);
+        }
+
+        public static PackageSpec WithTestProjectReference(this PackageSpec parent, PackageSpec child, LibraryIncludeFlags privateAssets, params NuGetFramework[] frameworks)
+        {
             var spec = parent.Clone();
 
             if (frameworks.Length == 0)
@@ -116,7 +122,8 @@ namespace NuGet.Commands.Test
                 framework.ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectUniqueName = child.RestoreMetadata.ProjectUniqueName,
-                    ProjectPath = child.RestoreMetadata.ProjectPath
+                    ProjectPath = child.RestoreMetadata.ProjectPath,
+                    PrivateAssets = privateAssets,
                 });
             }
 
@@ -185,6 +192,24 @@ namespace NuGet.Commands.Test
             }
 
             return updated;
+        }
+
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net5.0")
+        {
+            const string referenceSpec = @"
+                {
+                    ""frameworks"": {
+                        ""TARGET_FRAMEWORK"": {
+                            ""dependencies"": {
+                            }
+                        }
+                    }
+                }";
+
+            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework);
+            var packageSpec = JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithTestRestoreMetadata();
+            packageSpec.RestoreSettings.HideWarningsAndErrors = true; // Pretend this is running in VS and this is a .NET Core project.
+            return packageSpec;
         }
     }
 }
