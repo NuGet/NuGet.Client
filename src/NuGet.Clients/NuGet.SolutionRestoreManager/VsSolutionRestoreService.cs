@@ -169,7 +169,7 @@ namespace NuGet.SolutionRestoreManager
                 catch (Exception e)
                 {
                     var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, string.Format(Resources.NU1105, projectNames.ShortName, e.Message));
-                    restoreLogMessage.LibraryId = projectUniqueName;
+                    restoreLogMessage.ProjectPath = projectUniqueName;
 
                     nominationErrors = new List<IAssetsLogMessage>()
                     {
@@ -305,14 +305,16 @@ namespace NuGet.SolutionRestoreManager
                     msbuildProjectExtensionsPath));
         }
 
-        private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
+        internal static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
         {
             var packageSpec = new PackageSpec();
             packageSpec.FilePath = projectPath;
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
             packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
             packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            packageSpec.RestoreMetadata.ProjectPath = projectPath;
             packageSpec.RestoreMetadata.OutputPath = outputPath;
+            packageSpec.RestoreMetadata.CacheFilePath = Path.Combine(outputPath, "project.nuget.cache");
 
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddProject(packageSpec);
