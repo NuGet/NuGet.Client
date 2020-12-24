@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.Telemetry
     {
         private const string Data = "Data";
 
-        private static readonly string EventName = $"{DiagnosticEventName}/GetInstalledPackagesAsync";
+        private const string EventName = DiagnosticEventName + "/GetInstalledPackagesAsync";
 
         public GetInstalledPackagesAsyncTelemetryEvent()
             : base(EventName)
