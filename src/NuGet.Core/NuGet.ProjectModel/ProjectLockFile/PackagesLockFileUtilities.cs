@@ -172,6 +172,13 @@ namespace NuGet.ProjectModel
                             // The package spec not found in the dg spec. This could mean that the project does not exist anymore.
                             if (p2pSpec != null)
                             {
+                                if(p2pSpec.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
+                                {
+                                    // Skip compat check and dependency check for non PR projects.
+                                    // Projects that are not PR do not undergo compat checks and do not contribute anything transitively.
+                                    continue;
+                                }
+
                                 // This does not consider ATF.
                                 var p2pSpecTargetFrameworkInformation = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
 

@@ -10440,6 +10440,120 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        // TODO NK - Enable lock files and check locked mode here.
+        [Fact]
+        public async Task RestorePackageReferenceLockFile_WithPackagesConfigProjectReference_IncludesTransitivePackageReferenceProjects()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var projectB = SimpleTestProjectContext.CreateNonNuGet(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var packageX100 = new SimpleTestPackageContext("X", "1.0.0");
+                var packageX110 = new SimpleTestPackageContext("X", "1.1.0");
+                var packageY = new SimpleTestPackageContext("Y", "1.0.0");
+
+                projectA.AddPackageToAllFrameworks(packageX100);
+                projectC.AddPackageToAllFrameworks(packageY);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageX110,
+                    packageY);
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                // B -> packages.config
+                Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""X"" version=""1.1.0"" targetFramework=""net472"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                var args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed",
+                    "-Recursive"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert correct projects were restored.
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.False(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectC.AssetsFileOutputPath));
+
+                // Assert transitivity is applied across non PackageReference projects.
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectB.ProjectName);
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectC.ProjectName);
+                ridlessTarget.Libraries.Should().Contain(e => e.Name == "X");
+                ridlessTarget.Libraries.Should().Contain(e => e.Name == "Y");
+
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+
+                var lockFileTarget = lockFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                lockFileTarget.Dependencies.Should().HaveCount(4);
+                lockFileTarget.Dependencies.Should().ContainSingle(e => e.Id == projectB.ProjectName);
+                lockFileTarget.Dependencies.Should().ContainSingle(e => e.Id == projectC.ProjectName);
+                var projectDeps = lockFileTarget.Dependencies.Where(e => e.Type == PackageDependencyType.Project).Should().HaveCount(2);
+                var projectBlockFileTarget = lockFileTarget.Dependencies.Single(e => e.Id == projectB.ProjectName);
+                projectBlockFileTarget.Dependencies.Should().HaveCount(1);
+                projectBlockFileTarget.Dependencies.Should().ContainSingle(e => e.Id == projectC.ProjectName);
+
+                // Check locked mode
+                var lockedModeArgs = args.Append("-LockedMode").Append("-Force");
+
+                // Act
+                r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", lockedModeArgs),
+                    waitForExit: true);
+                r.Success.Should().BeTrue(because: r.AllOutput);
+            }
+        }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
