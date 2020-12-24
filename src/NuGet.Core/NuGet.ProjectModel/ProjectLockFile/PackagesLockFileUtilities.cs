@@ -172,16 +172,18 @@ namespace NuGet.ProjectModel
                             // The package spec not found in the dg spec. This could mean that the project does not exist anymore.
                             if (p2pSpec != null)
                             {
-                                if(p2pSpec.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
+                                TargetFrameworkInformation p2pSpecTargetFrameworkInformation = default;
+                                if (p2pSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig || p2pSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Unknown)
                                 {
                                     // Skip compat check and dependency check for non PR projects.
-                                    // Projects that are not PR do not undergo compat checks and do not contribute anything transitively.
-                                    continue;
+                                    // Projects that are not PR do not undergo compat checks by NuGet and do not contribute anything transitively.
+                                    p2pSpecTargetFrameworkInformation = p2pSpec.TargetFrameworks.FirstOrDefault();
                                 }
-
-                                // This does not consider ATF.
-                                var p2pSpecTargetFrameworkInformation = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
-
+                                else
+                                {
+                                    // This does not consider ATF.
+                                    p2pSpecTargetFrameworkInformation = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
+                                }
                                 // No compatible framework found
                                 if (p2pSpecTargetFrameworkInformation != null)
                                 {

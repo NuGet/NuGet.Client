@@ -692,5 +692,96 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile).Should().BeTrue();
         }
+
+        // <summary>
+        /// A(PR) -> B (PC) -> C(PR) -> PackageC
+        /// </summary>
+        [Fact]
+        public void IsLockFileStillValid_WithProjectToProjectPackagesConfig_IncludesAllDependencies()
+        {
+            // Arrange
+            var framework = CommonFrameworks.Net50;
+            var frameworkShortName = framework.GetShortFolderName();
+            var projectA = ProjectJsonTestHelpers.GetPackageSpec("A", framework: frameworkShortName);
+            var projectB = ProjectJsonTestHelpers.GetPackagesConfigPackageSpec("B");
+            var projectC = ProjectJsonTestHelpers.GetPackageSpec("C", framework: frameworkShortName);
+
+            var packageC = new LibraryDependency(
+                new LibraryRange("packageC", versionRange: VersionRange.Parse("2.0.0"), LibraryDependencyTarget.Package),
+                type: LibraryDependencyType.Default,
+                includeType: LibraryIncludeFlags.All,
+                suppressParent: LibraryIncludeFlagUtils.DefaultSuppressParent,
+                noWarn: new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct,
+                aliases: null);
+
+            // B -> C 
+            projectB = projectB.WithTestProjectReference(projectC);
+
+            // A -> B
+            projectA = projectA.WithTestProjectReference(projectB);
+
+            // C -> PackageC
+            projectC.TargetFrameworks.First().Dependencies.Add(packageC);
+
+            var dgSpec = ProjectJsonTestHelpers.GetDGSpec(projectA, projectB, projectC);
+
+            var lockFile = new PackagesLockFileBuilder()
+                        .WithTarget(target => target
+                        .WithFramework(framework)
+                        .WithDependency(dep => dep
+                            .WithId("B")
+                            .WithType(PackageDependencyType.Project)
+                            .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                            .WithDependency(new PackageDependency("C", VersionRange.Parse("1.0.0"))))
+                        .WithDependency(dep => dep
+                            .WithId("C")
+                            .WithType(PackageDependencyType.Project)
+                            .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                            .WithDependency(new PackageDependency("packageC", VersionRange.Parse("2.0.0"))))
+                        .WithDependency(dep => dep
+                            .WithId("packageC")
+                            .WithType(PackageDependencyType.Transitive)
+                            .WithRequestedVersion(VersionRange.Parse("2.0.0"))
+                            .WithResolvedVersion(NuGetVersion.Parse("2.0.0"))
+                        ))
+                        .Build();
+
+            PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile).Should().BeTrue();
+        }
+
+        // <summary>
+        /// A(PR) -> B (PC), where A and B have incompatible frameworks
+        /// </summary>
+        [Fact]
+        public void IsLockFileStillValid_WithProjectToProjectPackagesConfig_WithIncompatibleFrameworks_IgnoresCompatiblityChecksAndSucceeds()
+        {
+            // Arrange
+            var framework = CommonFrameworks.NetStandard;
+            var frameworkShortName = framework.GetShortFolderName();
+            var incompatibleFramework = CommonFrameworks.Net46;
+            var projectA = ProjectJsonTestHelpers.GetPackageSpec("A", framework: frameworkShortName);
+            var projectB = ProjectJsonTestHelpers.GetPackagesConfigPackageSpec("B", framework: incompatibleFramework.GetShortFolderName());
+
+            // A -> B
+            projectA = projectA.WithTestProjectReference(projectB);
+
+            var dgSpec = ProjectJsonTestHelpers.GetDGSpec(projectA, projectB);
+
+            var lockFile = new PackagesLockFileBuilder()
+                        .WithTarget(target => target
+                        .WithFramework(framework)
+                        .WithDependency(dep => dep
+                            .WithId("B")
+                            .WithType(PackageDependencyType.Project)
+                            .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        ))
+                        .Build();
+
+            PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile).Should().BeTrue();
+        }
     }
 }
