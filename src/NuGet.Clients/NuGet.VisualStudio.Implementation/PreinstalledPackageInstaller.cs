@@ -360,27 +360,28 @@ namespace NuGet.VisualStudio
 
                 DirectoryInfo packageFolder = new DirectoryInfo(Path.Combine(repositoryPath, packagePath));
 
-                PackageFolderReader reader = new PackageFolderReader(packageFolder);
-
-                var frameworkGroups = reader.GetReferenceItems();
-
-                var groups = reader.GetReferenceItems();
-
-                var fwComparer = new NuGetFrameworkFullComparer();
-                FrameworkReducer reducer = new FrameworkReducer();
-                NuGetFramework targetGroupFramework = reducer.GetNearest(projectSystem.TargetFramework, groups.Select(e => e.TargetFramework));
-
-                if (targetGroupFramework != null)
+                using (var reader = new PackageFolderReader(packageFolder))
                 {
-                    var refGroup = groups.Where(e => fwComparer.Equals(targetGroupFramework, e.TargetFramework)).FirstOrDefault();
+                    var frameworkGroups = reader.GetReferenceItems();
 
-                    foreach (string refItem in refGroup.Items)
+                    var groups = reader.GetReferenceItems();
+
+                    var fwComparer = new NuGetFrameworkFullComparer();
+                    FrameworkReducer reducer = new FrameworkReducer();
+                    NuGetFramework targetGroupFramework = reducer.GetNearest(projectSystem.TargetFramework, groups.Select(e => e.TargetFramework));
+
+                    if (targetGroupFramework != null)
                     {
-                        string sourcePath = Path.Combine(packageFolder.FullName, refItem.Replace('/', Path.DirectorySeparatorChar));
+                        var refGroup = groups.Where(e => fwComparer.Equals(targetGroupFramework, e.TargetFramework)).FirstOrDefault();
 
-                        // create one refresh file for each assembly reference, as per required by Website projects
-                        // projectSystem.CreateRefreshFile(assemblyPath);
-                        RefreshFileUtility.CreateRefreshFile(projectSystem, sourcePath);
+                        foreach (string refItem in refGroup.Items)
+                        {
+                            string sourcePath = Path.Combine(packageFolder.FullName, refItem.Replace('/', Path.DirectorySeparatorChar));
+
+                            // create one refresh file for each assembly reference, as per required by Website projects
+                            // projectSystem.CreateRefreshFile(assemblyPath);
+                            RefreshFileUtility.CreateRefreshFile(projectSystem, sourcePath);
+                        }
                     }
                 }
             }

@@ -649,7 +649,10 @@ namespace NuGet.Protocol
                     DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
                 });
 
-                return XDocument.Load(xmlReader, LoadOptions.None);
+                using (xmlReader)
+                {
+                    return XDocument.Load(xmlReader, LoadOptions.None);
+                }                
             }
         }
     }

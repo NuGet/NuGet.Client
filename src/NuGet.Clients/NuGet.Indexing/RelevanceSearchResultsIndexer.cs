@@ -25,29 +25,33 @@ namespace NuGet.Indexing
             {
                 AddToIndex(directory, entries);
 
-                var searcher = new IndexSearcher(directory);
-                var query = NuGetQuery.MakeQuery(queryString);
-                var topDocs = searcher.Search(query, entries.Count());
+                using (var searcher = new IndexSearcher(directory))
+                {
+                    var query = NuGetQuery.MakeQuery(queryString);
+                    var topDocs = searcher.Search(query, entries.Count());
 
-                var ranking = topDocs.ScoreDocs
-                    .Select(d => searcher.Doc(d.Doc))
-                    .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length).Reverse(), (doc, rank) => new { doc, rank })
-                    .ToDictionary(x => x.doc.Get("Id"), x => (long)x.rank);
+                    var ranking = topDocs.ScoreDocs
+                        .Select(d => searcher.Doc(d.Doc))
+                        .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length).Reverse(), (doc, rank) => new { doc, rank })
+                        .ToDictionary(x => x.doc.Get("Id"), x => (long)x.rank);
 
-                return ranking;
+                    return ranking;
+                }
             }
         }
 
         private static void AddToIndex(Directory directory, IEnumerable<IPackageSearchMetadata> entries)
         {
-            var packageAnalyzer = new PackageAnalyzer();
-            using (var writer = new IndexWriter(directory, packageAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED))
+            using (var packageAnalyzer = new PackageAnalyzer())
             {
-                foreach (var document in entries.Select(CreateDocument))
+                using (var writer = new IndexWriter(directory, packageAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED))
                 {
-                    writer.AddDocument(document);
+                    foreach (var document in entries.Select(CreateDocument))
+                    {
+                        writer.AddDocument(document);
+                    }
+                    writer.Commit();
                 }
-                writer.Commit();
             }
         }
 

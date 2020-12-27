@@ -554,6 +554,7 @@ namespace NuGetConsole.Implementation.Console
             finally
             {
                 WpfConsole.Dispatcher.SetExecutingCommand(false);
+                ctSource.Dispose();
             }
 
             if (simpleExpansion != null

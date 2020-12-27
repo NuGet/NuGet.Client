@@ -40,50 +40,52 @@ namespace NuGet.Indexing
 
         static Query ConstructQuery(Dictionary<string, HashSet<string>> clauses)
         {
-            Analyzer analyzer = new PackageAnalyzer();
-
             BooleanQuery query = new BooleanQuery();
-            foreach (var clause in clauses)
-            {
-                switch (clause.Key.ToLowerInvariant())
-                {
-                    case "id":
-                        IdClause(query, analyzer, clause.Value, Occur.MUST);
-                        break;
-                    case "packageid":
-                        PackageIdClause(query, analyzer, clause.Value);
-                        break;
-                    case "version":
-                        VersionClause(query, analyzer, clause.Value, Occur.MUST);
-                        break;
-                    case "title":
-                        TitleClause(query, analyzer, clause.Value, Occur.MUST);
-                        break;
-                    case "description":
-                        DescriptionClause(query, analyzer, clause.Value, Occur.MUST);
-                        break;
-                    case "tag":
-                    case "tags":
-                        TagClause(query, analyzer, clause.Value, Occur.MUST);
-                        break;
-                    case "author":
-                    case "authors":
-                        AuthorClause(query, analyzer, clause.Value, Occur.MUST);
-                        break;
-                    case "summary":
-                        SummaryClause(query, analyzer, clause.Value, Occur.MUST);
-                        break;
-                    case "owner":
-                    case "owners":
-                        OwnerClause(query, analyzer, clause.Value, Occur.MUST);
-                        break;
-                    default:
-                        AnyClause(query, analyzer, clause.Value);
-                        break;
-                }
-            }
 
-            return query;
+            using (var analyzer = new PackageAnalyzer())
+            {
+                foreach (var clause in clauses)
+                {
+                    switch (clause.Key.ToLowerInvariant())
+                    {
+                        case "id":
+                            IdClause(query, analyzer, clause.Value, Occur.MUST);
+                            break;
+                        case "packageid":
+                            PackageIdClause(query, analyzer, clause.Value);
+                            break;
+                        case "version":
+                            VersionClause(query, analyzer, clause.Value, Occur.MUST);
+                            break;
+                        case "title":
+                            TitleClause(query, analyzer, clause.Value, Occur.MUST);
+                            break;
+                        case "description":
+                            DescriptionClause(query, analyzer, clause.Value, Occur.MUST);
+                            break;
+                        case "tag":
+                        case "tags":
+                            TagClause(query, analyzer, clause.Value, Occur.MUST);
+                            break;
+                        case "author":
+                        case "authors":
+                            AuthorClause(query, analyzer, clause.Value, Occur.MUST);
+                            break;
+                        case "summary":
+                            SummaryClause(query, analyzer, clause.Value, Occur.MUST);
+                            break;
+                        case "owner":
+                        case "owners":
+                            OwnerClause(query, analyzer, clause.Value, Occur.MUST);
+                            break;
+                        default:
+                            AnyClause(query, analyzer, clause.Value);
+                            break;
+                    }
+                }
+
+                return query;
+            }
         }
 
         static Query ConstructClauseQuery(Analyzer analyzer, string field, IEnumerable<string> values, Occur occur = Occur.SHOULD, float queryBoost = 1.0f, float termBoost = 1.0f)
@@ -181,23 +183,26 @@ namespace NuGet.Indexing
 
         static Query ExecuteAnalyzer(Analyzer analyzer, string field, string text)
         {
-            TokenStream tokenStream = analyzer.TokenStream(field, new StringReader(text));
-
-            ITermAttribute termAttribute = tokenStream.AddAttribute<ITermAttribute>();
-            IPositionIncrementAttribute positionIncrementAttribute = tokenStream.AddAttribute<IPositionIncrementAttribute>();
-
             List<List<Term>> terms = new List<List<Term>>();
             List<Term> current = null;
-            while (tokenStream.IncrementToken())
+
+            using (var reader = new StringReader(text))
             {
-                if (positionIncrementAttribute.PositionIncrement > 0)
+                TokenStream tokenStream = analyzer.TokenStream(field, reader);
+                ITermAttribute termAttribute = tokenStream.AddAttribute<ITermAttribute>();
+                IPositionIncrementAttribute positionIncrementAttribute = tokenStream.AddAttribute<IPositionIncrementAttribute>();
+
+                while (tokenStream.IncrementToken())
                 {
-                    current = new List<Term>();
-                    terms.Add(current);
-                }
-                if (current != null)
-                {
-                    current.Add(new Term(field, termAttribute.Term));
+                    if (positionIncrementAttribute.PositionIncrement > 0)
+                    {
+                        current = new List<Term>();
+                        terms.Add(current);
+                    }
+                    if (current != null)
+                    {
+                        current.Add(new Term(field, termAttribute.Term));
+                    }
                 }
             }
 
@@ -245,7 +250,7 @@ namespace NuGet.Indexing
                 switch (state)
                 {
                     case 0:
-                        if (Char.IsWhiteSpace(ch))
+                        if (char.IsWhiteSpace(ch))
                         {
                             if (buf.Length > 0)
                             {

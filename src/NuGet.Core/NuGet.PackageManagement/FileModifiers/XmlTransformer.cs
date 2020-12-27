@@ -155,18 +155,20 @@ namespace NuGet.ProjectManagement
 
             using (var packageStream = File.OpenRead(packageFileInfo.ZipArchivePath))
             {
-                var zipArchive = new ZipArchive(packageStream);
-                var zipArchivePackageEntry = PathUtility.GetEntry(zipArchive, packageFileInfo.ZipArchiveEntryFullName);
-
-                if (zipArchivePackageEntry == null)
+                using (var zipArchive = new ZipArchive(packageStream))
                 {
-                    throw new ArgumentException("internalZipFileInfo");
-                }
+                    var zipArchivePackageEntry = PathUtility.GetEntry(zipArchive, packageFileInfo.ZipArchiveEntryFullName);
 
-                content = await Preprocessor.ProcessAsync(
-                    () => Task.FromResult(zipArchivePackageEntry.Open()),
-                    projectSystem,
-                    cancellationToken);
+                    if (zipArchivePackageEntry == null)
+                    {
+                        throw new ArgumentException("internalZipFileInfo");
+                    }
+
+                    content = await Preprocessor.ProcessAsync(
+                        () => Task.FromResult(zipArchivePackageEntry.Open()),
+                        projectSystem,
+                        cancellationToken);
+                }
             }
 
             return XElement.Parse(content, LoadOptions.PreserveWhitespace);

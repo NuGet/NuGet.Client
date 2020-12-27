@@ -862,41 +862,42 @@ namespace NuGet.Commands
         private void PrintVerbose(string outputPath, PackageBuilder builder)
         {
             WriteLine(string.Empty);
-            var package = new PackageArchiveReader(outputPath);
+            using (var package = new PackageArchiveReader(outputPath))
+            {
+                WriteLine("Id: {0}", builder.Id);
+                WriteLine("Version: {0}", builder.Version);
+                WriteLine("Authors: {0}", string.Join(", ", builder.Authors));
+                WriteLine("Description: {0}", builder.Description);
+                if (builder.LicenseUrl != null)
+                {
+                    WriteLine("License Url: {0}", builder.LicenseUrl);
+                }
+                if (builder.ProjectUrl != null)
+                {
+                    WriteLine("Project Url: {0}", builder.ProjectUrl);
+                }
+                if (builder.Tags.Any())
+                {
+                    WriteLine("Tags: {0}", string.Join(", ", builder.Tags));
+                }
+                if (builder.DependencyGroups.Any())
+                {
+                    WriteLine("Dependencies: {0}", string.Join(", ", builder.DependencyGroups.SelectMany(d => d.Packages).Select(d => d.ToString())));
+                }
+                else
+                {
+                    WriteLine("Dependencies: None");
+                }
 
-            WriteLine("Id: {0}", builder.Id);
-            WriteLine("Version: {0}", builder.Version);
-            WriteLine("Authors: {0}", string.Join(", ", builder.Authors));
-            WriteLine("Description: {0}", builder.Description);
-            if (builder.LicenseUrl != null)
-            {
-                WriteLine("License Url: {0}", builder.LicenseUrl);
-            }
-            if (builder.ProjectUrl != null)
-            {
-                WriteLine("Project Url: {0}", builder.ProjectUrl);
-            }
-            if (builder.Tags.Any())
-            {
-                WriteLine("Tags: {0}", string.Join(", ", builder.Tags));
-            }
-            if (builder.DependencyGroups.Any())
-            {
-                WriteLine("Dependencies: {0}", string.Join(", ", builder.DependencyGroups.SelectMany(d => d.Packages).Select(d => d.ToString())));
-            }
-            else
-            {
-                WriteLine("Dependencies: None");
-            }
+                WriteLine(string.Empty);
 
-            WriteLine(string.Empty);
+                foreach (string file in package.GetFiles().OrderBy(p => p))
+                {
+                    WriteLine(Strings.Log_PackageCommandAddedFile, file);
+                }
 
-            foreach (string file in package.GetFiles().OrderBy(p => p))
-            {
-                WriteLine(Strings.Log_PackageCommandAddedFile, file);
+                WriteLine(string.Empty);
             }
-
-            WriteLine(string.Empty);
         }
 
         internal void ExcludeFiles(ICollection<IPackageFile> packageFiles)

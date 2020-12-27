@@ -195,6 +195,9 @@ namespace NuGet.ProjectManagement
             var buildFileGroups = await packageContentReader.GetBuildItemsAsync(token);
             var toolItemGroups = await packageContentReader.GetToolItemsAsync(token);
 
+            if (downloadResourceResult.PackageReader == null)
+                packageReader.Dispose();
+
             // Step-3: Get the most compatible items groups for all items groups
             var hasCompatibleProjectLevelContent = false;
 
@@ -458,110 +461,113 @@ namespace NuGet.ProjectManagement
 
             using (var packageStream = File.OpenRead(packagePath))
             {
-                var zipArchive = new ZipArchive(packageStream);
-                var packageReader = new PackageArchiveReader(zipArchive);
-
-                // Step-2: Execute powershell script - uninstall.ps1
-                var toolItemGroups = packageReader.GetToolItems();
-                var compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility
-                    .GetMostCompatibleGroup(packageTargetFramework, toolItemGroups);
-                compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.Normalize(compatibleToolItemsGroup);
-
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
+                using (var zipArchive = new ZipArchive(packageStream))
                 {
-                    var uninstallPS1RelativePath = compatibleToolItemsGroup.Items.FirstOrDefault(
-                        p => p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall,
-                                        StringComparison.OrdinalIgnoreCase));
-
-                    if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
+                    using (var packageReader = new PackageArchiveReader(zipArchive))
                     {
-                        var packageInstallPath = FolderNuGetProject.GetInstalledPath(
-                            packageIdentity);
-                        await ProjectServices.ScriptService.ExecutePackageScriptAsync(
-                            packageIdentity,
-                            packageInstallPath,
-                            uninstallPS1RelativePath,
-                            nuGetProjectContext,
-                            throwOnFailure: false,
-                            token: token);
-                    }
-                }
+                        // Step-2: Execute powershell script - uninstall.ps1
+                        var toolItemGroups = packageReader.GetToolItems();
+                        var compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility
+                            .GetMostCompatibleGroup(packageTargetFramework, toolItemGroups);
+                        compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.Normalize(compatibleToolItemsGroup);
 
-                // Step-3: Obtain the various item groups
-                // Get the package target framework instead of using project targetframework
-                var referenceItemGroups = packageReader.GetReferenceItems();
-                var contentFileGroups = packageReader.GetContentItems();
-                var buildFileGroups = packageReader.GetBuildItems();
-
-                // Step-4: Get the most compatible items groups for all items groups
-                var compatibleReferenceItemsGroup =
-                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, referenceItemGroups);
-
-                var compatibleContentFilesGroup =
-                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, contentFileGroups);
-
-                var compatibleBuildFilesGroup =
-                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, buildFileGroups);
-
-                compatibleReferenceItemsGroup
-                    = MSBuildNuGetProjectSystemUtility.Normalize(compatibleReferenceItemsGroup);
-                compatibleContentFilesGroup
-                    = MSBuildNuGetProjectSystemUtility.Normalize(compatibleContentFilesGroup);
-                compatibleBuildFilesGroup
-                    = MSBuildNuGetProjectSystemUtility.Normalize(compatibleBuildFilesGroup);
-
-                // Step-5: Remove package reference from packages.config
-                await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
-
-                // Step-6: Remove packages.config from MSBuildNuGetProject if there are no packages
-                //         OR Add it again (to ensure that Source Control works), when there are some packages
-                if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
-                {
-                    ProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-                }
-                else
-                {
-                    ProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-                }
-
-                // Step-7: Uninstall package from the msbuild project
-                // Step-7.1: Remove references
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
-                {
-                    foreach (var item in compatibleReferenceItemsGroup.Items)
-                    {
-                        if (IsAssemblyReference(item))
+                        if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
                         {
-                            await ProjectSystem.RemoveReferenceAsync(Path.GetFileName(item));
+                            var uninstallPS1RelativePath = compatibleToolItemsGroup.Items.FirstOrDefault(
+                                p => p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall,
+                                                StringComparison.OrdinalIgnoreCase));
+
+                            if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
+                            {
+                                var packageInstallPath = FolderNuGetProject.GetInstalledPath(
+                                    packageIdentity);
+                                await ProjectServices.ScriptService.ExecutePackageScriptAsync(
+                                    packageIdentity,
+                                    packageInstallPath,
+                                    uninstallPS1RelativePath,
+                                    nuGetProjectContext,
+                                    throwOnFailure: false,
+                                    token: token);
+                            }
                         }
-                    }
-                }
 
-                // Step-7.2: Framework references are never removed. This is a no-op
+                        // Step-3: Obtain the various item groups
+                        // Get the package target framework instead of using project targetframework
+                        var referenceItemGroups = packageReader.GetReferenceItems();
+                        var contentFileGroups = packageReader.GetContentItems();
+                        var buildFileGroups = packageReader.GetBuildItems();
 
-                // Step-7.3: Remove content files
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
-                {
-                    var packagesPaths = (await GetInstalledPackagesAsync(token))
-                        .Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity))
-                        .Where(path => !string.IsNullOrEmpty(path));
+                        // Step-4: Get the most compatible items groups for all items groups
+                        var compatibleReferenceItemsGroup =
+                            MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, referenceItemGroups);
 
-                    await MSBuildNuGetProjectSystemUtility.DeleteFilesAsync(
-                        ProjectSystem,
-                        zipArchive,
-                        packagesPaths,
-                        compatibleContentFilesGroup,
-                        FileTransformers,
-                        token);
-                }
+                        var compatibleContentFilesGroup =
+                            MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, contentFileGroups);
 
-                // Step-7.4: Remove build imports
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
-                {
-                    foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
-                    {
-                        var fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
-                        ProjectSystem.RemoveImport(fullImportFilePath);
+                        var compatibleBuildFilesGroup =
+                            MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, buildFileGroups);
+
+                        compatibleReferenceItemsGroup
+                            = MSBuildNuGetProjectSystemUtility.Normalize(compatibleReferenceItemsGroup);
+                        compatibleContentFilesGroup
+                            = MSBuildNuGetProjectSystemUtility.Normalize(compatibleContentFilesGroup);
+                        compatibleBuildFilesGroup
+                            = MSBuildNuGetProjectSystemUtility.Normalize(compatibleBuildFilesGroup);
+
+                        // Step-5: Remove package reference from packages.config
+                        await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
+
+                        // Step-6: Remove packages.config from MSBuildNuGetProject if there are no packages
+                        //         OR Add it again (to ensure that Source Control works), when there are some packages
+                        if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
+                        {
+                            ProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+                        }
+                        else
+                        {
+                            ProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+                        }
+
+                        // Step-7: Uninstall package from the msbuild project
+                        // Step-7.1: Remove references
+                        if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
+                        {
+                            foreach (var item in compatibleReferenceItemsGroup.Items)
+                            {
+                                if (IsAssemblyReference(item))
+                                {
+                                    await ProjectSystem.RemoveReferenceAsync(Path.GetFileName(item));
+                                }
+                            }
+                        }
+
+                        // Step-7.2: Framework references are never removed. This is a no-op
+
+                        // Step-7.3: Remove content files
+                        if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
+                        {
+                            var packagesPaths = (await GetInstalledPackagesAsync(token))
+                                .Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity))
+                                .Where(path => !string.IsNullOrEmpty(path));
+
+                            await MSBuildNuGetProjectSystemUtility.DeleteFilesAsync(
+                                ProjectSystem,
+                                zipArchive,
+                                packagesPaths,
+                                compatibleContentFilesGroup,
+                                FileTransformers,
+                                token);
+                        }
+
+                        // Step-7.4: Remove build imports
+                        if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
+                        {
+                            foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
+                            {
+                                var fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
+                                ProjectSystem.RemoveImport(fullImportFilePath);
+                            }
+                        }
                     }
                 }
 

@@ -152,8 +152,11 @@ namespace NuGet.Protocol.Core.Types
             {
                 try
                 {
-                    var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true);
-                    var packageIdentity = packageReader.GetIdentity();
+                    var packageIdentity = default(PackageIdentity);
+                    using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
+                    {
+                        packageIdentity = packageReader.GetIdentity();
+                    }
 
                     bool isValidPackage;
                     if (PackageExists(packageIdentity, source, out isValidPackage))
