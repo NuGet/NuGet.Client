@@ -1,6 +1,7 @@
 #if IS_DESKTOP
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -40,11 +41,20 @@ namespace NuGet.Common
 
             const int MaxRecursionDepth = 3;
             var parsedArgs = new List<string>();
+            string previousArg = "";
             foreach (var arg in args)
             {
                 if (string.IsNullOrWhiteSpace(arg) || !arg.StartsWith("@", StringComparison.InvariantCultureIgnoreCase))
                 {
+                    previousArg = arg;
                     parsedArgs.Add(arg);
+                    continue;
+                }
+
+                if (previousArg.ToLower(CultureInfo.CurrentCulture).Contains("password"))
+                {
+                    parsedArgs.Add(arg);
+                    previousArg = arg;
                     continue;
                 }
 
