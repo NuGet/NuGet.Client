@@ -14,8 +14,8 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.PackageManagement.Telemetry;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -241,7 +241,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             HashSet<NuGetFramework> targetFrameworks = new HashSet<NuGetFramework>();
             foreach (NuGetProject project in projects)
-            { 
+            {
                 if (project is BuildIntegratedNuGetProject buildIntegratedProject)
                 {
                     if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)

@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public IReadOnlyList<PackageReference> InstalledPackages { get; }
         public IReadOnlyList<PackageReference> TransitivePackages { get; }
 
-        public ProjectPackages(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages) 
+        public ProjectPackages(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)
         {
             InstalledPackages = installedPackages ?? Array.Empty<PackageReference>();
             TransitivePackages = transitivePackages ?? Array.Empty<PackageReference>();
