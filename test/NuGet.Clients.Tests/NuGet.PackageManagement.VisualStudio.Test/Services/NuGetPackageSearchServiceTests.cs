@@ -33,12 +33,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private readonly SourceRepository _sourceRepository;
         private readonly IEnumerable<IPackageReferenceContextInfo> _installedPackages;
+        private readonly IEnumerable<IPackageReferenceContextInfo> _transitivePackages;
         private readonly IReadOnlyCollection<IProjectContextInfo> _projects;
 
         public NuGetPackageSearchServiceTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
         {
             _installedPackages = new List<IPackageReferenceContextInfo>();
+            _transitivePackages = new List<IPackageReferenceContextInfo>();
             _projects = new List<IProjectContextInfo>
             {
                 new ProjectContextInfo(
@@ -302,10 +304,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var projectManagerService = new Mock<INuGetProjectManagerService>();
 
-            projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
+            projectManagerService.Setup(x => x.GetInstalledAndTransitivePackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(_installedPackages.ToList()));
+                .Returns(new ValueTask<IInstalledAndTransitivePackages>(new InstalledAndTransitivePackages(_installedPackages.ToList(), _transitivePackages.ToList())));
 
 #pragma warning disable ISB001 // Dispose of proxies
             serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(
