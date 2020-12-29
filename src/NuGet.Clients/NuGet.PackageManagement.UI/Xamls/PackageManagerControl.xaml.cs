@@ -832,37 +832,6 @@ namespace NuGet.PackageManagement.UI
             return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
         }
 
-        private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
-        {
-            // only make recommendations when
-            //   one of the source repositories is nuget.org,
-            //   the package manager was opened for a project, not a solution,
-            //   this is the Browse tab,
-            //   and the search text is an empty string
-            _recommendPackages = false;
-            if (loadContext.IsSolution == false
-                && _topPanel.Filter == ItemFilter.All
-                && searchText == string.Empty
-                && loadContext.SourceRepositories.Any(item => TelemetryUtility.IsNuGetOrg(item.PackageSource)))
-            {
-                _recommendPackages = true;
-            }
-
-            // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages
-            var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
-            if (IsRecommenderFlightEnabled())
-            {
-                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
-                _recommenderVersion = ((RecommenderPackageFeed)packageFeeds.recommenderFeed)?.VersionInfo;
-            }
-            else
-            {
-                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, recommendPackages: false);
-            }
-
-            return packageFeeds;
-        }
-
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
@@ -950,9 +919,6 @@ namespace NuGet.PackageManagement.UI
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
                 && SelectedSource.PackageSources.Count() == 1
-                // also check if this is a PC-style project. We will not provide recommendations for PR-style
-                // projects until we have a way to get dependent packages without negatively impacting perf.
-                && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
                 && TelemetryUtility.IsNuGetOrg(SelectedSource.PackageSources.First()?.Source))
             {
                 _recommendPackages = true;
@@ -1152,86 +1118,6 @@ namespace NuGet.PackageManagement.UI
                     selectedPackage.Id,
                     selectedPackage.Version));
             }
-        }
-
-        private static async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger, bool recommendPackages)
-        {
-            var logger = new VisualStudioActivityLogger();
-            var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
-
-            if (filter == ItemFilter.All && recommendPackages == false)
-            {
-                packageFeeds.mainFeed = new MultiSourcePackageFeed(
-                    context.SourceRepositories,
-                    uiLogger,
-                    TelemetryActivity.NuGetTelemetryService);
-                return packageFeeds;
-            }
-
-            var metadataProvider = CreatePackageMetadataProvider(context);
-
-            InstalledAndTransitivePackageCollections allPackages = await context.GetInstalledAndTransitivePackagesAsync();
-
-            if (filter == ItemFilter.All)
-            {
-                // if we get here, recommendPackages == true
-                IReadOnlyCollection<string> targetFrameworks = await context.GetSupportedFrameworksAsync();
-                packageFeeds.mainFeed = new MultiSourcePackageFeed(
-                    context.SourceRepositories,
-                    uiLogger,
-                    TelemetryActivity.NuGetTelemetryService);
-                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
-                    context.SourceRepositories.First(),
-                    allPackages.InstalledPackages,
-                    allPackages.TransitivePackages,
-                    targetFrameworks,
-                    metadataProvider,
-                    logger);
-                return packageFeeds;
-            }
-
-            if (filter == ItemFilter.Installed)
-            {
-                packageFeeds.mainFeed = new InstalledPackageFeed(allPackages.InstalledPackages, metadataProvider, logger);
-                return packageFeeds;
-            }
-
-            if (filter == ItemFilter.Consolidate)
-            {
-                packageFeeds.mainFeed = new ConsolidatePackageFeed(allPackages.TransitivePackages, metadataProvider, logger);
-                return packageFeeds;
-            }
-
-            // Search all / updates available cannot work without a source repo
-            if (context.SourceRepositories == null)
-            {
-                return packageFeeds;
-            }
-
-            if (filter == ItemFilter.UpdatesAvailable)
-            {
-                packageFeeds.mainFeed = new UpdatePackageFeed(
-                    context.ServiceBroker,
-                    allPackages.InstalledPackages,
-                    metadataProvider,
-                    context.Projects,
-                    context.CachedPackages,
-                    logger);
-                return packageFeeds;
-            }
-
-            throw new InvalidOperationException("Unsupported feed type");
-        }
-
-        private static IPackageMetadataProvider CreatePackageMetadataProvider(PackageLoadContext context)
-        {
-            var logger = new VisualStudioActivityLogger();
-
-            return new MultiSourcePackageMetadataProvider(
-                context.SourceRepositories,
-                context.PackageManager?.PackagesFolderSourceRepository,
-                context.PackageManager?.GlobalPackageFolderRepositories,
-                logger);
         }
 
         private void SourceRepoList_SelectionChanged(object sender, EventArgs e)

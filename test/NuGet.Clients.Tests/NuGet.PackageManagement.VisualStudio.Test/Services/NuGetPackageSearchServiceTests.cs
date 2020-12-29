@@ -17,8 +17,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
@@ -119,8 +121,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     MaxCount,
                     projects,
                     sources.Select(s => PackageSourceContextInfo.Create(s)).ToList(),
+                    targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
-                    ItemFilter.All,
+                    NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                     CancellationToken.None);
 
                 Assert.Equal(MaxCount, totalCount);
@@ -136,8 +139,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     maxCount: 100,
                     _projects,
                     new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
+                    targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
-                    ItemFilter.All,
+                    NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                     CancellationToken.None);
 
                 Assert.Equal(1, totalCount);
@@ -152,8 +156,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 IReadOnlyCollection<PackageSearchMetadataContextInfo> allPackages = await searchService.GetAllPackagesAsync(
                     _projects,
                     new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
+                    targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
-                    ItemFilter.All,
+                    NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                     CancellationToken.None);
 
                 Assert.Equal(1, allPackages.Count);
@@ -225,9 +230,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 SearchResultContextInfo searchResult = await searchService.SearchAsync(
                     _projects,
                     new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
+                    targetFrameworks: new List<string>() { "net45", "net5.0" },
                     searchText: "nuget",
                     new SearchFilter(includePrerelease: true),
-                    ItemFilter.All,
+                    NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                     useRecommender: true,
                     CancellationToken.None);
                 SearchResultContextInfo continueSearchResult = await searchService.ContinueSearchAsync(CancellationToken.None);

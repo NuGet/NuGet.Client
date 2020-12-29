@@ -60,6 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            IReadOnlyCollection<string> targetFrameworks,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
             CancellationToken cancellationToken)
@@ -72,6 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
             (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) packageFeeds = await CreatePackageFeedAsync(
                 projectContextInfos,
+                targetFrameworks,
                 itemFilter,
                 recommendPackages,
                 sourceRepositories,
@@ -212,6 +214,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<SearchResultContextInfo> SearchAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            IReadOnlyCollection<string> targetFrameworks,
             string searchText,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
@@ -225,6 +228,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
             (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(
                 projectContextInfos,
+                targetFrameworks,
                 itemFilter,
                 useRecommender,
                 sourceRepositories,
@@ -247,6 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
             int maxCount,
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            IReadOnlyCollection<string> targetFrameworks,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
             CancellationToken cancellationToken)
@@ -256,7 +261,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(searchFilter);
 
             IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
-            (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(projectContextInfos, itemFilter, recommendPackages: false, sourceRepositories, cancellationToken);
+            (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(projectContextInfos, targetFrameworks, itemFilter, recommendPackages: false, sourceRepositories, cancellationToken);
             Assumes.NotNull(mainFeed);
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
@@ -294,8 +299,36 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageReferences.SelectMany(e => e).ToList();
         }
 
+        private async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
+        {
+            IEnumerable<Task<IInstalledAndTransitivePackages>> tasks = projectContextInfos
+                .Select(project => project.GetInstalledAndTransitivePackagesAsync(_serviceBroker, cancellationToken).AsTask());
+            IInstalledAndTransitivePackages[] installedAndTransitivePackagesArray = await Task.WhenAll(tasks);
+            if (installedAndTransitivePackagesArray.Length == 1)
+            {
+                return installedAndTransitivePackagesArray[0];
+            }
+            else if (installedAndTransitivePackagesArray.Length > 1)
+            {
+                List<IPackageReferenceContextInfo> installedPackages = new List<IPackageReferenceContextInfo>();
+                List<IPackageReferenceContextInfo> transitivePackages = new List<IPackageReferenceContextInfo>();
+                foreach (var installedAndTransitivePackages in installedAndTransitivePackagesArray)
+                {
+                    installedPackages.AddRange(installedAndTransitivePackages.InstalledPackages);
+                    transitivePackages.AddRange(installedAndTransitivePackages.TransitivePackages);
+                }
+                InstalledAndTransitivePackages collectAllPackagesHere = new InstalledAndTransitivePackages(installedPackages, transitivePackages);
+                return collectAllPackagesHere;
+            }
+            else
+            {
+                return new InstalledAndTransitivePackages(new List<IPackageReferenceContextInfo>(), new List<IPackageReferenceContextInfo>());
+            }
+        }
+
         private async Task<(IPackageFeed? mainFeed, IPackageFeed? recommenderFeed)> CreatePackageFeedAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
+            IReadOnlyCollection<string> targetFrameworks,
             ItemFilter itemFilter,
             bool recommendPackages,
             IEnumerable<SourceRepository> sourceRepositories,
@@ -311,9 +344,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 return packageFeeds;
             }
 
-            IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
+            IInstalledAndTransitivePackages installedAndTransitivePackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, cancellationToken);
 
-            PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedPackages);
+            PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
+            PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages);
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
@@ -326,11 +360,14 @@ namespace NuGet.PackageManagement.VisualStudio
             if (itemFilter == ItemFilter.All)
             {
                 // if we get here, recommendPackages == true
-                // for now, we are only making recommendations for PC-style projects, and for these the dependent packages are
-                // already included in the installedPackages list. When we implement PR-style projects, we'll need to also pass
-                // the dependent packages to RecommenderPackageFeed.
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
-                packageFeeds.recommenderFeed = new RecommenderPackageFeed(sourceRepositories.First(), installedPackageCollection, metadataProvider);
+                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
+                    sourceRepositories.First(),
+                    installedPackageCollection,
+                    transitivePackageCollection,
+                    targetFrameworks,
+                    metadataProvider,
+                    logger);
                 return packageFeeds;
             }
 

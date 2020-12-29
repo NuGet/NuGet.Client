@@ -10,6 +10,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -33,6 +34,10 @@ namespace NuGet.PackageManagement.UI
                 ServiceBroker,
                 Projects,
                 CancellationToken.None);
+            _allPackagesTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageCollection.FromProjectsIncludeTransitiveAsync(
+                ServiceBroker,
+                Projects,
+                CancellationToken.None));
         }
 
         public NuGetPackageManager PackageManager { get; }
@@ -49,29 +54,6 @@ namespace NuGet.PackageManagement.UI
         public INuGetSolutionManagerService SolutionManager { get; }
 
         internal IServiceBroker ServiceBroker { get; }
-
-        public PackageLoadContext(
-            IEnumerable<SourceRepository> sourceRepositories,
-            bool isSolution,
-            INuGetUIContext uiContext)
-        {
-            SourceRepositories = sourceRepositories;
-            IsSolution = isSolution;
-            PackageManager = uiContext.PackageManager;
-            Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
-            PackageManagerProviders = uiContext.PackageManagerProviders;
-            SolutionManager = uiContext.SolutionManagerService;
-            ServiceBroker = uiContext.ServiceBroker;
-
-            _installedPackagesTask = PackageCollection.FromProjectsAsync(
-                ServiceBroker,
-                Projects,
-                CancellationToken.None);
-            _allPackagesTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageCollection.FromProjectsIncludeTransitiveAsync(
-                ServiceBroker,
-                Projects,
-                CancellationToken.None));
-        }
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
 
