@@ -133,8 +133,8 @@ namespace NuGet.PackageManagement.Test
                 // Assert
                 var assetsFilePath = Path.Combine(objFolder.FullName, "project.assets.json");
                 Assert.True(File.Exists(assetsFilePath), "Assets file does not exist");
-                var assetsFile = new LockFileFormat().Read(assetsFilePath);
-                var actualMessage = Assert.Single(assetsFile.LogMessages);
+                LockFile assetsFile = new LockFileFormat().Read(assetsFilePath);
+                IAssetsLogMessage actualMessage = Assert.Single(assetsFile.LogMessages);
                 Assert.Equal(restoreLogMessage.Level, actualMessage.Level);
                 Assert.Equal(restoreLogMessage.Code, actualMessage.Code);
                 Assert.Equal(restoreLogMessage.Message, actualMessage.Message);

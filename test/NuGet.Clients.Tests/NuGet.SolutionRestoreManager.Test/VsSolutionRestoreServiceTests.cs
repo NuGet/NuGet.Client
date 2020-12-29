@@ -2131,14 +2131,14 @@ namespace NuGet.SolutionRestoreManager.Test
         public void CreateMinimalDependencyGraphSpec_ComparedToTestUtility_AreEqual()
         {
             // Arrange
-            var projectPath = @"c:\src\project\project.csproj";
-            var outputPath = @"c:\src\project\obj";
+            const string projectPath = @"c:\src\project\project.csproj";
+            const string outputPath = @"c:\src\project\obj";
 
-            var productionMinimalDGSpec = VsSolutionRestoreService.CreateMinimalDependencyGraphSpec(projectPath, outputPath);
-            var testMinimalDGSpec = DependencyGraphSpecTestUtilities.CreateMinimalDependencyGraphSpec(projectPath, outputPath);
+            DependencyGraphSpec productionMinimalDGSpec = VsSolutionRestoreService.CreateMinimalDependencyGraphSpec(projectPath, outputPath);
+            DependencyGraphSpec testMinimalDGSpec = DependencyGraphSpecTestUtilities.CreateMinimalDependencyGraphSpec(projectPath, outputPath);
 
-            var prodJson = Newtonsoft.Json.JsonConvert.SerializeObject(productionMinimalDGSpec);
-            var testJson = Newtonsoft.Json.JsonConvert.SerializeObject(testMinimalDGSpec);
+            string prodJson = Newtonsoft.Json.JsonConvert.SerializeObject(productionMinimalDGSpec);
+            string testJson = Newtonsoft.Json.JsonConvert.SerializeObject(testMinimalDGSpec);
 
             // Act/Assert
             Assert.Equal(prodJson, testJson);
