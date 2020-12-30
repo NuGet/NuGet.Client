@@ -230,16 +230,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static VersionRange ToVersionRange(string version, bool isCpvmEnabled)
         {
-            if (isCpvmEnabled && string.IsNullOrEmpty(version))
+            if (string.IsNullOrEmpty(version))
             {
-                // Projects that have their packages managed centrally will not have Version metadata on PackageReference items.
-                return null;
-            }
-            else if (string.IsNullOrEmpty(version))
-            {
-                // https://github.com/NuGet/Home/issues/9289
-                // Below is equalant as version doesn't have an inclusive lower bound.
-                return VersionRange.All;
+                if (isCpvmEnabled)
+                {
+                    // Projects that have their packages managed centrally will not have Version metadata on PackageReference items.
+                    return null;
+                }
+                else
+                {
+                    // Below is equalant as version doesn't have an inclusive lower bound.
+                    return VersionRange.All;
+                }
             }
 
             return VersionRange.Parse(version);
