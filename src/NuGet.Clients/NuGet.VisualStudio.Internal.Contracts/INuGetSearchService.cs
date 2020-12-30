@@ -19,6 +19,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<SearchResultContextInfo> SearchAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            IReadOnlyCollection<string> targetFrameworks,
             string searchText,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
@@ -28,6 +29,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            IReadOnlyCollection<string> targetFrameworks,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
             CancellationToken cancellationToken);
@@ -36,6 +38,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             int maxCount,
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            IReadOnlyCollection<string> targetFrameworks,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
             CancellationToken cancellationToken);

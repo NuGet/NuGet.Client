@@ -50,9 +50,9 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(projects);
 
             // Read package references from all projects.
-            IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>>? tasks = projects
+            IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = projects
                 .Select(project => project.GetInstalledPackagesAsync(serviceBroker, cancellationToken).AsTask());
-            IEnumerable<IPackageReferenceContextInfo>[]? packageReferences = await Task.WhenAll(tasks);
+            IEnumerable<IPackageReferenceContextInfo>[] packageReferences = await Task.WhenAll(tasks);
 
             return FromPackageReferences(packageReferences.SelectMany(e => e));
         }
@@ -65,6 +65,34 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToArray();
 
             return new PackageCollection(packages);
+        }
+
+        public static async Task<InstalledAndTransitivePackageCollections> FromProjectsIncludeTransitiveAsync(
+            IServiceBroker serviceBroker,
+            IEnumerable<IProjectContextInfo> projects,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(serviceBroker);
+            Assumes.NotNull(projects);
+
+            // Read installed and transitive package references from all projects.
+            IEnumerable<Task<IInstalledAndTransitivePackages>> tasks = projects
+                .Select(project => project.GetInstalledAndTransitivePackagesAsync(serviceBroker, cancellationToken).AsTask());
+            IInstalledAndTransitivePackages[] allPackageReferences = await Task.WhenAll(tasks);
+
+            // Group all installed package references for an id/version into a single item.
+            PackageCollectionItem[] installedPackages = allPackageReferences
+                .SelectMany(e => e.InstalledPackages)
+                .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
+                .ToArray();
+
+            // Group all transitive package references for an id/version into a single item.
+            PackageCollectionItem[] transitivePackages = allPackageReferences
+                .SelectMany(e => e.TransitivePackages)
+                .GroupBy(e => e.Identity, (key, group) => new PackageCollectionItem(key.Id, key.Version, group))
+                .ToArray();
+
+            return new InstalledAndTransitivePackageCollections(new PackageCollection(installedPackages), new PackageCollection(transitivePackages));
         }
     }
 }

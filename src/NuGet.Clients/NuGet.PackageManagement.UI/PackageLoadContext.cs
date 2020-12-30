@@ -7,8 +7,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -17,6 +19,7 @@ namespace NuGet.PackageManagement.UI
     internal class PackageLoadContext
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
+        private readonly JoinableTask<InstalledAndTransitivePackageCollections> _allPackagesTask;
 
         public PackageLoadContext(bool isSolution, INuGetUIContext uiContext)
         {
@@ -31,6 +34,10 @@ namespace NuGet.PackageManagement.UI
                 ServiceBroker,
                 Projects,
                 CancellationToken.None);
+            _allPackagesTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageCollection.FromProjectsIncludeTransitiveAsync(
+                ServiceBroker,
+                Projects,
+                CancellationToken.None));
         }
 
         public NuGetPackageManager PackageManager { get; }
@@ -50,53 +57,64 @@ namespace NuGet.PackageManagement.UI
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
 
+        public async Task<InstalledAndTransitivePackageCollections> GetInstalledAndTransitivePackagesAsync() => await _allPackagesTask;
+
         // Returns the list of frameworks that we need to pass to the server during search
-        public async Task<IEnumerable<string>> GetSupportedFrameworksAsync()
+        public async Task<IReadOnlyCollection<string>> GetSupportedFrameworksAsync()
         {
-            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var frameworks = new HashSet<NuGetFramework>();
 
             foreach (IProjectContextInfo project in Projects)
             {
-                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
-                    ServiceBroker,
-                    CancellationToken.None);
-                NuGetFramework framework = projectMetadata.TargetFramework;
-
-                if (framework != null)
+                if (project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                 {
-                    if (framework.IsAny)
+                    IReadOnlyCollection<NuGetFramework> targetFrameworks = await project.GetTargetFrameworksAsync(ServiceBroker, CancellationToken.None);
+                    foreach (NuGetFramework targetFramework in targetFrameworks)
                     {
-                        // One of the project's target framework is AnyFramework. In this case,
-                        // we don't need to pass the framework filter to the server.
-                        return Enumerable.Empty<string>();
-                    }
-
-                    if (framework.IsSpecificFramework)
-                    {
-                        frameworks.Add(framework.DotNetFrameworkName);
+                        frameworks.Add(targetFramework);
                     }
                 }
                 else
                 {
-                    // we also need to process SupportedFrameworks
-                    IReadOnlyCollection<NuGetFramework> supportedFrameworks = projectMetadata.SupportedFrameworks;
+                    IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                        ServiceBroker,
+                        CancellationToken.None);
+                    NuGetFramework framework = projectMetadata.TargetFramework;
 
-                    if (supportedFrameworks != null && supportedFrameworks.Count > 0)
+                    if (framework is null)
                     {
-                        foreach (var f in supportedFrameworks)
-                        {
-                            if (f.IsAny)
-                            {
-                                return Enumerable.Empty<string>();
-                            }
+                        IReadOnlyCollection<NuGetFramework> supportedFrameworks = projectMetadata.SupportedFrameworks;
 
-                            frameworks.Add(f.DotNetFrameworkName);
+                        if (supportedFrameworks != null && supportedFrameworks.Count > 0)
+                        {
+                            foreach (NuGetFramework supportedFramework in supportedFrameworks)
+                            {
+                                if (supportedFramework.IsAny)
+                                {
+                                    return Array.Empty<string>();
+                                }
+
+                                frameworks.Add(supportedFramework);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (framework.IsAny)
+                        {
+                            return Array.Empty<string>();
+                        }
+
+                        if (framework.IsSpecificFramework)
+                        {
+                            frameworks.Add(framework);
                         }
                     }
                 }
             }
 
-            return frameworks;
+            return frameworks.Select(framework => framework.ToString())
+                .ToArray();
         }
     }
 }

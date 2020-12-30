@@ -144,16 +144,20 @@ namespace NuGet.PackageManagement.UI
         {
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;
-            return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
+            IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
+
+            return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, targetFrameworks, _searchFilter, _itemFilter, cancellationToken);
         }
 
-        public async Task<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetInstalledAndTransitivePackagesAsync(CancellationToken cancellationToken)
         {
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;
 
             ActivityCorrelationId.StartNew();
-            return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, _searchFilter, _itemFilter, cancellationToken);
+            IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
+
+            return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, targetFrameworks, _searchFilter, _itemFilter, cancellationToken);
         }
 
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -205,8 +209,9 @@ namespace NuGet.PackageManagement.UI
                 // only continue search for the search package feed, not the recommender.
                 return await _searchService.ContinueSearchAsync(cancellationToken);
             }
+            IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
 
-            return await _searchService.SearchAsync(_context.Projects, _packageSources, _searchText, _searchFilter, _itemFilter, _useRecommender, cancellationToken);
+            return await _searchService.SearchAsync(_context.Projects, _packageSources, targetFrameworks, _searchText, _searchFilter, _itemFilter, _useRecommender, cancellationToken);
         }
 
         public async Task UpdateStateAndReportAsync(SearchResultContextInfo searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
