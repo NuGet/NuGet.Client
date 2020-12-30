@@ -56,6 +56,7 @@ namespace NuGet.PackageManagement.UI.Test
                 x.SearchAsync(
                     It.IsAny<IReadOnlyCollection<IProjectContextInfo>>(),
                     It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<string>(),
                     It.IsAny<SearchFilter>(),
                     It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
@@ -125,6 +126,7 @@ namespace NuGet.PackageManagement.UI.Test
                 x.SearchAsync(
                     It.IsAny<IReadOnlyCollection<IProjectContextInfo>>(),
                     It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<string>(),
                     It.IsAny<SearchFilter>(),
                     It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),

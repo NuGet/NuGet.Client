@@ -14,11 +14,13 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
@@ -158,6 +160,43 @@ namespace NuGet.PackageManagement.VisualStudio
             return installedPackages;
         }
 
+        public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectIds);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+            // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
+            var prStyleTasks = new List<Task<ProjectPackages>>();
+            var nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
+            foreach (NuGetProject? project in projects)
+            {
+                if (project is PackageReferenceProject packageReferenceProject)
+                {
+                    prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(cancellationToken));
+                }
+                else
+                {
+                    nonPrStyleTasks.Add(project.GetInstalledPackagesAsync(cancellationToken));
+                }
+            }
+            ProjectPackages[] prStyleReferences = await Task.WhenAll(prStyleTasks);
+            IEnumerable<PackageReference>[] nonPrStyleReferences = await Task.WhenAll(nonPrStyleTasks);
+
+            // combine all of the installed package references
+            IEnumerable<IEnumerable<PackageReference>> installedPackages = nonPrStyleReferences
+                .Concat(prStyleReferences
+                    .Select(p => p.InstalledPackages));
+
+            PackageReferenceContextInfo[] installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            PackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
+        }
+
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
             string projectId,
             bool includeUnresolved,
@@ -188,6 +227,45 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return results.ToArray();
+        }
+
+        public async ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectIds);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+            HashSet<NuGetFramework> targetFrameworks = new HashSet<NuGetFramework>();
+            foreach (NuGetProject project in projects)
+            {
+                if (project is BuildIntegratedNuGetProject buildIntegratedProject)
+                {
+                    if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)
+                    {
+                        targetFrameworks.Add(legacyPackageReferenceProject.TargetFramework);
+                    }
+                    else
+                    {
+                        var dgcContext = new DependencyGraphCacheContext();
+                        IReadOnlyList<ProjectModel.PackageSpec>? packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
+
+                        IEnumerable<NuGetFramework>? frameworks = packageSpecs
+                            .SelectMany(spec => spec.TargetFrameworks)
+                            .Select(f => f.FrameworkName);
+
+                        if (!(frameworks is null))
+                        {
+                            targetFrameworks.UnionWith(frameworks);
+                        }
+                    }
+                }
+            }
+
+            return targetFrameworks;
         }
 
         public async ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken)

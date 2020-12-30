@@ -919,9 +919,6 @@ namespace NuGet.PackageManagement.UI
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
                 && SelectedSource.PackageSources.Count() == 1
-                // also check if this is a PC-style project. We will not provide recommendations for PR-style
-                // projects until we have a way to get dependent packages without negatively impacting perf.
-                && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
                 && TelemetryUtility.IsNuGetOrg(SelectedSource.PackageSources.First()?.Source))
             {
                 _recommendPackages = true;
@@ -1002,9 +999,10 @@ namespace NuGet.PackageManagement.UI
 
             _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount);
 
+            // Update updates tab count
             Model.CachedUpdates = new PackageSearchMetadataCache
             {
-                Packages = await loader.GetAllPackagesAsync(refreshCts.Token),
+                Packages = await loader.GetInstalledAndTransitivePackagesAsync(refreshCts.Token),
                 IncludePrerelease = IncludePrerelease
             };
 

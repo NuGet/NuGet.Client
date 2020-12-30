@@ -492,7 +492,7 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     var plc = new PackageLoadContext(isSolution: false, uiService.UIContext);
-                    var frameworks = (await plc.GetSupportedFrameworksAsync()).ToList();
+                    IReadOnlyCollection<string> frameworks = await plc.GetSupportedFrameworksAsync();
                     string[] projectIds = (await ProjectUtility.GetSortedProjectIdsAsync(
                         uiService.UIContext.ServiceBroker,
                         uiService.Projects,
@@ -548,7 +548,7 @@ namespace NuGet.PackageManagement.UI
             List<string> removedPackages,
             List<Tuple<string, string>> updatedPackagesOld,
             List<Tuple<string, string>> updatedPackagesNew,
-            List<string> targetFrameworks)
+            IReadOnlyCollection<string> targetFrameworks)
         {
             static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
             {

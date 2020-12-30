@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
+using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
@@ -73,11 +74,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
+            NuGetFramework targetFramework = await vsProjectAdapter.GetTargetFrameworkAsync();
+
             return new LegacyPackageReferenceProject(
                 vsProjectAdapter,
                 vsProjectAdapter.ProjectId,
                 projectServices,
-                _threadingService);
+                _threadingService,
+                targetFramework);
         }
 
         /// <summary>
