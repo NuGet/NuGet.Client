@@ -22,6 +22,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
+using Test.Utility.ProjectManagement;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -1364,7 +1365,7 @@ namespace NuGet.Commands.Test
                 project1.Create();
                 sources.Add(new PackageSource(packageSource.FullName));
 
-                var dgspec1 = CreateMinimalDependencyGraphSpec(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
+                var dgspec1 = DependencyGraphSpecTestUtilities.CreateMinimalDependencyGraphSpec(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
                 var spec1 = dgspec1.Projects[0];
 
                 var logger = new TestLogger();
@@ -2031,21 +2032,6 @@ namespace NuGet.Commands.Test
             };
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
-        }
-
-        private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
-        {
-            var packageSpec = new PackageSpec();
-            packageSpec.FilePath = projectPath;
-            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
-            packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
-            packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
-            packageSpec.RestoreMetadata.OutputPath = outputPath;
-            packageSpec.RestoreMetadata.CacheFilePath = Path.Combine(outputPath, "project.nuget.cache");
-            var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(packageSpec);
-
-            return dgSpec;
         }
     }
 }
