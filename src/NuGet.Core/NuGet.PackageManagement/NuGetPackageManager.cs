@@ -2620,10 +2620,10 @@ namespace NuGet.PackageManagement
                         {
                             await result.EnsureResultAsync();
                             result.Dispose();
-                        }
-
-                        downloadTokenSource.Dispose();
+                        }                        
                     }
+
+                    downloadTokenSource?.Dispose();
 
                     if (msbuildProject != null)
                     {
