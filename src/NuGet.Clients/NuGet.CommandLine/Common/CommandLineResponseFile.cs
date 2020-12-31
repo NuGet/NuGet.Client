@@ -65,7 +65,7 @@ namespace NuGet.Common
 
                 if (!File.Exists(responseFilePath))
                 {
-                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileDoesNotExist")), arg);
+                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileDoesNotExist"), arg));
                 }
 
                 var fileInfo = new FileInfo(responseFilePath);
