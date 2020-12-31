@@ -29,6 +29,9 @@ namespace NuGet.PackageManagement.VisualStudio
         public const string ProjectUpgraderServiceName = "Microsoft.VisualStudio.NuGet.ProjectUpgraderService";
         public const string ProjectUpgraderServiceVersion = "1.0.0";
 
+        public const string RemoteFileServiceName = "Microsoft.VisualStudio.NuGet.RemoteFileService";
+        public const string RemoteFileServiceVersion = "1.0.0";
+
         public const string SearchServiceName = "Microsoft.VisualStudio.NuGet.PackageSearchService";
         public const string SearchServiceVersion = "1.0.0";
 

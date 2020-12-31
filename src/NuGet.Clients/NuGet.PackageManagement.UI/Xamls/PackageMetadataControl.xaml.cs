@@ -3,12 +3,17 @@
 
 using System;
 using System.Globalization;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -30,7 +35,6 @@ namespace NuGet.PackageManagement.UI
         {
             if (DataContext is DetailedPackageMetadata metadata)
             {
-
                 var window = new LicenseFileWindow()
                 {
                     DataContext = new LicenseFileData
@@ -42,7 +46,8 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    var content = metadata.LoadFileAsText(metadata.LicenseMetadata.License);
+                    string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(new Packaging.Core.PackageIdentity(metadata.Id, metadata.Version), CancellationToken.None);
+
                     var flowDoc = new FlowDocument();
                     flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

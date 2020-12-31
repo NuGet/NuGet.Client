@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Core.Types.Tests
             Assert.True(copy1 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
 
             var clone1 = (PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)copy1;
-            Assert.NotNull(clone1.PackageReader);
+            Assert.NotNull(clone1.PackagePath);
 
             var copy2 = PackageSearchMetadataBuilder
                 .FromMetadata(copy1)
@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Core.Types.Tests
             Assert.True(copy2 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
 
             var clone2 = (PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)copy2;
-            Assert.NotNull(clone2.PackageReader);
+            Assert.NotNull(clone2.PackagePath);
         }
     }
 }

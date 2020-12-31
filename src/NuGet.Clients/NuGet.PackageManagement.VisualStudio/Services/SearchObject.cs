@@ -14,8 +14,10 @@ using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Internal.Contracts;
+using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -233,6 +235,51 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 memoryCacheItem.UpdateSearchMetadata(packageSearchMetadata);
             }
+
+            Assumes.NotNull(packageSearchMetadata);
+            NuGetRemoteFileService.AddIconToCache(packageSearchMetadata.Identity, packageSearchMetadata.IconUrl);
+
+            string? packagePath = (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
+                    (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath;
+
+            if (packagePath != null)
+            {
+                LicenseMetadata? licenseMetadata = (packageSearchMetadata as LocalPackageSearchMetadata)?.LicenseMetadata ??
+                    (packageSearchMetadata as ClonedPackageSearchMetadata)?.LicenseMetadata;
+                if (licenseMetadata != null)
+                {
+                    NuGetRemoteFileService.AddLicenseToCache(
+                        packageSearchMetadata.Identity,
+                        CreateEmbeddedLicenseUri(packagePath, licenseMetadata));
+                }
+            }
+        }
+
+        private static Uri CreateEmbeddedLicenseUri(string packagePath, LicenseMetadata licenseMetadata)
+        {
+            Uri? baseUri = Convert(packagePath);
+
+            UriBuilder builder = new UriBuilder(baseUri)
+            {
+                Fragment = licenseMetadata.License
+            };
+
+            return builder.Uri;
+        }
+
+        /// <summary>
+        /// Convert a string to a URI safely. This will return null if there are errors.
+        /// </summary>
+        private static Uri? Convert(string uri)
+        {
+            Uri? fullUri = null;
+
+            if (!string.IsNullOrEmpty(uri))
+            {
+                Uri.TryCreate(uri, UriKind.Absolute, out fullUri);
+            }
+
+            return fullUri;
         }
     }
 }

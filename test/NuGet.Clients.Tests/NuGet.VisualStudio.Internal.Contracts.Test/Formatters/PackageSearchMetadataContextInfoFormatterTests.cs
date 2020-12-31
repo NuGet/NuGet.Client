@@ -51,6 +51,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             Assert.Equal(expectedResult.PackageDetailsUrl, actualResult.PackageDetailsUrl);
             Assert.Equal(expectedResult.PrefixReserved, actualResult.PrefixReserved);
             Assert.Equal(expectedResult.ProjectUrl, actualResult.ProjectUrl);
+            Assert.Equal(expectedResult.PackagePath, actualResult.PackagePath);
             Assert.Equal(expectedResult.Published, actualResult.Published);
             Assert.Equal(expectedResult.ReportAbuseUrl, actualResult.ReportAbuseUrl);
             Assert.Equal(expectedResult.Title, actualResult.Title);

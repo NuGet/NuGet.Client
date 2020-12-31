@@ -148,18 +148,13 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseFileLocation = "License.txt";
             var licenseFileHeader = "header";
             var licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
-            var licenseContent = "License content";
+            //TODO:  var licenseContent = "License content";
 
             // Act
             var links = PackageLicenseUtilities.GenerateLicenseLinks(
                 licenseData,
                 licenseFileHeader,
-                delegate (string value)
-                {
-                    if (value.Equals(licenseFileLocation))
-                        return licenseContent;
-                    return null;
-                });
+                licenseFileLocation);
 
             Assert.Equal(1, links.Count);
             Assert.True(links[0] is LicenseFileText);

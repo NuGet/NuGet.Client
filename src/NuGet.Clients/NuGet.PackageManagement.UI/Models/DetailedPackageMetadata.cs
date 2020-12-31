@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.UI
             LicenseMetadata = serverData.LicenseMetadata;
             DeprecationMetadata = deprecationMetadata;
             Vulnerabilities = serverData.Vulnerabilities;
-            _localMetadata = null; //TODO: SCOBAN // serverData as LocalPackageSearchMetadata;
+            PackagePath = serverData.PackagePath;
 
             // Determine the package details URL and text.
             PackageDetailsUrl = null;
@@ -70,8 +70,6 @@ namespace NuGet.PackageManagement.UI
                 }
             }
         }
-
-        private readonly LocalPackageSearchMetadata _localMetadata;
 
         public string Id { get; set; }
 
@@ -117,13 +115,6 @@ namespace NuGet.PackageManagement.UI
 
         private static readonly IReadOnlyList<PackageDependencySetMetadata> NoDependenciesPlaceholder = new PackageDependencySetMetadata[] { new PackageDependencySetMetadata(dependencyGroup: null) };
 
-        public string LoadFileAsText(string path)
-        {
-            if (_localMetadata != null)
-            {
-                return _localMetadata.LoadFileAsText(path);
-            }
-            return null;
-        }
+        public string PackagePath { get; set; }
     }
 }

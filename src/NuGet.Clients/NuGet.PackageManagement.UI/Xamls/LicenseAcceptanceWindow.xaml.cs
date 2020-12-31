@@ -4,6 +4,8 @@
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,7 +41,9 @@ namespace NuGet.PackageManagement.UI
                         DataContext = licenseFile
                     };
 
-                    licenseFile.LoadLicenseFile();
+                    //TODO: plumb identity in
+                    PackageIdentity packageIdentity = null;
+                    licenseFile.LoadLicenseFile(packageIdentity);
 
                     using (NuGetEventTrigger.TriggerEventBeginEnd(
                             NuGetEvent.EmbeddedLicenseWindowBegin,

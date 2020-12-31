@@ -56,6 +56,7 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(NuGetServices.SolutionManagerService, factory.CreateSolutionManagerServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.ProjectManagerService, factory.CreateProjectManagerServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.ProjectUpgraderService, factory.CreateProjectUpgraderServiceAsync);
+            brokeredServiceContainer.Proffer(NuGetServices.RemoteFileService, factory.CreateRemoteFileServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.SearchService, factory.CreatePackageSearchServiceAsync);
 
             return factory;
@@ -179,6 +180,24 @@ namespace NuGetVSExtension
             return new NuGetProjectService(solutionManager, settings, telemetryProvider);
         }
 
+        private async ValueTask<object> CreateRemoteFileServiceAsync(
+            ServiceMoniker moniker,
+            ServiceActivationOptions options,
+            IServiceBroker serviceBroker,
+            AuthorizationServiceClient authorizationServiceClient,
+            CancellationToken cancellationToken)
+        {
+            await _lazyInitializer.InitializeAsync(cancellationToken);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var service = new NuGetRemoteFileService(
+                options,
+                serviceBroker,
+                authorizationServiceClient);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            return service;
+        }
         private async Task InitializeAsync()
         {
             _lazySettings = new AsyncLazy<ISettings>(ServiceLocator.GetInstanceAsync<ISettings>, ThreadHelper.JoinableTaskFactory);

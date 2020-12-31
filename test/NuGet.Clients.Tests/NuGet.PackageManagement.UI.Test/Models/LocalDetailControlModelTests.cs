@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var testVersion = new NuGetVersion(0, 0, 1);
             _testViewModel = new PackageItemListViewModel()
             {
-                PackageReader = _testData.TestData.PackageReader,
+                PackagePath = _testData.TestData.PackagePath,
                 Version = testVersion,
                 InstalledVersion = testVersion,
             };
@@ -61,14 +61,9 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public void PackageReader_Always_IsNotNull()
+        public void PackagePath_Always_IsNotNull()
         {
-            Assert.NotNull(_testInstance.PackageReader);
-
-            Func<PackageReaderBase> lazyReader = _testInstance.PackageReader;
-
-            PackageReaderBase reader = lazyReader();
-            Assert.IsType(typeof(PackageArchiveReader), reader);
+            Assert.NotNull(_testInstance.PackagePath);
         }
 
         [Theory]
@@ -205,17 +200,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();
-        }
-
-        [Fact]
-        public void PackageReader_Always_IsNotNull()
-        {
-            Assert.NotNull(_testInstance.PackageReader);
-
-            Func<PackageReaderBase> lazyReader = _testInstance.PackageReader;
-
-            PackageReaderBase reader = lazyReader();
-            Assert.IsType(typeof(PackageArchiveReader), reader);
         }
     }
 }

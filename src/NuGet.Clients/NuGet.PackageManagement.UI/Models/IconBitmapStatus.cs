@@ -10,15 +10,10 @@ namespace NuGet.PackageManagement.UI
         NeedToFetch,
         Fetching,
         MemoryCachedIcon,
-        DownloadedIcon,
-        EmbeddedIcon,
+        FetchedIcon,
         DefaultIcon,
         DefaultIconDueToDecodingError,
         DefaultIconDueToNullStream,
-        DefaultIconDueToNoPackageReader,
-        DefaultIconDueToNetworkFailures,
-        DefaultIconDueToWebExceptionBadNetwork,
-        DefaultIconDueToWebExceptionOther,
         DefaultIconDueToRelativeUri
     }
 }

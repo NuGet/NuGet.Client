@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -20,6 +21,7 @@ namespace NuGet.Protocol
         /// <param name="lastWriteTimeUtc">Last nupkg write time for publish date.</param>
         /// <param name="nuspec">Nuspec XML.</param>
         /// <param name="getPackageReader">Method to retrieve the package as a reader.</param>
+        [Obsolete("use constructor with useFolder boolean for best codespaces support.")]
         public LocalPackageInfo(
             PackageIdentity identity,
             string path,
@@ -54,6 +56,56 @@ namespace NuGet.Protocol
             _getPackageReader = getPackageReader;
         }
 
+        /// <summary>
+        /// Local nuget package.
+        /// </summary>
+        /// <param name="identity">Package id and version.</param>
+        /// <param name="path">Path to the nupkg.</param>
+        /// <param name="lastWriteTimeUtc">Last nupkg write time for publish date.</param>
+        /// <param name="nuspec">Nuspec XML.</param>
+        /// <param name="useFolder">Read content from folder next to nupkg.</param>
+        public LocalPackageInfo(
+            PackageIdentity identity,
+            string path,
+            DateTime lastWriteTimeUtc,
+            Lazy<NuspecReader> nuspec,
+            bool useFolder)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            if (nuspec == null)
+            {
+                throw new ArgumentNullException(nameof(nuspec));
+            }
+
+            Identity = identity;
+            Path = path;
+            LastWriteTimeUtc = lastWriteTimeUtc;
+            _nuspecHelper = nuspec;
+            UseFolder = useFolder;
+            _getPackageReader = new Func<PackageReaderBase>(() =>
+            {
+                if (UseFolder)
+                {
+                    //TODO: cut .nupkg from file name and use it as directory peer name. (or should we fix Path to be passed in properly)
+                    var directoryName = Path.Substring(0, Path.Length - 6);
+                    return new PackageFolderReader(directoryName);
+                }
+                else
+                {
+                    return new PackageArchiveReader(Path);
+                }
+            });
+        }
+
         protected LocalPackageInfo()
         {
 
@@ -68,6 +120,11 @@ namespace NuGet.Protocol
         /// Nupkg or folder path.
         /// </summary>
         public virtual string Path { get; }
+
+        /// <summary>
+        /// Read contents from folder.
+        /// </summary>
+        public virtual bool UseFolder { get; }
 
         /// <summary>
         /// Last file write time. This is used for the publish date.
