@@ -195,9 +195,6 @@ namespace NuGet.ProjectManagement
             var buildFileGroups = await packageContentReader.GetBuildItemsAsync(token);
             var toolItemGroups = await packageContentReader.GetToolItemsAsync(token);
 
-            if (downloadResourceResult.PackageReader == null)
-                packageReader.Dispose();
-
             // Step-3: Get the most compatible items groups for all items groups
             var hasCompatibleProjectLevelContent = false;
 
