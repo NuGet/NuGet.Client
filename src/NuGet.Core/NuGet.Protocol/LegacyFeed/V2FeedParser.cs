@@ -652,7 +652,7 @@ namespace NuGet.Protocol
                 using (xmlReader)
                 {
                     return XDocument.Load(xmlReader, LoadOptions.None);
-                }                
+                }
             }
         }
     }

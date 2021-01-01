@@ -82,7 +82,7 @@ namespace NuGet.Packaging
             {
                 sfh.Dispose();
                 throw;
-            }            
+            }
         }
 
         private static FileStream MonoPosixCreateFile(string path)
