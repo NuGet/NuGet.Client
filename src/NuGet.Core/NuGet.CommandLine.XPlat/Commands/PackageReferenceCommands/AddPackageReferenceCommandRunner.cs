@@ -112,7 +112,7 @@ namespace NuGet.CommandLine.XPlat
 
                 foreach (string source in packageReferenceArgs.Sources)
                 {
-                    sourcePaths.Add(UriUtility.GetAbsolutePath(projectDirectory, source));
+                    sourcePaths.Add(UriUtility.GetAbsolutePath(Environment.CurrentDirectory, source));
                 }
 
                 originalPackageSpec.RestoreMetadata.Sources =

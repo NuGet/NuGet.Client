@@ -757,7 +757,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -800,7 +800,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageY = "packageY";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageY_V1 = new PackageIdentity(packageY, new NuGetVersion("1.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package, but packageX is not in nuget feed.
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -832,7 +832,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -874,7 +874,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V3 = new PackageIdentity(packageX, new NuGetVersion("3.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package, but V3 is not in nuget feed.
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -908,7 +908,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packagesPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -953,7 +953,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageY = "packageY";
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX, frameworkString: packageFrameworks);
                 var packageY_V1_Context = XPlatTestUtils.CreatePackage(packageY, frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packagesPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -989,7 +989,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packagesPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1035,7 +1035,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V3 = new PackageIdentity(packageX, new NuGetVersion("3.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packagesPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1067,7 +1067,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -1077,7 +1077,12 @@ namespace NuGet.XPlat.FuncTest
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\source\\Custompackages" : "../source/Custompackages");
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1110,7 +1115,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageY = "packageY";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageY_V1 = new PackageIdentity(packageY, new NuGetVersion("1.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package, but packageX is not in nuget feed.
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -1120,7 +1125,12 @@ namespace NuGet.XPlat.FuncTest
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\source\\Custompackages" : "../source/Custompackages");
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1142,7 +1152,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -1151,7 +1161,12 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, packageX_V1.Version.ToString(),
                     projectA,
-                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\source\\Custompackages" : "../source/Custompackages");
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1184,7 +1199,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V3 = new PackageIdentity(packageX, new NuGetVersion("3.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package, but V3 is not in nuget feed.
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -1193,7 +1208,12 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V3.Id, packageX_V3.Version.ToString(),
                     projectA,
-                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\source\\Custompackages" : "../source/Custompackages");
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1218,7 +1238,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packagesPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1229,7 +1249,12 @@ namespace NuGet.XPlat.FuncTest
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\source\\Custompackages" : "../source/Custompackages");
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1263,7 +1288,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageY = "packageY";
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX, frameworkString: packageFrameworks);
                 var packageY_V1_Context = XPlatTestUtils.CreatePackage(packageY, frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packagesPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1274,7 +1299,12 @@ namespace NuGet.XPlat.FuncTest
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX, "*",
                     projectA,
-                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\source\\Custompackages" : "../source/Custompackages");
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1299,7 +1329,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packagesPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1309,7 +1339,12 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, packageX_V1.Version.ToString(),
                     projectA,
-                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\source\\Custompackages" : "../source/Custompackages");
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1345,7 +1380,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V3 = new PackageIdentity(packageX, new NuGetVersion("3.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var packagesPath = Path.Combine(pathContext.PackageSource, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1355,7 +1390,12 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V3.Id, packageX_V3.Version.ToString(),
                     projectA,
-                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages");
+                    sources: RuntimeEnvironmentHelper.IsWindows ? "..\\source\\Custompackages" : "../source/Custompackages");
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1383,8 +1423,8 @@ namespace NuGet.XPlat.FuncTest
                 var packageY_V2 = new PackageIdentity(packageY, new NuGetVersion("2.0.0"));
                 var packageY_V1_Context = XPlatTestUtils.CreatePackage(packageY_V1.Id, packageY_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageY_V2_Context = XPlatTestUtils.CreatePackage(packageY_V2.Id, packageY_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "CustompackagesX");
-                var packageYPath = Path.Combine(pathContext.WorkingDirectory, "CustompackagesY");
+                var packageXPath = Path.Combine(pathContext.PackageSource, "CustompackagesX");
+                var packageYPath = Path.Combine(pathContext.PackageSource, "CustompackagesY");
 
                 // Generate V2 Package
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -1396,6 +1436,11 @@ namespace NuGet.XPlat.FuncTest
                     packageYPath,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext[] { packageY_V1_Context, packageY_V2_Context });
+
+                // Set startup directory.
+                var startUpDirectory = Path.Combine(pathContext.WorkingDirectory, "StartUpDirectory");
+                Directory.CreateDirectory(startUpDirectory);
+                Environment.CurrentDirectory = startUpDirectory;
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
