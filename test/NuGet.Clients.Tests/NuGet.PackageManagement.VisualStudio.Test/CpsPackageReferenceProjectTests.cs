@@ -3026,7 +3026,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
-                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
@@ -3085,7 +3085,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
-                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
@@ -3153,7 +3153,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
-                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
@@ -3204,7 +3204,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
-                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
                 projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
