@@ -65,7 +65,11 @@ namespace NuGet.Common
 
                 if (!File.Exists(responseFilePath))
                 {
-                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileDoesNotExist"), arg));
+                    //if the file could not be found, report this back to the user, but dont crash yet, the use of '@' in the argument might be intentional here.
+                    System.Console.WriteLine(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileDoesNotExist"), arg));
+                    System.Console.WriteLine(LocalizedResourceManager.GetString("Error_ResponseFileDoesNotExistUsingOriginalValue"));
+                    parsedArgs.Add(arg);
+                    continue;
                 }
 
                 var fileInfo = new FileInfo(responseFilePath);

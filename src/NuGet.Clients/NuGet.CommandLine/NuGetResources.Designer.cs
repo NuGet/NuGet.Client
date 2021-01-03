@@ -3130,6 +3130,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Using the originally entered value as an argument instead..
+        /// </summary>
+        public static string Error_ResponseFileDoesNotExistUsingOriginalValue {
+            get {
+                return ResourceManager.GetString("Error_ResponseFileDoesNotExistUsingOriginalValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid response file, &apos;@&apos; does not exist.
         /// </summary>
         public static string Error_ResponseFileInvalid {

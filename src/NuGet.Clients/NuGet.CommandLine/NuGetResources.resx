@@ -5427,4 +5427,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="ArgumentNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>
   </data>
+  <data name="Error_ResponseFileDoesNotExistUsingOriginalValue" xml:space="preserve">
+    <value>Using the originally entered value as an argument instead.</value>
+  </data>
 </root>
