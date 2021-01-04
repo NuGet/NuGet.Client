@@ -90,13 +90,11 @@ namespace NuGet.Protocol
             Path = path;
             LastWriteTimeUtc = lastWriteTimeUtc;
             _nuspecHelper = nuspec;
-            UseFolder = useFolder;
             _getPackageReader = new Func<PackageReaderBase>(() =>
             {
-                if (UseFolder)
+                if (useFolder)
                 {
-                    //TODO: cut .nupkg from file name and use it as directory peer name. (or should we fix Path to be passed in properly)
-                    var directoryName = Path.Substring(0, Path.Length - 6);
+                    var directoryName = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path), System.IO.Path.GetFileNameWithoutExtension(Path));
                     return new PackageFolderReader(directoryName);
                 }
                 else
@@ -120,11 +118,6 @@ namespace NuGet.Protocol
         /// Nupkg or folder path.
         /// </summary>
         public virtual string Path { get; }
-
-        /// <summary>
-        /// Read contents from folder.
-        /// </summary>
-        public virtual bool UseFolder { get; }
 
         /// <summary>
         /// Last file write time. This is used for the publish date.
