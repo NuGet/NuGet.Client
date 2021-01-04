@@ -54,9 +54,9 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Read a targets or props file and find all the items.
         /// </summary>
-        public static Dictionary<string, Dictionary<string, string>> GetMSBuildItems(XDocument doc)
+        public static List<(string, Dictionary<string, string>)> GetMSBuildItems(XDocument doc)
         {
-            var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+            var result = new List<(string, Dictionary<string, string>)>();
 
             var itemGroupName = XName.Get("ItemGroup", "http://schemas.microsoft.com/developer/msbuild/2003");
 
@@ -66,15 +66,12 @@ namespace NuGet.Test.Utility
                 {
                     var key = item.Name.LocalName;
 
-                    if (!result.ContainsKey(key))
+                    var attributeValues = new Dictionary<string, string>();
+                    foreach (var attribute in item.Attributes())
                     {
-                        var attributeValues = new Dictionary<string, string>();
-                        foreach (var attribute in item.Attributes())
-                        {
-                            attributeValues.Add(attribute.Name.LocalName, attribute.Value);
-                        }
-                        result.Add(key, attributeValues);
+                        attributeValues.Add(attribute.Name.LocalName, attribute.Value);
                     }
+                    result.Add((key, attributeValues));
                 }
             }
 
