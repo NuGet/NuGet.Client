@@ -21,7 +21,7 @@ namespace NuGet.Protocol
         /// <param name="lastWriteTimeUtc">Last nupkg write time for publish date.</param>
         /// <param name="nuspec">Nuspec XML.</param>
         /// <param name="getPackageReader">Method to retrieve the package as a reader.</param>
-        [Obsolete("use constructor with useFolder boolean for best codespaces support.")]
+        [Obsolete("use other constructor")]
         public LocalPackageInfo(
             PackageIdentity identity,
             string path,

@@ -41,9 +41,7 @@ namespace NuGet.PackageManagement.UI
                         DataContext = licenseFile
                     };
 
-                    //TODO: plumb identity in
-                    PackageIdentity packageIdentity = null;
-                    licenseFile.LoadLicenseFile(packageIdentity);
+                    licenseFile.LoadLicenseFile();
 
                     using (NuGetEventTrigger.TriggerEventBeginEnd(
                             NuGetEvent.EmbeddedLicenseWindowBegin,

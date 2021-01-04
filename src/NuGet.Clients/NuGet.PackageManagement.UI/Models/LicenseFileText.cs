@@ -21,19 +21,21 @@ namespace NuGet.PackageManagement.UI
         private string _licenseHeader;
         private string _packagePath;
         private readonly string _licenseFileLocation;
+        private PackageIdentity _packageIdentity;
 
         private int _initialized;
 
-        internal LicenseFileText(string text, string licenseFileHeader, string packagePath, string licenseFileLocation)
+        internal LicenseFileText(string text, string licenseFileHeader, string packagePath, string licenseFileLocation, PackageIdentity packageIdentity)
         {
             _text = text;
             _licenseHeader = licenseFileHeader;
             _licenseText = new FlowDocument(new Paragraph(new Run(Resources.LicenseFile_Loading)));
             _packagePath = packagePath;
             _licenseFileLocation = licenseFileLocation;
+            _packageIdentity = packageIdentity;
         }
 
-        internal void LoadLicenseFile(PackageIdentity packageIdentity)
+        internal void LoadLicenseFile()
         {
             if (Interlocked.CompareExchange(ref _initialized, 1, 0) == 0)
             {
@@ -45,7 +47,7 @@ namespace NuGet.PackageManagement.UI
                         IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
                         var embeddedFileUri = new Uri(_packagePath + "#" + _licenseFileLocation);
-                        string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
+                        string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(_packageIdentity, CancellationToken.None);
 
                         var flowDoc = new FlowDocument();
                         flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
@@ -84,6 +86,11 @@ namespace NuGet.PackageManagement.UI
                 _licenseText = value;
                 OnPropertyChanged("LicenseText");
             }
+        }
+
+        public PackageIdentity PackageIdentity
+        {
+            get => _packageIdentity;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
