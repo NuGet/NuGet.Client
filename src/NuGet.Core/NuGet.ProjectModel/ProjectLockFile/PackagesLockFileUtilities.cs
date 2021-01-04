@@ -502,9 +502,7 @@ namespace NuGet.ProjectModel
             IList<LockFileDependency> lockTransitiveDependencies)
         {
             // Transitive dependencies moved to be centraly managed will invalidate the lock file
-            var transitiveDependenciesMovedToBeManagedCentrally = lockTransitiveDependencies.Where(dep => centralPackageVersions.ContainsKey(dep.Id));
-
-            if (transitiveDependenciesMovedToBeManagedCentrally.Any())
+            if (lockTransitiveDependencies.Any(dep => centralPackageVersions.ContainsKey(dep.Id)))
             {
                 return true;
             }
