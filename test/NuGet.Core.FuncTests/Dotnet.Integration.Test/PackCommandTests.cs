@@ -730,7 +730,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_DoesNotIncludeContentFromDependencies_PackSuceeds()
+        public void PackProject_DependenciesWithContentFiles_NupkgExcludesContentFilesFromDependencies()
         {
             // Arrange
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
