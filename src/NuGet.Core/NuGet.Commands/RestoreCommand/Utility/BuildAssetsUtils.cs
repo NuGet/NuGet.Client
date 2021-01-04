@@ -164,6 +164,7 @@ namespace NuGet.Commands
             string assetsFilePath,
             bool success)
         {
+
             doc.Root.AddFirst(
                 new XElement(Namespace + "PropertyGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
@@ -176,7 +177,7 @@ namespace NuGet.Commands
                             GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())),
                 new XElement(Namespace + "ItemGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
-                            GenerateItem("SourceRoot", "$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))")));
+                            packageFolders.Select(e => GenerateItem("SourceRoot", PathUtility.EnsureTrailingSlash(e)))));
         }
 
         /// <summary>
