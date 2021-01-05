@@ -362,7 +362,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // if we get here, recommendPackages == true
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
                 packageFeeds.recommenderFeed = new RecommenderPackageFeed(
-                    sourceRepositories.First(),
+                    sourceRepositories,
                     installedPackageCollection,
                     transitivePackageCollection,
                     targetFrameworks,
