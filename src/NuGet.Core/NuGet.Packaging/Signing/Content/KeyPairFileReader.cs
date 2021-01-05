@@ -14,7 +14,6 @@ namespace NuGet.Packaging.Signing
         private static readonly Regex NamePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$", RegexOptions.CultureInvariant);
 
         private readonly StreamReader _reader;
-        // To detect redundant calls
         private bool _disposed;
 
         public KeyPairFileReader(Stream stream, Encoding encoding)

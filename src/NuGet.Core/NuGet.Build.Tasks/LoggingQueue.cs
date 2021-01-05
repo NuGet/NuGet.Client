@@ -12,7 +12,6 @@ namespace NuGet.Build.Tasks
     /// <typeparam name="T">The type of object to be added to the queue.</typeparam>
     public abstract class LoggingQueue<T> : IDisposable
     {
-        // To detect redundant calls
         private bool _disposed = false;
 
         /// <summary>

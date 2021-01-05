@@ -10,7 +10,6 @@ namespace NuGet.Packaging.Signing
     public class KeyPairFileWriter : IDisposable
     {
         private readonly StreamWriter _writer;
-        // To detect redundant calls
         private bool _disposed;
 
         public KeyPairFileWriter(Stream stream, Encoding encoding, bool leaveOpen)

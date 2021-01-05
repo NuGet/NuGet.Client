@@ -18,7 +18,6 @@ namespace NuGet.Build.Tasks
     public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-        // To detect redundant calls
         private bool _disposed = false;
 
         /// <summary>

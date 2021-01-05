@@ -23,7 +23,6 @@ namespace NuGet.PackageManagement
         private readonly DateTimeOffset _downloadStartTime;
         private DateTimeOffset _packageFetchTime;
         private DateTimeOffset _taskReturnTime;
-        // To detect redundant calls
         private bool _disposed = false;
 
         /// <summary>
@@ -162,7 +161,6 @@ namespace NuGet.PackageManagement
             GC.SuppressFinalize(this);
         }
 
-        // Protected implementation of Dispose pattern.
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
