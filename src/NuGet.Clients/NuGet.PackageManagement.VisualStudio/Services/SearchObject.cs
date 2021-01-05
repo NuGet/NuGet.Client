@@ -259,7 +259,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Uri? baseUri = Convert(packagePath);
 
-            UriBuilder builder = new UriBuilder(baseUri)
+            var builder = new UriBuilder(baseUri)
             {
                 Fragment = licenseMetadata.License
             };
