@@ -24,6 +24,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio.Implementation.Resources;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio
@@ -42,6 +43,7 @@ namespace NuGet.VisualStudio
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         private readonly Lazy<INuGetProjectContext> _projectContext;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
 
         [ImportingConstructor]
@@ -50,12 +52,14 @@ namespace NuGet.VisualStudio
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
             Lazy<ILogger> logger,
-            Lazy<IMachineWideSettings> machineWideSettings)
+            Lazy<IMachineWideSettings> machineWideSettings,
+            INuGetTelemetryProvider telemetryProvider)
             : this(AsyncServiceProvider.GlobalProvider,
                   settings,
                   solutionManager,
                   logger,
-                  machineWideSettings)
+                  machineWideSettings,
+                  telemetryProvider)
         { }
 
         public VsPathContextProvider(
@@ -63,7 +67,8 @@ namespace NuGet.VisualStudio
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
             Lazy<ILogger> logger,
-            Lazy<IMachineWideSettings> machineWideSettings)
+            Lazy<IMachineWideSettings> machineWideSettings,
+            INuGetTelemetryProvider telemetryProvider)
         {
             _asyncServiceprovider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -83,6 +88,7 @@ namespace NuGet.VisualStudio
                         NullLogger.Instance)
             });
             _userWideSettings = new Microsoft.VisualStudio.Threading.AsyncLazy<ISettings>(() => Task.FromResult(Settings.LoadDefaultSettings(null, null, machineWideSettings.Value)), NuGetUIThreadHelper.JoinableTaskFactory);
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
         /// <summary>
@@ -92,7 +98,8 @@ namespace NuGet.VisualStudio
             ISettings settings,
             IVsSolutionManager solutionManager,
             ILogger logger,
-            Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync)
+            Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync,
+            INuGetTelemetryProvider telemetryProvider)
         {
             if (settings == null)
             {
@@ -125,6 +132,8 @@ namespace NuGet.VisualStudio
                         NullLogger.Instance)
                 };
             });
+
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
         public bool TryCreateContext(string projectUniqueName, out IVsPathContext outputPathContext)
@@ -134,31 +143,47 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(projectUniqueName));
             }
 
-            // invoke async operation from within synchronous method
-            outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                async () =>
-                {
-                    var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
-
-                    // It's possible the project isn't a NuGet-compatible project at all.
-                    if (nuGetProject == null)
+            try
+            {
+                // invoke async operation from within synchronous method
+                outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                    async () =>
                     {
-                        return null;
-                    }
+                        var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
 
-                    return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
-                });
+                        // It's possible the project isn't a NuGet-compatible project at all.
+                        if (nuGetProject == null)
+                        {
+                            return null;
+                        }
 
-            return outputPathContext != null;
+                        return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
+                    });
+
+                return outputPathContext != null;
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                throw;
+            }
         }
 
         public bool TryCreateSolutionContext(out IVsPathContext2 outputPathContext)
         {
-            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager.Value, _settings.Value);
+            try
+            {
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager.Value, _settings.Value);
 
-            outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), packagesFolderPath);
+                outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), _telemetryProvider, packagesFolderPath);
 
-            return outputPathContext != null;
+                return outputPathContext != null;
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                throw;
+            }
         }
 
         public bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 outputPathContext)
@@ -168,11 +193,19 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(solutionDirectory));
             }
 
-            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings.Value);
+            try
+            {
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings.Value);
 
-            outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), packagesFolderPath);
+                outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), _telemetryProvider, packagesFolderPath);
 
-            return outputPathContext != null;
+                return outputPathContext != null;
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                throw;
+            }
         }
 
         private async Task<NuGetProject> CreateNuGetProjectAsync(string projectUniqueName)
@@ -196,7 +229,7 @@ namespace NuGet.VisualStudio
             return null;
         }
 
-        public async Task<IVsPathContext> CreatePathContextAsync(NuGetProject nuGetProject, CancellationToken token)
+        internal async Task<IVsPathContext> CreatePathContextAsync(NuGetProject nuGetProject, CancellationToken token)
         {
             IVsPathContext context;
 
@@ -238,9 +271,9 @@ namespace NuGet.VisualStudio
             return context;
         }
 
-        public IVsPathContext GetSolutionPathContext()
+        internal IVsPathContext GetSolutionPathContext()
         {
-            return new VsPathContext(NuGetPathContext.Create(_settings.Value));
+            return new VsPathContext(NuGetPathContext.Create(_settings.Value), _telemetryProvider);
         }
 
         private async Task<IVsPathContext> GetPathContextFromAssetsFileAsync(
@@ -266,7 +299,7 @@ namespace NuGet.VisualStudio
             if (lockFile.Libraries == null ||
                 lockFile.Libraries.Count == 0)
             {
-                return new VsPathContext(userPackageFolder, fallbackPackageFolders);
+                return new VsPathContext(userPackageFolder, fallbackPackageFolders, _telemetryProvider);
             }
 
             var fppr = new FallbackPackagePathResolver(userPackageFolder, fallbackPackageFolders);
@@ -290,7 +323,8 @@ namespace NuGet.VisualStudio
             return new VsIndexedPathContext(
                 userPackageFolder,
                 fallbackPackageFolders,
-                trie);
+                trie,
+                _telemetryProvider);
         }
 
         private async Task<IVsPathContext> GetPathContextFromPackagesConfigAsync(
@@ -319,7 +353,8 @@ namespace NuGet.VisualStudio
             return new VsIndexedPathContext(
                 pathContext.UserPackageFolder,
                 pathContext.FallbackPackageFolders.Cast<string>(),
-                trie);
+                trie,
+                _telemetryProvider);
         }
 
         private async Task<IEnumerable<Project>> GetProjectsInSolutionAsync(DTE dte)
@@ -339,10 +374,18 @@ namespace NuGet.VisualStudio
 
         public bool TryCreateNoSolutionContext(out IVsPathContext vsPathContext)
         {
-            // invoke async operation from within synchronous method
-            vsPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => TryCreateUserWideContextAsync());
+            try
+            {
+                // invoke async operation from within synchronous method
+                vsPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => TryCreateUserWideContextAsync());
 
-            return vsPathContext != null;
+                return vsPathContext != null;
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                throw;
+            }
         }
 
         private async Task<IVsPathContext> TryCreateUserWideContextAsync()
@@ -351,7 +394,7 @@ namespace NuGet.VisualStudio
             // 1. We do not reload configs
             // 2. There is no way to edit gpf/fallback folders through the PM UI.
             var settings = await _userWideSettings.GetValueAsync();
-            var outputPathContext = new VsPathContext(NuGetPathContext.Create(settings));
+            var outputPathContext = new VsPathContext(NuGetPathContext.Create(settings), _telemetryProvider);
             return outputPathContext;
         }
     }
