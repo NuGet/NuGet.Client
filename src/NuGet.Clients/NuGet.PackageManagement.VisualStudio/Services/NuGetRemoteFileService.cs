@@ -30,7 +30,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private AuthorizationServiceClient? _authorizationServiceClient;
         private bool _disposedValue;
 
-        // TODO: right settings for cache and policy?
         internal readonly static MemoryCache IdentityToUriCache = new MemoryCache("PackageSearchMetadata",
             new NameValueCollection
             {
