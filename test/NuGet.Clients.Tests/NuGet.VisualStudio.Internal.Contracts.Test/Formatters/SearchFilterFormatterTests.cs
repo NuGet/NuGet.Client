@@ -13,9 +13,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(TestData))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(SearchFilter expectedResult)
         {
-            SearchFilter actualResult = SerializeThenDeserialize(SearchFilterFormatter.Instance, expectedResult);
+            SearchFilter? actualResult = SerializeThenDeserialize(SearchFilterFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.Filter, actualResult.Filter);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.Filter, actualResult!.Filter);
             Assert.Equal(expectedResult.IncludeDelisted, actualResult.IncludeDelisted);
             Assert.Equal(expectedResult.IncludePrerelease, actualResult.IncludePrerelease);
             Assert.Equal(expectedResult.OrderBy, actualResult.OrderBy);

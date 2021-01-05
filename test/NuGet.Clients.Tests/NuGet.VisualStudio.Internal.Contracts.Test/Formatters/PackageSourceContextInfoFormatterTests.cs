@@ -11,8 +11,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(TestData))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(PackageSourceContextInfo expectedResult)
         {
-            PackageSourceContextInfo actualResult = SerializeThenDeserialize(PackageSourceContextInfoFormatter.Instance, expectedResult);
+            PackageSourceContextInfo? actualResult = SerializeThenDeserialize(PackageSourceContextInfoFormatter.Instance, expectedResult);
 
+            Assert.NotNull(actualResult);
             Assert.Equal(expectedResult, actualResult);
         }
 

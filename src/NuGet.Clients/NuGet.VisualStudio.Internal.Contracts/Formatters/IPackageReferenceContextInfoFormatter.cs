@@ -67,7 +67,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
             }
 
             Assumes.NotNull(identity);
-            Assumes.NotNull(framework);
 
             var packageReferenceContextInfo = new PackageReferenceContextInfo(identity, framework)
             {

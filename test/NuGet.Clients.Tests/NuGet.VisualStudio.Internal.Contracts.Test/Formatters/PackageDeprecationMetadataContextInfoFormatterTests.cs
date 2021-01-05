@@ -24,12 +24,18 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
             var options = MessagePackSerializerOptions.Standard.WithSecurity(MessagePackSecurity.UntrustedData).WithResolver(CompositeResolver.Create(formatters, resolvers));
 
-            PackageDeprecationMetadataContextInfo actualResult = SerializeThenDeserialize(PackageDeprecationMetadataContextInfoFormatter.Instance, expectedResult, options);
+            PackageDeprecationMetadataContextInfo? actualResult = SerializeThenDeserialize(PackageDeprecationMetadataContextInfoFormatter.Instance, expectedResult, options);
 
-            Assert.Equal(expectedResult.Message, actualResult.Message);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.Message, actualResult!.Message);
             Assert.Equal(expectedResult.Reasons.First(), actualResult.Reasons.First());
-            Assert.Equal(expectedResult.AlternatePackage.PackageId, actualResult.AlternatePackage.PackageId);
-            Assert.Equal(expectedResult.AlternatePackage.VersionRange, actualResult.AlternatePackage.VersionRange);
+            Assert.Equal(expectedResult.AlternatePackage is null, actualResult.AlternatePackage is null);
+
+            if (expectedResult.AlternatePackage is object)
+            {
+                Assert.Equal(expectedResult.AlternatePackage.PackageId, actualResult.AlternatePackage!.PackageId);
+                Assert.Equal(expectedResult.AlternatePackage.VersionRange, actualResult.AlternatePackage.VersionRange);
+            }
         }
 
         public static TheoryData TestData => new TheoryData<PackageDeprecationMetadataContextInfo>
