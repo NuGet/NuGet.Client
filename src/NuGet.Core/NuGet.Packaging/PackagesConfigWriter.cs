@@ -16,7 +16,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// Writes the packages.config XML file to a stream
     /// </summary>
-    public sealed class PackagesConfigWriter : IDisposable
+    public class PackagesConfigWriter : IDisposable
     {
         private readonly Stream _stream;
         private readonly string _filePath;
@@ -588,10 +588,19 @@ namespace NuGet.Packaging
         /// </summary>
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
                 if (!string.IsNullOrEmpty(_filePath))
                 {
                     WriteFile(_filePath);
@@ -601,6 +610,8 @@ namespace NuGet.Packaging
                     WriteFile();
                 }
             }
+
+            _disposed = true;
         }
     }
 }
