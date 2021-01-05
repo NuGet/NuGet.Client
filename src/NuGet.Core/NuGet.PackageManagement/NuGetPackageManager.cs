@@ -2814,6 +2814,11 @@ namespace NuGet.PackageManagement
 
                 if (packageIdentity != null)
                 {
+                    if (primarySources == null || primarySources.Count == 0)
+                    {
+                        throw new ArgumentNullException(nameof(primarySources), $"Should have value in {nameof(primarySources)} if there is value for {nameof(packageIdentity)}");
+                    }
+
                     var nugetAction = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);
                     nuGetProjectActions = new[] { nugetAction };
                     nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath] = nuGetProjectActions;
