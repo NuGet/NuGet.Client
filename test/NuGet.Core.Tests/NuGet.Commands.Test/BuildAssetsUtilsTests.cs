@@ -106,6 +106,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("Compile", metadata["NuGetItemType"]);
             Assert.Equal("False", metadata["Private"]);
             Assert.Equal("test/test.cs", metadata["Link"].Replace('\\', '/'));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Fact]
@@ -132,6 +133,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("PreserveNewest", metadata["CopyToOutputDirectory"]);
             Assert.Equal("a/b/", metadata["DestinationSubDirectory"].Replace('\\', '/'));
             Assert.Equal("a/b/c.txt", metadata["TargetPath"].Replace('\\', '/'));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Fact]
@@ -158,6 +160,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("a/b/c.txt", metadata["Link"].Replace('\\', '/'));
             Assert.Equal("PreserveNewest", metadata["CopyToOutputDirectory"]);
             Assert.False(metadata.ContainsKey("DestinationSubDirectory"));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Theory]

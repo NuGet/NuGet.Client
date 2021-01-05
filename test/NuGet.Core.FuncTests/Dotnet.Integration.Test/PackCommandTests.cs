@@ -729,6 +729,84 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackProject_DependenciesWithContentFiles_NupkgExcludesContentFilesFromDependencies()
+        {
+            // Arrange
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                // layout
+                var topName = "top";
+                var basePackageName = "BasePackage";
+                var topPath = Path.Combine(testDirectory, topName);
+                var basePackagePath = Path.Combine(testDirectory, basePackageName);
+                var pkgsPath = Path.Combine(testDirectory, "pkgs");
+                Directory.CreateDirectory(topPath);
+                Directory.CreateDirectory(pkgsPath);
+                Directory.CreateDirectory(basePackagePath);
+
+                // Base Package
+                var basePackageProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\pkgs</PackageOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include='data.json'>
+      <PackagePath>contentFiles/any/any/data.json</PackagePath>
+    </Content>
+  </ItemGroup>
+</Project>";
+                File.WriteAllText(Path.Combine(basePackagePath, $"{basePackageName}.csproj"), basePackageProjectContent);
+
+                var dataJsonContent = @"{""data"":""file""}";
+
+                File.WriteAllText(Path.Combine(basePackagePath, "data.json"), dataJsonContent);
+
+                // Top package
+                var customNuGetConfigContent = @"<configuration>
+  <packageSources>
+    <clear />
+    <add key='nuget' value ='https://api.nuget.org/v3/index.json' />
+    <add key ='local' value ='../pkgs' />
+  </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(topPath, "NuGet.Config"), customNuGetConfigContent);
+
+                var topProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include='BasePackage' Version='1.0.0' />
+  </ItemGroup>
+</Project>";
+
+                File.WriteAllText(Path.Combine(topPath, $"{topName}.csproj"), topProjectContent);
+
+                // create the base package
+                msbuildFixture.PackProject(basePackagePath, basePackageName, "");
+
+                // create the top package
+                msbuildFixture.PackProject(topPath, topName, $"-o {topPath}");
+
+                var basePkgPath = Path.Combine(pkgsPath, "BasePackage.1.0.0.nupkg");
+                Assert.True(File.Exists(basePkgPath));
+                var topPkgPath = Path.Combine(topPath, "top.1.0.0.nupkg");
+                Assert.True(File.Exists(topPkgPath));
+
+                // Asset package content
+                using (var par = new PackageArchiveReader(topPkgPath))
+                {
+                    foreach (var pkgFile in par.GetFiles())
+                    {
+                        Assert.DoesNotContain("data.json", pkgFile);
+                    }
+                }
+            }
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData(null, null, null, true, "", "Analyzers,Build")]
         [InlineData(null, "Native", null, true, "", "Analyzers,Build,Native")]
