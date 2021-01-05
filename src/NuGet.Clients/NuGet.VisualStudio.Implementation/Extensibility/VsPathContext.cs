@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
@@ -19,19 +20,31 @@ namespace NuGet.VisualStudio
 
         public string SolutionPackageFolder { get; }
 
-        public VsPathContext(NuGetPathContext pathContext, string solutionPackageFolder = null)
+        private INuGetTelemetryProvider _telemetryProvider;
+
+        public VsPathContext(NuGetPathContext pathContext, INuGetTelemetryProvider telemetryProvider, string solutionPackageFolder = null)
         {
             if (pathContext == null)
             {
                 throw new ArgumentNullException(nameof(pathContext));
             }
 
-            UserPackageFolder = pathContext.UserPackageFolder;
-            FallbackPackageFolders = pathContext.FallbackPackageFolders;
-            SolutionPackageFolder = solutionPackageFolder;
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
+
+            try
+            {
+                UserPackageFolder = pathContext.UserPackageFolder;
+                FallbackPackageFolders = pathContext.FallbackPackageFolders;
+                SolutionPackageFolder = solutionPackageFolder;
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPathContext).FullName);
+                throw;
+            }
         }
 
-        public VsPathContext(string userPackageFolder, IEnumerable<string> fallbackPackageFolders)
+        public VsPathContext(string userPackageFolder, IEnumerable<string> fallbackPackageFolders, INuGetTelemetryProvider telemetryProvider)
         {
             if (userPackageFolder == null)
             {
@@ -43,8 +56,18 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(fallbackPackageFolders));
             }
 
-            UserPackageFolder = userPackageFolder;
-            FallbackPackageFolders = fallbackPackageFolders.ToList();
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
+
+            try
+            {
+                UserPackageFolder = userPackageFolder;
+                FallbackPackageFolders = fallbackPackageFolders.ToList();
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPathContext).FullName);
+                throw;
+            }
         }
 
         public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)

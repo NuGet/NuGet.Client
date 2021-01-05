@@ -13,6 +13,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using ContractsNuGetServices = NuGet.VisualStudio.Contracts.NuGetServices;
 using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 using ISettings = NuGet.Configuration.ISettings;
@@ -29,6 +30,7 @@ namespace NuGetVSExtension
         private AsyncLazy<IVsSolutionManager> _lazySolutionManager;
         private INuGetProjectManagerServiceState _projectManagerServiceSharedState;
         private ISharedServiceState _sharedServiceState;
+        private AsyncLazy<INuGetTelemetryProvider> _lazyTelemetryProvider;
 
         private NuGetBrokeredServiceFactory()
         {
@@ -172,8 +174,9 @@ namespace NuGetVSExtension
 
             IVsSolutionManager solutionManager = await _lazySolutionManager.GetValueAsync(cancellationToken);
             ISettings settings = await _lazySettings.GetValueAsync(cancellationToken);
+            INuGetTelemetryProvider telemetryProvider = await _lazyTelemetryProvider.GetValueAsync(cancellationToken);
 
-            return new NuGetProjectService(solutionManager, settings);
+            return new NuGetProjectService(solutionManager, settings, telemetryProvider);
         }
 
         private async Task InitializeAsync()
@@ -182,6 +185,7 @@ namespace NuGetVSExtension
             _lazySolutionManager = new AsyncLazy<IVsSolutionManager>(ServiceLocator.GetInstanceAsync<IVsSolutionManager>, ThreadHelper.JoinableTaskFactory);
             _projectManagerServiceSharedState = new NuGetProjectManagerServiceState();
             _sharedServiceState = await SharedServiceState.CreateAsync(CancellationToken.None);
+            _lazyTelemetryProvider = new AsyncLazy<INuGetTelemetryProvider>(ServiceLocator.GetInstanceAsync<INuGetTelemetryProvider>, ThreadHelper.JoinableTaskFactory);
         }
     }
 }

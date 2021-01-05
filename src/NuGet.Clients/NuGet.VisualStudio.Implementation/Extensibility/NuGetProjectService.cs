@@ -23,43 +23,55 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
     {
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISettings _settings;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
-        public NuGetProjectService(IVsSolutionManager solutionManager, ISettings settings)
+        public NuGetProjectService(IVsSolutionManager solutionManager, ISettings settings, INuGetTelemetryProvider telemetryProvider)
         {
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
         public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(Guid projectId, CancellationToken cancellationToken)
         {
-            // Just in case we're on the UI thread, switch to background thread. Very low cost (does not schedule new task) if already on background thread.
-            await TaskScheduler.Default;
-
-            NuGetProject project = await _solutionManager.GetNuGetProjectAsync(projectId.ToString());
-            if (project == null)
+            try
             {
-                return NuGetContractsFactory.CreateInstalledPackagesResult(InstalledPackageResultStatus.ProjectNotReady, packages: null);
+                // Just in case we're on the UI thread, switch to background thread. Very low cost (does not schedule new task) if already on background thread.
+                await TaskScheduler.Default;
+
+                NuGetProject project = await _solutionManager.GetNuGetProjectAsync(projectId.ToString());
+                if (project == null)
+                {
+                    return NuGetContractsFactory.CreateInstalledPackagesResult(InstalledPackageResultStatus.ProjectNotReady, packages: null);
+                }
+
+                InstalledPackageResultStatus status;
+                IReadOnlyCollection<NuGetInstalledPackage> installedPackages;
+
+                switch (project)
+                {
+                    case BuildIntegratedNuGetProject packageReferenceProject:
+                        (status, installedPackages) = await GetInstalledPackagesAsync(packageReferenceProject, cancellationToken);
+                        break;
+
+                    case MSBuildNuGetProject packagesConfigProject:
+                        (status, installedPackages) = await GetInstalledPackagesAsync(packagesConfigProject, cancellationToken);
+                        break;
+
+                    default:
+                        (status, installedPackages) = await GetInstalledPackagesAsync(project, cancellationToken);
+                        break;
+                }
+
+                return NuGetContractsFactory.CreateInstalledPackagesResult(status, installedPackages);
             }
-
-            InstalledPackageResultStatus status;
-            IReadOnlyCollection<NuGetInstalledPackage> installedPackages;
-
-            switch (project)
+            catch (Exception exception)
             {
-                case BuildIntegratedNuGetProject packageReferenceProject:
-                    (status, installedPackages) = await GetInstalledPackagesAsync(packageReferenceProject, cancellationToken);
-                    break;
-
-                case MSBuildNuGetProject packagesConfigProject:
-                    (status, installedPackages) = await GetInstalledPackagesAsync(packagesConfigProject, cancellationToken);
-                    break;
-
-                default:
-                    (status, installedPackages) = await GetInstalledPackagesAsync(project, cancellationToken);
-                    break;
+                var extraProperties = new Dictionary<string, object>();
+                extraProperties["projectId"] = projectId.ToString();
+                await _telemetryProvider.PostFaultAsync(exception, typeof(NuGetProjectService).FullName, extraProperties: extraProperties);
+                throw;
             }
-
-            return NuGetContractsFactory.CreateInstalledPackagesResult(status, installedPackages);
         }
 
         private async Task<(InstalledPackageResultStatus, IReadOnlyCollection<NuGetInstalledPackage>)> GetInstalledPackagesAsync(BuildIntegratedNuGetProject project, CancellationToken cancellationToken)
