@@ -4,9 +4,16 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using FluentAssertions;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
+using NuGet.XPlat.FuncTest;
 using Xunit;
 
 namespace Dotnet.Integration.Test
@@ -450,6 +457,46 @@ namespace Dotnet.Integration.Test
                 VerifyResultFailure(result, invalidMessage);
                 // Verify traits of help message in stdout
                 Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithV2AdditionalSource_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\source\\Custompackages" : "../../source/Custompackages";
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(
+                    packageXPath, //not using solution source folder
+                    new PackageIdentity[] { packageX_V1, packageX_V2 });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePath}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
+
+                LockFileTarget ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
+                // Should resolve to highest available version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V2.Version));
             }
         }
 

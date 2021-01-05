@@ -103,12 +103,11 @@ namespace NuGet.CommandLine.XPlat
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
             // Convert relative path to absolute path if there is any
-            List<string> sourcePaths;
+            List<string> sourcePaths = null;
 
             if (packageReferenceArgs.Sources?.Any() == true)
             {
                 sourcePaths = new List<string>();
-                string projectDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath);
 
                 foreach (string source in packageReferenceArgs.Sources)
                 {
@@ -119,10 +118,6 @@ namespace NuGet.CommandLine.XPlat
                                     sourcePaths.Where(ns => !string.IsNullOrEmpty(ns))
                                     .Select(ns => new PackageSource(ns))
                                     .ToList();
-            }
-            else
-            {
-                sourcePaths = packageReferenceArgs.Sources?.ToList();
             }
 
             PackageDependency packageDependency = default;
