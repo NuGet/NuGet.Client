@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -6,8 +6,6 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TestProject>true</TestProject>
     <Description>Unit and integration tests for NuGet.SolutionRestoreManager.</Description>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,9 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Include="Microsoft.VisualStudio.Utilities" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

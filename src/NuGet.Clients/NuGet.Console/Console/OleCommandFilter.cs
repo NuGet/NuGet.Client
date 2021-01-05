@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TextManager.Interop;
 
 namespace NuGetConsole.Implementation.Console
@@ -24,7 +25,7 @@ namespace NuGetConsole.Implementation.Console
             ErrorHandler.ThrowOnFailure(vsTextView.AddCommandFilter(this, out _oldChain));
             Debug.Assert(_oldChain != null);
 
-            this.OldChain = _oldChain;
+            OldChain = _oldChain;
         }
 
         protected virtual int InternalQueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -41,6 +42,8 @@ namespace NuGetConsole.Implementation.Console
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int hr = InternalQueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
 
             if (hr == OLECMDERR_E_NOTSUPPORTED)
@@ -53,6 +56,8 @@ namespace NuGetConsole.Implementation.Console
 
         public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int hr = InternalExec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
 
             if (hr == OLECMDERR_E_NOTSUPPORTED)
