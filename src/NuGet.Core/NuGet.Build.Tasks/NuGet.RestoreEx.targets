@@ -13,7 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <UsingTask TaskName="NuGet.Build.Tasks.RestoreTaskEx" AssemblyFile="$(RestoreTaskAssemblyFile)" />
-
+  <UsingTask TaskName="NuGet.Build.Tasks.GenerateRestoreGraphFileTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <Target Name="Restore">
     <!-- Restore using MSBuild's Static Graph Evaluation -->
     <RestoreTaskEx
@@ -30,6 +30,25 @@ Copyright (c) .NET Foundation. All rights reserved.
         Recursive="$([MSBuild]::ValueOrDefault('$(RestoreRecursive)', 'true'))"
         RestorePackagesConfig="$(RestorePackagesConfig)"
         SolutionPath="$(SolutionPath)"
+        ProcessFileName="$(NuGetConsoleProcessFileName)"
+        MSBuildStartupDirectory="$(MSBuildStartupDirectory)"
+        />
+  </Target>
+
+ <!--
+    ============================================================
+    GenerateRestoreGraphFile
+    Writes the output the dg spec generation by static graph restore.
+    ============================================================
+  -->
+  <Target Name="GenerateRestoreGraphFile">
+    <Error Condition="$(RestoreGraphOutputPath) == ''" Text="Missing RestoreGraphOutputPath property!" />
+      <GenerateRestoreGraphFileTask
+        MSBuildBinPath="$(MSBuildBinPath)"
+        ProjectFullPath="$(MSBuildProjectFullPath)"
+        Recursive="$([MSBuild]::ValueOrDefault('$(RestoreRecursive)', 'true'))"
+        SolutionPath="$(SolutionPath)"
+        RestoreGraphOutputPath="$(RestoreGraphOutputPath)"
         ProcessFileName="$(NuGetConsoleProcessFileName)"
         MSBuildStartupDirectory="$(MSBuildStartupDirectory)"
         />
