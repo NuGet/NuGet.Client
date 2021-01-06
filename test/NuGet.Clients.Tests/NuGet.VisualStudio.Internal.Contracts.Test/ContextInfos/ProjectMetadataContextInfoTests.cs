@@ -15,7 +15,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         public void Create_IfProjectMetadataIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 () => ProjectMetadataContextInfo.Create(projectMetadata: null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
             Assert.Equal("projectMetadata", exception.ParamName);
         }
@@ -23,7 +25,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [Fact]
         public void Create_IfProjectMetadataIsEmpty_DoesNotThrow()
         {
-            ProjectMetadataContextInfo projectMetadata = ProjectMetadataContextInfo.Create(new Dictionary<string, object>());
+            ProjectMetadataContextInfo projectMetadata = ProjectMetadataContextInfo.Create(new Dictionary<string, object?>());
 
             AssertAllPropertiesAreNull(projectMetadata);
         }
@@ -31,7 +33,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [Fact]
         public void Create_IfProjectMetadataValueDataTypesAreUnexpected_ReturnsNullPropertyValues()
         {
-            var metadata = new Dictionary<string, object>()
+            var metadata = new Dictionary<string, object?>()
             {
                 { NuGetProjectMetadataKeys.FullPath, 1 },
                 { NuGetProjectMetadataKeys.Name, 1 },
@@ -49,7 +51,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [Fact]
         public void Create_IfProjectMetadataValuesAreNull_ReturnsNullPropertyValues()
         {
-            var metadata = new Dictionary<string, object>()
+            var metadata = new Dictionary<string, object?>()
             {
                 { NuGetProjectMetadataKeys.FullPath, null },
                 { NuGetProjectMetadataKeys.Name, null },
@@ -67,7 +69,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [Fact]
         public void Create_IfProjectMetadataValuesAreNonNullAndValid_ReturnsNonNullPropertyValues()
         {
-            var metadata = new Dictionary<string, object>()
+            var metadata = new Dictionary<string, object?>()
             {
                 { NuGetProjectMetadataKeys.FullPath, "a" },
                 { NuGetProjectMetadataKeys.Name, "b" },
@@ -87,7 +89,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         {
             NuGetFramework expectedFramework = NuGetFramework.Parse("net50");
 
-            var metadata = new Dictionary<string, object>()
+            var metadata = new Dictionary<string, object?>()
             {
                 { NuGetProjectMetadataKeys.TargetFramework, expectedFramework.DotNetFrameworkName }
             };
@@ -107,7 +109,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             Assert.Null(projectMetadata.UniqueName);
         }
 
-        private static void AssertEqual(Dictionary<string, object> expectedResults, ProjectMetadataContextInfo actualResult)
+        private static void AssertEqual(Dictionary<string, object?> expectedResults, ProjectMetadataContextInfo actualResult)
         {
             Assert.Equal(expectedResults[NuGetProjectMetadataKeys.FullPath] as string, actualResult.FullPath);
             Assert.Equal(expectedResults[NuGetProjectMetadataKeys.Name] as string, actualResult.Name);

@@ -12,16 +12,17 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public sealed class PackageReferenceContextInfo : IPackageReferenceContextInfo
     {
-        public PackageReferenceContextInfo(PackageIdentity identity, NuGetFramework framework)
+        public PackageReferenceContextInfo(PackageIdentity identity, NuGetFramework? framework)
         {
             Assumes.NotNull(identity);
-            Assumes.NotNull(framework);
+            // framework is null for project.json package references. 
 
             Identity = identity;
             Framework = framework;
         }
 
-        public static PackageReferenceContextInfo Create(PackageIdentity identity, NuGetFramework framework)
+        // For testing only
+        internal static PackageReferenceContextInfo Create(PackageIdentity identity, NuGetFramework? framework)
         {
             return new PackageReferenceContextInfo(identity, framework);
         }
@@ -42,7 +43,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         }
 
         public PackageIdentity Identity { get; internal set; }
-        public NuGetFramework Framework { get; internal set; }
+        public NuGetFramework? Framework { get; internal set; }
         public VersionRange? AllowedVersions { get; internal set; }
         public bool IsAutoReferenced { get; internal set; }
         public bool IsUserInstalled { get; internal set; }

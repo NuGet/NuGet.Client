@@ -16,7 +16,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         {
             using (var rpc = new TestJsonRpc())
             {
-                Type type = rpc.GetErrorDetailsDataTypeHelper(error: null);
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+                Type? type = rpc.GetErrorDetailsDataTypeHelper(error: null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
                 Assert.Equal(typeof(CommonErrorData), type);
             }
@@ -27,7 +29,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         {
             using (var rpc = new TestJsonRpc())
             {
-                Type type = rpc.GetErrorDetailsDataTypeHelper(
+                Type? type = rpc.GetErrorDetailsDataTypeHelper(
                     new JsonRpcError()
                     {
                         Error = null
@@ -42,7 +44,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         {
             using (var rpc = new TestJsonRpc())
             {
-                Type type = rpc.GetErrorDetailsDataTypeHelper(
+                Type? type = rpc.GetErrorDetailsDataTypeHelper(
                     new JsonRpcError()
                     {
                         Error = new JsonRpcError.ErrorDetail()
@@ -60,7 +62,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         {
             using (var rpc = new TestJsonRpc())
             {
-                Type type = rpc.GetErrorDetailsDataTypeHelper(
+                Type? type = rpc.GetErrorDetailsDataTypeHelper(
                     new JsonRpcError()
                     {
                         Error = new JsonRpcError.ErrorDetail()
@@ -80,7 +82,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             {
             }
 
-            internal Type GetErrorDetailsDataTypeHelper(JsonRpcError error)
+            internal Type? GetErrorDetailsDataTypeHelper(JsonRpcError error)
             {
                 return GetErrorDetailsDataType(error);
             }

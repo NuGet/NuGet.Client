@@ -14,9 +14,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(PackageSourceUpdateOptions expectedResult)
         {
-            PackageSourceUpdateOptions actualResult = SerializeThenDeserialize(PackageSourceUpdateOptionsFormatter.Instance, expectedResult);
+            PackageSourceUpdateOptions? actualResult = SerializeThenDeserialize(PackageSourceUpdateOptionsFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.UpdateCredentials, actualResult.UpdateCredentials);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.UpdateCredentials, actualResult!.UpdateCredentials);
             Assert.Equal(expectedResult.UpdateEnabled, actualResult.UpdateEnabled);
         }
 
