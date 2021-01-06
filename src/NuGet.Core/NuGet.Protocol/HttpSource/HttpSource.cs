@@ -24,6 +24,7 @@ namespace NuGet.Protocol
         private string _httpCacheDirectory;
         private readonly PackageSource _packageSource;
         private readonly IThrottle _throttle;
+        private bool _disposed = false;
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
@@ -436,12 +437,28 @@ namespace NuGet.Protocol
 
         public void Dispose()
         {
-            if (_httpClient != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                _httpClient.Dispose();
+                return;
             }
 
-            _httpClientLock.Dispose();
+            if (disposing)
+            {
+                if (_httpClient != null)
+                {
+                    _httpClient.Dispose();
+                }
+
+                _httpClientLock.Dispose();
+            }
+
+            _disposed = true;
         }
 
         private class ThrottledResponse : IDisposable
