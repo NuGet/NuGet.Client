@@ -130,6 +130,42 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
+        /// Generates a dependency graph spec for the given properties.
+        /// </summary>
+        /// <param name="entryProjectFilePath">The main project to generate that graph for.  This can be a project for a Visual Studio© Solution File.</param>
+        /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
+        /// <param name="options">The set of options to use to generate the graph, including the restore graph output path.</param>
+        /// <returns><code>true</code> if the dependency graph spec was generated and written, otherwise <code>false</code>.</returns>
+        public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
+        {
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties);
+
+            try
+            {
+                if (dependencyGraphSpec == null)
+                {
+                    LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_DgSpecGenerationFailed);
+                    return false;
+                }
+
+                if (options.TryGetValue("RestoreGraphOutputPath", out var path))
+                {
+                    dependencyGraphSpec.Save(path);
+                    return true;
+                }
+                else
+                {
+                    LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_MissingRestoreGraphOutputPath);
+                }
+            }
+            catch (Exception e)
+            {
+                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Gets the framework references per target framework for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get framework references for.</param>

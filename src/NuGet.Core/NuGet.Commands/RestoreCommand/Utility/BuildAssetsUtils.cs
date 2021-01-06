@@ -223,7 +223,8 @@ namespace NuGet.Commands
                                 new XAttribute("Condition", $"Exists('{path}')"),
                                 new XElement(Namespace + "NuGetPackageId", packageId),
                                 new XElement(Namespace + "NuGetPackageVersion", packageVersion),
-                                new XElement(Namespace + "NuGetItemType", item.BuildAction));
+                                new XElement(Namespace + "NuGetItemType", item.BuildAction),
+                                new XElement(Namespace + "Pack", false));
 
             var privateFlag = false;
 
