@@ -461,6 +461,10 @@ namespace Dotnet.Integration.Test
         }
 
         [Theory]
+        [InlineData("netcoreapp2.1")]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp3.1")]
+        [InlineData("net472")]
         [InlineData("net5.0")]
         public async Task AddPkg_WithV2AdditionalSource_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
         {
