@@ -21,5 +21,7 @@ NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.set -> void
 override NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Execute() -> bool
 static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string startupDirectory, string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string startupDirectory, string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
+virtual NuGet.Build.Tasks.LoggingQueue<T>.Dispose(bool disposing) -> void
+virtual NuGet.Build.Tasks.RestoreTask.Dispose(bool disposing) -> void
 static NuGet.Build.Tasks.Strings.Error_DgSpecGenerationFailed.get -> string
 static NuGet.Build.Tasks.Strings.Error_MissingRestoreGraphOutputPath.get -> string
