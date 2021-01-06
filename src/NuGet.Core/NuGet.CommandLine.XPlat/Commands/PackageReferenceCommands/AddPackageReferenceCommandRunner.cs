@@ -103,12 +103,10 @@ namespace NuGet.CommandLine.XPlat
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
             // Convert relative path to absolute path if there is any
-            List<string> sourcePaths = null;
+            List<string> sourcePaths = new List<string>();
 
             if (packageReferenceArgs.Sources?.Any() == true)
             {
-                sourcePaths = new List<string>();
-
                 foreach (string source in packageReferenceArgs.Sources)
                 {
                     sourcePaths.Add(UriUtility.GetAbsolutePath(Environment.CurrentDirectory, source));
