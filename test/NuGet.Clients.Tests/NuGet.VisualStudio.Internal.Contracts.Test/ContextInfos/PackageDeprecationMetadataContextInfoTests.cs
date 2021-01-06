@@ -13,11 +13,18 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(TestData))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(PackageDeprecationMetadataContextInfo expectedResult)
         {
-            PackageDeprecationMetadataContextInfo actualResult = SerializeThenDeserialize(PackageDeprecationMetadataContextInfoFormatter.Instance, expectedResult);
+            PackageDeprecationMetadataContextInfo? actualResult = SerializeThenDeserialize(PackageDeprecationMetadataContextInfoFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.Message, actualResult.Message);
-            Assert.Equal(expectedResult.AlternatePackage.PackageId, actualResult.AlternatePackage.PackageId);
-            Assert.Equal(expectedResult.AlternatePackage.VersionRange, actualResult.AlternatePackage.VersionRange);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.Message, actualResult!.Message);
+            Assert.Equal(expectedResult.AlternatePackage is null, actualResult.AlternatePackage is null);
+
+            if (expectedResult.AlternatePackage is object)
+            {
+                Assert.Equal(expectedResult.AlternatePackage.PackageId, actualResult.AlternatePackage!.PackageId);
+                Assert.Equal(expectedResult.AlternatePackage.VersionRange, actualResult.AlternatePackage.VersionRange);
+            }
+
             Assert.Equal(expectedResult.Reasons, actualResult.Reasons);
         }
 

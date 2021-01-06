@@ -36,10 +36,11 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(IInstalledAndTransitivePackages))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(InstalledAndTransitivePackages expectedResult)
         {
-            IInstalledAndTransitivePackages actualResult = SerializeThenDeserialize(IInstalledAndTransitivePackagesFormatter.Instance, expectedResult);
+            IInstalledAndTransitivePackages? actualResult = SerializeThenDeserialize(IInstalledAndTransitivePackagesFormatter.Instance, expectedResult);
 
-            Assert.Equal(actualResult.InstalledPackages.Count, expectedResult.InstalledPackages.Count);
-            Assert.Equal(actualResult.TransitivePackages.Count, expectedResult.TransitivePackages.Count);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.InstalledPackages.Count, actualResult!.InstalledPackages.Count);
+            Assert.Equal(expectedResult.TransitivePackages.Count, actualResult.TransitivePackages.Count);
 
             foreach (IPackageReferenceContextInfo expectedPackage in expectedResult.InstalledPackages)
             {

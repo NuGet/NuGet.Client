@@ -16,8 +16,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(VersionRanges))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(VersionRange expectedResult)
         {
-            VersionRange actualResult = SerializeThenDeserialize(VersionRangeFormatter.Instance, expectedResult);
+            VersionRange? actualResult = SerializeThenDeserialize(VersionRangeFormatter.Instance, expectedResult);
 
+            Assert.NotNull(actualResult);
             Assert.Equal(expectedResult, actualResult);
         }
 

@@ -19,9 +19,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(IPackageReferenceContextInfos))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(IPackageReferenceContextInfo expectedResult)
         {
-            IPackageReferenceContextInfo actualResult = SerializeThenDeserialize(IPackageReferenceContextInfoFormatter.Instance, expectedResult);
+            IPackageReferenceContextInfo? actualResult = SerializeThenDeserialize(IPackageReferenceContextInfoFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.Identity, actualResult.Identity);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.Identity, actualResult!.Identity);
             Assert.Equal(expectedResult.Framework, actualResult.Framework);
             Assert.Equal(expectedResult.AllowedVersions, actualResult.AllowedVersions);
             Assert.Equal(expectedResult.IsAutoReferenced, actualResult.IsAutoReferenced);
@@ -31,7 +32,8 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 
         public static TheoryData IPackageReferenceContextInfos => new TheoryData<IPackageReferenceContextInfo>
             {
-                { PackageReferenceContextInfo.Create(PackageIdentity ,Framework) },
+                { PackageReferenceContextInfo.Create(PackageIdentity, Framework) },
+                { PackageReferenceContextInfo.Create(PackageIdentity, framework: null) },
                 { PackageReferenceContextInfo.Create(PackageReference) }
             };
     }

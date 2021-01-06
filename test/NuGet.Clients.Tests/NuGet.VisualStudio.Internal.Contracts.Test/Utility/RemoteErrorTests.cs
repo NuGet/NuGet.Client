@@ -42,7 +42,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new RemoteError(
                     TypeName,
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                     logMessage: null,
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                     LogMessages,
                     ProjectContextLogMessage,
                     ActivityLogMessage));
