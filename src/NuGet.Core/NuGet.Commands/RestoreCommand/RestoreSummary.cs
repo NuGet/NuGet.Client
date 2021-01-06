@@ -173,7 +173,7 @@ namespace NuGet.Commands
                 }
             }
 
-            if (RuntimeEnvironmentHelper.IsRunningInVisualStudio)
+            if (!RuntimeEnvironmentHelper.IsRunningInVisualStudio)
             {
                 if (noOpCount == restoreSummaries.Count)
                 {
