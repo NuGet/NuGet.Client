@@ -463,7 +463,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithV2AdditionalSource_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
+        public async Task AddPkg_WithV2_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -492,6 +492,7 @@ namespace Dotnet.Integration.Test
                 // Make sure source is replaced in generated dgSpec file.
                 PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
                 string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.Equal(sources.Count(), 1);
                 Assert.True(sources[0].Contains("Custompackages"));
 
                 LockFileTarget ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
@@ -504,7 +505,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithV2AdditionalSource_RelativePath_NoVersionSpecified_Fail(string targetFrameworks)
+        public async Task AddPkg_WithV2_RelativePath_NoVersionSpecified_Fail(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -535,7 +536,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithV2AdditionalSource_RelativePath_VersionSpecified_Success(string targetFrameworks)
+        public async Task AddPkg_WithV2_RelativePath_VersionSpecified_Success(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -564,6 +565,7 @@ namespace Dotnet.Integration.Test
                 // Make sure source is replaced in generated dgSpec file.
                 PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
                 string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.Equal(sources.Count(), 1);
                 Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
@@ -575,7 +577,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithV2AdditionalSource_RelativePath_VersionSpecified_Fail(string targetFrameworks)
+        public async Task AddPkg_WithV2_RelativePath_VersionSpecified_Fail(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -606,7 +608,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithV3AdditionalSource_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
+        public async Task AddPkg_WithV3_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -639,6 +641,7 @@ namespace Dotnet.Integration.Test
                 // Make sure source is replaced in generated dgSpec file.
                 PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
                 string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.Equal(sources.Count(), 1);
                 Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
@@ -650,7 +653,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithV3AdditionalSource_RelativePath_NoVersionSpecified_Fail(string targetFrameworks)
+        public async Task AddPkg_WithV3_RelativePath_NoVersionSpecified_Fail(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -683,7 +686,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithV3AdditionalSource_RelativePath_VersionSpecified_Success(string targetFrameworks)
+        public async Task AddPkg_WithV3_RelativePath_VersionSpecified_Success(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -716,6 +719,7 @@ namespace Dotnet.Integration.Test
                 // Make sure source is replaced in generated dgSpec file.
                 PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
                 string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.Equal(sources.Count(), 1);
                 Assert.True(sources[0].Contains("Custompackages"));
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
@@ -727,7 +731,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithV3AdditionalSource_RelativePath_VersionSpecified_Fail(string targetFrameworks)
+        public async Task AddPkg_WithV3_RelativePath_VersionSpecified_Fail(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -760,7 +764,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("net5.0")]
-        public async Task AddPkg_WithMixed_V2_V3_AdditionalSources_AbsolutePath_NoVersionSpecified_Success(string targetFrameworks)
+        public async Task AddPkg_WithMixed_V2_V3_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
