@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -461,10 +462,6 @@ namespace Dotnet.Integration.Test
         }
 
         [Theory]
-        [InlineData("netcoreapp2.1")]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net472")]
         [InlineData("net5.0")]
         public async Task AddPkg_WithV2AdditionalSource_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
         {
@@ -533,6 +530,296 @@ namespace Dotnet.Integration.Test
                 // Assert
                 // It should fail because there is no packageX, only packageY in source directory.
                 result.Success.Should().BeFalse(because: result.AllOutput);
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithV2AdditionalSource_RelativePath_VersionSpecified_Success(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages";
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(
+                    packageXPath, //not using solution source folder
+                    new PackageIdentity[] { packageX_V1, packageX_V2 });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePath} -v {packageX_V1.Version}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
+                // Should resolve to specified version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V1.Version));
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithV2AdditionalSource_RelativePath_VersionSpecified_Fail(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageX_V3 = new PackageIdentity(packageX, new NuGetVersion("3.0.0"));
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages";
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(
+                    packageXPath, //not using solution source folder
+                    new PackageIdentity[] { packageX_V1, packageX_V2 });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePath} -v {packageX_V3.Version}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeFalse(because: result.AllOutput);
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithV3AdditionalSource_RelativePath_NoVersionSpecified_Success(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages";
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageXPath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageX_V1_Context, packageX_V2_Context });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePath}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
+                // Should resolve to specified version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V2.Version));
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithV3AdditionalSource_RelativePath_NoVersionSpecified_Fail(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageY = "packageY";
+                var packageY_V1 = new PackageIdentity(packageY, new NuGetVersion("1.0.0"));
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var packageY_V1_Context = XPlatTestUtils.CreatePackage(packageY_V1.Id, packageY_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages";
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageXPath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageY_V1_Context });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePath}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeFalse(because: result.AllOutput);
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithV3AdditionalSource_RelativePath_VersionSpecified_Success(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages";
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageXPath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageX_V1_Context, packageX_V2_Context });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePath} -v {packageX_V1.Version}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.True(sources[0].Contains("Custompackages"));
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
+                // Should resolve to specified version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V1.Version));
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithV3AdditionalSource_RelativePath_VersionSpecified_Fail(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages";
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageXPath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageX_V1_Context });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePath} -v {packageX_V2.Version}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeFalse(because: result.AllOutput);
+            }
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithMixed_V2_V3_AdditionalSources_AbsolutePath_NoVersionSpecified_Success(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageY = "packageY";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageY_V1 = new PackageIdentity(packageY, new NuGetVersion("1.0.0"));
+                var packageY_V2 = new PackageIdentity(packageY, new NuGetVersion("2.0.0"));
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var packageY_V1_Context = XPlatTestUtils.CreatePackage(packageY_V1.Id, packageY_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageY_V2_Context = XPlatTestUtils.CreatePackage(packageY_V2.Id, packageY_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "CustompackagesX");
+                var packageYPath = Path.Combine(pathContext.WorkingDirectory, "CustompackagesY");
+                var sourceRelativePathX = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\CustompackagesX" : "../../CustompackagesX";
+                var sourceRelativePathY = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\CustompackagesY" : "../../CustompackagesY";
+
+                // Generate V2 Package
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(
+                    packageXPath, //not using solution source folder
+                    new PackageIdentity[] { packageX_V1, packageX_V2 });
+
+                // Generate V3 Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageYPath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageY_V1_Context, packageY_V2_Context });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+
+                // Single source
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePathX}", ignoreExitCode: true);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                // Multiple sources
+                result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageY} -s {sourceRelativePathY};{sourceRelativePathX}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.Equal(sources.Count(), 2);
+                sources.Should().Contain(e => e.Contains("CustompackagesX"));
+                sources.Should().Contain(e => e.Contains("CustompackagesY"));
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                // Should resolve to specified version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageY);
+                // Should resolve to highest available version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V2.Version));
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageY_V2.Version));
             }
         }
 
