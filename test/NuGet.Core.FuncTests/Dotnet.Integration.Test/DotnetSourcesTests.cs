@@ -471,8 +471,8 @@ namespace Dotnet.Integration.Test
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
-                var packageXPath = Path.Combine(pathContext.PackageSource, "Custompackages");
-                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\source\\Custompackages" : "../../source/Custompackages";
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages";
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
@@ -497,6 +497,38 @@ namespace Dotnet.Integration.Test
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
                 // Should resolve to highest available version.
                 ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V2.Version));
+            }
+        }
+
+
+        [Theory]
+        [InlineData("net5.0")]
+        public async Task AddPkg_WithV2AdditionalSource_RelativePath_NoVersionSpecified_Fail(string targetFrameworks)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "projectA";
+                XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+                var packageX = "packageX";
+                var packageY = "packageY";
+                var packageY_V1 = new PackageIdentity(packageY, new NuGetVersion("1.0.0"));
+                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var sourceRelativePath = RuntimeEnvironmentHelper.IsWindows ? "..\\..\\Custompackages" : "../../Custompackages";
+
+                // Generate Package, but packageX is not in nuget feed.
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(
+                    packageXPath, //not using solution source folder
+                    new PackageIdentity[] { packageY_V1 });
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(projectDirectory, $"add {projectFilePath} package {packageX} -s {sourceRelativePath}", ignoreExitCode: true);
+
+                // Assert
+                // It should fail because there is no packageX, only packageY in source directory.
+                result.Success.Should().BeFalse(because: result.AllOutput);
             }
         }
 
