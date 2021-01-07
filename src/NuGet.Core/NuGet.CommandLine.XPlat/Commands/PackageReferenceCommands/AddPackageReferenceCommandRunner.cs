@@ -103,17 +103,19 @@ namespace NuGet.CommandLine.XPlat
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
             // Convert relative path to absolute path if there is any
-            List<string> sourcePaths = new List<string>();
+            List<string> sources = null;
 
             if (packageReferenceArgs.Sources?.Any() == true)
             {
+                sources = new List<string>();
+
                 foreach (string source in packageReferenceArgs.Sources)
                 {
-                    sourcePaths.Add(UriUtility.GetAbsolutePath(Environment.CurrentDirectory, source));
+                    sources.Add(UriUtility.GetAbsolutePath(Environment.CurrentDirectory, source));
                 }
 
                 originalPackageSpec.RestoreMetadata.Sources =
-                                    sourcePaths.Where(ns => !string.IsNullOrEmpty(ns))
+                                    sources.Where(ns => !string.IsNullOrEmpty(ns))
                                     .Select(ns => new PackageSource(ns))
                                     .ToList();
             }
@@ -165,7 +167,7 @@ namespace NuGet.CommandLine.XPlat
             packageReferenceArgs.Logger.LogDebug("Running Restore preview");
 
             var restorePreviewResult = await PreviewAddPackageReferenceAsync(packageReferenceArgs,
-                updatedDgSpec, sourcePaths);
+                updatedDgSpec, sources);
 
             packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
@@ -349,8 +351,8 @@ namespace NuGet.CommandLine.XPlat
                     Log = packageReferenceArgs.Logger,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
-                    PreLoadedRequestProviders = providers,
-                    Sources = sourcePaths
+                    PreLoadedRequestProviders = providers
+                    // Sources : No need to pass it, because SourceRepositories contains the already built SourceRepository objects
                 };
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.

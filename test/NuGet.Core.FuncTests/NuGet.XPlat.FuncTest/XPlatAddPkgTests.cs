@@ -748,7 +748,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2Source_AbsolutePath_NoVersionSpecified_Success()
+        public async Task AddPkg_V2LocalSourceFeed_WithAbsolutePath_NoVersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -757,17 +757,17 @@ namespace NuGet.XPlat.FuncTest
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
-                    packageXPath, //not using solution source folder
+                    customSourcePath, //not using solution source folder
                     new PackageIdentity[] { packageX_V1, packageX_V2 });
 
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: packageXPath);
+                    sources: customSourcePath);
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -781,7 +781,7 @@ namespace NuGet.XPlat.FuncTest
                 PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
                 string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
                 Assert.Equal(sources.Count(), 1);
-                Assert.True(sources[0].Contains("Custompackages"));
+                Assert.Equal(sources[0], customSourcePath);
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -791,7 +791,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2_AbsolutePath_NoVersionSpecified_Fail()
+        public async Task AddPkg_V2LocalSourceFeed_WithAbsolutePath_NoVersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -801,17 +801,17 @@ namespace NuGet.XPlat.FuncTest
                 var packageY = "packageY";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageY_V1 = new PackageIdentity(packageY, new NuGetVersion("1.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
 
                 // Generate Package, but packageX is not in nuget feed.
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
-                    packageXPath, //not using solution source folder
+                    customSourcePath, //not using solution source folder
                     new PackageIdentity[] { packageY_V1 });
 
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: packageXPath);
+                    sources: customSourcePath);
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -824,7 +824,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2_AbsolutePath_VersionSpecified_Success()
+        public async Task AddPkg_V2LocalSourceFeed_WithAbsolutePath_VersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -833,16 +833,16 @@ namespace NuGet.XPlat.FuncTest
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
-                    packageXPath, //not using solution source folder
+                    customSourcePath, //not using solution source folder
                     new PackageIdentity[] { packageX_V1, packageX_V2 });
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, packageX_V1.Version.ToString(),
                     projectA,
-                    sources: packageXPath);
+                    sources: customSourcePath);
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -856,7 +856,7 @@ namespace NuGet.XPlat.FuncTest
                 PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
                 string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
                 Assert.Equal(sources.Count(), 1);
-                Assert.True(sources[0].Contains("Custompackages"));
+                Assert.Equal(sources[0], customSourcePath);
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -866,7 +866,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV2_AbsolutePath_VersionSpecified_Fail()
+        public async Task AddPkg_V2LocalSourceFeed_WithAbsolutePath_VersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -876,16 +876,16 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V3 = new PackageIdentity(packageX, new NuGetVersion("3.0.0"));
-                var packageXPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
 
                 // Generate Package, but V3 is not in nuget feed.
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(
-                    packageXPath, //not using solution source folder
+                    customSourcePath, //not using solution source folder
                     new PackageIdentity[] { packageX_V1, packageX_V2 });
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V3.Id, packageX_V3.Version.ToString(),
                     projectA,
-                    sources: packageXPath);
+                    sources: customSourcePath);
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -898,7 +898,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3_AbsolutePath_NoVersionSpecified_Success()
+        public async Task AddPkg_V3LocalSourceFeed_WithAbsolutePath_NoVersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -910,18 +910,18 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    packagesPath,
+                    customSourcePath,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext[] { packageX_V1_Context, packageX_V2_Context });
 
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
                     projectA,
-                    sources: packagesPath);
+                    sources: customSourcePath);
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -935,7 +935,7 @@ namespace NuGet.XPlat.FuncTest
                 PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
                 string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
                 Assert.Equal(sources.Count(), 1);
-                Assert.True(sources[0].Contains("Custompackages"));
+                Assert.Equal(sources[0], customSourcePath);
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -945,7 +945,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3_AbsolutePath_NoVersionSpecified_Fail()
+        public async Task AddPkg_V3LocalSourceFeed_WithAbsolutePath_NoVersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -956,18 +956,18 @@ namespace NuGet.XPlat.FuncTest
                 var packageY = "packageY";
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX, frameworkString: packageFrameworks);
                 var packageY_V1_Context = XPlatTestUtils.CreatePackage(packageY, frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    packagesPath,
+                    customSourcePath,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext[] { packageY_V1_Context });
 
                 // Since user is not inputing a version, it is converted to a " * " in the command
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX, "*",
                     projectA,
-                    sources: packagesPath);
+                    sources: customSourcePath);
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -980,7 +980,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3_AbsolutePath_VersionSpecified_Success()
+        public async Task AddPkg_V3LocalSourceFeed_WithAbsolutePath_VersionSpecified_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -992,17 +992,17 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    packagesPath,
+                    customSourcePath,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext[] { packageX_V1_Context, packageX_V2_Context });
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, packageX_V1.Version.ToString(),
                     projectA,
-                    sources: packagesPath);
+                    sources: customSourcePath);
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -1016,7 +1016,7 @@ namespace NuGet.XPlat.FuncTest
                 PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
                 string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
                 Assert.Equal(sources.Count(), 1);
-                Assert.True(sources[0].Contains("Custompackages"));
+                Assert.Equal(sources[0], customSourcePath);
 
                 var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
@@ -1026,7 +1026,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithV3_AbsolutePath_VersionSpecified_Fail()
+        public async Task AddPkg_V3LocalSourceFeed_WithAbsolutePath_VersionSpecified_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1039,17 +1039,17 @@ namespace NuGet.XPlat.FuncTest
                 var packageX_V3 = new PackageIdentity(packageX, new NuGetVersion("3.0.0"));
                 var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
                 var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
-                var packagesPath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    packagesPath,
+                    customSourcePath,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext[] { packageX_V1_Context, packageX_V2_Context });
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V3.Id, packageX_V3.Version.ToString(),
                     projectA,
-                    sources: packagesPath);
+                    sources: customSourcePath);
 
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
