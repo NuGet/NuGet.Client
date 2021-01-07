@@ -24,7 +24,8 @@
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
                     ToolTip="{Binding Link}"
-                    NavigateUri="{Binding Link}">
+                    NavigateUri="{Binding Link}"
+                    AutomationProperties.Name="{x:Static nuget:Resources.Label_License}">
                     <Run Text="{Binding Text}"></Run>
                 </Hyperlink>
         </TextBlock>
