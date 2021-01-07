@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -102,9 +103,9 @@ namespace NuGet.Protocol
                 return Enumerable.Empty<PackageSearchMetadataRegistration>();
             }
 
-            var results = new List<PackageSearchMetadataRegistration>();
+            var results = new ConcurrentBag<PackageSearchMetadataRegistration>();
 
-            foreach (var registrationPage in registrationIndex.Items)
+            IEnumerable<Task> tasks = registrationIndex.Items.Select(async registrationPage =>
             {
                 if (registrationPage == null)
                 {
@@ -119,7 +120,7 @@ namespace NuGet.Protocol
                     if (registrationPage.Items == null)
                     {
                         var rangeUri = registrationPage.Url;
-                        var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
+                        var leafRegistrationPage = await GetRegistrationIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
 
                         if (registrationPage == null)
                         {
@@ -133,8 +134,9 @@ namespace NuGet.Protocol
                         ProcessRegistrationPage(registrationPage, results, range, includePrerelease, includeUnlisted, metadataCache);
                     }
                 }
-            }
+            });
 
+            await Task.WhenAll(tasks);
             return results;
         }
 
@@ -216,7 +218,7 @@ namespace NuGet.Protocol
         /// <param name="log">Logger Instance.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        private Task<RegistrationPage> GetRegistratioIndexPageAsync(
+        private Task<RegistrationPage> GetRegistrationIndexPageAsync(
             HttpSource httpSource,
             string rangeUri,
             string packageId,
@@ -252,7 +254,7 @@ namespace NuGet.Protocol
         /// <param name="includeUnlisted">Whether to include Unlisted versions into result.</param>
         private void ProcessRegistrationPage(
             RegistrationPage registrationPage,
-            List<PackageSearchMetadataRegistration> results,
+            ConcurrentBag<PackageSearchMetadataRegistration> results,
             VersionRange range, bool includePrerelease,
             bool includeUnlisted,
             MetadataReferenceCache metadataCache)
