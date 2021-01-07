@@ -102,12 +102,10 @@ namespace NuGet.CommandLine.XPlat
 
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
-            // Convert relative path to absolute path if there is any
-            List<string> sources = null;
-
             if (packageReferenceArgs.Sources?.Any() == true)
             {
-                sources = new List<string>();
+                // Convert relative path to absolute path if there is any
+                List<string> sources = new List<string>();
 
                 foreach (string source in packageReferenceArgs.Sources)
                 {
@@ -167,7 +165,7 @@ namespace NuGet.CommandLine.XPlat
             packageReferenceArgs.Logger.LogDebug("Running Restore preview");
 
             var restorePreviewResult = await PreviewAddPackageReferenceAsync(packageReferenceArgs,
-                updatedDgSpec, sources);
+                updatedDgSpec);
 
             packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
@@ -326,7 +324,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private static async Task<RestoreResultPair> PreviewAddPackageReferenceAsync(PackageReferenceArgs packageReferenceArgs,
-            DependencyGraphSpec dgSpec, List<string> sourcePaths)
+            DependencyGraphSpec dgSpec)
         {
             // Set user agent and connection settings.
             XPlatUtility.ConfigureProtocol();
