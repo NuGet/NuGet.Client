@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 IPackageSearchMetadata detailedMetadata = await _detailedPackageSearchMetadata.Value;
                 deprecationMetadata = await detailedMetadata.GetDeprecationMetadataAsync();
-                if(deprecationMetadata == null)
+                if (deprecationMetadata == null)
                 {
                     return null;
                 }
