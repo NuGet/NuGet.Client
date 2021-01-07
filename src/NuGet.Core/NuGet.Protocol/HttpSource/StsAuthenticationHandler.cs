@@ -172,20 +172,19 @@ namespace NuGet.Protocol
         {
             var binding = new WS2007HttpBinding(SecurityMode.Transport);
 
-            using (var factory = new WSTrustChannelFactory(binding, endpoint) { TrustVersion = TrustVersion.WSTrust13 })
-            {
-                var endPointReference = new EndpointReference(realm);
-                var requestToken = new RequestSecurityToken
-                {
-                    RequestType = RequestTypes.Issue,
-                    KeyType = KeyTypes.Bearer,
-                    AppliesTo = endPointReference
-                };
+            using var factory = new WSTrustChannelFactory(binding, endpoint) { TrustVersion = TrustVersion.WSTrust13 };
 
-                var channel = factory.CreateChannel();
-                var responseToken = channel.Issue(requestToken) as GenericXmlSecurityToken;
-                return responseToken?.TokenXml.OuterXml;
-            }
+            var endPointReference = new EndpointReference(realm);
+            var requestToken = new RequestSecurityToken
+            {
+                RequestType = RequestTypes.Issue,
+                KeyType = KeyTypes.Bearer,
+                AppliesTo = endPointReference
+            };
+
+            var channel = factory.CreateChannel();
+            var responseToken = channel.Issue(requestToken) as GenericXmlSecurityToken;
+            return responseToken?.TokenXml.OuterXml;
         }
 
         private static string GetHeader(HttpResponseMessage response, string header)

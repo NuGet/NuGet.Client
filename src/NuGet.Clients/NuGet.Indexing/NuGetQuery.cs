@@ -42,50 +42,49 @@ namespace NuGet.Indexing
         {
             BooleanQuery query = new BooleanQuery();
 
-            using (var analyzer = new PackageAnalyzer())
-            {
-                foreach (var clause in clauses)
-                {
-                    switch (clause.Key.ToLowerInvariant())
-                    {
-                        case "id":
-                            IdClause(query, analyzer, clause.Value, Occur.MUST);
-                            break;
-                        case "packageid":
-                            PackageIdClause(query, analyzer, clause.Value);
-                            break;
-                        case "version":
-                            VersionClause(query, analyzer, clause.Value, Occur.MUST);
-                            break;
-                        case "title":
-                            TitleClause(query, analyzer, clause.Value, Occur.MUST);
-                            break;
-                        case "description":
-                            DescriptionClause(query, analyzer, clause.Value, Occur.MUST);
-                            break;
-                        case "tag":
-                        case "tags":
-                            TagClause(query, analyzer, clause.Value, Occur.MUST);
-                            break;
-                        case "author":
-                        case "authors":
-                            AuthorClause(query, analyzer, clause.Value, Occur.MUST);
-                            break;
-                        case "summary":
-                            SummaryClause(query, analyzer, clause.Value, Occur.MUST);
-                            break;
-                        case "owner":
-                        case "owners":
-                            OwnerClause(query, analyzer, clause.Value, Occur.MUST);
-                            break;
-                        default:
-                            AnyClause(query, analyzer, clause.Value);
-                            break;
-                    }
-                }
+            using var analyzer = new PackageAnalyzer();
 
-                return query;
+            foreach (var clause in clauses)
+            {
+                switch (clause.Key.ToLowerInvariant())
+                {
+                    case "id":
+                        IdClause(query, analyzer, clause.Value, Occur.MUST);
+                        break;
+                    case "packageid":
+                        PackageIdClause(query, analyzer, clause.Value);
+                        break;
+                    case "version":
+                        VersionClause(query, analyzer, clause.Value, Occur.MUST);
+                        break;
+                    case "title":
+                        TitleClause(query, analyzer, clause.Value, Occur.MUST);
+                        break;
+                    case "description":
+                        DescriptionClause(query, analyzer, clause.Value, Occur.MUST);
+                        break;
+                    case "tag":
+                    case "tags":
+                        TagClause(query, analyzer, clause.Value, Occur.MUST);
+                        break;
+                    case "author":
+                    case "authors":
+                        AuthorClause(query, analyzer, clause.Value, Occur.MUST);
+                        break;
+                    case "summary":
+                        SummaryClause(query, analyzer, clause.Value, Occur.MUST);
+                        break;
+                    case "owner":
+                    case "owners":
+                        OwnerClause(query, analyzer, clause.Value, Occur.MUST);
+                        break;
+                    default:
+                        AnyClause(query, analyzer, clause.Value);
+                        break;
+                }
             }
+
+            return query;
         }
 
         static Query ConstructClauseQuery(Analyzer analyzer, string field, IEnumerable<string> values, Occur occur = Occur.SHOULD, float queryBoost = 1.0f, float termBoost = 1.0f)
@@ -186,23 +185,22 @@ namespace NuGet.Indexing
             List<List<Term>> terms = new List<List<Term>>();
             List<Term> current = null;
 
-            using (var reader = new StringReader(text))
-            {
-                TokenStream tokenStream = analyzer.TokenStream(field, reader);
-                ITermAttribute termAttribute = tokenStream.AddAttribute<ITermAttribute>();
-                IPositionIncrementAttribute positionIncrementAttribute = tokenStream.AddAttribute<IPositionIncrementAttribute>();
+            using var reader = new StringReader(text);
 
-                while (tokenStream.IncrementToken())
+            TokenStream tokenStream = analyzer.TokenStream(field, reader);
+            ITermAttribute termAttribute = tokenStream.AddAttribute<ITermAttribute>();
+            IPositionIncrementAttribute positionIncrementAttribute = tokenStream.AddAttribute<IPositionIncrementAttribute>();
+
+            while (tokenStream.IncrementToken())
+            {
+                if (positionIncrementAttribute.PositionIncrement > 0)
                 {
-                    if (positionIncrementAttribute.PositionIncrement > 0)
-                    {
-                        current = new List<Term>();
-                        terms.Add(current);
-                    }
-                    if (current != null)
-                    {
-                        current.Add(new Term(field, termAttribute.Term));
-                    }
+                    current = new List<Term>();
+                    terms.Add(current);
+                }
+                if (current != null)
+                {
+                    current.Add(new Term(field, termAttribute.Term));
                 }
             }
 

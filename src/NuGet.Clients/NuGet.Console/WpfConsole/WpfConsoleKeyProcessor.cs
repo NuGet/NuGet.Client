@@ -539,7 +539,7 @@ namespace NuGetConsole.Implementation.Console
             Debug.Assert(caretIndex >= 0);
 
             // Cancel tab expansion if it takes more than 'TabExpansionTimeout' secs (defaults to 3 secs) to get any results
-            CancellationTokenSource ctSource = new CancellationTokenSource(TabExpansionTimeout * 1000);
+            using var ctSource = new CancellationTokenSource(TabExpansionTimeout * 1000);
             SimpleExpansion simpleExpansion = null;
             try
             {
@@ -554,7 +554,6 @@ namespace NuGetConsole.Implementation.Console
             finally
             {
                 WpfConsole.Dispatcher.SetExecutingCommand(false);
-                ctSource.Dispose();
             }
 
             if (simpleExpansion != null

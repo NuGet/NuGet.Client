@@ -638,22 +638,18 @@ namespace NuGet.Protocol
 
         internal static async Task<XDocument> LoadXmlAsync(Stream stream, CancellationToken token)
         {
-            using (var memStream = await stream.AsSeekableStreamAsync(token))
-            {
-                var xmlReader = XmlReader.Create(memStream, new XmlReaderSettings()
-                {
-                    CloseInput = true,
-                    IgnoreWhitespace = true,
-                    IgnoreComments = true,
-                    IgnoreProcessingInstructions = true,
-                    DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
-                });
+            using var memStream = await stream.AsSeekableStreamAsync(token);
 
-                using (xmlReader)
-                {
-                    return XDocument.Load(xmlReader, LoadOptions.None);
-                }
-            }
+            using var xmlReader = XmlReader.Create(memStream, new XmlReaderSettings()
+            {
+                CloseInput = true,
+                IgnoreWhitespace = true,
+                IgnoreComments = true,
+                IgnoreProcessingInstructions = true,
+                DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
+            });
+
+            return XDocument.Load(xmlReader, LoadOptions.None);
         }
     }
 }

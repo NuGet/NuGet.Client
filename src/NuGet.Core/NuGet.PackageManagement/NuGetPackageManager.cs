@@ -1939,50 +1939,49 @@ namespace NuGet.PackageManagement
             // TODO: move this timeout to a better place
             // TODO: what should the timeout be?
             // Give up after 5 minutes
-            using (var tokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
-            {
-                var results = new Queue<KeyValuePair<SourceRepository, Task<bool>>>();
+            using var tokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
-                foreach (var sourceRepository in sourceRepositories)
+            var results = new Queue<KeyValuePair<SourceRepository, Task<bool>>>();
+
+            foreach (var sourceRepository in sourceRepositories)
+            {
+                // TODO: fetch the resource in parallel also
+                var metadataResource = await sourceRepository.GetResourceAsync<MetadataResource>();
+                if (metadataResource != null)
                 {
-                    // TODO: fetch the resource in parallel also
-                    var metadataResource = await sourceRepository.GetResourceAsync<MetadataResource>();
-                    if (metadataResource != null)
+                    var task = Task.Run(() => metadataResource.Exists(packageIdentity, sourceCacheContext, logger, tokenSource.Token), tokenSource.Token);
+                    results.Enqueue(new KeyValuePair<SourceRepository, Task<bool>>(sourceRepository, task));
+                }
+            }
+
+            while (results.Count > 0)
+            {
+                var pair = results.Dequeue();
+
+                try
+                {
+                    var exists = await pair.Value;
+
+                    // take only the first true result, but continue waiting for the remaining cancelled
+                    // tasks to keep things from getting out of control.
+                    if (source == null && exists)
                     {
-                        var task = Task.Run(() => metadataResource.Exists(packageIdentity, sourceCacheContext, logger, tokenSource.Token), tokenSource.Token);
-                        results.Enqueue(new KeyValuePair<SourceRepository, Task<bool>>(sourceRepository, task));
+                        source = pair.Key;
+
+                        // there is no need to finish trying the others
+                        tokenSource.Cancel();
                     }
                 }
-
-                while (results.Count > 0)
+                catch (OperationCanceledException)
                 {
-                    var pair = results.Dequeue();
-
-                    try
-                    {
-                        var exists = await pair.Value;
-
-                        // take only the first true result, but continue waiting for the remaining cancelled
-                        // tasks to keep things from getting out of control.
-                        if (source == null && exists)
-                        {
-                            source = pair.Key;
-
-                            // there is no need to finish trying the others
-                            tokenSource.Cancel();
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // ignore these
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarning(
-                            string.Format(Strings.Warning_ErrorFindingRepository,
-                                pair.Key.PackageSource.Source,
-                                ExceptionUtilities.DisplayMessage(ex)));
-                    }
+                    // ignore these
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(
+                        string.Format(Strings.Warning_ErrorFindingRepository,
+                            pair.Key.PackageSource.Source,
+                            ExceptionUtilities.DisplayMessage(ex)));
                 }
             }
 

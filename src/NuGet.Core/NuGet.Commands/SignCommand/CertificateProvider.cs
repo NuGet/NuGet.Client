@@ -159,32 +159,31 @@ namespace NuGet.Commands
         {
             X509Certificate2Collection resultCollection = null;
 
-            using (var store = new X509Store(options.StoreName, options.StoreLocation))
+            using var store = new X509Store(options.StoreName, options.StoreLocation);
+
+            OpenStore(store);
+
+            // Passing true for validOnly seems like a good idea; it would filter out invalid certificates.
+            // However, "invalid certificates" is a broad category that includes untrusted self-issued certificates.
+            // Untrusted self-issued certificates are permitted at signing time, so we must perform certificate
+            // validity checks ourselves.
+            const bool validOnly = false;
+
+            if (!string.IsNullOrEmpty(options.Fingerprint))
             {
-                OpenStore(store);
-
-                // Passing true for validOnly seems like a good idea; it would filter out invalid certificates.
-                // However, "invalid certificates" is a broad category that includes untrusted self-issued certificates.
-                // Untrusted self-issued certificates are permitted at signing time, so we must perform certificate
-                // validity checks ourselves.
-                const bool validOnly = false;
-
-                if (!string.IsNullOrEmpty(options.Fingerprint))
-                {
-                    resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly);
-                }
-                else if (!string.IsNullOrEmpty(options.SubjectName))
-                {
-                    resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly);
-                }
-
-                store.Close();
-
-                resultCollection = resultCollection ?? new X509Certificate2Collection();
-                resultCollection = GetValidCertificates(resultCollection);
-
-                return resultCollection;
+                resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly);
             }
+            else if (!string.IsNullOrEmpty(options.SubjectName))
+            {
+                resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly);
+            }
+
+            store.Close();
+
+            resultCollection = resultCollection ?? new X509Certificate2Collection();
+            resultCollection = GetValidCertificates(resultCollection);
+
+            return resultCollection;
         }
 
         /// <summary>
