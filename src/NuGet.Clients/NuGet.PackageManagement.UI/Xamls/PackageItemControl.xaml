@@ -88,7 +88,9 @@
                     VerticalAlignment="top"
                     Visibility="{Binding CheckBoxesEnabled, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}, Converter={StaticResource NonVisualStateHiddenBooleanToVisibilityConverter}}"
                     AutomationProperties.Name="{x:Static nuget:Resources.CheckBox_Selected}"
-                    IsChecked="{Binding Selected}" />
+                    IsChecked="{Binding Selected}"
+                    Checked="CheckBox_Checked"
+                    Unchecked="CheckBox_Checked"/>
 
       <!-- Icon -->
       <Grid
