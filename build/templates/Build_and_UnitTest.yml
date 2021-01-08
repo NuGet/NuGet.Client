@@ -408,12 +408,18 @@ steps:
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: CopyFiles@2
-  displayName: "Copy LCG Files"
+  displayName: "Copy LCG Files to Build Share (deprecated)"
   inputs:
     SourceFolder: "artifacts\\"
     Contents: "**\\*.lcg"
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+
+- task: PublishPipelineArtifact@1
+  displayName: "Upload localize artifact"
+  inputs:
+    pathToPublish: "artifacts\\localize"
+    artifactName: "localize"
 
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
