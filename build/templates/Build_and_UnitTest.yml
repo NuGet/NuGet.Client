@@ -408,12 +408,12 @@ steps:
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: CopyFiles@2
-  displayName: "Copy LCG Files to Build Share (deprecated)"
+  displayName: "Copy LCG Files (deprecated)"
   inputs:
-    SourceFolder: "artifacts\\"
+    SourceFolder: "artifacts\\localize\\ENU\\"
     Contents: "**\\*.lcg"
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))" # Enabled for all build for testing
 
 - task: PublishPipelineArtifact@1
   displayName: "Upload localize artifact"
