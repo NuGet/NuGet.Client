@@ -219,15 +219,14 @@ namespace NuGet.XPlat.FuncTest
         }
 
         internal static PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
-            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false, string dgFilePath = "")
+            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false)
         {
             var logger = new TestCommandOutputLogger();
-
-            if (string.IsNullOrEmpty(dgFilePath) && !noRestore)
+            var dgFilePath = string.Empty;
+            if (!noRestore)
             {
                 dgFilePath = CreateDGFileForProject(project);
             }
-
             return new PackageReferenceArgs(project.ProjectPath, logger)
             {
                 Frameworks = MSBuildStringUtility.Split(frameworks),
