@@ -420,6 +420,7 @@ steps:
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localize\\"
     artifactName: "localizeInputs"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
