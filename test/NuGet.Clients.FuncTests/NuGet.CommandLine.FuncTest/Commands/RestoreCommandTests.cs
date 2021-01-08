@@ -925,7 +925,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Remove old obj folders.
                 Directory.Delete(Path.GetDirectoryName(projectA.AssetsFileOutputPath), recursive: true);
 
-
                 // Act
                 result = RunRestore(pathContext, _failureExitCode, "-LockedMode");
 
