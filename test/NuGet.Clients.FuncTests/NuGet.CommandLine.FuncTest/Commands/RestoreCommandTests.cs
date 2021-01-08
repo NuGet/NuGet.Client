@@ -901,6 +901,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     Id = "y",
                     Version = "1.0.0"
                 };
+                packageY.Files.Clear();
                 packageY.AddFile("lib/net461/y.dll");
 
                 projectA.AddPackageToAllFrameworks(packageX);
@@ -916,12 +917,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var result = RunRestore(pathContext, _successExitCode, "-UseLockFile");
                 Assert.True(result.Success);
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                var originalPackagesLockFileWriteTime = new FileInfo(projectA.NuGetLockFileOutputPath).LastWriteTimeUtc;
 
                 projectA.AddPackageToAllFrameworks(packageY);
                 projectA.Save();
 
                 // Remove old obj folders.
                 Directory.Delete(Path.GetDirectoryName(projectA.AssetsFileOutputPath), recursive: true);
+
 
                 // Act
                 result = RunRestore(pathContext, _failureExitCode, "-LockedMode");
@@ -933,6 +936,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.True(File.Exists(projectA.PropsOutput));
                 Assert.True(File.Exists(projectA.TargetsOutput));
                 Assert.True(File.Exists(projectA.CacheFileOutputPath));
+                var packagesLockFileWriteTime = new FileInfo(projectA.NuGetLockFileOutputPath).LastWriteTimeUtc;
+                packagesLockFileWriteTime.Should().Be(originalPackagesLockFileWriteTime, because: "Locked mode must not overwrite the lock file");
             }
         }
 
