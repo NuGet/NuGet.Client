@@ -239,7 +239,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else
                 {
-                    // Below is equalant as version doesn't have an inclusive lower bound.
                     return VersionRange.All;
                 }
             }
