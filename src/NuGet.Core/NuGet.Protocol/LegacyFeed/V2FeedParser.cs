@@ -639,7 +639,6 @@ namespace NuGet.Protocol
         internal static async Task<XDocument> LoadXmlAsync(Stream stream, CancellationToken token)
         {
             using var memStream = await stream.AsSeekableStreamAsync(token);
-
             using var xmlReader = XmlReader.Create(memStream, new XmlReaderSettings()
             {
                 CloseInput = true,

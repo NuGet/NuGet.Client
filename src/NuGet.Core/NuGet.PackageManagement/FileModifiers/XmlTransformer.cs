@@ -154,7 +154,6 @@ namespace NuGet.ProjectManagement
             string content;
 
             using var packageStream = File.OpenRead(packageFileInfo.ZipArchivePath);
-
             using var zipArchive = new ZipArchive(packageStream);
 
             var zipArchivePackageEntry = PathUtility.GetEntry(zipArchive, packageFileInfo.ZipArchiveEntryFullName);

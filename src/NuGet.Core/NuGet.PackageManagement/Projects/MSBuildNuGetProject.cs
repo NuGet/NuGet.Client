@@ -457,9 +457,7 @@ namespace NuGet.ProjectManagement
             }
 
             using var packageStream = File.OpenRead(packagePath);
-
             using var zipArchive = new ZipArchive(packageStream);
-
             using var packageReader = new PackageArchiveReader(zipArchive);
 
             // Step-2: Execute powershell script - uninstall.ps1
