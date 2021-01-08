@@ -418,8 +418,8 @@ steps:
 - task: PublishPipelineArtifact@1
   displayName: "Upload localize artifact"
   inputs:
-    pathToPublish: "$(Build.Repository.LocalPath)\\artifacts\\localize\\"
-    artifactName: "localize"
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localize\\"
+    artifactName: "localizeInputs"
 
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
