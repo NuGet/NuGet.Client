@@ -702,9 +702,9 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // Arrange
             var framework = CommonFrameworks.Net50;
             var frameworkShortName = framework.GetShortFolderName();
-            var projectA = ProjectJsonTestHelpers.GetPackageSpec("A", framework: frameworkShortName);
-            var projectB = ProjectJsonTestHelpers.GetPackagesConfigPackageSpec("B");
-            var projectC = ProjectJsonTestHelpers.GetPackageSpec("C", framework: frameworkShortName);
+            var projectA = ProjectTestHelpers.GetPackageSpec("A", framework: frameworkShortName);
+            var projectB = ProjectTestHelpers.GetPackagesConfigPackageSpec("B");
+            var projectC = ProjectTestHelpers.GetPackageSpec("C", framework: frameworkShortName);
 
             var packageC = new LibraryDependency(
                 new LibraryRange("packageC", versionRange: VersionRange.Parse("2.0.0"), LibraryDependencyTarget.Package),
@@ -727,7 +727,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // C -> PackageC
             projectC.TargetFrameworks.First().Dependencies.Add(packageC);
 
-            var dgSpec = ProjectJsonTestHelpers.GetDGSpec(projectA, projectB, projectC);
+            var dgSpec = ProjectTestHelpers.GetDGSpec(projectA, projectB, projectC);
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -750,7 +750,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                         ))
                         .Build();
 
-            PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile).Should().BeTrue();
+            PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile).Item1.Should().BeTrue();
         }
 
         // <summary>
@@ -763,13 +763,13 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var framework = CommonFrameworks.NetStandard;
             var frameworkShortName = framework.GetShortFolderName();
             var incompatibleFramework = CommonFrameworks.Net46;
-            var projectA = ProjectJsonTestHelpers.GetPackageSpec("A", framework: frameworkShortName);
-            var projectB = ProjectJsonTestHelpers.GetPackagesConfigPackageSpec("B", framework: incompatibleFramework.GetShortFolderName());
+            var projectA = ProjectTestHelpers.GetPackageSpec("A", framework: frameworkShortName);
+            var projectB = ProjectTestHelpers.GetPackagesConfigPackageSpec("B", framework: incompatibleFramework.GetShortFolderName());
 
             // A -> B
             projectA = projectA.WithTestProjectReference(projectB);
 
-            var dgSpec = ProjectJsonTestHelpers.GetDGSpec(projectA, projectB);
+            var dgSpec = ProjectTestHelpers.GetDGSpec(projectA, projectB);
 
             var lockFile = new PackagesLockFileBuilder()
                         .WithTarget(target => target
@@ -781,7 +781,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                         ))
                         .Build();
 
-            PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile).Should().BeTrue();
+            PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile).Item1.Should().BeTrue();
         }
     }
 }
