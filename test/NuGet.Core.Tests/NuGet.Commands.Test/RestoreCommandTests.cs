@@ -1397,7 +1397,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                         LibraryDependencyType.Default,
                         LibraryIncludeFlags.All,
@@ -1419,6 +1419,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1456,7 +1457,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 var dependencyBar = new LibraryDependency(new LibraryRange(autoreferencedpackageId, VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
@@ -1478,6 +1479,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1722,7 +1724,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 // Package Bar does not have a corresponding PackageVersion 
                 var packageRefDependecyFoo = new LibraryDependency()
                 {
@@ -1741,6 +1743,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1779,7 +1782,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 // Package Bar does not have a corresponding PackageVersion 
                 var packageRefDependecyBar = new LibraryDependency()
                 {
@@ -1798,6 +1801,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
