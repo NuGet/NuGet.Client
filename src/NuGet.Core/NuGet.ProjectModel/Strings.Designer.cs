@@ -160,6 +160,15 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Version specified in {0} is invalid. Current tooling supports version {1} and previous formats. Regenerate the lock file to avoid manual errors..
+        /// </summary>
+        internal static string PackagesLockFile_IncompatibleLockFileVersion {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_IncompatibleLockFileVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The project target frameworks are different than the lock file&apos;s target frameworks. Lock file target frameworks: {0}. Project target frameworks {1}..
         /// </summary>
         internal static string PackagesLockFile_MismatchedTargetFrameworks {

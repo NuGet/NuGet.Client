@@ -74,7 +74,13 @@ namespace NuGet.ProjectModel
             // Current tools know how to read only previous formats including the current
             if (PackagesLockFileFormat.PackagesLockFileVersion < nuGetLockFile.Version)
             {
-                return (false, "Previous Version");
+                return (false,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.PackagesLockFile_IncompatibleLockFileVersion,
+                            nuGetLockFile.Path,
+                            PackagesLockFileFormat.PackagesLockFileVersion
+                            ));
             }
 
             var uniqueName = dgSpec.Restore.First();
