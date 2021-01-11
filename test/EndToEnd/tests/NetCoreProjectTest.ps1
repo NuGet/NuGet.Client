@@ -240,7 +240,7 @@ function Test-NetCorePackageVersionNoInclusiveLowerBoundNU1604 {
     $projectXML = [xml](Get-Content $project.FullName)
     $itemGroup = $projectXML.CreateElement("ItemGroup")
     $packageReference = $projectXML.CreateElement("PackageReference")
-    $packageReference.SetAttribute("Include", "TestUpdatePackage")
+    $packageReference.SetAttribute("Include", "TestUpdatePackage") # Note: Version is not specified
     $projectXML.DocumentElement.AppendChild($itemGroup)
     $itemGroup.AppendChild($packageReference)
     $projectXML.Save($project.FullName)       
@@ -248,7 +248,7 @@ function Test-NetCorePackageVersionNoInclusiveLowerBoundNU1604 {
     Build-Solution
 
     # Give time for restore to finish, so we can capture VS UI warnings.
-    Start-Sleep -s 5
+    Start-Sleep -s 3
 
     # Assert   
     $warnings = Get-Warnings   
