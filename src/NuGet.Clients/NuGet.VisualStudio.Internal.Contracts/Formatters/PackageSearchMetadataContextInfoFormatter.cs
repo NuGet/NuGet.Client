@@ -214,7 +214,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         protected override void SerializeCore(ref MessagePackWriter writer, PackageSearchMetadataContextInfo value, MessagePackSerializerOptions options)
         {
-            writer.WriteMapHeader(count: 21);
+            writer.WriteMapHeader(count: 23);
             writer.Write(AuthorsPropertyName);
             writer.Write(value.Authors);
 
