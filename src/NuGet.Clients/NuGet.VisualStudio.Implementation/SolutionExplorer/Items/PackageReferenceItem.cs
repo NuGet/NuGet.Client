@@ -49,7 +49,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override int Priority => AttachedItemPriority.Package;
 
-        public override ImageMoniker IconMoniker => KnownMonikers.PackageReference;
+        public override ImageMoniker IconMoniker => KnownMonikers.NuGetNoColor;
 
         protected override IContextMenuController? ContextMenuController => MenuController.TransitivePackage;
 

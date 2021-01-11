@@ -52,7 +52,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
             _ => throw new InvalidEnumArgumentException(nameof(GroupType), (int)GroupType, typeof(PackageAssemblyGroupType))
         };
 
-        public override ImageMoniker IconMoniker => KnownMonikers.ReferencePrivate;
+        public override ImageMoniker IconMoniker => KnownMonikers.ReferenceGroup;
 
     }
 }
