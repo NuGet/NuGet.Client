@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.UI
             ContractItemFilter itemFilter,
             string searchText = null,
             bool includePrerelease = true,
-            bool useRecommender = true)
+            bool useRecommender = false)
         {
             var itemLoader = new PackageItemLoader(
                 serviceBroker,
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.UI
             INuGetSearchService searchService,
             string searchText = null,
             bool includePrerelease = true,
-            bool useRecommender = true)
+            bool useRecommender = false)
         {
             var itemLoader = new PackageItemLoader(
                 serviceBroker,

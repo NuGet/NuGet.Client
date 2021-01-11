@@ -63,18 +63,21 @@ namespace NuGet.PackageManagement.VisualStudio
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            // get only the nuget.org repository. The recommender package feed is only created when one of the sources is nuget.org.
-            _sourceRepository = sourceRepositories.First(item => TelemetryUtility.IsNuGetOrg(item.PackageSource.Source));
+            // The recommender package feed should only created when one of the sources is nuget.org.
+            if (sourceRepositories.Any(item => TelemetryUtility.IsNuGetOrg(item.PackageSource.Source)))
+            {
+                _sourceRepository = sourceRepositories.First(item => TelemetryUtility.IsNuGetOrg(item.PackageSource.Source));
 
-            _installedPackages = installedPackages.Select(item => item.Id).ToList();
-            _transitivePackages = transitivePackages.Select(item => item.Id).ToList();
+                _installedPackages = installedPackages.Select(item => item.Id).ToList();
+                _transitivePackages = transitivePackages.Select(item => item.Id).ToList();
 
-            _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
-                async () =>
-                {
-                    return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsNuGetRecommenderService, IVsNuGetPackageRecommender>();
-                },
-                NuGetUIThreadHelper.JoinableTaskFactory);
+                _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
+                    async () =>
+                    {
+                        return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsNuGetRecommenderService, IVsNuGetPackageRecommender>();
+                    },
+                    NuGetUIThreadHelper.JoinableTaskFactory);
+            }
         }
 
         private class RecommendSearchToken : ContinuationToken
@@ -108,7 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // get recommender service and version info
-            if (NuGetRecommender is null)
+            if (NuGetRecommender is null && _nuGetRecommender != null)
             {
                 try
                 {
