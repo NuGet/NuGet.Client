@@ -783,6 +783,91 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 "lock file's dependencies count: 0.", actual.Item2);
         }
 
+        [Fact]
+        public void IsLockFileStillValid_WithChangeInP2PDependency_InvalidateLockFile()
+        {
+            // Arrange
+            var framework = CommonFrameworks.Net50;
+            var frameworkShortName = framework.GetShortFolderName();
+            var projectA = ProjectTestHelpers.GetPackageSpec("A", framework: frameworkShortName);
+            var projectB = ProjectTestHelpers.GetPackageSpec("B", framework: frameworkShortName);
+            var projectD = ProjectTestHelpers.GetPackageSpec("D", framework: frameworkShortName);
+
+            // B -> D
+            projectB = projectB.WithTestProjectReference(projectD);
+
+            // A -> B
+            projectA = projectA.WithTestProjectReference(projectB);
+
+            var dgSpec = ProjectTestHelpers.GetDGSpec(projectA, projectB, projectD);
+
+            var lockFile = new PackagesLockFileBuilder()
+                        .WithTarget(target => target
+                        .WithFramework(framework)
+                        .WithDependency(dep => dep
+                            .WithId("B")
+                            .WithType(PackageDependencyType.Project)
+                            .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                            .WithDependency(new PackageDependency("C", VersionRange.Parse("1.0.0"))))
+                        .WithDependency(dep => dep
+                            .WithId("C")
+                            .WithType(PackageDependencyType.Project)))
+                        .Build();
+
+            var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+
+            Assert.False(actual.Item1);
+            Assert.Equal("The project references B project dependencies has changed.", actual.Item2);
+        }
+
+        [Fact]
+        public void IsLockFileStillValid_WithChangeInP2PPackageDependency_InvalidateLockFile()
+        {
+            // Arrange
+            var framework = CommonFrameworks.Net50;
+            var frameworkShortName = framework.GetShortFolderName();
+            var projectA = ProjectTestHelpers.GetPackageSpec("A", framework: frameworkShortName);
+            var projectB = ProjectTestHelpers.GetPackageSpec("B", framework: frameworkShortName);
+
+            // A -> B
+            projectA = projectA.WithTestProjectReference(projectB);
+
+            var packageC = new LibraryDependency(
+                new LibraryRange("packageC", versionRange: VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+                type: LibraryDependencyType.Default,
+                includeType: LibraryIncludeFlags.All,
+                suppressParent: LibraryIncludeFlagUtils.DefaultSuppressParent,
+                noWarn: new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct,
+                aliases: null);
+
+            projectB.TargetFrameworks.First().Dependencies.Add(packageC);
+
+            var dgSpec = ProjectTestHelpers.GetDGSpec(projectA, projectB);
+
+            var lockFile = new PackagesLockFileBuilder()
+                        .WithTarget(target => target
+                        .WithFramework(framework)
+                        .WithDependency(dep => dep
+                            .WithId("B")
+                            .WithType(PackageDependencyType.Project)
+                            .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                            .WithDependency(new PackageDependency("packageB", VersionRange.Parse("1.0.0"))))
+                        .WithDependency(dep => dep
+                            .WithId("packageB")
+                            .WithType(PackageDependencyType.Transitive)
+                            .WithRequestedVersion(VersionRange.Parse("1.0.0"))))
+                        .Build();
+
+            var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+
+            Assert.False(actual.Item1);
+            Assert.Equal("The project references B project dependencies has changed.", actual.Item2);
+        }
+
         /// <summary>
         /// A -> B (PrivateAssets)-> C
         /// A has packages lock file enabled. Locked should succeed and ignore `C`.
