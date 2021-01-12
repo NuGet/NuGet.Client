@@ -54,7 +54,6 @@ function Test-NetCorePackageVersionNoInclusiveLowerBoundNU1604 {
     $project = $sol | New-WpfApplication
 
     # Act
-    Clean-Solution
     Build-Solution
 
     # Assert   
