@@ -201,26 +201,25 @@ namespace NuGet.PackageManagement.UI
 
         protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)
         {
-            // allVersions is null if server doesn't return any versions.
+            // The value will be null if the server does not return any versions.
             if (_allPackageVersions == null || _allPackageVersions.Count == 0)
             {
                 return;
             }
 
             _versions = new List<DisplayVersion>();
-            var allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v.version.Version).ToList();
+            List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v.version.Version).ToList();
 
             // null, if no version constraint defined in package.config
             VersionRange allowedVersions = await GetAllowedVersionsAsync(cancellationToken);
             var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v.version)).ToArray();
 
-            // null, if all versions are allowed to install or update
             var blockedVersions = new List<NuGetVersion>(allVersions.Count);
-            foreach (var version in allVersions)
+            foreach ((NuGetVersion version, bool isDeprecated) in allVersions)
             {
-                if (!allVersionsAllowed.Any(a => a.version.Version.Equals(version.version.Version)))
+                if (!allVersionsAllowed.Any(a => a.version.Version.Equals(version.Version)))
                 {
-                    blockedVersions.Add(version.version);
+                    blockedVersions.Add(version);
                 }
             }
 
