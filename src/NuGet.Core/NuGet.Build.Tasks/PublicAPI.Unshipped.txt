@@ -1,4 +1,27 @@
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Cancel() -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Dispose() -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.GenerateRestoreGraphFileTask() -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildBinPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildBinPath.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildStartupDirectory.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildStartupDirectory.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProcessFileName.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProcessFileName.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProjectFullPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProjectFullPath.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Recursive.get -> bool
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Recursive.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.RestoreGraphOutputPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.RestoreGraphOutputPath.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.get -> string
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.set -> void
+override NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Execute() -> bool
 static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string startupDirectory, string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string startupDirectory, string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
+virtual NuGet.Build.Tasks.LoggingQueue<T>.Dispose(bool disposing) -> void
+virtual NuGet.Build.Tasks.RestoreTask.Dispose(bool disposing) -> void
+static NuGet.Build.Tasks.Strings.Error_DgSpecGenerationFailed.get -> string
+static NuGet.Build.Tasks.Strings.Error_MissingRestoreGraphOutputPath.get -> string

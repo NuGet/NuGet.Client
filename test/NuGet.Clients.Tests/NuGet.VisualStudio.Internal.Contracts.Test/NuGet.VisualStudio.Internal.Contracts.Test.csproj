@@ -6,10 +6,14 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TestProject>true</TestProject>
     <Description>Unit and integration tests for NuGet.VisualStudio.Internal.Contracts.</Description>
-    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>

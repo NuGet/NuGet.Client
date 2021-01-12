@@ -18,6 +18,7 @@ namespace NuGet.Build.Tasks
     public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private bool _disposed = false;
 
         /// <summary>
         /// DG file entries
@@ -146,9 +147,23 @@ namespace NuGet.Build.Tasks
 
         public void Dispose()
         {
-            _cts.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-    }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
+            if (disposing)
+            {
+                _cts.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
 }

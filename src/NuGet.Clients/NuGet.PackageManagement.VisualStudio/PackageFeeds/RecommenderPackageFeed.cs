@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -23,8 +24,9 @@ namespace NuGet.PackageManagement.VisualStudio
         public bool IsMultiSource => false;
 
         private readonly SourceRepository _sourceRepository;
-        private readonly IEnumerable<PackageCollectionItem> _installedPackages;
-        private readonly IEnumerable<string> _targetFrameworks;
+        private readonly List<string> _installedPackages;
+        private readonly List<string> _transitivePackages;
+        private readonly IReadOnlyCollection<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
 
@@ -38,16 +40,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
-            IEnumerable<PackageCollectionItem> installedPackages,
-            IEnumerable<string> targetFrameworks,
+            PackageCollection installedPackages,
+            PackageCollection transitivePackages,
+            IReadOnlyCollection<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
-            _installedPackages = installedPackages ?? throw new ArgumentNullException(nameof(installedPackages));
+            if (installedPackages is null)
+            {
+                throw new ArgumentNullException(nameof(installedPackages));
+            }
+            if (transitivePackages is null)
+            {
+                throw new ArgumentNullException(nameof(transitivePackages));
+            }
             _targetFrameworks = targetFrameworks ?? throw new ArgumentNullException(nameof(targetFrameworks));
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            _installedPackages = installedPackages.Select(item => item.Id).ToList();
+            _transitivePackages = transitivePackages.Select(item => item.Id).ToList();
 
             _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
                 async () =>
@@ -77,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<SearchResult<IPackageSearchMetadata>> RecommendPackagesAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             var searchToken = continuationToken as RecommendSearchToken;
-            if (searchToken == null)
+            if (searchToken is null)
             {
                 throw new ArgumentException("Invalid continuation token", nameof(continuationToken));
             }
@@ -88,7 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // get recommender service and version info
-            if (NuGetRecommender == null)
+            if (NuGetRecommender is null)
             {
                 try
                 {
@@ -98,7 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     // if the recommender service is not available, NuGetRecommender remains null and we show only the default package list
                 }
-                if (NuGetRecommender != null)
+                if (!(NuGetRecommender is null))
                 {
                     var VersionDict = NuGetRecommender.GetVersionInfo();
                     VersionInfo = (modelVersion: VersionDict.ContainsKey("Model") ? VersionDict["Model"] : (string)null,
@@ -106,19 +119,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            List<string> recommendIds = new List<string>();
-            if (NuGetRecommender != null)
+            List<string> recommendIds = null;
+            if (!(NuGetRecommender is null))
             {
-                // get lists of only the package ids to send to the recommender
-                List<string> topPackages = _installedPackages.Select(item => item.Id).ToList();
-                // set the dependent packages to an empty list for now. We'll need to update this to the actual dependent packages
-                // when we implement PR-style projects.
-                List<string> depPackages = new List<string>();
                 // call the recommender to get package recommendations
-                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
+                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, _installedPackages, _transitivePackages, cancellationToken);
             }
 
-            if (recommendIds == null || !recommendIds.Any())
+            if (recommendIds is null || !recommendIds.Any())
             {
                 return SearchResult.Empty<IPackageSearchMetadata>();
             }
@@ -126,15 +134,14 @@ namespace NuGet.PackageManagement.VisualStudio
             // get PackageIdentity info for the top 5 recommended packages
             int index = 0;
             List<PackageIdentity> recommendPackages = new List<PackageIdentity>();
+            MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
+            PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
             while (index < recommendIds.Count && recommendPackages.Count < MaxRecommended)
             {
-                MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
-                PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-
                 Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], includePrerelease: false, includeUnlisted: false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
-                if (ver != null)
+                if (!(ver is null))
                 {
-                    NuGet.Packaging.Core.PackageIdentity pid = new NuGet.Packaging.Core.PackageIdentity(recommendIds[index], ver);
+                    var pid = new PackageIdentity(recommendIds[index], ver);
                     recommendPackages.Add(pid);
                 }
                 index++;
@@ -171,7 +178,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // first we try and load the metadata from a local package
             var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-            if (packageMetadata == null)
+            if (packageMetadata is null)
             {
                 // and failing that we go to the network
                 packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);

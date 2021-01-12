@@ -1719,6 +1719,96 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [SkipMono(Skip = "Mono has issues if the MockServer has anything else running in the same process https://github.com/NuGet/Home/issues/8594")]
+        public async Task InstallCommand_DoNotSpecifyVersion_IgnoresUnlistedPackagesAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            using (var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource))
+            {
+                //Replace the default package source of folder to ServiceIndexUri
+                var settings = pathContext.Settings;
+                SimpleTestSettingsContext.RemoveSource(settings.XML, "source");
+                var section = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
+                SimpleTestSettingsContext.AddEntry(section, "source", mockServer.ServiceIndexUri);
+                settings.Save();
+
+                // Arrange
+                var a1 = new SimpleTestPackageContext("a", "1.0.0");
+                var a2 = new SimpleTestPackageContext("a", "2.0.0");
+                var b1 = new SimpleTestPackageContext("b", "1.0.0");
+                var b2 = new SimpleTestPackageContext("b", "2.0.0");
+
+                SimpleTestPackageContext[] packages = new SimpleTestPackageContext[] { a1, a2, b1, b2 };
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packages);
+
+                //Unlist a2 and b1
+                mockServer.UnlistedPackages.Add(a2.Identity);
+                mockServer.UnlistedPackages.Add(b1.Identity);
+
+                mockServer.Start();
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot);
+
+                // Act
+                var r1 = RunInstall(pathContext, "A", 0, "-OutputDirectory", pathContext.SolutionRoot);
+                var r2 = RunInstall(pathContext, "B", 0, "-OutputDirectory", pathContext.SolutionRoot);
+
+                mockServer.Stop();
+
+                // Assert
+                var a1Nupkg = pathResolver.GetInstalledPackageFilePath(a1.Identity);
+                var a2Nupkg = pathResolver.GetInstalledPackageFilePath(a2.Identity);
+                var b1Nupkg = pathResolver.GetInstalledPackageFilePath(b1.Identity);
+                var b2Nupkg = pathResolver.GetInstalledPackageFilePath(b2.Identity);
+
+                r1.Success.Should().BeTrue();
+                r2.Success.Should().BeTrue();
+                File.Exists(a1Nupkg).Should().BeTrue();
+                File.Exists(a2Nupkg).Should().BeFalse();
+                File.Exists(b1Nupkg).Should().BeFalse();
+                File.Exists(b2Nupkg).Should().BeTrue();
+            }
+        }
+
+        [SkipMono(Skip = "Mono has issues if the MockServer has anything else running in the same process https://github.com/NuGet/Home/issues/8594")]
+        public async Task InstallCommand_SpecifyUnlistedVersion_InstallUnlistedPackagesAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            using (var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource))
+            {
+                //Replace the default package source of folder to ServiceIndexUri
+                var settings = pathContext.Settings;
+                SimpleTestSettingsContext.RemoveSource(settings.XML, "source");
+                var section = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
+                SimpleTestSettingsContext.AddEntry(section, "source", mockServer.ServiceIndexUri);
+                settings.Save();
+
+                // Arrange
+                var a1 = new SimpleTestPackageContext("a", "1.0.0");
+                var a2 = new SimpleTestPackageContext("a", "2.0.0");
+
+                SimpleTestPackageContext[] packages = new SimpleTestPackageContext[] { a1, a2 };
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packages);
+
+                //Unlist a2
+                mockServer.UnlistedPackages.Add(a2.Identity);
+
+                mockServer.Start();
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot);
+
+                // Act
+                var r1 = RunInstall(pathContext, "a", 0, "-Version", "2.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                mockServer.Stop();
+
+                // Assert
+                var a1Nupkg = pathResolver.GetInstalledPackageFilePath(a1.Identity);
+                var a2Nupkg = pathResolver.GetInstalledPackageFilePath(a2.Identity);
+
+                r1.Success.Should().BeTrue();
+                File.Exists(a1Nupkg).Should().BeFalse();
+                File.Exists(a2Nupkg).Should().BeTrue();
+            }
+        }
         public static CommandRunnerResult RunInstall(SimpleTestPathContext pathContext, string input, int expectedExitCode = 0, params string[] additionalArgs)
         {
             var nugetexe = Util.GetNuGetExePath();

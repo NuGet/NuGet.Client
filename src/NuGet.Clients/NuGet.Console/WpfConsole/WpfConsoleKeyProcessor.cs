@@ -9,17 +9,18 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.Win32;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using ActivityLog = Microsoft.VisualStudio.Shell.ActivityLog;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Implementation.Console
 {
@@ -142,12 +143,16 @@ namespace NuGetConsole.Implementation.Console
         /// </summary>
         private void ExecuteCommand(VSConstants.VSStd2KCmdID idCommand, object args = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             OldChain.Execute(idCommand, args);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         protected override int InternalExec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int hr = OLECMDERR_E_NOTSUPPORTED;
 
             if (WpfConsole == null
@@ -442,6 +447,8 @@ namespace NuGetConsole.Implementation.Console
 
         private void PasteText(ref int hr)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             string text = Clipboard.GetText();
             int iLineStart = 0;
             int iNewLine = -1;

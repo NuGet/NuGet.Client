@@ -68,11 +68,13 @@ namespace NuGetVSExtension
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string, PackageAutoLoadFlags.BackgroundLoad)]
     [FontAndColorsRegistration("Package Manager Console", NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString, "{" + GuidList.guidNuGetPkgString + "}")]
-    [ProvideBrokeredService(ContractsNuGetServices.NuGetProjectServiceName, ContractsNuGetServices.Version1, Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService(ContractsNuGetServices.NuGetProjectServiceName, ContractsNuGetServices.Version1, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SourceProviderServiceName, BrokeredServicesUtilities.SourceProviderServiceVersion_1_0_1, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SolutionManagerServiceName, BrokeredServicesUtilities.SolutionManagerServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectManagerServiceName, BrokeredServicesUtilities.ProjectManagerServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -215,8 +217,20 @@ namespace NuGetVSExtension
                 await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
             }
 
-            ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager.Value, this, componentModel);
-            ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager.Value);
+            IVsTrackProjectRetargeting vsTrackProjectRetargeting = await this.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
+            IVsMonitorSelection vsMonitorSelection = await this.GetServiceAsync<IVsMonitorSelection>();
+            ProjectRetargetingHandler = new ProjectRetargetingHandler(
+                    _dte,
+                    SolutionManager.Value,
+                    this,
+                    componentModel,
+                    vsTrackProjectRetargeting,
+                    vsMonitorSelection);
+
+            IVsSolution2 vsSolution2 = await this.GetServiceAsync<SVsSolution, IVsSolution2>();
+            ProjectUpgradeHandler = new ProjectUpgradeHandler(
+                SolutionManager.Value,
+                vsSolution2);
 
             SolutionUserOptions.Value.LoadSettings();
         }
@@ -303,6 +317,18 @@ namespace NuGetVSExtension
                 var generalSettingsCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdGeneralSettings);
                 var generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
+
+                // menu command for the Update option on each package or a selection of packages
+                var updatePackageDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpdatePackage);
+                var updatePackageDialogCommand = new OleMenuCommand(ShowUpdatePackageDialog, changeHandler: null, BeforeQueryStatusForAddPackageDialog, updatePackageDialogCommandID);
+                updatePackageDialogCommand.ParametersDescription = "$";
+                _mcs.AddCommand(updatePackageDialogCommand);
+
+                // menu command for the Update All option on the Dependencies -> Packages node
+                var updatePackagesDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpdatePackages);
+                var updatePackagesDialogCommand = new OleMenuCommand(ShowUpdatePackagesDialog, changeHandler: null, BeforeQueryStatusForAddPackageDialog, updatePackagesDialogCommandID);
+                updatePackageDialogCommand.ParametersDescription = "$";
+                _mcs.AddCommand(updatePackagesDialogCommand);
             }
         }
 
@@ -590,56 +616,77 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
+            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                if (ShouldMEFBeInitialized())
-                {
-                    await InitializeMEFAsync();
-                }
-
-                string parameterString = null;
-                var args = e as OleMenuCmdEventArgs;
-                if (null != args)
-                {
-                    parameterString = args.InValue as string;
-                }
-                var searchText = GetSearchText(parameterString);
-
-                // *** temp code
-                var project = VsMonitorSelection.GetActiveProject();
-
-                if (project != null
-                    &&
-                    !project.IsUnloaded()
-                    &&
-                    await EnvDTEProjectUtility.IsSupportedAsync(project))
-                {
-                    var windowFrame = await FindExistingWindowFrameAsync(project);
-                    if (windowFrame == null)
-                    {
-                        windowFrame = await CreateNewWindowFrameAsync(project);
-                    }
-
-                    if (windowFrame != null)
-                    {
-                        Search(windowFrame, searchText);
-                        windowFrame.Show();
-                    }
-                }
-                else
-                {
-                    // show error message when no supported project is selected.
-                    var projectName = project != null ? project.Name : string.Empty;
-
-                    var errorMessage = string.IsNullOrEmpty(projectName)
-                        ? Resources.NoProjectSelected
-                        : string.Format(CultureInfo.CurrentCulture, Resources.DTE_ProjectUnsupported, projectName);
-
-                    MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
-                }
+                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString));
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
+        }
+
+        private async Task ShowManageLibraryPackageDialogAsync(string searchText, ShowUpdatePackageOptions updatePackageOptions = null)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (ShouldMEFBeInitialized())
+            {
+                await InitializeMEFAsync();
+            }
+
+            // *** temp code
+            var project = VsMonitorSelection.GetActiveProject();
+
+            if (project != null
+                &&
+                !project.IsUnloaded()
+                &&
+                await EnvDTEProjectUtility.IsSupportedAsync(project))
+            {
+                var windowFrame = await FindExistingWindowFrameAsync(project);
+                if (windowFrame == null)
+                {
+                    windowFrame = await CreateNewWindowFrameAsync(project);
+                }
+
+                if (windowFrame != null)
+                {
+                    ShowUpdatePackages(windowFrame, updatePackageOptions);
+                    Search(windowFrame, searchText);
+                    windowFrame.Show();
+                }
+            }
+            else
+            {
+                // show error message when no supported project is selected.
+                var projectName = project != null ? project.Name : string.Empty;
+
+                var errorMessage = string.IsNullOrEmpty(projectName)
+                    ? Resources.NoProjectSelected
+                    : string.Format(CultureInfo.CurrentCulture, Resources.DTE_ProjectUnsupported, projectName);
+
+                MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
+            }
+        }
+
+        private void ShowUpdatePackageDialog(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var updatePackages = ShowUpdatePackageOptions.UpdatePackages(GetSelectedPackages());
+
+            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString), updatePackages);
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowUpdatePackageDialog));
+        }
+
+        private void ShowUpdatePackagesDialog(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString), ShowUpdatePackageOptions.UpdateAllPackages());
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowUpdatePackagesDialog));
         }
 
         private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
@@ -686,6 +733,96 @@ namespace NuGetVSExtension
                 return parameterString;
             }
             return parameterString.Substring(0, lastIndexOfSearchInSwitch);
+        }
+
+        /// <summary>
+        /// Gets the names of the package or packages that are selected in the VsHierarchy.
+        /// </summary>
+        /// <returns>
+        /// A string array containing the list of selected packages in the same hierarchy.
+        /// If only one package is selected, the array will contain one package name, otherwise, it will be a list of package names.
+        /// If the selected packages are across multiple hierarchies or if no packages are selected, an empty array will be returned.
+        /// This method will return <c>null</c> if it fails to retrieve the selected hierarchy.
+        /// </returns>
+        private string[] GetSelectedPackages()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IntPtr hierarchyPtr = IntPtr.Zero;
+            IntPtr selectionContainerPtr = IntPtr.Zero;
+            try
+            {
+                if (!ErrorHandler.Succeeded(VsMonitorSelection.GetCurrentSelection(out hierarchyPtr, out uint itemId, out IVsMultiItemSelect multiItemSelect, out selectionContainerPtr))
+                    || (itemId == VSConstants.VSITEMID_NIL && hierarchyPtr != IntPtr.Zero))
+                {
+                    return null;
+                }
+
+                var packages = new List<string>();
+                if (itemId != VSConstants.VSITEMID_SELECTION)
+                {
+                    // This is a single item selection.
+
+                    if (Marshal.GetTypedObjectForIUnknown(hierarchyPtr, typeof(IVsHierarchy)) is IVsHierarchy hierarchy
+                        && TryGetPackageNameFromHierarchy(hierarchy, itemId, out string packageName))
+                    {
+                        packages.Add(packageName);
+                    }
+                }
+                else if (multiItemSelect != null)
+                {
+                    // This is a multiple item selection.
+
+                    VSITEMSELECTION[] vsItemSelections = multiItemSelect.GetSelectedItemsInSingleHierachy();
+                    if (vsItemSelections != null)
+                    {
+                        foreach (VSITEMSELECTION sel in vsItemSelections)
+                        {
+                            if (sel.pHier != null && TryGetPackageNameFromHierarchy(sel.pHier, sel.itemid, out string packageName))
+                            {
+                                packages.Add(packageName);
+                            }
+                        }
+                    }
+                }
+
+                return packages.ToArray();
+            }
+            finally
+            {
+                if (hierarchyPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(hierarchyPtr);
+                }
+                if (selectionContainerPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(selectionContainerPtr);
+                }
+            }
+        }
+
+        private static bool TryGetPackageNameFromHierarchy(IVsHierarchy hierarchy, uint itemId, out string packageName)
+        {
+            Assumes.NotNull(hierarchy);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            int hr = hierarchy.GetProperty(itemId, (int)__VSHPROPID7.VSHPROPID_ProjectTreeCapabilities, out object treeCapabilities);
+            packageName = ParsePackageNameFromTreeCapabilities(treeCapabilities as string);
+            return hr == VSConstants.S_OK && packageName != null;
+        }
+
+        private static string ParsePackageNameFromTreeCapabilities(string treeCapabilities)
+        {
+            const string packageNamePrefix = "$ID:";
+
+            if (treeCapabilities == null)
+            {
+                return null;
+            }
+
+            string[] capabilities = treeCapabilities.Split(' ');
+            string packageName = capabilities.SingleOrDefault(p => p.StartsWith(packageNamePrefix, StringComparison.Ordinal));
+            return packageName?.Substring(packageNamePrefix.Length);
         }
 
         private async Task<IVsWindowFrame> CreateDocWindowForSolutionAsync()
@@ -841,6 +978,19 @@ namespace NuGetVSExtension
             {
                 packageManagerControl.Search(searchText);
             }
+        }
+
+        private void ShowUpdatePackages(IVsWindowFrame windowFrame, ShowUpdatePackageOptions updatePackageOptions)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (updatePackageOptions == null)
+            {
+                return;
+            }
+
+            var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
+            packageManagerControl?.ShowUpdatePackages(updatePackageOptions);
         }
 
         // For PowerShell, it's okay to query from the worker thread.

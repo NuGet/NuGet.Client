@@ -3,29 +3,23 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using Test.Utility.Threading;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test.Projects
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
-    public class CpsPackageReferenceProjectProviderTests
+    [Collection(MockedVS.Collection)]
+    public class CpsPackageReferenceProjectProviderTests : MockedVSCollectionTests
     {
-        private readonly JoinableTaskFactory _jtf;
-
-        public CpsPackageReferenceProjectProviderTests(DispatcherThreadFixture fixture)
+        public CpsPackageReferenceProjectProviderTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
         {
-            Assumes.Present(fixture);
-
-            _jtf = fixture.JoinableTaskFactory;
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
+            globalServiceProvider.Reset();
         }
 
         // As of October 2020, Service Fabric projects (sfproj) uses CPS, but does not support PackageReference. Make sure non-PR CPS projects do not use this project system.
@@ -51,9 +45,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Projects
             var target = new CpsPackageReferenceProjectProvider(projectSystemCache.Object);
 
             // Act
-            NuGetProject actual = await _jtf.RunAsync(async () =>
+            NuGetProject actual = await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await _jtf.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 return await target.TryCreateNuGetProjectAsync(projectAdapter.Object, ppc, forceProjectType: false);
             });
 

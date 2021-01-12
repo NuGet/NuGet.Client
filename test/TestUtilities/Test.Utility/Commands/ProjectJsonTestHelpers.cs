@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands.Test
@@ -100,6 +101,11 @@ namespace NuGet.Commands.Test
 
         public static PackageSpec WithTestProjectReference(this PackageSpec parent, PackageSpec child, params NuGetFramework[] frameworks)
         {
+            return parent.WithTestProjectReference(child, privateAssets: LibraryIncludeFlagUtils.DefaultSuppressParent, frameworks);
+        }
+
+        public static PackageSpec WithTestProjectReference(this PackageSpec parent, PackageSpec child, LibraryIncludeFlags privateAssets, params NuGetFramework[] frameworks)
+        {
             var spec = parent.Clone();
 
             if (frameworks.Length == 0)
@@ -116,7 +122,8 @@ namespace NuGet.Commands.Test
                 framework.ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectUniqueName = child.RestoreMetadata.ProjectUniqueName,
-                    ProjectPath = child.RestoreMetadata.ProjectPath
+                    ProjectPath = child.RestoreMetadata.ProjectPath,
+                    PrivateAssets = privateAssets,
                 });
             }
 
@@ -185,6 +192,65 @@ namespace NuGet.Commands.Test
             }
 
             return updated;
+        }
+
+        public static PackageSpec WithPackagesConfigRestoreMetadata(this PackageSpec spec)
+        {
+            var updated = spec.Clone();
+            var packageSpecFile = new FileInfo(spec.FilePath);
+            var projectDir = packageSpecFile.Directory.FullName;
+
+            var projectPath = Path.Combine(projectDir, spec.Name + ".csproj");
+            updated.FilePath = projectPath;
+
+            updated.RestoreMetadata = new PackagesConfigProjectRestoreMetadata();
+            updated.RestoreMetadata.OutputPath = projectDir;
+            updated.RestoreMetadata.ProjectStyle = ProjectStyle.PackagesConfig;
+            updated.RestoreMetadata.ProjectName = spec.Name;
+            updated.RestoreMetadata.ProjectUniqueName = projectPath;
+            updated.RestoreMetadata.ProjectPath = projectPath;
+            updated.RestoreMetadata.ConfigFilePaths = new List<string>();
+            (updated.RestoreMetadata as PackagesConfigProjectRestoreMetadata).PackagesConfigPath = Path.GetFullPath(Path.Combine(projectDir, "../packages"));
+
+            foreach (var framework in updated.TargetFrameworks)
+            {
+                updated.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework.FrameworkName));
+            }
+            return updated;
+        }
+
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net5.0")
+        {
+            const string referenceSpec = @"
+                {
+                    ""frameworks"": {
+                        ""TARGET_FRAMEWORK"": {
+                            ""dependencies"": {
+                            }
+                        }
+                    }
+                }";
+
+            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework);
+            var packageSpec = JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithTestRestoreMetadata();
+            packageSpec.RestoreSettings.HideWarningsAndErrors = true; // Pretend this is running in VS and this is a .NET Core project.
+            return packageSpec;
+        }
+
+        public static PackageSpec GetPackagesConfigPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net472")
+        {
+            const string referenceSpec = @"
+                {
+                    ""frameworks"": {
+                        ""TARGET_FRAMEWORK"": {
+                            ""dependencies"": {
+                            }
+                        }
+                    }
+                }";
+
+            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework);
+            return JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithPackagesConfigRestoreMetadata();
         }
     }
 }

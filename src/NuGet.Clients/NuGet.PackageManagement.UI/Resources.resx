@@ -924,4 +924,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="ColumnHeader_InstalledVersion" xml:space="preserve">
     <value>Installed</value>
   </data>
+  <data name="ArgumentNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
 </root>

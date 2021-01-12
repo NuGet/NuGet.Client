@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="$(MicroBuildDirectory)MicroBuild.Core.props" />
+  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.props" />
 
   <PropertyGroup>
     <OutputArchitecture>neutral</OutputArchitecture>
@@ -17,9 +17,9 @@
   <PropertyGroup>
     <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\$(VisualStudioVersion)\bin\$(Configuration)\</ReferenceOutputPath>
     <NuGetTargetsBasePath>$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks\</NuGetTargetsBasePath>
-    <XmlTransformPath>$(ArtifactsDirectory)microsoft.web.xdt\2.1.2\lib\net40\</XmlTransformPath>
+    <XmlTransformPath>$(ArtifactsDirectory)microsoft.web.xdt\3.0.0\lib\net40\</XmlTransformPath>
     <NewtonsoftJsonPath>$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\</NewtonsoftJsonPath>
-  
+
 </PropertyGroup>
 
   <PropertyGroup>
@@ -35,5 +35,5 @@
 
   <!-- MicroBuild plugin fails if GetNativeManifest is not found for some reason -->
   <Target Name="GetNativeManifest" />
-  <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets" />
+  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
 </Project>

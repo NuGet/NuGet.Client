@@ -24,8 +24,9 @@ namespace NuGet.VisualStudio
 
             try
             {
-                vsMonitorSelection.GetCurrentSelection(out ppHier, out pitemid, out ppMIS, out ppSC);
+                IVsHierarchy hierarchy = null;
 
+                vsMonitorSelection.GetCurrentSelection(out ppHier, out pitemid, out ppMIS, out ppSC);
                 if (ppHier == IntPtr.Zero)
                 {
                     return null;
@@ -34,10 +35,18 @@ namespace NuGet.VisualStudio
                 // multiple items are selected.
                 if (pitemid == (uint)VSConstants.VSITEMID.Selection)
                 {
-                    return null;
+                    VSITEMSELECTION[] vsItemSelections = ppMIS.GetSelectedItemsInSingleHierachy();
+                    if (vsItemSelections != null && vsItemSelections.Length > 0)
+                    {
+                        VSITEMSELECTION sel = vsItemSelections[0];
+                        hierarchy = sel.pHier;
+                    }
+                }
+                else
+                {
+                    hierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
                 }
 
-                IVsHierarchy hierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
                 if (hierarchy != null)
                 {
                     object project;

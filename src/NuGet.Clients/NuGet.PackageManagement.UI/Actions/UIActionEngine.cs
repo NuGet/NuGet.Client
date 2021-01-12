@@ -234,7 +234,7 @@ namespace NuGet.PackageManagement.UI
 
             string[] projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
 
-            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.Select(source => source.PackageSource.Name).ToList();
+            IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
 
             return await projectManagerService.GetUpdateActionsAsync(
                 projectIds,
@@ -491,8 +491,8 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
-                    PackageLoadContext plc = new PackageLoadContext(sourceRepositories: null, isSolution: false, uiService.UIContext);
-                    var frameworks = (await plc.GetSupportedFrameworksAsync()).ToList();
+                    var plc = new PackageLoadContext(isSolution: false, uiService.UIContext);
+                    IReadOnlyCollection<string> frameworks = await plc.GetSupportedFrameworksAsync();
                     string[] projectIds = (await ProjectUtility.GetSortedProjectIdsAsync(
                         uiService.UIContext.ServiceBroker,
                         uiService.Projects,
@@ -548,7 +548,7 @@ namespace NuGet.PackageManagement.UI
             List<string> removedPackages,
             List<Tuple<string, string>> updatedPackagesOld,
             List<Tuple<string, string>> updatedPackagesNew,
-            List<string> targetFrameworks)
+            IReadOnlyCollection<string> targetFrameworks)
         {
             static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
             {
@@ -781,7 +781,7 @@ namespace NuGet.PackageManagement.UI
                 userAction.Action == NuGetProjectActionType.Uninstall ||
                 userAction.Version.IsPrerelease == true;
 
-            IReadOnlyList<string> packageSourceNames = uiService.ActiveSources.Select(source => source.PackageSource.Name).ToList();
+            IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
             string[] projectIds = projects
                 .Select(project => project.ProjectId)
                 .Distinct()

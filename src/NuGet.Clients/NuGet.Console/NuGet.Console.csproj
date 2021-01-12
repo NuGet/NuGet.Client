@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <PropertyGroup>
@@ -17,18 +17,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Design" />
-    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="PresentationCore">
       <Private>False</Private>
     </Reference>
     <Reference Include="PresentationFramework">
       <Private>False</Private>
     </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
@@ -152,11 +152,16 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.Editor" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Data" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" />
     <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.10.0" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.VisualStudio.RpcContracts" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.3.DesignTime" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />

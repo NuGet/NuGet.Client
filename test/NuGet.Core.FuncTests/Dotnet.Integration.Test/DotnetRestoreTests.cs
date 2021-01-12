@@ -278,8 +278,10 @@ EndGlobal";
         }
 #endif //IS_SIGNING_SUPPORTED
 
-        [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_OneLinePerRestore()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_OneLinePerRestore(bool useStaticGraphRestore)
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -340,14 +342,15 @@ EndGlobal";
                 File.WriteAllText(slnPath, slnContents);
 
                 // Act
-                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
+                var arguments = $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}" + (useStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty);
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, arguments, ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
                 Assert.True(2 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
                 // Act - make sure no-op does the same thing.
-                result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
+                result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, arguments, ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
@@ -939,6 +942,36 @@ EndGlobal";
                 // Ensure static graph restore no-ops
                 result.ExitCode.Should().Be(0, because: result.AllOutput);
                 result.AllOutput.Should().Contain("All projects are up-to-date for restore.");
+            }
+        }
+
+        [Fact]
+        public void GenerateRestoreGraphFile_StandardAndStaticGraphRestore_AreEquivalent()
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                var testDirectory = pathContext.SolutionRoot;
+                var projectName1 = "ClassLibrary";
+                var projectName2 = "ConsoleApp";
+                var projectName3 = "WebApplication";
+
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib");
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName2, " console");
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName3, " webapp");
+                _msbuildFixture.RunDotnet(testDirectory, "new sln --name test");
+                _msbuildFixture.RunDotnet(testDirectory, $"sln add {projectName1}");
+                _msbuildFixture.RunDotnet(testDirectory, $"sln add {projectName2}");
+                _msbuildFixture.RunDotnet(testDirectory, $"sln add {projectName3}");
+                var targetPath = Path.Combine(testDirectory, "test.sln");
+                var standardDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "standard.dgspec.json");
+                var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
+                _msbuildFixture.RunDotnet(testDirectory, $"msbuild /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{standardDgSpecFile}\" {targetPath}");
+                _msbuildFixture.RunDotnet(testDirectory, $"msbuild /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation=true {targetPath}");
+
+                var regularDgSpec = File.ReadAllText(standardDgSpecFile);
+                var staticGraphDgSpec = File.ReadAllText(staticGraphDgSpecFile);
+
+                regularDgSpec.Should().BeEquivalentTo(staticGraphDgSpec);
             }
         }
 #endif

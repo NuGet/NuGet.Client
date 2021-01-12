@@ -91,7 +91,9 @@ namespace NuGet.Build.Tasks
                         return;
 
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(
+                            paramName: nameof(message),
+                            message: nameof(consoleOutLogMessage.MessageType));
                 }
             }
         }

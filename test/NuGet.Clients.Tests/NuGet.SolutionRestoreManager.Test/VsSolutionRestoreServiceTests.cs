@@ -21,6 +21,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.VisualStudio;
+using Test.Utility.ProjectManagement;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
 
@@ -2108,6 +2109,39 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal("tfm1", targetFrameworkInfo.TargetAlias);
             targetFrameworkInfo = Assert.Single(result.TargetFrameworks, tf => tf.FrameworkName == CommonFrameworks.NetStandard21);
             Assert.Equal("tfm2", targetFrameworkInfo.TargetAlias);
+        }
+
+        // In VS, when a PackageReference CPS (SDK style) project gets loaded, the project system needs to send us a nomination.
+        // We then parse/transform that nomination input into a DependencyGraphSpec. If there's any problem, we need to display a message.
+        // However, the "contract" is that NuGet only ever writes errors for CPS projects to the assets file, and CPS will read the assets
+        // file and replay the errors in Visual Studio's Error List. Therefore, in VS, we must generate an assets file, even when there's
+        // a nomination error. We do this by creating a minimal DependencyGraphSpec, and do a normal restore with it. This is the only
+        // production code that needs to create the minimal DGSpec, hence the method to create the minimal DGSpec is in our VS assembly.
+        //
+        // For testing, we want to be able to test the minimal DGSpec in NuGet.Commands.Test and NuGet.PackageManagement.Test. There are a
+        // few problems here. First, NuGet.SolutionRestoreManager.dll is only net472, but NuGet.Commands.Test and NuGet.PackageManagement.Test
+        // also target netstandard and net5. Additionally, NuGet.Commands is part of the NuGet SDK, meaning it only uses other NuGet SDK projects
+        // and I don't want to add CreateMinimalDependencyGraphSpec to the public API.
+        //
+        // Therefore, what I've done is duplicated the method, once in NuGet.SolutionRestoreManagement, once in Test.Utilities. This test
+        // makes sure the implementations are the same, so if someone modifies some restore code and the minimum DGSpec grows, they will
+        // naturally change the Test.Utilities copy of the method as tests that use that will fail. This test will make sure they update the
+        // NuGet.SolutionRestoreManager copy as well.
+        [Fact]
+        public void CreateMinimalDependencyGraphSpec_ComparedToTestUtility_AreEqual()
+        {
+            // Arrange
+            const string projectPath = @"c:\src\project\project.csproj";
+            const string outputPath = @"c:\src\project\obj";
+
+            DependencyGraphSpec productionMinimalDGSpec = VsSolutionRestoreService.CreateMinimalDependencyGraphSpec(projectPath, outputPath);
+            DependencyGraphSpec testMinimalDGSpec = DependencyGraphSpecTestUtilities.CreateMinimalDependencyGraphSpec(projectPath, outputPath);
+
+            string prodJson = Newtonsoft.Json.JsonConvert.SerializeObject(productionMinimalDGSpec);
+            string testJson = Newtonsoft.Json.JsonConvert.SerializeObject(testMinimalDGSpec);
+
+            // Act/Assert
+            Assert.Equal(prodJson, testJson);
         }
 
         private delegate void TryGetProjectNamesCallback(string projectPath, out ProjectNames projectNames);

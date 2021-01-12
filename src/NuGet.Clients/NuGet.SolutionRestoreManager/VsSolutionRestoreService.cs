@@ -72,16 +72,30 @@ namespace NuGet.SolutionRestoreManager
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
 
-        public Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
+        public async Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
         {
             Assumes.NotNullOrEmpty(projectUniqueName);
+
+            if (!_projectSystemCache.TryGetProjectNames(projectUniqueName, out ProjectNames projectNames))
+            {
+                IVsSolution2 vsSolution2 = await _vsSolution2.GetValueAsync(token);
+                projectNames = await ProjectNames.FromIVsSolution2(projectUniqueName, vsSolution2, token);
+            }
+            var dgSpec = new DependencyGraphSpec();
+            var packageSpec = new PackageSpec()
+            {
+                Name = projectUniqueName
+            };
+            dgSpec.AddProject(packageSpec);
+            dgSpec.AddRestore(packageSpec.Name);
+            _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, new List<IAssetsLogMessage>());
 
             // returned task completes when scheduled restore operation completes.
             var restoreTask = _restoreWorker.ScheduleRestoreAsync(
                 SolutionRestoreRequest.OnUpdate(),
                 token);
 
-            return restoreTask;
+            return await restoreTask;
         }
 
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
@@ -155,7 +169,7 @@ namespace NuGet.SolutionRestoreManager
                 catch (Exception e)
                 {
                     var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, string.Format(Resources.NU1105, projectNames.ShortName, e.Message));
-                    restoreLogMessage.LibraryId = projectUniqueName;
+                    restoreLogMessage.ProjectPath = projectUniqueName;
 
                     nominationErrors = new List<IAssetsLogMessage>()
                     {
@@ -291,14 +305,16 @@ namespace NuGet.SolutionRestoreManager
                     msbuildProjectExtensionsPath));
         }
 
-        private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
+        internal static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
         {
             var packageSpec = new PackageSpec();
             packageSpec.FilePath = projectPath;
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
             packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
             packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            packageSpec.RestoreMetadata.ProjectPath = projectPath;
             packageSpec.RestoreMetadata.OutputPath = outputPath;
+            packageSpec.RestoreMetadata.CacheFilePath = Path.Combine(outputPath, "project.nuget.cache");
 
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddProject(packageSpec);

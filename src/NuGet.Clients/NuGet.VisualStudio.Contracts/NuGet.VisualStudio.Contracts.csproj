@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -14,8 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605"/>
-    <PackageReference Include="Microsoft.VisualStudio.RpcContracts" />
+    <PackageReference Include="Microsoft.ServiceHub.Framework" />
     <!-- We do this to avoid the warning our build raises about keeping a consistent newtonsoft.json version. We don't need newtonsonft.json type in here, we don't use it. -->
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" PrivateAssets="all" ExcludeAssets="all" />
   </ItemGroup>

@@ -187,6 +187,8 @@ namespace NuGetConsole.Implementation
         /// </summary>
         int IOleCommandTarget.QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // examine buttons within our toolbar
             if (pguidCmdGroup == GuidList.guidNuGetCmdSet)
             {
@@ -240,6 +242,8 @@ namespace NuGetConsole.Implementation
         /// </summary>
         int IOleCommandTarget.Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var hr = OleCommandFilter.OLECMDERR_E_NOTSUPPORTED;
 
             if (VsTextView != null)

@@ -17,10 +17,11 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(Versions))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(NuGetVersion expectedResult)
         {
-            NuGetVersion actualResult = SerializeThenDeserialize(NuGetVersionFormatter.Instance, expectedResult);
+            NuGetVersion? actualResult = SerializeThenDeserialize(NuGetVersionFormatter.Instance, expectedResult);
 
+            Assert.NotNull(actualResult);
             Assert.Equal(expectedResult, actualResult);
-            Assert.Equal(expectedResult.OriginalVersion, actualResult.OriginalVersion);
+            Assert.Equal(expectedResult.OriginalVersion, actualResult!.OriginalVersion);
             Assert.Equal(expectedResult.ToString(), actualResult.ToString());
         }
 

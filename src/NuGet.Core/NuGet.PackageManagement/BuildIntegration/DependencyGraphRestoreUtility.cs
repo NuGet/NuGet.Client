@@ -321,7 +321,7 @@ namespace NuGet.PackageManagement
             List<IAssetsLogMessage> allAdditionalMessages = null;
 
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
-            var knownProjects = projects.Select(e => e.MSBuildProjectPath).ToHashSet(PathUtility.GetStringComparerBasedOnOS());
+            var knownProjects = new HashSet<string>(projects.Select(e => e.MSBuildProjectPath), PathUtility.GetStringComparerBasedOnOS());
 
             for (var i = 0; i < projects.Count; i++)
             {

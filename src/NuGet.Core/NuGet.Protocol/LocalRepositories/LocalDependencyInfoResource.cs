@@ -51,7 +51,7 @@ namespace NuGet.Protocol
         {
             if (package == null)
             {
-                throw new ArgumentNullException(null, nameof(package));
+                throw new ArgumentNullException(nameof(package));
             }
 
             if (projectFramework == null)

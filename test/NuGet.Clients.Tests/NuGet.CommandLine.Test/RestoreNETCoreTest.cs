@@ -8581,6 +8581,8 @@ namespace NuGet.CommandLine.Test
                 // No change expected in the lock file.
                 intitialRuntimes.ShouldBeEquivalentTo(lockRuntimes);
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -8619,7 +8621,7 @@ namespace NuGet.CommandLine.Test
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
                 var lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName).Distinct().ToList();
                 _output.WriteLine($"PackageLockFrameworks First Evaluation: {string.Join(",", lockFrameworks)}");
-                lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
+                lockFrameworks.ShouldBeEquivalentTo(lockFrameworkTransformed);
 
                 // Setup - change frameworks
                 projectA.Properties.Add("RestoreLockedMode", "true");
@@ -8634,9 +8636,11 @@ namespace NuGet.CommandLine.Test
                 lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
                 lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName).Distinct().ToList();
                 _output.WriteLine($"PackageLockFrameworks Second Evaluation: {string.Join(",", lockFrameworks)}");
-                // The frameworks should not chnage in the lock file.
-                lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
+                // The frameworks should not change in the lock file.
+                lockFrameworks.ShouldBeEquivalentTo(lockFrameworkTransformed);
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -8729,6 +8733,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -8829,6 +8835,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -8884,6 +8892,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 Assert.Contains("NU1004", r.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -10227,6 +10237,438 @@ namespace NuGet.CommandLine.Test
                 ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectC.ProjectName);
                 ridlessTarget.Libraries.Should().Contain(e => e.Name == "X");
                 ridlessTarget.Libraries.Should().Contain(e => e.Name == "Y");
+            }
+        }
+
+        /// <summary>
+        /// A -> B (PrivateAssets)-> C
+        /// A has packages lock file enabled. Locked should succeed and ignore `C`.
+        /// </summary>
+        [Fact]
+        public void RestoreWithPackagesLockFile_ProjectToProjectWithPrivateAssets_SucceedsInLockedMode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                   "b",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                   "c",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                // A -> B
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C with PrivateAssets
+                projectC.PrivateAssets = LibraryIncludeFlags.All.ToString();
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                // Solution
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Pre-Conditions, Act & Assert.
+                Util.RestoreSolution(pathContext).Success.Should().BeTrue();
+
+                // Second Restore
+                var r = Util.RestoreSolution(pathContext, additionalArgs: "-LockedMode");
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
+
+        /// <summary>
+        /// A -> B (PrivateAssets)-> C -> PackageC
+        /// A -> D -> C -> PackageC
+        /// </summary>
+        [Fact]
+        public async Task RestoreWithPackagesLockFile_ProjectToProject_MultipleEdgesWithDifferentPrivateAssets_SucceedsInLockedMode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                   "b",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                   "c",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectCWithPrivateAssets = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net472"));
+
+                var projectD = SimpleTestProjectContext.CreateNETCore(
+                    "d",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net472"));
+
+                // Enable lock file everywhere:
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectB.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectC.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectD.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C with PrivateAssets
+                projectCWithPrivateAssets.PrivateAssets = LibraryIncludeFlags.All.ToString();
+                projectB.AddProjectToAllFrameworks(projectCWithPrivateAssets);
+
+                // A -> D
+                projectA.AddProjectToAllFrameworks(projectD);
+
+                // D -> C
+                projectD.AddProjectToAllFrameworks(projectC);
+
+                // C - package X
+                var packageX = new SimpleTestPackageContext("X", "1.0.0");
+                projectC.AddPackageToAllFrameworks(packageX);
+
+                // Create packages
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Solution
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Projects.Add(projectD);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Pre-Conditions, Act & Assert.
+                Util.RestoreSolution(pathContext).Success.Should().BeTrue();
+
+                // Second Restore
+                var r = Util.RestoreSolution(pathContext, additionalArgs: "-LockedMode");
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
+
+        /// <summary>
+        /// A -> B (PrivateAssets)-> C
+        /// A has packages lock file enabled.
+        /// A change in C's dependencies should not affect A's locked mode.
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task RestoreWithPackagesLockFile_ChangesInSuppressedProjects_DoNotAffectLockedMode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                   "b",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                   "c",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                // Enable lock for A
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C with PrivateAssets
+                projectC.PrivateAssets = LibraryIncludeFlags.All.ToString();
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                // C - package X
+                var packageX = new SimpleTestPackageContext("X", "1.0.0");
+                var packageY = new SimpleTestPackageContext("Y", "1.0.0");
+                projectC.AddPackageToAllFrameworks(packageX);
+
+                // Create packages
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                // Solution
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Pre-Conditions, Act & Assert.
+                Util.RestoreSolution(pathContext).Success.Should().BeTrue();
+
+                // Set-up again.
+                projectC.AddPackageToAllFrameworks(packageY);
+                projectC.Save();
+                // Second Restore - changes in C should *not* affect A.
+                var r = Util.RestoreSolution(pathContext, additionalArgs: "-LockedMode");
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
+
+        /// <summary>
+        /// A -> B(packages.config) -> C
+        /// A -> X
+        /// C -> Y
+        /// </summary>
+        [Fact]
+        public async Task RestorePackageReferenceWithLockFile_WithPackagesConfigProjectReference_IncludesTransitivePackageReferenceProjects()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var projectB = SimpleTestProjectContext.CreateNonNuGet(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var packageX100 = new SimpleTestPackageContext("X", "1.0.0");
+                var packageX110 = new SimpleTestPackageContext("X", "1.1.0");
+                var packageY = new SimpleTestPackageContext("Y", "1.0.0");
+
+                projectA.AddPackageToAllFrameworks(packageX100);
+                projectC.AddPackageToAllFrameworks(packageY);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageX110,
+                    packageY);
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                // B -> packages.config
+                Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""X"" version=""1.1.0"" targetFramework=""net472"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                var args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed",
+                    "-Recursive"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Preconditions
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert correct projects were restored.
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.False(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectC.AssetsFileOutputPath));
+
+                // Assert transitivity is applied across non PackageReference projects.
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectB.ProjectName);
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "project" && e.Name == projectC.ProjectName);
+                ridlessTarget.Libraries.Should().Contain(e => e.Name == "X");
+                ridlessTarget.Libraries.Should().Contain(e => e.Name == "Y");
+
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+
+                var lockFileTarget = lockFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                lockFileTarget.Dependencies.Should().HaveCount(4);
+                lockFileTarget.Dependencies.Should().ContainSingle(e => e.Id == projectB.ProjectName);
+                lockFileTarget.Dependencies.Should().ContainSingle(e => e.Id == projectC.ProjectName);
+                var projectDeps = lockFileTarget.Dependencies.Where(e => e.Type == PackageDependencyType.Project).Should().HaveCount(2);
+                var projectBlockFileTarget = lockFileTarget.Dependencies.Single(e => e.Id == projectB.ProjectName);
+                projectBlockFileTarget.Dependencies.Should().HaveCount(1);
+                projectBlockFileTarget.Dependencies.Should().ContainSingle(e => e.Id == projectC.ProjectName);
+
+                // Check locked mode
+                var lockedModeArgs = args.Append("-LockedMode").Append("-Force");
+
+                // Act
+                r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", lockedModeArgs),
+                    waitForExit: true);
+
+                r.Success.Should().BeTrue(because: r.AllOutput);
+            }
+        }
+
+        /// <summary>
+        /// A -> B(packages.config) -> C
+        /// A -> X
+        /// C -> Y
+        /// Ensure that a change in C, fails locked mode for A.
+        /// </summary>
+        [Fact]
+        public async Task RestorePackageReferenceLockFile_WithPackagesConfigProjectReference_IncludesTransitivePackageReferenceProjects()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var projectB = SimpleTestProjectContext.CreateNonNuGet(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                var packageX100 = new SimpleTestPackageContext("X", "1.0.0");
+                var packageX110 = new SimpleTestPackageContext("X", "1.1.0");
+                var packageY100 = new SimpleTestPackageContext("Y", "1.0.0");
+                var packageY110 = new SimpleTestPackageContext("Y", "1.1.0");
+
+                projectA.AddPackageToAllFrameworks(packageX100);
+                projectC.AddPackageToAllFrameworks(packageY100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageX110,
+                    packageY100,
+                    packageY110);
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                // B -> packages.config
+                Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""X"" version=""1.1.0"" targetFramework=""net472"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                var args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed",
+                    "-Recursive"
+                };
+
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Pre-Conditions
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Change project C, bump the package Y version.
+                projectC.CleanPackagesFromAllFrameworks();
+                projectC.AddPackageToAllFrameworks(packageY110);
+                projectC.Save();
+
+                // Act
+                var lockedModeArgs = args.Append("-LockedMode").Append("-Force");
+                r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", lockedModeArgs),
+                    waitForExit: true);
+
+                // Assert
+                r.Success.Should().BeFalse(because: r.AllOutput);
+                r.AllOutput.Should().Contain("NU1004");
             }
         }
 
