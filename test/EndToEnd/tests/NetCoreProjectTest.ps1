@@ -231,34 +231,3 @@ function Test-NetCoreToolsVSandMSBuildNoOp {
     #Assert
     Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
 }
-
-function Test-NetCorePackageVersionNoInclusiveLowerBoundNU1604 {
-    # Arrange
-    $project = New-NetCoreConsoleApp ConsoleApp
-
-    # Act
-    $projectXML = [xml](Get-Content $project.FullName)
-    $itemGroup = $projectXML.CreateElement("ItemGroup")
-    $packageReference = $projectXML.CreateElement("PackageReference")
-    $packageReference.SetAttribute("Include", "TestUpdatePackage") # Note: Version is not specified
-    $projectXML.DocumentElement.AppendChild($itemGroup)
-    $itemGroup.AppendChild($packageReference)
-    $projectXML.Save($project.FullName)       
-
-    Build-Solution
-
-    # Give time for restore to finish, so we can capture VS UI warnings.
-    Start-Sleep -s 3
-
-    # Assert   
-    $warnings = Get-Warnings   
-    
-    # Make sure VS UI warning has NU1604 warning
-    Assert-True $warnings.Contains("Project dependency TestUpdatePackage does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.")
-
-    # Make sure asset file has NU1604 warning
-    $NetCoreLockFilePath = Get-NetCoreLockFilePath $project
-    $assetJson = Get-Content -Raw -Path $NetCoreLockFilePath | ConvertFrom-Json
-    $warningCodes = $assetJson.logs | Select-Object Code
-    Assert-True $warningCodes.Code.Contains("NU1604")    
-}
