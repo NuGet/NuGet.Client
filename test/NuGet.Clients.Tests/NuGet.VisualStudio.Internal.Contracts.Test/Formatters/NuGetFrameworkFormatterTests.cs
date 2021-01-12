@@ -13,8 +13,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(NuGetFrameworks))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(NuGetFramework expectedResult)
         {
-            NuGetFramework actualResult = SerializeThenDeserialize(NuGetFrameworkFormatter.Instance, expectedResult);
+            NuGetFramework? actualResult = SerializeThenDeserialize(NuGetFrameworkFormatter.Instance, expectedResult);
 
+            Assert.NotNull(actualResult);
             Assert.Equal(expectedResult, actualResult);
         }
 

@@ -559,6 +559,9 @@ namespace NuGet.PackageManagement.UI
 
                         NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask());
                     }
+
+                    OnPropertyChanged(nameof(SelectedVersion));
+                    OnSelectedVersionChanged();
                 }
             }
         }
@@ -604,9 +607,6 @@ namespace NuGet.PackageManagement.UI
                     PackageMetadata = detailedPackageMetadata;
                 }
             }
-
-            OnPropertyChanged(nameof(SelectedVersion));
-            OnSelectedVersionChanged();
         }
 
         // Calculate the version to select among _versions and select it

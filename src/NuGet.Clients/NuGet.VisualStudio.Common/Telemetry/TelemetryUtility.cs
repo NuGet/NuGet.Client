@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace NuGet.VisualStudio.Telemetry
 {
     public static class TelemetryUtility
     {
-        public static async Task PostFaultAsync(Exception e, string callerClassName, [CallerMemberName] string callerMemberName = null)
+        public static async Task PostFaultAsync(Exception e, string callerClassName, [CallerMemberName] string callerMemberName = null, IDictionary<string, object> extraProperties = null)
         {
             if (e == null)
             {
@@ -31,8 +32,16 @@ namespace NuGet.VisualStudio.Telemetry
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var fault = new FaultEvent($"{VSTelemetrySession.VSEventNamePrefix}Fault", description, FaultSeverity.General, e, gatherEventDetails: null);
+            var fault = new FaultEvent(VSTelemetrySession.VSEventNamePrefix + "Fault", description, FaultSeverity.General, e, gatherEventDetails: null);
             fault.Properties[$"{VSTelemetrySession.VSPropertyNamePrefix}Fault.Caller"] = caller;
+            if (extraProperties != null)
+            {
+                foreach (var kvp in extraProperties)
+                {
+                    fault.Properties[VSTelemetrySession.VSEventNamePrefix + kvp.Key] = kvp.Value;
+                }
+            }
+
             TelemetryService.DefaultSession.PostEvent(fault);
 
             if (await IsShellAvailable.GetValueAsync())

@@ -8,6 +8,8 @@ namespace NuGet.Protocol
 {
     public class HttpSourceResult : IDisposable
     {
+        private bool _disposed;
+
         public Stream Stream { get; private set; }
         public HttpSourceResultStatus Status { get; }
         public string CacheFile { get; }
@@ -28,11 +30,27 @@ namespace NuGet.Protocol
 
         public void Dispose()
         {
-            if (Stream != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                Stream.Dispose();
-                Stream = null;
+                return;
             }
+
+            if (disposing)
+            {
+                if (Stream != null)
+                {
+                    Stream.Dispose();
+                    Stream = null;
+                }
+            }
+
+            _disposed = true;
         }
     }
 }

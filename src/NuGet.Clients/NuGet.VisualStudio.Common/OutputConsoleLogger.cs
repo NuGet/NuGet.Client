@@ -18,7 +18,7 @@ namespace NuGet.VisualStudio.Common
 {
     [Export(typeof(INuGetUILogger))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class OutputConsoleLogger : INuGetUILogger, IDisposable
+    public sealed class OutputConsoleLogger : INuGetUILogger, IDisposable
     {
         private const string DTEProjectPage = "ProjectsAndSolution";
         private const string DTEEnvironmentCategory = "Environment";

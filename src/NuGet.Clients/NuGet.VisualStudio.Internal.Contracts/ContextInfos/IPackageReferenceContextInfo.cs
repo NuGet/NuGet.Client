@@ -10,7 +10,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
     public interface IPackageReferenceContextInfo
     {
         PackageIdentity Identity { get; }
-        NuGetFramework Framework { get; }
+        NuGetFramework? Framework { get; }
         VersionRange? AllowedVersions { get; }
         bool IsAutoReferenced { get; }
         bool IsUserInstalled { get; }

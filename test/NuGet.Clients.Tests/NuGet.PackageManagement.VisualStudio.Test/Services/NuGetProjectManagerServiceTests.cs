@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private NuGetPackageManager _packageManager;
         private NuGetProjectManagerService _projectManager;
-        private TestNuGetProjectContext _projectContext;
+        private readonly TestNuGetProjectContext _projectContext;
         private TestSharedServiceState _sharedState;
         private TestVsSolutionManager _solutionManager;
         private NuGetProjectManagerServiceState _state;

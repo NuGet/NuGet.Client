@@ -6,7 +6,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TestProject>true</TestProject>
     <Description>Unit and integration tests for NuGet.VisualStudio.Internal.Contracts.</Description>
-    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 

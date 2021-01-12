@@ -47,7 +47,8 @@
     <DockPanel
       x:Name="_root"
       LastChildFill="True"
-      Width="{Binding ActualWidth, ElementName=_self}">
+      Width="{Binding ActualWidth, ElementName=_self}"
+      KeyboardNavigation.TabNavigation="Cycle">
       <DockPanel.MinWidth>
         <MultiBinding Converter="{StaticResource AdditionConverter}">
           <Binding Path="MinWidth" ElementName="_leftSideGridColumn" />

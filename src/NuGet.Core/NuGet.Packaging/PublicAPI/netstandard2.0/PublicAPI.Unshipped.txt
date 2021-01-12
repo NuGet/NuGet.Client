@@ -5,3 +5,7 @@ static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFilesWa
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInReferenceGroupsWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkWarning.get -> string
+virtual NuGet.Packaging.PackagesConfigWriter.Dispose(bool disposing) -> void
+virtual NuGet.Packaging.Signing.KeyPairFileReader.Dispose(bool disposing) -> void
+virtual NuGet.Packaging.Signing.KeyPairFileWriter.Dispose(bool disposing) -> void
+virtual NuGet.Packaging.Signing.SignPackageRequest.Dispose(bool disposing) -> void

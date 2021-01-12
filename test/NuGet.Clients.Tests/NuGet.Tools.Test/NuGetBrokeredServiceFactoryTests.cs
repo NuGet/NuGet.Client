@@ -20,6 +20,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using NuGetVSExtension;
 using Test.Utility;
 using Xunit;
@@ -54,6 +55,7 @@ namespace NuGet.Tools.Test
             globalServiceProvider.AddService(typeof(ISettings), Mock.Of<ISettings>());
             globalServiceProvider.AddService(typeof(ISourceRepositoryProvider), sourceRepositoryProvider.Object);
             globalServiceProvider.AddService(typeof(SComponentModel), componentModel.Object);
+            globalServiceProvider.AddService(typeof(INuGetTelemetryProvider), Mock.Of<INuGetTelemetryProvider>());
 
             _serviceFactories = new Dictionary<ServiceRpcDescriptor, BrokeredServiceFactory>();
             _authorizingServiceFactories = new Dictionary<ServiceRpcDescriptor, AuthorizingBrokeredServiceFactory>();
