@@ -189,6 +189,7 @@ namespace NuGet.Commands
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
                 var isLockFileValid = false;
                 PackagesLockFile packagesLockFile = null;
+                var regenerateLockFile = true;
 
                 using (var lockFileTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: RestoreLockFileInformation))
                 {
@@ -200,35 +201,8 @@ namespace NuGet.Commands
                     lockFileTelemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
                     lockFileTelemetry.TelemetryEvent[LockFileEvaluationResult] = result;
 
-                    if (!result)
-                    {
-                        _success = result;
-
-                        // Replay Warnings and Errors from an existing lock file
-                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
-
-                        if (cacheFile != null)
-                        {
-                            cacheFile.Success = _success;
-                        }
-
-                        return new RestoreResult(
-                            success: _success,
-                            restoreGraphs: new List<RestoreTargetGraph>(),
-                            compatibilityCheckResults: new List<CompatibilityCheckResult>(),
-                            msbuildFiles: new List<MSBuildOutputFile>(),
-                            lockFile: _request.ExistingLockFile,
-                            previousLockFile: _request.ExistingLockFile,
-                            lockFilePath: _request.ExistingLockFile?.Path,
-                            cacheFile: cacheFile,
-                            cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
-                            packagesLockFilePath: packagesLockFilePath,
-                            packagesLockFile: packagesLockFile,
-                            dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
-                            dependencyGraphSpec: _request.DependencyGraphSpec,
-                            projectStyle: _request.ProjectStyle,
-                            elapsedTime: restoreTime.Elapsed);
-                    }
+                    regenerateLockFile = result; // Ensure that the lock file *does not* get rewritten, when the lock file is out of date and the status is false.
+                    _success &= result;
                 }
 
                 IEnumerable<RestoreTargetGraph> graphs = null;
@@ -343,9 +317,17 @@ namespace NuGet.Commands
                     }
                     else if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project))
                     {
-                        // generate packages.lock.json file if enabled
-                        packagesLockFile = new PackagesLockFileBuilder()
-                            .CreateNuGetLockFile(assetsFile);
+                        if (regenerateLockFile)
+                        {
+                            // generate packages.lock.json file if enabled
+                            packagesLockFile = new PackagesLockFileBuilder()
+                                .CreateNuGetLockFile(assetsFile);
+                        }
+                        else
+                        {
+                            packagesLockFile = null;
+                            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingPackagesLockFileGeneration, packagesLockFilePath));
+                        }
                     }
 
                     // Write the logs into the assets file
@@ -530,10 +512,9 @@ namespace NuGet.Commands
         /// <param name="packagesLockFilePath"></param>
         /// <param name="contextForProject"></param>
         /// <returns>result of packages.lock.json file evaluation where
-        /// Item1 is the status of evaluating packages lock file if false, then bail restore
-        /// Item2 is also a tuple which has 2 parts -
-        ///     Item1 tells whether lock file is still valid to be consumed for this restore
-        ///     Item2 is the PackagesLockFile instance
+        /// success is whether the lock file is in a valid state (ex. locked mode, but not up to date)
+        /// isLockFileValid tells whether lock file is still valid to be consumed for this restore
+        /// packagesLockFile is the PackagesLockFile instance
         /// </returns>
         private async Task<(bool success, bool isLockFileValid, PackagesLockFile packagesLockFile)> EvaluatePackagesLockFileAsync(
             string packagesLockFilePath,
@@ -593,9 +574,7 @@ namespace NuGet.Commands
                         success = false;
 
                         // bail restore since it's the locked mode but required to update the lock file.
-                        // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
-                        // be skipped for netcore projects.
-                        await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
+                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
                     }
                 }
             }
@@ -956,9 +935,6 @@ namespace NuGet.Commands
             // with the RestoreRequest spec.
             var updatedExternalProjects = GetProjectReferences(context);
 
-            // Determine if the targets and props files should be written out.
-            context.IsMsBuildBased = _request.ProjectStyle != ProjectStyle.DotnetCliTool;
-
             // Load repositories
             // the external project provider is specific to the current restore project
             context.ProjectLibraryProviders.Add(
@@ -1174,6 +1150,9 @@ namespace NuGet.Commands
             {
                 context.RemoteLibraryProviders.Add(provider);
             }
+
+            // Determine if the targets and props files should be written out.
+            context.IsMsBuildBased = request.ProjectStyle != ProjectStyle.DotnetCliTool;
 
             return context;
         }

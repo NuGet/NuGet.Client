@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -24,8 +24,6 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EnvDTE80" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" />
     <PackageReference Include="VSSDK.TemplateWizardInterface" />
   </ItemGroup>
 

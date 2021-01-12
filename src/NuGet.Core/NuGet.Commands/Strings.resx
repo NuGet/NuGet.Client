@@ -1118,4 +1118,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Platform version is not present for one or more target frameworks, even though they have specified a platform: {0}</value>
     <comment>0 - comma-separated list of TFMs missing a platform version</comment>
   </data>
+  <data name="Log_SkippingPackagesLockFileGeneration" xml:space="preserve">
+    <value>Skipping the lock file regeneration for '{0}'.</value>
+  </data>
 </root>

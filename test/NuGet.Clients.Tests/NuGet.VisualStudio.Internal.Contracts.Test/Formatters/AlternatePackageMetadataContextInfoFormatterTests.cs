@@ -12,9 +12,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(TestData))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(AlternatePackageMetadataContextInfo expectedResult)
         {
-            AlternatePackageMetadataContextInfo actualResult = SerializeThenDeserialize(AlternatePackageMetadataContextInfoFormatter.Instance, expectedResult);
+            AlternatePackageMetadataContextInfo? actualResult = SerializeThenDeserialize(AlternatePackageMetadataContextInfoFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.PackageId, actualResult.PackageId);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.PackageId, actualResult!.PackageId);
             Assert.Equal(expectedResult.VersionRange, actualResult.VersionRange);
         }
 

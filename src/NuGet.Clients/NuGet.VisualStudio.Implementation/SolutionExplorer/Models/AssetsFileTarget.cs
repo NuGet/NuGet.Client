@@ -103,7 +103,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
         /// <returns><see langword="true"/> if dependencies were found, otherwise <see langword="false"/>.</returns>
         public bool TryGetDependencies(string libraryName, string? version, out ImmutableArray<AssetsFileTargetLibrary> dependencies)
         {
-            if (!LibraryByName.TryGetValue(libraryName, out AssetsFileTargetLibrary library))
+            if (!LibraryByName.TryGetValue(libraryName, out AssetsFileTargetLibrary? library))
             {
                 dependencies = default;
                 return false;
@@ -129,7 +129,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                         // For example "NETStandard.Library" as a dependency of a package brought in via a project will
                         // not cause details NETStandard.Library to be included in the grandparent's assets file.
                         // Such libraries are excluded.
-                        if (LibraryByName.TryGetValue(dependencyName, out AssetsFileTargetLibrary dependency))
+                        if (LibraryByName.TryGetValue(dependencyName, out AssetsFileTargetLibrary? dependency))
                         {
                             builder.Add(dependency);
                         }

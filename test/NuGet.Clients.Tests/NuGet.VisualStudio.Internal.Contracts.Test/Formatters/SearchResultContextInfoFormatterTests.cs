@@ -30,8 +30,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
             var options = MessagePackSerializerOptions.Standard.WithSecurity(MessagePackSecurity.UntrustedData).WithResolver(CompositeResolver.Create(formatters, resolvers));
 
-            SearchResultContextInfo actualResult = SerializeThenDeserialize(SearchResultContextInfoFormatter.Instance, expectedResult, options);
-            Assert.Equal(expectedResult.OperationId, actualResult.OperationId);
+            SearchResultContextInfo? actualResult = SerializeThenDeserialize(SearchResultContextInfoFormatter.Instance, expectedResult, options);
+
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.OperationId, actualResult!.OperationId);
             Assert.Equal(expectedResult.HasMoreItems, actualResult.HasMoreItems);
             Assert.Equal(expectedResult.SourceLoadingStatus, actualResult.SourceLoadingStatus);
             Assert.Equal(expectedResult.PackageSearchItems.Count, actualResult.PackageSearchItems.Count);

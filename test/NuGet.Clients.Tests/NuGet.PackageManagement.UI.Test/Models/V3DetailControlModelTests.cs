@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Moq;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;

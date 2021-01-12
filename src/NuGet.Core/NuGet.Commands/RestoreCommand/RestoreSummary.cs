@@ -173,13 +173,16 @@ namespace NuGet.Commands
                 }
             }
 
-            if (noOpCount == restoreSummaries.Count)
+            if (!RuntimeEnvironmentHelper.IsRunningInVisualStudio)
             {
-                logger.LogMinimal(Strings.Log_AllProjectsUpToDate);
-            }
-            else if (noOpCount > 0)
-            {
-                logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectUpToDateSummary, noOpCount, restoreSummaries.Count));
+                if (noOpCount == restoreSummaries.Count)
+                {
+                    logger.LogMinimal(Strings.Log_AllProjectsUpToDate);
+                }
+                else if (noOpCount > 0)
+                {
+                    logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectUpToDateSummary, noOpCount, restoreSummaries.Count));
+                }
             }
         }
 

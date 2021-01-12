@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             UniqueName = uniqueName;
         }
 
-        public static ProjectMetadataContextInfo Create(IReadOnlyDictionary<string, object> projectMetadata)
+        public static ProjectMetadataContextInfo Create(IReadOnlyDictionary<string, object?> projectMetadata)
         {
             if (projectMetadata is null)
             {
@@ -47,7 +47,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyCollection<NuGetFramework>? supportedFrameworks = null;
             NuGetFramework? targetFramework = null;
             string? uniqueName = null;
-            object value;
+            object? value;
 
             if (projectMetadata.TryGetValue(NuGetProjectMetadataKeys.FullPath, out value))
             {
@@ -91,7 +91,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 uniqueName);
         }
 
-        private static NuGetFramework? ToNuGetFramework(object value)
+        private static NuGetFramework? ToNuGetFramework(object? value)
         {
             // See https://github.com/NuGet/Home/issues/4491
             if (value is string stringValue)
