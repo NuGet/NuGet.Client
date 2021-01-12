@@ -610,7 +610,6 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             Assert.True(actual1.Item1);
             Assert.True(string.IsNullOrEmpty(actual1.Item2));
-
             Assert.True(actual2.Item1);
             Assert.True(string.IsNullOrEmpty(actual2.Item2));
         }
@@ -660,6 +659,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             // Nothing changed in central package versions
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+
             Assert.True(actual.Item1);
             Assert.True(string.IsNullOrEmpty(actual.Item2));
         }
