@@ -137,7 +137,7 @@ namespace NuGet.Protocol
             });
 
             await Task.WhenAll(tasks);
-            return results;
+            return results.OrderBy(result => result.Version.Version).ToList();
         }
 
         /// <summary>

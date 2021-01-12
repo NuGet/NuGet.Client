@@ -14,6 +14,7 @@ namespace NuGet.Protocol
     /// </summary>
     public class MetadataReferenceCache
     {
+        private readonly object _lockObject = new object();
         private readonly Dictionary<string, string> _stringCache = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new Dictionary<Type, PropertyInfo[]>();
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
@@ -94,47 +95,50 @@ namespace NuGet.Protocol
             PropertyInfo[] properties;
             Type typeKey = typeof(T);
 
-            if (!_propertyCache.TryGetValue(typeKey, out properties))
+            lock (_lockObject)
             {
-                properties = typeKey.GetTypeInfo()
-                    .DeclaredProperties.Where(
-                        p => CachableTypesMap.ContainsKey(p.PropertyType) && p.GetMethod != null && p.SetMethod != null)
-                    .ToArray();
+                if (!_propertyCache.TryGetValue(typeKey, out properties))
+                {
+                    properties = typeKey.GetTypeInfo()
+                        .DeclaredProperties.Where(
+                            p => CachableTypesMap.ContainsKey(p.PropertyType) && p.GetMethod != null && p.SetMethod != null)
+                        .ToArray();
 
-                _propertyCache.Add(typeKey, properties);
+                    _propertyCache.Add(typeKey, properties);
+                }
+
+                if (!CachableMethodTypes.ContainsKey(typeof(MetadataReferenceCache)))
+                {
+                    // Doing reflection everytime is expensive so cache it for string type which is all this MetadataReferenceCache about.
+                    Type stringPropertyType = typeof(string);
+                    MethodInfo method = _metadataReferenceCacheType.GetTypeInfo()
+                            .DeclaredMethods.FirstOrDefault(
+                                m =>
+                                    m.Name == CachableTypesMap[stringPropertyType] &&
+                                    m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { stringPropertyType }));
+                    CachableMethodTypes.Add(_metadataReferenceCacheType, method);
+                }
+
+                for (var i = 0; i < properties.Length; i++)
+                {
+                    PropertyInfo property = properties[i];
+                    object value = property.GetMethod.Invoke(input, null);
+
+                    object cachedValue = property.PropertyType == typeof(string) ?
+                        CachableMethodTypes[_metadataReferenceCacheType]
+                        .Invoke(this, new[] { value })
+                        :
+                        typeof(MetadataReferenceCache).GetTypeInfo()
+                            .DeclaredMethods.FirstOrDefault(
+                                m =>
+                                    m.Name == CachableTypesMap[property.PropertyType] &&
+                                    m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { property.PropertyType }))
+                            .Invoke(this, new[] { value });
+                    property.SetMethod.Invoke(input, new[] { cachedValue });
+                }
+
+                return input;
             }
-
-            if (!CachableMethodTypes.ContainsKey(typeof(MetadataReferenceCache)))
-            {
-                // Doing reflection everytime is expensive so cache it for string type which is all this MetadataReferenceCache about.
-                Type stringPropertyType = typeof(string);
-                MethodInfo method = _metadataReferenceCacheType.GetTypeInfo()
-                        .DeclaredMethods.FirstOrDefault(
-                            m =>
-                                m.Name == CachableTypesMap[stringPropertyType] &&
-                                m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { stringPropertyType }));
-                CachableMethodTypes.Add(_metadataReferenceCacheType, method);
-            }
-
-            for (var i = 0; i < properties.Length; i++)
-            {
-                PropertyInfo property = properties[i];
-                object value = property.GetMethod.Invoke(input, null);
-
-                object cachedValue = property.PropertyType == typeof(string) ?
-                    CachableMethodTypes[_metadataReferenceCacheType]
-                    .Invoke(this, new[] { value })
-                    :
-                    typeof(MetadataReferenceCache).GetTypeInfo()
-                        .DeclaredMethods.FirstOrDefault(
-                            m =>
-                                m.Name == CachableTypesMap[property.PropertyType] &&
-                                m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { property.PropertyType }))
-                        .Invoke(this, new[] { value });
-                property.SetMethod.Invoke(input, new[] { cachedValue });
-            }
-
-            return input;
         }
     }
 }
