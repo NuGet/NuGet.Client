@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _sourceRepository = StaticHttpHandler.CreateSource(testFeedUrl, Repository.Provider.GetCoreV3(), responses);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10450")]
         public async Task GetTotalCountAsync_WithGreaterThanOrEqualToMaxCountResults_ReturnsMaxCount()
         {
             var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
