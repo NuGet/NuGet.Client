@@ -156,7 +156,7 @@
     <value>Central package management file doesn't contain version range for {0} package which is specified as CentralTransitive dependency in the lock file.</value>
   </data>
   <data name="PackagesLockFile_IncompatibleLockFileVersion" xml:space="preserve">
-    <value>Version specified in the packages.lock.json file is invalid. Current tooling supports version {1} and previous formats.</value>
+    <value>Version specified in the packages.lock.json file is invalid. Current tooling supports version {0} and previous formats.</value>
   </data>
   <data name="PackagesLockFile_MismatchedTargetFrameworks" xml:space="preserve">
     <value>The project target frameworks are different than the lock file's target frameworks. Lock file target frameworks: {0}. Project target frameworks {1}.</value>

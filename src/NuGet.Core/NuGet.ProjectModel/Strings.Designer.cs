@@ -169,7 +169,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version specified in the packages.lock.json file is invalid. Current tooling supports version {1} and previous formats..
+        ///   Looks up a localized string similar to Version specified in the packages.lock.json file is invalid. Current tooling supports version {0} and previous formats..
         /// </summary>
         internal static string PackagesLockFile_IncompatibleLockFileVersion {
             get {
