@@ -584,7 +584,12 @@ namespace NuGet.Commands
                         success = false;
 
                         // bail restore since it's the locked mode but required to update the lock file.
-                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
+                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004,
+                                                string.Format(
+                                                CultureInfo.CurrentCulture,
+                                                Strings.Error_RestoreInLockedMode,
+                                                lockFileInvalidReason
+                                                )));
                     }
                 }
             }

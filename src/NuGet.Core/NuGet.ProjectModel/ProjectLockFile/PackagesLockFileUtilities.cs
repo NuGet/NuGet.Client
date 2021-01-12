@@ -78,7 +78,6 @@ namespace NuGet.ProjectModel
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.PackagesLockFile_IncompatibleLockFileVersion,
-                            nuGetLockFile.Path,
                             PackagesLockFileFormat.PackagesLockFileVersion
                             ));
             }
@@ -123,20 +122,21 @@ namespace NuGet.ProjectModel
 
                 var directDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Direct);
 
-                (var hasChanged, var message) = HasProjectDependencyChanged(framework.Dependencies, directDependencies, target.TargetFramework);
-                if (hasChanged)
+                (var hasProjectDependencyChanged, var pmessage) = HasProjectDependencyChanged(framework.Dependencies, directDependencies, target.TargetFramework);
+                if (hasProjectDependencyChanged)
                 {
                     // lock file is out of sync
-                    return (false, message);
+                    return (false, pmessage);
                 }
 
                 var transitiveDependenciesEnforcedByCentralVersions = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.CentralTransitive).ToList();
                 var transitiveDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Transitive).ToList();
 
-                if (HasProjectTransitiveDependencyChanged(framework.CentralPackageVersions, transitiveDependenciesEnforcedByCentralVersions, transitiveDependencies))
+                (var hasTransitiveDependencyChanged, var tmessage) = HasProjectTransitiveDependencyChanged(framework.CentralPackageVersions, transitiveDependenciesEnforcedByCentralVersions, transitiveDependencies);
+                if (hasTransitiveDependencyChanged)
                 {
                     // lock file is out of sync
-                    return (false, "lock file is out of sync");
+                    return (false, tmessage);
                 }
             }
 
@@ -281,7 +281,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            return (true, null);
+            return (true, string.Empty);
         }
 
         /// <summary>Compares two lock files to check if the structure is the same (all values are the same, other
@@ -387,6 +387,7 @@ namespace NuGet.ProjectModel
             // If the count is not the same, something has changed.
             // Otherwise the N^2 walk below determines whether anything has changed.
             var newPackageDependencies = newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
+            
             if (newPackageDependencies.Count() != lockFileDependencies.Count())
             {
                 return (true,
@@ -429,7 +430,7 @@ namespace NuGet.ProjectModel
             }
 
             // no dependency changed. Lock file is still valid.
-            return (false, null);
+            return (false, string.Empty);
         }
 
         private static (bool, string) HasP2PDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<ProjectRestoreReference> projectRestoreReferences, LockFileDependency projectDependency, DependencyGraphSpec dgSpec)
@@ -465,7 +466,7 @@ namespace NuGet.ProjectModel
                     return (true,
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.PackagesLockFile_ProjectReferenceDependenciesHasChanged + "2",
+                            Strings.PackagesLockFile_ProjectReferenceDependenciesHasChanged,
                             projectDependency.Id
                             )
                         );
@@ -483,7 +484,7 @@ namespace NuGet.ProjectModel
                     return (true,
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.PackagesLockFile_ProjectReferenceDependenciesHasChanged + "1",
+                            Strings.PackagesLockFile_ProjectReferenceDependenciesHasChanged,
                             projectDependency.Id
                             )
                         );
@@ -502,7 +503,7 @@ namespace NuGet.ProjectModel
         ///     or
         /// 2. If a central version that is a transitive dependency is removed from CPVM the lock file is invalidated.
         /// </summary>
-        private static bool HasProjectTransitiveDependencyChanged(
+        private static (bool, string) HasProjectTransitiveDependencyChanged(
             IDictionary<string, CentralPackageVersion> centralPackageVersions,
             IList<LockFileDependency> lockFileCentralTransitiveDependencies,
             IList<LockFileDependency> lockTransitiveDependencies)
@@ -510,7 +511,13 @@ namespace NuGet.ProjectModel
             // Transitive dependencies moved to be centraly managed will invalidate the lock file
             if (lockTransitiveDependencies.Any(dep => centralPackageVersions.ContainsKey(dep.Id)))
             {
-                return true;
+                //return true;
+                return (true,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.PackagesLockFile_ProjectTransitiveDependencyChanged
+                            )
+                        );
             }
 
             foreach (var lockFileDependencyEnforcedByCPV in lockFileCentralTransitiveDependencies)
@@ -519,16 +526,29 @@ namespace NuGet.ProjectModel
                 {
                     if (centralPackageVersion != null && !EqualityUtility.EqualsWithNullCheck(lockFileDependencyEnforcedByCPV.RequestedVersion, centralPackageVersion.VersionRange))
                     {
-                        return true;
+                        return (true,
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.PackagesLockFile_ProjectTransitiveDependencyVersionChanged,
+                                    lockFileDependencyEnforcedByCPV.RequestedVersion.ToNormalizedString(),
+                                    centralPackageVersion.VersionRange.ToNormalizedString()
+                                    )
+                                );
                     }
                     continue;
                 }
 
                 // The central version was removed
-                return true;
+                return (true,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.PackagesLockFile_CentralPackageVersionRemoved,
+                            lockFileDependencyEnforcedByCPV.Id
+                            )
+                        );
             }
 
-            return false;
+            return (false, string.Empty);
         }
 
         /// <summary>

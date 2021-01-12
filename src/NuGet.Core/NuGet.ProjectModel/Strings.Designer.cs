@@ -160,7 +160,16 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version specified in {0} is invalid. Current tooling supports version {1} and previous formats. Regenerate the lock file to avoid manual errors..
+        ///   Looks up a localized string similar to Central package management file doesn&apos;t contain version range for {0} package which is specified as CentralTransitive dependency in the lock file..
+        /// </summary>
+        internal static string PackagesLockFile_CentralPackageVersionRemoved {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_CentralPackageVersionRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version specified in the packages.lock.json file is invalid. Current tooling supports version {1} and previous formats..
         /// </summary>
         internal static string PackagesLockFile_IncompatibleLockFileVersion {
             get {
@@ -246,6 +255,24 @@ namespace NuGet.ProjectModel {
         internal static string PackagesLockFile_ProjectReferencesHasChange {
             get {
                 return ResourceManager.GetString("PackagesLockFile_ProjectReferencesHasChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transitive dependencies moved to be centraly managed invalidated the lock file..
+        /// </summary>
+        internal static string PackagesLockFile_ProjectTransitiveDependencyChanged {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ProjectTransitiveDependencyChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. Lock file version {0}, central package management version {1}..
+        /// </summary>
+        internal static string PackagesLockFile_ProjectTransitiveDependencyVersionChanged {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ProjectTransitiveDependencyVersionChanged", resourceCulture);
             }
         }
         

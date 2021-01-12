@@ -157,6 +157,116 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
         }
 
         [Fact]
+        public void IsLockFileStillValid_DifferentTargetFrameworksInDgspec_InvalidateLockFile()
+        {
+            // Arrange
+            var framework = CommonFrameworks.NetStandard20;
+            var projectName = "project";
+
+            var dependency1 = new LibraryDependency(
+                new LibraryRange("library1", versionRange: VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
+
+            var tfm1 = new TargetFrameworkInformation
+            {
+                FrameworkName = framework
+            };
+            tfm1.Dependencies.Add(dependency1);
+
+            var tfm2 = new TargetFrameworkInformation
+            {
+                FrameworkName = CommonFrameworks.NetCoreApp31
+            };
+
+            var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm1, tfm2 })
+            {
+                RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = false }
+            };
+
+            DependencyGraphSpec dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore(projectName);
+            dgSpec.AddProject(project);
+
+            var lockFile = new PackagesLockFileBuilder()
+                        .WithTarget(target => target
+                        .WithFramework(CommonFrameworks.NetStandard20)
+                        .WithDependency(dep => dep
+                        .WithId("library1")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Direct))
+                        .WithDependency(dep => dep
+                        .WithId("otherDep")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Transitive)))
+                        .Build();
+
+            var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+            Assert.False(actual.Item1);
+            Assert.Equal("The project target frameworks are different than the lock file's target frameworks. " +
+                "Lock file target frameworks: netstandard2.0,netcoreapp3.1. Project target frameworks netstandard2.0.", actual.Item2);
+        }
+
+        [Fact]
+        public void IsLockFileStillValid_NewTargetFrameworksInDgspec_InvalidateLockFile()
+        {
+            // Arrange
+            var framework = CommonFrameworks.NetStandard20;
+            var projectName = "project";
+
+            var dependency1 = new LibraryDependency(
+                new LibraryRange("library1", versionRange: VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
+
+            var tfm = new TargetFrameworkInformation
+            {
+                FrameworkName = framework
+            };
+            tfm.Dependencies.Add(dependency1);
+
+            var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm })
+            {
+                RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = false }
+            };
+
+            DependencyGraphSpec dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore(projectName);
+            dgSpec.AddProject(project);
+
+            var lockFile = new PackagesLockFileBuilder()
+                        .WithTarget(target => target
+                        .WithFramework(CommonFrameworks.NetCoreApp31)
+                        .WithDependency(dep => dep
+                        .WithId("library1")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Direct))
+                        .WithDependency(dep => dep
+                        .WithId("otherDep")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Transitive)))
+                        .Build();
+
+            var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+            Assert.False(actual.Item1);
+            Assert.Equal("The project target framework netstandard2.0 was not found in the lock file.", actual.Item2);
+        }
+
+        [Fact]
         public void IsLockFileStillValid_RemovedCentralTransitivePackageVersions_InvalidateLockFile()
         {
             // Arrange
@@ -180,6 +290,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             tfm.FrameworkName = framework;
             tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
             tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.Dependencies.Add(dependency1);
             LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
             var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
@@ -209,6 +320,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // The central package version cpvm3 it was removed
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
             Assert.False(actual.Item1);
+            Assert.Equal("Central package management file doesn't contain version range for cpvm3 package " +
+                "which is specified as CentralTransitive dependency in the lock file.", actual.Item2);
         }
 
         [Fact]
@@ -261,6 +374,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // The central package version cpvm2 has version changed
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
             Assert.False(actual.Item1);
+            Assert.Equal("Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. " +
+                "Lock file version [1.0.0, ), central package management version [2.0.0, ).", actual.Item2);
         }
 
         [Fact]
@@ -313,6 +428,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // The central package version cpvm2 has version changed
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
             Assert.False(actual.Item1);
+            Assert.Equal("The package reference cpvm1 version has changed from [1.0.0, ) to [2.0.0, ).", actual.Item2);
         }
 
         [Fact]
