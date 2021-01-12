@@ -395,7 +395,7 @@ namespace NuGet.Packaging.Test
 
                 var expectedTrustedSigners = new List<TrustedSignerItem>()
                 {
-                    new AuthorItem("author1", new CertificateItem("abc", HashAlgorithmName.SHA256), new CertificateItem("jkl", HashAlgorithmName.SHA256)),
+                    new AuthorItem("author1", new CertificateItem("jkl", HashAlgorithmName.SHA256)),
                     new AuthorItem("author2", new CertificateItem("def", HashAlgorithmName.SHA256)),
                     new RepositoryItem("repo1", "https://serviceIndex.test/v3/api.json", new CertificateItem("ghi", HashAlgorithmName.SHA256))
                 };
