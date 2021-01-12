@@ -223,7 +223,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A new project reference was found {0} for {1}..
+        ///   Looks up a localized string similar to A new project reference to {0} was found for {1} target framework..
         /// </summary>
         internal static string PackagesLockFile_ProjectReferenceAdded {
             get {
