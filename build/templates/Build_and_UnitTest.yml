@@ -70,7 +70,7 @@ steps:
   inputs:
     getDropNameByDrop: true
     optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['GetOptProfOptimizationData'], 'true'))"
 
 - task: PowerShell@1
   displayName: "Restore dotnet tools"
