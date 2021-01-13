@@ -278,7 +278,7 @@
         <TextBlock
                       x:Name="_versionToInstall"
                       Grid.Row="0"
-                      Grid.Column="0"
+                      Grid.Column="1"
                       Margin="2,0,4,0"
                       VerticalAlignment="Center"
                       TextAlignment="Right"
