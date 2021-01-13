@@ -98,7 +98,19 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        public bool CheckBoxesEnabled { get; set; }
+        private bool _checkBoxesEnabled;
+        public bool CheckBoxesEnabled
+        {
+            get => _checkBoxesEnabled;
+            set
+            {
+                if (_checkBoxesEnabled != value)
+                {
+                    _checkBoxesEnabled = value;
+                    _list.CheckboxesEnabled = value;
+                }
+            }
+        }
 
         public bool IsSolution { get; set; }
 

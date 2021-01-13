@@ -15,9 +15,18 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal partial class ListBoxToggleableItemsAutomationPeer : ListBoxAutomationPeer
     {
-        public ListBoxToggleableItemsAutomationPeer(ListBox owner)
+        public ListBoxToggleableItemsAutomationPeer(InfiniteScrollListBox owner)
             : base(owner)
         {
+        }
+
+        public override object GetPattern(PatternInterface patternInterface)
+        {
+            if (patternInterface == PatternInterface.Toggle)
+            {
+                return this;
+            }
+            return base.GetPattern(patternInterface);
         }
 
         protected override ItemAutomationPeer CreateItemAutomationPeer(object item)

@@ -10,22 +10,19 @@ namespace NuGet.PackageManagement.UI
 {
     internal class ToggleableItemAutomationPeer : ListBoxItemAutomationPeer, IToggleProvider
     {
+        private readonly InfiniteScrollListBox _ownerParent;
         private readonly PackageItemListViewModel _owner;
 
         public ToggleableItemAutomationPeer(object item, SelectorAutomationPeer selectorAutomationPeer)
             : base(item, selectorAutomationPeer)
         {
             _owner = item as PackageItemListViewModel;
+            _ownerParent = selectorAutomationPeer.Owner as InfiniteScrollListBox;
         }
 
-        /// <summary>
-        /// TODO: really necessary?
-        /// </summary>
-        /// <param name="patternInterface"></param>
-        /// <returns></returns>
         public override object GetPattern(PatternInterface patternInterface)
         {
-            if (patternInterface == PatternInterface.Toggle)
+            if (patternInterface == PatternInterface.Toggle && _ownerParent?.CheckboxesEnabled == true)
             {
                 return this;
             }

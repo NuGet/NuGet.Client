@@ -9,6 +9,8 @@ namespace NuGet.PackageManagement.UI
 {
     internal class InfiniteScrollListBox : ListBox
     {
+        public bool CheckboxesEnabled { get; set; }
+
         public ReentrantSemaphore ItemsLock { get; set; }
 
         protected override AutomationPeer OnCreateAutomationPeer()
