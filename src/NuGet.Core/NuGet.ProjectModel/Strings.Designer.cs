@@ -232,7 +232,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project references {0} project dependencies has changed..
+        ///   Looks up a localized string similar to The project references {0} whose project dependencies has changed..
         /// </summary>
         internal static string PackagesLockFile_ProjectReferenceDependenciesHasChanged {
             get {

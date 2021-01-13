@@ -431,7 +431,7 @@ namespace NuGet.Commands.FuncTest
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"A new project reference was found IntermediateProject2 for {targetFramework.GetShortFolderName()}");
+                logger.ErrorMessages.Single().Should().Contain($"A new project reference to IntermediateProject2 was found for {targetFramework.GetShortFolderName()} target framework");
             }
         }
 
@@ -871,7 +871,7 @@ namespace NuGet.Commands.FuncTest
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"The project references intermediateproject project dependencies has changed.2");
+                logger.ErrorMessages.Single().Should().Contain($"The project references intermediateproject whose project dependencies has changed.");
             }
         }
 
@@ -944,7 +944,7 @@ namespace NuGet.Commands.FuncTest
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"The project references intermediateproject project dependencies has changed.1");
+                logger.ErrorMessages.Single().Should().Contain($"The project references intermediateproject whose project dependencies has changed.");
             }
         }
     }

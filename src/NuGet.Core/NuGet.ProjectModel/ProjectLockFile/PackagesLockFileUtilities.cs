@@ -387,7 +387,7 @@ namespace NuGet.ProjectModel
             // If the count is not the same, something has changed.
             // Otherwise the N^2 walk below determines whether anything has changed.
             var newPackageDependencies = newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
-            
+
             if (newPackageDependencies.Count() != lockFileDependencies.Count())
             {
                 return (true,

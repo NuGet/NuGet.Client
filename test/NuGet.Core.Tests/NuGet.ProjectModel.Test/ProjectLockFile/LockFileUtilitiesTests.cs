@@ -817,7 +817,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
             Assert.False(actual.Item1);
-            Assert.Equal("The project references B project dependencies has changed.", actual.Item2);
+            Assert.Equal("The project references B whose project dependencies has changed.", actual.Item2);
         }
 
         [Fact]
@@ -865,7 +865,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
             Assert.False(actual.Item1);
-            Assert.Equal("The project references B project dependencies has changed.", actual.Item2);
+            Assert.Equal("The project references B whose project dependencies has changed.", actual.Item2);
         }
 
         /// <summary>

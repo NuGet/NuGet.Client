@@ -180,7 +180,7 @@
     <value>A new project reference to {0} was found for {1} target framework.</value>
   </data>
   <data name="PackagesLockFile_ProjectReferenceDependenciesHasChanged" xml:space="preserve">
-    <value>The project references {0} project dependencies has changed.</value>
+    <value>The project references {0} whose project dependencies has changed.</value>
   </data>
   <data name="PackagesLockFile_ProjectReferenceHasNoCompatibleTargetFramework" xml:space="preserve">
     <value>The project {0} has no compatible target framework. </value>
