@@ -705,10 +705,10 @@ namespace NuGet.PackageManagement.UI
 
         public Func<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
 
-        protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
+        protected void AddBlockedVersions(List<NuGetVersion> blockedVersions)
         {
             // add a separator
-            if (blockedVersions.Length > 0)
+            if (blockedVersions.Count > 0)
             {
                 if (_versions.Count > 0)
                 {
