@@ -559,6 +559,9 @@ namespace NuGet.PackageManagement.UI
 
                         NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask());
                     }
+
+                    OnPropertyChanged(nameof(SelectedVersion));
+                    OnSelectedVersionChanged();
                 }
             }
         }
@@ -604,9 +607,6 @@ namespace NuGet.PackageManagement.UI
                     PackageMetadata = detailedPackageMetadata;
                 }
             }
-
-            OnPropertyChanged(nameof(SelectedVersion));
-            OnSelectedVersionChanged();
         }
 
         // Calculate the version to select among _versions and select it
@@ -705,10 +705,10 @@ namespace NuGet.PackageManagement.UI
 
         public Func<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
 
-        protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
+        protected void AddBlockedVersions(List<NuGetVersion> blockedVersions)
         {
             // add a separator
-            if (blockedVersions.Length > 0)
+            if (blockedVersions.Count > 0)
             {
                 if (_versions.Count > 0)
                 {

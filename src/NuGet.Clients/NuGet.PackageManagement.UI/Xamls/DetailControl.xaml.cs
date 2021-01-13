@@ -26,7 +26,32 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageSolutionDetailControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            _root.Visibility = DataContext is DetailControlModel ? Visibility.Visible : Visibility.Collapsed;
+            var dataContext = DataContext as DetailControlModel;
+
+            if (dataContext == null)
+            {
+                _root.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            _root.Visibility = Visibility.Visible;
+
+            if (dataContext.IsSolution)
+            {
+                _solutionView.InstallButtonClicked += SolutionInstallButtonClicked;
+                _solutionView.UninstallButtonClicked += SolutionUninstallButtonClicked;
+
+                _projectView.InstallButtonClicked -= ProjectInstallButtonClicked;
+                _projectView.UninstallButtonClicked -= ProjectUninstallButtonClicked;
+            }
+            else
+            {
+                _projectView.InstallButtonClicked += ProjectInstallButtonClicked;
+                _projectView.UninstallButtonClicked += ProjectUninstallButtonClicked;
+
+                _solutionView.InstallButtonClicked -= SolutionInstallButtonClicked;
+                _solutionView.UninstallButtonClicked -= SolutionUninstallButtonClicked;
+            }
         }
 
         private void ExecuteOpenLicenseLink(object sender, ExecutedRoutedEventArgs e)

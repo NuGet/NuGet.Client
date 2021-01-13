@@ -107,6 +107,22 @@ namespace NuGet.CommandLine.XPlat
             // Setup the Credential Service before making any potential http calls.
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageReferenceArgs.Logger, !packageReferenceArgs.Interactive);
 
+            if (packageReferenceArgs.Sources?.Any() == true)
+            {
+                // Convert relative path to absolute path if there is any
+                List<string> sources = new List<string>();
+
+                foreach (string source in packageReferenceArgs.Sources)
+                {
+                    sources.Add(UriUtility.GetAbsolutePath(Environment.CurrentDirectory, source));
+                }
+
+                originalPackageSpec.RestoreMetadata.Sources =
+                                    sources.Where(ns => !string.IsNullOrEmpty(ns))
+                                    .Select(ns => new PackageSource(ns))
+                                    .ToList();
+            }
+
             PackageDependency packageDependency = default;
             if (packageReferenceArgs.NoVersion)
             {
@@ -338,8 +354,8 @@ namespace NuGet.CommandLine.XPlat
                     Log = packageReferenceArgs.Logger,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
-                    PreLoadedRequestProviders = providers,
-                    Sources = packageReferenceArgs.Sources?.ToList()
+                    PreLoadedRequestProviders = providers
+                    // Sources : No need to pass it, because SourceRepositories contains the already built SourceRepository objects
                 };
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.

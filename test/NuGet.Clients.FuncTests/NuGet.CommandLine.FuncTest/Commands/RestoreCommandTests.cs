@@ -291,6 +291,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 Assert.Contains("NU1004:", result.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -867,6 +869,74 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     Assert.NotNull(library);
                     Assert.False(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
                 }
+            }
+        }
+
+        [Fact]
+        public async Task Restore_WithLockedModeAndNoObjFolder_RestoreFailsAndWritesOutRestoreResultFiles()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile("lib/net461/y.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile");
+                Assert.True(result.Success);
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                var originalPackagesLockFileWriteTime = new FileInfo(projectA.NuGetLockFileOutputPath).LastWriteTimeUtc;
+
+                projectA.AddPackageToAllFrameworks(packageY);
+                projectA.Save();
+
+                // Remove old obj folders.
+                Directory.Delete(Path.GetDirectoryName(projectA.AssetsFileOutputPath), recursive: true);
+
+                // Act
+                result = RunRestore(pathContext, _failureExitCode, "-LockedMode");
+
+                // Assert
+                Assert.Contains("NU1004:", result.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
+                Assert.True(File.Exists(projectA.PropsOutput));
+                Assert.True(File.Exists(projectA.TargetsOutput));
+                Assert.True(File.Exists(projectA.CacheFileOutputPath));
+                var packagesLockFileWriteTime = new FileInfo(projectA.NuGetLockFileOutputPath).LastWriteTimeUtc;
+                packagesLockFileWriteTime.Should().Be(originalPackagesLockFileWriteTime, because: "Locked mode must not overwrite the lock file");
             }
         }
 
