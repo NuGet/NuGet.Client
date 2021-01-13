@@ -864,9 +864,11 @@ Valid from:</comment>
     <comment>0 - property name</comment>
   </data>
   <data name="ZipFileTimeStampModified" xml:space="preserve">
-    <value>Last write timestamp for '{0}' changed from '{1}' to '{2}' because the zip file format does not support timestamp values before 01/01/1980 or after 12/31/2107.</value>
+    <value>Last write timestamp for '{0}' changed from '{1}' to '{2}' because the zip file format does not support timestamp values before {3} or after {4}.</value>
     <comment>0 - Entry name
 1 - original modified timestamp
-2 - new modified timestamp</comment>
+2 - new modified timestamp
+3 - Earliest date zip file supports
+4 - Latest date zip file supports</comment>
   </data>
 </root>

@@ -926,7 +926,7 @@ namespace NuGet.Packaging
                         PackagingLogMessage.CreateMessage(
                             string.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()),
+                                Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
                             LogLevel.Information));
                 }
 
@@ -942,7 +942,7 @@ namespace NuGet.Packaging
                         PackagingLogMessage.CreateMessage(
                             string.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()),
+                                Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
                             LogLevel.Information));
                 }
 
