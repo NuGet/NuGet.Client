@@ -918,8 +918,7 @@ namespace NuGet.PackageManagement.UI
             if (loadContext.IsSolution == false
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
-                && SelectedSource.PackageSources.Count() == 1
-                && TelemetryUtility.IsNuGetOrg(SelectedSource.PackageSources.First()?.Source))
+                && SelectedSource.PackageSources.Any(item => TelemetryUtility.IsNuGetOrg(item.Source)))
             {
                 _recommendPackages = true;
             }

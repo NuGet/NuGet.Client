@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     searchText: "nuget",
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
-                    useRecommender: true,
+                    useRecommender: false,
                     CancellationToken.None);
                 SearchResultContextInfo continueSearchResult = await searchService.ContinueSearchAsync(CancellationToken.None);
 
