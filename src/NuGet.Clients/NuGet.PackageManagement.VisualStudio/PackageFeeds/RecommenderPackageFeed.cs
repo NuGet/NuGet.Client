@@ -13,6 +13,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -39,14 +40,17 @@ namespace NuGet.PackageManagement.VisualStudio
         private const int MaxRecommended = 5;
 
         public RecommenderPackageFeed(
-            SourceRepository sourceRepository,
+            IEnumerable<SourceRepository> sourceRepositories,
             PackageCollection installedPackages,
             PackageCollection transitivePackages,
             IReadOnlyCollection<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
         {
-            _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
+            if (sourceRepositories == null)
+            {
+                throw new ArgumentNullException(nameof(sourceRepositories));
+            }
             if (installedPackages is null)
             {
                 throw new ArgumentNullException(nameof(installedPackages));
@@ -59,15 +63,21 @@ namespace NuGet.PackageManagement.VisualStudio
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _installedPackages = installedPackages.Select(item => item.Id).ToList();
-            _transitivePackages = transitivePackages.Select(item => item.Id).ToList();
+            // The recommender package feed should only created when one of the sources is nuget.org.
+            if (sourceRepositories.Any(item => TelemetryUtility.IsNuGetOrg(item.PackageSource.Source)))
+            {
+                _sourceRepository = sourceRepositories.First(item => TelemetryUtility.IsNuGetOrg(item.PackageSource.Source));
 
-            _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
-                async () =>
-                {
-                    return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsNuGetRecommenderService, IVsNuGetPackageRecommender>();
-                },
-                NuGetUIThreadHelper.JoinableTaskFactory);
+                _installedPackages = installedPackages.Select(item => item.Id).ToList();
+                _transitivePackages = transitivePackages.Select(item => item.Id).ToList();
+
+                _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
+                    async () =>
+                    {
+                        return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsNuGetRecommenderService, IVsNuGetPackageRecommender>();
+                    },
+                    NuGetUIThreadHelper.JoinableTaskFactory);
+            }
         }
 
         private class RecommendSearchToken : ContinuationToken
@@ -101,7 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // get recommender service and version info
-            if (NuGetRecommender is null)
+            if (NuGetRecommender is null && _nuGetRecommender != null)
             {
                 try
                 {
