@@ -1939,7 +1939,7 @@ namespace NuGet.PackageManagement
             // TODO: move this timeout to a better place
             // TODO: what should the timeout be?
             // Give up after 5 minutes
-            var tokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            using var tokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
             var results = new Queue<KeyValuePair<SourceRepository, Task<bool>>>();
 
@@ -2620,9 +2620,9 @@ namespace NuGet.PackageManagement
                             await result.EnsureResultAsync();
                             result.Dispose();
                         }
-
-                        downloadTokenSource.Dispose();
                     }
+
+                    downloadTokenSource?.Dispose();
 
                     if (msbuildProject != null)
                     {

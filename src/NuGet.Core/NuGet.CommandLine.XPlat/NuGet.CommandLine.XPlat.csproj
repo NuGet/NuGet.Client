@@ -11,6 +11,7 @@
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <XPLATProject>true</XPLATProject>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
