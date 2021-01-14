@@ -158,7 +158,8 @@ namespace NuGet.Commands
         private static X509Certificate2Collection LoadCertificateFromStore(CertificateSourceOptions options)
         {
             X509Certificate2Collection resultCollection = null;
-            var store = new X509Store(options.StoreName, options.StoreLocation);
+
+            using var store = new X509Store(options.StoreName, options.StoreLocation);
 
             OpenStore(store);
 
@@ -177,9 +178,7 @@ namespace NuGet.Commands
                 resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly);
             }
 
-#if IS_DESKTOP
             store.Close();
-#endif
 
             resultCollection = resultCollection ?? new X509Certificate2Collection();
             resultCollection = GetValidCertificates(resultCollection);
