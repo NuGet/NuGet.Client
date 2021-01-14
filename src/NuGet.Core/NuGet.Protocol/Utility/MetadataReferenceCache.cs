@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -14,10 +15,9 @@ namespace NuGet.Protocol
     /// </summary>
     public class MetadataReferenceCache
     {
-        private readonly object _lockObject = new object();
-        private readonly Dictionary<string, string> _stringCache = new Dictionary<string, string>(StringComparer.Ordinal);
-        private readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new Dictionary<Type, PropertyInfo[]>();
-        private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, string> _stringCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<Type, PropertyInfo[]> _propertyCache = new ConcurrentDictionary<Type, PropertyInfo[]>();
+        private readonly ConcurrentDictionary<string, NuGetVersion> _versionCache = new ConcurrentDictionary<string, NuGetVersion>(StringComparer.Ordinal);
         private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
 
         /// <summary>
@@ -37,15 +37,7 @@ namespace NuGet.Protocol
                 return string.Empty;
             }
 
-            string cachedValue;
-
-            if (!_stringCache.TryGetValue(s, out cachedValue))
-            {
-                _stringCache.Add(s, s);
-                cachedValue = s;
-            }
-
-            return cachedValue;
+            return _stringCache.GetOrAdd(s, s);
         }
 
         /// <summary>
@@ -58,14 +50,7 @@ namespace NuGet.Protocol
                 return NuGetVersion.Parse(s);
             }
 
-            NuGetVersion version;
-            if (!_versionCache.TryGetValue(s, out version))
-            {
-                version = NuGetVersion.Parse(s);
-                _versionCache.Add(s, version);
-            }
-
-            return version;
+            return _versionCache.GetOrAdd(s, (nugetVersionString) => NuGetVersion.Parse(nugetVersionString));
         }
 
         /// <summary>
@@ -84,7 +69,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// <see cref="IEnumerable{Type}"/> containing string type methods can be cached.
         /// </summary>
-        internal Dictionary<Type, MethodInfo> CachableMethodTypes { get; } = new Dictionary<Type, MethodInfo>();
+        internal ConcurrentDictionary<Type, MethodInfo> CachableMethodTypes { get; } = new ConcurrentDictionary<Type, MethodInfo>();
 
         /// <summary>
         /// Iterates through the properties of <paramref name="input"/> that are either <see cref="string"/>s, <see cref="DateTimeOffset"/>s, or <see cref="NuGetVersion"/>s and checks them against the cache.
@@ -92,53 +77,42 @@ namespace NuGet.Protocol
         public T GetObject<T>(T input)
         {
             // Get all properties that contain both a Get method and a Set method and can be cached.
-            PropertyInfo[] properties;
-            Type typeKey = typeof(T);
-
-            lock (_lockObject)
+            PropertyInfo[] properties = _propertyCache.GetOrAdd(typeof(T), (typeKeyInput) =>
             {
-                if (!_propertyCache.TryGetValue(typeKey, out properties))
-                {
-                    properties = typeKey.GetTypeInfo()
-                        .DeclaredProperties.Where(
-                            p => CachableTypesMap.ContainsKey(p.PropertyType) && p.GetMethod != null && p.SetMethod != null)
-                        .ToArray();
+                return typeKeyInput.GetTypeInfo()
+                    .DeclaredProperties.Where(
+                        p => CachableTypesMap.ContainsKey(p.PropertyType) && p.GetMethod != null && p.SetMethod != null)
+                    .ToArray();
+            });
 
-                    _propertyCache.Add(typeKey, properties);
-                }
+            var stringMethodType = CachableMethodTypes.GetOrAdd(_metadataReferenceCacheType, (metadataReferenceCacheType) =>
+            {
+                // Doing reflection everytime is expensive so cache it for string type which is all this MetadataReferenceCache about.
+                Type stringPropertyType = typeof(string);
+                return _metadataReferenceCacheType.GetTypeInfo()
+                        .DeclaredMethods.FirstOrDefault(
+                            m =>
+                                m.Name == CachableTypesMap[stringPropertyType] &&
+                                m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { stringPropertyType }));
+            });
 
-                if (!CachableMethodTypes.ContainsKey(typeof(MetadataReferenceCache)))
-                {
-                    // Doing reflection everytime is expensive so cache it for string type which is all this MetadataReferenceCache about.
-                    Type stringPropertyType = typeof(string);
-                    MethodInfo method = _metadataReferenceCacheType.GetTypeInfo()
-                            .DeclaredMethods.FirstOrDefault(
-                                m =>
-                                    m.Name == CachableTypesMap[stringPropertyType] &&
-                                    m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { stringPropertyType }));
-                    CachableMethodTypes.Add(_metadataReferenceCacheType, method);
-                }
+            for (var i = 0; i < properties.Length; i++)
+            {
+                PropertyInfo property = properties[i];
+                object value = property.GetMethod.Invoke(input, null);
 
-                for (var i = 0; i < properties.Length; i++)
-                {
-                    PropertyInfo property = properties[i];
-                    object value = property.GetMethod.Invoke(input, null);
-
-                    object cachedValue = property.PropertyType == typeof(string) ?
-                        CachableMethodTypes[_metadataReferenceCacheType]
-                        .Invoke(this, new[] { value })
-                        :
-                        typeof(MetadataReferenceCache).GetTypeInfo()
-                            .DeclaredMethods.FirstOrDefault(
-                                m =>
-                                    m.Name == CachableTypesMap[property.PropertyType] &&
-                                    m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { property.PropertyType }))
-                            .Invoke(this, new[] { value });
-                    property.SetMethod.Invoke(input, new[] { cachedValue });
-                }
-
-                return input;
+                object cachedValue = property.PropertyType == typeof(string)
+                    ? stringMethodType.Invoke(this, new[] { value })
+                    : _metadataReferenceCacheType.GetTypeInfo()
+                        .DeclaredMethods.FirstOrDefault(
+                            m =>
+                                m.Name == CachableTypesMap[property.PropertyType] &&
+                                m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { property.PropertyType }))
+                        .Invoke(this, new[] { value });
+                property.SetMethod.Invoke(input, new[] { cachedValue });
             }
+
+            return input;
         }
     }
 }
