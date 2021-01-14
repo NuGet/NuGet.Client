@@ -28,7 +28,7 @@ function Test-UwpPackageRefClassLibInstallPackage {
     Assert-AreEqual $packageRefs[1].GetMetadataValue("Version") '3.5.0'
 }
 
-function Test-NetCorePackageVersionNoInclusiveLowerBoundNU1604 {
+function Test-WPFPackageVersionNoInclusiveLowerBoundNU1604 {
 
     # Arrange
     param(
@@ -58,7 +58,6 @@ function Test-NetCorePackageVersionNoInclusiveLowerBoundNU1604 {
 
     # Assert   
     # Make sure VS UI warning has NU1604 warning       
-    Start-Sleep -s 3 # Give time for restore to finish, so we can capture VS UI warnings.
     $warnings = Get-Warnings   
     Assert-True $warnings.Contains("Project dependency TestUpdatePackage does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.")
    
@@ -69,7 +68,6 @@ function Test-NetCorePackageVersionNoInclusiveLowerBoundNU1604 {
     Assert-True $warningCodes.Code.Contains("NU1604")
 
     # Make sure msbuild creates asset file with NU1604 warning too
-    Clean-Solution
     $MSBuildExe = Get-MSBuildExe    
     & "$MSBuildExe" /t:restore  $project.FullName   
     $NetCoreLockFilePath = Get-NetCoreLockFilePath $project
