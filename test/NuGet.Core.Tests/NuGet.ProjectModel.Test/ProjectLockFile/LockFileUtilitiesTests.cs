@@ -209,9 +209,9 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                         .Build();
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
-            Assert.False(actual.Item1);
-            Assert.Equal("The project target frameworks are different than the lock file's target frameworks. " +
-                "Lock file target frameworks: netstandard2.0,netcoreapp3.1. Project target frameworks netstandard2.0.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("The project target frameworks are different than the lock file's target frameworks. " +
+                "Lock file target frameworks: netstandard2.0,netcoreapp3.1. Project target frameworks netstandard2.0.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -262,8 +262,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                         .Build();
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
-            Assert.False(actual.Item1);
-            Assert.Equal("The project target framework netstandard2.0 was not found in the lock file.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("The project target framework netstandard2.0 was not found in the lock file.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -319,9 +319,9 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             // The central package version cpvm3 it was removed
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
-            Assert.False(actual.Item1);
-            Assert.Equal("Central package management file doesn't contain version range for cpvm3 package " +
-                "which is specified as CentralTransitive dependency in the lock file.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("Central package management file doesn't contain version range for cpvm3 package " +
+                "which is specified as CentralTransitive dependency in the lock file.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -373,9 +373,9 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             // The central package version cpvm2 has version changed
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
-            Assert.False(actual.Item1);
-            Assert.Equal("Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. " +
-                "Lock file version [1.0.0, ), central package management version [2.0.0, ).", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. " +
+                "Lock file version [1.0.0, ), central package management version [2.0.0, ).", actual.InvalidReasons);
         }
 
         [Fact]
@@ -427,8 +427,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             // The central package version cpvm2 has version changed
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
-            Assert.False(actual.Item1);
-            Assert.Equal("The package reference cpvm1 version has changed from [1.0.0, ) to [2.0.0, ).", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("The package reference cpvm1 version has changed from [1.0.0, ) to [2.0.0, ).", actual.InvalidReasons);
         }
 
         [Fact]
@@ -480,8 +480,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             // The central package version cpvm2 has was changed from transitive to central 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
-            Assert.False(actual.Item1);
-            Assert.Equal("Transitive dependencies moved to be centraly managed invalidated the lock file.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("Transitive dependencies moved to be centraly managed invalidated the lock file.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -537,8 +537,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             // Nothing changed in central package versions
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
-            Assert.True(actual.Item1);
-            Assert.True(string.IsNullOrEmpty(actual.Item2));
+            Assert.True(actual.IsValid);
+            Assert.Empty(actual.InvalidReasons);
         }
 
         [Fact]
@@ -608,10 +608,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual1 = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile1);
             var actual2 = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile2);
 
-            Assert.True(actual1.Item1);
-            Assert.True(string.IsNullOrEmpty(actual1.Item2));
-            Assert.True(actual2.Item1);
-            Assert.True(string.IsNullOrEmpty(actual2.Item2));
+            Assert.True(actual1.IsValid);
+            Assert.Empty(actual1.InvalidReasons);
+            Assert.True(actual2.IsValid);
+            Assert.Empty(actual2.InvalidReasons);
         }
 
         [Fact]
@@ -660,8 +660,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // Nothing changed in central package versions
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.True(actual.Item1);
-            Assert.True(string.IsNullOrEmpty(actual.Item2));
+            Assert.True(actual.IsValid);
+            Assert.Empty(actual.InvalidReasons);
         }
 
         [Fact]
@@ -711,9 +711,9 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // Due to the increased version in the lock file the lock should be invalid
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.False(actual.Item1);
-            Assert.Equal("Version specified in the packages.lock.json file is invalid. Current tooling supports version " +
-                $"{PackagesLockFileFormat.PackagesLockFileVersion} and previous formats.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("Version specified in the packages.lock.json file is invalid. Current tooling supports version " +
+                $"{PackagesLockFileFormat.PackagesLockFileVersion} and previous formats.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -745,8 +745,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.False(actual.Item1);
-            Assert.Equal("A new project reference to C was found for net5.0 target framework.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("A new project reference to C was found for net5.0 target framework.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -778,9 +778,9 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.False(actual.Item1);
-            Assert.Equal("The project reference B has changed. Current dependencies count: 1, " +
-                "lock file's dependencies count: 0.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("The project reference B has changed. Current dependencies count: 1, " +
+                "lock file's dependencies count: 0.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -816,8 +816,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.False(actual.Item1);
-            Assert.Equal("The project references B whose project dependencies has changed.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("The project references B whose project dependencies has changed.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -864,8 +864,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.False(actual.Item1);
-            Assert.Equal("The project references B whose project dependencies has changed.", actual.Item2);
+            Assert.False(actual.IsValid);
+            Assert.Contains("The project references B whose project dependencies has changed.", actual.InvalidReasons);
         }
 
         /// <summary>
@@ -901,8 +901,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.True(actual.Item1);
-            Assert.True(string.IsNullOrEmpty(actual.Item2));
+            Assert.True(actual.IsValid);
+            Assert.Empty(actual.InvalidReasons);
         }
 
         /// <summary>
@@ -976,8 +976,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.True(actual.Item1);
-            Assert.True(string.IsNullOrEmpty(actual.Item2));
+            Assert.True(actual.IsValid);
+            Assert.Empty(actual.InvalidReasons);
         }
 
         // <summary>
@@ -1039,8 +1039,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.True(actual.Item1);
-            Assert.True(string.IsNullOrEmpty(actual.Item2));
+            Assert.True(actual.IsValid);
+            Assert.Empty(actual.InvalidReasons);
         }
 
         // <summary>
@@ -1073,8 +1073,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
-            Assert.True(actual.Item1);
-            Assert.True(string.IsNullOrEmpty(actual.Item2));
+            Assert.True(actual.IsValid);
+            Assert.Empty(actual.InvalidReasons);
         }
     }
 }
