@@ -3769,6 +3769,48 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
+        [InlineData("net45", ".NETStandard,Version=v1.3")]
+        [InlineData("netstandard1.3", ".NETFramework,Version=v4.5")]
+        public void PackCommand_BuildOutput_DoesNotContainForSpecificFramework(string frameworkToExclude, string frameworkInPackage)
+        {
+            // Arrange
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net45;netstandard1.3");
+                    ProjectFileUtils.AddProperty(xml, "IncludeBuildOutput", "false", $"'$(TargetFramework)'=='{frameworkToExclude}'");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Contains(frameworkInPackage, libItems[0].TargetFramework.ToString());
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
         [InlineData("MIT")]
         [InlineData("MIT OR Apache-2.0 WITH 389-exception")]
         public void PackCommand_PackLicense_SimpleExpression_StandardLicense(string licenseExpr)
