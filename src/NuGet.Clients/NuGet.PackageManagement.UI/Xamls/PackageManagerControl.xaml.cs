@@ -1552,11 +1552,18 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
         {
-            var packagesToUpdate = selectedPackages
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                //Wait for LatestVersion to be available.
+                await Task.WhenAll(selectedPackages.Select(vm => vm.GetVersionsAsync()));
+
+                var packagesToUpdate = selectedPackages
                 .Select(package => new PackageIdentity(package.Id, package.LatestVersion))
                 .ToList();
 
-            UpdatePackage(packagesToUpdate);
+                UpdatePackage(packagesToUpdate);
+            })
+            .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_UpdateButtonClicked));
         }
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
