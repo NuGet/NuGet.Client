@@ -3,14 +3,12 @@
 
 using System;
 using System.ComponentModel;
-using System.IO;
 using System.Threading;
 using System.Windows.Documents;
 using Microsoft.ServiceHub.Framework;
 using NuGet.Packaging.Core;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
-using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {

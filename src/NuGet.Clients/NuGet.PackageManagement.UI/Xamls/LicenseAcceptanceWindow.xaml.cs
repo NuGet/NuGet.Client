@@ -4,8 +4,6 @@
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI
 {
