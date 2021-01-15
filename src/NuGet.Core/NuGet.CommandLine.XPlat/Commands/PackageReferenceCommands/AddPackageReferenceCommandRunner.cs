@@ -102,6 +102,27 @@ namespace NuGet.CommandLine.XPlat
 
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
+            // 2. Determine the version
+
+            // Setup the Credential Service before making any potential http calls.
+            DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageReferenceArgs.Logger, !packageReferenceArgs.Interactive);
+
+            if (packageReferenceArgs.Sources?.Any() == true)
+            {
+                // Convert relative path to absolute path if there is any
+                List<string> sources = new List<string>();
+
+                foreach (string source in packageReferenceArgs.Sources)
+                {
+                    sources.Add(UriUtility.GetAbsolutePath(Environment.CurrentDirectory, source));
+                }
+
+                originalPackageSpec.RestoreMetadata.Sources =
+                                    sources.Where(ns => !string.IsNullOrEmpty(ns))
+                                    .Select(ns => new PackageSource(ns))
+                                    .ToList();
+            }
+
             PackageDependency packageDependency = default;
             if (packageReferenceArgs.NoVersion)
             {
@@ -145,7 +166,7 @@ namespace NuGet.CommandLine.XPlat
             var updatedDgSpec = dgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
             updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
 
-            // 2. Run Restore Preview
+            // 3. Run Restore Preview
             packageReferenceArgs.Logger.LogDebug("Running Restore preview");
 
             var restorePreviewResult = await PreviewAddPackageReferenceAsync(packageReferenceArgs,
@@ -153,7 +174,7 @@ namespace NuGet.CommandLine.XPlat
 
             packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
-            // 3. Process Restore Result
+            // 4. Process Restore Result
             var compatibleFrameworks = new HashSet<NuGetFramework>(
                 restorePreviewResult
                 .Result
@@ -171,7 +192,7 @@ namespace NuGet.CommandLine.XPlat
                 compatibleFrameworks.IntersectWith(userSpecifiedFrameworkSet);
             }
 
-            // 4. Write to Project
+            // 5. Write to Project
             if (compatibleFrameworks.Count == 0)
             {
                 // Package is compatible with none of the project TFMs
@@ -221,7 +242,7 @@ namespace NuGet.CommandLine.XPlat
                     compatibleOriginalFrameworks);
             }
 
-            // 5. Commit restore result
+            // 6. Commit restore result
             await RestoreRunner.CommitAsync(restorePreviewResult, CancellationToken.None);
 
             return 0;
@@ -333,15 +354,12 @@ namespace NuGet.CommandLine.XPlat
                     Log = packageReferenceArgs.Logger,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
-                    PreLoadedRequestProviders = providers,
-                    Sources = packageReferenceArgs.Sources?.ToList()
+                    PreLoadedRequestProviders = providers
+                    // Sources : No need to pass it, because SourceRepositories contains the already built SourceRepository objects
                 };
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.
                 var restoreRequests = await RestoreRunner.GetRequests(restoreContext);
-
-                //Setup the Credential Service
-                DefaultCredentialServiceUtility.SetupDefaultCredentialService(restoreContext.Log, !packageReferenceArgs.Interactive);
 
                 // Run restore without commit. This will always return 1 Result pair since we are restoring for 1 request.
                 var restoreResult = await RestoreRunner.RunWithoutCommit(restoreRequests, restoreContext);

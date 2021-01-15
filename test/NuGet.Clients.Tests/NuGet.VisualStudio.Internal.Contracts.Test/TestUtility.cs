@@ -10,7 +10,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 {
     internal static class TestUtility
     {
-        internal static void AssertEqual(ILogMessage expectedResult, ILogMessage actualResult)
+        internal static void AssertEqual(ILogMessage? expectedResult, ILogMessage? actualResult)
         {
             if (expectedResult is null)
             {
@@ -23,7 +23,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
                 Assert.NotNull(actualResult);
             }
 
-            Assert.Equal(expectedResult.Code, actualResult.Code);
+            Assert.Equal(expectedResult.Code, actualResult!.Code);
             Assert.Equal(expectedResult.Level, actualResult.Level);
             Assert.Equal(expectedResult.Message, actualResult.Message);
             Assert.Equal(expectedResult.ProjectPath, actualResult.ProjectPath);
@@ -73,8 +73,8 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         }
 
         internal static void AssertEqual(
-            IReadOnlyList<ILogMessage> expectedResults,
-            IReadOnlyList<ILogMessage> actualResults)
+            IReadOnlyList<ILogMessage>? expectedResults,
+            IReadOnlyList<ILogMessage>? actualResults)
         {
             if (expectedResults is null)
             {
@@ -83,7 +83,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             else
             {
                 Assert.NotNull(actualResults);
-                Assert.Equal(expectedResults.Count, actualResults.Count);
+                Assert.Equal(expectedResults.Count, actualResults!.Count);
 
                 for (var i = 0; i < expectedResults.Count; ++i)
                 {

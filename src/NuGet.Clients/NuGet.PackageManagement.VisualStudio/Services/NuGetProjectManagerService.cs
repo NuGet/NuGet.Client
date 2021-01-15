@@ -14,10 +14,13 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
@@ -106,11 +109,92 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
-            // Read package references from all projects.
-            IEnumerable<Task<IEnumerable<PackageReference>>> tasks = projects.Select(project => project.GetInstalledPackagesAsync(cancellationToken));
-            IEnumerable<PackageReference>[] packageReferences = await Task.WhenAll(tasks);
+            List<Task<IEnumerable<PackageReference>>> tasks = projects
+                .Select(project => project.GetInstalledPackagesAsync(cancellationToken))
+                .ToList();
+            IEnumerable<PackageReference>[] results = await Task.WhenAll(tasks);
 
-            return packageReferences.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            var installedPackages = new List<PackageReferenceContextInfo>();
+            GetInstalledPackagesAsyncTelemetryEvent? telemetryEvent = null;
+
+            for (var i = 0; i < results.Length; ++i)
+            {
+                IEnumerable<PackageReference> packageReferences = results[i];
+                int totalCount = 0;
+                int nullCount = 0;
+
+                foreach (PackageReference? packageReference in packageReferences)
+                {
+                    ++totalCount;
+
+                    if (packageReference is null)
+                    {
+                        ++nullCount;
+
+                        continue;
+                    }
+
+                    PackageReferenceContextInfo installedPackage = PackageReferenceContextInfo.Create(packageReference);
+
+                    installedPackages.Add(installedPackage);
+                }
+
+                if (nullCount > 0)
+                {
+                    telemetryEvent ??= new GetInstalledPackagesAsyncTelemetryEvent();
+
+                    NuGetProject project = projects[i];
+
+                    string projectId = project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                    NuGetProjectType projectType = VSTelemetryServiceUtility.GetProjectType(project);
+
+                    telemetryEvent.AddProject(projectType, projectId, nullCount, totalCount);
+                }
+            }
+
+            if (telemetryEvent is object)
+            {
+                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+            }
+
+            return installedPackages;
+        }
+
+        public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectIds);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+            // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
+            var prStyleTasks = new List<Task<ProjectPackages>>();
+            var nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
+            foreach (NuGetProject? project in projects)
+            {
+                if (project is PackageReferenceProject packageReferenceProject)
+                {
+                    prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(cancellationToken));
+                }
+                else
+                {
+                    nonPrStyleTasks.Add(project.GetInstalledPackagesAsync(cancellationToken));
+                }
+            }
+            ProjectPackages[] prStyleReferences = await Task.WhenAll(prStyleTasks);
+            IEnumerable<PackageReference>[] nonPrStyleReferences = await Task.WhenAll(nonPrStyleTasks);
+
+            // combine all of the installed package references
+            IEnumerable<IEnumerable<PackageReference>> installedPackages = nonPrStyleReferences
+                .Concat(prStyleReferences
+                    .Select(p => p.InstalledPackages));
+
+            PackageReferenceContextInfo[] installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            PackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
         }
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
@@ -143,6 +227,45 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return results.ToArray();
+        }
+
+        public async ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectIds);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+            HashSet<NuGetFramework> targetFrameworks = new HashSet<NuGetFramework>();
+            foreach (NuGetProject project in projects)
+            {
+                if (project is BuildIntegratedNuGetProject buildIntegratedProject)
+                {
+                    if (project is LegacyPackageReferenceProject legacyPackageReferenceProject)
+                    {
+                        targetFrameworks.Add(legacyPackageReferenceProject.TargetFramework);
+                    }
+                    else
+                    {
+                        var dgcContext = new DependencyGraphCacheContext();
+                        IReadOnlyList<ProjectModel.PackageSpec>? packageSpecs = await buildIntegratedProject.GetPackageSpecsAsync(dgcContext);
+
+                        IEnumerable<NuGetFramework>? frameworks = packageSpecs
+                            .SelectMany(spec => spec.TargetFrameworks)
+                            .Select(f => f.FrameworkName);
+
+                        if (!(frameworks is null))
+                        {
+                            targetFrameworks.UnionWith(frameworks);
+                        }
+                    }
+                }
+            }
+
+            return targetFrameworks;
         }
 
         public async ValueTask<IProjectMetadataContextInfo> GetMetadataAsync(string projectId, CancellationToken cancellationToken)
@@ -290,7 +413,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 _state.PackageIdentity = packageIdentity;
 
-                IReadOnlyList<SourceRepository> sourceRepositories = await GetSourceRepositoriesAsync(
+                IReadOnlyList<SourceRepository> sourceRepositories = GetSourceRepositories(
                     packageSourceNames,
                     cancellationToken);
 
@@ -426,8 +549,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var primarySources = new List<SourceRepository>();
                 var secondarySources = new List<SourceRepository>();
 
-                ISourceRepositoryProvider sourceRepositoryProvider = await _sharedState.SourceRepositoryProvider.GetValueAsync(cancellationToken);
-                IEnumerable<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories();
+                IEnumerable<SourceRepository> sourceRepositories = _sharedState.SourceRepositoryProvider.GetRepositories();
                 var packageSourceNamesSet = new HashSet<string>(packageSourceNames, StringComparer.OrdinalIgnoreCase);
 
                 foreach (SourceRepository sourceRepository in sourceRepositories)
@@ -536,13 +658,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return matchingProjects;
         }
 
-        private async ValueTask<IReadOnlyList<SourceRepository>> GetSourceRepositoriesAsync(
+        private IReadOnlyList<SourceRepository> GetSourceRepositories(
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken)
         {
-            ISourceRepositoryProvider sourceRepositoryProvider = await _sharedState.SourceRepositoryProvider.GetValueAsync(cancellationToken);
             var sourceRepositories = new List<SourceRepository>();
-            Dictionary<string, SourceRepository>? allSourceRepositories = sourceRepositoryProvider.GetRepositories()
+            Dictionary<string, SourceRepository> allSourceRepositories = _sharedState.SourceRepositoryProvider.GetRepositories()
                 .ToDictionary(sr => sr.PackageSource.Name, sr => sr);
 
             foreach (string packageSourceName in packageSourceNames)

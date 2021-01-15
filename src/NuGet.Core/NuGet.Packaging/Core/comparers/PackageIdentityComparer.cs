@@ -46,10 +46,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Default comparer that compares on the id, version, and version release labels.
         /// </summary>
-        public static PackageIdentityComparer Default
-        {
-            get { return new PackageIdentityComparer(); }
-        }
+        public static PackageIdentityComparer Default { get; } = new PackageIdentityComparer();
 
         /// <summary>
         /// True if the package identities are the same when ignoring build metadata.
@@ -68,7 +65,7 @@ namespace NuGet.Packaging.Core
             }
 
             return _versionComparer.Equals(x.Version, y.Version)
-                   && StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
+                && StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
         }
 
         /// <summary>
@@ -109,7 +106,7 @@ namespace NuGet.Packaging.Core
                 return 1;
             }
 
-            var result = StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id);
+            int result = StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id);
 
             if (result == 0)
             {

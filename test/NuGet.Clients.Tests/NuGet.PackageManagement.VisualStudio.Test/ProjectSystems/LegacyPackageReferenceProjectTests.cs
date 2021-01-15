@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -25,27 +25,29 @@ using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
-using Test.Utility.Threading;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
-    public class LegacyPackageReferenceProjectTests
+    [Collection(MockedVS.Collection)]
+    public class LegacyPackageReferenceProjectTests : MockedVSCollectionTests
     {
         private readonly IVsProjectThreadingService _threadingService;
 
-        public LegacyPackageReferenceProjectTests(DispatcherThreadFixture fixture)
+        public LegacyPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
         {
-            Assumes.Present(fixture);
+            globalServiceProvider.Reset();
 
-            _threadingService = new TestProjectThreadingService(fixture.JoinableTaskFactory);
+            _threadingService = new TestProjectThreadingService(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         [Fact]
         public async Task GetAssetsFilePathAsync_WithValidMSBuildProjectExtensionsPath_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -62,8 +64,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     new TestProjectSystemServices(),
                     _threadingService);
 
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 // Act
                 var assetsPath = await testProject.GetAssetsFilePathAsync();
 
@@ -79,6 +79,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetAssetsFilePathAsync_WithNoMSBuildProjectExtensionsPath_Throws()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (TestDirectory.Create())
             {
@@ -87,8 +89,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
                     _threadingService);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
@@ -99,6 +99,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetCacheFilePathAsync_WithValidMSBuildProjectExtensionsPath_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -120,8 +122,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     new TestProjectSystemServices(),
                     _threadingService);
 
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 // Act
                 var cachePath = await testProject.GetCacheFilePathAsync();
 
@@ -137,6 +137,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetCacheFilePathAsync_WithNoMSBuildProjectExtensionsPath_Throws()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (TestDirectory.Create())
             {
@@ -145,8 +147,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
                     _threadingService);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
@@ -193,6 +193,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithDefaultVersion_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -206,8 +208,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -239,6 +239,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithVersion_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -256,8 +258,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -284,6 +284,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData("RestorePackagesPath", "Source1;Source2", null)]
         public async Task GetPackageSpecsAsync_ReadSettingsWithRelativePaths(string restorePackagesPath, string sources, string fallbackFolders)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -310,8 +311,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -351,6 +350,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", null)]
         public async Task GetPackageSpecsAsync_ReadSettingsWithFullPaths(string restorePackagesPath, string sources, string fallbackFolders)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -377,8 +378,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -414,6 +413,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithPackageTargetFallback_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -429,8 +430,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -468,6 +467,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithPackageReference_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
             {
@@ -493,8 +494,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -523,6 +522,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_WithProjectReference_Succeeds()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
             {
@@ -545,8 +546,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     _threadingService);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -708,6 +707,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageSpecsAsync_SkipContentFilesAlwaysTrue()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
             {
@@ -734,8 +735,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
 
@@ -759,6 +758,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             string lockFilePath,
             bool restoreLockedMode)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
@@ -785,8 +786,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
-
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Act
                 var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
@@ -1126,6 +1125,213 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Asert
                 packages.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task GetTransitivePackagesAsync_WithTransitivePackageReferences_ReturnsPackageIdentities()
+        {
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+
+                NullSettings settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                IReadOnlyList<PackageSpec> packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageB", "1.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    packageSource.FullName,
+                    "packageA",
+                    "2.15.3",
+                    new Packaging.Core.PackageDependency[]
+                    {
+                        new Packaging.Core.PackageDependency("packageB", VersionRange.Parse("1.0.0"))
+                    });
+
+                // Act
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                Assert.True(result.Success);
+                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+
+                // Assert
+                packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
+                packages.TransitivePackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageB", new NuGetVersion("1.0.0"))));
+            }
+        }
+
+        [Fact]
+        public async Task GetTransitivePackagesAsync_WithNestedTransitivePackageReferences_ReturnsPackageIdentities()
+        {
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+
+                NullSettings settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageC", "2.1.43");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    packageSource.FullName,
+                    "packageB",
+                    "1.0.0",
+                    new Packaging.Core.PackageDependency[]
+                    {
+                        new Packaging.Core.PackageDependency("packageC", VersionRange.Parse("2.1.43"))
+                    });
+                await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    packageSource.FullName,
+                    "packageA",
+                    "2.15.3",
+                    new Packaging.Core.PackageDependency[]
+                    {
+                        new Packaging.Core.PackageDependency("packageB", VersionRange.Parse("1.0.0"))
+                    });
+
+                // Act
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                Assert.True(result.Success);
+                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+
+                // Assert
+                packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
+                packages.TransitivePackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageB", new NuGetVersion("1.0.0"))));
+                packages.TransitivePackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageC", new NuGetVersion("2.1.43"))));
+            }
+        }
+
+        [Fact]
+        public async Task GetTransitivePackagesAsync_WithNoTransitivePackageReferences_ReturnsOnlyInstalledPackageIdentities()
+        {
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+
+                NullSettings settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                IReadOnlyList<PackageSpec> packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "2.15.3");
+
+                // Act
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                Assert.True(result.Success);
+                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+
+                // Assert
+                packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
+                packages.TransitivePackages.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task GetTransitivePackagesAsync_WithTransitivePackageReferences_ReturnsPackageIdentitiesFromCache()
+        {
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                // Setup
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+
+                NullSettings settings = NullSettings.Instance;
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                IReadOnlyList<PackageSpec> packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+                string lockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json");
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = lockFilePath
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageB", "1.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    packageSource.FullName,
+                    "packageA",
+                    "2.15.3",
+                    new Packaging.Core.PackageDependency[]
+                    {
+                        new Packaging.Core.PackageDependency("packageB", VersionRange.Parse("1.0.0"))
+                    });
+
+                // Act
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                Assert.True(result.Success);
+                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+                DateTime lastWriteTime = File.GetLastWriteTimeUtc(lockFilePath);
+                File.WriteAllText(lockFilePath, "** replaced file content to test cache **");
+                File.SetLastWriteTimeUtc(lockFilePath, lastWriteTime);
+                ProjectPackages cache_packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+
+                // Assert
+                cache_packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
+                cache_packages.TransitivePackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageB", new NuGetVersion("1.0.0"))));
+                Assert.True(lastWriteTime == File.GetLastWriteTimeUtc(lockFilePath));
             }
         }
 

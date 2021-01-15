@@ -199,8 +199,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     CollectFrameworkReferences
     ============================================================
   -->
-  <Target Name="CollectFrameworkReferences" Returns="@(FrameworkReference)" />
-
+  <Target Name="CollectFrameworkReferences" Returns="@(_FrameworkReferenceForRestore)">
+      <ItemGroup>
+          <_FrameworkReferenceForRestore 
+            Include="@(FrameworkReference)"
+            Condition="'%(FrameworkReference.IsTransitiveFrameworkReference)' != 'true'"/>
+      </ItemGroup>
+  </Target>
   <!--
     ============================================================
     _LoadRestoreGraphEntryPoints
@@ -510,7 +515,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- For project.json projects target frameworks will be read from project.json. -->
     <GetProjectTargetFrameworksTask
-      Condition=" '$(RestoreProjectStyle)' != 'ProjectJson' OR '$(PackageReferenceCompatibleProjectStyle)' == 'true' "
+      Condition=" '$(RestoreProjectStyle)' != 'ProjectJson'"
       ProjectPath="$(MSBuildProjectFullPath)"
       TargetFrameworks="$(TargetFrameworks)"
       TargetFramework="$(TargetFramework)"
@@ -766,7 +771,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RepositoryPath>$(_OutputRepositoryPath)</RepositoryPath>
         <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
-      </_RestoreGraphEntry>
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
+        </_RestoreGraphEntry>
     </ItemGroup>
 
     <!-- Non-NuGet type -->

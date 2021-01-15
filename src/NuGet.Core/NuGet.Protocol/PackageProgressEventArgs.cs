@@ -24,12 +24,12 @@ namespace NuGet.Protocol.Core.Types
             if (complete < 0
                 || complete > 1)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(complete));
             }
 
             if (identity == null)
             {
-                throw new ArgumentNullException("identity");
+                throw new ArgumentNullException(nameof(identity));
             }
 
             _identity = identity;

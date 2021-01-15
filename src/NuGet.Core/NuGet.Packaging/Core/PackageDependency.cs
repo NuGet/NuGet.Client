@@ -57,7 +57,7 @@ namespace NuGet.Packaging.Core
         {
             if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
             }
 
             Id = id;

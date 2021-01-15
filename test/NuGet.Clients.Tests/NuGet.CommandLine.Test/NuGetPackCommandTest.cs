@@ -5985,6 +5985,52 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Theory]
+        [InlineData(".jpg")]
+        [InlineData(".PnG")]
+        [InlineData(".jpEg")]
+        public void PackCommand_PackIcon_ValidExtension_Succeeds(string fileExtension)
+        {
+            NuspecBuilder nuspecBuilder = NuspecBuilder.Create();
+            TestDirectoryBuilder testDirBuilder = TestDirectoryBuilder.Create();
+            var rng = new Random();
+
+            var iconFile = $"icon{fileExtension}";
+
+            nuspecBuilder
+                .WithFile(iconFile)
+                .WithIcon(iconFile);
+
+            testDirBuilder
+                .WithNuspec(nuspecBuilder)
+                .WithFile(iconFile, rng.Next(1, 1024));
+
+            TestPackIconSuccess(testDirBuilder, iconFile);
+        }
+
+        [Theory]
+        [InlineData(".x")]
+        [InlineData(".jpeg.x")]
+        [InlineData("")]
+        public void PackCommand_PackIcon_InvalidExtension_Fails(string fileExtension)
+        {
+            NuspecBuilder nuspecBuilder = NuspecBuilder.Create();
+            TestDirectoryBuilder testDirBuilder = TestDirectoryBuilder.Create();
+            var rng = new Random();
+
+            var iconFile = $"icon{fileExtension}";
+
+            nuspecBuilder
+                .WithFile(iconFile)
+                .WithIcon(iconFile);
+
+            testDirBuilder
+                .WithNuspec(nuspecBuilder)
+                .WithFile(iconFile, rng.Next(1, 1024));
+
+            TestPackIconFailure(testDirBuilder, NuGetLogCode.NU5045.ToString());
+        }
+
+        [Theory]
         [InlineData(SymbolPackageFormat.Snupkg)]
         [InlineData(SymbolPackageFormat.SymbolsNupkg)]
         public void PackCommand_PackIcon_SymbolsPackage_MustNotHaveIconInfo_Succeed(SymbolPackageFormat symbolPackageFormat)

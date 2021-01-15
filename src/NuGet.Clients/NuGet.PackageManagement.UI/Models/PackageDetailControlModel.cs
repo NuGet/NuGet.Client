@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
             _solutionManager.ProjectUpdated += ProjectChanged;
         }
 
-        public async override Task SetCurrentPackage(
+        public async override Task SetCurrentPackageAsync(
             PackageItemListViewModel searchResultPackage,
             ItemFilter filter,
             Func<PackageItemListViewModel> getPackageItemListViewModel)
@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
             // Set InstalledVersion before fetching versions list.
             InstalledVersion = searchResultPackage.InstalledVersion;
 
-            await base.SetCurrentPackage(searchResultPackage, filter, getPackageItemListViewModel);
+            await base.SetCurrentPackageAsync(searchResultPackage, filter, getPackageItemListViewModel);
 
             // SetCurrentPackage can take long time to return, user might changed selected package.
             // Check selected package.
@@ -93,12 +93,16 @@ namespace NuGet.PackageManagement.UI
         public override void CleanUp()
         {
             _solutionManager.ProjectUpdated -= ProjectChanged;
-
-            Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
         }
 
         protected override Task CreateVersionsAsync(CancellationToken cancellationToken)
         {
+            // The value will be null if the server does not return any versions.
+            if (_allPackageVersions == null || _allPackageVersions.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
             _versions = new List<DisplayVersion>();
             var installedDependency = InstalledPackageDependencies.Where(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id) && p.VersionRange != null && p.VersionRange.HasLowerBound)
@@ -108,23 +112,30 @@ namespace NuGet.PackageManagement.UI
             // installVersion is null if the package is not installed
             var installedVersion = installedDependency?.VersionRange?.MinVersion;
 
-            var allVersions = _allPackageVersions?.OrderByDescending(v => v).ToArray();
-
-            // allVersions is null if server doesn't return any versions.
-            if (allVersions == null)
-            {
-                return Task.CompletedTask;
-            }
+            List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.OrderByDescending(v => v.version.Version).ToList();
 
             // null, if no version constraint defined in package.config
-            var allowedVersions = _projectVersionConstraints.Select(e => e.VersionRange).FirstOrDefault() ?? VersionRange.All;
-            var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v.version)).ToArray();
-
+            VersionRange allowedVersions = _projectVersionConstraints.Select(e => e.VersionRange).FirstOrDefault();
             // null, if all versions are allowed to be install or update
-            var blockedVersions = allVersions
-                .Select(v => v.version)
-                .Where(v => !allVersionsAllowed.Any(allowed => allowed.version.Equals(v)))
-                .ToArray();
+            var blockedVersions = new List<NuGetVersion>(allVersions.Count);
+
+            List<(NuGetVersion version, bool isDeprecated)> allVersionsAllowed;
+            if (allowedVersions == null)
+            {
+                allowedVersions = VersionRange.All;
+                allVersionsAllowed = allVersions;
+            }
+            else
+            {
+                allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v.version)).ToList();
+                foreach ((NuGetVersion version, bool isDeprecated) in allVersions)
+                {
+                    if (!allVersionsAllowed.Any(a => a.version.Version.Equals(version.Version)))
+                    {
+                        blockedVersions.Add(version);
+                    }
+                }
+            }
 
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);

@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Plugins
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                throw new ArgumentException(nameof(filePath));
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(filePath));
             }
             // There's no embedded signature verification on Linux, MacOS and Mono platforms
             return true;

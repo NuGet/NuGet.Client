@@ -52,13 +52,6 @@ steps:
     inlineScript: |
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-- task: NuGetCommand@2
-  displayName: 'MicroBuild:  install core package'
-  inputs:
-    command: 'custom'
-    arguments: 'install Microsoft.VisualStudioEng.MicroBuild.Core -Version 0.4.1 -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
 - task: MicroBuildLocalizationPlugin@1
   displayName: "Install Localization Plugin"
 

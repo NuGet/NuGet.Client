@@ -322,4 +322,8 @@ The string representation of the user's input framework name.</comment>
   <data name="PackageFrameworkAssemblyGroupName" xml:space="preserve">
     <value>Framework Assemblies</value>
   </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>'{0}' cannot be null.</value>
+    <comment>0 - property name</comment>
+  </data>
 </root>

@@ -40,9 +40,10 @@ namespace NuGet.Indexing
 
         static Query ConstructQuery(Dictionary<string, HashSet<string>> clauses)
         {
-            Analyzer analyzer = new PackageAnalyzer();
-
             BooleanQuery query = new BooleanQuery();
+
+            using var analyzer = new PackageAnalyzer();
+
             foreach (var clause in clauses)
             {
                 switch (clause.Key.ToLowerInvariant())
@@ -181,13 +182,15 @@ namespace NuGet.Indexing
 
         static Query ExecuteAnalyzer(Analyzer analyzer, string field, string text)
         {
-            TokenStream tokenStream = analyzer.TokenStream(field, new StringReader(text));
+            List<List<Term>> terms = new List<List<Term>>();
+            List<Term> current = null;
 
+            using var reader = new StringReader(text);
+
+            TokenStream tokenStream = analyzer.TokenStream(field, reader);
             ITermAttribute termAttribute = tokenStream.AddAttribute<ITermAttribute>();
             IPositionIncrementAttribute positionIncrementAttribute = tokenStream.AddAttribute<IPositionIncrementAttribute>();
 
-            List<List<Term>> terms = new List<List<Term>>();
-            List<Term> current = null;
             while (tokenStream.IncrementToken())
             {
                 if (positionIncrementAttribute.PositionIncrement > 0)
@@ -245,7 +248,7 @@ namespace NuGet.Indexing
                 switch (state)
                 {
                     case 0:
-                        if (Char.IsWhiteSpace(ch))
+                        if (char.IsWhiteSpace(ch))
                         {
                             if (buf.Length > 0)
                             {

@@ -2128,6 +2128,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 r.AllOutput.Should().Contain("NU1004");
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                logCodes.Should().Contain(NuGetLogCode.NU1004);
             }
         }
     }

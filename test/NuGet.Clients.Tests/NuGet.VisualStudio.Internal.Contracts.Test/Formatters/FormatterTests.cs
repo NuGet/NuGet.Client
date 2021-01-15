@@ -13,16 +13,21 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 
         protected T SerializeThenDeserialize<T>(IMessagePackFormatter<T> formatter, T expectedResult)
         {
+            return SerializeThenDeserialize(formatter, expectedResult, _options);
+        }
+
+        protected T SerializeThenDeserialize<T>(IMessagePackFormatter<T> formatter, T expectedResult, MessagePackSerializerOptions options)
+        {
             var sequence = new Sequence<byte>();
             var writer = new MessagePackWriter(sequence);
 
-            formatter.Serialize(ref writer, expectedResult, _options);
+            formatter.Serialize(ref writer, expectedResult, options);
 
             writer.Flush();
 
             var reader = new MessagePackReader(sequence.AsReadOnlySequence);
 
-            return formatter.Deserialize(ref reader, _options);
+            return formatter.Deserialize(ref reader, options);
         }
     }
 }

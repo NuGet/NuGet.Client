@@ -80,15 +80,15 @@ namespace NuGet.Test.Utility
 
             public string Owners => string.Empty;
 
-            public bool RequireLicenseAcceptance => throw new NotImplementedException();
+            public bool RequireLicenseAcceptance => false;
 
             public string Summary => string.Empty;
 
             public string Tags => null;
 
-            public string Title => throw new NotImplementedException();
+            public string Title => "title";
 
-            public bool IsListed => throw new NotImplementedException();
+            public bool IsListed => true;
 
             public bool PrefixReserved => false;
 

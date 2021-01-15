@@ -22,6 +22,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
+using Test.Utility.ProjectManagement;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -1364,7 +1365,7 @@ namespace NuGet.Commands.Test
                 project1.Create();
                 sources.Add(new PackageSource(packageSource.FullName));
 
-                var dgspec1 = CreateMinimalDependencyGraphSpec(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
+                var dgspec1 = DependencyGraphSpecTestUtilities.CreateMinimalDependencyGraphSpec(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
                 var spec1 = dgspec1.Projects[0];
 
                 var logger = new TestLogger();
@@ -1396,7 +1397,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                         LibraryDependencyType.Default,
                         LibraryIncludeFlags.All,
@@ -1418,6 +1419,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1455,7 +1457,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 var dependencyBar = new LibraryDependency(new LibraryRange(autoreferencedpackageId, VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
@@ -1477,6 +1479,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1721,7 +1724,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 // Package Bar does not have a corresponding PackageVersion 
                 var packageRefDependecyFoo = new LibraryDependency()
                 {
@@ -1740,6 +1743,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1778,7 +1782,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 // Package Bar does not have a corresponding PackageVersion 
                 var packageRefDependecyBar = new LibraryDependency()
                 {
@@ -1797,6 +1801,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -2031,21 +2036,6 @@ namespace NuGet.Commands.Test
             };
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
-        }
-
-        private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
-        {
-            var packageSpec = new PackageSpec();
-            packageSpec.FilePath = projectPath;
-            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
-            packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
-            packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
-            packageSpec.RestoreMetadata.OutputPath = outputPath;
-            packageSpec.RestoreMetadata.CacheFilePath = Path.Combine(outputPath, "project.nuget.cache");
-            var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(packageSpec);
-
-            return dgSpec;
         }
     }
 }

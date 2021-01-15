@@ -8,8 +8,6 @@ namespace NuGet.PackageManagement
 {
     public class PackageReferenceComparer : IEqualityComparer<Packaging.PackageReference>
     {
-        private readonly PackageIdentityComparer _packageIdentityComparer = new PackageIdentityComparer();
-
         public bool Equals(Packaging.PackageReference x, Packaging.PackageReference y)
         {
             if (ReferenceEquals(x, y))
@@ -17,12 +15,12 @@ namespace NuGet.PackageManagement
                 return true;
             }
 
-            return _packageIdentityComparer.Equals(x.PackageIdentity, y.PackageIdentity);
+            return PackageIdentityComparer.Default.Equals(x.PackageIdentity, y.PackageIdentity);
         }
 
         public int GetHashCode(Packaging.PackageReference obj)
         {
-            return _packageIdentityComparer.GetHashCode(obj.PackageIdentity);
+            return PackageIdentityComparer.Default.GetHashCode(obj.PackageIdentity);
         }
     }
 }

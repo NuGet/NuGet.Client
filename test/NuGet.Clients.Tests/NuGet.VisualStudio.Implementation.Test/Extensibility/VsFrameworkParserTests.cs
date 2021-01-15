@@ -1,17 +1,22 @@
 using System;
 using System.Runtime.Versioning;
+using Moq;
 using NuGet.Frameworks;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 {
     public class VsFrameworkParserTests
     {
+        // known/expected errors should not be reported to telemetry, hence use MockBehavior.Strict
+        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
+
         [Fact]
         public void VsFrameworkParser_ParseFrameworkName_RejectsNullInput()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => target.ParseFrameworkName(null));
@@ -21,7 +26,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkParser_ParseFrameworkName_RejectsInvalidVersion()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => target.ParseFrameworkName("foo,Version=a.b"));
@@ -31,7 +36,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkParser_ParseFrameworkName_RejectsInvalidProfile()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => target.ParseFrameworkName(".NETPortable,Version=1.0,Profile=a-b"));
@@ -41,7 +46,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkParser_ParseFrameworkName_ParsesShortFrameworkName()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
 
             // Act
             var frameworkName = target.ParseFrameworkName("net45");
@@ -54,7 +59,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkParser_ParseFrameworkName_ParsesLongFrameworkName()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
 
             // Act
             var frameworkName = target.ParseFrameworkName(".NETFramework,Version=v4.5");
@@ -67,7 +72,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkParser_GetShortFrameworkName_Success()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
             var frameworkName = new FrameworkName(".NETStandard", Version.Parse("1.3"));
 
             // Act
@@ -81,7 +86,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkParser_GetShortFrameworkName_RejectsNull()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => target.GetShortFrameworkName(null));
@@ -91,7 +96,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkParser_GetShortFrameworkName_RejectsInvalidFrameworkIdentifier()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
             var frameworkName = new FrameworkName("!?", Version.Parse("4.5"));
 
             // Act & Assert
@@ -102,7 +107,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void VsFrameworkParser_GetShortFrameworkName_RejectsInvalidPortable()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
             var frameworkName = new FrameworkName(".NETPortable", Version.Parse("4.5"), "net45+portable-net451");
 
             // Act & Assert
@@ -113,7 +118,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void TryParse_NullInput_ThrowsArgumentNullException()
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
 
             // Act
             var exception = Assert.Throws<ArgumentNullException>(() => target.TryParse(input: null, out _));
@@ -137,7 +142,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void TryParse_ValidInput_Succeeds(string input)
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
             IVsNuGetFramework actual;
             var expected = NuGetFramework.Parse(input);
 
@@ -158,7 +163,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         public void TryParse_InvalidInput_ReturnsFalse(string input)
         {
             // Arrange
-            var target = new VsFrameworkParser();
+            var target = new VsFrameworkParser(_telemetryProvider.Object);
 
             // Act
             var actual = target.TryParse(input, out IVsNuGetFramework parsed);
