@@ -916,7 +916,7 @@ namespace NuGet.Packaging
             // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
             // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
             // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.The ZIP format has no notion of time zone, so timestamps are only meaningful if it is known what time zone they were created in.
-            if (timeOffset.UtcDateTime < ZipFormatMinDate)
+            if (timeOffset < ZipFormatMinDate)
             {
                 if (!_zipFormatCorrected)
                 {
@@ -932,7 +932,7 @@ namespace NuGet.Packaging
 
                 entry.LastWriteTime = ZipFormatMinDate;
             }
-            else if (timeOffset.UtcDateTime > ZipFormatMaxDate)
+            else if (timeOffset > ZipFormatMaxDate)
             {
                 if (!_zipFormatCorrected)
                 {

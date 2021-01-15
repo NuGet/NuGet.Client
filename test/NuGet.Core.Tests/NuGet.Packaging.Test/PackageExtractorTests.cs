@@ -163,50 +163,6 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
-        public async Task InstallFromSourceAsync_ReturnsTrueAfterNewInstallAsync()
-        {
-            // Arrange
-            using (var root = TestDirectory.Create())
-            {
-                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
-
-                var sourcePath = Path.Combine(root, "source");
-                Directory.CreateDirectory(sourcePath);
-                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
-                    sourcePath,
-                    identity.Id,
-                    identity.Version.ToString(),
-                    DateTimeOffset.UtcNow.LocalDateTime,
-                    "lib/net45/A.dll");
-
-                var packagesPath = Path.Combine(root, "packages");
-                var pathResolver = new VersionFolderPathResolver(packagesPath);
-
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    sourcePath,
-                    packageFileInfo.FullName,
-                    identity,
-                    NullLogger.Instance))
-                {
-                    // Act
-                    var installed = await PackageExtractor.InstallFromSourceAsync(
-                         identity,
-                         packageDownloader,
-                         pathResolver,
-                         new PackageExtractionContext(
-                             packageSaveMode: PackageSaveMode.Nupkg,
-                             xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                             clientPolicyContext: null,
-                             logger: NullLogger.Instance),
-                         CancellationToken.None);
-
-                    // Assert
-                    Assert.True(installed);
-                }
-            }
-        }
-
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

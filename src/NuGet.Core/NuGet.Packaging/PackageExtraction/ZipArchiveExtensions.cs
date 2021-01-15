@@ -70,12 +70,11 @@ namespace NuGet.Packaging
             var attr = File.GetAttributes(fileFullPath);
 
             if (!attr.HasFlag(FileAttributes.Directory) &&
-                entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
-                entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
+                entry.LastWriteTime.DateTime != DateTime.MinValue) // Ignore invalid times
             {
                 try
                 {
-                    File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.UtcDateTime);
+                    File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime);
                 }
                 catch (ArgumentOutOfRangeException ex)
                 {
