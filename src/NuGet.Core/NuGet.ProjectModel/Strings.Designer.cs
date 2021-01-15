@@ -277,11 +277,29 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restore metadata is mising the required target frameworks list..
+        /// </summary>
+        internal static string PackagesLockFile_RestoreMetadataMissingTfms {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_RestoreMetadataMissingTfms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The project&apos;s runtime identifiers have changed from. Project&apos;s runtime identifiers: {0}, lock file&apos;s runtime identifiers {1}..
         /// </summary>
         internal static string PackagesLockFile_RuntimeIdentifiersChanged {
             get {
                 return ResourceManager.GetString("PackagesLockFile_RuntimeIdentifiersChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to load package spec for {0} project..
+        /// </summary>
+        internal static string PackagesLockFile_UnableToLoadPackagespec {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_UnableToLoadPackagespec", resourceCulture);
             }
         }
     }

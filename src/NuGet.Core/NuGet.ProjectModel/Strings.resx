@@ -194,7 +194,13 @@
   <data name="PackagesLockFile_ProjectTransitiveDependencyVersionChanged" xml:space="preserve">
     <value>Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. Lock file version {0}, central package management version {1}.</value>
   </data>
+  <data name="PackagesLockFile_RestoreMetadataMissingTfms" xml:space="preserve">
+    <value>Restore metadata is mising the required target frameworks list.</value>
+  </data>
   <data name="PackagesLockFile_RuntimeIdentifiersChanged" xml:space="preserve">
     <value>The project's runtime identifiers have changed from. Project's runtime identifiers: {0}, lock file's runtime identifiers {1}.</value>
+  </data>
+  <data name="PackagesLockFile_UnableToLoadPackagespec" xml:space="preserve">
+    <value>Unable to load package spec for {0} project.</value>
   </data>
 </root>

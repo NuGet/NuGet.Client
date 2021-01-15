@@ -561,11 +561,10 @@ namespace NuGet.Commands
                 {
                     // check if lock file is out of sync with project data
                     lockFileTelemetry.StartIntervalMeasure();
-                    string lockFileInvalidReason;
-                    (isLockFileValid, lockFileInvalidReason) = PackagesLockFileUtilities.IsLockFileStillValid(_request.DependencyGraphSpec, packagesLockFile);
+                    var lockFileResult = PackagesLockFileUtilities.IsLockFileStillValid(_request.DependencyGraphSpec, packagesLockFile);
                     lockFileTelemetry.EndIntervalMeasure(ValidateLockFileDuration);
 
-                    if (isLockFileValid)
+                    if (lockFileResult.IsValid)
                     {
                         // pass lock file details down to generate restore graph
                         foreach (var target in packagesLockFile.Targets)
@@ -582,14 +581,16 @@ namespace NuGet.Commands
                     else if (_request.IsRestoreOriginalAction && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode)
                     {
                         success = false;
+                        var invalidReasons = string.Join(Environment.NewLine, lockFileResult.InvalidReasons);
 
                         // bail restore since it's the locked mode but required to update the lock file.
-                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004,
+                        var message = RestoreLogMessage.CreateError(NuGetLogCode.NU1004,
                                                 string.Format(
                                                 CultureInfo.CurrentCulture,
-                                                Strings.Error_RestoreInLockedMode,
-                                                lockFileInvalidReason
-                                                )));
+                                                string.Concat(invalidReasons,
+                                                Strings.Error_RestoreInLockedMode)));
+
+                        await _logger.LogAsync(message);
                     }
                 }
             }
