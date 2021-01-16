@@ -105,7 +105,7 @@ namespace NuGetConsole
                                     { VsInstanceTelemetryConsts.ReOpenAtStart, reopenAtStart}
                                 });
 
-                _nugetSolutionTelemetry.AddSolutionTelemetryEvent(telemetryEvent);
+                _nugetSolutionTelemetry?.AddSolutionTelemetryEvent(telemetryEvent);
 
                 _isTelemetryEmitted = true;
             }
@@ -132,7 +132,7 @@ namespace NuGetConsole
                                 {
                                     { VsInstanceTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount},
                                 });
-            _nugetSolutionTelemetry.AddSolutionTelemetryEvent(telemetryEvent);
+            _nugetSolutionTelemetry?.AddSolutionTelemetryEvent(telemetryEvent);
 
             _windowLoadCount = 0;
         }

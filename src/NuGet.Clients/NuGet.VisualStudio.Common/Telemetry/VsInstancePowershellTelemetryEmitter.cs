@@ -24,31 +24,55 @@ namespace NuGet.VisualStudio.Telemetry
         {
             _vsSolutionTelemetryEmitQueue = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
             _vsInstanceTelemetryEmitQueue = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
-            _nuGetTelemetryCollector = new NuGetTelemetryCollector();
+            _nuGetTelemetryCollector = nuGetTelemetryCollector;
             _vsInstanceTelemetryEvents = new Lazy<IReadOnlyList<TelemetryEvent>>(() =>
             {
-                return _nuGetTelemetryCollector.GetVSIntanceTelemetryEvents();
+                return _nuGetTelemetryCollector?.GetVSIntanceTelemetryEvents();
             });
         }
 
-        public void SolutionOpenedEmit()
+        public void SolutionOpenedTelemetryEmit()
         {
             try
             {
+                
                 // Handle edge cases.
                 EmitPMCUsedWithoutSolution();
+                _nuGetTelemetryCollector.ClearSolutionTelemetryEvents();
+                _solutionCount++;
             }
             catch (Exception)
             {
                 // Currently do nothing.
             }
+        }
 
-            //vsSolutionTelemetryEvents.Clear();
-            _solutionCount++;
+        // Emit VS solution session telemetry when solution is closed.
+        public void SolutionClosedEmit()
+        {
+            try
+            {
+                // Queue all different types of telemetries and do some processing prior to emit.
+                EnqueueVSSolutionPowershellTelemetry();
+
+                // Add other telemetry type queuing here in the future. You can emit many different types of telemetry other than powershell here.
+                // Each of them differentiate by prefix. i.e vs.nuget.nugetpowershell.xxxx here nugetpowershell (NugetPowershellPrefix) differentiating prefix.
+                // Using prefix avoid collision of property names from different types of telemetry.
+
+                // Actual emit
+                CombineAndEmitTelemetry(_vsSolutionTelemetryEmitQueue.Value, NuGetVSSolutionClose);
+
+                _nuGetTelemetryCollector.ClearSolutionTelemetryEvents();
+                _vsSolutionTelemetryEmitQueue.Value.Clear();
+            }
+            catch (Exception)
+            {
+                // Currently do nothing.
+            }
         }
 
         // Emit VS solution session telemetry when VS instance is closed.
-        public void EmitVSInstanceTelemetry()
+        public void VSInstanceClosedTelemetryEmit()
         {
             try
             {
@@ -84,32 +108,8 @@ namespace NuGet.VisualStudio.Telemetry
             // If there is not emitted PowerShellExecuteCommand telemetry.
             if (_nuGetTelemetryCollector.GetSolutionTelemetryEvents().Any(e => e.Name == PowerShellExecuteCommand))
             {
-                EmitVSSolutionTelemetry();
+                SolutionClosedEmit();
             }
-        }
-
-        // Emit VS solution session telemetry when solution is closed.
-        public void EmitVSSolutionTelemetry()
-        {
-            try
-            {
-                // Queue all different types of telemetries and do some processing prior to emit.
-                EnqueueVSSolutionPowershellTelemetry();
-
-                // Add other telemetry type queuing here in the future. You can emit many different types of telemetry other than powershell here.
-                // Each of them differentiate by prefix. i.e vs.nuget.nugetpowershell.xxxx here nugetpowershell (NugetPowershellPrefix) differentiating prefix.
-                // Using prefix avoid collision of property names from different types of telemetry.
-
-                // Actual emit
-                CombineAndEmitTelemetry(_vsSolutionTelemetryEmitQueue.Value, NuGetVSSolutionClose);
-            }
-            catch (Exception)
-            {
-                // Currently do nothing.
-            }
-
-            //_vsSolutionTelemetryEvents.Clear();
-            _vsSolutionTelemetryEmitQueue.Value.Clear();
         }
 
         private void EnqueueVSSolutionPowershellTelemetry()

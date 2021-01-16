@@ -14,5 +14,6 @@ namespace NuGet.VisualStudio.Telemetry
         void AddSolutionTelemetryEvent(TelemetryEvent telemetryData);
         IReadOnlyList<TelemetryEvent> GetSolutionTelemetryEvents();
         IReadOnlyList<TelemetryEvent> GetVSIntanceTelemetryEvents();
+        void ClearSolutionTelemetryEvents();
     }
 }

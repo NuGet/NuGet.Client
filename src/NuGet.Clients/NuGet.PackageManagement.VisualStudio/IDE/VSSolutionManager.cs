@@ -1038,19 +1038,19 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnSolutionOpened(object sender, EventArgs e)
         {
-            _vsIntanceTelemetryEmitter.SolutionOpenedEmit();
+            _vsIntanceTelemetryEmitter.SolutionOpenedTelemetryEmit();
         }
 
         private void OnSolutionClosed(object sender, EventArgs e)
         {
-            _vsIntanceTelemetryEmitter.EmitVSSolutionTelemetry();
+            _vsIntanceTelemetryEmitter.SolutionClosedEmit();
         }
 
         public void Dispose()
         {
             SolutionOpened -= OnSolutionOpened;
             SolutionClosed -= OnSolutionClosed;
-            _vsIntanceTelemetryEmitter.EmitVSInstanceTelemetry();
+            _vsIntanceTelemetryEmitter.VSInstanceClosedTelemetryEmit();
         }
 
         #endregion

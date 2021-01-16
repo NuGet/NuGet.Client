@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -17,7 +16,7 @@ namespace NuGet.VisualStudio.Telemetry
         private bool _isTelemetryEmitted;
         private int _pmcExecutedCount;
         private int _nonPmcExecutedCount;
-        private readonly INuGetTelemetryCollector _nugetTelemetryAggregate;
+        private readonly INuGetTelemetryCollector _nuGetTelemetryCollector;
 
         // There are 8 bits in byte which used as boolean flags.
         // 0 - Did any nuget command execute during current VS solution session?
@@ -32,7 +31,7 @@ namespace NuGet.VisualStudio.Telemetry
 
         public VsPowerShellHostTelemetryEmit()
         {
-            _nugetTelemetryAggregate = ServiceLocator.GetInstance<INuGetTelemetryCollector>();
+            _nuGetTelemetryCollector = ServiceLocator.GetInstance<INuGetTelemetryCollector>();
         }
 
         public void RecordPSHostInitializeOrigin(bool isPMC)
@@ -125,7 +124,7 @@ namespace NuGet.VisualStudio.Telemetry
                     }
                     else
                     {
-                        _nugetTelemetryAggregate.AddSolutionTelemetryEvent(telemetryEvent);
+                        _nuGetTelemetryCollector?.AddSolutionTelemetryEvent(telemetryEvent);
                     }
                 }
             }
@@ -151,7 +150,7 @@ namespace NuGet.VisualStudio.Telemetry
                                         { LoadedFromPMC, TestAllBitsSet(PowerShellHostInstances, 0b00000001) },
                                         { SolutionLoaded, withSolution}
                                     });
-                    _nugetTelemetryAggregate.AddSolutionTelemetryEvent(telemetryEvent);
+                    _nuGetTelemetryCollector?.AddSolutionTelemetryEvent(telemetryEvent);
 
                     _pmcExecutedCount = 0;
                     _nonPmcExecutedCount = 0;

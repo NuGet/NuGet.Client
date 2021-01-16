@@ -2,25 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
+using System.Threading;
 using NuGet.Common;
 
 namespace NuGet.VisualStudio.Telemetry
 {
     [Export(typeof(INuGetTelemetryCollector))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class NuGetTelemetryCollector : INuGetTelemetryCollector
+    internal sealed class NuGetTelemetryCollector : INuGetTelemetryCollector
     {
         // _solutionTelemetryEvents hold telemetry for current VS solution session.
-        private readonly List<TelemetryEvent> _vsSolutionTelemetryEvents;
+        private ConcurrentBag<TelemetryEvent> _vsSolutionTelemetryEvents;
         // _vsInstanceTelemetryEvents hold telemetry for current VS instance session.
-        private readonly List<TelemetryEvent> _vsInstanceTelemetryEvents;
+        private readonly ConcurrentBag<TelemetryEvent> _vsInstanceTelemetryEvents;
 
         public NuGetTelemetryCollector()
         {
-            _vsSolutionTelemetryEvents = new List<TelemetryEvent>();
-            _vsInstanceTelemetryEvents = new List<TelemetryEvent>();
+            _vsSolutionTelemetryEvents = new ConcurrentBag<TelemetryEvent>();
+            _vsInstanceTelemetryEvents = new ConcurrentBag<TelemetryEvent>();
         }
 
         // Adds telemetry into list which will be aggregated by end of VS solution sessions or VS instance session.
@@ -30,7 +33,14 @@ namespace NuGet.VisualStudio.Telemetry
             _vsInstanceTelemetryEvents.Add(telemetryData);
         }
 
-        public IReadOnlyList<TelemetryEvent> GetSolutionTelemetryEvents() => _vsSolutionTelemetryEvents.AsReadOnly();
-        public IReadOnlyList<TelemetryEvent> GetVSIntanceTelemetryEvents() => _vsInstanceTelemetryEvents.AsReadOnly();
+        public IReadOnlyList<TelemetryEvent> GetSolutionTelemetryEvents() => _vsSolutionTelemetryEvents.ToList().AsReadOnly();
+        public IReadOnlyList<TelemetryEvent> GetVSIntanceTelemetryEvents() => _vsInstanceTelemetryEvents.ToList().AsReadOnly();
+
+        // If open new solution then need ability to reset existing solution events.
+        public void ClearSolutionTelemetryEvents()
+        {
+            var newBag = new ConcurrentBag<TelemetryEvent>();
+            Interlocked.Exchange<ConcurrentBag<TelemetryEvent>>(ref _vsSolutionTelemetryEvents, newBag);
+        }
     }
 }
