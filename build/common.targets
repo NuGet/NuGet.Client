@@ -144,8 +144,21 @@
       Properties="Configuration=$(Configuration);
                   VisualStudioVersion=$(VisualStudioVersion);
                   PackageOutputPath=$(NupkgOutputDirectory);
+                  IncludeSymbols=true;
                   NoBuild=true;">
     </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    GetPackProject - gets the list of projects need to be packed
+    ============================================================
+  -->
+  <Target Name="GetPackProject" Returns="@(PackProjects)">
+    <ItemGroup Condition="'$(PackProject)' == 'true'">
+      <PackProjects Include="$(MSBuildProjectFullPath)">
+      </PackProjects>
+    </ItemGroup>
   </Target>
 
   <!--

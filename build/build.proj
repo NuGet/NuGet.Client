@@ -135,7 +135,7 @@
 
   <!--
     ============================================================
-    Build 
+    Build
     ============================================================
   -->
   <Target Name="BuildVS"  Condition=" '$(IsXPlat)' != 'true' " >
@@ -144,7 +144,7 @@
 
     <!--
     ============================================================
-    Build for XPLAT 
+    Build for XPLAT
     ============================================================
   -->
   <Target Name="BuildXPLAT" DependsOnTargets="GetXPLATProjects">
@@ -286,7 +286,7 @@
   -->
   <Target Name="RestoreXPLAT" DependsOnTargets="GetXPLATProjects">
     <Message Text="Restoring for XPLAT" Importance="high" />
-    
+
     <PropertyGroup>
       <ProjectListValue>@(XPLATProjects)</ProjectListValue>
     </PropertyGroup>
@@ -302,7 +302,7 @@
 
   <!--
     ============================================================
-    Restore Apex 
+    Restore Apex
     ============================================================
   -->
   <Target Name="RestoreApex">
@@ -336,8 +336,40 @@
 
   <!--
     ============================================================
+    Get projects need to be packed
+    ============================================================
+  -->
+  <Target Name="GetPackProjects">
+    <MsBuild
+      Projects="@(SolutionProjects)"
+      Targets="GetPackProject">
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="PackProjects" />
+    </MsBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Ensure all the nupkg and symbol.nugkg files created
+    ============================================================
+  -->
+  <Target Name="EnsurePackagesExist" DependsOnTargets="GetPackProjects">
+    <ItemGroup>
+      <NupkgsFiles Include="$(NupkgOutputDirectory)\*.nupkg"
+                   Exclude="$(NupkgOutputDirectory)\*.symbols.nupkg" />
+      <SymbolFiles Include="$(NupkgOutputDirectory)\*.symbols.nupkg" />
+    </ItemGroup>
+
+    <Message Text="Count of Projects need to be packed: @(PackProjects->Count())        Nupkg Count: @(NupkgsFiles->Count())        Symbol Count: @(SymbolFiles->Count())" Importance="high" />
+
+    <Error Text="There are @(PackProjects->Count()) projects need to be packed, but only @(NupkgsFiles->Count()) nupkg files and  @(SymbolFiles->Count()) symbol nupkg files are created under '$(NupkgOutputDirectory)'."
+           Condition=" '@(PackProjects->Count())' != '@(NupkgsFiles->Count())' OR '@(PackProjects->Count())' != '@(SymbolFiles->Count())' " />
+  </Target>
+  <!--
+    ============================================================
     RunTestsOnProjects
-    Finds all test assemblies and allows Xunit to run them as 
+    Finds all test assemblies and allows Xunit to run them as
     efficiently as the xunit.runner.json settings allow.
     ============================================================
   -->
@@ -375,7 +407,7 @@
       <!-- Sort assemblies -->
       <DesktopInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsDesktop", "true"))</DesktopInputTestAssemblies>
       <DesktopInputTestAssembliesSpaced>$(DesktopInputTestAssemblies.Replace(';', ' '))</DesktopInputTestAssembliesSpaced>
-      
+
       <!-- Build exe commands -->
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced) -verbose</DesktopTestCommand>
       <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit)</DesktopTestCommand>
@@ -390,7 +422,7 @@
     </PropertyGroup>
 
     <!-- Desktop -->
-    <Message Text="Running $(DesktopTestCommand)" 
+    <Message Text="Running $(DesktopTestCommand)"
           Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' "/>
 
     <Exec Command="$(DesktopTestCommand)"
@@ -400,7 +432,7 @@
     </Exec>
 
     <!-- VSTest/NETCore -->
-    <Message Text="Running $(VSTestCommand)" 
+    <Message Text="Running $(VSTestCommand)"
           Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(CoreInputTestAssemblies)' != '' "/>
 
     <Exec Command="$(VSTestCommand)"
