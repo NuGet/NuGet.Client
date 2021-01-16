@@ -15,14 +15,16 @@ Regression? Last working version:
 - [ ] PR has a linked issue.
 - [ ] Described changes
 
-- [ ] Automated tests added
-- **OR**
-<!-- Describe why you haven't added automation. -->
-- [ ] Test exception
-- **OR**
-- [ ] N/A <!-- Infrastructure, documentation etc. -->
+- **Tests**
+  - [ ] Automated tests added
+  - **OR**
+  <!-- Describe why you haven't added automation. -->
+  - [ ] Test exception
+  - **OR**
+  - [ ] N/A <!-- Infrastructure, documentation etc. -->
 
-<!-- Please link the PR/issue if appropriate -->
-- [ ] Documentation PR or issue filled
-- **OR**
-- [ ] N/A
+- **Documentation**
+  <!-- Please link the PR/issue if appropriate -->
+  - [ ] Documentation PR or issue filled
+  - **OR**
+  - [ ] N/A
