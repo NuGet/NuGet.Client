@@ -19,11 +19,12 @@ Regression? Last working version:
   - [ ] Automated tests added
   - [ ] If applicable, manual tests performed
 - **OR**
-- [ ] Tests exception
-- **OR**
-- [ ] Infrastructure
 <!-- Describe why you haven't added automation. -->
+- [ ] Test exception
+- **OR**
+- [ ] N/A <!-- Infrastructure, documentation etc. -->
 
+<!-- Please link the PR/issue if appropriate -->
 - [ ] Documentation PR or issue filled
 - **OR**
 - [ ] N/A
