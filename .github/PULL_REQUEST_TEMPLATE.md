@@ -15,6 +15,7 @@ Regression? Last working version:
 - [ ] PR has a linked issue.
 - [ ] Described changes
 
+
 - [ ] Automated tests added
   - [ ] If applicable, manual tests performed
 - **OR**
@@ -22,6 +23,7 @@ Regression? Last working version:
 - [ ] Test exception
 - **OR**
 - [ ] N/A <!-- Infrastructure, documentation etc. -->
+
 
 <!-- Please link the PR/issue if appropriate -->
 - [ ] Documentation PR or issue filled
