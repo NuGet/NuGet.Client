@@ -26,6 +26,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -34,7 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ISolutionManager))]
     [Export(typeof(IVsSolutionManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
+    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IDisposable
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private static readonly string VSNuGetClientName = "NuGet VS VSIX";
@@ -55,6 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
         private readonly Common.ILogger _logger;
         private readonly Lazy<ISettings> _settings;
+        private VsInstancePowershellTelemetryEmitter _vsIntanceTelemetryEmitter;
 
         private bool _initialized;
         private bool _cacheInitialized;
@@ -126,6 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio
             [Import("VisualStudioActivityLogger")]
             Common.ILogger logger,
             Lazy<ISettings> settings,
+            VsInstancePowershellTelemetryEmitter vsIntanceTelemetryEmitter,
             JoinableTaskContext joinableTaskContext)
             : this(AsyncServiceProvider.GlobalProvider,
                    projectSystemCache,
@@ -134,6 +137,7 @@ namespace NuGet.PackageManagement.VisualStudio
                    vsProjectAdapterProvider,
                    logger,
                    settings,
+                   vsIntanceTelemetryEmitter,
                    joinableTaskContext)
         { }
 
@@ -146,6 +150,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapterProvider vsProjectAdapterProvider,
             ILogger logger,
             Lazy<ISettings> settings,
+            VsInstancePowershellTelemetryEmitter vsIntanceTelemetryEmitter,
             JoinableTaskContext joinableTaskContext)
         {
             Assumes.Present(asyncServiceProvider);
@@ -164,7 +169,11 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _logger = logger;
             _settings = settings;
+            _vsIntanceTelemetryEmitter = vsIntanceTelemetryEmitter;
             _initLock = new NuGetLockService(joinableTaskContext);
+
+            SolutionOpened += OnSolutionOpened;
+            SolutionClosed += OnSolutionClosed;
         }
 
         private async Task InitializeAsync()
@@ -1025,6 +1034,23 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectUpdated?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
 
             return nuGetProject;
+        }
+
+        private void OnSolutionOpened(object sender, EventArgs e)
+        {
+            _vsIntanceTelemetryEmitter.SolutionOpenedEmit();
+        }
+
+        private void OnSolutionClosed(object sender, EventArgs e)
+        {
+            _vsIntanceTelemetryEmitter.EmitVSSolutionTelemetry();
+        }
+
+        public void Dispose()
+        {
+            SolutionOpened -= OnSolutionOpened;
+            SolutionClosed -= OnSolutionClosed;
+            _vsIntanceTelemetryEmitter.EmitVSInstanceTelemetry();
         }
 
         #endregion
