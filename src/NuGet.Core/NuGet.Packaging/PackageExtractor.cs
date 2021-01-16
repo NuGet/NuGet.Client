@@ -398,11 +398,7 @@ namespace NuGet.Packaging
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                            logger.LogInformation(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_InstallingPackage,
-                                packageIdentity.Id,
-                                packageIdentity.Version));
+                            logger.LogInformation(StringFormatter.Log_InstallingPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, source));
 
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -643,11 +639,7 @@ namespace NuGet.Packaging
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                            logger.LogInformation(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_InstallingPackage,
-                                packageIdentity.Id,
-                                packageIdentity.Version));
+                            logger.LogInformation(StringFormatter.Log_InstallingPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, packageDownloader.Source));
 
                             cancellationToken.ThrowIfCancellationRequested();
 

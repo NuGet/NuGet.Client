@@ -745,7 +745,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing {0} {1}..
+        ///   Looks up a localized string similar to Installing {0} {1} from {2}..
         /// </summary>
         internal static string Log_InstallingPackage {
             get {

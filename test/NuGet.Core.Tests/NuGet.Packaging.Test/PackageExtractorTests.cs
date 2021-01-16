@@ -3766,6 +3766,49 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public async Task InstallFromSourceAsync_LogsSourceOnNormalLevel()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var source = Path.Combine(testDirectory, "source");
+                Directory.CreateDirectory(source);
+                var resolver = new VersionFolderPathResolver(Path.Combine(testDirectory, "gpf"));
+                var identity = new PackageIdentity("A", new NuGetVersion("1.2.3"));
+                var testLogger = new TestLogger();
+
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   source,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "content/A.nupkg");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        testLogger);
+
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        source,
+                        identity,
+                        (stream) => packageStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        resolver,
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
+                    testLogger.InformationMessages.Should().Contain($"Installing {identity.Id} {identity.Version} from {source}.");
+                }
+            }
+        }
+
+        [Fact]
         public async Task InstallFromSourceAsync_LogsSourceOnVerboseLevel()
         {
             // Arrange
