@@ -309,7 +309,8 @@
         Background="{x:Null}"
         TreeViewItem.Selected="OnItemSelected"
         LostFocus="TreeView_LostFocus"
-        AutomationProperties.Name="{x:Static nuget:Resources.Label_Dependencies}">
+        AutomationProperties.Name="{x:Static nuget:Resources.Label_Dependencies}"
+        FocusVisualStyle="{StaticResource ControlsFocusVisualStyle}">
       <TreeView.Template>
         <!--
           Replaces default control template for this treeview with a slimmer control template.
@@ -329,17 +330,22 @@
           <TextBlock Text="{Binding}" ToolTip="{Binding}" />
         </DataTemplate>
       </TreeView.Resources>
+      <TreeView.ItemContainerStyle>
+        <Style TargetType="TreeViewItem">
+          <Setter Property="IsExpanded" Value="True" />
+          <Setter Property="AutomationProperties.Name" Value="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource AccNameWorkaround}}" />
+          <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
+          <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+      </TreeView.ItemContainerStyle>
       <TreeViewItem Header="{x:Static nuget:Resources.Label_Dependencies}"
-                    ItemsSource="{Binding Path=DependencySets}"
-                    IsExpanded="true"
-                    Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
-                    FontWeight="Bold">
+                    ItemsSource="{Binding Path=DependencySets}">
         <TreeViewItem.ItemContainerStyle>
           <Style TargetType="TreeViewItem">
-            <Setter Property="IsExpanded" Value="true" />
+            <Setter Property="IsExpanded" Value="True" />
             <Setter Property="AutomationProperties.Name" Value="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource AccNameWorkaround}}" />
             <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
-            <Setter Property="FontWeight" Value="normal" />
+            <Setter Property="FontWeight" Value="Normal" />
           </Style>
         </TreeViewItem.ItemContainerStyle>
       </TreeViewItem>
