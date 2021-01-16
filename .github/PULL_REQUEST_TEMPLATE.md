@@ -18,10 +18,12 @@ Regression? Last working version:
 - Tests:
   - [ ] Automated tests added
   - [ ] If applicable, manual tests performed
-- *OR*
+- **OR**
 - [ ] Tests exception
+- **OR**
+- [ ] Infrastructure
 <!-- Describe why you haven't added automation. -->
 
 - [ ] Documentation PR or issue filled
-- *OR*
+- **OR**
 - [ ] N/A
