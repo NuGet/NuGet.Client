@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // to initialize SolutionSettings first time outside MEF constructor
         private Tuple<string, AsyncLazy<ISettings>> _solutionSettings;
-        private VsIntanceTelemetryEmit _vsIntanceTelemetryEmit;
+        private VsInstancePowershellTelemetryEmitter _vsIntanceTelemetryEmitter;
 
         private ISettings SolutionSettings
         {
@@ -42,20 +42,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler SettingsChanged;
 
-        public VSSettings(ISolutionManager solutionManager, VsIntanceTelemetryEmit vsIntanceTelemetryEmit)
-            : this(solutionManager, vsIntanceTelemetryEmit, machineWideSettings: null)
+        public VSSettings(ISolutionManager solutionManager, VsInstancePowershellTelemetryEmitter vsIntanceTelemetryEmitter)
+            : this(solutionManager, vsIntanceTelemetryEmitter, machineWideSettings: null)
         {
         }
 
         [ImportingConstructor]
-        public VSSettings(ISolutionManager solutionManager, VsIntanceTelemetryEmit vsIntanceTelemetryEmit, IMachineWideSettings machineWideSettings)
+        public VSSettings(ISolutionManager solutionManager, VsInstancePowershellTelemetryEmitter vsIntanceTelemetryEmitter, IMachineWideSettings machineWideSettings)
         {
             SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             MachineWideSettings = machineWideSettings;
             SolutionManager.SolutionOpening += OnSolutionOpening;
             SolutionManager.SolutionOpened += OnSolutionOpened;
             SolutionManager.SolutionClosed += OnSolutionClosed;
-            _vsIntanceTelemetryEmit = vsIntanceTelemetryEmit;
+            _vsIntanceTelemetryEmitter = vsIntanceTelemetryEmitter;
         }
 
         private bool ResetSolutionSettingsIfNeeded()
@@ -112,12 +112,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnSolutionOpened(object sender, EventArgs e)
         {
-            _vsIntanceTelemetryEmit.SolutionOpenedEmit();
+            _vsIntanceTelemetryEmitter.SolutionOpenedEmit();
         }
 
         private void OnSolutionClosed(object sender, EventArgs e)
         {
-            _vsIntanceTelemetryEmit.EmitVSSolutionTelemetry();
+            _vsIntanceTelemetryEmitter.EmitVSSolutionTelemetry();
             DetectSolutionSettingChange();
         }
 
@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager.SolutionOpening -= OnSolutionOpening;
             SolutionManager.SolutionOpened -= OnSolutionOpened;
             SolutionManager.SolutionClosed -= OnSolutionClosed;
-            _vsIntanceTelemetryEmit.EmitVSInstanceTelemetry();
+            _vsIntanceTelemetryEmitter.EmitVSInstanceTelemetry();
         }
 
         // The value for SolutionSettings can't possibly be null, but it could be a read-only instance

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using NuGet.Common;
 
 namespace NuGet.VisualStudio.Telemetry
@@ -11,5 +12,7 @@ namespace NuGet.VisualStudio.Telemetry
         /// <summary> Add a <see cref="TelemetryEvent"/> to telemetry list which will be aggregated and emitted later. </summary>
         /// <param name="telemetryData"> Telemetry event to add into aggregation. </param>
         void AddSolutionTelemetryEvent(TelemetryEvent telemetryData);
+        IReadOnlyList<TelemetryEvent> GetSolutionTelemetryEvents();
+        IReadOnlyList<TelemetryEvent> GetVSIntanceTelemetryEvents();
     }
 }

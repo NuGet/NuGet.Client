@@ -173,6 +173,8 @@
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\PackageManagerUIRefreshEvent.cs" />
     <Compile Include="Telemetry\DiagnosticTelemetryEvent.cs" />
+    <Compile Include="Telemetry\PMC\NugetPowershellLoadedEvent.cs" />
+    <Compile Include="Telemetry\PMC\NugetVSSolutionClose.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchPageTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchSelectionTelemetryEvent.cs" />
@@ -319,6 +321,10 @@
     <PackageReference Include="VSLangProj" />
     <PackageReference Include="VSLangProj80" />
     <PackageReference Include="VSLangProj157" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Telemetry\NewFolder1\" />
+    <Folder Include="Telemetry\NewFolder2\" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
