@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using NuGet.Common;
+using NuGet.VisualStudio.Telemetry.Powershell;
+using TelemetryConst = NuGet.VisualStudio.Telemetry.VSPowershellTelemetryConsts;
 
 namespace NuGet.VisualStudio.Telemetry
 {
     [Export(typeof(VsPowerShellHostTelemetryEmit))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class VsPowerShellHostTelemetryEmit : VsInstanceTelemetryConsts
+    public class VsPowerShellHostTelemetryEmit
     {
         private readonly object _telemetryLock = new object();
         private bool _isTelemetryEmitted;
@@ -110,9 +112,9 @@ namespace NuGet.VisualStudio.Telemetry
                 // This is PowerShellHost load first time, let's emit this to find out later how many VS instance crash after loading powershell.
                 if (TestAnyBitNotSet(PowerShellHostInstances, 0b00000011))
                 {
-                    var telemetryEvent = new TelemetryEvent(NuGetPowerShellLoaded, new Dictionary<string, object>
+                    var telemetryEvent = new TelemetryEvent(TelemetryConst.NuGetPowerShellLoaded, new Dictionary<string, object>
                                     {
-                                        { NuGetPowershellPrefix + LoadedFromPMC, isPMC}
+                                        { TelemetryConst.NuGetPowershellPrefix + TelemetryConst.LoadedFromPMC, isPMC}
                                     });
 
 
@@ -136,21 +138,22 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 if (!_isTelemetryEmitted)
                 {
-                    var telemetryEvent = new TelemetryEvent(PowerShellExecuteCommand, new Dictionary<string, object>
-                                    {
-                                        { NuGetPMCExecuteCommandCount, _pmcExecutedCount},
-                                        { NuGetPMUIExecuteCommandCount, _nonPmcExecutedCount},
-                                        { NuGetCommandUsed, TestAllBitsSet(PowerShellHostInstances, 0b10000000) },
-                                        { InitPs1LoadPMUI, TestAllBitsSet(PowerShellHostInstances, 0b01000000) },
-                                        { InitPs1LoadPMC, TestAllBitsSet(PowerShellHostInstances, 0b00100000) },
-                                        { InitPs1LoadedFromPMCFirst, TestAllBitsSet(PowerShellHostInstances, 0b00010000) },
-                                        { FirstTimeLoadedFromPMUI, TestAllBitsSet(PowerShellHostInstances, 0b00001000) },
-                                        { FirstTimeLoadedFromPMC, TestAllBitsSet(PowerShellHostInstances, 0b00000100) },
-                                        { LoadedFromPMUI, TestAllBitsSet(PowerShellHostInstances, 0b00000010) },
-                                        { LoadedFromPMC, TestAllBitsSet(PowerShellHostInstances, 0b00000001) },
-                                        { SolutionLoaded, withSolution}
-                                    });
-                    _nuGetTelemetryCollector?.AddSolutionTelemetryEvent(telemetryEvent);
+                    var nugetVSSolutionCloseEvent = new NuGetPowershellVSSolutionCloseEvent(
+                            FirstTimeLoadedFromPMC: TestAllBitsSet(PowerShellHostInstances, 0b00000100),
+                            FirstTimeLoadedFromPMUI: TestAllBitsSet(PowerShellHostInstances, 0b00001000),
+                            InitPs1LoadedFromPMCFirst: TestAllBitsSet(PowerShellHostInstances, 0b00010000),
+                            InitPs1LoadPMC: TestAllBitsSet(PowerShellHostInstances, 0b00100000),
+                            InitPs1LoadPMUI: TestAllBitsSet(PowerShellHostInstances, 0b01000000),
+                            LoadedFromPMC: TestAllBitsSet(PowerShellHostInstances, 0b00000001),
+                            LoadedFromPMUI: TestAllBitsSet(PowerShellHostInstances, 0b00000010),
+                            NuGetCommandUsed: TestAllBitsSet(PowerShellHostInstances, 0b10000000),
+                            NuGetPMCExecuteCommandCount: _pmcExecutedCount,
+                            NuGetPMCWindowLoadCount: 0,
+                            NuGetPMUIExecuteCommandCount: _nonPmcExecutedCount,
+                            SolutionLoaded: withSolution
+                         );
+
+                    _nuGetTelemetryCollector?.AddSolutionTelemetryEvent(nugetVSSolutionCloseEvent);
 
                     _pmcExecutedCount = 0;
                     _nonPmcExecutedCount = 0;

@@ -26,7 +26,8 @@ namespace NuGet.VisualStudio.Telemetry
             _vsInstanceTelemetryEvents = new ConcurrentBag<TelemetryEvent>();
         }
 
-        // Adds telemetry into list which will be aggregated by end of VS solution sessions or VS instance session.
+        /// <summary> Add a <see cref="TelemetryEvent"/> to telemetry list which will be aggregated and emitted later. </summary>
+        /// <param name="telemetryData"> Telemetry event to add into aggregation. </param>
         public void AddSolutionTelemetryEvent(TelemetryEvent telemetryData)
         {
             _vsSolutionTelemetryEvents.Add(telemetryData);
