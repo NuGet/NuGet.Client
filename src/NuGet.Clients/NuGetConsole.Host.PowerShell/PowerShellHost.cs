@@ -52,7 +52,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<ISourceControlManagerProvider> _sourceControlManagerProvider;
         private readonly Lazy<ICommonOperations> _commonOperations;
-        private readonly Lazy<VsPowerShellHostTelemetryProcessor> _vsPowerShellHostTelemetryEmit;
+        private readonly Lazy<PowerShellHostTelemetryProcessor> _vsPowerShellHostTelemetryEmit;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
         private const string ActivePackageSourceKey = "activePackageSource";
@@ -116,7 +116,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
                 () => ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>());
             _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetInstanceSafe<ICommonOperations>());
-            _vsPowerShellHostTelemetryEmit = new Lazy<VsPowerShellHostTelemetryProcessor>(() => ServiceLocator.GetInstanceSafe<VsPowerShellHostTelemetryProcessor>());
+            _vsPowerShellHostTelemetryEmit = new Lazy<PowerShellHostTelemetryProcessor>(() => ServiceLocator.GetInstanceSafe<PowerShellHostTelemetryProcessor>());
             _name = name;
             IsCommandEnabled = true;
 

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
-using TelemetryConst = NuGet.VisualStudio.Telemetry.VSPowershellTelemetryConsts;
+using TelemetryConst = NuGet.VisualStudio.Telemetry.PowershellTelemetryConsts;
 
 namespace NuGet.VisualStudio.Telemetry.Powershell
 {

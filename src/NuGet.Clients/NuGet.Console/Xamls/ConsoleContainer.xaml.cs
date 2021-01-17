@@ -99,10 +99,10 @@ namespace NuGetConsole
             {
                 // Work around to detect if PMC loaded automatically because it was last focused window.
                 var reopenAtStart = IsLoaded;
-                var telemetryEvent = new TelemetryEvent(VSPowershellTelemetryConsts.PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
+                var telemetryEvent = new TelemetryEvent(PowershellTelemetryConsts.PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
                                 {
-                                    { VSPowershellTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount},
-                                    { VSPowershellTelemetryConsts.ReOpenAtStart, reopenAtStart}
+                                    { PowershellTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount},
+                                    { PowershellTelemetryConsts.ReOpenAtStart, reopenAtStart}
                                 });
 
                 _nugetSolutionTelemetry?.AddSolutionTelemetryEvent(telemetryEvent);
@@ -128,9 +128,9 @@ namespace NuGetConsole
 
         private void EmitPowershellUsageTelemetry()
         {
-            var telemetryEvent = new TelemetryEvent(VSPowershellTelemetryConsts.PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
+            var telemetryEvent = new TelemetryEvent(PowershellTelemetryConsts.PackageManagerConsoleWindowsLoad, new Dictionary<string, object>
                                 {
-                                    { VSPowershellTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount},
+                                    { PowershellTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount},
                                 });
             _nugetSolutionTelemetry?.AddSolutionTelemetryEvent(telemetryEvent);
 

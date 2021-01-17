@@ -3,7 +3,7 @@
 
 namespace NuGet.VisualStudio.Telemetry
 {
-    public sealed class VSPowershellTelemetryConsts
+    public sealed class PowershellTelemetryConsts
     {
         // PMC, PMUI powershell telemetry consts
         public const string NuGetPMCExecuteCommandCount = nameof(NuGetPMCExecuteCommandCount);

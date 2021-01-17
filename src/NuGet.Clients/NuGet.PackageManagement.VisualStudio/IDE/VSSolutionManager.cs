@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
         private readonly Common.ILogger _logger;
         private readonly Lazy<ISettings> _settings;
-        private VsInstancePowershellTelemetryEmitter _vsIntanceTelemetryEmitter;
+        private PowershellTelemetryEmitter _vsIntanceTelemetryEmitter;
 
         private bool _initialized;
         private bool _cacheInitialized;
@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio
             [Import("VisualStudioActivityLogger")]
             Common.ILogger logger,
             Lazy<ISettings> settings,
-            VsInstancePowershellTelemetryEmitter vsIntanceTelemetryEmitter,
+            PowershellTelemetryEmitter vsIntanceTelemetryEmitter,
             JoinableTaskContext joinableTaskContext)
             : this(AsyncServiceProvider.GlobalProvider,
                    projectSystemCache,
@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapterProvider vsProjectAdapterProvider,
             ILogger logger,
             Lazy<ISettings> settings,
-            VsInstancePowershellTelemetryEmitter vsIntanceTelemetryEmitter,
+            PowershellTelemetryEmitter vsIntanceTelemetryEmitter,
             JoinableTaskContext joinableTaskContext)
         {
             Assumes.Present(asyncServiceProvider);
@@ -1043,7 +1043,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnSolutionClosed(object sender, EventArgs e)
         {
-            _vsIntanceTelemetryEmitter.SolutionClosedEmit();
+            _vsIntanceTelemetryEmitter.SolutionClosedTelemetryEmit();
         }
 
         public void Dispose()

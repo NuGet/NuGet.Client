@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using NuGet.Common;
-using TelemetryConst = NuGet.VisualStudio.Telemetry.VSPowershellTelemetryConsts;
+using TelemetryConst = NuGet.VisualStudio.Telemetry.PowershellTelemetryConsts;
 
 namespace NuGet.VisualStudio.Telemetry.Powershell
 {
-    [Export(typeof(VsInstancePowershellTelemetryEmitter))]
+    [Export(typeof(PowershellTelemetryEmitter))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VsInstancePowershellTelemetryEmitter
+    public sealed class PowershellTelemetryEmitter
     {
         private int _solutionCount;
         //private Lazy<Dictionary<string, object>> _vsSolutionTelemetryEmitQueue;
@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
         private Lazy<IReadOnlyList<TelemetryEvent>> _vsInstanceTelemetryEvents;
 
         [ImportingConstructor]
-        internal VsInstancePowershellTelemetryEmitter(INuGetTelemetryCollector nuGetTelemetryCollector)
+        internal PowershellTelemetryEmitter(INuGetTelemetryCollector nuGetTelemetryCollector)
         {
             //_vsSolutionTelemetryEmitQueue = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
             //_vsInstanceTelemetryEmitQueue = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
@@ -54,7 +54,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
         }
 
         // Emit VS solution session telemetry when solution is closed.
-        public void SolutionClosedEmit()
+        public void SolutionClosedTelemetryEmit()
         {
             try
             {
@@ -99,7 +99,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
             // If there is not emitted PowerShellExecuteCommand telemetry.
             if (_nuGetTelemetryCollector.GetSolutionTelemetryEvents().Any(e => e is NuGetPowershellVSSolutionCloseEvent))
             {
-                SolutionClosedEmit();
+                SolutionClosedTelemetryEmit();
             }
         }
 
