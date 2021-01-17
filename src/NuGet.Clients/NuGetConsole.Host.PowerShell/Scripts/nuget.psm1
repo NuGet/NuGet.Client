@@ -1,8 +1,6 @@
 # make sure we stop on exceptions
 $ErrorActionPreference = "Stop"
 
-# Please note below command names are hard coded in emitting telemetry in VsPowerShellHostTelemetryEmit.cs. If you add/remove command here then please update it there too.
-
 # This object reprents the result value for tab expansion functions when no result is returned.
 # This is so that we can distinguish it from $null, which has different semantics
 $NoResultValue = New-Object PSObject -Property @{ NoResult = $true }

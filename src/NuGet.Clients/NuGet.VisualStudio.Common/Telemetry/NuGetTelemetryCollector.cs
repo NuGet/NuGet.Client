@@ -37,7 +37,7 @@ namespace NuGet.VisualStudio.Telemetry
         public IReadOnlyList<TelemetryEvent> GetSolutionTelemetryEvents() => _vsSolutionTelemetryEvents.ToList().AsReadOnly();
         public IReadOnlyList<TelemetryEvent> GetVSIntanceTelemetryEvents() => _vsInstanceTelemetryEvents.ToList().AsReadOnly();
 
-        // If open new solution then need ability to reset existing solution events.
+        // If open new solution then need ability to reset previous solution events.
         public void ClearSolutionTelemetryEvents()
         {
             var newBag = new ConcurrentBag<TelemetryEvent>();
