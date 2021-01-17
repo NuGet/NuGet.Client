@@ -320,7 +320,6 @@
     <PackageReference Include="VSLangProj80" />
     <PackageReference Include="VSLangProj157" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

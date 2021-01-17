@@ -7,10 +7,9 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using NuGet.Common;
-using NuGet.VisualStudio.Telemetry.Powershell;
 using TelemetryConst = NuGet.VisualStudio.Telemetry.VSPowershellTelemetryConsts;
 
-namespace NuGet.VisualStudio.Telemetry
+namespace NuGet.VisualStudio.Telemetry.Powershell
 {
     [Export(typeof(VsInstancePowershellTelemetryEmitter))]
     [PartCreationPolicy(CreationPolicy.Shared)]
@@ -42,7 +41,7 @@ namespace NuGet.VisualStudio.Telemetry
         {
             try
             {
-                
+
                 // Handle edge cases.
                 EmitPMCUsedWithoutSolution();
                 _nuGetTelemetryCollector.ClearSolutionTelemetryEvents();
@@ -130,8 +129,8 @@ namespace NuGet.VisualStudio.Telemetry
         private void VSInstancePowershellTelemetryEmit()
         {
             NuGetPowershellVSInstanceCloseEvent nuGetPowershellVSInstanceCloseEvent = new NuGetPowershellVSInstanceCloseEvent(
-                nugetpmcexecutecommandcount : _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCExecuteCommandCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCExecuteCommandCount]),
-                nugetpmcwindowloadcount :  _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]),
+                nugetpmcexecutecommandcount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCExecuteCommandCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCExecuteCommandCount]),
+                nugetpmcwindowloadcount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]),
                 nugetpmuiexecutecommandcount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMUIExecuteCommandCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMUIExecuteCommandCount]),
                 pmcpowershellloadedsolutioncount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.SolutionLoaded] is bool && (bool)e[TelemetryConst.SolutionLoaded] && e[TelemetryConst.LoadedFromPMC] is bool).Count(e => (bool)e[TelemetryConst.LoadedFromPMC] == true),
                 pmuipowershellloadedsolutioncount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.LoadedFromPMUI] is bool).Count(e => (bool)e[TelemetryConst.LoadedFromPMUI] == true),

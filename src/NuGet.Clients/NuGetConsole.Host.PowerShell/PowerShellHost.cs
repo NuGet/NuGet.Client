@@ -29,6 +29,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
+using NuGet.VisualStudio.Telemetry.Powershell;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Host.PowerShell.Implementation

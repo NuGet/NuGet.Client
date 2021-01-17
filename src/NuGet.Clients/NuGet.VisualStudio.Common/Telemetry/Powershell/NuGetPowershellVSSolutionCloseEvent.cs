@@ -10,19 +10,19 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
     {
         // Emitted first time powershell gets loaded, so we can detect if VS crash while powershell in use.
         public NuGetPowershellVSSolutionCloseEvent() : this(
-            FirstTimeLoadedFromPMC : false,
-            FirstTimeLoadedFromPMUI : false,
-            InitPs1LoadedFromPMCFirst : false,
-            InitPs1LoadPMC : false,
-            InitPs1LoadPMUI : false,
-            LoadedFromPMC : false,
+            FirstTimeLoadedFromPMC: false,
+            FirstTimeLoadedFromPMUI: false,
+            InitPs1LoadedFromPMCFirst: false,
+            InitPs1LoadPMC: false,
+            InitPs1LoadPMUI: false,
+            LoadedFromPMC: false,
             LoadedFromPMUI: false,
-            NuGetCommandUsed : false,
-            NuGetPMCExecuteCommandCount : 0,
-            NuGetPMCWindowLoadCount : 0,
-            NuGetPMUIExecuteCommandCount : 0,
-            SolutionLoaded : false)
-        {}
+            NuGetCommandUsed: false,
+            NuGetPMCExecuteCommandCount: 0,
+            NuGetPMCWindowLoadCount: 0,
+            NuGetPMUIExecuteCommandCount: 0,
+            SolutionLoaded: false)
+        { }
 
         public NuGetPowershellVSSolutionCloseEvent(
             bool FirstTimeLoadedFromPMC,

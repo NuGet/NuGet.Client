@@ -5,10 +5,9 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using NuGet.Common;
-using NuGet.VisualStudio.Telemetry.Powershell;
 using TelemetryConst = NuGet.VisualStudio.Telemetry.VSPowershellTelemetryConsts;
 
-namespace NuGet.VisualStudio.Telemetry
+namespace NuGet.VisualStudio.Telemetry.Powershell
 {
     [Export(typeof(VsPowerShellHostTelemetryProcessor))]
     [PartCreationPolicy(CreationPolicy.Shared)]

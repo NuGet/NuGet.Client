@@ -8,7 +8,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
 {
     internal class NuGetPowershellLoadedEvent : TelemetryEvent
     {
-        // Emitted first time powershell gets loaded, so we can detect if VS crash while powershell in use.
+        // Emitted first time powershell gets loaded, so we can detect if VS crashed after powershell loaded.
         public NuGetPowershellLoadedEvent(bool loadedfrompmc) : base(TelemetryConst.NuGetPowerShellLoaded)
         {
             base[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.LoadedFromPMC] = TelemetryConst.LoadedFromPMC;

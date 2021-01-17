@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <PropertyGroup>
@@ -22,7 +22,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -155,11 +154,13 @@
     <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
     <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
   </PropertyGroup>
+
   <Target Name="AfterBuild">
     <ItemGroup>
       <PowerShellScripts Include="$(MSBuildProjectDirectory)\Scripts\*.ps*" Exclude="$(MSBuildProjectDirectory)\Scripts\NuGet.psd1" />
     </ItemGroup>
-    <Copy SourceFiles="@(PowerShellScripts)" DestinationFolder="$(ArtifactsDirectory)Scripts" />
+    <Copy SourceFiles="@(PowerShellScripts)"
+          DestinationFolder="$(ArtifactsDirectory)Scripts" />
     <Exec Command="powershell.exe -ExecutionPolicy Bypass &quot;$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\UpdateNuGetModuleManifest.ps1&quot; -NuGetPackageManagementPowerShellCmdletsFilePath &quot;$(ArtifactsDirectory)NuGet.PackageManagement.PowerShellCmdlets\$(BuildVariationFolder)\bin\$(Configuration)\NuGet.PackageManagement.PowerShellCmdlets.dll&quot; -ManifestModuleSourceFilePath &quot;$(MSBuildProjectDirectory)\Scripts\NuGet.psd1&quot; -ManifestModuleDestinationFilePath &quot;$(ArtifactsDirectory)Scripts\NuGet.psd1&quot;" />
   </Target>
   <Target Name="GetScriptsForSigning" Returns="@(ScriptsToSign)">
@@ -180,6 +181,7 @@
       </PowerShellCmdletsHelpFiles>
     </ItemGroup>
   </Target>
+
   <!-- This is called at PackVsix time to get localized files -->
   <Target Name="GetLocalizedPowerShellCmdletHelpFile">
     <ItemGroup>
@@ -197,13 +199,16 @@
       <VSLanguage Include="PTB" Locale="pt-BR" />
       <VSLanguage Include="RUS" Locale="ru" />
       <VSLanguage Include="TRK" Locale="tr" />
+
       <_AllLocalizedXmlFiles Include="$(OutputPath)Scripts\**\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
       <_XmlLocFiles Include="@(_AllLocalizedXmlFiles)">
         <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
       </_XmlLocFiles>
+
       <_TxtLocFiles Include="$(LocalizationRootDirectory)\%(VSLanguage.Identity)\15\about_NuGet.Cmdlets.help.txt">
         <TargetPath>Modules\NuGet\%(VSLanguage.Locale)\about_NuGet.Cmdlets.help.txt</TargetPath>
       </_TxtLocFiles>
+
       <LocalizedFilesForVsix Include="@(_XmlLocFiles);@(_TxtLocFiles)" />
     </ItemGroup>
   </Target>
