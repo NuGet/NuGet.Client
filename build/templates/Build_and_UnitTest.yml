@@ -60,8 +60,7 @@ steps:
     signType: "$(SigningType)"
     esrpSigning: "true"
   displayName: "Install Signing Plugin"
-  #condition: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
-  condition: "eq(variables['BuildRTM'], 'true')"  #test
+  condition: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
@@ -79,8 +78,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       dotnet tool restore
-  #condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
-  condition: "eq(variables['BuildRTM'], 'true')"  #test
+  condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
@@ -105,8 +103,7 @@ steps:
     solution: "nuget.sln"
     msbuildVersion: "16.0"
     msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
-  #condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'))"  #test
+  condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Ensure package versions are declared in packages.targets"
@@ -115,8 +112,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution"
-  #condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'))"  #test
+  condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
 
 - task: MSBuild@1
@@ -152,8 +148,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-  #condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
-  condition: "failed()"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: MSBuild@1
   displayName: "Run unit tests (continue on error)"
@@ -209,8 +204,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild"
-  #condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'))"  #test
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
@@ -219,8 +213,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
-  #condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'))"  #test
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Ensure all Nupkgs and Symbols are created"
@@ -229,8 +222,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
-  #condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'))"  #test
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
