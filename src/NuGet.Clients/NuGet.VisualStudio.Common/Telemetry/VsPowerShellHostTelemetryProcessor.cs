@@ -10,9 +10,9 @@ using TelemetryConst = NuGet.VisualStudio.Telemetry.VSPowershellTelemetryConsts;
 
 namespace NuGet.VisualStudio.Telemetry
 {
-    [Export(typeof(VsPowerShellHostTelemetryEmit))]
+    [Export(typeof(VsPowerShellHostTelemetryProcessor))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class VsPowerShellHostTelemetryEmit
+    public class VsPowerShellHostTelemetryProcessor
     {
         private readonly object _telemetryLock = new object();
         private bool _isTelemetryEmitted;
@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio.Telemetry
         // 7 - Did PowerShellHost for PMC created during current VS instance session?
         private static byte PowerShellHostInstances;
 
-        public VsPowerShellHostTelemetryEmit()
+        public VsPowerShellHostTelemetryProcessor()
         {
             _nuGetTelemetryCollector = ServiceLocator.GetInstance<INuGetTelemetryCollector>();
         }

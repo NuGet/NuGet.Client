@@ -25,7 +25,7 @@ namespace NuGet.VisualStudio.Telemetry
         private Lazy<IReadOnlyList<TelemetryEvent>> _vsInstanceTelemetryEvents;
 
         [ImportingConstructor]
-        public VsInstancePowershellTelemetryEmitter(INuGetTelemetryCollector nuGetTelemetryCollector)
+        internal VsInstancePowershellTelemetryEmitter(INuGetTelemetryCollector nuGetTelemetryCollector)
         {
             //_vsSolutionTelemetryEmitQueue = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
             //_vsInstanceTelemetryEmitQueue = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
