@@ -117,7 +117,6 @@ namespace NuGet.ProjectModel
                                     Strings.PackagesLockFile_NewTargetFramework,
                                     framework.FrameworkName.GetShortFolderName())
                                 );
-
                         continue;
                     }
 
@@ -140,7 +139,6 @@ namespace NuGet.ProjectModel
                         invalidReasons.Add(tmessage);
                     }
                 }
-
 
                 // Validate all P2P references
                 foreach (var framework in project.RestoreMetadata.TargetFrameworks)
@@ -462,7 +460,7 @@ namespace NuGet.ProjectModel
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
 
                 if (matchedP2PLibrary == null || !EqualityUtility.EqualsWithNullCheck(matchedP2PLibrary.VersionRange, dependency.LibraryRange.VersionRange))
-                {                    
+                {
                     // P2P dependency has changed and lock file is out of sync.
                     return (true,
                         string.Format(
