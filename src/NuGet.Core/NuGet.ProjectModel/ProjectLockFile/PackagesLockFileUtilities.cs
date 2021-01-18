@@ -88,7 +88,7 @@ namespace NuGet.ProjectModel
 
             // Validate all the direct dependencies
             var lockFileFrameworks = nuGetLockFile.Targets
-                .Where(t => t.TargetFramework != null) // When is this ok? Never? 
+                .Where(t => t.TargetFramework != null)
                 .Select(t => t.TargetFramework)
                 .Distinct()
                 .ToArray();
@@ -462,8 +462,7 @@ namespace NuGet.ProjectModel
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
 
                 if (matchedP2PLibrary == null || !EqualityUtility.EqualsWithNullCheck(matchedP2PLibrary.VersionRange, dependency.LibraryRange.VersionRange))
-                {
-                    // Do it in a similar way as the above.
+                {                    
                     // P2P dependency has changed and lock file is out of sync.
                     return (true,
                         string.Format(
