@@ -10,7 +10,7 @@ namespace NuGet.VisualStudio.Telemetry
     public interface INuGetTelemetryCollector
     {
         void AddSolutionTelemetryEvent(TelemetryEvent telemetryData);
-        IReadOnlyList<TelemetryEvent> GetSolutionTelemetryEvents();
+        IReadOnlyList<TelemetryEvent> GetVSSolutionTelemetryEvents();
         IReadOnlyList<TelemetryEvent> GetVSIntanceTelemetryEvents();
         void ClearSolutionTelemetryEvents();
     }

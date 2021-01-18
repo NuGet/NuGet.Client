@@ -16,32 +16,32 @@ namespace NuGet.VisualStudio.Telemetry
     internal sealed class NuGetTelemetryCollector : INuGetTelemetryCollector
     {
         // _solutionTelemetryEvents hold telemetry for current VS solution session.
-        private ConcurrentBag<TelemetryEvent> _vsSolutionTelemetryEvents;
+        private Lazy<ConcurrentBag<TelemetryEvent>> _vsSolutionTelemetryEvents;
         // _vsInstanceTelemetryEvents hold telemetry for current VS instance session.
-        private readonly ConcurrentBag<TelemetryEvent> _vsInstanceTelemetryEvents;
+        private readonly Lazy<ConcurrentBag<TelemetryEvent>> _vsInstanceTelemetryEvents;
 
         public NuGetTelemetryCollector()
         {
-            _vsSolutionTelemetryEvents = new ConcurrentBag<TelemetryEvent>();
-            _vsInstanceTelemetryEvents = new ConcurrentBag<TelemetryEvent>();
+            _vsSolutionTelemetryEvents = new Lazy<ConcurrentBag<TelemetryEvent>>();
+            _vsInstanceTelemetryEvents = new Lazy<ConcurrentBag<TelemetryEvent>>();
         }
 
         /// <summary> Add a <see cref="TelemetryEvent"/> to telemetry list which will be aggregated and emitted later. </summary>
         /// <param name="telemetryData"> Telemetry event to add into aggregation. </param>
         public void AddSolutionTelemetryEvent(TelemetryEvent telemetryData)
         {
-            _vsSolutionTelemetryEvents.Add(telemetryData);
-            _vsInstanceTelemetryEvents.Add(telemetryData);
+            _vsSolutionTelemetryEvents.Value.Add(telemetryData);
+            _vsInstanceTelemetryEvents.Value.Add(telemetryData);
         }
 
-        public IReadOnlyList<TelemetryEvent> GetSolutionTelemetryEvents() => _vsSolutionTelemetryEvents.ToList().AsReadOnly();
-        public IReadOnlyList<TelemetryEvent> GetVSIntanceTelemetryEvents() => _vsInstanceTelemetryEvents.ToList().AsReadOnly();
+        public IReadOnlyList<TelemetryEvent> GetVSSolutionTelemetryEvents() => _vsSolutionTelemetryEvents.Value.ToList();
+        public IReadOnlyList<TelemetryEvent> GetVSIntanceTelemetryEvents() => _vsInstanceTelemetryEvents.Value.ToList();
 
-        // If open new solution then need ability to reset previous solution events.
+        // If open new solution then need to clear previous solution events.
         public void ClearSolutionTelemetryEvents()
         {
-            var newBag = new ConcurrentBag<TelemetryEvent>();
-            Interlocked.Exchange<ConcurrentBag<TelemetryEvent>>(ref _vsSolutionTelemetryEvents, newBag);
+            var newBag = new Lazy<ConcurrentBag<TelemetryEvent>>();
+            Interlocked.Exchange(ref _vsSolutionTelemetryEvents, newBag);
         }
     }
 }

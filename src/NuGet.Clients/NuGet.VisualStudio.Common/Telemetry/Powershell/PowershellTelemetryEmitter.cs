@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -16,24 +15,19 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
     public sealed class PowershellTelemetryEmitter
     {
         private int _solutionCount;
-        //private Lazy<Dictionary<string, object>> _vsSolutionTelemetryEmitQueue;
-        //private Lazy<Dictionary<string, object>> _vsInstanceTelemetryEmitQueue;
-        private Lazy<ConcurrentBag<TelemetryEvent>> _vsSolutionTelemetryEmitQueue;
-        private Lazy<ConcurrentBag<TelemetryEvent>> _vsInstanceTelemetryEmitQueue;
+        private bool _powershellLoadEventEmitted = false;
         private INuGetTelemetryCollector _nuGetTelemetryCollector;
-        private Lazy<IReadOnlyList<TelemetryEvent>> _vsInstanceTelemetryEvents;
+        private Func<List<TelemetryEvent>> _vsSolutionTelemetryEvents;
+        private Lazy<List<TelemetryEvent>> _vsInstanceTelemetryEvents;
 
         [ImportingConstructor]
         internal PowershellTelemetryEmitter(INuGetTelemetryCollector nuGetTelemetryCollector)
         {
-            //_vsSolutionTelemetryEmitQueue = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
-            //_vsInstanceTelemetryEmitQueue = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
-            _vsSolutionTelemetryEmitQueue = new Lazy<ConcurrentBag<TelemetryEvent>>(() => new ConcurrentBag<TelemetryEvent>());
-            _vsInstanceTelemetryEmitQueue = new Lazy<ConcurrentBag<TelemetryEvent>>(() => new ConcurrentBag<TelemetryEvent>());
             _nuGetTelemetryCollector = nuGetTelemetryCollector;
-            _vsInstanceTelemetryEvents = new Lazy<IReadOnlyList<TelemetryEvent>>(() =>
+            _vsSolutionTelemetryEvents = () => _nuGetTelemetryCollector?.GetVSSolutionTelemetryEvents().ToList();
+            _vsInstanceTelemetryEvents = new Lazy<List<TelemetryEvent>>(() =>
             {
-                return _nuGetTelemetryCollector?.GetVSIntanceTelemetryEvents();
+                return _nuGetTelemetryCollector?.GetVSIntanceTelemetryEvents().ToList();
             });
         }
 
@@ -41,7 +35,6 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
         {
             try
             {
-
                 // Handle edge cases.
                 EmitPMCUsedWithoutSolution();
                 _nuGetTelemetryCollector.ClearSolutionTelemetryEvents();
@@ -74,8 +67,8 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
             try
             {
                 // Handle edge cases.
-                EmitPMCUsedWithoutSolution();
 
+                EmitPMCUsedWithoutSolution();
                 VSInstancePowershellTelemetryEmit();
             }
             catch (Exception)
@@ -88,16 +81,20 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
         {
             // Edge case: PMC window can be opened without any solution at all, but sometimes TelemetryActivity.NuGetTelemetryService is not ready yet when PMC open.
             // In general we want to emit this telemetry right away, but not possible then emit later.
-            var nuGetPowerShellLoadedEvent = _nuGetTelemetryCollector.GetSolutionTelemetryEvents().FirstOrDefault(e => e.Name == TelemetryConst.NuGetPowerShellLoaded);
 
-            if (nuGetPowerShellLoadedEvent != null)
+            if (!_powershellLoadEventEmitted)
             {
-                TelemetryActivity.EmitTelemetryEvent(nuGetPowerShellLoadedEvent);
-                //vsSolutionTelemetryEvents.Remove(nuGetPowerShellLoadedEvent);
+                var nuGetPowerShellLoadedEvent = _vsSolutionTelemetryEvents().FirstOrDefault(e => e.Name == TelemetryConst.NuGetPowerShellLoaded);
+
+                if (nuGetPowerShellLoadedEvent != null)
+                {
+                    TelemetryActivity.EmitTelemetryEvent(nuGetPowerShellLoadedEvent);
+                    _powershellLoadEventEmitted = true;
+                }
             }
 
             // If there is not emitted PowerShellExecuteCommand telemetry.
-            if (_nuGetTelemetryCollector.GetSolutionTelemetryEvents().Any(e => e is NuGetPowershellVSSolutionCloseEvent))
+            if (_vsSolutionTelemetryEvents().Any(e => e is NuGetPowershellVSSolutionCloseEvent))
             {
                 SolutionClosedTelemetryEmit();
             }
@@ -105,7 +102,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
 
         private void VSSolutionPowershellTelemetryEmit()
         {
-            NuGetPowershellVSSolutionCloseEvent vsSolutionPowershellTelemetry = _nuGetTelemetryCollector.GetSolutionTelemetryEvents().FirstOrDefault(e => e is NuGetPowershellVSSolutionCloseEvent) as NuGetPowershellVSSolutionCloseEvent;
+            NuGetPowershellVSSolutionCloseEvent vsSolutionPowershellTelemetry = _vsSolutionTelemetryEvents().FirstOrDefault(e => e is NuGetPowershellVSSolutionCloseEvent) as NuGetPowershellVSSolutionCloseEvent;
 
             // If powershell(PMC/PMUI) is not loaded at all then we need to create default telemetry event which will be emitted.
             if (vsSolutionPowershellTelemetry == null)
@@ -120,7 +117,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
                     return;
                 }
 
-                vsSolutionPowershellTelemetry[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCWindowLoadCount] = _nuGetTelemetryCollector.GetSolutionTelemetryEvents().Where(e => e[TelemetryConst.NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]);
+                vsSolutionPowershellTelemetry[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCWindowLoadCount] = _vsSolutionTelemetryEvents().Where(e => e[TelemetryConst.NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]);
             }
 
             TelemetryActivity.EmitTelemetryEvent(vsSolutionPowershellTelemetry);
