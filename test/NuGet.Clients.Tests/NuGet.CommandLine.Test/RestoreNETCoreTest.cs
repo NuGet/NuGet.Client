@@ -9275,9 +9275,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: The package reference x version has changed from [1.0.0, ) to [2.0.0, ). " +
-                    "The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. " +
-                    "Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: The package reference x version has changed from [1.0.0, ) to [2.0.0, )."));
             }
         }
 
@@ -9360,9 +9358,7 @@ namespace NuGet.CommandLine.Test
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
                 Assert.True(r.AllOutput.Contains("NU1004: Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. " +
-                    "Lock file version [1.0.0, ), central package management version [2.0.0, ). " +
-                    "The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. " +
-                    "Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                    "Lock file version [1.0.0, ), central package management version [2.0.0, )."));
             }
         }
 
@@ -9436,9 +9432,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: The package reference x version has changed from [1.0.0, ) to (, ). " +
-                    "The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. " +
-                    "Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: The package reference x version has changed from [1.0.0, ) to (, )."));
             }
         }
 
@@ -9512,9 +9506,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: Central package management file doesn't contain version range for y package which is specified as CentralTransitive dependency in the lock file. " +
-                    "The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. " +
-                    "Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: Central package management file doesn't contain version range for y package which is specified as CentralTransitive dependency in the lock file."));
             }
         }
 
@@ -9587,9 +9579,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: Transitive dependencies moved to be centraly managed invalidated the lock file. " +
-                    "The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. " +
-                    "Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: Transitive dependencies moved to be centraly managed invalidated the lock file."));
             }
         }
 

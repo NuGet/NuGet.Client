@@ -561,10 +561,13 @@ namespace NuGet.Commands
                 {
                     // check if lock file is out of sync with project data
                     lockFileTelemetry.StartIntervalMeasure();
+
                     var lockFileResult = PackagesLockFileUtilities.IsLockFileStillValid(_request.DependencyGraphSpec, packagesLockFile);
+                    isLockFileValid = lockFileResult.IsValid;
+
                     lockFileTelemetry.EndIntervalMeasure(ValidateLockFileDuration);
 
-                    if (lockFileResult.IsValid)
+                    if (isLockFileValid)
                     {
                         // pass lock file details down to generate restore graph
                         foreach (var target in packagesLockFile.Targets)
