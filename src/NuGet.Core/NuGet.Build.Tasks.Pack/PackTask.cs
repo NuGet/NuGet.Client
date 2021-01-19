@@ -129,7 +129,7 @@ namespace NuGet.Build.Tasks.Pack
             }
             catch (Exception ex)
             {
-                ExceptionUtilities.LogException(ex, Logger);
+                ExceptionUtilities.LogException(ex, Logger, true);
                 return false;
             }
 
