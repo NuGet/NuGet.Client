@@ -25,13 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _packageMetadataProvider = packageMetadataProvider;
             _detailedPackageSearchMetadata = AsyncLazy.New(() =>
             {
-                var multiSourceMetadataProvider = packageMetadataProvider as MultiSourcePackageMetadataProvider;
-                if (multiSourceMetadataProvider != null)
-                {
-                    return multiSourceMetadataProvider.GetPackageMetadataForIdentityAsync(_packageSearchMetadata.Identity, CancellationToken.None);
-                }
-
-                return _packageMetadataProvider.GetPackageMetadataAsync(_packageSearchMetadata.Identity, includePrerelease: true, CancellationToken.None);
+                return _packageMetadataProvider.GetPackageMetadataForIdentityAsync(_packageSearchMetadata.Identity, CancellationToken.None);
             });
         }
 

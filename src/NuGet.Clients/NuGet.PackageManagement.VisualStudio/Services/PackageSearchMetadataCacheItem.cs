@@ -47,10 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (!_cachedItemEntries.TryGetValue(packageIdentity.Version, out PackageSearchMetadataCacheItemEntry cacheItemEntry))
             {
-                var multiSourceProvider = _packageMetadataProvider as MultiSourcePackageMetadataProvider;
-                IPackageSearchMetadata packageSearchMetadata = multiSourceProvider != null
-                        ? await multiSourceProvider.GetPackageMetadataForIdentityAsync(packageIdentity, cancellationToken)
-                        : await _packageMetadataProvider.GetPackageMetadataAsync(packageIdentity, includePrerelease: true, cancellationToken);
+                IPackageSearchMetadata packageSearchMetadata = await _packageMetadataProvider.GetPackageMetadataForIdentityAsync(packageIdentity, cancellationToken);
                 cacheItemEntry = new PackageSearchMetadataCacheItemEntry(packageSearchMetadata, _packageMetadataProvider);
                 _cachedItemEntries[packageIdentity.Version] = cacheItemEntry;
             }
