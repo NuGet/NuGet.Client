@@ -8,7 +8,6 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
 {
     internal class NuGetPowershellVSSolutionCloseEvent : TelemetryEvent
     {
-        // Emitted first time powershell gets loaded, so we can detect if VS crash while powershell in use.
         public NuGetPowershellVSSolutionCloseEvent() : this(
             FirstTimeLoadedFromPMC: false,
             FirstTimeLoadedFromPMUI: false,

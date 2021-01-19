@@ -67,7 +67,6 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
             try
             {
                 // Handle edge cases.
-
                 EmitPMCUsedWithoutSolution();
                 VSInstancePowershellTelemetryEmit();
             }

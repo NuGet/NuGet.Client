@@ -108,7 +108,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
         {
             lock (_telemetryLock)
             {
-                // This is PowerShellHost load first time, let's emit this to find out later how many VS instance crash after loading powershell.
+                // PowerShellHost loaded first time, let's emit this to find out later how many VS instance crash after loading powershell.
                 if (TestAnyBitNotSet(PowerShellHostInstances, 0b00000011))
                 {
                     var telemetryEvent = new TelemetryEvent(TelemetryConst.NuGetPowerShellLoaded, new Dictionary<string, object>
