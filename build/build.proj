@@ -342,7 +342,7 @@
   <Target Name="GetPackProjects">
       <MsBuild
         Projects="@(SolutionProjects)"
-        Targets="GetPackProject">
+        Targets="_IsProjectNeedsPack">
           <Output
               TaskParameter="TargetOutputs"
               ItemName="PackProjects" />

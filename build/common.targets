@@ -151,10 +151,11 @@
 
   <!--
     ============================================================
-    GetPackProject - gets the list of projects need to be packed
+    _IsProjectNeedsPack
+    Verify if the project needs to be packed.
     ============================================================
   -->
-  <Target Name="GetPackProject" Returns="@(PackProjects)">
+  <Target Name="_IsProjectNeedsPack" Returns="@(PackProjects)">
     <ItemGroup Condition="'$(PackProject)' == 'true'">
       <PackProjects Include="$(MSBuildProjectFullPath)">
       </PackProjects>
