@@ -4539,7 +4539,7 @@ namespace ClassLibrary
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("Microsoft.NETCore.App", "true", "netcoreapp3.0", "", "netcoreapp3.0")]
-        [InlineData("Microsoft.NETCore.App", "false", "netcoreapp3.0", "", "netcoreapp3.0")]
+        [InlineData("Microsoft.NETCore.App", "false", "netcoreapp3.0", "", "")]
         [InlineData("Microsoft.WindowsDesktop.App", "true", "netstandard2.1;netcoreapp3.0", "netcoreapp3.0", "netcoreapp3.0")]
         [InlineData("Microsoft.WindowsDesktop.App;Microsoft.AspNetCore.App", "true;true", "netcoreapp3.0", "netcoreapp3.0", "netcoreapp3.0")]
         [InlineData("Microsoft.WindowsDesktop.App.WPF;Microsoft.WindowsDesktop.App.WindowsForms", "true;false", "netcoreapp3.0", "", "netcoreapp3.0")]
@@ -4608,13 +4608,29 @@ namespace ClassLibrary
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
-                    var expectedFrameworks = expectedTargetFramework.Split(';');
+                    var expectedFrameworks = expectedTargetFramework.Split(';').Where(fw => !string.IsNullOrEmpty(fw));
+                    var allFrameworks = targetFrameworks.Split(';').Where(fw => !string.IsNullOrEmpty(fw));
+                    var nupkgFrameworkGroups = nupkgReader.NuspecReader.GetFrameworkRefGroups();
 
-                    var frameworkItems = nupkgReader.NuspecReader.GetFrameworkRefGroups();
+                    if (expectedFrameworks.Any())
+                    {
+                        Assert.Equal(
+                            allFrameworks.Select(fw => NuGetFramework.Parse(fw)).ToHashSet(),
+                            nupkgFrameworkGroups.Select(t => t.TargetFramework).ToHashSet()
+                        );
+                    }
+                    else
+                    {
+                        Assert.Equal(
+                            new HashSet<NuGetFramework>(),
+                            nupkgFrameworkGroups.Select(t => t.TargetFramework).ToHashSet()
+                        );
+                    }
+
                     foreach (var framework in expectedFrameworks)
                     {
                         var nugetFramework = NuGetFramework.Parse(framework);
-                        var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.Equals(nugetFramework)).FirstOrDefault();
+                        var frameworkSpecificGroup = nupkgFrameworkGroups.Where(t => t.TargetFramework.Equals(nugetFramework)).FirstOrDefault();
 
                         foreach (var frameworkRef in frameworkReftoPack)
                         {
