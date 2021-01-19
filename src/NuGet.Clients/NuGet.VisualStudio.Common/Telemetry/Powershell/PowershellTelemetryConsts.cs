@@ -26,6 +26,7 @@ namespace NuGet.VisualStudio.Telemetry
         public const string ReOpenAtStart = nameof(ReOpenAtStart);
 
         // Const name for emitting when VS solution close or VS instance close.
+        public const string Name = nameof(Name);
         public const string NuGetPowershellPrefix = nameof(NuGetPowershellPrefix); // Using prefix prevent accidental same name property collission from different type telemetry.
         public const string NuGetVSSolutionClose = nameof(NuGetVSSolutionClose);
         public const string NuGetVSInstanceClose = nameof(NuGetVSInstanceClose);

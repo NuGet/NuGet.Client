@@ -17,18 +17,17 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
         private int _solutionCount;
         private bool _powershellLoadEventEmitted = false;
         private INuGetTelemetryCollector _nuGetTelemetryCollector;
-        private Func<List<TelemetryEvent>> _vsSolutionTelemetryEvents;
-        private Lazy<List<TelemetryEvent>> _vsInstanceTelemetryEvents;
+        private Func<List<Dictionary<string, object>>> _vsSolutionTelemetryEvents;
+        private Func<List<Dictionary<string, object>>> _vsInstanceTelemetryEvents;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
-        internal PowershellTelemetryEmitter(INuGetTelemetryCollector nuGetTelemetryCollector)
+        internal PowershellTelemetryEmitter(INuGetTelemetryCollector nuGetTelemetryCollector, INuGetTelemetryProvider telemetryProvider)
         {
             _nuGetTelemetryCollector = nuGetTelemetryCollector;
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
             _vsSolutionTelemetryEvents = () => _nuGetTelemetryCollector?.GetVSSolutionTelemetryEvents().ToList();
-            _vsInstanceTelemetryEvents = new Lazy<List<TelemetryEvent>>(() =>
-            {
-                return _nuGetTelemetryCollector?.GetVSIntanceTelemetryEvents().ToList();
-            });
+            _vsInstanceTelemetryEvents = () => _nuGetTelemetryCollector?.GetVSIntanceTelemetryEvents().ToList();
         }
 
         public void SolutionOpenedTelemetryEmit()
@@ -40,9 +39,9 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
                 _nuGetTelemetryCollector.ClearSolutionTelemetryEvents();
                 _solutionCount++;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                // Currently do nothing.
+                _telemetryProvider.PostFault(exception, typeof(PowershellTelemetryEmitter).FullName);
             }
         }
 
@@ -55,9 +54,9 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
                 VSSolutionPowershellTelemetryEmit();
                 _nuGetTelemetryCollector.ClearSolutionTelemetryEvents();
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                // Currently do nothing.
+                _telemetryProvider.PostFault(exception, typeof(PowershellTelemetryEmitter).FullName);
             }
         }
 
@@ -70,9 +69,9 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
                 EmitPMCUsedWithoutSolution();
                 VSInstancePowershellTelemetryEmit();
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                // Currently do nothing.
+                _telemetryProvider.PostFault(exception, typeof(PowershellTelemetryEmitter).FullName);
             }
         }
 
@@ -83,17 +82,20 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
 
             if (!_powershellLoadEventEmitted)
             {
-                var nuGetPowerShellLoadedEvent = _vsSolutionTelemetryEvents().FirstOrDefault(e => e.Name == TelemetryConst.NuGetPowerShellLoaded);
+                Dictionary<string, object> nuGetPowerShellLoadedEvent = _vsSolutionTelemetryEvents().FirstOrDefault(e => (string)e[TelemetryConst.Name] == TelemetryConst.NuGetPowerShellLoaded);
 
                 if (nuGetPowerShellLoadedEvent != null)
                 {
-                    TelemetryActivity.EmitTelemetryEvent(nuGetPowerShellLoadedEvent);
+                    TelemetryActivity.EmitTelemetryEvent(
+                        new NuGetPowershellLoadedEvent(
+                            loadedfrompmc: (bool)nuGetPowerShellLoadedEvent[TelemetryConst.LoadedFromPMC])
+                        );
                     _powershellLoadEventEmitted = true;
                 }
             }
 
             // If there is not emitted PowerShellExecuteCommand telemetry.
-            if (_vsSolutionTelemetryEvents().Any(e => e is NuGetPowershellVSSolutionCloseEvent))
+            if (_vsSolutionTelemetryEvents().Where(e => (string)e[TelemetryConst.Name] == TelemetryConst.NuGetVSSolutionClose).Any())
             {
                 SolutionClosedTelemetryEmit();
             }
@@ -101,36 +103,50 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
 
         private void VSSolutionPowershellTelemetryEmit()
         {
-            NuGetPowershellVSSolutionCloseEvent vsSolutionPowershellTelemetry = _vsSolutionTelemetryEvents().FirstOrDefault(e => e is NuGetPowershellVSSolutionCloseEvent) as NuGetPowershellVSSolutionCloseEvent;
+            Dictionary<string, object> vsSolutionPowershellTelemetry = _vsSolutionTelemetryEvents().Where(e => (string)e[TelemetryConst.Name] == TelemetryConst.NuGetVSSolutionClose).FirstOrDefault();
 
             // If powershell(PMC/PMUI) is not loaded at all then we need to create default telemetry event which will be emitted.
-            if (vsSolutionPowershellTelemetry == null)
-            {
-                vsSolutionPowershellTelemetry = new NuGetPowershellVSSolutionCloseEvent();
-            }
-            else
+            var nugetVSSolutionCloseEvent = new NuGetPowershellVSSolutionCloseEvent();
+
+            if (vsSolutionPowershellTelemetry != null)
             {
                 // PMC opened, but no command executed nor any solution was loaded. Rather than sending separate nugetvssolutionclose telemetry with no data just ignore.
-                if (!(bool)vsSolutionPowershellTelemetry[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.SolutionLoaded] && (int)vsSolutionPowershellTelemetry[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCExecuteCommandCount] == 0)
+                if (!(bool)vsSolutionPowershellTelemetry[TelemetryConst.SolutionLoaded] && (int)vsSolutionPowershellTelemetry[TelemetryConst.NuGetPMCExecuteCommandCount] == 0)
                 {
                     return;
                 }
 
-                vsSolutionPowershellTelemetry[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCWindowLoadCount] = _vsSolutionTelemetryEvents().Where(e => e[TelemetryConst.NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]);
+                nugetVSSolutionCloseEvent = new NuGetPowershellVSSolutionCloseEvent(
+                    FirstTimeLoadedFromPMC: (bool)vsSolutionPowershellTelemetry[TelemetryConst.FirstTimeLoadedFromPMC],
+                    FirstTimeLoadedFromPMUI: (bool)vsSolutionPowershellTelemetry[TelemetryConst.FirstTimeLoadedFromPMUI],
+                    InitPs1LoadedFromPMCFirst: (bool)vsSolutionPowershellTelemetry[TelemetryConst.InitPs1LoadedFromPMCFirst],
+                    InitPs1LoadPMC: (bool)vsSolutionPowershellTelemetry[TelemetryConst.InitPs1LoadPMC],
+                    InitPs1LoadPMUI: (bool)vsSolutionPowershellTelemetry[TelemetryConst.InitPs1LoadPMUI],
+                    LoadedFromPMC: (bool)vsSolutionPowershellTelemetry[TelemetryConst.LoadedFromPMC],
+                    LoadedFromPMUI: (bool)vsSolutionPowershellTelemetry[TelemetryConst.LoadedFromPMUI],
+                    NuGetCommandUsed: (bool)vsSolutionPowershellTelemetry[TelemetryConst.NuGetCommandUsed],
+                    NuGetPMCExecuteCommandCount: (int)vsSolutionPowershellTelemetry[TelemetryConst.NuGetPMCExecuteCommandCount],
+                    NuGetPMCWindowLoadCount: _vsSolutionTelemetryEvents().Where(e => e[TelemetryConst.NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]),
+                    NuGetPMUIExecuteCommandCount: (int)vsSolutionPowershellTelemetry[TelemetryConst.NuGetPMUIExecuteCommandCount],
+                    SolutionLoaded: (bool)vsSolutionPowershellTelemetry[TelemetryConst.SolutionLoaded]
+                 );
             }
 
-            TelemetryActivity.EmitTelemetryEvent(vsSolutionPowershellTelemetry);
+            TelemetryActivity.EmitTelemetryEvent(nugetVSSolutionCloseEvent);
         }
 
         private void VSInstancePowershellTelemetryEmit()
         {
+            List<Dictionary<string, object>> nuGetVSSolutionCloseEvents = _vsInstanceTelemetryEvents().Where(e => (string)e[TelemetryConst.Name] == TelemetryConst.NuGetVSSolutionClose).ToList();
+            List<Dictionary<string, object>> packageManagerConsoleWindowsLoadEvents = _vsInstanceTelemetryEvents().Where(e => (string)e[TelemetryConst.Name] == TelemetryConst.PackageManagerConsoleWindowsLoad).ToList();
+
             NuGetPowershellVSInstanceCloseEvent nuGetPowershellVSInstanceCloseEvent = new NuGetPowershellVSInstanceCloseEvent(
-                nugetpmcexecutecommandcount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCExecuteCommandCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMCExecuteCommandCount]),
-                nugetpmcwindowloadcount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.NuGetPMCWindowLoadCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]),
-                nugetpmuiexecutecommandcount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMUIExecuteCommandCount] is int).Sum(e => (int)e[TelemetryConst.NuGetPowershellPrefix + TelemetryConst.NuGetPMUIExecuteCommandCount]),
-                pmcpowershellloadedsolutioncount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.SolutionLoaded] is bool && (bool)e[TelemetryConst.SolutionLoaded] && e[TelemetryConst.LoadedFromPMC] is bool).Count(e => (bool)e[TelemetryConst.LoadedFromPMC] == true),
-                pmuipowershellloadedsolutioncount: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.LoadedFromPMUI] is bool).Count(e => (bool)e[TelemetryConst.LoadedFromPMUI] == true),
-                reopenatstart: _vsInstanceTelemetryEvents.Value.Where(e => e[TelemetryConst.ReOpenAtStart] != null).Any(),
+                nugetpmcexecutecommandcount: nuGetVSSolutionCloseEvents.Sum(e => (int)e[TelemetryConst.NuGetPMCExecuteCommandCount]),
+                nugetpmcwindowloadcount: packageManagerConsoleWindowsLoadEvents.Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]),
+                nugetpmuiexecutecommandcount: nuGetVSSolutionCloseEvents.Sum(e => (int)e[TelemetryConst.NuGetPMUIExecuteCommandCount]),
+                pmcpowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.LoadedFromPMC] == true),
+                pmuipowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.LoadedFromPMUI] == true),
+                reopenatstart: packageManagerConsoleWindowsLoadEvents.Any(e => e[TelemetryConst.ReOpenAtStart] != null),
                 solutioncount: _solutionCount
                 );
 
