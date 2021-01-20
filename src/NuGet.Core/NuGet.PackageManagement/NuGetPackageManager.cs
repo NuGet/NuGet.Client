@@ -605,6 +605,11 @@ namespace NuGet.PackageManagement
                 IEnumerable<SourceRepository> secondarySources,
                 CancellationToken token)
         {
+            if (packageIdentities == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentities));
+            }
+
             if (nuGetProjects == null)
             {
                 throw new ArgumentNullException(nameof(nuGetProjects));
@@ -660,7 +665,7 @@ namespace NuGet.PackageManagement
                     if (packagesToUpdateInProject.Count > 0)
                     {
                         var includePrerelease = packagesToUpdateInProject.Any(
-                        package => package.Version.IsPrerelease) || resolutionContext.IncludePrerelease;
+                        package => package.Version?.IsPrerelease == true) || resolutionContext.IncludePrerelease;
 
                         updatedResolutionContext = new ResolutionContext(
                             dependencyBehavior: resolutionContext.DependencyBehavior,
