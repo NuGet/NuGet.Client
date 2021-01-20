@@ -151,6 +151,25 @@
 
   <!--
     ============================================================
+    _IsNupkgAndSymbolsExist
+    Verify if predicted package path exists.
+    ============================================================
+  -->
+  <Target Name="_IsNupkgOrSymbolsExist" Condition="'$(PackProject)' == 'true'" Returns="@(MissingPackages)" >
+    <PropertyGroup>
+      <!-- If we want to check in packages in another folder, e.g. publish folder, we can pass /p:PackageFolder=$(AnthorFolder) -->
+      <PackageFolder Condition=" '$(PackageFolder)' == '' ">$(NupkgOutputDirectory)</PackageFolder>
+      <PrediectNupkgPath>$(PackageFolder)$(PackageId).$(Version).nupkg</PrediectNupkgPath>
+      <PrediectSymbolsPath>$(PackageFolder)$(PackageId).$(Version).symbols.nupkg</PrediectSymbolsPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <MissingPackages Include="$(PackageId).$(Version).nupkg" Condition="!Exists('$(PrediectNupkgPath)')" />
+      <MissingPackages Include="$(PackageId).$(Version).symbols.nupkg" Condition="!Exists('$(PrediectSymbolsPath)')" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
     _IsProjectNeedsPack
     Verify if the project needs to be packed.
     ============================================================

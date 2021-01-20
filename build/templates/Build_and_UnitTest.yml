@@ -216,12 +216,21 @@ steps:
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
-  displayName: "Ensure all Nupkgs and Symbols are created"
+  displayName: "Ensure the count of Nupkg and Symbols files are correct"
   inputs:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
+
+- task: MSBuild@1
+  displayName: "Ensure all wanted Nupkgs and Symbols are created"
+  inputs:
+    solution: "build\\build.proj"
+    msbuildVersion: "16.0"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/t:GetMissingPackageList /p:ExcludeTestProjects=$(BuildRTM)"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1

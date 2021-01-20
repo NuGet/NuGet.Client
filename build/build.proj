@@ -369,6 +369,25 @@
 
   <!--
     ============================================================
+    Get missing packages List
+    ============================================================
+  -->
+    <Target Name="GetMissingPackageList">
+        <MsBuild
+          Projects="@(SolutionProjects)"
+          Targets="_IsNupkgOrSymbolsExist">
+            <Output
+                TaskParameter="TargetOutputs"
+                ItemName="MissingPackages" />
+        </MsBuild>
+        <Message Text="All wanted nupkgs and symbols are created. " Importance="high"
+                 Condition=" '@(MissingPackages->Count())' == '0' "/>
+        <Error Text="Failed to create following @(MissingPackages->Count()) nupkg or symbols in $(PackageFolder) :'%0D%0A' @(MissingPackages, '%0D%0A')"
+               Condition=" '@(MissingPackages->Count())' != '0' " />
+    </Target>
+
+    <!--
+    ============================================================
     RunTestsOnProjects
     Finds all test assemblies and allows Xunit to run them as 
     efficiently as the xunit.runner.json settings allow.
