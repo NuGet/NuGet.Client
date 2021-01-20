@@ -160,7 +160,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
                 nugetpmcwindowloadcount: packageManagerConsoleWindowsLoadEvents.Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]),
                 nugetpmuiexecutecommandcount: nuGetVSSolutionCloseEvents.Sum(e => (int)e[TelemetryConst.NuGetPMUIExecuteCommandCount]),
                 pmcpowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.SolutionLoaded] && (bool)e[TelemetryConst.LoadedFromPMC]),
-                pmuipowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.SolutionLoaded] && (bool)e[TelemetryConst.LoadedFromPMUI] == true),
+                pmuipowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.SolutionLoaded] && (bool)e[TelemetryConst.LoadedFromPMUI]),
                 reopenatstart: packageManagerConsoleWindowsLoadEvents.Any(e => e[TelemetryConst.ReOpenAtStart] != null),
                 solutioncount: _solutionCount
                 );
