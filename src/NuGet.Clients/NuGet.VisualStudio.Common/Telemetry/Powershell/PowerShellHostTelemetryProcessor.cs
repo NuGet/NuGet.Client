@@ -140,24 +140,28 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
             {
                 if (!_isTelemetryEmitted)
                 {
-                    var nugetVSSolutionCloseEvent = new Dictionary<string, object>
+                    // PMC opened, but no command executed nor any solution was loaded. Rather than sending separate nugetvssolutionclose telemetry with no data just ignore.
+                    if (withSolution || _pmcExecutedCount > 0)
                     {
-                        {   TelemetryConst.Name , TelemetryConst.NuGetVSSolutionClose },
-                        {   TelemetryConst.FirstTimeLoadedFromPMC , TestAllBitsSet(PowerShellHostInstances, 0b00000100) },
-                        {   TelemetryConst.FirstTimeLoadedFromPMUI, TestAllBitsSet(PowerShellHostInstances, 0b00001000) },
-                        {   TelemetryConst.InitPs1LoadedFromPMCFirst, TestAllBitsSet(PowerShellHostInstances, 0b00010000) },
-                        {   TelemetryConst.InitPs1LoadPMC, TestAllBitsSet(PowerShellHostInstances, 0b00100000) },
-                        {   TelemetryConst.InitPs1LoadPMUI, TestAllBitsSet(PowerShellHostInstances, 0b01000000) },
-                        {   TelemetryConst.LoadedFromPMC, TestAllBitsSet(PowerShellHostInstances, 0b00000001) },
-                        {   TelemetryConst.LoadedFromPMUI, TestAllBitsSet(PowerShellHostInstances, 0b00000010) },
-                        {   TelemetryConst.NuGetCommandUsed, TestAllBitsSet(PowerShellHostInstances, 0b10000000) },
-                        {   TelemetryConst.NuGetPMCExecuteCommandCount, _pmcExecutedCount },
-                        {   TelemetryConst.NuGetPMCWindowLoadCount, 0 },
-                        {   TelemetryConst.NuGetPMUIExecuteCommandCount, _nonPmcExecutedCount },
-                        {   TelemetryConst.SolutionLoaded, withSolution }
-                    };
+                        var nugetVSSolutionCloseEvent = new Dictionary<string, object>
+                        {
+                            {   TelemetryConst.Name , TelemetryConst.NuGetVSSolutionClose },
+                            {   TelemetryConst.FirstTimeLoadedFromPMC , TestAllBitsSet(PowerShellHostInstances, 0b00000100) },
+                            {   TelemetryConst.FirstTimeLoadedFromPMUI, TestAllBitsSet(PowerShellHostInstances, 0b00001000) },
+                            {   TelemetryConst.InitPs1LoadedFromPMCFirst, TestAllBitsSet(PowerShellHostInstances, 0b00010000) },
+                            {   TelemetryConst.InitPs1LoadPMC, TestAllBitsSet(PowerShellHostInstances, 0b00100000) },
+                            {   TelemetryConst.InitPs1LoadPMUI, TestAllBitsSet(PowerShellHostInstances, 0b01000000) },
+                            {   TelemetryConst.LoadedFromPMC, TestAllBitsSet(PowerShellHostInstances, 0b00000001) },
+                            {   TelemetryConst.LoadedFromPMUI, TestAllBitsSet(PowerShellHostInstances, 0b00000010) },
+                            {   TelemetryConst.NuGetCommandUsed, TestAllBitsSet(PowerShellHostInstances, 0b10000000) },
+                            {   TelemetryConst.NuGetPMCExecuteCommandCount, _pmcExecutedCount },
+                            {   TelemetryConst.NuGetPMCWindowLoadCount, 0 },
+                            {   TelemetryConst.NuGetPMUIExecuteCommandCount, _nonPmcExecutedCount },
+                            {   TelemetryConst.SolutionLoaded, withSolution }
+                        };
 
-                    _nuGetTelemetryCollector?.AddSolutionTelemetryEvent(nugetVSSolutionCloseEvent);
+                        _nuGetTelemetryCollector?.AddSolutionTelemetryEvent(nugetVSSolutionCloseEvent);
+                    }
 
                     _pmcExecutedCount = 0;
                     _nonPmcExecutedCount = 0;

@@ -119,12 +119,6 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
 
             if (vsSolutionCloseTelemetry != null)
             {
-                // PMC opened, but no command executed nor any solution was loaded. Rather than sending separate nugetvssolutionclose telemetry with no data just ignore.
-                if (!(bool)vsSolutionCloseTelemetry[TelemetryConst.SolutionLoaded] && (int)vsSolutionCloseTelemetry[TelemetryConst.NuGetPMCExecuteCommandCount] == 0)
-                {
-                    return;
-                }
-
                 nugetVSSolutionCloseEvent = new NuGetPowershellVSSolutionCloseEvent(
                     FirstTimeLoadedFromPMC: (bool)vsSolutionCloseTelemetry[TelemetryConst.FirstTimeLoadedFromPMC],
                     FirstTimeLoadedFromPMUI: (bool)vsSolutionCloseTelemetry[TelemetryConst.FirstTimeLoadedFromPMUI],
@@ -165,8 +159,8 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
                 nugetpmcexecutecommandcount: nuGetVSSolutionCloseEvents.Sum(e => (int)e[TelemetryConst.NuGetPMCExecuteCommandCount]),
                 nugetpmcwindowloadcount: packageManagerConsoleWindowsLoadEvents.Sum(e => (int)e[TelemetryConst.NuGetPMCWindowLoadCount]),
                 nugetpmuiexecutecommandcount: nuGetVSSolutionCloseEvents.Sum(e => (int)e[TelemetryConst.NuGetPMUIExecuteCommandCount]),
-                pmcpowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.LoadedFromPMC] == true),
-                pmuipowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.LoadedFromPMUI] == true),
+                pmcpowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.SolutionLoaded] && (bool)e[TelemetryConst.LoadedFromPMC]),
+                pmuipowershellloadedsolutioncount: nuGetVSSolutionCloseEvents.Count(e => (bool)e[TelemetryConst.SolutionLoaded] && (bool)e[TelemetryConst.LoadedFromPMUI] == true),
                 reopenatstart: packageManagerConsoleWindowsLoadEvents.Any(e => e[TelemetryConst.ReOpenAtStart] != null),
                 solutioncount: _solutionCount
                 );
