@@ -34,7 +34,7 @@ steps:
 - task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
-    arguments: "-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -SkipUpdateBuildNumber"
+    arguments: "-BuildRTM $(BuildRTM)"
   displayName: "Configure VSTS CI Environment"
 
 - task: PublishBuildArtifacts@1

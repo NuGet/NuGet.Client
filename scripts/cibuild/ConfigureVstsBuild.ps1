@@ -4,15 +4,8 @@ Sets build variables during a VSTS build dynamically.
 
 .DESCRIPTION
 This script is used to dynamically set some build variables during VSTS build.
-Specifically, this script reads the buildcounter.txt file in the $(DropRoot) to
-determine the build number of the artifacts, also it sets the $(NupkgOutputDir)
-based on whether $(BuildRTM) is true or false.
-
-.PARAMETER BuildCounterFile
-Path to the file in the drop root which stores the current build counter.
-
-.PARAMETER BuildInfoJsonFile
-Path to the buildInfo.json file that is generated for every build in the output folder.
+Specifically, this script determines the build number of the artifacts,
+also it sets the $(NupkgOutputDir) based on whether $(BuildRTM) is true or false.
 
 .PARAMETER BuildRTM
 True/false depending on whether nupkgs are being with or without the release labels.
@@ -22,15 +15,7 @@ True/false depending on whether nupkgs are being with or without the release lab
 param
 (
     [Parameter(Mandatory=$True)]
-    [string]$BuildCounterFile,
-
-    [Parameter(Mandatory=$True)]
-    [string]$BuildInfoJsonFile,
-
-    [Parameter(Mandatory=$True)]
-    [string]$BuildRTM,
-    
-    [switch]$SkipUpdateBuildNumber
+    [string]$BuildRTM
 )
 
 Function Get-Version {
@@ -128,54 +113,10 @@ if ($BuildRTM -eq 'true')
     # Set the $(NupkgOutputDir) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=NupkgOutputDir;]ReleaseNupkgs"
     Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15-RTM"
-    # Only for backward compatibility with orchestrated builds
-    if(-not $SkipUpdateBuildNumber)
-    {
-        $numberOfTries = 0
-        do{
-            Write-Host "Waiting for buildinfo.json to be generated..."
-            $numberOfTries++
-            Start-Sleep -s 15
-        }
-        until ((Test-Path $BuildInfoJsonFile) -or ($numberOfTries -gt 50))
-        $json = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
-        $currentBuild = [System.Decimal]::Parse($json.BuildNumber)
-        # Set the $(Revision) build variable in VSTS build
-        Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild"
-        Write-Host "##vso[build.updatebuildnumber]$currentBuild" 
-        $oldBuildOutputDirectory = Split-Path -Path $BuildInfoJsonFile
-        $branchDirectory = Split-Path -Path $oldBuildOutputDirectory
-        $newBuildOutputFolder =  Join-Path $branchDirectory $currentBuild
-        if(Test-Path $newBuildOutputFolder)
-        {
-            Move-Item -Path $BuildInfoJsonFile -Destination $newBuildOutputFolder
-            Remove-Item -Path $oldBuildOutputDirectory -Force
-        }
-        else
-        {
-            Rename-Item $oldBuildOutputDirectory $currentBuild
-        }
-    }
 }
 else
 {
-    # Only for backward compatibility with orchestrated builds
-    if(-not $SkipUpdateBuildNumber)
-    {
-        $revision = Get-Content $BuildCounterFile
-        $newBuildCounter = [System.Decimal]::Parse($revision)
-        $newBuildCounter++
-        Set-Content $BuildCounterFile $newBuildCounter
-        # Set the $(Revision) build variable in VSTS build
-        Write-Host "##vso[task.setvariable variable=Revision;]$newBuildCounter"
-        Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
-        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
-    }
-    else
-    {
-        $newBuildCounter = $env:BUILD_BUILDNUMBER
-    }
-
+    $newBuildCounter = $env:BUILD_BUILDNUMBER
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
     $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
     $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
@@ -198,10 +139,6 @@ else
 
     New-Item $localBuildInfoJsonFilePath -Force
     $jsonRepresentation | ConvertTo-Json | Set-Content $localBuildInfoJsonFilePath
-
-    # Now copy the file to the remote folder.
-    [System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($BuildInfoJsonFile))
-    [System.IO.File]::Copy($localBuildInfoJsonFilePath, $BuildInfoJsonFile)
 
     $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
     if (-not $?)
