@@ -28,7 +28,7 @@ namespace NuGetConsole
     {
         private INuGetSolutionManagerService _solutionManager;
         private IVsSolutionManager _iVsSolutionManager;
-        private INuGetTelemetryCollector _nugetSolutionTelemetry;
+        private INuGetTelemetryCollector _nugeTelemetryCollector;
         private int _windowLoadCount;
         private bool _isTelemetryEmitted;
 
@@ -65,7 +65,7 @@ namespace NuGetConsole
                             var packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
                             var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
                             var shell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
-                            _nugetSolutionTelemetry = ServiceLocator.GetInstance<INuGetTelemetryCollector>();
+                            _nugeTelemetryCollector = ServiceLocator.GetInstance<INuGetTelemetryCollector>();
 
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -106,7 +106,7 @@ namespace NuGetConsole
                                     { PowershellTelemetryConsts.ReOpenAtStart, reopenAtStart}
                                 };
 
-                _nugetSolutionTelemetry?.AddSolutionTelemetryEvent(telemetryEvent);
+                _nugeTelemetryCollector?.AddSolutionTelemetryEvent(telemetryEvent);
 
                 _isTelemetryEmitted = true;
             }
@@ -134,7 +134,7 @@ namespace NuGetConsole
                                     { PowershellTelemetryConsts.Name, PowershellTelemetryConsts.PackageManagerConsoleWindowsLoad},
                                     { PowershellTelemetryConsts.NuGetPMCWindowLoadCount, _windowLoadCount},
                                 };
-            _nugetSolutionTelemetry?.AddSolutionTelemetryEvent(telemetryEvent);
+            _nugeTelemetryCollector?.AddSolutionTelemetryEvent(telemetryEvent);
 
             _windowLoadCount = 0;
         }
