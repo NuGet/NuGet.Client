@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using EnvDTE;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,7 +34,7 @@ namespace NuGet.Tests.Apex
             VisualStudio.ClearOutputWindow();
 
             // Act
-            dte.ExecuteCommand("Project.ManageNuGetPackages");
+            OpenNuGetPackageManagerWithDte();
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.SwitchTabToBrowse();
@@ -56,7 +57,7 @@ namespace NuGet.Tests.Apex
             VisualStudio.ClearOutputWindow();
 
             // Act
-            dte.ExecuteCommand("Project.ManageNuGetPackages");
+            OpenNuGetPackageManagerWithDte();
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
@@ -78,12 +79,12 @@ namespace NuGet.Tests.Apex
             var nuProject = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "NuProject");
 
             // Act
-            dte.ExecuteCommand("Project.ManageNuGetPackages");
+            OpenNuGetPackageManagerWithDte();
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(nuProject);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
             VisualStudio.SelectProjectInSolutionExplorer(project.Name);
-            dte.ExecuteCommand("Project.ManageNuGetPackages");
+            OpenNuGetPackageManagerWithDte();
 
             VisualStudio.ClearOutputWindow();
             var uiwindow2 = nugetTestService.GetUIWindowfromProject(project);
@@ -94,7 +95,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, nuProject, "newtonsoft.json", "9.0.1", XunitLogger);
         }
 
-        [StaFact(Skip = "https://github.com/NuGet/Home/issues/10412")]
+        [StaFact]
         public void UninstallPackageFromUI()
         {
             // Arrange
@@ -104,8 +105,9 @@ namespace NuGet.Tests.Apex
 
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+
             FileInfo packagesConfigFile = GetPackagesConfigFile(project);
-            dte.ExecuteCommand("Project.ManageNuGetPackages");
+            OpenNuGetPackageManagerWithDte();
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
@@ -136,7 +138,7 @@ namespace NuGet.Tests.Apex
             VisualStudio.ClearWindows();
 
             // Act
-            dte.ExecuteCommand("Project.ManageNuGetPackages");
+            OpenNuGetPackageManagerWithDte();
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
@@ -147,6 +149,32 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "10.0.3", XunitLogger);
+        }
+
+        private void OpenNuGetPackageManagerWithDte()
+        {
+            VisualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
+            WaitForCommandAvailable("Project.ManageNuGetPackages", TimeSpan.FromMinutes(1));
+            VisualStudio.Dte.ExecuteCommand("Project.ManageNuGetPackages");
+        }
+
+        private void WaitForCommandAvailable(string commandName, TimeSpan timeout)
+        {
+            WaitForCommandAvailable(VisualStudio.Dte.Commands.Item(commandName), timeout);
+        }
+
+        private void WaitForCommandAvailable(Command cmd, TimeSpan timeout)
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            while (stopWatch.Elapsed < timeout)
+            {
+                if (cmd.IsAvailable)
+                {
+                    return;
+                }
+                System.Threading.Thread.Sleep(250);
+            }
         }
 
         private static FileInfo GetPackagesConfigFile(ProjectTestExtension project)
