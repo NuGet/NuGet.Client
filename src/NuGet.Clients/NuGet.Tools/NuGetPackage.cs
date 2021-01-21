@@ -28,6 +28,7 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
+using NuGet.VisualStudio.Telemetry.Powershell;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using ContractsNuGetServices = NuGet.VisualStudio.Contracts.NuGetServices;
@@ -139,6 +140,9 @@ namespace NuGetVSExtension
         [Import]
         private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
+        [Import]
+        private Lazy<NuGetPowerShellUsageCollector> NuGetPowerShellUsageCollector { get; set; }
+
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -179,6 +183,8 @@ namespace NuGetVSExtension
                 ThreadHelper.JoinableTaskFactory);
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
+
+            VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
         }
 
         /// <summary>
@@ -209,12 +215,17 @@ namespace NuGetVSExtension
                 SolutionManager.Value.NuGetProjectContext = ProjectContext.Value;
             }
 
+            NuGetPowerShellUsageCollector nuGetPowerShellUsageCollectorInstance = NuGetPowerShellUsageCollector.Value;
+
             // when NuGet loads, if the current solution has some package
             // folders marked for deletion (because a previous uninstalltion didn't succeed),
             // delete them now.
             if (await SolutionManager.Value.IsSolutionOpenAsync())
             {
                 await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
+
+                // Hook up solution events, check if PMC is used before without any solution.
+                NuGetPowerShellUsage.RaiseSolutionOpenEvent();
             }
 
             IVsTrackProjectRetargeting vsTrackProjectRetargeting = await this.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
@@ -1245,6 +1256,11 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
+        }
+
+        private void RegisterEmitVSInstancePowerShellTelemetry()
+        {
+            NuGetPowerShellUsage.RaiseVSInstanceCloseEvent();
         }
 
         #region IVsPersistSolutionOpts

@@ -751,12 +751,6 @@ namespace NuGetConsole.Implementation.Console
                 {
                     disposable.Dispose();
                 }
-
-                var host = Host as IDisposable;
-                if (host != null)
-                {
-                    host.Dispose();
-                }
             }
         }
 

@@ -52,7 +52,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<ISourceControlManagerProvider> _sourceControlManagerProvider;
         private readonly Lazy<ICommonOperations> _commonOperations;
-        private readonly Lazy<PowerShellHostTelemetryProcessor> _powerShellHostTelemetryProcessor;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
         private const string ActivePackageSourceKey = "activePackageSource";
@@ -116,7 +115,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
                 () => ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>());
             _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetInstanceSafe<ICommonOperations>());
-            _powerShellHostTelemetryProcessor = new Lazy<PowerShellHostTelemetryProcessor>(() => ServiceLocator.GetInstanceSafe<PowerShellHostTelemetryProcessor>());
             _name = name;
             IsCommandEnabled = true;
 
@@ -316,17 +314,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         UpdateWorkingDirectory();
 
                         // Emit first time Powershell load event to find out later how many VS instance crash after loading powershell.
-                        _powerShellHostTelemetryProcessor.Value.EmitPowerShellLoadedTelemetry(console is IWpfConsole);
-                        // Record if PowerShellHost initiated from PMC or PMUI
-                        _powerShellHostTelemetryProcessor.Value.RecordPSHostInitializeOrigin(console is IWpfConsole);
+                        NuGetPowerShellUsageCollector nuGetPowerShellUsageCollectorInstance = ServiceLocator.GetInstance<NuGetPowerShellUsageCollector>();
+                        Assumes.NotNull(nuGetPowerShellUsageCollectorInstance);
+
+                        NuGetPowerShellUsage.RaisePowerShellLoadEvent(console is IWpfConsole);
 
                         await ExecuteInitScriptsAsync();
-
-                        _solutionManager.Value.SolutionOpening += (o, e) =>
-                        {
-                            // Hook up solution events, check if PMC is used before without any solution.
-                            _powerShellHostTelemetryProcessor.Value.HandleSolutionOpenedEmit();
-                        };
 
                         // check if PMC console is actually opened, then only hook to solution load events.
                         if (console is IWpfConsole)
@@ -346,7 +339,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         _solutionManager.Value.SolutionClosing += (o, e) =>
                         {
                             // Hook up solution events, we emit telemetry data from current VS solution session.
-                            _powerShellHostTelemetryProcessor.Value.HandleSolutionClosingEmit();
+                            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
                         };
 
                         _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
@@ -495,7 +488,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     if (File.Exists(scriptPath))
                     {
                         // Record if init.ps1 is loaded.
-                        _powerShellHostTelemetryProcessor.Value.RecordInitPs1loaded(_activeConsole is IWpfConsole);
+                        NuGetPowerShellUsage.RaisInitPs1LoadEvent(_activeConsole is IWpfConsole);
 
                         if (_scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
                         {
@@ -555,10 +548,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
 
             // Increase command execution counters for PMC/PMUI
-            _powerShellHostTelemetryProcessor.Value.IncreaseCommandCounter(console is IWpfConsole);
-
-            // Check and add to telemetery if a command is NugetCommand like 'install-package' etc.
-            _powerShellHostTelemetryProcessor.Value.IsNuGetCommand(command);
+            NuGetPowerShellUsage.RaiseCommandExecuteEvent(console is IWpfConsole, command);
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
             // to run it once for each solution
@@ -943,11 +933,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
-
-            // Below emits telemetry in case there was no solution was loaded at all.
-            // But in case there were any solution then this one will ignored because actual data already emitted with solution SolutionClosing event previously.
-            // If no solution loaded nor PMC is engaged at then this will be ignored internally.  Rather than sending separate nugetvssolutionclose telemetry with no data just ignore then.
-            _powerShellHostTelemetryProcessor.Value.EmitPowershellUsageTelemetry(false);
         }
 
         #endregion
