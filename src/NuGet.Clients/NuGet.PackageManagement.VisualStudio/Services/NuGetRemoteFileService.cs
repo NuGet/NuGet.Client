@@ -35,24 +35,33 @@ namespace NuGet.PackageManagement.VisualStudio
                 { "physicalMemoryLimitPercentage", "0" },
                 { "pollingInterval", "00:02:00" }
             });
+
         private static readonly CacheItemPolicy CacheItemPolicy = new CacheItemPolicy
         {
             SlidingExpiration = ObjectCache.NoSlidingExpiration,
             AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
         };
 
-        public static void AddIconToCache(PackageIdentity packageIdentity, Uri uri)
+        public static void AddIconToCache(PackageIdentity packageIdentity, Uri iconUri)
         {
-            if (uri != null)
+            Assumes.NotNull(iconUri);
+            string key = "icon:" + packageIdentity.ToString();
+            if (!IdentityToUriCache.Add(key, iconUri, CacheItemPolicy))
             {
-                IdentityToUriCache.Add("icon:" + packageIdentity.ToString(), uri, CacheItemPolicy);
+                IdentityToUriCache.Remove(key);
+                IdentityToUriCache.Add(key, iconUri, CacheItemPolicy);
             }
         }
 
         public static void AddLicenseToCache(PackageIdentity packageIdentity, Uri embeddedLicenseUri)
         {
             Assumes.NotNull(embeddedLicenseUri);
-            IdentityToUriCache.Add("license:" + packageIdentity.ToString(), embeddedLicenseUri, CacheItemPolicy);
+            string key = "license:" + packageIdentity.ToString();
+            if (!IdentityToUriCache.Add(key, embeddedLicenseUri, CacheItemPolicy))
+            {
+                IdentityToUriCache.Remove(key);
+                IdentityToUriCache.Add(key, embeddedLicenseUri, CacheItemPolicy);
+            }
         }
 
         public NuGetRemoteFileService(
