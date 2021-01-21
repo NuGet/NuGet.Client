@@ -253,11 +253,13 @@ namespace NuGet.VisualStudio.Telemetry
         {
             bool pmcPowershellLoad = _vsSolutionData.LoadedFromPMC;
             bool pmuiPowershellLoad = _vsSolutionData.LoadedFromPMUI;
+            int pmcWindowLoadCount = _vsSolutionData.PMCWindowLoadCount;
 
             _vsSolutionData = new SolutionData();
 
             _vsSolutionData.LoadedFromPMC = pmcPowershellLoad;
             _vsSolutionData.LoadedFromPMUI = pmuiPowershellLoad;
+            _vsSolutionData.PMCWindowLoadCount = pmcWindowLoadCount;
         }
 
         public void Dispose()
