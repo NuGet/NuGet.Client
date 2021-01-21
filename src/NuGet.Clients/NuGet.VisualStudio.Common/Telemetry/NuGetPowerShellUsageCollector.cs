@@ -82,6 +82,7 @@ namespace NuGet.VisualStudio.Telemetry
                             { NuGetPowershellPrefix + LoadedFromPMC, isPMC }
                         });
 
+                    // Telemetry service is not ready then delay for while.
                     if (TelemetryActivity.NuGetTelemetryService == null)
                     {
                         _powerShellLoadEvent = telemetryEvent;
@@ -211,7 +212,12 @@ namespace NuGet.VisualStudio.Telemetry
         {
             lock (_lock)
             {
-                _vsSolutionData._nuGetPMCWindowLoadCount++;
+                if (isLoad)
+                {
+                    _vsSolutionData._nuGetPMCWindowLoadCount++;
+                }
+
+                // Shutdown call happen before Unload event for PMCWindow so VSInstanceClose event going to have current up to date status.
                 _vsInstanceData._reOpenAtStart = isLoad;
             }
         }
