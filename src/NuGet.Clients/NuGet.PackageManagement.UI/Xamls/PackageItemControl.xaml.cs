@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             var itemContainer = VisualTreeHelper.GetParent(parentBorder) as ListBoxItem;
-            if (itemContainer == null)
+            if (itemContainer is null)
             {
                 return;
             }
