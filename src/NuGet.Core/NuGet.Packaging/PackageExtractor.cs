@@ -398,8 +398,6 @@ namespace NuGet.Packaging
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                            logger.LogInformation(StringFormatter.Log_InstallingPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, source));
-
                             cancellationToken.ThrowIfCancellationRequested();
 
                             // We do not stop the package extraction after this point
@@ -551,7 +549,7 @@ namespace NuGet.Packaging
 
                             File.Move(tempNupkgMetadataPath, nupkgMetadataFilePath);
 
-                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version} from {source} with content hash {contentHash}");
+                            logger.LogVerbose(StringFormatter.Log_InstalledPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, source, contentHash));
 
                             packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;
@@ -638,8 +636,6 @@ namespace NuGet.Packaging
                         {
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
-
-                            logger.LogInformation(StringFormatter.Log_InstallingPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, packageDownloader.Source));
 
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -820,7 +816,7 @@ namespace NuGet.Packaging
 
                             File.Move(tempNupkgMetadataFilePath, nupkgMetadataFilePath);
 
-                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version} from {packageDownloader.Source} with content hash {contentHash}");
+                            logger.LogVerbose(StringFormatter.Log_InstalledPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, packageDownloader.Source, contentHash));
 
                             packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;

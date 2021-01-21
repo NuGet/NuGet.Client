@@ -7,16 +7,18 @@ namespace NuGet.Packaging
 {
     internal static class StringFormatter
     {
-        internal static string Log_InstallingPackage(
+        internal static string Log_InstalledPackage(
             string packageId,
             string packageVersion,
-            string source)
+            string source,
+            string contentHash)
         {
             return string.Format(CultureInfo.CurrentCulture,
-                Strings.Log_InstallingPackage,
+                Strings.Log_InstalledPackage,
                 packageId,
                 packageVersion,
-                source);
+                source,
+                contentHash);
         }
     }
 }

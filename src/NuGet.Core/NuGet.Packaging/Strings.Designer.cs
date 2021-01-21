@@ -745,11 +745,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing {0} {1} from {2}..
+        ///   Looks up a localized string similar to Installed {0} {1} from {2} with content hash {3}..
         /// </summary>
-        internal static string Log_InstallingPackage {
+        internal static string Log_InstalledPackage {
             get {
-                return ResourceManager.GetString("Log_InstallingPackage", resourceCulture);
+                return ResourceManager.GetString("Log_InstalledPackage", resourceCulture);
             }
         }
         
