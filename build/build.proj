@@ -336,6 +336,39 @@
 
   <!--
     ============================================================
+    Get projects need to be packed
+    ============================================================
+  -->
+  <Target Name="GetPackProjects">
+      <MsBuild
+        Projects="@(SolutionProjects)"
+        Targets="_IsProjectNeedsPack">
+          <Output
+              TaskParameter="TargetOutputs"
+              ItemName="PackProjects" />
+      </MsBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Ensure all the nupkg and symbol.nugkg files created
+    ============================================================
+  -->
+  <Target Name="EnsurePackagesExist" DependsOnTargets="GetPackProjects">
+      <ItemGroup>
+          <NupkgsFiles Include="$(NupkgOutputDirectory)\*.nupkg"
+                       Exclude="$(NupkgOutputDirectory)\*.symbols.nupkg" />
+          <SymbolFiles Include="$(NupkgOutputDirectory)\*.symbols.nupkg" />
+      </ItemGroup>
+
+      <Message Text="Count of Projects need to be packed: @(PackProjects->Count())        Nupkg Count: @(NupkgsFiles->Count())        Symbol Count: @(SymbolFiles->Count())" Importance="high" />
+
+      <Error Text="There are @(PackProjects->Count()) projects need to be packed, but only @(NupkgsFiles->Count()) nupkg files and  @(SymbolFiles->Count()) symbol nupkg files are created under '$(NupkgOutputDirectory)'."
+             Condition=" '@(PackProjects->Count())' != '@(NupkgsFiles->Count())' OR '@(PackProjects->Count())' != '@(SymbolFiles->Count())' " />
+  </Target>
+
+  <!--
+    ============================================================
     RunTestsOnProjects
     Finds all test assemblies and allows Xunit to run them as 
     efficiently as the xunit.runner.json settings allow.
