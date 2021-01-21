@@ -314,9 +314,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         UpdateWorkingDirectory();
 
                         // Emit first time Powershell load event to find out later how many VS instance crash after loading powershell.
-                        NuGetPowerShellUsageCollector nuGetPowerShellUsageCollectorInstance = ServiceLocator.GetInstance<NuGetPowerShellUsageCollector>();
-                        Assumes.NotNull(nuGetPowerShellUsageCollectorInstance);
-
                         NuGetPowerShellUsage.RaisePowerShellLoadEvent(console is IWpfConsole);
 
                         await ExecuteInitScriptsAsync();
@@ -541,8 +538,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException(nameof(command));
             }
 
-            // Increase command execution counters for PMC/PMUI
-            NuGetPowerShellUsage.RaiseCommandExecuteEvent(console is IWpfConsole, command);
+            // Record origin of powershell command
+            NuGetPowerShellUsage.RaiseCommandExecuteEvent(console is IWpfConsole);
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
             // to run it once for each solution

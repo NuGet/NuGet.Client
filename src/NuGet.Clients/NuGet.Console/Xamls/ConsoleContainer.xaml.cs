@@ -30,9 +30,6 @@ namespace NuGetConsole
         {
             InitializeComponent();
 
-            NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector = ServiceLocator.GetInstance<NuGetPowerShellUsageCollector>();
-            Assumes.NotNull(_nuGetPowerShellUsageCollector);
-
             Loaded += ConsoleContainer_Loaded;
             Unloaded += ConsoleContainer_UnLoaded;
 

@@ -186,8 +186,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
             });
 
-            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
-
             _vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
 
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
@@ -218,8 +216,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
 
             _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
-
-            NuGetPowerShellUsageCollector nuGetPowerShellUsageCollectorInstance = ServiceLocator.GetInstance<NuGetPowerShellUsageCollector>();
         }
 
         public async Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)

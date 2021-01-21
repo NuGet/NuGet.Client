@@ -17,8 +17,11 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
         public delegate void PowerShellLoadEventHandler(bool isPMC);
         public static event PowerShellLoadEventHandler PowerShellLoadEvent;
 
-        public delegate void PowerShellCommandExecuteEventHandler(bool isPMC, string commandStr);
+        public delegate void PowerShellCommandExecuteEventHandler(bool isPMC);
         public static event PowerShellCommandExecuteEventHandler PowerShellCommandExecuteEvent;
+
+        public delegate void NuGetCmdletExecutedEventHandler();
+        public static event NuGetCmdletExecutedEventHandler NuGetCmdletExecutedEvent;
 
         public delegate void InitPs1LoadEventHandler(bool isPMC);
         public static event InitPs1LoadEventHandler InitPs1LoadEvent;
@@ -31,9 +34,14 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
             PowerShellLoadEvent?.Invoke(isPMC);
         }
 
-        public static void RaiseCommandExecuteEvent(bool isPMC, string commandStr)
+        public static void RaiseCommandExecuteEvent(bool isPMC)
         {
-            PowerShellCommandExecuteEvent?.Invoke(isPMC, commandStr);
+            PowerShellCommandExecuteEvent?.Invoke(isPMC);
+        }
+
+        public static void RaiseNuGetCmdletExecutedEvent()
+        {
+            NuGetCmdletExecutedEvent?.Invoke();
         }
 
         public static void RaisInitPs1LoadEvent(bool isPMC)

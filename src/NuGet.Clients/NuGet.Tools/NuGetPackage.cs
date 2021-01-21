@@ -97,6 +97,7 @@ namespace NuGetVSExtension
         private uint _solutionExistsCookie;
         private bool _powerConsoleCommandExecuting;
         private bool _initialized;
+        private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
 
         public NuGetPackage()
         {
@@ -140,15 +141,15 @@ namespace NuGetVSExtension
         [Import]
         private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
-        [Import]
-        private Lazy<NuGetPowerShellUsageCollector> NuGetPowerShellUsageCollector { get; set; }
-
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
+            NuGet.Common.TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
+
             await base.InitializeAsync(cancellationToken, progress);
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
@@ -214,8 +215,6 @@ namespace NuGetVSExtension
             {
                 SolutionManager.Value.NuGetProjectContext = ProjectContext.Value;
             }
-
-            NuGetPowerShellUsageCollector nuGetPowerShellUsageCollectorInstance = NuGetPowerShellUsageCollector.Value;
 
             // when NuGet loads, if the current solution has some package
             // folders marked for deletion (because a previous uninstalltion didn't succeed),
