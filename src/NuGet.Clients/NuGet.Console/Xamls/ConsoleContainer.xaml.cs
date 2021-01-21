@@ -14,7 +14,6 @@ using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
-using NuGet.VisualStudio.Telemetry;
 using NuGet.VisualStudio.Telemetry.Powershell;
 
 namespace NuGetConsole

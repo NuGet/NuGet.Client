@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             stopWatch.Start();
             try
             {
-                // Recond NuGetCmdlet executed
+                // Record NuGetCmdlet executed
                 NuGetPowerShellUsage.RaiseNuGetCmdletExecutedEvent();
 
                 ProcessRecordCore();

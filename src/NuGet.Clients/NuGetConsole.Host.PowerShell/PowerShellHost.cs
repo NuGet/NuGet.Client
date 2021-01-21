@@ -318,7 +318,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         await ExecuteInitScriptsAsync();
 
-                        // check if PMC console is actually opened, then only hook to solution load events.
+                        // check if PMC console is actually opened, then only hook to solution load/close events.
                         if (console is IWpfConsole)
                         {
                             // Hook up solution events
@@ -332,7 +332,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                 NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
                             };
                         }
-
                         _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                         _solutionManager.Value.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                         _solutionManager.Value.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();

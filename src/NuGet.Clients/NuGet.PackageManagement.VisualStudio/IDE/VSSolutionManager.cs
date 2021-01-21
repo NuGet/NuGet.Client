@@ -26,7 +26,6 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
 using NuGet.VisualStudio.Telemetry.Powershell;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
@@ -529,6 +528,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private void OnBeforeClosing()
         {
             NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+
             SolutionClosing?.Invoke(this, EventArgs.Empty);
         }
 

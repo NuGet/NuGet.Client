@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Common;
 using NuGet.VisualStudio.Telemetry.Powershell;
 
@@ -23,16 +22,13 @@ namespace NuGet.VisualStudio.Telemetry
         public const string LoadedFromPMC = nameof(LoadedFromPMC);
         public const string FirstTimeLoadedFromPMC = nameof(FirstTimeLoadedFromPMC);
         public const string SolutionLoaded = nameof(SolutionLoaded);
-        public const string PowerShellExecuteCommand = nameof(PowerShellExecuteCommand);
         public const string NuGetPowerShellLoaded = nameof(NuGetPowerShellLoaded);
 
         // PMC UI Console Container telemetry consts
-        public const string PackageManagerConsoleWindowsLoad = nameof(PackageManagerConsoleWindowsLoad);
         public const string NuGetPMCWindowLoadCount = nameof(NuGetPMCWindowLoadCount);
         public const string ReOpenAtStart = nameof(ReOpenAtStart);
 
         // Const name for emitting when VS solution close or VS instance close.
-        public const string Name = nameof(Name);
         public const string NuGetPowershellPrefix = "NuGetPowershellPrefix."; // Using prefix prevent accidental same name property collission from different type telemetry.
         public const string NuGetVSSolutionClose = nameof(NuGetVSSolutionClose);
         public const string NuGetVSInstanceClose = nameof(NuGetVSInstanceClose);
@@ -156,10 +152,8 @@ namespace NuGet.VisualStudio.Telemetry
         {
             lock (_lock)
             {
-                // Test bit flag for if init.ps1 already loaded from PMC or PMUI
                 if (isPMC && (!vsSolutionData.FirstTimeLoadedFromPMC && !vsSolutionData.FirstTimeLoadedFromPMUI))
                 {
-                    // if not then set initialization origin bit
                     vsSolutionData.InitPs1LoadedFromPMCFirst = true;
                 }
 
@@ -217,7 +211,7 @@ namespace NuGet.VisualStudio.Telemetry
                 // Edge case: PMC used without solution load
                 if (!_vsSolutionData.SolutionLoaded && _vsSolutionData.PMCExecuteCommandCount > 0)
                 {
-                    // PMC used before any solution is loaded, let's emit what we have for nugetvsinstanceclose event aggregation before loading a solution.
+                    // PMC used before any solution is loaded, let's emit what we have for nugetvsinstanceclose event.
                     TelemetryActivity.EmitTelemetryEvent(_vsSolutionData.ToTelemetryEvent());
                 }
 
@@ -245,7 +239,7 @@ namespace NuGet.VisualStudio.Telemetry
                 // Edge case: PMC used without solution load
                 if (!_vsSolutionData.SolutionLoaded && _vsSolutionData.PMCExecuteCommandCount > 0)
                 {
-                    // PMC used before any solution is loaded, let's emit what we have for nugetvsinstanceclose event aggregation before loading a solution.
+                    // PMC used before any solution is loaded, let's emit what we have for nugetvsinstanceclose event.
                     TelemetryActivity.EmitTelemetryEvent(_vsSolutionData.ToTelemetryEvent());
                 }
 
