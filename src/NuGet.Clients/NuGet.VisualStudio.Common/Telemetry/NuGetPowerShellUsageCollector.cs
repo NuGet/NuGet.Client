@@ -202,23 +202,17 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        private void NuGetPowerShellUsage_PMCWindowsEventHandler(bool? reOpen)
+        private void NuGetPowerShellUsage_PMCWindowsEventHandler(bool isLoad)
         {
-            AddPMCWindowsEventData(reOpen);
+            AddPMCWindowsEventData(isLoad);
         }
 
-        internal void AddPMCWindowsEventData(bool? reOpen)
+        internal void AddPMCWindowsEventData(bool isLoad)
         {
             lock (_lock)
             {
-                if (reOpen.HasValue)
-                {
-                    _vsInstanceData._reOpenAtStart = reOpen.Value;
-                }
-                else
-                {
-                    _vsSolutionData._nuGetPMCWindowLoadCount++;
-                }
+                _vsSolutionData._nuGetPMCWindowLoadCount++;
+                _vsInstanceData._reOpenAtStart = isLoad;
             }
         }
 
@@ -317,6 +311,7 @@ namespace NuGet.VisualStudio.Telemetry
             NuGetPowerShellUsage.PowerShellLoadEvent -= NuGetPowerShellUsage_PMCLoadEventHandler;
             NuGetPowerShellUsage.PowerShellCommandExecuteEvent -= NuGetPowerShellUsage_PowerShellCommandExecuteEvent;
             NuGetPowerShellUsage.InitPs1LoadEvent -= NuGetPowerShellUsage_InitPs1LoadEvent;
+            NuGetPowerShellUsage.PMCWindowsEvent -= NuGetPowerShellUsage_PMCWindowsEventHandler;
             NuGetPowerShellUsage.SolutionOpenEvent -= NuGetPowerShellUsage_SolutionOpenHandler;
             NuGetPowerShellUsage.SolutionCloseEvent -= NuGetPowerShellUsage_SolutionCloseHandler;
             NuGetPowerShellUsage.VSInstanceCloseEvent -= NuGetPowerShellUsage_VSInstanseCloseHandler;
@@ -356,7 +351,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             internal TelemetryEvent ToTelemetryEvent()
             {
-                var telemetry = new TelemetryEvent(nameof(NuGetPowershellVSSolutionCloseEvent),
+                var telemetry = new TelemetryEvent(NuGetVSSolutionClose,
                 new Dictionary<string, object>()
                 {
                     { NuGetPowershellPrefix + FirstTimeLoadedFromPMC , _firstTimeLoadedFromPMC },
@@ -400,7 +395,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             internal TelemetryEvent ToTelemetryEvent()
             {
-                var telemetry = new TelemetryEvent(nameof(NuGetPowershellVSInstanceCloseEvent),
+                var telemetry = new TelemetryEvent(NuGetVSInstanceClose,
                 new Dictionary<string, object>()
                 {
                     { NuGetPowershellPrefix + NuGetPMCExecuteCommandCount , _nugetPMCExecuteCommandCount },

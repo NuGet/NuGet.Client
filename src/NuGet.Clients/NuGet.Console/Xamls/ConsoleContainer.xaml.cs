@@ -25,7 +25,6 @@ namespace NuGetConsole
     public sealed partial class ConsoleContainer : UserControl, IDisposable
     {
         private INuGetSolutionManagerService _solutionManager;
-        private bool _isTelemetryEmitted;
 
         public ConsoleContainer()
         {
@@ -35,6 +34,7 @@ namespace NuGetConsole
             Assumes.NotNull(_nuGetPowerShellUsageCollector);
 
             Loaded += ConsoleContainer_Loaded;
+            Unloaded += ConsoleContainer_UnLoaded;
 
             ThreadHelper.JoinableTaskFactory.StartOnIdle(
                 async () =>
@@ -84,16 +84,8 @@ namespace NuGetConsole
 
         public void Dispose()
         {
-            if (!_isTelemetryEmitted)
-            {
-                // Work around to detect if PMC loaded automatically because it was last focused window.
-                bool? reopenAtStart = IsLoaded;
-                NuGetPowerShellUsage.RaisePMCWindowsEvent(reopenAtStart);
-
-                _isTelemetryEmitted = true;
-            }
-
             Loaded -= ConsoleContainer_Loaded;
+            Unloaded -= ConsoleContainer_UnLoaded;
 
             // Use more verbose null-checking syntax to avoid ISB001 misfiring.
             if (_solutionManager != null)
@@ -106,7 +98,12 @@ namespace NuGetConsole
 
         void ConsoleContainer_Loaded(object sender, RoutedEventArgs e)
         {
-            NuGetPowerShellUsage.RaisePMCWindowsEvent(null);
+            NuGetPowerShellUsage.RaisePMCWindowsLoadEvent(true);
+        }
+
+        void ConsoleContainer_UnLoaded(object sender, RoutedEventArgs e)
+        {
+            NuGetPowerShellUsage.RaisePMCWindowsLoadEvent(false);
         }
     }
 }

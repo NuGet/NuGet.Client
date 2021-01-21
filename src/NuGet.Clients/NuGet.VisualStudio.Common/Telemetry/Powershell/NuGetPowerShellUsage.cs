@@ -23,7 +23,7 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
         public delegate void InitPs1LoadEventHandler(bool isPMC);
         public static event InitPs1LoadEventHandler InitPs1LoadEvent;
 
-        public delegate void PMCWindowEventHandler(bool? reOpen);
+        public delegate void PMCWindowEventHandler(bool isLoad);
         public static event PMCWindowEventHandler PMCWindowsEvent;
 
         public static void RaisePowerShellLoadEvent(bool isPMC)
@@ -41,9 +41,9 @@ namespace NuGet.VisualStudio.Telemetry.Powershell
             InitPs1LoadEvent?.Invoke(isPMC);
         }
 
-        public static void RaisePMCWindowsEvent(bool? reOpen)
+        public static void RaisePMCWindowsLoadEvent(bool isLoad)
         {
-            PMCWindowsEvent?.Invoke(reOpen);
+            PMCWindowsEvent?.Invoke(isLoad);
         }
 
         public static void RaiseSolutionOpenEvent()
