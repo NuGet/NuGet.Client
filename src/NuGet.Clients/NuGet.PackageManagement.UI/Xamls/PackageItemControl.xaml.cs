@@ -27,12 +27,24 @@ namespace NuGet.PackageManagement.UI
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var itemCheckBox = sender as CheckBox;
-            if (itemCheckBox == null || itemCheckBox.Visibility != Visibility.Visible)
+            if (itemCheckBox is null || itemCheckBox.Visibility != Visibility.Visible)
             {
                 return;
             }
 
-            ListBoxItem itemContainer = FindParent<ListBoxItem>(this);
+            var parentContentPresenter = VisualTreeHelper.GetParent(this) as ContentPresenter;
+            if (parentContentPresenter is null)
+            {
+                return;
+            }
+
+            var parentBorder = VisualTreeHelper.GetParent(parentContentPresenter) as Border;
+            if (parentBorder is null)
+            {
+                return;
+            }
+
+            var itemContainer = VisualTreeHelper.GetParent(parentBorder) as ListBoxItem;
             if (itemContainer == null)
             {
                 return;
@@ -47,27 +59,6 @@ namespace NuGet.PackageManagement.UI
                     TogglePatternIdentifiers.ToggleStateProperty,
                     isChecked ? ToggleState.Off : ToggleState.On, // Assume the state has actually toggled.
                     isChecked ? ToggleState.On : ToggleState.Off);
-            }
-        }
-
-        private static T FindParent<T>(DependencyObject child) where T : DependencyObject
-        {
-            DependencyObject parentDepedencyObject = VisualTreeHelper.GetParent(child);
-
-            if (parentDepedencyObject == null)
-            {
-                return null;
-            }
-
-            T parent = parentDepedencyObject as T;
-
-            if (parent != null)
-            {
-                return parent;
-            }
-            else // Keep looking up the visual tree.
-            {
-                return FindParent<T>(parentDepedencyObject);
             }
         }
     }
