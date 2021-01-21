@@ -98,7 +98,20 @@
 
   <!--
     ============================================================
-    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that 
+    _IsProjectNeedsPack
+    Verify if the project needs to be packed.
+    ============================================================
+  -->
+  <Target Name="_IsProjectNeedsPack" Returns="@(PackProjects)">
+    <ItemGroup Condition="'$(PackProject)' == 'true'">
+      <PackProjects Include="$(MSBuildProjectFullPath)">
+      </PackProjects>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that
     need to be indexed on the symbol server
     ============================================================
   -->
