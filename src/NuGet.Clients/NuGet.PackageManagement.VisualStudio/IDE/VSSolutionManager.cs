@@ -26,6 +26,8 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
+using NuGet.VisualStudio.Telemetry.Powershell;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -34,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ISolutionManager))]
     [Export(typeof(IVsSolutionManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
+    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IDisposable
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private static readonly string VSNuGetClientName = "NuGet VS VSIX";
@@ -165,6 +167,9 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger;
             _settings = settings;
             _initLock = new NuGetLockService(joinableTaskContext);
+
+            SolutionOpened += OnSolutionOpened;
+            SolutionClosing += OnSolutionClosing;
         }
 
         private async Task InitializeAsync()
@@ -216,6 +221,8 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
 
             _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
+
+            NuGetPowerShellUsageCollector nuGetPowerShellUsageCollectorInstance = await _asyncServiceProvider.GetServiceAsync<NuGetPowerShellUsageCollector>();
         }
 
         public async Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
@@ -1025,6 +1032,22 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectUpdated?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
 
             return nuGetProject;
+        }
+
+        private void OnSolutionOpened(object sender, EventArgs e)
+        {
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+        }
+
+        private void OnSolutionClosing(object sender, EventArgs e)
+        {
+            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+        }
+
+        public void Dispose()
+        {
+            SolutionOpened -= OnSolutionOpened;
+            SolutionClosing -= OnSolutionClosing;
         }
 
         #endregion

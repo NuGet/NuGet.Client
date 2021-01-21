@@ -336,12 +336,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             };
                         }
 
-                        _solutionManager.Value.SolutionClosing += (o, e) =>
-                        {
-                            // Hook up solution events, we emit telemetry data from current VS solution session.
-                            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
-                        };
-
                         _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                         _solutionManager.Value.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                         _solutionManager.Value.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();

@@ -235,13 +235,14 @@ namespace NuGet.VisualStudio.Telemetry
                 }
 
                 _solutionCount++;
+                _vsInstanceData._solutionCount = _solutionCount;
 
                 // Edge case: PMC used without solution load
                 if (!_vsSolutionData._solutionLoaded && _vsSolutionData._nuGetPMCExecuteCommandCount > 0)
                 {
                     // PMC used before any solution is loaded, let's emit what we have for nugetvsinstanceclose event aggregation before loading a solution.
                     TelemetryActivity.EmitTelemetryEvent(_vsSolutionData.ToTelemetryEvent());
-                    UpdateVSInstanceData();
+                    IncrementUpdateVSInstanceData();
                 }
 
                 ClearSolutionData();
@@ -255,7 +256,7 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 // Emit solution telemetry
                 TelemetryActivity.EmitTelemetryEvent(_vsSolutionData.ToTelemetryEvent());
-                UpdateVSInstanceData();
+                IncrementUpdateVSInstanceData();
                 ClearSolutionData();
             }
         }
@@ -275,7 +276,7 @@ namespace NuGet.VisualStudio.Telemetry
                 {
                     // PMC used before any solution is loaded, let's emit what we have for nugetvsinstanceclose event aggregation before loading a solution.
                     TelemetryActivity.EmitTelemetryEvent(_vsSolutionData.ToTelemetryEvent());
-                    UpdateVSInstanceData();
+                    IncrementUpdateVSInstanceData();
                 }
 
                 // Emit VS Instance telemetry
@@ -295,7 +296,7 @@ namespace NuGet.VisualStudio.Telemetry
             _vsSolutionData._loadedFromPMUI = pmuiPowershellLoad;
         }
 
-        private void UpdateVSInstanceData()
+        private void IncrementUpdateVSInstanceData()
         {
             _vsInstanceData._nugetPMCExecuteCommandCount += _vsSolutionData._nuGetPMCExecuteCommandCount;
             _vsInstanceData._nugetPMCWindowLoadCount += _vsSolutionData._nuGetPMCWindowLoadCount;
@@ -310,8 +311,6 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 _vsInstanceData._pmuiLoadedSolutionCount++;
             }
-
-            _vsInstanceData._solutionCount = _solutionCount;
         }
 
         public void Dispose()

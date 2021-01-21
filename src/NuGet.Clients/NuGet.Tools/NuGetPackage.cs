@@ -223,9 +223,6 @@ namespace NuGetVSExtension
             if (await SolutionManager.Value.IsSolutionOpenAsync())
             {
                 await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
-
-                // Hook up solution events, check if PMC is used before without any solution.
-                NuGetPowerShellUsage.RaiseSolutionOpenEvent();
             }
 
             IVsTrackProjectRetargeting vsTrackProjectRetargeting = await this.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
