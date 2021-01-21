@@ -195,10 +195,12 @@ namespace NuGet.VisualStudio.Telemetry
                 if (isPMC)
                 {
                     vsSolutionData._initPs1LoadPMC = true;
+                    vsSolutionData._loadedFromPMC = true;
                 }
                 else
                 {
                     vsSolutionData._initPs1LoadPMUI = true;
+                    vsSolutionData._loadedFromPMUI = true;
                 }
             }
         }
@@ -358,21 +360,21 @@ namespace NuGet.VisualStudio.Telemetry
             internal TelemetryEvent ToTelemetryEvent()
             {
                 var telemetry = new TelemetryEvent(NuGetVSSolutionClose,
-                new Dictionary<string, object>()
-                {
-                    { NuGetPowershellPrefix + FirstTimeLoadedFromPMC , _firstTimeLoadedFromPMC },
-                    { NuGetPowershellPrefix + FirstTimeLoadedFromPMUI , _firstTimeLoadedFromPMUI },
-                    { NuGetPowershellPrefix + InitPs1LoadedFromPMCFirst , _initPs1LoadedFromPMCFirst },
-                    { NuGetPowershellPrefix + InitPs1LoadPMC , _initPs1LoadPMC },
-                    { NuGetPowershellPrefix + InitPs1LoadPMUI , _initPs1LoadPMUI },
-                    { NuGetPowershellPrefix + LoadedFromPMC , _loadedFromPMC },
-                    { NuGetPowershellPrefix + LoadedFromPMUI , _loadedFromPMUI },
-                    { NuGetPowershellPrefix + NuGetCommandUsed , _nuGetCommandUsed },
-                    { NuGetPowershellPrefix + NuGetPMCExecuteCommandCount , _nuGetPMCExecuteCommandCount },
-                    { NuGetPowershellPrefix + NuGetPMCWindowLoadCount , _nuGetPMCWindowLoadCount },
-                    { NuGetPowershellPrefix + NuGetPMUIExecuteCommandCount , _nuGetPMUIExecuteCommandCount },
-                    { NuGetPowershellPrefix + SolutionLoaded , _solutionLoaded }
-                });
+                    new Dictionary<string, object>()
+                    {
+                        { NuGetPowershellPrefix + FirstTimeLoadedFromPMC , _firstTimeLoadedFromPMC },
+                        { NuGetPowershellPrefix + FirstTimeLoadedFromPMUI , _firstTimeLoadedFromPMUI },
+                        { NuGetPowershellPrefix + InitPs1LoadedFromPMCFirst , _initPs1LoadedFromPMCFirst },
+                        { NuGetPowershellPrefix + InitPs1LoadPMC , _initPs1LoadPMC },
+                        { NuGetPowershellPrefix + InitPs1LoadPMUI , _initPs1LoadPMUI },
+                        { NuGetPowershellPrefix + LoadedFromPMC , _loadedFromPMC },
+                        { NuGetPowershellPrefix + LoadedFromPMUI , _loadedFromPMUI },
+                        { NuGetPowershellPrefix + NuGetCommandUsed , _nuGetCommandUsed },
+                        { NuGetPowershellPrefix + NuGetPMCExecuteCommandCount , _nuGetPMCExecuteCommandCount },
+                        { NuGetPowershellPrefix + NuGetPMCWindowLoadCount , _nuGetPMCWindowLoadCount },
+                        { NuGetPowershellPrefix + NuGetPMUIExecuteCommandCount , _nuGetPMUIExecuteCommandCount },
+                        { NuGetPowershellPrefix + SolutionLoaded , _solutionLoaded }
+                    });
 
                 return telemetry;
             }
@@ -402,16 +404,16 @@ namespace NuGet.VisualStudio.Telemetry
             internal TelemetryEvent ToTelemetryEvent()
             {
                 var telemetry = new TelemetryEvent(NuGetVSInstanceClose,
-                new Dictionary<string, object>()
-                {
-                    { NuGetPowershellPrefix + NuGetPMCExecuteCommandCount , _nugetPMCExecuteCommandCount },
-                    { NuGetPowershellPrefix + NuGetPMCWindowLoadCount , _nugetPMCWindowLoadCount },
-                    { NuGetPowershellPrefix + NuGetPMUIExecuteCommandCount , _nugetPMUIExecuteCommandCount },
-                    { NuGetPowershellPrefix + PMCPowerShellLoadedSolutionCount , _pmcLoadedSolutionCount },
-                    { NuGetPowershellPrefix + PMUIPowerShellLoadedSolutionCount , _pmuiLoadedSolutionCount },
-                    { NuGetPowershellPrefix + ReOpenAtStart , _reOpenAtStart },
-                    { NuGetPowershellPrefix + SolutionCount , _solutionCount },
-                });
+                    new Dictionary<string, object>()
+                    {
+                        { NuGetPowershellPrefix + NuGetPMCExecuteCommandCount , _nugetPMCExecuteCommandCount },
+                        { NuGetPowershellPrefix + NuGetPMCWindowLoadCount , _nugetPMCWindowLoadCount },
+                        { NuGetPowershellPrefix + NuGetPMUIExecuteCommandCount , _nugetPMUIExecuteCommandCount },
+                        { NuGetPowershellPrefix + PMCPowerShellLoadedSolutionCount , _pmcLoadedSolutionCount },
+                        { NuGetPowershellPrefix + PMUIPowerShellLoadedSolutionCount , _pmuiLoadedSolutionCount },
+                        { NuGetPowershellPrefix + ReOpenAtStart , _reOpenAtStart },
+                        { NuGetPowershellPrefix + SolutionCount , _solutionCount },
+                    });
 
                 return telemetry;
             }
