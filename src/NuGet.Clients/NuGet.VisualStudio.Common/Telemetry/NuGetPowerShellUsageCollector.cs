@@ -228,14 +228,12 @@ namespace NuGet.VisualStudio.Telemetry
         {
             lock (_lock)
             {
+                // Emit previously not sent telemetry due to Telemetry service was not available yet.
                 if (_powerShellLoadEvent != null)
                 {
                     TelemetryActivity.EmitTelemetryEvent(_powerShellLoadEvent);
                     _powerShellLoadEvent = null;
                 }
-
-                _solutionCount++;
-                _vsInstanceData._solutionCount = _solutionCount;
 
                 // Edge case: PMC used without solution load
                 if (!_vsSolutionData._solutionLoaded && _vsSolutionData._nuGetPMCExecuteCommandCount > 0)
@@ -246,7 +244,6 @@ namespace NuGet.VisualStudio.Telemetry
                 }
 
                 ClearSolutionData();
-                _vsSolutionData._solutionLoaded = true;
             }
         }
 
@@ -254,6 +251,9 @@ namespace NuGet.VisualStudio.Telemetry
         {
             lock (_lock)
             {
+                _vsInstanceData._solutionCount = ++_solutionCount;
+                _vsSolutionData._solutionLoaded = true;
+
                 // Emit solution telemetry
                 TelemetryActivity.EmitTelemetryEvent(_vsSolutionData.ToTelemetryEvent());
                 IncrementUpdateVSInstanceData();

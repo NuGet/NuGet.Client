@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ISolutionManager))]
     [Export(typeof(IVsSolutionManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IDisposable
+    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private static readonly string VSNuGetClientName = "NuGet VS VSIX";
@@ -167,9 +167,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger;
             _settings = settings;
             _initLock = new NuGetLockService(joinableTaskContext);
-
-            SolutionOpened += OnSolutionOpened;
-            SolutionClosing += OnSolutionClosing;
         }
 
         private async Task InitializeAsync()
@@ -222,7 +219,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
 
-            NuGetPowerShellUsageCollector nuGetPowerShellUsageCollectorInstance = await _asyncServiceProvider.GetServiceAsync<NuGetPowerShellUsageCollector>();
+            NuGetPowerShellUsageCollector nuGetPowerShellUsageCollectorInstance = ServiceLocator.GetInstance<NuGetPowerShellUsageCollector>();
         }
 
         public async Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
@@ -506,6 +503,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SolutionOpening?.Invoke(this, EventArgs.Empty);
 
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
             if (!await IsSolutionOpenAsync())
@@ -533,6 +532,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnBeforeClosing()
         {
+            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
             SolutionClosing?.Invoke(this, EventArgs.Empty);
         }
 
@@ -1032,22 +1032,6 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectUpdated?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
 
             return nuGetProject;
-        }
-
-        private void OnSolutionOpened(object sender, EventArgs e)
-        {
-            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
-        }
-
-        private void OnSolutionClosing(object sender, EventArgs e)
-        {
-            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
-        }
-
-        public void Dispose()
-        {
-            SolutionOpened -= OnSolutionOpened;
-            SolutionClosing -= OnSolutionClosing;
         }
 
         #endregion
