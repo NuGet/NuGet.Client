@@ -159,6 +159,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             var memoryStream = new MemoryStream();
                             await parStream.CopyToAsync(memoryStream);
+                            memoryStream.Seek(0, SeekOrigin.Begin);
                             return memoryStream;
                         }
                     }
