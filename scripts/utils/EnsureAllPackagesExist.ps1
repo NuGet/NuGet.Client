@@ -2,11 +2,12 @@
 
 [CmdletBinding(SupportsShouldProcess=$True)]
 Param (
-    [string]$NupkgOutputPath
+    [string]$NupkgOutputPath,
+    [switch]$BuildRTM
 )
 
 # The list of projects need to be packed.
-$ProjectsShouldPack = @(
+[System.Collections.ArrayList]$PackageIDListShouldExist = @(
 "NuGet.CommandLine",
 "NuGet.Indexing",
 "NuGet.SolutionRestoreManager.Interop",
@@ -33,15 +34,21 @@ $ProjectsShouldPack = @(
 "NuGet.Resolver",
 "NuGet.Versioning")
 
+if (!$BuildRTM)
+{
+    $PackageIDListShouldExist.Add("Test.Utility")
+    $PackageIDListShouldExist.Add("NuGet.Localization")
+}
+
 $ErrorMessage = ""
 $MissingNupkgs = ""
 $MissingSymbols = ""
 $MissingNupkgCount = 0
 $MissingSymbolsCount = 0
 
-ForEach ($ProjectShouldPack in $ProjectsShouldPack)
+ForEach ($PackageIDShouldExist in $PackageIDListShouldExist)
 {
-    $ProjectShouldPack = $ProjectShouldPack.trim()
+    $PackageIDShouldExist = $PackageIDShouldExist.trim()
 
     $PackagesName = Get-ChildItem $NupkgOutputPath -Filter *.nupkg -Name
 
@@ -51,7 +58,7 @@ ForEach ($ProjectShouldPack in $ProjectsShouldPack)
 
     Foreach ($PackageName in $PackagesName)
     {
-        $FoundNupkg = ( ($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.nupkg") -and -not($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg") )
+        $FoundNupkg = ( ($PackageName -match "${PackageIDShouldExist}.[0-9][0-9a-zA-Z.-]*.nupkg") -and -not($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg") )
 
         if ($FoundNupkg)
         {
@@ -62,7 +69,7 @@ ForEach ($ProjectShouldPack in $ProjectsShouldPack)
 
     Foreach ($PackageName in $PackagesName)
     {
-        $FoundSymbols = $PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg"
+        $FoundSymbols = $PackageName -match "${PackageIDShouldExist}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg"
 
         if ($FoundSymbols)
         {
@@ -73,12 +80,12 @@ ForEach ($ProjectShouldPack in $ProjectsShouldPack)
 
     if (-not($FoundNupkg))
     {
-        $MissingNupkg = $MissingNupkg + "$ProjectShouldPack "
+        $MissingNupkg = $MissingNupkg + "$PackageIDShouldExist "
         $MissingNupkgCount = $MissingNupkgCount + 1
     }
      if (-not($FoundSymbols))
     {
-        $MissingSymbols = $MissingSymbols + "$ProjectShouldPack "
+        $MissingSymbols = $MissingSymbols + "$PackageIDShouldExist "
         $MissingSymbolsCount = $MissingSymbolsCount + 1
     }
 }
