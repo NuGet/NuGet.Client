@@ -32,6 +32,7 @@ namespace NuGet.Tests.Apex
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
 
             // Act
             OpenNuGetPackageManagerWithDte();
@@ -55,6 +56,7 @@ namespace NuGet.Tests.Apex
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
 
             // Act
             OpenNuGetPackageManagerWithDte();
@@ -77,6 +79,7 @@ namespace NuGet.Tests.Apex
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             var nuProject = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "NuProject");
+            solutionService.SaveAll();
 
             // Act
             OpenNuGetPackageManagerWithDte();
@@ -105,6 +108,7 @@ namespace NuGet.Tests.Apex
 
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+            solutionService.SaveAll();
 
             FileInfo packagesConfigFile = GetPackagesConfigFile(project);
             OpenNuGetPackageManagerWithDte();
@@ -136,6 +140,7 @@ namespace NuGet.Tests.Apex
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearWindows();
+            solutionService.SaveAll();
 
             // Act
             OpenNuGetPackageManagerWithDte();
