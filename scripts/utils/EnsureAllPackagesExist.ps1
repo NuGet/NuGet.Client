@@ -33,38 +33,68 @@ $ProjectsShouldPack = @(
 "NuGet.Resolver",
 "NuGet.Versioning")
 
-
 $ErrorMessage = ""
-$ErrorCount = 0
+$MissingNupkgs = ""
+$MissingSymbols = ""
+$MissingNupkgCount = 0
+$MissingSymbolsCount = 0
 
-ForEach ($ProjectShouldPack in $ProjectsShouldPack) {
-
+ForEach ($ProjectShouldPack in $ProjectsShouldPack)
+{
     $ProjectShouldPack = $ProjectShouldPack.trim()
 
     $PackagesName = Get-ChildItem $NupkgOutputPath -Filter *.nupkg -Name
 
     $FoundNupkg = $false
 
-    Foreach ($PackageName in $PackagesName) {
+    $FoundSymbols = $false
 
-        if ( ($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.nupkg") -and -not($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg") ) {
-            $FoundNupkg = $true
-            Write-Host "$ProjectShouldPack is packed as : $PackageName" -ForegroundColor Cyan
+    Foreach ($PackageName in $PackagesName)
+    {
+        $FoundNupkg = ( ($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.nupkg") -and -not($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg") )
+
+        if ($FoundNupkg)
+        {
+            Write-Host "$PackageName is found." -ForegroundColor Cyan
+            break
+        }
+    }
+
+    Foreach ($PackageName in $PackagesName)
+    {
+        $FoundSymbols = $PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg"
+
+        if ($FoundSymbols)
+        {
+            Write-Host "$PackageName is found." -ForegroundColor Cyan
             break
         }
     }
 
     if (-not($FoundNupkg))
     {
-        $ErrorMessage = $ErrorMessage + "$ProjectShouldPack "
-        $ErrorCount = $ErrorCount + 1
+        $MissingNupkg = $MissingNupkg + "$ProjectShouldPack "
+        $MissingNupkgCount = $MissingNupkgCount + 1
     }
-
+     if (-not($FoundSymbols))
+    {
+        $MissingSymbols = $MissingSymbols + "$ProjectShouldPack "
+        $MissingSymbolsCount = $MissingSymbolsCount + 1
+    }
 }
 
-If ($ErrorCount -ne 0)
+if (($MissingNupkgCount -ne 0) -OR ($MissingSymbolsCount -ne 0))
 {
-    $ErrorMessage = "The following project(s) are not packed in $NupkgOutputPath : " + $ErrorMessage
+    $ErrorMessage = "$MissingNupkgCount nupkgs and $MissingSymbolsCount symbols are missing in $NupkgOutputPath `n"
+    if ($MissingNupkgCount -ne 0)
+    {
+        $ErrorMessage = $ErrorMessage + "Projects missing nupkgs: $MissingNupkg `n"
+    }
+    if ($MissingSymbolsCount -ne 0)
+    {
+        $ErrorMessage = $ErrorMessage + "Projects missing Symbols: $MissingSymbols `n"
+    }
+
     Write-Error "[FATAL] $ErrorMessage"
     Exit 1
 }
