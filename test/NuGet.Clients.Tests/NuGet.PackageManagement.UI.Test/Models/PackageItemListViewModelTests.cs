@@ -82,11 +82,14 @@ namespace NuGet.PackageManagement.UI.Test
                 RemoteFileService = _remoteFileService,
             };
 
+            var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, packageItemListViewModel.Version);
+            NuGetRemoteFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
+
             // initial result should be fetching and defaultpackageicon
             BitmapSource initialResult = packageItemListViewModel.IconBitmap;
             Assert.Same(initialResult, Images.DefaultPackageIcon);
 
-            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel, addIconToCache: false);
             VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
             Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemListViewModel.BitmapStatus);
         }
@@ -345,10 +348,13 @@ namespace NuGet.PackageManagement.UI.Test
         /// <summary>
         /// Tests the final bitmap returned by the view model, by waiting for the BitmapStatus to be "complete".
         /// </summary>
-        private static async Task<BitmapSource> GetFinalIconBitmapAsync(PackageItemListViewModel packageItemListViewModel)
+        private static async Task<BitmapSource> GetFinalIconBitmapAsync(PackageItemListViewModel packageItemListViewModel, bool addIconToCache = true)
         {
-            var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, packageItemListViewModel.Version);
-            NuGetRemoteFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
+            if (addIconToCache)
+            {
+                var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, packageItemListViewModel.Version);
+                NuGetRemoteFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
+            }
 
             BitmapSource result = packageItemListViewModel.IconBitmap;
             int millisecondsToWait = 3000;
