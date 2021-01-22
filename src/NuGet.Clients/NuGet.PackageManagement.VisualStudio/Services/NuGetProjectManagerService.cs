@@ -601,7 +601,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 implicitActions = new List<ImplicitProjectAction>();
 
-                foreach (NuGetProjectAction? buildAction in buildIntegratedAction.GetProjectActions())
+                foreach (NuGetProjectAction buildAction in buildIntegratedAction.GetProjectActions())
                 {
                     var implicitAction = new ImplicitProjectAction(
                         CreateProjectActionId(),
