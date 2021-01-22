@@ -595,7 +595,7 @@ namespace NuGet.PackageManagement
                     {
                         var resource = await depResources[source];
 
-                        if (source != null && !_primaryResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                        if (!_primaryResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
                         {
                             _primaryResources.Add(new SourceResource(source, resource));
                         }
@@ -612,7 +612,7 @@ namespace NuGet.PackageManagement
                         //var resource = await depResources[source];
                         var resource = depResources[source];
 
-                        if (source != null && !_allResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                        if (!_allResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
                         {
                             currentSource = source.PackageSource.Source;
                             _allResources.Add(new SourceResource(source, resource.Result));
