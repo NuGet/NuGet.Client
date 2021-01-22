@@ -44,7 +44,7 @@ namespace NuGet.VisualStudio.Telemetry.PowerShell
             NuGetCmdletExecutedEvent?.Invoke();
         }
 
-        public static void RaisInitPs1LoadEvent(bool isPMC)
+        public static void RaiseInitPs1LoadEvent(bool isPMC)
         {
             InitPs1LoadEvent?.Invoke(isPMC);
         }

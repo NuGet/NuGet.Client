@@ -39,6 +39,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private static readonly string AggregateSourceName = Resources.AggregateSourceName;
         private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
         private static readonly int MaxTasks = 16;
+        private static bool PowerShellLoaded = false;
 
         private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
         private IVsMonitorSelection VsMonitorSelection => ThreadHelper.JoinableTaskFactory.Run(_vsMonitorSelection.GetValueAsync);
@@ -313,7 +314,17 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         UpdateWorkingDirectory();
 
-                        // Emit first time Powershell load event to find out later how many VS instance crash after loading powershell.
+                        if (!PowerShellLoaded)
+                        {
+                            var telemetryEvent = new TelemetryEvent("PowerShellLoaded", new Dictionary<string, object>
+                            {
+                                { "Trigger", console is IWpfConsole ? "PMC" : "PMUI" }
+                            });
+
+                            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+                            PowerShellLoaded = true;
+                        }
+
                         NuGetPowerShellUsage.RaisePowerShellLoadEvent(isPMC: console is IWpfConsole);
 
                         await ExecuteInitScriptsAsync();
@@ -477,8 +488,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
                     if (File.Exists(scriptPath))
                     {
-                        // Record if init.ps1 is loaded.
-                        NuGetPowerShellUsage.RaisInitPs1LoadEvent(isPMC: _activeConsole is IWpfConsole);
+                        NuGetPowerShellUsage.RaiseInitPs1LoadEvent(isPMC: _activeConsole is IWpfConsole);
 
                         if (_scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
                         {
@@ -537,7 +547,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException(nameof(command));
             }
 
-            // Record origin of powershell command
             NuGetPowerShellUsage.RaiseCommandExecuteEvent(isPMC: console is IWpfConsole);
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
