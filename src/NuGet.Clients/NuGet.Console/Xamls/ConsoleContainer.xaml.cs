@@ -14,7 +14,7 @@ using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
-using NuGet.VisualStudio.Telemetry.Powershell;
+using NuGet.VisualStudio.Telemetry.PowerShell;
 
 namespace NuGetConsole
 {
@@ -94,12 +94,12 @@ namespace NuGetConsole
 
         void ConsoleContainer_Loaded(object sender, RoutedEventArgs e)
         {
-            NuGetPowerShellUsage.RaisePMCWindowsLoadEvent(true);
+            NuGetPowerShellUsage.RaisePMCWindowsLoadEvent(isLoad: true);
         }
 
         void ConsoleContainer_UnLoaded(object sender, RoutedEventArgs e)
         {
-            NuGetPowerShellUsage.RaisePMCWindowsLoadEvent(false);
+            NuGetPowerShellUsage.RaisePMCWindowsLoadEvent(isLoad: false);
         }
     }
 }

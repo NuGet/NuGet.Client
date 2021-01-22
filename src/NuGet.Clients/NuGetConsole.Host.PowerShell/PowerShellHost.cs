@@ -29,7 +29,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using NuGet.VisualStudio.Telemetry.Powershell;
+using NuGet.VisualStudio.Telemetry.PowerShell;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -314,7 +314,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         UpdateWorkingDirectory();
 
                         // Emit first time Powershell load event to find out later how many VS instance crash after loading powershell.
-                        NuGetPowerShellUsage.RaisePowerShellLoadEvent(console is IWpfConsole);
+                        NuGetPowerShellUsage.RaisePowerShellLoadEvent(isPMC: console is IWpfConsole);
 
                         await ExecuteInitScriptsAsync();
 
@@ -478,7 +478,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     if (File.Exists(scriptPath))
                     {
                         // Record if init.ps1 is loaded.
-                        NuGetPowerShellUsage.RaisInitPs1LoadEvent(_activeConsole is IWpfConsole);
+                        NuGetPowerShellUsage.RaisInitPs1LoadEvent(isPMC: _activeConsole is IWpfConsole);
 
                         if (_scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
                         {
@@ -538,7 +538,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
 
             // Record origin of powershell command
-            NuGetPowerShellUsage.RaiseCommandExecuteEvent(console is IWpfConsole);
+            NuGetPowerShellUsage.RaiseCommandExecuteEvent(isPMC: console is IWpfConsole);
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
             // to run it once for each solution
