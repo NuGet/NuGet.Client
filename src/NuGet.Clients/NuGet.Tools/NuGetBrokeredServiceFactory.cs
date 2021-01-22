@@ -189,11 +189,14 @@ namespace NuGetVSExtension
         {
             await _lazyInitializer.InitializeAsync(cancellationToken);
 
+            INuGetTelemetryProvider telemetryProvider = await _lazyTelemetryProvider.GetValueAsync(cancellationToken);
+
 #pragma warning disable CA2000 // Dispose objects before losing scope
             var service = new NuGetRemoteFileService(
                 options,
                 serviceBroker,
-                authorizationServiceClient);
+                authorizationServiceClient,
+                telemetryProvider);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             return service;

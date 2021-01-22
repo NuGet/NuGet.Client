@@ -19,6 +19,7 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using Test.Utility.Threading;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,6 +34,7 @@ namespace NuGet.PackageManagement.UI.Test
         private readonly ITestOutputHelper _output;
         private readonly INuGetRemoteFileService _remoteFileService;
         private Mock<IServiceBroker> _serviceBroker = new Mock<IServiceBroker>();
+        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
 
         public PackageItemListViewModelTests(
             GlobalServiceProvider globalServiceProvider,
@@ -48,9 +50,9 @@ namespace NuGet.PackageManagement.UI.Test
                 It.IsAny<ServiceActivationOptions>(),
                 It.IsAny<CancellationToken>()))
 #pragma warning restore ISB001 // Dispose of proxies
-            .Returns(new ValueTask<INuGetRemoteFileService>(new NuGetRemoteFileService(_serviceBroker.Object)));
+            .Returns(new ValueTask<INuGetRemoteFileService>(new NuGetRemoteFileService(_serviceBroker.Object, _telemetryProvider.Object)));
 
-            _remoteFileService = new NuGetRemoteFileService(_serviceBroker.Object);
+            _remoteFileService = new NuGetRemoteFileService(_serviceBroker.Object, _telemetryProvider.Object);
 
             _testData = testData;
             _testInstance = new PackageItemListViewModel()

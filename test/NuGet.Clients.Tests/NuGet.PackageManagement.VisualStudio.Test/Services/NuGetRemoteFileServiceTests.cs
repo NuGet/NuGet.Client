@@ -4,13 +4,16 @@
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Moq;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -19,6 +22,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
     public class NuGetRemoteFileServiceTests
     {
+        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Default);
+
         [Fact]
         public void Constructor_WhenServiceBrokerIsNull_Throws()
         {
@@ -26,7 +31,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 () => new NuGetRemoteFileService(
                     default(ServiceActivationOptions),
                     serviceBroker: null,
-                    new AuthorizationServiceClient(Mock.Of<IAuthorizationService>())));
+                    new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                    _telemetryProvider.Object));
 
             ExceptionUtility.AssertMicrosoftAssumesException(exception);
         }
@@ -38,7 +44,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 () => new NuGetRemoteFileService(
                     default(ServiceActivationOptions),
                     Mock.Of<IServiceBroker>(),
-                    authorizationServiceClient: null));
+                    authorizationServiceClient: null,
+                    _telemetryProvider.Object));
 
             ExceptionUtility.AssertMicrosoftAssumesException(exception);
         }
@@ -54,7 +61,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var remoteFileService = new NuGetRemoteFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
-                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()));
+                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                        _telemetryProvider.Object);
                 var packageIdentity = new PackageIdentity("AddIconToCache_WhenAdded_IsFound", NuGetVersion.Parse("1.0.0"));
                 NuGetRemoteFileService.AddIconToCache(packageIdentity, new Uri(filePath));
 
@@ -81,7 +89,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var remoteFileService = new NuGetRemoteFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
-                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()));
+                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                        _telemetryProvider.Object);
                 var packageIdentity = new PackageIdentity("AddIconToCache_WhenAddedTwice_UsesSecond", NuGetVersion.Parse("1.0.0"));
                 NuGetRemoteFileService.AddIconToCache(packageIdentity, new Uri(filePath));
                 NuGetRemoteFileService.AddIconToCache(packageIdentity, new Uri(filePath2));
@@ -99,7 +108,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var remoteFileService = new NuGetRemoteFileService(
                     default(ServiceActivationOptions),
                     Mock.Of<IServiceBroker>(),
-                    new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()));
+                    new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                    _telemetryProvider.Object);
             var packageIdentity = new PackageIdentity("AddIconToCache_WhenMissing_IsNotFound", NuGetVersion.Parse("1.0.0"));
             Stream iconStream = await remoteFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
 
@@ -134,7 +144,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var remoteFileService = new NuGetRemoteFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
-                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()));
+                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                        _telemetryProvider.Object);
                 var packageIdentity = new PackageIdentity("AddLicenseToCache_WhenAdded_IsFound", NuGetVersion.Parse("1.0.0"));
                 NuGetRemoteFileService.AddLicenseToCache(packageIdentity, builder.Uri);
 
@@ -173,7 +184,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var remoteFileService = new NuGetRemoteFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
-                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()));
+                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                        _telemetryProvider.Object);
                 var packageIdentity = new PackageIdentity("AddLicenseToCache_WhenAdded_IsFound", NuGetVersion.Parse("1.0.0"));
                 NuGetRemoteFileService.AddLicenseToCache(packageIdentity, new Uri(builder.Uri.ToString() + "more"));
                 NuGetRemoteFileService.AddLicenseToCache(packageIdentity, builder.Uri);
@@ -191,7 +203,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var remoteFileService = new NuGetRemoteFileService(
                     default(ServiceActivationOptions),
                     Mock.Of<IServiceBroker>(),
-                    new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()));
+                    new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                    _telemetryProvider.Object);
             var packageIdentity = new PackageIdentity("AddLicenseToCache_WhenMissing_IsNotFound", NuGetVersion.Parse("1.0.0"));
             Stream licenseStream = await remoteFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
 

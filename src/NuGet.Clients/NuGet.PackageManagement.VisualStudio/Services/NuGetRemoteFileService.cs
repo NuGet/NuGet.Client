@@ -15,9 +15,11 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -26,6 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private ServiceActivationOptions? _options;
         private IServiceBroker _serviceBroker;
         private AuthorizationServiceClient? _authorizationServiceClient;
+        private INuGetTelemetryProvider _nuGetTelemetryProvider;
         private bool _disposedValue;
 
         internal readonly static MemoryCache IdentityToUriCache = new MemoryCache("PackageSearchMetadata",
@@ -44,9 +47,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static void AddIconToCache(PackageIdentity packageIdentity, Uri iconUri)
         {
-            Assumes.NotNull(iconUri);
             string key = "icon:" + packageIdentity.ToString();
-            if (!IdentityToUriCache.Add(key, iconUri, CacheItemPolicy))
+            if (iconUri != null && !IdentityToUriCache.Add(key, iconUri, CacheItemPolicy))
             {
                 IdentityToUriCache.Remove(key);
                 IdentityToUriCache.Add(key, iconUri, CacheItemPolicy);
@@ -67,20 +69,25 @@ namespace NuGet.PackageManagement.VisualStudio
         public NuGetRemoteFileService(
             ServiceActivationOptions options,
             IServiceBroker serviceBroker,
-            AuthorizationServiceClient authorizationServiceClient)
+            AuthorizationServiceClient authorizationServiceClient,
+            INuGetTelemetryProvider nuGetTelemetryProvider)
         {
             _options = options;
             _serviceBroker = serviceBroker;
             _authorizationServiceClient = authorizationServiceClient;
-
+            _nuGetTelemetryProvider = nuGetTelemetryProvider;
             Assumes.NotNull(_serviceBroker);
             Assumes.NotNull(_authorizationServiceClient);
+            Assumes.NotNull(_nuGetTelemetryProvider);
         }
 
-        public NuGetRemoteFileService(IServiceBroker serviceBroker)
+        public NuGetRemoteFileService(IServiceBroker serviceBroker, INuGetTelemetryProvider nuGetTelemetryProvider)
         {
             _serviceBroker = serviceBroker;
             Assumes.NotNull(_serviceBroker);
+
+            _nuGetTelemetryProvider = nuGetTelemetryProvider;
+            Assumes.NotNull(_nuGetTelemetryProvider);
         }
 
         public async ValueTask<Stream?> GetPackageIconAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
@@ -91,6 +98,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (uri == null)
             {
+                var exception = new CacheMissException();
+                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetRemoteFileService).FullName, nameof(GetEmbeddedFileAsync));
                 return null;
             }
 
@@ -114,6 +123,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Uri? uri = IdentityToUriCache.Get(key) as Uri;
             if (uri == null)
             {
+                var exception = new CacheMissException();
+                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetRemoteFileService).FullName, nameof(GetEmbeddedLicenseAsync));
                 return null;
             }
 
