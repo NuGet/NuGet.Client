@@ -301,6 +301,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     try
                     {
+                        bool _isPmc = console is IWpfConsole;
                         var result = _runspaceManager.GetRunspace(console, _name);
                         Runspace = result.Item1;
                         _nugetHost = result.Item2;
@@ -316,21 +317,21 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         if (!PowerShellLoaded)
                         {
-                            var telemetryEvent = new TelemetryEvent("PowerShellLoaded", new Dictionary<string, object>
+                            var telemetryEvent = new TelemetryEvent(NuGetPowerShellUsageCollector.PowerShellLoaded, new Dictionary<string, object>
                             {
-                                { "Trigger", console is IWpfConsole ? "PMC" : "PMUI" }
+                                { NuGetPowerShellUsageCollector.Trigger, _isPmc ? NuGetPowerShellUsageCollector.Pmc : NuGetPowerShellUsageCollector.Pmui }
                             });
 
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                             PowerShellLoaded = true;
                         }
 
-                        NuGetPowerShellUsage.RaisePowerShellLoadEvent(isPMC: console is IWpfConsole);
+                        NuGetPowerShellUsage.RaisePowerShellLoadEvent(isPMC: _isPmc);
 
                         await ExecuteInitScriptsAsync();
 
                         // check if PMC console is actually opened, then only hook to solution load/close events.
-                        if (console is IWpfConsole)
+                        if (_isPmc)
                         {
                             // Hook up solution events
                             _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
