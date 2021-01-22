@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.VisualStudio
             cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
-            if(metadataResource == null)
+            if (metadataResource == null)
             {
                 return null;
             }
