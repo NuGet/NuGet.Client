@@ -99,7 +99,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (uri == null)
             {
                 var exception = new CacheMissException();
-                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetRemoteFileService).FullName, nameof(GetEmbeddedFileAsync));
+                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetPackageIconAsync));
                 return null;
             }
 
@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (uri == null)
             {
                 var exception = new CacheMissException();
-                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetRemoteFileService).FullName, nameof(GetEmbeddedLicenseAsync));
+                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetEmbeddedLicenseAsync));
                 return null;
             }
 

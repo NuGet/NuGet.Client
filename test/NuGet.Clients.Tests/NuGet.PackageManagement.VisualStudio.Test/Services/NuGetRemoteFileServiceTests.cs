@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
     public class NuGetRemoteFileServiceTests
     {
-        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Default);
+        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
 
         [Fact]
         public void Constructor_WhenServiceBrokerIsNull_Throws()
@@ -105,6 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async void AddIconToCache_WhenMissing_IsNotFound()
         {
+            _telemetryProvider.Setup(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetPackageIconAsync), It.IsAny<IDictionary<string, object>>())).Returns(Task.CompletedTask);
             var remoteFileService = new NuGetRemoteFileService(
                     default(ServiceActivationOptions),
                     Mock.Of<IServiceBroker>(),
@@ -113,6 +115,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var packageIdentity = new PackageIdentity("AddIconToCache_WhenMissing_IsNotFound", NuGetVersion.Parse("1.0.0"));
             Stream iconStream = await remoteFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
 
+            _telemetryProvider.Verify(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetPackageIconAsync), It.IsAny<IDictionary<string, object>>()));
+            _telemetryProvider.VerifyNoOtherCalls();
             Assert.Null(iconStream);
         }
 
@@ -200,6 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async void AddLicenseToCache_WhenMissing_IsNotFound()
         {
+            _telemetryProvider.Setup(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetEmbeddedLicenseAsync), It.IsAny<IDictionary<string, object>>())).Returns(Task.CompletedTask);
             var remoteFileService = new NuGetRemoteFileService(
                     default(ServiceActivationOptions),
                     Mock.Of<IServiceBroker>(),
@@ -208,6 +213,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var packageIdentity = new PackageIdentity("AddLicenseToCache_WhenMissing_IsNotFound", NuGetVersion.Parse("1.0.0"));
             Stream licenseStream = await remoteFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
 
+            _telemetryProvider.Verify(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetEmbeddedLicenseAsync), It.IsAny<IDictionary<string, object>>()));
+            _telemetryProvider.VerifyNoOtherCalls();
             Assert.Null(licenseStream);
         }
 
