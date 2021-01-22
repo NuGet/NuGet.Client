@@ -178,10 +178,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
             }
 
-            var completed = (await Task.WhenAll(tasks))
+            IEnumerable<IPackageSearchMetadata> completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
-            var master = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
+            IPackageSearchMetadata master = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
                 ?? completed.FirstOrDefault()
                 ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 

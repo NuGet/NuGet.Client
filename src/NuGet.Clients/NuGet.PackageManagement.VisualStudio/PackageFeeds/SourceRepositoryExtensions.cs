@@ -95,12 +95,17 @@ namespace NuGet.PackageManagement.VisualStudio
             cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
+            if (metadataResource == null)
+            {
+                return null;
+            }
+
             using (var sourceCacheContext = new SourceCacheContext())
             {
                 // Update http source cache context MaxAge so that it can always go online to fetch latest version of packages.
                 sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
 
-                return await metadataResource?.GetMetadataAsync(identity, sourceCacheContext, Common.NullLogger.Instance, cancellationToken);
+                return await metadataResource.GetMetadataAsync(identity, sourceCacheContext, Common.NullLogger.Instance, cancellationToken);
             }
         }
 
@@ -113,13 +118,18 @@ namespace NuGet.PackageManagement.VisualStudio
             cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
+            if(metadataResource == null)
+            {
+                return null;
+            }
+
             using (var sourceCacheContext = new SourceCacheContext())
             {
                 // Update http source cache context MaxAge so that it can always go online to fetch
                 // latest version of packages.
                 sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
 
-                var packages = await metadataResource?.GetMetadataAsync(
+                var packages = await metadataResource.GetMetadataAsync(
                     identity.Id,
                     includePrerelease: true,
                     includeUnlisted: false,
