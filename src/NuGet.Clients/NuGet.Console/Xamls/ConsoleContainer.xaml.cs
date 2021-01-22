@@ -94,12 +94,12 @@ namespace NuGetConsole
 
         void ConsoleContainer_Loaded(object sender, RoutedEventArgs e)
         {
-            NuGetPowerShellUsage.RaisePMCWindowsLoadEvent(isLoad: true);
+            NuGetPowerShellUsage.RaisePmcWindowsLoadEvent(isLoad: true);
         }
 
         void ConsoleContainer_UnLoaded(object sender, RoutedEventArgs e)
         {
-            NuGetPowerShellUsage.RaisePMCWindowsLoadEvent(isLoad: false);
+            NuGetPowerShellUsage.RaisePmcWindowsLoadEvent(isLoad: false);
         }
     }
 }
