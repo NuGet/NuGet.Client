@@ -180,6 +180,8 @@ namespace NuGet.Tests.Apex
                 }
                 System.Threading.Thread.Sleep(250);
             }
+
+            XunitLogger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
         }
 
         private static FileInfo GetPackagesConfigFile(ProjectTestExtension project)

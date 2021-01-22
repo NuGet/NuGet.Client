@@ -34,9 +34,8 @@ namespace NuGet.Tests.Apex
         public bool InstallPackageFromUI(string packageId, string version)
         {
             Stopwatch sw = Stopwatch.StartNew();
-            var result = _uiproject.WaitForActionComplete(() => _uiproject.InstallPackage(packageId, version), _timeout);
+            bool result = _uiproject.WaitForActionComplete(() => _uiproject.InstallPackage(packageId, version), _timeout);
             sw.Stop();
-
 
             _logger.WriteMessage($"{nameof(InstallPackageFromUI)} took {sw.ElapsedMilliseconds}ms to complete");
             return result;
