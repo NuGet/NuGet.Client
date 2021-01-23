@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Microsoft.Test.Apex.Services;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.TestContract;
 using NuGet.Packaging.Core;
@@ -13,13 +15,15 @@ namespace NuGet.Tests.Apex
     public class NuGetUIProjectTestExtension : NuGetBaseTestExtension<object, NuGetUIProjectTestExtensionVerifier>
     {
         private ApexTestUIProject _uiproject;
-        private TimeSpan _timeout = TimeSpan.FromSeconds(5);
+        private TimeSpan _timeout = TimeSpan.FromMinutes(1);
+        private ITestLogger _logger;
 
         public bool IsSolution { get => _uiproject.IsSolution; }
 
-        public NuGetUIProjectTestExtension(ApexTestUIProject project)
+        public NuGetUIProjectTestExtension(ApexTestUIProject project, ITestLogger logger)
         {
             _uiproject = project;
+            _logger = logger;
         }
 
         public bool SeachPackgeFromUI(string searchText)
@@ -29,20 +33,34 @@ namespace NuGet.Tests.Apex
 
         public bool InstallPackageFromUI(string packageId, string version)
         {
-            return _uiproject.WaitForActionComplete(() => _uiproject.InstallPackage(packageId, version), _timeout);
+            Stopwatch sw = Stopwatch.StartNew();
+            bool result = _uiproject.WaitForActionComplete(() => _uiproject.InstallPackage(packageId, version), _timeout);
+            sw.Stop();
+
+            _logger.WriteMessage($"{nameof(InstallPackageFromUI)} took {sw.ElapsedMilliseconds}ms to complete");
+            return result;
         }
 
         public bool UninstallPackageFromUI(string packageId)
         {
-            return _uiproject.WaitForActionComplete(() => _uiproject.UninstallPackage(packageId), _timeout);
+            Stopwatch sw = Stopwatch.StartNew();
+            bool result = _uiproject.WaitForActionComplete(() => _uiproject.UninstallPackage(packageId), _timeout);
+            sw.Stop();
+
+            _logger.WriteMessage($"{nameof(UninstallPackageFromUI)} took {sw.ElapsedMilliseconds}ms to complete");
+            return result;
         }
 
         public bool UpdatePackageFromUI(string packageId, string version)
         {
-            return _uiproject.WaitForActionComplete(
-                () => _uiproject.UpdatePackage(
-                    new List<PackageIdentity>() { new PackageIdentity(packageId, NuGetVersion.Parse(version)) }),
+            Stopwatch sw = Stopwatch.StartNew();
+            bool result = _uiproject.WaitForActionComplete(
+                () => _uiproject.UpdatePackage(new List<PackageIdentity>() { new PackageIdentity(packageId, NuGetVersion.Parse(version)) }),
                 _timeout);
+            sw.Stop();
+
+            _logger.WriteMessage($"{nameof(UpdatePackageFromUI)} took {sw.ElapsedMilliseconds}ms to complete");
+            return result;
         }
 
         public void SwitchTabToBrowse()
