@@ -26,6 +26,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry.PowerShell;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -183,8 +184,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     return await _credentialServiceProvider.GetCredentialServiceAsync();
                 });
             });
-
-            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
 
             _vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
 
@@ -499,6 +498,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SolutionOpening?.Invoke(this, EventArgs.Empty);
 
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
             if (!await IsSolutionOpenAsync())
@@ -526,6 +527,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnBeforeClosing()
         {
+            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+
             SolutionClosing?.Invoke(this, EventArgs.Empty);
         }
 

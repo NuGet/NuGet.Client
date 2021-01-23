@@ -28,6 +28,7 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
+using NuGet.VisualStudio.Telemetry.PowerShell;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using ContractsNuGetServices = NuGet.VisualStudio.Contracts.NuGetServices;
@@ -96,6 +97,7 @@ namespace NuGetVSExtension
         private uint _solutionExistsCookie;
         private bool _powerConsoleCommandExecuting;
         private bool _initialized;
+        private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
 
         public NuGetPackage()
         {
@@ -145,6 +147,9 @@ namespace NuGetVSExtension
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
+            NuGet.Common.TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
+
             await base.InitializeAsync(cancellationToken, progress);
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
@@ -179,6 +184,8 @@ namespace NuGetVSExtension
                 ThreadHelper.JoinableTaskFactory);
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
+
+            VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
         }
 
         /// <summary>
@@ -1245,6 +1252,11 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
+        }
+
+        private void RegisterEmitVSInstancePowerShellTelemetry()
+        {
+            NuGetPowerShellUsage.RaiseVSInstanceCloseEvent();
         }
 
         #region IVsPersistSolutionOpts
