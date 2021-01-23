@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.VisualStudio.Telemetry.PowerShell;
 
@@ -302,23 +301,20 @@ namespace NuGet.VisualStudio.Telemetry
 
             internal TelemetryEvent ToTelemetryEvent()
             {
-                var telemetry = new TelemetryEvent(SolutionClose,
-                    new Dictionary<string, object>()
-                    {
-                        { PowerShellHost + NuGetPowerShellUsageCollector.FirstTimeLoadedFromPmc , FirstTimeLoadedFromPmc },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.FirstTimeLoadedFromPmui , FirstTimeLoadedFromPmui },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadedFromPmcFirst , InitPs1LoadedFromPmcFirst },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadPmc , InitPs1LoadPmc },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadPmui , InitPs1LoadPmui },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.LoadedFromPmc , LoadedFromPmc },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.LoadedFromPmui , LoadedFromPmui },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.NuGetCommandUsed , NuGetCommandUsed },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount , PmcExecuteCommandCount },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount , PmcWindowLoadCount },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount , PmuiExecuteCommandCount },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.SolutionLoaded , SolutionLoaded }
-                    });
-
+                var telemetry = new SolutionCloseEvent(
+                    FirstTimeLoadedFromPmc: FirstTimeLoadedFromPmc,
+                    FirstTimeLoadedFromPmui: FirstTimeLoadedFromPmui,
+                    InitPs1LoadedFromPmcFirst: InitPs1LoadedFromPmcFirst,
+                    InitPs1LoadPmc: InitPs1LoadPmc,
+                    InitPs1LoadPmui: InitPs1LoadPmui,
+                    LoadedFromPmc: LoadedFromPmc,
+                    LoadedFromPmui: LoadedFromPmui,
+                    NuGetCommandUsed: NuGetCommandUsed,
+                    PmcExecuteCommandCount: PmcExecuteCommandCount,
+                    PmcWindowLoadCount: PmcWindowLoadCount,
+                    PmuiExecuteCommandCount: PmuiExecuteCommandCount,
+                    SolutionLoaded: SolutionLoaded
+                    );
                 return telemetry;
             }
         }
@@ -346,18 +342,15 @@ namespace NuGet.VisualStudio.Telemetry
 
             internal TelemetryEvent ToTelemetryEvent()
             {
-                var telemetry = new TelemetryEvent(InstanceClose,
-                    new Dictionary<string, object>()
-                    {
-                        { PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount , PmcExecuteCommandCount },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount , PmcWindowLoadCount },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount , PmuiExecuteCommandCount },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.PmcPowerShellLoadedSolutionCount , PmcLoadedSolutionCount },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.PmuiPowerShellLoadedSolutionCount , PmuiLoadedSolutionCount },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.ReOpenAtStart , ReOpenAtStart },
-                        { PowerShellHost + NuGetPowerShellUsageCollector.SolutionCount , SolutionCount },
-                    });
-
+                var telemetry = new InstanceCloseEvent(
+                    PmcExecuteCommandCount: PmcExecuteCommandCount,
+                    PmcWindowLoadCount: PmcWindowLoadCount,
+                    PmuiExecuteCommandCount: PmuiExecuteCommandCount,
+                    PmcPowerShellLoadedSolutionCount: PmcLoadedSolutionCount,
+                    PmuiPowerShellLoadedSolutionCount: PmuiLoadedSolutionCount,
+                    ReOpenAtStart: ReOpenAtStart,
+                    SolutionCount: SolutionCount
+                    );
                 return telemetry;
             }
         }

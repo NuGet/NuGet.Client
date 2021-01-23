@@ -317,11 +317,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         if (!PowerShellLoaded)
                         {
-                            var telemetryEvent = new TelemetryEvent(NuGetPowerShellUsageCollector.PowerShellLoaded, new Dictionary<string, object>
-                            {
-                                { NuGetPowerShellUsageCollector.Trigger, _isPmc ? NuGetPowerShellUsageCollector.Pmc : NuGetPowerShellUsageCollector.Pmui }
-                            });
-
+                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc);
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                             PowerShellLoaded = true;
                         }
