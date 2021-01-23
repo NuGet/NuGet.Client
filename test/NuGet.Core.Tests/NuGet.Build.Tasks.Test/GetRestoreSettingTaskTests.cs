@@ -42,7 +42,7 @@ namespace NuGet.Build.Tasks.Test
             RestoreSettingsUtils.GetValue(
                 () => null,
                 () => null,
-                () => Array.Empty<string>()).ShouldBeEquivalentTo(Array.Empty<string>());
+                () => Array.Empty<string>()).Should().BeEquivalentTo(Array.Empty<string>());
         }
 
         [Fact]
@@ -168,7 +168,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB"), Path.Combine(testDir, "sourceC") });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB"), Path.Combine(testDir, "sourceC") });
             }
         }
 
@@ -200,7 +200,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB"), Path.Combine(testDir, "sourceC") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB"), Path.Combine(testDir, "sourceC") });
             }
         }
 
@@ -237,7 +237,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") });
             }
         }
 
@@ -291,8 +291,8 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base"), Path.Combine(testDir, "a"), Path.Combine(testDir, "b"), Path.Combine(testDir, "c"), Path.Combine(testDir, "d") });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base"), Path.Combine(testDir, "m"), Path.Combine(testDir, "n"), Path.Combine(testDir, "s"), Path.Combine(testDir, "t") });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base"), Path.Combine(testDir, "a"), Path.Combine(testDir, "b"), Path.Combine(testDir, "c"), Path.Combine(testDir, "d") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base"), Path.Combine(testDir, "m"), Path.Combine(testDir, "n"), Path.Combine(testDir, "s"), Path.Combine(testDir, "t") });
             }
         }
 
@@ -319,8 +319,8 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base") });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base") });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base") });
             }
         }
 
@@ -347,8 +347,8 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base") });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base") });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base") });
             }
         }
 
@@ -384,7 +384,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { @"https://nuget.org/v2/api" });
+                task.OutputSources.Should().BeEquivalentTo(new[] { @"https://nuget.org/v2/api" });
             }
         }
 
@@ -545,7 +545,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputSources.Should().BeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
                 task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(configFile);
             }
@@ -588,7 +588,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputSources.Should().BeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
                 task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(rootConfigFile);
                 task.OutputConfigFilePaths.Should().NotContain(projectLevelConfigFile);
@@ -633,7 +633,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputSources.Should().BeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
                 task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(rootConfigFile);
                 task.OutputConfigFilePaths.Should().NotContain(projectLevelConfigFile);
@@ -672,7 +672,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
             }
         }
 
@@ -707,7 +707,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
             }
         }
 

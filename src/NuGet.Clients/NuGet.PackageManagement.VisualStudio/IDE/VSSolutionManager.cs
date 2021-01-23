@@ -804,14 +804,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else
                 {
-                    // Check if the cache is initialized.
-                    // It is possible that the cache is not initialized, since,
-                    // the solution was not saved and/or there were no projects in the solution
-                    if (!_cacheInitialized && _solutionOpenedRaised)
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        await EnsureNuGetAndVsProjectAdapterCacheAsync();
-                    }
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
                 }
             }
             catch (Exception e)

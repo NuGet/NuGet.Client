@@ -4702,7 +4702,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 lib.CompileTimeAssemblies.Select(e => e.Path)
-                    .ShouldBeEquivalentTo(new[] { "lib/net45/a.dll" },
+                    .Should().BeEquivalentTo(new[] { "lib/net45/a.dll" },
                     "no compatible assets were found for ns2.0");
 
                 r.AllOutput.Should().Contain("This package may not be fully compatible with your project.");
@@ -4761,7 +4761,7 @@ namespace NuGet.CommandLine.Test
                     var lib = graph.GetTargetLibrary("x");
 
                     lib.CompileTimeAssemblies.Select(e => e.Path)
-                        .ShouldBeEquivalentTo(new[] { "ref/netstandard1.0/a.dll" },
+                        .Should().BeEquivalentTo(new[] { "ref/netstandard1.0/a.dll" },
                         "ATF does not fallback to lib/net45 if other assets were found.");
 
                     lib.RuntimeAssemblies.Should().BeEmpty();
@@ -4813,10 +4813,10 @@ namespace NuGet.CommandLine.Test
                     var lib = graph.GetTargetLibrary("b");
 
                     lib.CompileTimeAssemblies.Select(e => e.Path)
-                        .ShouldBeEquivalentTo(new[] { "bin/placeholder/b.dll" });
+                        .Should().BeEquivalentTo(new[] { "bin/placeholder/b.dll" });
 
                     lib.RuntimeAssemblies.Select(e => e.Path)
-                        .ShouldBeEquivalentTo(new[] { "bin/placeholder/b.dll" });
+                        .Should().BeEquivalentTo(new[] { "bin/placeholder/b.dll" });
 
                     lib.BuildMultiTargeting.Should().BeEmpty();
                     lib.Build.Should().BeEmpty();
@@ -4988,7 +4988,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.RestoreSolution(pathContext);
 
                 // Assert
-                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "m", "x", "y", "z" });
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "m", "x", "y", "z" });
             }
         }
 
@@ -5050,7 +5050,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.RestoreSolution(pathContext);
 
                 // Assert
-                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x", "y" });
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x", "y" });
             }
         }
 
@@ -5112,7 +5112,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.RestoreSolution(pathContext);
 
                 // Assert
-                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x", "y" });
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x", "y" });
 
                 // Verify fallback folder added
                 projectA.AssetsFile.PackageFolders.Select(e => e.Path).Should().Contain(extraSourceA);
@@ -5177,7 +5177,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.RestoreSolution(pathContext);
 
                 // Assert
-                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x", "y" });
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x", "y" });
 
                 // Verify the fallback folder was not added
                 projectA.AssetsFile.PackageFolders.Select(e => e.Path).Should().NotContain(extraSourceA);
@@ -5226,7 +5226,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.RestoreSolution(pathContext);
 
                 // Assert
-                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x" });
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x" });
 
                 // Verify the fallback folder was not added
                 projectA.AssetsFile.PackageFolders.Select(e => e.Path).Should().NotContain(extraFallback.Path);
@@ -5274,7 +5274,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.RestoreSolution(pathContext);
 
                 // Assert
-                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x" });
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x" });
 
                 // Verify the fallback folder was added
                 projectA.AssetsFile.PackageFolders.Select(e => e.Path).Should().Contain(extraFallback.Path);
@@ -8563,7 +8563,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
                 var lockRuntimes = lockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
-                intitialRuntimes.ShouldBeEquivalentTo(lockRuntimes);
+                intitialRuntimes.Should().BeEquivalentTo(lockRuntimes);
 
                 // Setup - change runtimes
                 projectA.Properties.Add("RestoreLockedMode", "true");
@@ -8579,7 +8579,7 @@ namespace NuGet.CommandLine.Test
                 lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
                 lockRuntimes = lockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
                 // No change expected in the lock file.
-                intitialRuntimes.ShouldBeEquivalentTo(lockRuntimes);
+                intitialRuntimes.Should().BeEquivalentTo(lockRuntimes);
                 Assert.Contains("NU1004", r.Errors);
                 var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
                 Assert.Contains(NuGetLogCode.NU1004, logCodes);
@@ -8621,7 +8621,7 @@ namespace NuGet.CommandLine.Test
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
                 var lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName).Distinct().ToList();
                 _output.WriteLine($"PackageLockFrameworks First Evaluation: {string.Join(",", lockFrameworks)}");
-                lockFrameworks.ShouldBeEquivalentTo(lockFrameworkTransformed);
+                lockFrameworks.Should().BeEquivalentTo(lockFrameworkTransformed);
 
                 // Setup - change frameworks
                 projectA.Properties.Add("RestoreLockedMode", "true");
@@ -8637,7 +8637,7 @@ namespace NuGet.CommandLine.Test
                 lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName).Distinct().ToList();
                 _output.WriteLine($"PackageLockFrameworks Second Evaluation: {string.Join(",", lockFrameworks)}");
                 // The frameworks should not change in the lock file.
-                lockFrameworks.ShouldBeEquivalentTo(lockFrameworkTransformed);
+                lockFrameworks.Should().BeEquivalentTo(lockFrameworkTransformed);
                 Assert.Contains("NU1004", r.Errors);
                 var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
                 Assert.Contains(NuGetLogCode.NU1004, logCodes);
@@ -9014,7 +9014,7 @@ namespace NuGet.CommandLine.Test
                 //Verify the RIDS are not the same after reordering.
                 //Lock file is not ordered based on input RIDs so Validating the reorder here.
                 var originalTargets = packagesLockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
-                runtimeidentifiers.ShouldBeEquivalentTo(originalTargets);
+                runtimeidentifiers.Should().BeEquivalentTo(originalTargets);
 
                 //Nuget.exe test so reordering to make it not match.  It should still restore correctly
                 packagesLockFile.Targets = packagesLockFile.Targets.

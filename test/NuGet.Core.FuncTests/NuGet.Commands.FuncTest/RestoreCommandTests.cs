@@ -1904,7 +1904,7 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
 
                 // Act
-                new Func<Task>(async () => await command.ExecuteAsync()).ShouldThrow<PathTooLongException>();
+                new Func<Task>(async () => await command.ExecuteAsync()).Should().Throw<PathTooLongException>();
             }
         }
 
