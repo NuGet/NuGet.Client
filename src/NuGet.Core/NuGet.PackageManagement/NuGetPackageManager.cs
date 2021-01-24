@@ -665,7 +665,7 @@ namespace NuGet.PackageManagement
                     if (packagesToUpdateInProject.Count > 0)
                     {
                         var includePrerelease = packagesToUpdateInProject.Any(
-                        package => package.Version?.IsPrerelease == true) || resolutionContext.IncludePrerelease;
+                        package => package.Version.IsPrerelease) || resolutionContext.IncludePrerelease;
 
                         updatedResolutionContext = new ResolutionContext(
                             dependencyBehavior: resolutionContext.DependencyBehavior,

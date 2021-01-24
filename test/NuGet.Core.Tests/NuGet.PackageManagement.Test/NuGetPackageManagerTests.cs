@@ -6975,6 +6975,11 @@ namespace NuGet.Test
             }
         }
 
+        /// <summary>
+        /// Repro for a bug caused by a NullReferenceException being thrown due to a null <see cref="PackageIdentity.Version"/>
+        /// (https://github.com/NuGet/Home/issues/9882).
+        /// </summary>
+        /// <returns></returns>
         [Fact]
         public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_NullVersion_Throws()
         {
@@ -6983,9 +6988,9 @@ namespace NuGet.Test
             // Set up Package Source
             var packages = new List<SourcePackageDependencyInfo>
             {
-                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
-                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
-                new SourcePackageDependencyInfo("a", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(3, 0, 0), new PackageDependency[] { }, true, null),
             };
 
             SourceRepositoryProvider sourceRepositoryProvider = CreateSource(packages);
@@ -6995,7 +7000,7 @@ namespace NuGet.Test
 
             var installedPackages = new List<NuGet.Packaging.PackageReference>
             {
-                new NuGet.Packaging.PackageReference(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), fwk45, true),
+                new PackageReference(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), fwk45, true),
             };
 
             var packageIdentity = _packageWithDependents[0];
@@ -7009,79 +7014,32 @@ namespace NuGet.Test
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
-                //var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
-
-
-
-                var projectName = Guid.NewGuid().ToString();
-                var projectFullPath = Path.Combine(solutionManager.SolutionDirectory, projectName);
-                Directory.CreateDirectory(projectFullPath);
-
                 var buildIntegratedProjectA = new Mock<BuildIntegratedNuGetProject>();
-
-                //ProjectSystem = msbuildNuGetProjectSystem ?? throw new ArgumentNullException(nameof(msbuildNuGetProjectSystem));
-                //FolderNuGetProject = new FolderNuGetProject(folderNuGetProjectPath);
-                //InternalMetadata.Add(NuGetProjectMetadataKeys.Name, ProjectSystem.ProjectName);
-                //InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, ProjectSystem.TargetFramework);
-                //InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, msbuildNuGetProjectSystem.ProjectFullPath);
-                //InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, msbuildNuGetProjectSystem.ProjectUniqueName);
-                //PackagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFolderPath, InternalMetadata);
-                buildIntegratedProjectA.SetupProperty(p => p.ProjectName, projectName);
-                buildIntegratedProjectA.SetupProperty(p => p.ProjectStyle, ProjectModel.ProjectStyle.PackagesConfig);
-                buildIntegratedProjectA.SetupProperty(p => p., new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext(),
-                projectFullPath, projectName);
-
-                buildIntegratedProjectA.SetupProperty(p => p.ProjectStyle, ProjectModel.ProjectStyle.PackagesConfig);
-                buildIntegratedProjectA.SetupProperty(p => p.ProjectStyle, ProjectModel.ProjectStyle.PackagesConfig);
-                buildIntegratedProjectA.SetupProperty(p => p.ProjectStyle, ProjectModel.ProjectStyle.PackagesConfig);
                 buildIntegratedProjectA.Setup(p => p.GetInstalledPackagesAsync(CancellationToken.None))
-                .Returns(() => Task.FromResult(installedPackages.AsEnumerable()));
+                    .Returns(() => Task.FromResult(installedPackages.AsEnumerable()));
 
                 var projectList = new List<NuGetProject> { buildIntegratedProjectA.Object };
                 solutionManager.NuGetProjects = projectList;
 
                 // Main Act
                 var targets = new List<PackageIdentity>
-                  {
-                    new PackageIdentity("a", null),
-                  };
+                {
+                    new PackageIdentity("a", null)
+                };
 
-                IEnumerable<NuGetProjectAction> result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    targets,
-                    projectList,
-                    new ResolutionContext(),
-                    new TestNuGetProjectContext(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    CancellationToken.None);
-
-                //// Assert
-                //Tuple<PackageIdentity, NuGetProjectActionType>[] resulting =
-                //    result.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
-
-                //var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                //Expected(expected, "a", new NuGetVersion(1, 0, 0), new NuGetVersion(2, 0, 0));
-                //Expected(expected, "b", new NuGetVersion(1, 0, 0), new NuGetVersion(2, 0, 0));
-                //Expected(expected, "c", new NuGetVersion(2, 0, 0), new NuGetVersion(3, 0, 0));
-
-                //Assert.True(Compare(resulting, expected));
+                // Assert
+                var ex = await Assert.ThrowsAsync<NullReferenceException>(async () =>
+                {
+                    IEnumerable<NuGetProjectAction> result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                        targets,
+                        projectList,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+                });
             }
-
-            //var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
-            //{
-            //    await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
-            //        projects,
-            //        nugetProjectActionsLookup,
-            //        packageIdentity: null,
-            //        primarySources,
-            //        nugetProjectContext,
-            //        CancellationToken.None);
-            //});
-
-            //// Assert
-            //Assert.Contains("Either should have value in", ex.Message);
-            //Assert.Contains(buildIntegratedProjectA.MSBuildProjectPath, ex.Message);
-
         }
 
         private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(IEnumerable<string> actual)
