@@ -25,6 +25,9 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class NuGetRemoteFileService : INuGetRemoteFileService
     {
+        public static readonly string IconPrefix = "icon:";
+        public static readonly string LicensePrefix = "license:";
+
         private ServiceActivationOptions? _options;
         private IServiceBroker _serviceBroker;
         private AuthorizationServiceClient? _authorizationServiceClient;
@@ -47,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static void AddIconToCache(PackageIdentity packageIdentity, Uri iconUri)
         {
-            string key = "icon:" + packageIdentity.ToString();
+            string key = NuGetRemoteFileService.IconPrefix + packageIdentity.ToString();
             if (iconUri != null && !IdentityToUriCache.Add(key, iconUri, CacheItemPolicy))
             {
                 IdentityToUriCache.Remove(key);
@@ -58,7 +61,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static void AddLicenseToCache(PackageIdentity packageIdentity, Uri embeddedLicenseUri)
         {
             Assumes.NotNull(embeddedLicenseUri);
-            string key = "license:" + packageIdentity.ToString();
+            string key = NuGetRemoteFileService.LicensePrefix + packageIdentity.ToString();
             if (!IdentityToUriCache.Add(key, embeddedLicenseUri, CacheItemPolicy))
             {
                 IdentityToUriCache.Remove(key);
@@ -93,7 +96,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<Stream?> GetPackageIconAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {
             Assumes.NotNull(packageIdentity);
-            string key = "icon:" + packageIdentity.ToString();
+            string key = NuGetRemoteFileService.IconPrefix + packageIdentity.ToString();
             Uri? uri = IdentityToUriCache.Get(key) as Uri;
 
             if (uri == null)
@@ -119,7 +122,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<Stream?> GetEmbeddedLicenseAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {
             Assumes.NotNull(packageIdentity);
-            string key = "license:" + packageIdentity.ToString();
+            string key = NuGetRemoteFileService.LicensePrefix + packageIdentity.ToString();
             Uri? uri = IdentityToUriCache.Get(key) as Uri;
             if (uri == null)
             {
