@@ -44,7 +44,6 @@ namespace NuGet.PackageManagement.UI
                         IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
                         IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
-                        var embeddedFileUri = new Uri(_packagePath + "#" + _licenseFileLocation);
                         string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(_packageIdentity, CancellationToken.None);
 
                         var flowDoc = new FlowDocument();
