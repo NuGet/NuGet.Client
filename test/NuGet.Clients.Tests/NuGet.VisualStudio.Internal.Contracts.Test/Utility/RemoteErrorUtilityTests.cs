@@ -18,5 +18,14 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 
             Assert.Equal("exception", exception.ParamName);
         }
+
+        [Fact]
+        public void ToRemoteError_WhenExceptionIsOtherType_SetsProjectContextLogMessage()
+        {
+            var exception = new DivideByZeroException();
+            RemoteError remoteError = RemoteErrorUtility.ToRemoteError(exception);
+
+            Assert.Equal(exception.ToString(), remoteError.ProjectContextLogMessage);
+        }
     }
 }

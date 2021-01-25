@@ -113,6 +113,36 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
+        [Fact]
+        public void ShowError_WhenArgumentIsRemoteInvocationExceptionForOtherException_ShowsError()
+        {
+            var remoteException = new ArgumentException(message: "a", new DivideByZeroException(message: "b"));
+            var remoteError = RemoteErrorUtility.ToRemoteError(remoteException);
+            var exception = new RemoteInvocationException(
+                message: "c",
+                errorCode: 0,
+                errorData: null,
+                deserializedErrorData: remoteError);
+            var defaultLogger = new Mock<INuGetUILogger>();
+            var projectLogger = new Mock<INuGetUILogger>();
+
+            defaultLogger.Setup(
+                x => x.ReportError(
+                    It.Is<ILogMessage>(logMessage => ReferenceEquals(logMessage, remoteError.LogMessage))));
+            projectLogger.Setup(
+                x => x.Log(
+                    It.Is<MessageLevel>(level => level == MessageLevel.Error),
+                    It.Is<string>(message => message == remoteException.ToString())));
+
+            using (NuGetUI ui = CreateNuGetUI(defaultLogger.Object, projectLogger.Object))
+            {
+                ui.ShowError(exception);
+
+                defaultLogger.VerifyAll();
+                projectLogger.VerifyAll();
+            }
+        }
+
         private NuGetUI CreateNuGetUI()
         {
             return CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>());
