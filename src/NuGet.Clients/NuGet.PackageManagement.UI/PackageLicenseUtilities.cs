@@ -161,8 +161,8 @@ namespace NuGet.PackageManagement.UI
             IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
-            using (INuGetRemoteFileService remoteFileService = await serviceBroker.GetProxyAsync<INuGetRemoteFileService>(NuGetServices.RemoteFileService))
-            using (Stream stream = await remoteFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None))
+            using (INuGetPackageFileService packageFileService = await serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService))
+            using (Stream stream = await packageFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None))
             {
                 if (stream != null)
                 {

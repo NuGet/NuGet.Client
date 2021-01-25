@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI.Test
                 x.RefreshSearchAsync(It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
 
-            var remoteFileService = new Mock<INuGetRemoteFileService>();
+            var packageFileService = new Mock<INuGetPackageFileService>();
 
             uiContext.Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.UI.Test
                 new List<PackageSourceContextInfo> { source1, source2 },
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                 searchService.Object,
-                remoteFileService.Object,
+                packageFileService.Object,
                 TestSearchTerm);
 
             await loader.LoadNextAsync(null, CancellationToken.None);
@@ -138,7 +138,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
 
-            var remoteFileService = new Mock<INuGetRemoteFileService>();
+            var packageFileService = new Mock<INuGetPackageFileService>();
 
             uiContext.Setup(x => x.ServiceBroker)
                 .Returns(Mock.Of<IServiceBroker>());
@@ -166,7 +166,7 @@ namespace NuGet.PackageManagement.UI.Test
                     new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(localSource) },
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                     searchService.Object,
-                    remoteFileService.Object,
+                    packageFileService.Object,
                     TestSearchTerm);
 
                 // Act

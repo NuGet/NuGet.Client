@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.UI.Test
         private readonly LocalPackageSearchMetadataFixture _testData;
         private readonly PackageItemListViewModel _testInstance;
         private readonly ITestOutputHelper _output;
-        private readonly INuGetRemoteFileService _remoteFileService;
+        private readonly INuGetPackageFileService _packageFileService;
         private Mock<IServiceBroker> _serviceBroker = new Mock<IServiceBroker>();
         private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
 
@@ -45,20 +45,20 @@ namespace NuGet.PackageManagement.UI.Test
             globalServiceProvider.Reset();
             _serviceBroker.Setup(
 #pragma warning disable ISB001 // Dispose of proxies
-                x => x.GetProxyAsync<INuGetRemoteFileService>(
-                It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.RemoteFileService.Moniker),
+                x => x.GetProxyAsync<INuGetPackageFileService>(
+                It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.PackageFileService.Moniker),
                 It.IsAny<ServiceActivationOptions>(),
                 It.IsAny<CancellationToken>()))
 #pragma warning restore ISB001 // Dispose of proxies
-            .Returns(new ValueTask<INuGetRemoteFileService>(new NuGetRemoteFileService(_serviceBroker.Object, _telemetryProvider.Object)));
+            .Returns(new ValueTask<INuGetPackageFileService>(new NuGetPackageFileService(_serviceBroker.Object, _telemetryProvider.Object)));
 
-            _remoteFileService = new NuGetRemoteFileService(_serviceBroker.Object, _telemetryProvider.Object);
+            _packageFileService = new NuGetPackageFileService(_serviceBroker.Object, _telemetryProvider.Object);
 
             _testData = testData;
             _testInstance = new PackageItemListViewModel()
             {
                 PackagePath = _testData.TestData.PackagePath,
-                RemoteFileService = _remoteFileService,
+                PackageFileService = _packageFileService,
             };
             _output = output;
         }
@@ -79,11 +79,11 @@ namespace NuGet.PackageManagement.UI.Test
                 Id = "PackageId.IconUrl_WithMalformedUrlScheme_ReturnsDefaultInitallyAndFinally",
                 Version = new NuGetVersion("1.0.0"),
                 IconUrl = iconUrl,
-                RemoteFileService = _remoteFileService,
+                PackageFileService = _packageFileService,
             };
 
             var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, packageItemListViewModel.Version);
-            NuGetRemoteFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
+            NuGetPackageFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
 
             // initial result should be fetching and defaultpackageicon
             BitmapSource initialResult = packageItemListViewModel.IconBitmap;
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.UI.Test
                 Id = "PackageId.IconUrl_WhenFileNotFound_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
                 IconUrl = iconUrl,
-                RemoteFileService = _remoteFileService,
+                PackageFileService = _packageFileService,
             };
 
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.UI.Test
                 Id = "PackageId.IconUrl_RelativeUri_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
                 IconUrl = iconUrl,
-                RemoteFileService = _remoteFileService,
+                PackageFileService = _packageFileService,
             };
 
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Id = "PackageId.IconUrl_WithLocalPathAndColorProfile_LoadsImage",
                     Version = new NuGetVersion("1.0.0"),
                     IconUrl = new Uri(grayiccImagePath, UriKind.Absolute),
-                    RemoteFileService = _remoteFileService,
+                    PackageFileService = _packageFileService,
                 };
 
                 // Act
@@ -178,7 +178,7 @@ namespace NuGet.PackageManagement.UI.Test
                 Id = "PackageId.IconUrl_WithValidImageUrl_FailsDownloadsImage_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
                 IconUrl = iconUrl,
-                RemoteFileService = _remoteFileService,
+                PackageFileService = _packageFileService,
             };
 
             BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
@@ -221,7 +221,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Version = new NuGetVersion("1.0.0"),
                     IconUrl = builder.Uri,
                     PackagePath = zipPath,
-                    RemoteFileService = _remoteFileService,
+                    PackageFileService = _packageFileService,
                 };
 
                 _output.WriteLine($"ZipPath {zipPath}");
@@ -251,7 +251,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Id = "PackageId.IconUrl_FileUri_LoadsImage",
                     Version = new NuGetVersion("1.0.0"),
                     IconUrl = new Uri(imagePath, UriKind.Absolute),
-                    RemoteFileService = _remoteFileService,
+                    PackageFileService = _packageFileService,
                 };
 
                 // Act
@@ -286,7 +286,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Version = new NuGetVersion("1.0.0"),
                     IconUrl = builder.Uri,
                     PackagePath = zipPath,
-                    RemoteFileService = _remoteFileService,
+                    PackageFileService = _packageFileService,
                 };
 
                 // Act
@@ -302,7 +302,7 @@ namespace NuGet.PackageManagement.UI.Test
         [MemberData(nameof(EmbeddedTestData))]
         public void IsEmbeddedIconUri_Tests(Uri testUri, bool expectedResult)
         {
-            var result = NuGetRemoteFileService.IsEmbeddedUri(testUri);
+            var result = NuGetPackageFileService.IsEmbeddedUri(testUri);
             Assert.Equal(expectedResult, result);
         }
 
@@ -353,7 +353,7 @@ namespace NuGet.PackageManagement.UI.Test
             if (addIconToCache)
             {
                 var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, packageItemListViewModel.Version);
-                NuGetRemoteFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
+                NuGetPackageFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
             }
 
             BitmapSource result = packageItemListViewModel.IconBitmap;
@@ -401,7 +401,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Version = new NuGetVersion("1.0.0"),
                     IconUrl = builder.Uri,
                     PackagePath = zipPath,
-                    RemoteFileService = _remoteFileService,
+                    PackageFileService = _packageFileService,
                 };
 
                 _output.WriteLine($"ZipPath {zipPath}");

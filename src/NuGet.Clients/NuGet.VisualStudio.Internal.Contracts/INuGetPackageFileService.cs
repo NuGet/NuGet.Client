@@ -11,7 +11,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    public interface INuGetRemoteFileService : IDisposable
+    public interface INuGetPackageFileService : IDisposable
     {
         ValueTask<Stream?> GetPackageIconAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken);
         ValueTask<Stream?> GetEmbeddedLicenseAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken);

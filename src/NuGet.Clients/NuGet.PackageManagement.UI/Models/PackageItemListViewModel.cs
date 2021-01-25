@@ -536,7 +536,7 @@ namespace NuGet.PackageManagement.UI
 
             Assumes.NotNull(IconUrl);
 
-            using (Stream stream = await RemoteFileService.GetPackageIconAsync(new PackageIdentity(Id, Version), CancellationToken.None))
+            using (Stream stream = await PackageFileService.GetPackageIconAsync(new PackageIdentity(Id, Version), CancellationToken.None))
             {
                 if (stream != null)
                 {
@@ -723,7 +723,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public string PackagePath { get; set; }
-        public INuGetRemoteFileService RemoteFileService { get; internal set; }
+        public INuGetPackageFileService PackageFileService { get; internal set; }
 
         public override string ToString()
         {

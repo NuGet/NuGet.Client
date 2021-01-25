@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI.Test
             var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = new Mock<INuGetUIContext>();
             var searchService = Mock.Of<INuGetSearchService>();
-            var remoteFileService = Mock.Of<INuGetRemoteFileService>();
+            var packageFileService = Mock.Of<INuGetPackageFileService>();
 
             uiContext.Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Test
                 new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(repo.PackageSource) },
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                 searchService,
-                remoteFileService,
+                packageFileService,
                 "EntityFramework",
                 includePrerelease: false);
 
@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.UI.Test
             var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = new Mock<INuGetUIContext>();
             var searchService = Mock.Of<INuGetSearchService>();
-            var remoteFileService = Mock.Of<INuGetRemoteFileService>();
+            var packageFileService = Mock.Of<INuGetPackageFileService>();
 
             uiContext.Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
@@ -122,7 +122,7 @@ namespace NuGet.PackageManagement.UI.Test
                 },
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                 searchService,
-                remoteFileService,
+                packageFileService,
                 "EntityFramework",
                 includePrerelease: false);
 

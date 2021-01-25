@@ -153,7 +153,7 @@ namespace NuGet.Tools.Test
             {
                 { NuGetServices.ProjectManagerService, typeof(NuGetProjectManagerService) },
                 { NuGetServices.ProjectUpgraderService, typeof(NuGetProjectUpgraderService) },
-                { NuGetServices.RemoteFileService, typeof(NuGetRemoteFileService) },
+                { NuGetServices.PackageFileService, typeof(NuGetPackageFileService) },
                 { NuGetServices.SearchService, typeof(NuGetPackageSearchService) },
                 { NuGetServices.SolutionManagerService, typeof(NuGetSolutionManagerService) },
                 { NuGetServices.SourceProviderService, typeof(NuGetSourcesService) }

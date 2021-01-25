@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     using ExceptionUtility = global::Test.Utility.ExceptionUtility;
 
-    public class NuGetRemoteFileServiceTests
+    public class NuGetPackageFileServiceTests
     {
         private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
 
@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void Constructor_WhenServiceBrokerIsNull_Throws()
         {
             Exception exception = Assert.ThrowsAny<Exception>(
-                () => new NuGetRemoteFileService(
+                () => new NuGetPackageFileService(
                     default(ServiceActivationOptions),
                     serviceBroker: null,
                     new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void Constructor_WhenAuthorizationServiceClientIsNull_Throws()
         {
             Exception exception = Assert.ThrowsAny<Exception>(
-                () => new NuGetRemoteFileService(
+                () => new NuGetPackageFileService(
                     default(ServiceActivationOptions),
                     Mock.Of<IServiceBroker>(),
                     authorizationServiceClient: null,
@@ -59,15 +59,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 string fileContents = "testFileContents";
                 string filePath = Path.Combine(testDirectory.Path, "testFile.txt");
                 File.WriteAllText(filePath, fileContents);
-                var remoteFileService = new NuGetRemoteFileService(
+                var packageFileService = new NuGetPackageFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
                         new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                         _telemetryProvider.Object);
                 var packageIdentity = new PackageIdentity("AddIconToCache_WhenAdded_IsFound", NuGetVersion.Parse("1.0.0"));
-                NuGetRemoteFileService.AddIconToCache(packageIdentity, new Uri(filePath));
+                NuGetPackageFileService.AddIconToCache(packageIdentity, new Uri(filePath));
 
-                Stream iconStream = await remoteFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
+                Stream iconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
 
                 Assert.NotNull(iconStream);
                 Assert.Equal(fileContents.Length, iconStream.Length);
@@ -87,16 +87,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 string filePath2 = Path.Combine(testDirectory.Path, "testFile2.txt");
                 File.WriteAllText(filePath2, fileContents2);
 
-                var remoteFileService = new NuGetRemoteFileService(
+                var packageFileService = new NuGetPackageFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
                         new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                         _telemetryProvider.Object);
                 var packageIdentity = new PackageIdentity("AddIconToCache_WhenAddedTwice_UsesSecond", NuGetVersion.Parse("1.0.0"));
-                NuGetRemoteFileService.AddIconToCache(packageIdentity, new Uri(filePath));
-                NuGetRemoteFileService.AddIconToCache(packageIdentity, new Uri(filePath2));
+                NuGetPackageFileService.AddIconToCache(packageIdentity, new Uri(filePath));
+                NuGetPackageFileService.AddIconToCache(packageIdentity, new Uri(filePath2));
 
-                Stream iconStream = await remoteFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
+                Stream iconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
 
                 Assert.NotNull(iconStream);
                 Assert.Equal(fileContents2.Length, iconStream.Length);
@@ -106,16 +106,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async void AddIconToCache_WhenMissing_IsNotFound()
         {
-            _telemetryProvider.Setup(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetPackageIconAsync), It.IsAny<IDictionary<string, object>>())).Returns(Task.CompletedTask);
-            var remoteFileService = new NuGetRemoteFileService(
+            _telemetryProvider.Setup(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetPackageFileService).FullName, nameof(NuGetPackageFileService.GetPackageIconAsync), It.IsAny<IDictionary<string, object>>())).Returns(Task.CompletedTask);
+            var packageFileService = new NuGetPackageFileService(
                     default(ServiceActivationOptions),
                     Mock.Of<IServiceBroker>(),
                     new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                     _telemetryProvider.Object);
             var packageIdentity = new PackageIdentity("AddIconToCache_WhenMissing_IsNotFound", NuGetVersion.Parse("1.0.0"));
-            Stream iconStream = await remoteFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
+            Stream iconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
 
-            _telemetryProvider.Verify(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetPackageIconAsync), It.IsAny<IDictionary<string, object>>()));
+            _telemetryProvider.Verify(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetPackageFileService).FullName, nameof(NuGetPackageFileService.GetPackageIconAsync), It.IsAny<IDictionary<string, object>>()));
             _telemetryProvider.VerifyNoOtherCalls();
             Assert.Null(iconStream);
         }
@@ -145,15 +145,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Fragment = iconElement
                 };
 
-                var remoteFileService = new NuGetRemoteFileService(
+                var packageFileService = new NuGetPackageFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
                         new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                         _telemetryProvider.Object);
                 var packageIdentity = new PackageIdentity("AddLicenseToCache_WhenAdded_IsFound", NuGetVersion.Parse("1.0.0"));
-                NuGetRemoteFileService.AddLicenseToCache(packageIdentity, builder.Uri);
+                NuGetPackageFileService.AddLicenseToCache(packageIdentity, builder.Uri);
 
-                Stream licenseStream = await remoteFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
+                Stream licenseStream = await packageFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
 
                 Assert.NotNull(licenseStream);
                 Assert.Equal(StreamContents.Length, licenseStream.Length);
@@ -185,16 +185,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Fragment = iconElement
                 };
 
-                var remoteFileService = new NuGetRemoteFileService(
+                var packageFileService = new NuGetPackageFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
                         new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                         _telemetryProvider.Object);
                 var packageIdentity = new PackageIdentity("AddLicenseToCache_WhenAdded_IsFound", NuGetVersion.Parse("1.0.0"));
-                NuGetRemoteFileService.AddLicenseToCache(packageIdentity, new Uri(builder.Uri.ToString() + "more"));
-                NuGetRemoteFileService.AddLicenseToCache(packageIdentity, builder.Uri);
+                NuGetPackageFileService.AddLicenseToCache(packageIdentity, new Uri(builder.Uri.ToString() + "more"));
+                NuGetPackageFileService.AddLicenseToCache(packageIdentity, builder.Uri);
 
-                Stream licenseStream = await remoteFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
+                Stream licenseStream = await packageFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
 
                 Assert.NotNull(licenseStream);
                 Assert.Equal(StreamContents.Length, licenseStream.Length);
@@ -204,16 +204,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async void AddLicenseToCache_WhenMissing_IsNotFound()
         {
-            _telemetryProvider.Setup(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetEmbeddedLicenseAsync), It.IsAny<IDictionary<string, object>>())).Returns(Task.CompletedTask);
-            var remoteFileService = new NuGetRemoteFileService(
+            _telemetryProvider.Setup(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetPackageFileService).FullName, nameof(NuGetPackageFileService.GetEmbeddedLicenseAsync), It.IsAny<IDictionary<string, object>>())).Returns(Task.CompletedTask);
+            var packageFileService = new NuGetPackageFileService(
                     default(ServiceActivationOptions),
                     Mock.Of<IServiceBroker>(),
                     new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                     _telemetryProvider.Object);
             var packageIdentity = new PackageIdentity("AddLicenseToCache_WhenMissing_IsNotFound", NuGetVersion.Parse("1.0.0"));
-            Stream licenseStream = await remoteFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
+            Stream licenseStream = await packageFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None);
 
-            _telemetryProvider.Verify(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetEmbeddedLicenseAsync), It.IsAny<IDictionary<string, object>>()));
+            _telemetryProvider.Verify(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetPackageFileService).FullName, nameof(NuGetPackageFileService.GetEmbeddedLicenseAsync), It.IsAny<IDictionary<string, object>>()));
             _telemetryProvider.VerifyNoOtherCalls();
             Assert.Null(licenseStream);
         }

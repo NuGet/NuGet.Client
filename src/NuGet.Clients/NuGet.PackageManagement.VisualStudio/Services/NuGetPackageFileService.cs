@@ -23,7 +23,7 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public sealed class NuGetRemoteFileService : INuGetRemoteFileService
+    public sealed class NuGetPackageFileService : INuGetPackageFileService
     {
         public static readonly string IconPrefix = "icon:";
         public static readonly string LicensePrefix = "license:";
@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static void AddIconToCache(PackageIdentity packageIdentity, Uri iconUri)
         {
-            string key = NuGetRemoteFileService.IconPrefix + packageIdentity.ToString();
+            string key = NuGetPackageFileService.IconPrefix + packageIdentity.ToString();
             if (iconUri != null && !IdentityToUriCache.Add(key, iconUri, CacheItemPolicy))
             {
                 IdentityToUriCache.Remove(key);
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static void AddLicenseToCache(PackageIdentity packageIdentity, Uri embeddedLicenseUri)
         {
             Assumes.NotNull(embeddedLicenseUri);
-            string key = NuGetRemoteFileService.LicensePrefix + packageIdentity.ToString();
+            string key = NuGetPackageFileService.LicensePrefix + packageIdentity.ToString();
             if (!IdentityToUriCache.Add(key, embeddedLicenseUri, CacheItemPolicy))
             {
                 IdentityToUriCache.Remove(key);
@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public NuGetRemoteFileService(
+        public NuGetPackageFileService(
             ServiceActivationOptions options,
             IServiceBroker serviceBroker,
             AuthorizationServiceClient authorizationServiceClient,
@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(_nuGetTelemetryProvider);
         }
 
-        public NuGetRemoteFileService(IServiceBroker serviceBroker, INuGetTelemetryProvider nuGetTelemetryProvider)
+        public NuGetPackageFileService(IServiceBroker serviceBroker, INuGetTelemetryProvider nuGetTelemetryProvider)
         {
             _serviceBroker = serviceBroker;
             Assumes.NotNull(_serviceBroker);
@@ -96,13 +96,13 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<Stream?> GetPackageIconAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {
             Assumes.NotNull(packageIdentity);
-            string key = NuGetRemoteFileService.IconPrefix + packageIdentity.ToString();
+            string key = NuGetPackageFileService.IconPrefix + packageIdentity.ToString();
             Uri? uri = IdentityToUriCache.Get(key) as Uri;
 
             if (uri == null)
             {
                 var exception = new CacheMissException();
-                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetPackageIconAsync));
+                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetPackageFileService).FullName, nameof(NuGetPackageFileService.GetPackageIconAsync));
                 return null;
             }
 
@@ -122,12 +122,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public async ValueTask<Stream?> GetEmbeddedLicenseAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {
             Assumes.NotNull(packageIdentity);
-            string key = NuGetRemoteFileService.LicensePrefix + packageIdentity.ToString();
+            string key = NuGetPackageFileService.LicensePrefix + packageIdentity.ToString();
             Uri? uri = IdentityToUriCache.Get(key) as Uri;
             if (uri == null)
             {
                 var exception = new CacheMissException();
-                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetRemoteFileService).FullName, nameof(NuGetRemoteFileService.GetEmbeddedLicenseAsync));
+                await _nuGetTelemetryProvider.PostFaultAsync(exception, typeof(NuGetPackageFileService).FullName, nameof(NuGetPackageFileService.GetEmbeddedLicenseAsync));
                 return null;
             }
 

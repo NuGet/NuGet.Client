@@ -237,7 +237,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             Assumes.NotNull(packageSearchMetadata);
-            NuGetRemoteFileService.AddIconToCache(packageSearchMetadata.Identity, packageSearchMetadata.IconUrl);
+            NuGetPackageFileService.AddIconToCache(packageSearchMetadata.Identity, packageSearchMetadata.IconUrl);
 
             string? packagePath = (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
                     (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath;
@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     (packageSearchMetadata as ClonedPackageSearchMetadata)?.LicenseMetadata;
                 if (licenseMetadata != null)
                 {
-                    NuGetRemoteFileService.AddLicenseToCache(
+                    NuGetPackageFileService.AddLicenseToCache(
                         packageSearchMetadata.Identity,
                         CreateEmbeddedLicenseUri(packagePath, licenseMetadata));
                 }
