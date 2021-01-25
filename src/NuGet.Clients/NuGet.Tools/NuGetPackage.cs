@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using TelemetryActivity = NuGet.Common.TelemetryActivity;
 using NuGet.Options;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
@@ -148,7 +149,7 @@ namespace NuGetVSExtension
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
-            NuGet.Common.TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
+            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
 
             await base.InitializeAsync(cancellationToken, progress);
 
