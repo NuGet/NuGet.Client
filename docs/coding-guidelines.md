@@ -213,28 +213,30 @@ For example the following are correct:
 
 1. The namespace of a new class would normally match the assembly name, or a more qualfied version of it. Exceptions may apply. For example if the namespace is preserved for type forwarding purposes. For a class in `NuGet.Packaging`:
 
-    This is correct:
+    These are correct:
 
     ```cs
-    namespace NuGet.Packaging
+    namespace NuGet.Packaging {
+        public class SpecialSigningUtility
+        {
+        }
+    }
     ...
-    public class SpecialSigningUtility
-    ```
-
-    This is correct:
-
-    ```cs
-    namespace NuGet.Packaging.Signing
-    ...
-    public class SpecialSigningUtility
+    namespace NuGet.Packaging.Signing {
+        public class SpecialSigningUtility
+        {
+        }
+    }
     ```
 
     This is incorrect:
 
     ```cs
-    namespace NuGet.Common
-    ...
-    public class SpecialSigningUtility
+    namespace NuGet.Common {
+        public class SpecialSigningUtility
+        {
+        }
+    }
     ```
 
 Exceptions are allowed when multiple type names coming from different namespaces are available.
