@@ -3,7 +3,7 @@
 
 using NuGet.Common;
 
-namespace NuGet.VisualStudio.Telemetry.PowerShell
+namespace NuGet.VisualStudio.Common.Telemetry.PowerShell
 {
     public class InstanceCloseEvent : TelemetryEvent
     {

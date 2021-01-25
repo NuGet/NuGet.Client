@@ -3,9 +3,9 @@
 
 using System;
 using NuGet.Common;
-using NuGet.VisualStudio.Telemetry.PowerShell;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 
-namespace NuGet.VisualStudio.Telemetry
+namespace NuGet.VisualStudio.Common.Telemetry
 {
     public sealed class NuGetPowerShellUsageCollector : IDisposable
     {
