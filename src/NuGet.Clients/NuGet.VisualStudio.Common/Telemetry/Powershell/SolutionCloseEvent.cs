@@ -8,31 +8,31 @@ namespace NuGet.VisualStudio.Telemetry.PowerShell
     public class SolutionCloseEvent : TelemetryEvent
     {
         public SolutionCloseEvent(
-            bool FirstTimeLoadedFromPmc,
-            bool FirstTimeLoadedFromPmui,
-            bool InitPs1LoadedFromPmcFirst,
-            bool InitPs1LoadPmc,
-            bool InitPs1LoadPmui,
-            bool LoadedFromPmc,
-            bool LoadedFromPmui,
-            bool NuGetCommandUsed,
-            int PmcExecuteCommandCount,
-            int PmcWindowLoadCount,
-            int PmuiExecuteCommandCount,
-            bool SolutionLoaded) : base(NuGetPowerShellUsageCollector.SolutionClose)
+            bool firstTimeLoadedFromPmc,
+            bool firstTimeLoadedFromPmui,
+            bool initPs1LoadedFromPmcFirst,
+            bool initPs1LoadPmc,
+            bool initPs1LoadPmui,
+            bool loadedFromPmc,
+            bool loadedFromPmui,
+            bool nuGetCommandUsed,
+            int pmcExecuteCommandCount,
+            int pmcWindowLoadCount,
+            int pmuiExecuteCommandCount,
+            bool solutionLoaded) : base(NuGetPowerShellUsageCollector.SolutionClose)
         {
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.FirstTimeLoadedFromPmc] = FirstTimeLoadedFromPmc;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.FirstTimeLoadedFromPmui] = FirstTimeLoadedFromPmui;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadedFromPmcFirst] = InitPs1LoadedFromPmcFirst;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadPmc] = InitPs1LoadPmc;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadPmui] = InitPs1LoadPmui;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.LoadedFromPmc] = LoadedFromPmc;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.LoadedFromPmui] = LoadedFromPmui;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.NuGetCommandUsed] = NuGetCommandUsed;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount] = PmcExecuteCommandCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount] = PmcWindowLoadCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount] = PmuiExecuteCommandCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.SolutionLoaded] = SolutionLoaded;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.FirstTimeLoadedFromPmc] = firstTimeLoadedFromPmc;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.FirstTimeLoadedFromPmui] = firstTimeLoadedFromPmui;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadedFromPmcFirst] = initPs1LoadedFromPmcFirst;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadPmc] = initPs1LoadPmc;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.InitPs1LoadPmui] = initPs1LoadPmui;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.LoadedFromPmc] = loadedFromPmc;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.LoadedFromPmui] = loadedFromPmui;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.NuGetCommandUsed] = nuGetCommandUsed;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount] = pmcExecuteCommandCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount] = pmcWindowLoadCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount] = pmuiExecuteCommandCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.SolutionLoaded] = solutionLoaded;
         }
     }
 }

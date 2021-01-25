@@ -8,22 +8,22 @@ namespace NuGet.VisualStudio.Telemetry.PowerShell
     public class InstanceCloseEvent : TelemetryEvent
     {
         public InstanceCloseEvent(
-            int PmcExecuteCommandCount,
-            int PmcWindowLoadCount,
-            int PmuiExecuteCommandCount,
-            int PmcPowerShellLoadedSolutionCount,
-            int PmuiPowerShellLoadedSolutionCount,
-            bool ReOpenAtStart,
-            int SolutionCount
+            int pmcExecuteCommandCount,
+            int pmcWindowLoadCount,
+            int pmuiExecuteCommandCount,
+            int pmcPowerShellLoadedSolutionCount,
+            int pmuiPowerShellLoadedSolutionCount,
+            bool reOpenAtStart,
+            int solutionCount
             ) : base(NuGetPowerShellUsageCollector.InstanceClose)
         {
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount] = PmcExecuteCommandCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount] = PmcWindowLoadCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount] = PmuiExecuteCommandCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcPowerShellLoadedSolutionCount] = PmcPowerShellLoadedSolutionCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmuiPowerShellLoadedSolutionCount] = PmuiPowerShellLoadedSolutionCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.ReOpenAtStart] = ReOpenAtStart;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.SolutionCount] = SolutionCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount] = pmcExecuteCommandCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount] = pmcWindowLoadCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount] = pmuiExecuteCommandCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcPowerShellLoadedSolutionCount] = pmcPowerShellLoadedSolutionCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmuiPowerShellLoadedSolutionCount] = pmuiPowerShellLoadedSolutionCount;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.ReOpenAtStart] = reOpenAtStart;
+            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.SolutionCount] = solutionCount;
         }
     }
 }

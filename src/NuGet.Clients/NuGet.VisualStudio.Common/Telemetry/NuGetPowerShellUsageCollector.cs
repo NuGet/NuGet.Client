@@ -302,18 +302,18 @@ namespace NuGet.VisualStudio.Telemetry
             internal TelemetryEvent ToTelemetryEvent()
             {
                 var telemetry = new SolutionCloseEvent(
-                    FirstTimeLoadedFromPmc: FirstTimeLoadedFromPmc,
-                    FirstTimeLoadedFromPmui: FirstTimeLoadedFromPmui,
-                    InitPs1LoadedFromPmcFirst: InitPs1LoadedFromPmcFirst,
-                    InitPs1LoadPmc: InitPs1LoadPmc,
-                    InitPs1LoadPmui: InitPs1LoadPmui,
-                    LoadedFromPmc: LoadedFromPmc,
-                    LoadedFromPmui: LoadedFromPmui,
-                    NuGetCommandUsed: NuGetCommandUsed,
-                    PmcExecuteCommandCount: PmcExecuteCommandCount,
-                    PmcWindowLoadCount: PmcWindowLoadCount,
-                    PmuiExecuteCommandCount: PmuiExecuteCommandCount,
-                    SolutionLoaded: SolutionLoaded
+                    firstTimeLoadedFromPmc: FirstTimeLoadedFromPmc,
+                    firstTimeLoadedFromPmui: FirstTimeLoadedFromPmui,
+                    initPs1LoadedFromPmcFirst: InitPs1LoadedFromPmcFirst,
+                    initPs1LoadPmc: InitPs1LoadPmc,
+                    initPs1LoadPmui: InitPs1LoadPmui,
+                    loadedFromPmc: LoadedFromPmc,
+                    loadedFromPmui: LoadedFromPmui,
+                    nuGetCommandUsed: NuGetCommandUsed,
+                    pmcExecuteCommandCount: PmcExecuteCommandCount,
+                    pmcWindowLoadCount: PmcWindowLoadCount,
+                    pmuiExecuteCommandCount: PmuiExecuteCommandCount,
+                    solutionLoaded: SolutionLoaded
                     );
                 return telemetry;
             }
@@ -343,13 +343,13 @@ namespace NuGet.VisualStudio.Telemetry
             internal TelemetryEvent ToTelemetryEvent()
             {
                 var telemetry = new InstanceCloseEvent(
-                    PmcExecuteCommandCount: PmcExecuteCommandCount,
-                    PmcWindowLoadCount: PmcWindowLoadCount,
-                    PmuiExecuteCommandCount: PmuiExecuteCommandCount,
-                    PmcPowerShellLoadedSolutionCount: PmcLoadedSolutionCount,
-                    PmuiPowerShellLoadedSolutionCount: PmuiLoadedSolutionCount,
-                    ReOpenAtStart: ReOpenAtStart,
-                    SolutionCount: SolutionCount
+                    pmcExecuteCommandCount: PmcExecuteCommandCount,
+                    pmcWindowLoadCount: PmcWindowLoadCount,
+                    pmuiExecuteCommandCount: PmuiExecuteCommandCount,
+                    pmcPowerShellLoadedSolutionCount: PmcLoadedSolutionCount,
+                    pmuiPowerShellLoadedSolutionCount: PmuiLoadedSolutionCount,
+                    reOpenAtStart: ReOpenAtStart,
+                    solutionCount: SolutionCount
                     );
                 return telemetry;
             }

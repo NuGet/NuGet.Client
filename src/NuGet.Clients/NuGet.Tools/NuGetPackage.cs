@@ -19,7 +19,6 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using TelemetryActivity = NuGet.Common.TelemetryActivity;
 using NuGet.Options;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
@@ -38,6 +37,7 @@ using ProvideBrokeredServiceAttribute = Microsoft.VisualStudio.Shell.ServiceBrok
 using Resx = NuGet.PackageManagement.UI.Resources;
 using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudience;
 using Task = System.Threading.Tasks.Task;
+using TelemetryActivity = NuGet.Common.TelemetryActivity;
 using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
