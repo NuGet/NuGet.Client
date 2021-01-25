@@ -208,6 +208,34 @@ For example the following are correct:
     System.Threading.Tasks.Task DoSomethingAsync()
     ```
 
+1. All the parameter names in methods and constructors should be `camelCase`.
+
+1. The namespace of a new class would normally match the assembly name, or a more qualfied version of it.
+Exceptions may apply. For example if the namespace is preserved for type forwarding purposes.
+
+For a class in `NuGet.Packaging`,
+
+    This is correct:
+    ```cs
+    namespace NuGet.Packaging
+    ...
+    public class SpecialSigningUtility
+    ```
+
+    This is correct:
+    ```cs
+    namespace NuGet.Packaging.Signing
+    ...
+    public class SpecialSigningUtility
+    ```
+
+    This is incorrect:
+    ```cs
+    namespace NuGet.Common
+    ...
+    public class SpecialSigningUtility
+    ```
+
 Exceptions are allowed when multiple type names coming from different namespaces are available.
 
 Many of the guidelines, wherever possible, and potentially some not listed here, are enforced by an [EditorConfig](https://editorconfig.org "EditorConfig homepage") file (`.editorconfig`) at the root of the repository.
