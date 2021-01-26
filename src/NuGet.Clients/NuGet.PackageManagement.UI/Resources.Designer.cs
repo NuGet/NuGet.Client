@@ -61,6 +61,33 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to not sorted, press space or enter to sort ascending.
+        /// </summary>
+        public static string Accessibility_ColumnNotSortedHelpText {
+            get {
+                return ResourceManager.GetString("Accessibility_ColumnNotSortedHelpText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to sorted ascending, press space or enter to sort descending.
+        /// </summary>
+        public static string Accessibility_ColumnSortedAscendingHelpText {
+            get {
+                return ResourceManager.GetString("Accessibility_ColumnSortedAscendingHelpText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to sorted descending, Press space or enter to sort ascending.
+        /// </summary>
+        public static string Accessibility_ColumnSortedDescendingHelpText {
+            get {
+                return ResourceManager.GetString("Accessibility_ColumnSortedDescendingHelpText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package changes.
         /// </summary>
         public static string Accessibility_PackageChanges {

@@ -4,9 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -172,11 +175,34 @@ namespace NuGet.PackageManagement.UI
             {
                 if (column == sortColumn)
                 {
+                    UpdateHeaderAutomationProperties(column);
                     continue;
                 }
 
                 SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
+                UpdateHeaderAutomationProperties(column);
             }
+
+            sortColumn.Focus();
+        }
+
+        private void UpdateHeaderAutomationProperties(GridViewColumnHeader columnHeader)
+        {
+            var sortDir = SortableColumnHeaderAttachedProperties.GetSortDirectionProperty(columnHeader);
+            if (sortDir == ListSortDirection.Ascending)
+            {
+                AutomationProperties.SetHelpText(columnHeader, Resx.Resources.Accessibility_ColumnSortedAscendingHelpText);
+            }
+            else if (sortDir == ListSortDirection.Descending)
+            {
+                AutomationProperties.SetHelpText(columnHeader, Resx.Resources.Accessibility_ColumnSortedDescendingHelpText);
+            }
+            else
+            {
+                AutomationProperties.SetHelpText(columnHeader, Resx.Resources.Accessibility_ColumnNotSortedHelpText);
+            }
+
+            //var peer = FrameworkElementAutomationPeer.FromElement(columnHeader);
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
