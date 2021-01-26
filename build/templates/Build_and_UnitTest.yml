@@ -411,7 +411,6 @@ steps:
   displayName: "Copy LCG Files (deprecated)"
   inputs:
     SourceFolder: "artifacts\\localize\\ENU\\"
-    Contents: "**\\*.lcg"
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))" # Enabled for all builds for testing
 
