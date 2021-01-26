@@ -9,7 +9,7 @@ Uses the Personal Access Token of NuGetLurker to automate the tagging process.
 PersonalAccessToken of the NuGetLurker account
 
 .PARAMETER VsTargetBranch
-The VS Branch that the NuGet build is being inserted into. 
+The VS Branch that the NuGet build is being inserted into.
 
 .PARAMETER BuildOutputPath
 The output path for NuGet Build artifacts.
@@ -48,7 +48,7 @@ if($index -ne '-1')
 
 $Date = Get-Date
 $Message = "Insert $ProductVersion into $VsTargetBranch on $Date"
-$BuildInfoJsonFile = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'buildinfo.json')
+$BuildInfoJsonFile = [System.IO.Path]::Combine('$(System.ArtifactsDirectory)','$(Build.DefinitionName)','BuildInfo','buildinfo.json')
 $buildInfoJson = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
 $LocRepoCommitHash = $buildInfoJson.LocalizationRepositoryCommitHash
 
@@ -76,12 +76,12 @@ try {
         type = 'commit';
         message= $TagMessage;
         } | ConvertTo-Json;
-        
+
         Write-Host $Body
-        
+
     $tagObject = "refs/tags/$TagName"
     $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/NuGet/$NuGetRepository/git/tags" -Body $Body
-    Write-Host $r1    
+    Write-Host $r1
 }
 catch {
     # The above would fail if the tag already existed, in which case we would append the attempt number to the tag name to make it unique
@@ -93,9 +93,9 @@ catch {
         type = 'commit';
         message= $TagMessage;
         } | ConvertTo-Json;
-        
+
         Write-Host $Body
-        
+
     $tagObject = "refs/tags/$TagName"
     $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/NuGet/$NuGetRepository/git/tags" -Body $Body
     Write-Host $r1
