@@ -90,8 +90,8 @@
                     Focusable="False"
                     AutomationProperties.Name="{x:Static nuget:Resources.CheckBox_Selected}"
                     IsChecked="{Binding Selected}"
-                    Checked="CheckBox_Checked"
-                    Unchecked="CheckBox_Checked"/>
+                    Checked="CheckBox_Toggled"
+                    Unchecked="CheckBox_Toggled"/>
 
       <!-- Icon -->
       <Grid

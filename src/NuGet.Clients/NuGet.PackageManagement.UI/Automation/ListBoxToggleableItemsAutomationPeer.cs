@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI
     /// Specifically, this is used for the representation of <see cref="PackageItemListViewModel"/> in
     /// the <see cref="InfiniteScrollList"/> control for selecting packages to be Updated (eg, Updates tab).
     /// </summary>
-    internal partial class ListBoxToggleableItemsAutomationPeer : ListBoxAutomationPeer
+    internal class ListBoxToggleableItemsAutomationPeer : ListBoxAutomationPeer
     {
         public ListBoxToggleableItemsAutomationPeer(InfiniteScrollListBox owner)
             : base(owner)

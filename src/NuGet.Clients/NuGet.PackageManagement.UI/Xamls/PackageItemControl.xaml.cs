@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI
         // UIA event to convey the fact that the toggle state of the item has changed. The 
         // event must be raised regardless of whether the toggle state of the item changed 
         // in response to keyboard, mouse, or programmatic input.
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        private void CheckBox_Toggled(object sender, RoutedEventArgs e)
         {
             var itemCheckBox = sender as CheckBox;
             if (itemCheckBox is null || itemCheckBox.Visibility != Visibility.Visible)
