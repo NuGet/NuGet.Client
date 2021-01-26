@@ -178,6 +178,15 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Lock file is mising the required target framework {0}. Please file a bug with repro steps on NuGet/Home if seen..
+        /// </summary>
+        internal static string PackagesLockFile_LockFileMissingRestoreMetadataTfms {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_LockFileMissingRestoreMetadataTfms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The project target frameworks are different than the lock file&apos;s target frameworks. Lock file target frameworks: {0}. Project target frameworks {1}..
         /// </summary>
         internal static string PackagesLockFile_MismatchedTargetFrameworks {
@@ -277,7 +286,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restore metadata is mising the required target frameworks list..
+        ///   Looks up a localized string similar to Restore metadata is mising the required target frameworks list. Please file a bug with repro steps on NuGet/Home if seen..
         /// </summary>
         internal static string PackagesLockFile_RestoreMetadataMissingTfms {
             get {

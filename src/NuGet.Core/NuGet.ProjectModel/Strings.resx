@@ -158,6 +158,9 @@
   <data name="PackagesLockFile_IncompatibleLockFileVersion" xml:space="preserve">
     <value>Version specified in the packages.lock.json file is invalid. Current tooling supports version {0} and previous formats.</value>
   </data>
+  <data name="PackagesLockFile_LockFileMissingRestoreMetadataTfms" xml:space="preserve">
+    <value>Lock file is mising the required target framework {0}. Please file a bug with repro steps on NuGet/Home if seen.</value>
+  </data>
   <data name="PackagesLockFile_MismatchedTargetFrameworks" xml:space="preserve">
     <value>The project target frameworks are different than the lock file's target frameworks. Lock file target frameworks: {0}. Project target frameworks {1}.</value>
     <comment>0 - Semicolon delimited list of lock file target frameworks, 1 - semicolon delimited list of lock file target frameworks</comment>
@@ -195,7 +198,7 @@
     <value>Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. Lock file version {0}, central package management version {1}.</value>
   </data>
   <data name="PackagesLockFile_RestoreMetadataMissingTfms" xml:space="preserve">
-    <value>Restore metadata is mising the required target frameworks list.</value>
+    <value>Restore metadata is mising the required target frameworks list. Please file a bug with repro steps on NuGet/Home if seen.</value>
   </data>
   <data name="PackagesLockFile_RuntimeIdentifiersChanged" xml:space="preserve">
     <value>The project's runtime identifiers have changed from. Project's runtime identifiers: {0}, lock file's runtime identifiers {1}.</value>

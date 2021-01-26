@@ -69,7 +69,7 @@ namespace NuGet.ProjectModel
         /// <param name="nuGetLockFile">The current <see cref="PackagesLockFile"/>.</param>
         /// <returns>Returns LockFileValidityWithInvalidReasons object with IsValid set to true if the lock file is valid false otherwise.
         /// The second return type is a localized message that indicates in further detail the reason for the inconsistency.</returns>
-        public static LockFileValidityWithInvalidReasons IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
+        public static LockFileValidationResult IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
         {
             List<string> invalidReasons = new List<string>();
 
@@ -104,6 +104,24 @@ namespace NuGet.ProjectModel
             }
             else
             {
+                // Validate the runtimes for the current project did not change.
+                var projectRuntimesKeys = project.RuntimeGraph.Runtimes.Select(r => r.Key).Where(k => k != null);
+                var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null).Distinct();
+
+                if (!projectRuntimesKeys.OrderedEquals(
+                lockFileRuntimes,
+                x => x,
+                StringComparer.InvariantCultureIgnoreCase,
+                StringComparer.InvariantCultureIgnoreCase))
+                {
+                    invalidReasons.Add(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.PackagesLockFile_RuntimeIdentifiersChanged,
+                                    string.Join(";", projectRuntimesKeys.OrderBy(e => e)),
+                                    string.Join(";", lockFileRuntimes.OrderBy(e => e))
+                                    ));
+                }
+
                 foreach (var framework in project.TargetFrameworks)
                 {
                     var target = nuGetLockFile.Targets.FirstOrDefault(
@@ -117,6 +135,7 @@ namespace NuGet.ProjectModel
                                     Strings.PackagesLockFile_NewTargetFramework,
                                     framework.FrameworkName.GetShortFolderName())
                                 );
+
                         continue;
                     }
 
@@ -149,12 +168,11 @@ namespace NuGet.ProjectModel
                     if (target == null)
                     {
                         // This should never be hit. A hit implies that project.RestoreMetadata.TargetsFrameworks and project.TargetsFrameworks are not the same.
-                        invalidReasons.Add((string.Format(
+                        throw new Exception(string.Format(
                                     CultureInfo.CurrentCulture,
-                                    Strings.PackagesLockFile_NewTargetFramework,
+                                    Strings.PackagesLockFile_LockFileMissingRestoreMetadataTfms,
                                     framework.FrameworkName.GetShortFolderName()
-                                    )));
-                        continue;
+                                    ));
                     }
 
                     var queue = new Queue<Tuple<string, string>>();
@@ -261,27 +279,9 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            // Validate the runtimes for the current project did not change.
-            var projectRuntimesKeys = project.RuntimeGraph.Runtimes.Select(r => r.Key).Where(k => k != null);
-            var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null).Distinct();
-
-            if (!projectRuntimesKeys.OrderedEquals(
-                            lockFileRuntimes,
-                            x => x,
-                            StringComparer.InvariantCultureIgnoreCase,
-                            StringComparer.InvariantCultureIgnoreCase))
-            {
-                invalidReasons.Add(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.PackagesLockFile_RuntimeIdentifiersChanged,
-                                string.Join(";", projectRuntimesKeys.OrderBy(e => e)),
-                                string.Join(";", lockFileRuntimes.OrderBy(e => e))
-                                ));
-            }
-
             bool isLockFileValid = invalidReasons.Count == 0;
 
-            return new LockFileValidityWithInvalidReasons(isLockFileValid, invalidReasons);
+            return new LockFileValidationResult(isLockFileValid, invalidReasons);
         }
 
         /// <summary>Compares two lock files to check if the structure is the same (all values are the same, other
@@ -576,9 +576,9 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// A class to return information about lock file validity with invalid reason.
+        /// A class to return information about lock file validity with invalid reasons.
         /// </summary>
-        public class LockFileValidityWithInvalidReasons
+        public class LockFileValidationResult
         {
             /// <summary>
             /// True if the packages.lock.json file dependencies match project.assets.json file dependencies
@@ -590,7 +590,7 @@ namespace NuGet.ProjectModel
             /// </summary>
             public IReadOnlyList<string> InvalidReasons { get; }
 
-            public LockFileValidityWithInvalidReasons(bool isValid, IReadOnlyList<string> invalidReasons)
+            public LockFileValidationResult(bool isValid, IReadOnlyList<string> invalidReasons)
             {
                 IsValid = isValid;
                 InvalidReasons = invalidReasons;

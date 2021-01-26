@@ -1,5 +1,5 @@
-NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidityWithInvalidReasons
-NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidityWithInvalidReasons.InvalidReasons.get -> System.Collections.Generic.IReadOnlyList<string>
-NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidityWithInvalidReasons.IsValid.get -> bool
-NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidityWithInvalidReasons.LockFileValidityWithInvalidReasons(bool isValid, System.Collections.Generic.IReadOnlyList<string> invalidReasons) -> void
-static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileStillValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidityWithInvalidReasons
+NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidationResult
+NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidationResult.InvalidReasons.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidationResult.IsValid.get -> bool
+NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidationResult.LockFileValidationResult(bool isValid, System.Collections.Generic.IReadOnlyList<string> invalidReasons) -> void
+static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileStillValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidationResult
