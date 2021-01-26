@@ -162,10 +162,10 @@ namespace NuGet.ProjectModel
                 // Validate all P2P references
                 foreach (var framework in project.RestoreMetadata.TargetFrameworks)
                 {
-                    var target = nuGetLockFile.Targets.FirstOrDefault(
-                        t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, framework.FrameworkName));
+                    var projecttarget = project.TargetFrameworks.FirstOrDefault(
+                        t => EqualityUtility.EqualsWithNullCheck(t.FrameworkName, framework.FrameworkName));
 
-                    if (target == null)
+                    if (projecttarget == null)
                     {
                         // This should never be hit. A hit implies that project.RestoreMetadata.TargetsFrameworks and project.TargetsFrameworks are not the same.
                         throw new Exception(string.Format(
@@ -174,6 +174,12 @@ namespace NuGet.ProjectModel
                                     framework.FrameworkName.GetShortFolderName()
                                     ));
                     }
+
+                    var target = nuGetLockFile.Targets.FirstOrDefault(
+                        t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, framework.FrameworkName));
+
+                    if (target == null)
+                        continue;
 
                     var queue = new Queue<Tuple<string, string>>();
                     var visitedP2PReference = new HashSet<string>();
