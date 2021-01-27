@@ -410,7 +410,10 @@ steps:
 - task: CopyFiles@2
   displayName: "Copy LCG Files (deprecated)"
   inputs:
-    SourceFolder: "artifacts\\localize\\ENU\\"
+    Contents: |
+      artifacts\**\*.lcg
+      artifacts\localize\*.dll
+      !artifacts\localize\**\*
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))" # Enabled for all builds for testing
 
