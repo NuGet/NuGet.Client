@@ -13,6 +13,9 @@ The VS Branch that the NuGet build is being inserted into.
 
 .PARAMETER BuildOutputPath
 The output path for NuGet Build artifacts.
+
+.PARAMETER BuildInfoJsonFile
+Path to the buildInfo.json file that is published as artifact for every build.
 #>
 
 [CmdletBinding()]
@@ -23,7 +26,9 @@ param
     [Parameter(Mandatory=$True)]
     [string]$VsTargetBranch,
     [Parameter(Mandatory=$True)]
-    [string]$BuildOutputPath
+    [string]$BuildOutputPath,
+    [Parameter(Mandatory=$True)]
+    [string]$BuildInfoJsonFile
 )
 
 # Set security protocol to tls1.2 for Invoke-RestMethod powershell cmdlet
@@ -48,7 +53,6 @@ if($index -ne '-1')
 
 $Date = Get-Date
 $Message = "Insert $ProductVersion into $VsTargetBranch on $Date"
-$BuildInfoJsonFile = [System.IO.Path]::Combine('$(System.ArtifactsDirectory)','$(Build.DefinitionName)','BuildInfo','buildinfo.json')
 $buildInfoJson = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
 $LocRepoCommitHash = $buildInfoJson.LocalizationRepositoryCommitHash
 
