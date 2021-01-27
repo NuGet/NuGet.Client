@@ -412,7 +412,6 @@ steps:
   inputs:
     Contents: |
       artifacts\**\*.lcg
-      artifacts\localize\*.dll
       !artifacts\localize\**\*
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))" # Enabled for all builds for testing
