@@ -182,8 +182,6 @@ namespace NuGet.PackageManagement.UI
                 SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
                 UpdateHeaderAutomationProperties(column);
             }
-
-            sortColumn.Focus();
         }
 
         private void UpdateHeaderAutomationProperties(GridViewColumnHeader columnHeader)
