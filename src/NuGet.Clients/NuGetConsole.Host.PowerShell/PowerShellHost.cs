@@ -28,8 +28,8 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Telemetry;
-using NuGet.VisualStudio.Telemetry.PowerShell;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -317,11 +317,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         if (!PowerShellLoaded)
                         {
-                            var telemetryEvent = new TelemetryEvent(NuGetPowerShellUsageCollector.PowerShellLoaded, new Dictionary<string, object>
-                            {
-                                { NuGetPowerShellUsageCollector.Trigger, _isPmc ? NuGetPowerShellUsageCollector.Pmc : NuGetPowerShellUsageCollector.Pmui }
-                            });
-
+                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc);
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                             PowerShellLoaded = true;
                         }

@@ -28,7 +28,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry.PowerShell;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets

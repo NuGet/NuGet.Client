@@ -26,9 +26,10 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Common.Telemetry;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
-using NuGet.VisualStudio.Telemetry.PowerShell;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using ContractsNuGetServices = NuGet.VisualStudio.Contracts.NuGetServices;
@@ -37,6 +38,7 @@ using ProvideBrokeredServiceAttribute = Microsoft.VisualStudio.Shell.ServiceBrok
 using Resx = NuGet.PackageManagement.UI.Resources;
 using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudience;
 using Task = System.Threading.Tasks.Task;
+using TelemetryActivity = NuGet.Common.TelemetryActivity;
 using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
@@ -148,7 +150,7 @@ namespace NuGetVSExtension
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
-            NuGet.Common.TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
+            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
 
             await base.InitializeAsync(cancellationToken, progress);
 
