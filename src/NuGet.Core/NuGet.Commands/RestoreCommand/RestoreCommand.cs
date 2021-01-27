@@ -577,12 +577,9 @@ namespace NuGet.Commands
                     }
                     else if (_request.IsRestoreOriginalAction && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode)
                     {
-
                         success = false;
 
                         // bail restore since it's the locked mode but required to update the lock file.
-                        var framework = _request.Project.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName()).ToArray();
-
                         await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
                     }
                 }
