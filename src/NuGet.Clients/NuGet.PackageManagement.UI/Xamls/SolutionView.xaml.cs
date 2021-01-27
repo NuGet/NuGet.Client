@@ -189,20 +189,24 @@ namespace NuGet.PackageManagement.UI
         private void UpdateHeaderAutomationProperties(GridViewColumnHeader columnHeader)
         {
             var sortDir = SortableColumnHeaderAttachedProperties.GetSortDirectionProperty(columnHeader);
+            string oldHelpText = AutomationProperties.GetHelpText(columnHeader);
+            string newHelpText;
             if (sortDir == ListSortDirection.Ascending)
             {
-                AutomationProperties.SetHelpText(columnHeader, Resx.Resources.Accessibility_ColumnSortedAscendingHelpText);
+                newHelpText = Resx.Resources.Accessibility_ColumnSortedAscendingHelpText;
             }
             else if (sortDir == ListSortDirection.Descending)
             {
-                AutomationProperties.SetHelpText(columnHeader, Resx.Resources.Accessibility_ColumnSortedDescendingHelpText);
+                newHelpText = Resx.Resources.Accessibility_ColumnSortedDescendingHelpText;
             }
             else
             {
-                AutomationProperties.SetHelpText(columnHeader, Resx.Resources.Accessibility_ColumnNotSortedHelpText);
+                newHelpText = Resx.Resources.Accessibility_ColumnNotSortedHelpText;
             }
 
-            //var peer = FrameworkElementAutomationPeer.FromElement(columnHeader);
+            AutomationProperties.SetHelpText(columnHeader, newHelpText);
+            var peer = UIElementAutomationPeer.FromElement(columnHeader);
+            peer?.RaisePropertyChangedEvent(AutomationElementIdentifiers.HelpTextProperty, oldHelpText, newHelpText);
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)

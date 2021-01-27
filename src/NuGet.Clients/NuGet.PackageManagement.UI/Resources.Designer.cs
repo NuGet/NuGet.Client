@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to not sorted, press space or enter to sort ascending.
+        ///   Looks up a localized string similar to Not sorted, press space to sort ascending.
         /// </summary>
         public static string Accessibility_ColumnNotSortedHelpText {
             get {
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to sorted ascending, press space or enter to sort descending.
+        ///   Looks up a localized string similar to Sorted ascending, press space to sort descending.
         /// </summary>
         public static string Accessibility_ColumnSortedAscendingHelpText {
             get {
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to sorted descending, Press space or enter to sort ascending.
+        ///   Looks up a localized string similar to Sorted descending, press space to sort ascending.
         /// </summary>
         public static string Accessibility_ColumnSortedDescendingHelpText {
             get {
