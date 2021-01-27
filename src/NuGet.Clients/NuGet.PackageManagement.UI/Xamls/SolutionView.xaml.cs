@@ -116,6 +116,11 @@ namespace NuGet.PackageManagement.UI
 
         public void RestoreUserSettings(UserSettings userSettings)
         {
+            if (userSettings == null)
+            {
+                return;
+            }
+
             // find the column to sort
             var sortColumn = _sortableColumns.FirstOrDefault(
                 column =>
@@ -130,34 +135,12 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            // add new sort description
-            _projectList.Items.SortDescriptions.Clear();
-            _projectList.Items.SortDescriptions.Add(
-                new SortDescription(
-                    userSettings.SortPropertyName,
-                    userSettings.SortDirection));
-
-            // upate sortInfo
-            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: userSettings.SortDirection);
-
-            // clear sort direction of other columns
-            foreach (var column in _sortableColumns)
-            {
-                if (column == sortColumn)
-                {
-                    continue;
-                }
-
-                SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
-            }
+            UpdateColumnSorting(sortColumn, new SortDescription(userSettings.SortPropertyName, userSettings.SortDirection));
         }
 
         private void SortByColumn(GridViewColumnHeader sortColumn)
         {
-            _projectList.Items.SortDescriptions.Clear();
-
             var sortDescription = new SortDescription();
-
             sortDescription.PropertyName = SortableColumnHeaderAttachedProperties.GetSortPropertyName(sortColumn);
             var sortDir = SortableColumnHeaderAttachedProperties.GetSortDirectionProperty(sortColumn);
 
@@ -167,10 +150,19 @@ namespace NuGet.PackageManagement.UI
                     ? ListSortDirection.Descending
                     : ListSortDirection.Ascending;
 
-            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: sortDescription.Direction);
+            UpdateColumnSorting(sortColumn, sortDescription);
+        }
 
+        private void UpdateColumnSorting(GridViewColumnHeader sortColumn, SortDescription sortDescription)
+        {
+            // Add new sort description
+            _projectList.Items.SortDescriptions.Clear();
             _projectList.Items.SortDescriptions.Add(sortDescription);
 
+            // Upate sorting info of the column to sort on
+            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: sortDescription.Direction);
+
+            // Clear sort direction of other columns and update automation properties on all columns
             foreach (var column in _sortableColumns)
             {
                 if (column == sortColumn)
