@@ -605,6 +605,11 @@ namespace NuGet.PackageManagement
                 IEnumerable<SourceRepository> secondarySources,
                 CancellationToken token)
         {
+            if (packageIdentities == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentities));
+            }
+
             if (nuGetProjects == null)
             {
                 throw new ArgumentNullException(nameof(nuGetProjects));
