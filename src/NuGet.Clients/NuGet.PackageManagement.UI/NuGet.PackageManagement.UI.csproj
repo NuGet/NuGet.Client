@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="UIAutomationProvider" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -52,7 +53,9 @@
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
     <Compile Include="Actions\UpgradeLogger.cs" />
+    <Compile Include="Automation\ListBoxToggleableItemsAutomationPeer.cs" />
     <Compile Include="Automation\TabItemButtonAutomationPeer.cs" />
+    <Compile Include="Automation\ToggleableItemAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
