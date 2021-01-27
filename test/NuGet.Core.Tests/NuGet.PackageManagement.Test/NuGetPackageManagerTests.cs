@@ -6975,6 +6975,73 @@ namespace NuGet.Test
             }
         }
 
+        /// <summary>
+        /// Repro for a bug caused by a NullReferenceException being thrown due to a null <see cref="PackageIdentity.Version"/>
+        /// (https://github.com/NuGet/Home/issues/9882).
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_NullVersion_Throws()
+        {
+            // Arrange
+
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(3, 0, 0), new PackageDependency[] { }, true, null),
+            };
+
+            SourceRepositoryProvider sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            var installedPackages = new List<NuGet.Packaging.PackageReference>
+            {
+                new PackageReference(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), fwk45, true),
+            };
+
+            var packageIdentity = _packageWithDependents[0];
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager())
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var buildIntegratedProjectA = new Mock<BuildIntegratedNuGetProject>();
+                buildIntegratedProjectA.Setup(p => p.GetInstalledPackagesAsync(CancellationToken.None))
+                    .Returns(() => Task.FromResult(installedPackages.AsEnumerable()));
+
+                var projectList = new List<NuGetProject> { buildIntegratedProjectA.Object };
+                solutionManager.NuGetProjects = projectList;
+
+                // Main Act
+                var targets = new List<PackageIdentity>
+                {
+                    new PackageIdentity("a", null)
+                };
+
+                // Assert
+                var ex = await Assert.ThrowsAsync<NullReferenceException>(async () =>
+                {
+                    IEnumerable<NuGetProjectAction> result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                        targets,
+                        projectList,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+                });
+            }
+        }
+
         private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(IEnumerable<string> actual)
         {
             Assert.True(actual.Contains(TelemetryConstants.GatherDependencyStepName));
