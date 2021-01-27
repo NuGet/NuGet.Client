@@ -170,7 +170,7 @@ namespace NuGet.ProjectModel
                         // This should never be hit. A hit implies that project.RestoreMetadata.TargetsFrameworks and project.TargetsFrameworks are not the same.
                         throw new Exception(string.Format(
                                     CultureInfo.CurrentCulture,
-                                    Strings.PackagesLockFile_LockFileMissingRestoreMetadataTfms,
+                                    Strings.PackagesLockFile_ProjectIsMissingRestoreMetadataTfms,
                                     framework.FrameworkName.GetShortFolderName()
                                     ));
                     }
