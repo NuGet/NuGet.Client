@@ -192,6 +192,7 @@ For example the following are correct:
         return (string input) => // method body
     }
     ```
+
 1. Prefer a using directive over fully qualifying a type.
 
     This is correct:
@@ -206,6 +207,36 @@ For example the following are correct:
     using System;
 
     System.Threading.Tasks.Task DoSomethingAsync()
+    ```
+
+1. All the parameter names in methods and constructors should be `camelCase`.
+
+1. The namespace of a new class would normally match the assembly name, or a more qualfied version of it. Exceptions may apply. For example if the namespace is preserved for type forwarding purposes. For a class in `NuGet.Packaging`:
+
+    These are correct:
+
+    ```cs
+    namespace NuGet.Packaging {
+        public class SpecialSigningUtility
+        {
+        }
+    }
+    ...
+    namespace NuGet.Packaging.Signing {
+        public class SpecialSigningUtility
+        {
+        }
+    }
+    ```
+
+    This is incorrect:
+
+    ```cs
+    namespace NuGet.Common {
+        public class SpecialSigningUtility
+        {
+        }
+    }
     ```
 
 Exceptions are allowed when multiple type names coming from different namespaces are available.
