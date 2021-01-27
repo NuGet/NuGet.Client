@@ -221,9 +221,8 @@ namespace NuGet.Commands
                 }
                 else
                 {
-
                     // Being in an unsuccessful state before ExecuteRestoreAsync means there was a problem with the
-                    // project or we're in locked and out of date.
+                    // project or we're in locked mode and out of date.
                     // For example, project TFM or package versions couldn't be parsed. Although the minimal
                     // fake package spec generated has no packages requested, it also doesn't have any project TFMs
                     // and will generate validation errors if we tried to call ExecuteRestoreAsync. So, to avoid
