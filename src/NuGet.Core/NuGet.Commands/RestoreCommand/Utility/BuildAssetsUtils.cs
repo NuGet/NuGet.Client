@@ -541,7 +541,8 @@ namespace NuGet.Commands
                 var projectGraph = targetGraph.Graphs.FirstOrDefault();
 
                 // Packages with GeneratePathProperty=true
-                var packageIdsToCreatePropertiesFor = new HashSet<string>(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name), StringComparer.OrdinalIgnoreCase);
+                var packages = projectGraph?.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name);
+                var packageIdsToCreatePropertiesFor = packages != null ? new HashSet<string>(packages, StringComparer.OrdinalIgnoreCase) : Enumerable.Empty<string>();
 
                 var localPackages = sortedPackages.Select(e => e.Value);
 
