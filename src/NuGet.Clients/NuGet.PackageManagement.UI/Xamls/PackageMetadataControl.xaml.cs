@@ -1,19 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
-using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Common;
-using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -52,7 +46,7 @@ namespace NuGet.PackageManagement.UI
                     flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     (window.DataContext as LicenseFileData).LicenseText = flowDoc;
-                });
+                }).PostOnFailure(nameof(PackageMetadataControl), nameof(ViewLicense_Click));
 
                 using (NuGetEventTrigger.TriggerEventBeginEnd(
                     NuGetEvent.EmbeddedLicenseWindowBegin,

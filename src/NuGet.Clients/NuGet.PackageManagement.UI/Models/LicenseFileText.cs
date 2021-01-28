@@ -1,14 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Documents;
-using Microsoft.ServiceHub.Framework;
 using NuGet.Packaging.Core;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Common;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -32,21 +30,18 @@ namespace NuGet.PackageManagement.UI
             PackageIdentity = packageIdentity;
         }
 
-        internal void LoadLicenseFile()
+        internal async Task LoadLicenseFileAsync()
         {
             if (Interlocked.CompareExchange(ref _initialized, 1, 0) == 0)
             {
                 if (_packagePath != null)
                 {
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                    {
-                        string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(PackageIdentity, CancellationToken.None);
+                    string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(PackageIdentity, CancellationToken.None);
 
-                        var flowDoc = new FlowDocument();
-                        flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        LicenseText = flowDoc;
-                    });
+                    var flowDoc = new FlowDocument();
+                    flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    LicenseText = flowDoc;
                 }
             }
         }

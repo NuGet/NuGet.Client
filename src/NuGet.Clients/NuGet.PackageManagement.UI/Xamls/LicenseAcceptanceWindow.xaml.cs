@@ -4,6 +4,8 @@
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,7 +41,9 @@ namespace NuGet.PackageManagement.UI
                         DataContext = licenseFile
                     };
 
-                    licenseFile.LoadLicenseFile();
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+                            () => { return licenseFile.LoadLicenseFileAsync(); }
+                    ).PostOnFailure(nameof(LicenseAcceptanceWindow), nameof(ViewLicense_Click));
 
                     using (NuGetEventTrigger.TriggerEventBeginEnd(
                             NuGetEvent.EmbeddedLicenseWindowBegin,
