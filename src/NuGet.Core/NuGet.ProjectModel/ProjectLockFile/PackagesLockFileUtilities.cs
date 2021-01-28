@@ -162,16 +162,16 @@ namespace NuGet.ProjectModel
                 // Validate all P2P references
                 foreach (var framework in project.RestoreMetadata.TargetFrameworks)
                 {
-                    var projecttarget = project.TargetFrameworks.FirstOrDefault(
+                    var projecttarget = project.TargetFrameworks.Any(
                         t => EqualityUtility.EqualsWithNullCheck(t.FrameworkName, framework.FrameworkName));
 
-                    if (projecttarget == null)
+                    if (!projecttarget)
                     {
                         // This should never be hit. A hit implies that project.RestoreMetadata.TargetsFrameworks and project.TargetsFrameworks are not the same.
                         throw new Exception(string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.PackagesLockFile_ProjectIsMissingRestoreMetadataTfms,
-                                    framework.FrameworkName.GetShortFolderName()
+                                    framework.FrameworkName.GetShortFolderName() + " Project Tfms: " + string.Join("-", project.TargetFrameworks)
                                     ));
                     }
 
