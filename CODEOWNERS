@@ -1,0 +1,51 @@
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+
+# These owners will be the default owners for everything in the repo.
+*       @client-team
+
+# Order is important. The last matching pattern has the most precedence.
+# So if a pull request only touches javascript files, only these owners
+# will be requested to review.
+
+# You can also use email addresses if you prefer.
+
+/src/NuGet.Clients/NuGet.CommandLine/    @dominoFire
+/src/NuGet.Clients/NuGet.Console/    @dominoFire
+/src/NuGet.Clients/NuGet.Indexing/    @donnie-msft
+/src/NuGet.Clients/NuGet.MSSigning.Extensions/    @kartheekp-ms
+/src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/    @dominoFire
+/src/NuGet.Clients/NuGet.PackageManagement.UI/    @donnie-msft
+/src/NuGet.Clients/NuGet.PackageManagement.VisualStudio/    @donnie-msft
+/src/NuGet.Clients/NuGet.SolutionRestoreManager/     @nkolev92 @zivkan
+/src/NuGet.Clients/NuGet.SolutionRestoreManager.Interop/     @nkolev92 @zivkan
+/src/NuGet.Clients/NuGet.Tools/NuGet.Tools/    @donnie-msft
+/src/NuGet.Clients/NuGet.VisualStudio/    @donnie-msft @zivkan
+/src/NuGet.Clients/NuGet.VisualStudio.Client/    @donnie-msft
+/src/NuGet.Clients/NuGet.VisualStudio.Common/    @donnie-msft
+/src/NuGet.Clients/NuGet.VisualStudio.Implementation/   @donnie-msft
+/src/NuGet.Clients/NuGet.VisualStudio.Internal.Contracts/    @donnie-msft
+/src/NuGet.Clients/NuGet.VisualStudio.Interop/    @donnie-msft
+/src/NuGet.Clients/NuGet.VisualStudio.OnlineEnvironment.Client/    @rrelyea
+/src/NuGet.Clients/NuGetConsole.Host.PowerShell/    @dominoFire
+/src/NuGet.Core/Microsoft.Build.NuGetSdkResolver/     @nkolev92 @zivkan
+/src/NuGet.Core/NuGet.Build.Tasks/     @nkolev92 @zivkan
+/src/NuGet.Core/NuGet.Build.Tasks.Console/    @dominoFire
+/src/NuGet.Core/NuGet.Build.Tasks.Pack/    @zkat
+/src/NuGet.Core/NuGet.CommandLine.XPlat/    @dominoFire
+/src/NuGet.Core/NuGet.Commands/     @nkolev92 @zivkan
+/src/NuGet.Core/NuGet.Common/    @zkat
+/src/NuGet.Core/NuGet.Configuration/    @heng-liu
+/src/NuGet.Core/NuGet.Credentials/    @rrelyea
+/src/NuGet.Core/NuGet.DependencyResolver.Core/     @nkolev92 @zivkan
+/src/NuGet.Core/NuGet.Frameworks/    @zkat
+/src/NuGet.Core/NuGet.LibraryModel/     @nkolev92 @zivkan
+/src/NuGet.Core/NuGet.Localization/    @dominoFire
+/src/NuGet.Core/NuGet.PackageManagement/    @heng-liu
+/src/NuGet.Core/NuGet.Packaging/    @zkat
+/src/NuGet.Core/NuGet.Packaging.Core/    @zkat
+/src/NuGet.Core/NuGet.ProjectModel/     @nkolev92 @zivkan
+/src/NuGet.Core/NuGet.Protocol/    @zkat
+/src/NuGet.Core/NuGet.Resolver/     @nkolev92 @zivkan
+/src/NuGet.Core/NuGet.Versioning/    @zkat
+
