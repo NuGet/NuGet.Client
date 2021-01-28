@@ -50,7 +50,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
                         break;
                     case LicenseExpressionPropertyName:
                         var expressionString = reader.ReadString();
-                        licenseExpression = NuGetLicenseExpression.Parse(expressionString);
+                        if (expressionString != null)
+                        {
+                            licenseExpression = NuGetLicenseExpression.Parse(expressionString);
+                        }
                         break;
                     case WarningsAndErrorsPropertyName:
                         if (!reader.TryReadNil())
@@ -84,7 +87,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             writer.Write(value.License);
 
             writer.Write(LicenseExpressionPropertyName);
-            writer.Write(value.LicenseExpression.ToString());
+            writer.Write(value.LicenseExpression?.ToString());
 
             writer.Write(WarningsAndErrorsPropertyName);
             if (value.WarningsAndErrors == null)

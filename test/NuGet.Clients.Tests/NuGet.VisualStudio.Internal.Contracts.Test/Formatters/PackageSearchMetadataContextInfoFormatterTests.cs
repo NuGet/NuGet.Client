@@ -9,6 +9,7 @@ using MessagePack.Resolvers;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -24,6 +25,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         {
             var formatters = new IMessagePackFormatter[]
             {
+                LicenseMetadataFormatter.Instance,
                 PackageDependencyFormatter.Instance,
                 PackageDependencyGroupFormatter.Instance,
                 PackageVulnerabilityMetadataContextInfoFormatter.Instance,
@@ -71,8 +73,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
                         DownloadCount = 1000,
                         IconUrl = new Uri("http://nuget.org"),
                         IsListed = true,
+                        LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), null, LicenseMetadata.EmptyVersion),
                         LicenseUrl = new Uri("http://nuget.org"),
                         Owners = "nuget",
+                        PackagePath = @"c:\packages\package.nupkg",
                         PrefixReserved = true,
                         ProjectUrl = new Uri("http://nuget.org"),
                         Published = new DateTimeOffset(DateTime.Now.AddDays(-1)),
