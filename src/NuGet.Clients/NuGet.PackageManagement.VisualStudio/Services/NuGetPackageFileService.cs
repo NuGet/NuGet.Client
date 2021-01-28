@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
@@ -23,7 +24,7 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public sealed class NuGetPackageFileService : INuGetPackageFileService
+    public sealed class NuGetPackageFileService : INuGetPackageFileService, IDisposable
     {
         public static readonly string IconPrefix = "icon:";
         public static readonly string LicensePrefix = "license:";
@@ -33,6 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private AuthorizationServiceClient? _authorizationServiceClient;
         private INuGetTelemetryProvider _nuGetTelemetryProvider;
         private bool _disposedValue;
+        private HttpClient _httpClient = new HttpClient();
 
         internal readonly static MemoryCache IdentityToUriCache = new MemoryCache("PackageSearchMetadata",
             new NameValueCollection
@@ -51,10 +53,9 @@ namespace NuGet.PackageManagement.VisualStudio
         public static void AddIconToCache(PackageIdentity packageIdentity, Uri iconUri)
         {
             string key = NuGetPackageFileService.IconPrefix + packageIdentity.ToString();
-            if (iconUri != null && !IdentityToUriCache.Add(key, iconUri, CacheItemPolicy))
+            if (iconUri != null)
             {
-                IdentityToUriCache.Remove(key);
-                IdentityToUriCache.Add(key, iconUri, CacheItemPolicy);
+                IdentityToUriCache.Set(key, iconUri, CacheItemPolicy);
             }
         }
 
@@ -62,11 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.NotNull(embeddedLicenseUri);
             string key = NuGetPackageFileService.LicensePrefix + packageIdentity.ToString();
-            if (!IdentityToUriCache.Add(key, embeddedLicenseUri, CacheItemPolicy))
-            {
-                IdentityToUriCache.Remove(key);
-                IdentityToUriCache.Add(key, embeddedLicenseUri, CacheItemPolicy);
-            }
+            IdentityToUriCache.Set(key, embeddedLicenseUri, CacheItemPolicy);
         }
 
         public NuGetPackageFileService(
@@ -166,9 +163,8 @@ namespace NuGet.PackageManagement.VisualStudio
                             return memoryStream;
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        Debug.WriteLine(ex);
                         return null;
                     }
                 }
@@ -203,28 +199,25 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                using (var httpClient = new HttpClient())
+                try
                 {
-                    try
-                    {
-                        imageData = await httpClient.GetByteArrayAsync(uri);
+                    imageData = await _httpClient.GetByteArrayAsync(uri);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope - stream needs to be disposed by caller.
-                        memoryStream = new MemoryStream(imageData, writable: false);
+                    memoryStream = new MemoryStream(imageData, writable: false);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                    }
-                    catch (HttpRequestException)
-                    {
-                        return null;
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        return null;
-                    }
-                    catch (ArgumentException)
-                    {
-                        return null;
-                    }
+                }
+                catch (HttpRequestException)
+                {
+                    return null;
+                }
+                catch (TaskCanceledException)
+                {
+                    return null;
+                }
+                catch (ArgumentException)
+                {
+                    return null;
                 }
 
                 return memoryStream;
@@ -252,6 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (disposing)
                 {
                     _authorizationServiceClient?.Dispose();
+                    _httpClient?.Dispose();
                 }
 
                 _disposedValue = true;

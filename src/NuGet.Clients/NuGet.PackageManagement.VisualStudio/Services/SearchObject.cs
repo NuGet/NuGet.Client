@@ -224,6 +224,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
+            Assumes.NotNull(packageSearchMetadata);
+
             // If nothing is in the cache this will return null
             object? cacheObject = _inMemoryObjectCache.AddOrGetExisting(
                     PackageSearchMetadataCacheItem.GetCacheId(packageSearchMetadata.Identity.Id, includesPrerelease, _packageSources),
@@ -236,7 +238,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 memoryCacheItem.UpdateSearchMetadata(packageSearchMetadata);
             }
 
-            Assumes.NotNull(packageSearchMetadata);
             NuGetPackageFileService.AddIconToCache(packageSearchMetadata.Identity, packageSearchMetadata.IconUrl);
 
             string? packagePath = (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??

@@ -162,13 +162,18 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
             using (INuGetPackageFileService packageFileService = await serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService))
-            using (Stream stream = await packageFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None))
             {
-                if (stream != null)
+                if (packageFileService != null)
                 {
-                    using (var reader = new StreamReader(stream))
+                    using (Stream stream = await packageFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None))
                     {
-                        content = reader.ReadToEnd();
+                        if (stream != null)
+                        {
+                            using (var reader = new StreamReader(stream))
+                            {
+                                content = reader.ReadToEnd();
+                            }
+                        }
                     }
                 }
             }

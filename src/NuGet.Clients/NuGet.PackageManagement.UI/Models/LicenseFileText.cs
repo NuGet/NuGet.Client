@@ -19,7 +19,6 @@ namespace NuGet.PackageManagement.UI
         private string _licenseHeader;
         private string _packagePath;
         private readonly string _licenseFileLocation;
-        private PackageIdentity _packageIdentity;
 
         private int _initialized;
 
@@ -30,7 +29,7 @@ namespace NuGet.PackageManagement.UI
             _licenseText = new FlowDocument(new Paragraph(new Run(Resources.LicenseFile_Loading)));
             _packagePath = packagePath;
             _licenseFileLocation = licenseFileLocation;
-            _packageIdentity = packageIdentity;
+            PackageIdentity = packageIdentity;
         }
 
         internal void LoadLicenseFile()
@@ -41,10 +40,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                     {
-                        IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
-                        IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
-
-                        string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(_packageIdentity, CancellationToken.None);
+                        string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(PackageIdentity, CancellationToken.None);
 
                         var flowDoc = new FlowDocument();
                         flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
@@ -85,10 +81,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageIdentity PackageIdentity
-        {
-            get => _packageIdentity;
-        }
+        public PackageIdentity PackageIdentity { get; internal set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
