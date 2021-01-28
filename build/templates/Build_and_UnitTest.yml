@@ -414,14 +414,14 @@ steps:
       artifacts\**\*.lcg
       !artifacts\localize\**\*
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PublishPipelineArtifact@1
   displayName: "Upload localizeInputs artifact"
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localize\\"
     artifactName: "localizeInputs"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
