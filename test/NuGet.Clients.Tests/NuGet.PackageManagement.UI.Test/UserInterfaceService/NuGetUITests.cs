@@ -101,9 +101,8 @@ namespace NuGet.PackageManagement.UI.Test
                         && logMessage.Message == ExceptionUtilities.DisplayMessage(exception, indent))));
             projectLogger.Setup(
                 x => x.Log(
-                    It.Is<ILogMessage>(
-                        logMessage => logMessage.Level == LogLevel.Error
-                        && logMessage.Message == exception.ToString())));
+                    It.Is<MessageLevel>(level => level == MessageLevel.Error),
+                    It.Is<string>(message => message == exception.ToString())));
 
             using (NuGetUI ui = CreateNuGetUI(defaultLogger.Object, projectLogger.Object))
             {
