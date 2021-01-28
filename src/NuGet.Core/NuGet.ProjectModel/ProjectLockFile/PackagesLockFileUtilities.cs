@@ -162,7 +162,7 @@ namespace NuGet.ProjectModel
                 // Validate all P2P references
                 foreach (var framework in project.RestoreMetadata.TargetFrameworks)
                 {
-                    bool projectTfmFound = project.TargetFrameworks.Any(t => EqualityUtility.EqualsWithNullCheck(t.FrameworkName, framework.FrameworkName));
+                    bool projectTfmFound = project.TargetFrameworks.Any(t => t.FrameworkName.Equals(framework.FrameworkName));
 
                     if (!projectTfmFound)
                     {
