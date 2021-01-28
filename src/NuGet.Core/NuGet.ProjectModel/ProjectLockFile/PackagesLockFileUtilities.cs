@@ -170,7 +170,7 @@ namespace NuGet.ProjectModel
                         throw new Exception(string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.PackagesLockFile_ProjectIsMissingRestoreMetadataTfms,
-                                    framework.FrameworkName.GetShortFolderName() + " Project Tfms: " + string.Join("-", project.TargetFrameworks)
+                                    framework.FrameworkName.GetShortFolderName()
                                     ));
                     }
 
