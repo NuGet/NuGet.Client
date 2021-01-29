@@ -94,6 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.IsType<RemoteError>(exception.ErrorData);
 
                 var remoteError = (RemoteError)exception.ErrorData;
+                string expectedProjectContextLogMessage = exception.InnerException.ToString();
 
                 Assert.Null(remoteError.ActivityLogMessage);
                 Assert.Equal(NuGetLogCode.Undefined, remoteError.LogMessage.Code);
@@ -103,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.InRange(remoteError.LogMessage.Time, DateTimeOffset.UtcNow.AddSeconds(-10), DateTimeOffset.UtcNow.AddSeconds(1));
                 Assert.Equal(WarningLevel.Severe, remoteError.LogMessage.WarningLevel);
                 Assert.Null(remoteError.LogMessages);
-                Assert.Null(remoteError.ProjectContextLogMessage);
+                Assert.Equal(expectedProjectContextLogMessage, remoteError.ProjectContextLogMessage);
                 Assert.Equal(typeof(ArgumentException).FullName, remoteError.TypeName);
             });
         }

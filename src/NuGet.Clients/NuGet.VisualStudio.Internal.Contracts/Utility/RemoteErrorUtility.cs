@@ -60,6 +60,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
                         .ToArray();
                 }
             }
+            else
+            {
+                projectContextLogMessage = exception.ToString();
+            }
 
             return new RemoteError(typeName, logMessage, logMessages, projectContextLogMessage, activityLogMessage);
         }
