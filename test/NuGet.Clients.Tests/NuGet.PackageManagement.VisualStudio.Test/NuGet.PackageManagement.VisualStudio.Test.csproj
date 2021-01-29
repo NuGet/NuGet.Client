@@ -41,6 +41,7 @@
     <Compile Include="Services\MockedVSCollectionTests.cs" />
     <Compile Include="Services\NuGetLockServiceTests.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceTests.cs" />
+    <Compile Include="Services\NuGetPackageFileServiceTests.cs" />
     <Compile Include="Services\NuGetSourcesServiceTests.cs" />
     <Compile Include="Services\TestSharedServiceState.cs" />
     <Compile Include="Services\NuGetPackageSearchServiceTests.cs" />

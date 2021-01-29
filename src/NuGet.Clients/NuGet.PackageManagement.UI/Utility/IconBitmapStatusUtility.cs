@@ -12,10 +12,6 @@ namespace NuGet.PackageManagement.UI
             return bitmapStatus == IconBitmapStatus.DefaultIcon ||
                 bitmapStatus == IconBitmapStatus.DefaultIconDueToDecodingError ||
                 bitmapStatus == IconBitmapStatus.DefaultIconDueToNullStream ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToNoPackageReader ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToNetworkFailures ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToWebExceptionBadNetwork ||
-                bitmapStatus == IconBitmapStatus.DefaultIconDueToWebExceptionOther ||
                 bitmapStatus == IconBitmapStatus.DefaultIconDueToRelativeUri;
         }
 

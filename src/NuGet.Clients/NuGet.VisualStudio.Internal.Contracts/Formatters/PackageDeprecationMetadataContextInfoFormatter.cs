@@ -64,8 +64,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             else
             {
                 options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Serialize(ref writer, value.Reasons, options);
-
             }
+
             writer.Write(AlternatePackageMetadataPropertyName);
             if (value.AlternatePackage == null)
             {

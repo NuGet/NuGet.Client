@@ -68,6 +68,8 @@ namespace NuGet.PackageManagement.UI.Test
                 x.RefreshSearchAsync(It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
 
+            var packageFileService = new Mock<INuGetPackageFileService>();
+
             uiContext.Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
 
@@ -84,6 +86,7 @@ namespace NuGet.PackageManagement.UI.Test
                 new List<PackageSourceContextInfo> { source1, source2 },
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                 searchService.Object,
+                packageFileService.Object,
                 TestSearchTerm);
 
             await loader.LoadNextAsync(null, CancellationToken.None);
@@ -98,8 +101,8 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [Fact(Skip = "Pending https://github.com/NuGet/Home/issues/10151")]
-        public async Task PackageReader_NotNull()
+        [Fact]
+        public async Task PackagePath_NotNull()
         {
             // Prepare
             var solutionManager = Mock.Of<INuGetSolutionManagerService>();
@@ -112,7 +115,8 @@ namespace NuGet.PackageManagement.UI.Test
             var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
                 Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
-                PrefixReserved = true
+                PrefixReserved = true,
+                PackagePath = "somesillypath",
             };
 
             var packageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>()
@@ -133,6 +137,8 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
+
+            var packageFileService = new Mock<INuGetPackageFileService>();
 
             uiContext.Setup(x => x.ServiceBroker)
                 .Returns(Mock.Of<IServiceBroker>());
@@ -160,6 +166,7 @@ namespace NuGet.PackageManagement.UI.Test
                     new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(localSource) },
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
                     searchService.Object,
+                    packageFileService.Object,
                     TestSearchTerm);
 
                 // Act
@@ -168,7 +175,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 Assert.Single(results);
-                Assert.NotNull(results.First().PackageReader);
+                Assert.NotNull(results.First().PackagePath);
             }
         }
     }

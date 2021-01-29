@@ -76,6 +76,8 @@ namespace NuGet.Test.Utility
 
             public Uri PackageDetailsUrl => null;
 
+            public string PackagePath => null;
+
             public DateTimeOffset? Published => DateTimeOffset.Now;
 
             public string Owners => string.Empty;

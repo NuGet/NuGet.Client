@@ -19,8 +19,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
         private const string TitlePropertyName = "title";
         private const string TagsPropertyName = "tags";
         private const string LicenseUrlPropertyName = "licenseurl";
+        private const string LicenseMetadataPropertyName = "licensemetadata";
         private const string OwnersPropertyName = "owners";
         private const string ProjectUrlPropertyName = "projecturl";
+        private const string PackagePathPropertyName = "packagepath";
         private const string PublishedPropertyName = "published";
         private const string ReportAbuseUrlPropertyName = "reportabuseurl";
         private const string PackageDetailsUrlPropertyName = "packagedetailsurl";
@@ -48,12 +50,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
             string? authors = null;
             Uri? iconUrl = null;
             string? tags = null;
+            LicenseMetadata? licenseMetadata = null;
             Uri? licenseUrl = null;
             string? owners = null;
             Uri? projectUrl = null;
             DateTimeOffset? published = null;
             Uri? reportAbuseUrl = null;
             Uri? packageDetailsUrl = null;
+            string? packagePath = null;
             bool requireLicenseAcceptance = false;
             string? summary = null;
             bool prefixReserved = false;
@@ -93,6 +97,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     case TagsPropertyName:
                         tags = reader.ReadString();
                         break;
+                    case LicenseMetadataPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            licenseMetadata = options.Resolver.GetFormatter<LicenseMetadata>().Deserialize(ref reader, options);
+                        }
+                        break;
                     case LicenseUrlPropertyName:
                         if (!reader.TryReadNil())
                         {
@@ -104,6 +114,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                         {
                             projectUrl = options.Resolver.GetFormatter<Uri>().Deserialize(ref reader, options);
                         }
+                        break;
+                    case PackagePathPropertyName:
+                        packagePath = reader.ReadString();
                         break;
                     case PublishedPropertyName:
                         if (!reader.TryReadNil())
@@ -179,6 +192,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 IconUrl = iconUrl,
                 Tags = tags,
                 Identity = identity,
+                LicenseMetadata = licenseMetadata,
                 LicenseUrl = licenseUrl,
                 IsRecommended = isRecommended,
                 RecommenderVersion = recommenderVersion,
@@ -187,6 +201,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Published = published,
                 ReportAbuseUrl = reportAbuseUrl,
                 PackageDetailsUrl = packageDetailsUrl,
+                PackagePath = packagePath,
                 RequireLicenseAcceptance = requireLicenseAcceptance,
                 Summary = summary,
                 PrefixReserved = prefixReserved,
@@ -199,7 +214,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         protected override void SerializeCore(ref MessagePackWriter writer, PackageSearchMetadataContextInfo value, MessagePackSerializerOptions options)
         {
-            writer.WriteMapHeader(count: 21);
+            writer.WriteMapHeader(count: 23);
             writer.Write(AuthorsPropertyName);
             writer.Write(value.Authors);
 
@@ -230,6 +245,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
             else
             {
                 PackageIdentityFormatter.Instance.Serialize(ref writer, value.Identity, options);
+            }
+
+            writer.Write(LicenseMetadataPropertyName);
+            if (value.LicenseMetadata == null)
+            {
+                writer.WriteNil();
+            }
+            else
+            {
+                options.Resolver.GetFormatter<LicenseMetadata>().Serialize(ref writer, value.LicenseMetadata, options);
             }
 
             writer.Write(LicenseUrlPropertyName);
@@ -285,6 +310,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 options.Resolver.GetFormatter<Uri>().Serialize(ref writer, value.PackageDetailsUrl, options);
             }
+
+            writer.Write(PackagePathPropertyName);
+            writer.Write(value.PackagePath);
 
             writer.Write(RequireLicenseAcceptancePropertyName);
             writer.Write(value.RequireLicenseAcceptance);
