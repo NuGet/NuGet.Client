@@ -915,19 +915,18 @@ namespace NuGet.Packaging
 
             // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
             // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
-            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.The ZIP format has no notion of time zone, so timestamps are only meaningful if it is known what time zone they were created in.
+            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.
             if (timeOffset < ZipFormatMinDate)
             {
                 if (!_zipFormatCorrected)
                 {
                     _zipFormatCorrected = true;
 
-                    _logger.Log(
-                        PackagingLogMessage.CreateMessage(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
-                            LogLevel.Information));
+                    _logger.Log(PackagingLogMessage.CreateMessage(
+                                    string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
+                                        LogLevel.Information));
                 }
 
                 entry.LastWriteTime = ZipFormatMinDate;
@@ -938,12 +937,11 @@ namespace NuGet.Packaging
                 {
                     _zipFormatCorrected = true;
 
-                    _logger.Log(
-                        PackagingLogMessage.CreateMessage(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
-                            LogLevel.Information));
+                    _logger.Log(PackagingLogMessage.CreateMessage(
+                                    string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
+                                        LogLevel.Information));
                 }
 
                 entry.LastWriteTime = ZipFormatMaxDate;

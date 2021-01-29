@@ -2944,7 +2944,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             // https://github.com/NuGet/Home/issues/7001
             // Act
             DateTime year2020Date = new DateTime(2020, 12, 14, 23, 59, 7, DateTimeKind.Utc);
-            DateTimeOffset lastWriteTime = ZipFormatMinDate.AddDays(-1);
+            DateTimeOffset lastWriteTime = ZipFormatMinDate.AddDays(-1); // 12/31/1979 12:00:00 AM + 00:00
             int numberOfDateCorrectedFiles = 0;
             int numberOfDateNotCorrectedFiles = 0;
             TestLogger innerLogger = new TestLogger();
@@ -2985,14 +2985,14 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
                             // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
                             // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
-                            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.The ZIP format has no notion of time zone, so timestamps are only meaningful if it is known what time zone they were created in.
+                            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.
                             // That is why you see this datetime interval instead of actual == of datetimes.
-                            // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
                             {
                                 if (path == after1980File1)
                                 {
                                     Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMinDate && entry.LastWriteTime.DateTime <= ZipFormatMinDate.AddSeconds(1));
+                                    numberOfDateNotCorrectedFiles++;
                                 }
                                 else if (path == after1980File2)
                                 {
@@ -3011,8 +3011,8 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
 
-                Assert.True(numberOfDateNotCorrectedFiles == 1);
-                Assert.True(numberOfDateCorrectedFiles > 1);
+                Assert.True(numberOfDateNotCorrectedFiles == 2);
+                Assert.True(numberOfDateCorrectedFiles == 5);
                 Assert.Equal(innerLogger.LogMessages.Count, 1);
                 Assert.True(innerLogger.LogMessages.First().Message.Contains("because the zip file format does not support timestamp values before"));
             }
@@ -3024,7 +3024,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             // https://github.com/NuGet/Home/issues/7001
             // Act
             DateTime year2020Date = new DateTime(2020, 12, 14, 23, 59, 2, DateTimeKind.Utc);
-            DateTimeOffset lastWriteTime = ZipFormatMaxDate.AddDays(1);
+            DateTimeOffset lastWriteTime = ZipFormatMaxDate.AddDays(1); // 1/1/2108 11:59:58 PM +00:00
             int numberOfDateCorrectedFiles = 0;
             int numberOfDateNotCorrectedFiles = 0;
             TestLogger innerLogger = new TestLogger();
@@ -3065,9 +3065,8 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
                             // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
                             // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
-                            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.The ZIP format has no notion of time zone, so timestamps are only meaningful if it is known what time zone they were created in.
+                            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.
                             // That is why you see this datetime interval instead of actual == of datetimes.
-                            // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
                             {
                                 if (path == before2107File1)
@@ -3079,6 +3078,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                                 else if (path == before2107File2)
                                 {
                                     Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMaxDate.AddSeconds(-2) && entry.LastWriteTime.DateTime <= ZipFormatMaxDate.AddSeconds(-1));
+                                    numberOfDateNotCorrectedFiles++;
                                 }
                                 else
                                 {
@@ -3091,8 +3091,8 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
 
-                Assert.True(numberOfDateNotCorrectedFiles == 1);
-                Assert.True(numberOfDateCorrectedFiles > 1);
+                Assert.True(numberOfDateNotCorrectedFiles == 2);
+                Assert.True(numberOfDateCorrectedFiles == 5);
                 Assert.Equal(innerLogger.LogMessages.Count, 1);
                 Assert.True(innerLogger.LogMessages.First().Message.Contains("because the zip file format does not support timestamp values before"));
             }
