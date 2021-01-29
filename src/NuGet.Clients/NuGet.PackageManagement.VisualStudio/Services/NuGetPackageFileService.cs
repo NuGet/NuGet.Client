@@ -155,12 +155,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     try
                     {
                         using (PackageArchiveReader reader = new PackageArchiveReader(packagePath))
-                        using (Stream parStream = await reader.GetStreamAsync(fileRelativePath, cancellationToken))
                         {
-                            var memoryStream = new MemoryStream();
-                            await parStream.CopyToAsync(memoryStream);
-                            memoryStream.Seek(0, SeekOrigin.Begin);
-                            return memoryStream;
+                            Stream parStream = await reader.GetStreamAsync(fileRelativePath, cancellationToken);
+                            return parStream;
                         }
                     }
                     catch (Exception)
@@ -177,20 +174,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<Stream?> GetStream(Uri uri)
         {
-            // BitmapImage can download on its own from URIs, but in order
-            // to support downloading on a worker thread, we need to download the image
-            // data and put into a memorystream. Then have the BitmapImage decode the
-            // image from the memorystream.
-
-            byte[]? imageData = null;
-            MemoryStream? memoryStream = null;
-
             if (uri.IsFile)
             {
                 if (File.Exists(uri.LocalPath))
                 {
-                    memoryStream = new MemoryStream(File.ReadAllBytes(uri.LocalPath));
-                    return memoryStream;
+                    return new FileStream(uri.LocalPath, FileMode.Open);
                 }
                 else
                 {
@@ -201,11 +189,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                    imageData = await _httpClient.GetByteArrayAsync(uri);
-
-#pragma warning disable CA2000 // Dispose objects before losing scope - stream needs to be disposed by caller.
-                    memoryStream = new MemoryStream(imageData, writable: false);
-#pragma warning restore CA2000 // Dispose objects before losing scope
+                    return await _httpClient.GetStreamAsync(uri);
                 }
                 catch (HttpRequestException)
                 {
@@ -219,8 +203,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     return null;
                 }
-
-                return memoryStream;
             }
         }
 

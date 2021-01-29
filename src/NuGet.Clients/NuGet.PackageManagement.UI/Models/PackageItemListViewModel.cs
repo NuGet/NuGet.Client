@@ -543,15 +543,15 @@ namespace NuGet.PackageManagement.UI
                 {
                     var iconBitmapImage = new BitmapImage();
                     iconBitmapImage.BeginInit();
-                    MemoryStream memoryStream = stream as MemoryStream;
-                    if (memoryStream == null)
-                    {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                        memoryStream = new MemoryStream();
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                        await stream.CopyToAsync(memoryStream);
-                    }
 
+                    // BitmapImage can download on its own from URIs, but in order
+                    // to support downloading on a worker thread, we need to download the image
+                    // data and put into a memorystream. Then have the BitmapImage decode the
+                    // image from the memorystream.
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                    var memoryStream = new MemoryStream();
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                    await stream.CopyToAsync(memoryStream);
                     iconBitmapImage.StreamSource = memoryStream;
 
                     try
