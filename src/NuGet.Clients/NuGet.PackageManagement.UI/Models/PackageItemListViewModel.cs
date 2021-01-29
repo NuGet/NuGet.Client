@@ -551,7 +551,9 @@ namespace NuGet.PackageManagement.UI
 #pragma warning disable CA2000 // Dispose objects before losing scope
                     var memoryStream = new MemoryStream();
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                    await stream.CopyToAsync(memoryStream);
+
+                    // Cannot call CopyToAsync as we'll get an InvalidOperationException due to CheckAccess() in next line.
+                    stream.CopyTo(memoryStream);
                     iconBitmapImage.StreamSource = memoryStream;
 
                     try
