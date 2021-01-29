@@ -155,9 +155,11 @@ namespace NuGet.PackageManagement.VisualStudio
                     try
                     {
                         using (PackageArchiveReader reader = new PackageArchiveReader(packagePath))
+                        using (Stream parStream = await reader.GetStreamAsync(fileRelativePath, cancellationToken))
                         {
-                            Stream parStream = await reader.GetStreamAsync(fileRelativePath, cancellationToken);
-                            return parStream;
+                            var memoryStream = new MemoryStream();
+                            await parStream.CopyToAsync(memoryStream);
+                            return memoryStream;
                         }
                     }
                     catch (Exception)
