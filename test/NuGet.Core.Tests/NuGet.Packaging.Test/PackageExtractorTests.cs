@@ -163,6 +163,50 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public async Task InstallFromSourceAsync_ReturnsTrueAfterNewInstallAsync()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
+
+                var sourcePath = Path.Combine(root, "source");
+                Directory.CreateDirectory(sourcePath);
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                    sourcePath,
+                    identity.Id,
+                    identity.Version.ToString(),
+                    DateTimeOffset.UtcNow.LocalDateTime,
+                    "lib/net45/A.dll");
+
+                var packagesPath = Path.Combine(root, "packages");
+                var pathResolver = new VersionFolderPathResolver(packagesPath);
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    sourcePath,
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act
+                    var installed = await PackageExtractor.InstallFromSourceAsync(
+                         identity,
+                         packageDownloader,
+                         pathResolver,
+                         new PackageExtractionContext(
+                             packageSaveMode: PackageSaveMode.Nupkg,
+                             xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                             clientPolicyContext: null,
+                             logger: NullLogger.Instance),
+                         CancellationToken.None);
+
+                    // Assert
+                    Assert.True(installed);
+                }
+            }
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -3722,7 +3766,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_LogsSourceOnVerboseLevel()
+        public async Task InstallFromSourceAsync_LogsSourceOnNormalLevel()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -3760,7 +3804,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
                     var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
-                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}");
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }
@@ -3811,7 +3855,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_WithPackageDownloader_LogsSourceOnVerboseLevel()
+        public async Task InstallFromSourceAsync_WithPackageDownloader_LogsSourceOnNormalLevel()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -3855,7 +3899,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
                     var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
-                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}");
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }

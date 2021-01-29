@@ -2920,7 +2920,6 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 using (var stream = new MemoryStream())
                 {
                     builder.Save(stream);
-                    stream.Seek(0, SeekOrigin.Begin);
 
                     // Assert
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
@@ -2940,7 +2939,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         [Fact]
-        public void PackageBuilder_TestLastWriteTimeFor_Year1980()
+        public void PackageBuilder_TestLastWriteTime_Year1980()
         {
             // https://github.com/NuGet/Home/issues/7001
             // Act
@@ -3020,7 +3019,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         [Fact]
-        public void PackageBuilder_TestLastWriteTimeFor_Year2107()
+        public void PackageBuilder_TestLastWriteTime_Year2107()
         {
             // https://github.com/NuGet/Home/issues/7001
             // Act
