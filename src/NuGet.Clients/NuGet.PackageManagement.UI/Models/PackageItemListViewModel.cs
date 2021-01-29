@@ -1,3 +1,4 @@
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -542,7 +543,16 @@ namespace NuGet.PackageManagement.UI
                 {
                     var iconBitmapImage = new BitmapImage();
                     iconBitmapImage.BeginInit();
-                    iconBitmapImage.StreamSource = stream;
+                    MemoryStream memoryStream = stream as MemoryStream;
+                    if (memoryStream == null)
+                    {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                        memoryStream = new MemoryStream();
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                        await stream.CopyToAsync(memoryStream);
+                    }
+
+                    iconBitmapImage.StreamSource = memoryStream;
 
                     try
                     {
@@ -556,6 +566,8 @@ namespace NuGet.PackageManagement.UI
                         IconBitmap = Images.DefaultPackageIcon;
                         BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
                     }
+
+                    memoryStream.Dispose();
                 }
                 else
                 {
