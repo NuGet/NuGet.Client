@@ -279,7 +279,7 @@ namespace NuGet.Protocol
                                     var frameworkString = parts[2];
 
                                     if (!string.IsNullOrWhiteSpace(frameworkString)
-                                        && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
+                                        && !string.Equals(NullString, frameworkString, StringComparison.OrdinalIgnoreCase))
                                     {
                                         framework = NuGetFramework.Parse(frameworkString);
                                     }
