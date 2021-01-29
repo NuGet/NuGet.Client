@@ -410,9 +410,10 @@ steps:
 - task: CopyFiles@2
   displayName: "Copy LCG Files (deprecated)"
   inputs:
+    SourceFolder: "artifacts\\"
     Contents: |
-      artifacts\**\*.lcg
-      !artifacts\localize\**\*
+      **\*.lcg
+      !localize\**\*
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
