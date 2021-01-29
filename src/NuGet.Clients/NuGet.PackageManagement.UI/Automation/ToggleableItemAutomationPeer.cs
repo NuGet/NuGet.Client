@@ -10,19 +10,22 @@ namespace NuGet.PackageManagement.UI
 {
     internal class ToggleableItemAutomationPeer : ListBoxItemAutomationPeer, IToggleProvider
     {
-        private readonly InfiniteScrollListBox _ownerParent;
-        private readonly PackageItemListViewModel _owner;
+        //private readonly InfiniteScrollListBox _ownerParent;
+        //private readonly PackageItemListViewModel _owner;
+
+        private readonly ISelectableItemsListBox _ownerParent;
+        private readonly ISelectableItem _owner;
 
         public ToggleableItemAutomationPeer(object item, SelectorAutomationPeer selectorAutomationPeer)
             : base(item, selectorAutomationPeer)
         {
-            _owner = item as PackageItemListViewModel;
-            _ownerParent = selectorAutomationPeer.Owner as InfiniteScrollListBox;
+            _owner = item as ISelectableItem;
+            _ownerParent = selectorAutomationPeer.Owner as ISelectableItemsListBox;
         }
 
         public override object GetPattern(PatternInterface patternInterface)
         {
-            if (patternInterface == PatternInterface.Toggle && _ownerParent?.CheckboxesEnabled == true)
+            if (patternInterface == PatternInterface.Toggle && _ownerParent?.IsItemSelectionEnabled == true)
             {
                 return this;
             }
@@ -37,13 +40,13 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _owner?.Selected == true ? ToggleState.On : ToggleState.Off;
+                return _owner?.IsSelected == true ? ToggleState.On : ToggleState.Off;
             }
             set
             {
                 if (_owner != null)
                 {
-                    _owner.Selected = value == ToggleState.On;
+                    _owner.IsSelected = value == ToggleState.On;
                 }
             }
         }
@@ -52,7 +55,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (_owner != null)
             {
-                _owner.Selected = !_owner.Selected;
+                _owner.IsSelected = !_owner.IsSelected;
             }
         }
     }

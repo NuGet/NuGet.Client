@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal class ListBoxToggleableItemsAutomationPeer : ListBoxAutomationPeer
     {
-        public ListBoxToggleableItemsAutomationPeer(InfiniteScrollListBox owner)
+        public ListBoxToggleableItemsAutomationPeer(ListBox owner)
             : base(owner)
         {
         }

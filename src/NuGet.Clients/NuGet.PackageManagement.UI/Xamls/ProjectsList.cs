@@ -3,16 +3,11 @@
 
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
-using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class InfiniteScrollListBox : ListBox, ISelectableItemsListBox
+    public class ProjectsList : ListBox
     {
-        public bool IsItemSelectionEnabled { get; set; }
-
-        public ReentrantSemaphore ItemsLock { get; set; }
-
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new ListBoxToggleableItemsAutomationPeer(this);

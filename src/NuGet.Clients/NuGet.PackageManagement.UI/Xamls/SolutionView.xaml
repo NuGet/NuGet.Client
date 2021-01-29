@@ -183,6 +183,7 @@
       Grid.Row="0"
       Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 
+    <local:ProjectsList></local:ProjectsList>
     <ListView
       Grid.Row="1"
       x:Name="_projectList"

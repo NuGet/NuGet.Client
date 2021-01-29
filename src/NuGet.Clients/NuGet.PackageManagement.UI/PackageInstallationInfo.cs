@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI
     // - A version of the package is installed. In this case, property Version is not null.
     //   Property IsSolution indicates if the package is installed in the solution or in a project.
     // - The package is not installed in a project/solution. In this case, property Version is null.
-    public class PackageInstallationInfo : IComparable<PackageInstallationInfo>, INotifyPropertyChanged
+    public class PackageInstallationInfo : IComparable<PackageInstallationInfo>, INotifyPropertyChanged, ISelectableItem
     {
         public event EventHandler SelectedChanged;
 
