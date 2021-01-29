@@ -87,7 +87,7 @@ namespace NuGet.ProjectModel
             var project = dgSpec.GetProjectSpec(uniqueName);
 
             // Validate all the direct dependencies
-            var lockFileFrameworks = nuGetLockFile.Targets
+            NuGetFramework[] lockFileFrameworks = nuGetLockFile.Targets
                 .Where(t => t.TargetFramework != null)
                 .Select(t => t.TargetFramework)
                 .Distinct()
@@ -109,10 +109,10 @@ namespace NuGet.ProjectModel
                 var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null).Distinct();
 
                 if (!projectRuntimesKeys.OrderedEquals(
-                lockFileRuntimes,
-                x => x,
-                StringComparer.InvariantCultureIgnoreCase,
-                StringComparer.InvariantCultureIgnoreCase))
+                            lockFileRuntimes,
+                            x => x,
+                            StringComparer.InvariantCultureIgnoreCase,
+                            StringComparer.InvariantCultureIgnoreCase))
                 {
                     invalidReasons.Add(string.Format(
                                     CultureInfo.CurrentCulture,
@@ -139,7 +139,7 @@ namespace NuGet.ProjectModel
                         continue;
                     }
 
-                    var directDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Direct);
+                    IEnumerable<LockFileDependency> directDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Direct);
 
                     (var hasProjectDependencyChanged, var pmessage) = HasProjectDependencyChanged(framework.Dependencies, directDependencies, target.TargetFramework);
                     if (hasProjectDependencyChanged)
@@ -187,7 +187,7 @@ namespace NuGet.ProjectModel
                     {
                         if (visitedP2PReference.Add(projectReference.ProjectUniqueName))
                         {
-                            var spec = dgSpec.GetProjectSpec(projectReference.ProjectUniqueName);
+                            PackageSpec spec = dgSpec.GetProjectSpec(projectReference.ProjectUniqueName);
                             queue.Enqueue(new Tuple<string, string>(spec.Name, projectReference.ProjectUniqueName));
 
                             while (queue.Count > 0)

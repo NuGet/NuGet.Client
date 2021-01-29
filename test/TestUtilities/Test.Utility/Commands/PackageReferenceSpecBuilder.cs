@@ -63,7 +63,7 @@ namespace Test.Utility.Commands
             var packageSpec = JsonPackageSpecReader.GetPackageSpec("{ }", _projectName, projectPath);
             packageSpec.RuntimeGraph = ProjectTestHelpers.GetRuntimeGraph(_runtimeIdentifiers, _runtimeSupports);
 
-            var targetFrameworks = _targetFrameworks.Select(e => NuGetFramework.Parse(e));
+            IEnumerable<NuGetFramework> targetFrameworks = _targetFrameworks.Select(e => NuGetFramework.Parse(e));
             packageSpec.TargetFrameworks.AddRange(targetFrameworks.Select(e => new TargetFrameworkInformation { FrameworkName = e }));
 
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata
