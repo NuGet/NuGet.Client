@@ -913,9 +913,6 @@ namespace NuGet.Packaging
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
 
-            // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
-            // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
-            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.
             if (timeOffset < ZipFormatMinDate)
             {
                 if (!_zipFormatCorrected)
