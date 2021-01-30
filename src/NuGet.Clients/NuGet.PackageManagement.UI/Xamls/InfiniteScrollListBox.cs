@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class InfiniteScrollListBox : ListBox, ISelectableItemsListBox
+    internal class InfiniteScrollListBox : ListBox, ISelectableItemsControl
     {
         public bool IsItemSelectionEnabled { get; set; }
 

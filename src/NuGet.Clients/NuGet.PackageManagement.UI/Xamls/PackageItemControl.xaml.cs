@@ -27,39 +27,19 @@ namespace NuGet.PackageManagement.UI
         private void CheckBox_Toggled(object sender, RoutedEventArgs e)
         {
             var itemCheckBox = sender as CheckBox;
-            if (itemCheckBox is null || itemCheckBox.Visibility != Visibility.Visible)
-            {
-                return;
-            }
-
-            var parentContentPresenter = VisualTreeHelper.GetParent(this) as ContentPresenter;
-            if (parentContentPresenter is null)
-            {
-                return;
-            }
-
-            var parentBorder = VisualTreeHelper.GetParent(parentContentPresenter) as Border;
-            if (parentBorder is null)
-            {
-                return;
-            }
-
-            var itemContainer = VisualTreeHelper.GetParent(parentBorder) as ListBoxItem;
+            var itemContainer = itemCheckBox?.FindParent<ListBoxItem>();
             if (itemContainer is null)
             {
                 return;
             }
 
-            var isChecked = (e.RoutedEvent == CheckBox.CheckedEvent);
-
-            AutomationPeer itemAutomationPeer = UIElementAutomationPeer.FromElement(itemContainer);
-            if (itemAutomationPeer != null)
-            {
-                itemAutomationPeer.RaisePropertyChangedEvent(
-                    TogglePatternIdentifiers.ToggleStateProperty,
-                    isChecked ? ToggleState.Off : ToggleState.On, // Assume the state has actually toggled.
-                    isChecked ? ToggleState.On : ToggleState.Off);
-            }
+            bool newValue = (e.RoutedEvent == CheckBox.CheckedEvent);
+            bool oldValue = !newValue; // Assume the state has actually toggled.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(itemContainer);
+            peer?.RaisePropertyChangedEvent(
+                TogglePatternIdentifiers.ToggleStateProperty,
+                oldValue ? ToggleState.On : ToggleState.Off,
+                newValue ? ToggleState.On : ToggleState.Off);
         }
     }
 }

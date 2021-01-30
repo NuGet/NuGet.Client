@@ -3,7 +3,7 @@
 
 namespace NuGet.PackageManagement.UI
 {
-    internal interface ISelectableItemsListBox
+    internal interface ISelectableItemsControl
     {
         public bool IsItemSelectionEnabled { get; set; }
     }

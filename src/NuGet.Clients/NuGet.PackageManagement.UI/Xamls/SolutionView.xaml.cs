@@ -299,5 +299,23 @@ namespace NuGet.PackageManagement.UI
 
             return versionColumn;
         }
+
+        private void ItemCheckBox_Toggled(object sender, RoutedEventArgs e)
+        {
+            var itemCheckBox = sender as CheckBox;
+            var itemContainer = itemCheckBox?.FindParent<ListViewItem>();
+            if (itemContainer is null)
+            {
+                return;
+            }
+
+            bool newValue = (e.RoutedEvent == CheckBox.CheckedEvent);
+            bool oldValue = !newValue; // Assume the state has actually toggled.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(itemContainer);
+            peer?.RaisePropertyChangedEvent(
+                TogglePatternIdentifiers.ToggleStateProperty,
+                oldValue ? ToggleState.On : ToggleState.Off,
+                newValue ? ToggleState.On : ToggleState.Off);
+        }
     }
 }

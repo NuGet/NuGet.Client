@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
@@ -10,17 +9,14 @@ namespace NuGet.PackageManagement.UI
 {
     internal class ToggleableItemAutomationPeer : ListBoxItemAutomationPeer, IToggleProvider
     {
-        //private readonly InfiniteScrollListBox _ownerParent;
-        //private readonly PackageItemListViewModel _owner;
-
-        private readonly ISelectableItemsListBox _ownerParent;
+        private readonly ISelectableItemsControl _ownerParent;
         private readonly ISelectableItem _owner;
 
         public ToggleableItemAutomationPeer(object item, SelectorAutomationPeer selectorAutomationPeer)
             : base(item, selectorAutomationPeer)
         {
             _owner = item as ISelectableItem;
-            _ownerParent = selectorAutomationPeer.Owner as ISelectableItemsListBox;
+            _ownerParent = selectorAutomationPeer.Owner as ISelectableItemsControl;
         }
 
         public override object GetPattern(PatternInterface patternInterface)
@@ -41,13 +37,6 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return _owner?.IsSelected == true ? ToggleState.On : ToggleState.Off;
-            }
-            set
-            {
-                if (_owner != null)
-                {
-                    _owner.IsSelected = value == ToggleState.On;
-                }
             }
         }
 

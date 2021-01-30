@@ -54,7 +54,7 @@
     <Compile Include="Actions\UpdatePreviewResult.cs" />
     <Compile Include="Actions\UpgradeLogger.cs" />
     <Compile Include="Automation\ISelectableItem.cs" />
-    <Compile Include="Automation\ISelectableItemsListBox.cs" />
+    <Compile Include="Automation\ISelectableItemsControl.cs" />
     <Compile Include="Automation\ListBoxToggleableItemsAutomationPeer.cs" />
     <Compile Include="Automation\TabItemButtonAutomationPeer.cs" />
     <Compile Include="Automation\ToggleableItemAutomationPeer.cs" />
@@ -142,6 +142,7 @@
     <Compile Include="Utility\ProjectUtility.cs" />
     <Compile Include="Utility\VsUtility.cs" />
     <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
+    <Compile Include="Utility\WpfUtility.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>
@@ -162,7 +163,7 @@
     <Compile Include="Xamls\PRMigratorBar.xaml.cs">
       <DependentUpon>PRMigratorBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Xamls\ProjectsList.cs" />
+    <Compile Include="Xamls\ProjectsListView.cs" />
     <Compile Include="Xamls\RestartRequestBar.xaml.cs">
       <DependentUpon>RestartRequestBar.xaml</DependentUpon>
     </Compile>

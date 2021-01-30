@@ -6,8 +6,15 @@ using System.Windows.Controls;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class ProjectsList : ListBox
+    public class ProjectsListView : ListView, ISelectableItemsControl
     {
+        public bool IsItemSelectionEnabled
+        {
+            get => true;
+
+            set => throw new System.NotImplementedException();
+        }
+
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new ListBoxToggleableItemsAutomationPeer(this);
