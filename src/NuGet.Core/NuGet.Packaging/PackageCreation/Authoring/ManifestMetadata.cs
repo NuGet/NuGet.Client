@@ -46,6 +46,7 @@ namespace NuGet.Packaging
             _projectUrl = copy.ProjectUrl?.OriginalString;
             _iconUrl = copy.IconUrl?.OriginalString;
             RequireLicenseAcceptance = copy.RequireLicenseAcceptance;
+            EmitRequireLicenseAcceptance = (copy as PackageBuilder)?.EmitRequireLicenseAcceptance ?? true;
             Description = copy.Description?.Trim();
             Copyright = copy.Copyright?.Trim();
             Summary = copy.Summary?.Trim();
@@ -160,6 +161,8 @@ namespace NuGet.Packaging
         }
 
         public bool RequireLicenseAcceptance { get; set; }
+
+        public bool EmitRequireLicenseAcceptance { get; set; } = true;
 
         public bool DevelopmentDependency { get; set; }
 
@@ -347,9 +350,17 @@ namespace NuGet.Packaging
                 yield return NuGetResources.IconMissingRequiredValue;
             }
 
-            if (RequireLicenseAcceptance && (string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))
+            if (RequireLicenseAcceptance)
             {
-                yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
+                if ((string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))
+                {
+                    yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
+                }
+
+                if (!EmitRequireLicenseAcceptance)
+                {
+                    yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresEmit;
+                }
             }
 
             if (_licenseUrl != null && LicenseMetadata != null && (string.IsNullOrWhiteSpace(_licenseUrl) || !LicenseUrl.Equals(LicenseMetadata.LicenseUrl)))

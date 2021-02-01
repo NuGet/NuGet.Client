@@ -782,6 +782,8 @@ namespace NuGet.Commands
 
             InitCommonPackageBuilderProperties(mainPackageBuilder);
 
+            mainPackageBuilder.EmitRequireLicenseAcceptance = mainPackageBuilder.RequireLicenseAcceptance;
+
             bool successful = true;
             // Build the main package
             if (GenerateNugetPackage)
