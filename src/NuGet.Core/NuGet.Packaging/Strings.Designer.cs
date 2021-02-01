@@ -1960,7 +1960,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Last write timestamp for &apos;{0}&apos; changed from &apos;{1}&apos; to &apos;{2}&apos; because the zip file format does not support timestamp values before 1980 or after 2107..
+        ///   Looks up a localized string similar to File &apos;{0}&apos; was last modified on &apos;{1}&apos;, which is out of range of what the zip format supports. Using &apos;{2}&apos; instead..
         /// </summary>
         internal static string ZipFileTimeStampModified {
             get {

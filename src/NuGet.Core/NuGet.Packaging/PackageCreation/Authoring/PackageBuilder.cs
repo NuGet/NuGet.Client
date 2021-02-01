@@ -925,7 +925,7 @@ namespace NuGet.Packaging
             }
             else if (timeOffset.UtcDateTime > ZipFormatMaxDate)
             {
-                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModified(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
+                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModified(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()));
                 entry.LastWriteTime = ZipFormatMaxDate;
             }
             else

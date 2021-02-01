@@ -3073,7 +3073,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 Assert.True(numberOfDateCorrectedFiles == 5);
                 Assert.Equal(innerLogger.LogMessages.Count, 1);
                 string[] logMessages = innerLogger.LogMessages.First().Message.Split('\n');
-                Assert.Equal(logMessages.Count(l => l.Contains("because the zip file format does not support timestamp values")), 5);
+                Assert.Equal(logMessages.Count(l => l.Contains("which is out of range of what the zip format supports.")), 5);
             }
         }
 
@@ -3164,7 +3164,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 Assert.True(numberOfDateCorrectedFiles == 5);
                 Assert.Equal(innerLogger.LogMessages.Count, 1);
                 string[] logMessages = innerLogger.LogMessages.First().Message.Split('\n');
-                Assert.Equal(logMessages.Count(l => l.Contains("because the zip file format does not support timestamp values")), 5);
+                Assert.Equal(logMessages.Count(l => l.Contains("which is out of range of what the zip format supports.")), 5);
             }
         }
 
