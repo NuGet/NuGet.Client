@@ -50,6 +50,7 @@ namespace NuGet.PackageManagement.UI
         private INuGetUILogger _logger;
         private Task<SearchResultContextInfo> _initialSearchResultTask;
         private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
+        private bool _checkBoxesEnabled;
 
         private const string LogEntrySource = "NuGet Package Manager";
 
@@ -98,7 +99,18 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        public bool CheckBoxesEnabled { get; set; }
+        public bool CheckBoxesEnabled
+        {
+            get => _checkBoxesEnabled;
+            set
+            {
+                if (_checkBoxesEnabled != value)
+                {
+                    _checkBoxesEnabled = value;
+                    _list.CheckboxesEnabled = value;
+                }
+            }
+        }
 
         public bool IsSolution { get; set; }
 

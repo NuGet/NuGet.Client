@@ -221,7 +221,7 @@ namespace NuGet.Commands.Test
 
             var logs = UnexpectedDependencyMessages.GetMissingLowerBounds(targetGraphs, ignore).ToList();
 
-            logs.Select(e => e.Message).ShouldBeEquivalentTo(new[]
+            logs.Select(e => e.Message).Should().BeEquivalentTo(new[]
             {
                 "x 9.0.0 does not provide an inclusive lower bound for dependency b (<= 5.0.0). An approximate best match of b 2.0.0 was resolved.",
                 "y 8.0.0 does not provide an inclusive lower bound for dependency b (> 1.0.0 && <= 6.0.0). An approximate best match of b 3.0.0 was resolved."
@@ -457,7 +457,7 @@ namespace NuGet.Commands.Test
             var log = UnexpectedDependencyMessages.GetBumpedUpDependencies(indexedGraphs, project, ignore).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1601);
-            log.TargetGraphs.ShouldBeEquivalentTo(new[] { "net46/win10" });
+            log.TargetGraphs.Should().BeEquivalentTo(new[] { "net46/win10" });
             log.Message.Should().Be("Dependency specified was x (>= 1.0.0) but ended up with X 2.0.0.");
         }
 
@@ -496,7 +496,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetMissingLowerBounds(targetGraphs, ignore).Single();
 
-            log.TargetGraphs.ShouldBeEquivalentTo(new[] { "net46/win10" });
+            log.TargetGraphs.Should().BeEquivalentTo(new[] { "net46/win10" });
             log.Code.Should().Be(NuGetLogCode.NU1602);
         }
 
@@ -514,10 +514,10 @@ namespace NuGet.Commands.Test
 
             var logs = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project);
 
-            logs.Select(e => e.Code).ShouldAllBeEquivalentTo(NuGetLogCode.NU1604);
-            logs.Select(e => e.Level).ShouldAllBeEquivalentTo(LogLevel.Warning);
+            logs.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1604);
+            logs.Select(e => e.Level).Should().AllBeEquivalentTo(LogLevel.Warning);
             logs.Select(e => e.Message)
-                .ShouldBeEquivalentTo(new[]
+                .Should().BeEquivalentTo(new[]
                 {
                     "Project dependency x (< 2.0.0) does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.",
                     "Project dependency y (< 3.0.0) does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results."
@@ -581,7 +581,7 @@ namespace NuGet.Commands.Test
             var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1604);
-            log.TargetGraphs.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName, NuGetFramework.Parse("net46").DotNetFrameworkName });
+            log.TargetGraphs.Should().BeEquivalentTo(new[] { NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName, NuGetFramework.Parse("net46").DotNetFrameworkName });
         }
 
         [Fact]
@@ -600,7 +600,7 @@ namespace NuGet.Commands.Test
             var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1604);
-            log.TargetGraphs.ShouldBeEquivalentTo(
+            log.TargetGraphs.Should().BeEquivalentTo(
                 new[] { NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName },
                 "net46 contains a valid range that should be filtered out");
         }

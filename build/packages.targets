@@ -73,7 +73,7 @@
 
     <!-- Test and utility packages -->
     <ItemGroup>
-        <PackageReference Update="FluentAssertions" Version="4.19.4" />
+        <PackageReference Update="FluentAssertions" Version="5.4.1" />
         <PackageReference Update="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.CSharp" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="Microsoft.CodeAnalysis" Version="3.0.0" />
@@ -83,7 +83,7 @@
         <PackageReference Update="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.5.0" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="16.3.29131.53-pre" />
+        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="16.8.30522.201-pre" />
         <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="15.0.751" PrivateAssets="All" />
         <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework" Version="16.5.22-beta" />
         <PackageReference Update="Moq" Version="4.14.5" />

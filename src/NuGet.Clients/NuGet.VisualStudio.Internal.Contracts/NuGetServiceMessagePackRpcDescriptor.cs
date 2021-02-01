@@ -50,15 +50,20 @@ namespace NuGet.VisualStudio.Internal.Contracts
             return new NuGetJsonRpc(handler);
         }
 
-        private static MessagePackSerializerOptions CreateMessagePackSerializerOptions()
+        // Non-private for testing purposes only.
+        internal static IMessagePackFormatter[] CreateMessagePackFormatters()
         {
-            var formatters = new IMessagePackFormatter[]
+            return new IMessagePackFormatter[]
             {
                 AlternatePackageMetadataContextInfoFormatter.Instance,
                 FloatRangeFormatter.Instance,
+                IInstalledAndTransitivePackagesFormatter.Instance,
+                ILogMessageFormatter.Instance,
+                ImplicitProjectActionFormatter.Instance,
                 IPackageReferenceContextInfoFormatter.Instance,
                 IProjectContextInfoFormatter.Instance,
                 IProjectMetadataContextInfoFormatter.Instance,
+                LicenseMetadataFormatter.Instance,
                 NuGetFrameworkFormatter.Instance,
                 NuGetVersionFormatter.Instance,
                 PackageDependencyFormatter.Instance,
@@ -68,16 +73,22 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 PackageIdentityFormatter.Instance,
                 PackageReferenceFormatter.Instance,
                 PackageSearchMetadataContextInfoFormatter.Instance,
-                PackageSourceFormatter.Instance,
                 PackageSourceContextInfoFormatter.Instance,
+                PackageSourceFormatter.Instance,
                 PackageSourceUpdateOptionsFormatter.Instance,
                 PackageVulnerabilityMetadataContextInfoFormatter.Instance,
                 ProjectActionFormatter.Instance,
-                VersionRangeFormatter.Instance,
+                RemoteErrorFormatter.Instance,
                 SearchFilterFormatter.Instance,
                 SearchResultContextInfoFormatter.Instance,
                 VersionInfoContextInfoFormatter.Instance,
+                VersionRangeFormatter.Instance
             };
+        }
+
+        private static MessagePackSerializerOptions CreateMessagePackSerializerOptions()
+        {
+            IMessagePackFormatter[] formatters = CreateMessagePackFormatters();
             var resolvers = new IFormatterResolver[] { MessagePack.MessagePackSerializerOptions.Standard.Resolver };
 
             return MessagePack.MessagePackSerializerOptions.Standard

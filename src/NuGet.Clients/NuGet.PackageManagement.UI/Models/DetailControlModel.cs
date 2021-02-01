@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -128,7 +127,7 @@ namespace NuGet.PackageManagement.UI
             _searchResultPackage = searchResultPackage;
             _filter = filter;
             OnPropertyChanged(nameof(Id));
-            OnPropertyChanged(nameof(PackageReader));
+            OnPropertyChanged(nameof(PackagePath));
             OnPropertyChanged(nameof(IconUrl));
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
@@ -703,12 +702,12 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<IProjectContextInfo> NuGetProjects => _nugetProjects;
 
-        public Func<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
+        public string PackagePath => _searchResultPackage?.PackagePath;
 
-        protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
+        protected void AddBlockedVersions(List<NuGetVersion> blockedVersions)
         {
             // add a separator
-            if (blockedVersions.Length > 0)
+            if (blockedVersions.Count > 0)
             {
                 if (_versions.Count > 0)
                 {

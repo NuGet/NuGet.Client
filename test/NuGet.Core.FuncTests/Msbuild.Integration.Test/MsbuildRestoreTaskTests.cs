@@ -8,9 +8,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace Msbuild.Integration.Test
@@ -232,7 +235,9 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
-                Assert.Contains("Installing x 1.0.0", result.AllOutput);
+                var resolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
+                var nupkg = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(packageX.Id, NuGetVersion.Parse(packageX.Version)), NullLogger.Instance);
+                Assert.Contains($"Installed x 1.0.0 from {pathContext.PackageSource} with content hash {nupkg.ContentHash}.", result.AllOutput);
                 Assert.Contains(configAPath, result.AllOutput);
             }
         }
@@ -289,7 +294,9 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
-                Assert.Contains("Installing x 1.0.0", result.AllOutput);
+                var resolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
+                var nupkg = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(packageX.Id, NuGetVersion.Parse(packageX.Version)), NullLogger.Instance);
+                Assert.Contains($"Installed x 1.0.0 from {pathContext.PackageSource} with content hash {nupkg.ContentHash}.", result.AllOutput);
                 Assert.Contains(configAPath, result.AllOutput);
             }
         }

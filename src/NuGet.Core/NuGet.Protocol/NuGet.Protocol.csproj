@@ -13,16 +13,8 @@
     <XPLATProject>true</XPLATProject>
     <Description>NuGet's implementation for interacting with feeds. Contains functionality for all feed types.</Description>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
-    <!-- Uncomment when fixing https://github.com/NuGet/Home/issues/9981
-    <CoreCompileDependsOn>$(CoreCompileDependsOn);DefineHttpRequestMessageOptions</CoreCompileDependsOn>
-    -->
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
-
-  <Target Name="DefineHttpRequestMessageOptions">
-    <PropertyGroup Condition =" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">
-      <DefineConstants >$(DefineConstants);USE_HTTPREQUESTMESSAGE_OPTIONS</DefineConstants>
-    </PropertyGroup>
-  </Target>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
     <TargetFrameworks />

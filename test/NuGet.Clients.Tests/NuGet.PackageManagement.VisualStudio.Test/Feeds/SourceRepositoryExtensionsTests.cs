@@ -42,6 +42,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetPackageMetadataForIdentityAsync_CancellationThrows()
+        {
+            // Arrange
+            var testProject = SetupProject(TestPackageIdentity, allowedVersions: null);
+
+            CancellationToken token = new CancellationToken(canceled: true);
+
+            // Act
+            Task task() => _source.GetPackageMetadataForIdentityAsync(
+                TestPackageIdentity,
+                cancellationToken: token);
+
+            await Assert.ThrowsAsync<OperationCanceledException>(task);
+        }
+
+        [Fact]
         public async Task GetPackageMetadataAsync_CancellationThrows()
         {
             // Arrange

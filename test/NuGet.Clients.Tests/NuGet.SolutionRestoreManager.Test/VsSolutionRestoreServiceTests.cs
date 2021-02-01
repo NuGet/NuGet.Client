@@ -835,8 +835,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var metadata = actualRestoreSpec.Projects.Single().RestoreMetadata;
 
             // Assert
-            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a", "b", "d" });
-            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x", "y", "z" });
+            metadata.Sources.Select(e => e.Source).Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a", "b", "d" });
+            metadata.FallbackFolders.Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x", "y", "z" });
         }
 
         [Fact]
@@ -885,8 +885,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var metadata = actualRestoreSpec.Projects.Single().RestoreMetadata;
 
             // Assert
-            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a", "b", "d" });
-            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x", "y", "z" });
+            metadata.Sources.Select(e => e.Source).Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a", "b", "d" });
+            metadata.FallbackFolders.Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x", "y", "z" });
         }
 
         [Fact]
@@ -919,8 +919,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var metadata = actualRestoreSpec.Projects.Single().RestoreMetadata;
 
             // Assert
-            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
-            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base" });
+            metadata.Sources.Select(e => e.Source).Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
+            metadata.FallbackFolders.Should().BeEquivalentTo(new[] { "base" });
         }
 
         [Fact]
@@ -957,8 +957,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var metadata = actualRestoreSpec.Projects.Single().RestoreMetadata;
 
             // Assert
-            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
-            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base" });
+            metadata.Sources.Select(e => e.Source).Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
+            metadata.FallbackFolders.Should().BeEquivalentTo(new[] { "base" });
         }
 
         [Fact]
@@ -994,8 +994,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var metadata = actualRestoreSpec.Projects.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool).RestoreMetadata;
 
             // Assert
-            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
-            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x" });
+            metadata.Sources.Select(e => e.Source).Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
+            metadata.FallbackFolders.Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x" });
         }
 
         [Fact]
@@ -1035,8 +1035,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var metadata = actualRestoreSpec.Projects.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool).RestoreMetadata;
 
             // Assert
-            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
-            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x" });
+            metadata.Sources.Select(e => e.Source).Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
+            metadata.FallbackFolders.Should().BeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x" });
         }
 
         [Theory]

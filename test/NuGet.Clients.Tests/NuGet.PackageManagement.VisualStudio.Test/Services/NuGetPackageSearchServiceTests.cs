@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     ProjectModel.ProjectStyle.PackageReference,
                     NuGetProjectKind.PackageReference)
             };
-            var testFeedUrl = "https://testsource.com/v3/index.json";
+            var testFeedUrl = "https://testsource.test/v3/index.json";
             var query = "https://api-v2v3search-0.nuget.org/query";
             var responses = new Dictionary<string, string>
             {
@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     searchText: "nuget",
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
-                    useRecommender: true,
+                    useRecommender: false,
                     CancellationToken.None);
                 SearchResultContextInfo continueSearchResult = await searchService.ContinueSearchAsync(CancellationToken.None);
 

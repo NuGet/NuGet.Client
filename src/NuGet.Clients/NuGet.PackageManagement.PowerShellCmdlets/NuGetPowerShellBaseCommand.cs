@@ -28,6 +28,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -214,6 +215,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             stopWatch.Start();
             try
             {
+                // Record NuGetCmdlet executed
+                NuGetPowerShellUsage.RaiseNuGetCmdletExecutedEvent();
+
                 ProcessRecordCore();
             }
             catch (Exception ex)

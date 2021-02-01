@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.EmptyVersion);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, licenseFileHeader: null, packagePath: null, packageIdentity: null);
 
             // Assert
             Assert.Equal(partsCount, links.Count);
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, null, new List<string> { "bad license warning" }, new System.Version(LicenseMetadata.CurrentVersion.Major + 1, 0, 0));
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, licenseFileHeader: null, packagePath: null, packageIdentity: null);
 
             Assert.True(links[0] is WarningText);
             Assert.Empty(links.Where(e => e is LicenseText));
@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.UI.Test
             var uri = new Uri(originalUri);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(null, uri, null, null);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(null, uri, licenseFileHeader: null, packagePath: null, packageIdentity: null);
 
             var licenseText = links[0] as LicenseText;
 
@@ -109,7 +109,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.CurrentVersion);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, licenseFileHeader: null, packagePath: null, packageIdentity: null);
 
             Assert.Equal(links.Count, 2);
             Assert.True(links[0] is WarningText);
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.CurrentVersion);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, licenseFileHeader: null, packagePath: null, packageIdentity: null);
 
             Assert.Equal(links.Count, 2);
             Assert.True(links[0] is WarningText);
@@ -148,18 +148,13 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseFileLocation = "License.txt";
             var licenseFileHeader = "header";
             var licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
-            var licenseContent = "License content";
 
             // Act
             var links = PackageLicenseUtilities.GenerateLicenseLinks(
                 licenseData,
                 licenseFileHeader,
-                delegate (string value)
-                {
-                    if (value.Equals(licenseFileLocation))
-                        return licenseContent;
-                    return null;
-                });
+                licenseFileLocation,
+                packageIdentity: null);
 
             Assert.Equal(1, links.Count);
             Assert.True(links[0] is LicenseFileText);
@@ -177,7 +172,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, null, LicenseMetadata.EmptyVersion);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, licenseFileHeader: null, packagePath: null, packageIdentity: null);
 
             // Assert
             Assert.Equal(1, links.Count);

@@ -28,6 +28,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
@@ -38,6 +39,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private static readonly string AggregateSourceName = Resources.AggregateSourceName;
         private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
         private static readonly int MaxTasks = 16;
+        private static bool PowerShellLoaded = false;
 
         private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
         private IVsMonitorSelection VsMonitorSelection => ThreadHelper.JoinableTaskFactory.Run(_vsMonitorSelection.GetValueAsync);
@@ -114,7 +116,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
                 () => ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>());
             _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetInstanceSafe<ICommonOperations>());
-
             _name = name;
             IsCommandEnabled = true;
 
@@ -300,6 +301,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     try
                     {
+                        bool _isPmc = console is IWpfConsole;
                         var result = _runspaceManager.GetRunspace(console, _name);
                         Runspace = result.Item1;
                         _nugetHost = result.Item2;
@@ -312,10 +314,20 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         }
 
                         UpdateWorkingDirectory();
+
+                        if (!PowerShellLoaded)
+                        {
+                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc);
+                            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+                            PowerShellLoaded = true;
+                        }
+
+                        NuGetPowerShellUsage.RaisePowerShellLoadEvent(isPMC: _isPmc);
+
                         await ExecuteInitScriptsAsync();
 
                         // check if PMC console is actually opened, then only hook to solution load/close events.
-                        if (console is IWpfConsole)
+                        if (_isPmc)
                         {
                             // Hook up solution events
                             _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
@@ -471,20 +483,24 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     AddPathToEnvironment(toolsPath);
 
                     var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
-                    if (File.Exists(scriptPath) &&
-                        _scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
+                    if (File.Exists(scriptPath))
                     {
-                        // always execute init script on a background thread
-                        await TaskScheduler.Default;
+                        NuGetPowerShellUsage.RaiseInitPs1LoadEvent(isPMC: _activeConsole is IWpfConsole);
 
-                        var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
+                        if (_scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
+                        {
+                            // always execute init script on a background thread
+                            await TaskScheduler.Default;
 
-                        Runspace.Invoke(
-                            request.BuildCommand(),
-                            request.BuildInput(),
-                            outputResults: true);
+                            var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
 
-                        return;
+                            Runspace.Invoke(
+                                request.BuildCommand(),
+                                request.BuildInput(),
+                                outputResults: true);
+
+                            return;
+                        }
                     }
                 }
 
@@ -527,6 +543,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 throw new ArgumentNullException(nameof(command));
             }
+
+            NuGetPowerShellUsage.RaiseCommandExecuteEvent(isPMC: console is IWpfConsole);
 
             // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
             // to run it once for each solution

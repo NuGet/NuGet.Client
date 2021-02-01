@@ -39,6 +39,8 @@ namespace NuGet.PackageManagement.UI
         private INuGetSearchService _searchService;
         public IItemLoaderState State => _state;
         private IServiceBroker _serviceBroker;
+        private INuGetPackageFileService _packageFileService;
+
         public bool IsMultiSource => _packageSources.Count > 1;
 
         private PackageItemLoader(
@@ -70,7 +72,7 @@ namespace NuGet.PackageManagement.UI
             ContractItemFilter itemFilter,
             string searchText = null,
             bool includePrerelease = true,
-            bool useRecommender = true)
+            bool useRecommender = false)
         {
             var itemLoader = new PackageItemLoader(
                 serviceBroker,
@@ -93,9 +95,10 @@ namespace NuGet.PackageManagement.UI
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             ContractItemFilter itemFilter,
             INuGetSearchService searchService,
+            INuGetPackageFileService packageFileService,
             string searchText = null,
             bool includePrerelease = true,
-            bool useRecommender = true)
+            bool useRecommender = false)
         {
             var itemLoader = new PackageItemLoader(
                 serviceBroker,
@@ -106,18 +109,19 @@ namespace NuGet.PackageManagement.UI
                 includePrerelease,
                 useRecommender);
 
-            await itemLoader.InitializeAsync(searchService);
+            await itemLoader.InitializeAsync(searchService, packageFileService);
 
             return itemLoader;
         }
 
-        private async ValueTask InitializeAsync(INuGetSearchService searchService = null)
+        private async ValueTask InitializeAsync(INuGetSearchService searchService = null, INuGetPackageFileService packageFileService = null)
         {
             _searchFilter = new SearchFilter(includePrerelease: _includePrerelease)
             {
                 SupportedFrameworks = await _context.GetSupportedFrameworksAsync()
             };
 
+            _packageFileService = packageFileService ?? await GetPackageFileServiceAsync(CancellationToken.None);
             _searchService = searchService ?? await GetSearchServiceAsync(CancellationToken.None);
             _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
         }
@@ -128,6 +132,8 @@ namespace NuGet.PackageManagement.UI
             {
                 _searchService?.Dispose();
                 _searchService = await GetSearchServiceAsync(CancellationToken.None);
+                _packageFileService?.Dispose();
+                _packageFileService = await GetPackageFileServiceAsync(CancellationToken.None);
             }).PostOnFailure(nameof(PackageItemLoader), nameof(OnAvailabilityChanged));
         }
 
@@ -138,6 +144,15 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore ISB001 // Dispose of proxies
             Assumes.NotNull(searchService);
             return searchService;
+        }
+
+        private async ValueTask<INuGetPackageFileService> GetPackageFileServiceAsync(CancellationToken cancellationToken)
+        {
+#pragma warning disable ISB001 // Dispose of proxies
+            INuGetPackageFileService packageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies
+            Assumes.NotNull(packageFileService);
+            return packageFileService;
         }
 
         public async Task<int> GetTotalCountAsync(int maxCount, CancellationToken cancellationToken)
@@ -283,7 +298,8 @@ namespace NuGet.PackageManagement.UI
                     RecommenderVersion = metadata.RecommenderVersion,
                     Vulnerabilities = metadata.Vulnerabilities,
                     Sources = _packageSources,
-                    // PackageReader = metadata.PackageReader, //(metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackageReader, SCOBAN
+                    PackagePath = metadata.PackagePath,
+                    PackageFileService = _packageFileService,
                 };
 
                 listItem.UpdatePackageStatus(_installedPackages);

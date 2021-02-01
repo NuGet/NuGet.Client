@@ -443,30 +443,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 foreach (ResolvedAction resolvedAction in resolvedActions)
                 {
-                    List<ImplicitProjectAction>? implicitActions = null;
-
-                    if (resolvedAction.Action is BuildIntegratedProjectAction buildIntegratedAction)
-                    {
-                        implicitActions = new List<ImplicitProjectAction>();
-
-                        foreach (NuGetProjectAction? buildAction in buildIntegratedAction.GetProjectActions())
-                        {
-                            var implicitAction = new ImplicitProjectAction(
-                                CreateProjectActionId(),
-                                buildAction.PackageIdentity,
-                                buildAction.NuGetProjectActionType);
-
-                            implicitActions.Add(implicitAction);
-                        }
-                    }
-
-                    string projectId = resolvedAction.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
-                    var projectAction = new ProjectAction(
-                        CreateProjectActionId(),
-                        projectId,
-                        resolvedAction.Action.PackageIdentity,
-                        resolvedAction.Action.NuGetProjectActionType,
-                        implicitActions);
+                    ProjectAction projectAction = CreateProjectAction(resolvedAction);
 
                     _state.ResolvedActions[projectAction.Id] = resolvedAction;
 
@@ -578,26 +555,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
                 IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUpdatePackagesAsync(
-                      packageIdentities.ToList(),
-                      projects,
-                      resolutionContext,
-                      projectContext,
-                      primarySources,
-                      secondarySources,
-                      cancellationToken);
+                    packageIdentities.ToList(),
+                    projects,
+                    resolutionContext,
+                    projectContext,
+                    primarySources,
+                    secondarySources,
+                    cancellationToken);
 
                 var projectActions = new List<ProjectAction>();
 
                 foreach (NuGetProjectAction action in actions)
                 {
-                    string projectId = action.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
                     var resolvedAction = new ResolvedAction(action.Project, action);
-                    var projectAction = new ProjectAction(
-                        CreateProjectActionId(),
-                        projectId,
-                        action.PackageIdentity,
-                        action.NuGetProjectActionType,
-                        implicitActions: null);
+                    ProjectAction projectAction = CreateProjectAction(resolvedAction);
 
                     _state.ResolvedActions[projectAction.Id] = resolvedAction;
 
@@ -620,6 +591,36 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(affectedProject => ProjectContextInfo.CreateAsync(affectedProject, cancellationToken).AsTask());
 
             return await Task.WhenAll(tasks);
+        }
+
+        private static ProjectAction CreateProjectAction(ResolvedAction resolvedAction)
+        {
+            List<ImplicitProjectAction>? implicitActions = null;
+
+            if (resolvedAction.Action is BuildIntegratedProjectAction buildIntegratedAction)
+            {
+                implicitActions = new List<ImplicitProjectAction>();
+
+                foreach (NuGetProjectAction buildAction in buildIntegratedAction.GetProjectActions())
+                {
+                    var implicitAction = new ImplicitProjectAction(
+                        CreateProjectActionId(),
+                        buildAction.PackageIdentity,
+                        buildAction.NuGetProjectActionType);
+
+                    implicitActions.Add(implicitAction);
+                }
+            }
+
+            string projectId = resolvedAction.Project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+            var projectAction = new ProjectAction(
+                CreateProjectActionId(),
+                projectId,
+                resolvedAction.Action.PackageIdentity,
+                resolvedAction.Action.NuGetProjectActionType,
+                implicitActions);
+
+            return projectAction;
         }
 
         private static string CreateProjectActionId()

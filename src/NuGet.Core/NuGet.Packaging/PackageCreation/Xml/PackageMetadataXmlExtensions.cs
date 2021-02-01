@@ -51,7 +51,10 @@ namespace NuGet.Packaging.Xml
             }
             if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
-                elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
+                if (metadata.EmitRequireLicenseAcceptance)
+                {
+                    elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
+                }
                 var licenseUrlToWrite = metadata.LicenseUrl?.ToString();
                 if (metadata.LicenseMetadata != null)
                 {

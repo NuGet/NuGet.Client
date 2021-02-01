@@ -73,7 +73,16 @@ namespace NuGet.Packaging
             }
 
             var sfh = new SafeFileHandle((IntPtr)fd, ownsHandle: true);
-            return new FileStream(sfh, FileAccess.ReadWrite);
+
+            try
+            {
+                return new FileStream(sfh, FileAccess.ReadWrite);
+            }
+            catch
+            {
+                sfh.Dispose();
+                throw;
+            }
         }
 
         private static FileStream MonoPosixCreateFile(string path)

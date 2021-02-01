@@ -176,19 +176,19 @@ namespace NuGet.PackageManagement.UI
             ComboBoxBorderKey = VsBrushes.ComboBoxBorderKey;
             ControlLinkTextHoverKey = VsBrushes.ControlLinkTextHoverKey;
             ControlLinkTextKey = VsBrushes.ControlLinkTextKey;
-            DetailPaneBackground = VsBrushes.BrandedUIBackgroundKey;
-            HeaderBackground = VsBrushes.BrandedUIBackgroundKey;
+            DetailPaneBackground = CommonDocumentColors.PageBrushKey;
+            HeaderBackground = CommonDocumentColors.PageBrushKey;
             InfoBackgroundKey = VsBrushes.InfoBackgroundKey;
             InfoTextKey = VsBrushes.InfoTextKey;
-            LegalMessageBackground = VsBrushes.BrandedUIBackgroundKey;
-            ListPaneBackground = VsBrushes.BrandedUIBackgroundKey;
+            LegalMessageBackground = CommonDocumentColors.PageBrushKey;
+            ListPaneBackground = CommonDocumentColors.PageBrushKey;
             SplitterBackgroundKey = VsBrushes.CommandShelfBackgroundGradientKey;
             ToolWindowBorderKey = VsBrushes.ToolWindowBorderKey;
             ToolWindowButtonDownBorderKey = VsBrushes.ToolWindowButtonDownBorderKey;
             ToolWindowButtonDownKey = VsBrushes.ToolWindowButtonDownKey;
             ToolWindowButtonHoverActiveBorderKey = VsBrushes.ToolWindowButtonHoverActiveBorderKey;
             ToolWindowButtonHoverActiveKey = VsBrushes.ToolWindowButtonHoverActiveKey;
-            UIText = VsBrushes.BrandedUITextKey;
+            UIText = CommonDocumentColors.PageTextBrushKey;
             WindowTextKey = VsBrushes.WindowTextKey;
 
             HeaderColorsDefaultBrushKey = HeaderColors.DefaultBrushKey;

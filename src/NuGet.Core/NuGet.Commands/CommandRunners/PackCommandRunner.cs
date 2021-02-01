@@ -166,44 +166,43 @@ namespace NuGet.Commands
                 PrintVerbose(outputPath, builder);
             }
 
-            using (var package = new PackageArchiveReader(outputPath))
-            {
+            using var package = new PackageArchiveReader(outputPath);
 
-                if (package != null && !_packArgs.NoPackageAnalysis && !symbolsPackage)
+            if (package != null && !_packArgs.NoPackageAnalysis && !symbolsPackage)
+            {
+                AnalyzePackage(package);
+                if (_packArgs.Logger is PackCollectorLogger collectorLogger)
                 {
-                    AnalyzePackage(package);
-                    if (_packArgs.Logger is PackCollectorLogger collectorLogger)
+                    if (collectorLogger.Errors.Any(e => e.Level == LogLevel.Error))
                     {
-                        if (collectorLogger.Errors.Any(e => e.Level == LogLevel.Error))
+                        package.Dispose();
+                        if (!isExistingPackage && File.Exists(outputPath))
                         {
-                            package.Dispose();
-                            if (!isExistingPackage && File.Exists(outputPath))
-                            {
-                                File.Delete(outputPath);
-                            }
-                            return false;
+                            File.Delete(outputPath);
                         }
+                        return false;
                     }
                 }
+            }
 
-                if (_packArgs.InstallPackageToOutputPath)
-                {
-                    _packArgs.Logger.Log(
-                        PackagingLogMessage.CreateMessage(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath),
-                            LogLevel.Minimal));
-
-                    WriteResolvedNuSpecToPackageOutputDirectory(builder);
-                    WriteSHA512PackageHash(builder);
-                }
-
+            if (_packArgs.InstallPackageToOutputPath)
+            {
                 _packArgs.Logger.Log(
                     PackagingLogMessage.CreateMessage(
-                        string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath),
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath),
                         LogLevel.Minimal));
+
+                WriteResolvedNuSpecToPackageOutputDirectory(builder);
+                WriteSHA512PackageHash(builder);
             }
+
+            _packArgs.Logger.Log(
+                PackagingLogMessage.CreateMessage(
+                    string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath),
+                    LogLevel.Minimal));
+
 
             return true;
         }
@@ -785,6 +784,8 @@ namespace NuGet.Commands
 
             InitCommonPackageBuilderProperties(mainPackageBuilder);
 
+            mainPackageBuilder.EmitRequireLicenseAcceptance = mainPackageBuilder.RequireLicenseAcceptance;
+
             bool successful = true;
             // Build the main package
             if (GenerateNugetPackage)
@@ -864,7 +865,8 @@ namespace NuGet.Commands
         private void PrintVerbose(string outputPath, PackageBuilder builder)
         {
             WriteLine(string.Empty);
-            var package = new PackageArchiveReader(outputPath);
+
+            using var package = new PackageArchiveReader(outputPath);
 
             WriteLine("Id: {0}", builder.Id);
             WriteLine("Version: {0}", builder.Version);

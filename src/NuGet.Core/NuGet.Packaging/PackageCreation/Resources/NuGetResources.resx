@@ -224,4 +224,7 @@
     <value>The 'icon' element '{0}' has an invalid file extension. Valid options are .png, .jpg or .jpeg.</value>
     <comment>0 - Icon entry in the nuspec</comment>
   </data>
+  <data name="Manifest_RequireLicenseAcceptanceRequiresEmit" xml:space="preserve">
+    <value>EmitRequireLicenseAcceptance must not be set to false if RequireLicenseAcceptance is set to true.</value>
+  </data>
 </root>

@@ -918,8 +918,7 @@ namespace NuGet.PackageManagement.UI
             if (loadContext.IsSolution == false
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
-                && SelectedSource.PackageSources.Count() == 1
-                && TelemetryUtility.IsNuGetOrg(SelectedSource.PackageSources.First()?.Source))
+                && SelectedSource.PackageSources.Any(item => TelemetryUtility.IsNuGetOrg(item.Source)))
             {
                 _recommendPackages = true;
             }
@@ -1494,8 +1493,6 @@ namespace NuGet.PackageManagement.UI
                     Model.CachedUpdates = null;
                     ResetTabDataLoadFlags();
 
-                    _actionCompleted?.Invoke(this, EventArgs.Empty);
-                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                     IsEnabled = true;
                     _isExecutingAction = false;
                     if (_isRefreshRequired)
@@ -1505,6 +1502,9 @@ namespace NuGet.PackageManagement.UI
                         EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success);
                         _isRefreshRequired = false;
                     }
+
+                    _actionCompleted?.Invoke(this, EventArgs.Empty);
+                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                 }
             })
             .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteAction));
@@ -1553,7 +1553,7 @@ namespace NuGet.PackageManagement.UI
         private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
         {
             var packagesToUpdate = selectedPackages
-                .Select(package => new PackageIdentity(package.Id, package.LatestVersion))
+                .Select(package => new PackageIdentity(package.Id, package.Version))
                 .ToList();
 
             UpdatePackage(packagesToUpdate);

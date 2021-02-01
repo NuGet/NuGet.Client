@@ -4,12 +4,14 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Telemetry;
 using AsyncLazyInt = Microsoft.VisualStudio.Threading.AsyncLazy<int>;
 using Task = System.Threading.Tasks.Task;
@@ -96,11 +98,32 @@ namespace NuGet.VisualStudio.Common
             });
         }
 
+        public void Log(MessageLevel level, string message, params object[] args)
+        {
+            Run(async () =>
+            {
+                int verbosityLevel = await _verbosityLevel.GetValueAsync();
+
+                if (level == MessageLevel.Info
+                    || level == MessageLevel.Error
+                    || level == MessageLevel.Warning
+                    || verbosityLevel > DefaultVerbosityLevel)
+                {
+                    if (args.Length > 0)
+                    {
+                        message = string.Format(CultureInfo.CurrentCulture, message, args);
+                    }
+
+                    await _outputConsole.WriteLineAsync(message);
+                }
+            });
+        }
+
         public void Log(ILogMessage message)
         {
             Run(async () =>
             {
-                var verbosityLevel = await _verbosityLevel.GetValueAsync();
+                int verbosityLevel = await _verbosityLevel.GetValueAsync();
 
                 if (message.Level == LogLevel.Information
                     || message.Level == LogLevel.Error

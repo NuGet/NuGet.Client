@@ -19,6 +19,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
         private const string ProjectManagerServiceVersion = "1.0.0";
         private const string ProjectUpgraderServiceName = "Microsoft.VisualStudio.NuGet.ProjectUpgraderService";
         private const string ProjectUpgraderServiceVersion = "1.0.0";
+        private const string PackageFileServiceName = "Microsoft.VisualStudio.NuGet.PackageFileService";
+        private const string PackageFileServiceVersion = "1.0.0";
         private const string SearchServiceName = "Microsoft.VisualStudio.NuGet.PackageSearchService";
         private const string SearchServiceVersion = "1.0.0";
 
@@ -34,6 +36,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             new ServiceMoniker(ProjectManagerServiceName, new Version(ProjectManagerServiceVersion)));
         public static readonly ServiceRpcDescriptor ProjectUpgraderService = new NuGetServiceMessagePackRpcDescriptor(
             new ServiceMoniker(ProjectUpgraderServiceName, new Version(ProjectUpgraderServiceVersion)));
+        public static readonly ServiceRpcDescriptor PackageFileService = new NuGetServiceMessagePackRpcDescriptor(
+          new ServiceMoniker(PackageFileServiceName, new Version(PackageFileServiceVersion)));
         public static readonly ServiceRpcDescriptor SearchService = new NuGetServiceMessagePackRpcDescriptor(
             new ServiceMoniker(SearchServiceName, new Version(SearchServiceVersion)));
     }

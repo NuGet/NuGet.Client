@@ -26,6 +26,8 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Common.Telemetry;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
@@ -36,6 +38,7 @@ using ProvideBrokeredServiceAttribute = Microsoft.VisualStudio.Shell.ServiceBrok
 using Resx = NuGet.PackageManagement.UI.Resources;
 using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudience;
 using Task = System.Threading.Tasks.Task;
+using TelemetryActivity = NuGet.Common.TelemetryActivity;
 using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
@@ -74,6 +77,7 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.SolutionManagerServiceName, BrokeredServicesUtilities.SolutionManagerServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectManagerServiceName, BrokeredServicesUtilities.ProjectManagerServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
+    [ProvideBrokeredService(BrokeredServicesUtilities.PackageFileServiceName, BrokeredServicesUtilities.PackageFileServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
@@ -96,6 +100,7 @@ namespace NuGetVSExtension
         private uint _solutionExistsCookie;
         private bool _powerConsoleCommandExecuting;
         private bool _initialized;
+        private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
 
         public NuGetPackage()
         {
@@ -145,6 +150,9 @@ namespace NuGetVSExtension
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
+            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
+
             await base.InitializeAsync(cancellationToken, progress);
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
@@ -179,6 +187,8 @@ namespace NuGetVSExtension
                 ThreadHelper.JoinableTaskFactory);
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
+
+            VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
         }
 
         /// <summary>
@@ -1245,6 +1255,11 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
+        }
+
+        private void RegisterEmitVSInstancePowerShellTelemetry()
+        {
+            NuGetPowerShellUsage.RaiseVSInstanceCloseEvent();
         }
 
         #region IVsPersistSolutionOpts
