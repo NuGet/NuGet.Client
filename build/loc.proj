@@ -75,13 +75,22 @@
     <Copy SourceFiles="@(EulaFiles->'%(Identity)')" DestinationFiles="@(EulaFiles->'%(DestinationDir)')"/>
   </Target>
 
-  <Target Name="MoveLcgFilesToArtifacts" AfterTargets="Localize">
+  <Target Name="CopyLcgFilesToArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <_MoveLcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg'">
         <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedToolFiles.lang), %(LocalizedToolFiles.RootDir)%(LocalizedToolFiles.Directory)))%(LocalizedToolFiles.Culture)\%(LocalizedToolFiles.Filename)%(LocalizedToolFiles.Extension)</DestinationDir>
       </_MoveLcgFiles>
     </ItemGroup>
-    <Move SourceFiles="@(_MoveLcgFiles->'%(Identity)')" DestinationFiles="@(_MoveLcgFiles->'%(DestinationDir)')"/>
+    <Copy SourceFiles="@(_MoveLcgFiles->'%(Identity)')" DestinationFiles="@(_MoveLcgFiles->'%(DestinationDir)')"/>
+  </Target>
+
+  <Target Name="CopyBinariesToLocalizeENU" AfterTargets="Localize">
+    <ItemGroup>
+      <_EnglishBinaires Include="@(FilesToLocalize)" Condition="'%(FilesToLocalize.Extension)'== '.dll'">
+        <DestinationPath>$(ArtifactsDirectory)localize\ENU\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
+      </_EnglishBinaires>
+    </ItemGroup>
+    <Copy SourceFiles="@(_EnglishBinaires)" DestinationFiles="@(_EnglishBinaires->'%(DestinationPath)')" />
   </Target>
 
   <Target Name="AfterBuild" DependsOnTargets="LocalizeNonProjectFiles;BatchLocalize"/>
