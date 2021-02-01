@@ -1,4 +1,3 @@
-
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -548,28 +547,25 @@ namespace NuGet.PackageManagement.UI
                     // to support downloading on a worker thread, we need to download the image
                     // data and put into a memorystream. Then have the BitmapImage decode the
                     // image from the memorystream.
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                    var memoryStream = new MemoryStream();
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
-                    // Cannot call CopyToAsync as we'll get an InvalidOperationException due to CheckAccess() in next line.
-                    stream.CopyTo(memoryStream);
-                    iconBitmapImage.StreamSource = memoryStream;
-
-                    try
+                    using (var memoryStream = new MemoryStream())
                     {
-                        FinalizeBitmapImage(iconBitmapImage);
-                        iconBitmapImage.Freeze();
-                        IconBitmap = iconBitmapImage;
-                        BitmapStatus = IconBitmapStatus.FetchedIcon;
-                    }
-                    catch (Exception ex) when (IsHandleableBitmapEncodingException(ex))
-                    {
-                        IconBitmap = Images.DefaultPackageIcon;
-                        BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
-                    }
+                        // Cannot call CopyToAsync as we'll get an InvalidOperationException due to CheckAccess() in next line.
+                        stream.CopyTo(memoryStream);
+                        iconBitmapImage.StreamSource = memoryStream;
 
-                    memoryStream.Dispose();
+                        try
+                        {
+                            FinalizeBitmapImage(iconBitmapImage);
+                            iconBitmapImage.Freeze();
+                            IconBitmap = iconBitmapImage;
+                            BitmapStatus = IconBitmapStatus.FetchedIcon;
+                        }
+                        catch (Exception ex) when (IsHandleableBitmapEncodingException(ex))
+                        {
+                            IconBitmap = Images.DefaultPackageIcon;
+                            BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
+                        }
+                    }
                 }
                 else
                 {
