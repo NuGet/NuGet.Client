@@ -8,7 +8,7 @@ namespace NuGet.PackageManagement.UI
 {
     public static class WpfUtility
     {
-        public static T FindParent<T> (this DependencyObject element)
+        public static T FindParent<T>(this DependencyObject element)
             where T : FrameworkElement
         {
             T parent = null;
