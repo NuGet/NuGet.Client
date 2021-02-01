@@ -70,7 +70,8 @@ namespace NuGet.Packaging
             var attr = File.GetAttributes(fileFullPath);
 
             if (!attr.HasFlag(FileAttributes.Directory) &&
-                entry.LastWriteTime.DateTime != DateTime.MinValue) // Ignore invalid times
+                entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
+                entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
             {
                 try
                 {

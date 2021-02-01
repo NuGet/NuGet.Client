@@ -2907,7 +2907,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         [Fact]
-        public void PackageBuilderPreserveFileLastWriteTime()
+        public void PackageBuilder_PreserveFileLastWriteTime_Succeeds()
         {
             // Act
             var lastWriteTime = new DateTimeOffset(2017, 1, 15, 23, 59, 0, new TimeSpan(0, 0, 0));
@@ -2939,9 +2939,8 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         [Fact]
-        public void PackageBuilder_TestLastWriteTime_Year1980()
+        public void PackageBuilder_CorrectLastWriteTimeBeforeYear1980_Succeeds()
         {
-            // https://github.com/NuGet/Home/issues/7001
             // Act
             DateTime year2020Date = new DateTime(2020, 12, 14, 23, 59, 7, DateTimeKind.Utc);
             DateTimeOffset lastWriteTime = ZipFormatMinDate.AddDays(-1); // 12/31/1979 12:00:00 AM + 00:00
@@ -2952,7 +2951,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
             using (var directory = new TestLastWriteTimeDirectory(lastWriteTime.LocalDateTime))
             {
-                var builder = new PackageBuilder(logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                var builder = new PackageBuilder(false, logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
                 builder.Authors.Add("test");
 
                 // Additional edge cases
@@ -2960,14 +2959,21 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 string before1980File2 = Path.Combine(directory.Path, "before1980File2.txt");
                 string after1980File1 = Path.Combine(directory.Path, "after1980File1.txt");
                 string after1980File2 = Path.Combine(directory.Path, "after1980File2.txt");
+                string after1980File3 = Path.Combine(directory.Path, "after1980File3.txt");
+                string after1980File4 = Path.Combine(directory.Path, "after1980File4.txt");
                 File.WriteAllText(before1980File1, string.Empty);
                 File.WriteAllText(before1980File2, string.Empty);
                 File.WriteAllText(after1980File1, string.Empty);
                 File.WriteAllText(after1980File2, string.Empty);
-                File.SetLastWriteTime(before1980File1, ZipFormatMinDate.AddSeconds(-1));
-                File.SetLastWriteTime(before1980File2, ZipFormatMinDate);
-                File.SetLastWriteTime(after1980File1, ZipFormatMinDate.AddSeconds(1));
-                File.SetLastWriteTime(after1980File2, year2020Date);
+                File.WriteAllText(after1980File3, string.Empty);
+                File.WriteAllText(after1980File3, string.Empty);
+                File.WriteAllText(after1980File4, string.Empty);
+                File.SetLastWriteTime(before1980File1, ZipFormatMinDate.AddSeconds(-2));
+                File.SetLastWriteTime(before1980File2, ZipFormatMinDate.AddSeconds(-1));
+                File.SetLastWriteTime(after1980File1, ZipFormatMinDate);
+                File.SetLastWriteTime(after1980File2, ZipFormatMinDate.AddSeconds(1));
+                File.SetLastWriteTime(after1980File3, ZipFormatMinDate.AddSeconds(2));
+                File.SetLastWriteTime(after1980File4, year2020Date);
 
                 builder.AddFiles(directory.Path, "**", "Content");
 
@@ -2991,10 +2997,15 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                             {
                                 if (path == after1980File1)
                                 {
-                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMinDate && entry.LastWriteTime.DateTime <= ZipFormatMinDate.AddSeconds(1));
+                                    Assert.True(entry.LastWriteTime.DateTime == ZipFormatMinDate);
                                     numberOfDateNotCorrectedFiles++;
                                 }
-                                else if (path == after1980File2)
+                                else if (path == after1980File2 || path == after1980File3)
+                                {
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMinDate && entry.LastWriteTime.DateTime <= ZipFormatMinDate.AddSeconds(2));
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else if (path == after1980File4)
                                 {
                                     // File from 2020
                                     Assert.True(entry.LastWriteTime.DateTime >= year2020Date.AddSeconds(-1) && entry.LastWriteTime.DateTime <= year2020Date);
@@ -3011,17 +3022,17 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
 
-                Assert.True(numberOfDateNotCorrectedFiles == 2);
+                Assert.True(numberOfDateNotCorrectedFiles == 4);
                 Assert.True(numberOfDateCorrectedFiles == 5);
                 Assert.Equal(innerLogger.LogMessages.Count, 1);
-                Assert.True(innerLogger.LogMessages.First().Message.Contains("because the zip file format does not support timestamp values before"));
+                string[] logMessages = innerLogger.LogMessages.First().Message.Split('\n');
+                Assert.Equal(logMessages.Count(l => l.Contains("because the zip file format does not support timestamp values")), 5);
             }
         }
 
         [Fact]
-        public void PackageBuilder_TestLastWriteTime_Year2107()
+        public void PackageBuilder_CorrectTestWriteTimeAfterYear2107_Succeeds()
         {
-            // https://github.com/NuGet/Home/issues/7001
             // Act
             DateTime year2020Date = new DateTime(2020, 12, 14, 23, 59, 2, DateTimeKind.Utc);
             DateTimeOffset lastWriteTime = ZipFormatMaxDate.AddDays(1); // 1/1/2108 11:59:58 PM +00:00
@@ -3032,22 +3043,28 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
             using (var directory = new TestLastWriteTimeDirectory(lastWriteTime.ToLocalTime()))
             {
-                var builder = new PackageBuilder(logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                var builder = new PackageBuilder(false, logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
                 builder.Authors.Add("test");
 
                 // Additional edge cases
                 string before2107File1 = Path.Combine(directory.Path, "Before2107_1.txt");
                 string before2107File2 = Path.Combine(directory.Path, "Before2107_2.txt");
                 string before2107File3 = Path.Combine(directory.Path, "Before2107_3.txt");
+                string before2107File4 = Path.Combine(directory.Path, "Before2107_4.txt");
                 string after2107File1 = Path.Combine(directory.Path, "After2107_1.txt");
+                string after2107File2 = Path.Combine(directory.Path, "After2107_2.txt");
                 File.WriteAllText(before2107File1, string.Empty);
                 File.WriteAllText(before2107File2, string.Empty);
                 File.WriteAllText(before2107File3, string.Empty);
+                File.WriteAllText(before2107File4, string.Empty);
                 File.WriteAllText(after2107File1, string.Empty);
+                File.WriteAllText(after2107File2, string.Empty);
                 File.SetLastWriteTime(before2107File1, year2020Date);
-                File.SetLastWriteTime(before2107File2, ZipFormatMaxDate.AddSeconds(-1));
-                File.SetLastWriteTime(before2107File3, ZipFormatMaxDate);
+                File.SetLastWriteTime(before2107File2, ZipFormatMaxDate.AddSeconds(-2));
+                File.SetLastWriteTime(before2107File3, ZipFormatMaxDate.AddSeconds(-1));
+                File.SetLastWriteTime(before2107File4, ZipFormatMaxDate);
                 File.SetLastWriteTime(after2107File1, ZipFormatMaxDate.AddSeconds(1));
+                File.SetLastWriteTime(after2107File2, ZipFormatMaxDate.AddSeconds(2));
 
                 builder.AddFiles(directory.Path, "**", "Content");
 
@@ -3075,9 +3092,14 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                                     Assert.True(entry.LastWriteTime.DateTime >= year2020Date.AddSeconds(-1) && entry.LastWriteTime.DateTime <= year2020Date);
                                     numberOfDateNotCorrectedFiles++;
                                 }
-                                else if (path == before2107File2)
+                                else if (path == before2107File2 || path == before2107File3)
                                 {
                                     Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMaxDate.AddSeconds(-2) && entry.LastWriteTime.DateTime <= ZipFormatMaxDate.AddSeconds(-1));
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else if (path == before2107File4)
+                                {
+                                    Assert.True(entry.LastWriteTime.DateTime == ZipFormatMaxDate);
                                     numberOfDateNotCorrectedFiles++;
                                 }
                                 else
@@ -3091,19 +3113,17 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
 
-                Assert.True(numberOfDateNotCorrectedFiles == 2);
+                Assert.True(numberOfDateNotCorrectedFiles == 4);
                 Assert.True(numberOfDateCorrectedFiles == 5);
                 Assert.Equal(innerLogger.LogMessages.Count, 1);
-                Assert.True(innerLogger.LogMessages.First().Message.Contains("because the zip file format does not support timestamp values before"));
+                string[] logMessages = innerLogger.LogMessages.First().Message.Split('\n');
+                Assert.Equal(logMessages.Count(l => l.Contains("because the zip file format does not support timestamp values")), 5);
             }
         }
 
         [Fact]
-        public async Task PackAndExtract_TestLastWriteTimeForZipfile_UsingLocalTimeAsync()
+        public async Task PackAndExtract_TestLastWriteTimeForZipfileUsingLocalTimeAsync_Succeeds()
         {
-            // https://github.com/NuGet/Home/issues/7395
-            // Implicitly testing timezone issue (Our case testing on PST timezone).
-
             // Arrange
             var now = DateTime.Now;
             TestLogger innerLogger = new TestLogger();
@@ -3115,31 +3135,10 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 var packageName = "A";
                 var outputNupkg = Path.Combine(root, $"{packageName}.nupkg");
                 var packageA = new PackageIdentity(packageName, new NuGetVersion("2.0.3"));
-                var builder = new PackageBuilder(logger) { Id = packageA.Id, Version = packageA.Version, Description = "test description" };
+                var builder = new PackageBuilder(false, logger) { Id = packageA.Id, Version = packageA.Version, Description = "test description" };
                 builder.Authors.Add("Test author");
-
-                var fileList = new List<string>()
-                {
-                    Path.Combine(@"build","foo.props"),
-                    Path.Combine(@"buildCrossTargeting","foo.props"),
-                    Path.Combine(@"buildMultiTargeting","foo.props"),
-                    Path.Combine(@"buildTransitive", "foo.props"),
-                    Path.Combine(@"buildTransitive", "net5.0", "foo.props"),
-                    Path.Combine(@"content", "foo.jpg"),
-                    Path.Combine(@"contentFiles", "any", "any", "foo.png"),
-                    Path.Combine(@"contentFiles", "cs", "net5.0", "foo.cs"),
-                    Path.Combine(@"embed", "net5.0", "foo.dll"),
-                    Path.Combine(@"lib", "net5.0", "foo.dll"),
-                    Path.Combine(@"ref", "net5.0", "foo.dll"),
-                    Path.Combine(@"runtimes", "win", "native", "foo.o"),
-                    Path.Combine(@"tools", "foo.dll"),
-                };
-
-                foreach (string file in fileList)
-                {
-                    CreatePackageFileOnPath(Path.Combine(root, file), now);
-                }
-
+                var file = Path.Combine(@"lib", "net5.0", "foo.dll");
+                CreatePackageFileOnPath(Path.Combine(root, file), now);
                 builder.AddFiles(root.Path, "**", "Content");
 
                 using (var fileStream = new FileStream(outputNupkg, FileMode.Create, FileAccess.Write))
@@ -3166,20 +3165,16 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     // Assert
                     var installPath = resolver.GetInstallPath(packageA);
                     Assert.True(File.Exists(Path.Combine(installPath, $"{packageA.Id}.{packageA.Version}.nupkg")));
-
-                    foreach (string file in fileList)
-                    {
-                        var extractedTextFile = new FileInfo(Path.Combine(installPath, "Content", file));
-                        Assert.True(File.Exists(extractedTextFile.FullName));
-                        // Since we're using DateTime.Now millisecond precision matters, let's use 2 second interval instead of 1 second.
-                        Assert.True(extractedTextFile.LastWriteTime >= now.AddSeconds(-2) && extractedTextFile.LastWriteTime <= now.AddSeconds(2));
-                    }
+                    var extractedTextFile = new FileInfo(Path.Combine(installPath, "Content", file));
+                    Assert.True(File.Exists(extractedTextFile.FullName));
+                    // Since we're using DateTime.Now millisecond precision matters, let's use 2 second interval instead of 1 second.
+                    Assert.True(extractedTextFile.LastWriteTime >= now.AddSeconds(-2) && extractedTextFile.LastWriteTime <= now.AddSeconds(2));
                 }
             }
         }
 
         [Fact]
-        public async Task PackAndExtract_TestLastWriteTimeForZipfile_UsingUtcTimeFromPastAsync()
+        public async Task PackAndExtract_TestLastWriteTimeForZipfileUsingUtcTimeFromPastAsync_Succeeds()
         {
             // Arrange
             var year2010 = new DateTime(2010, 12, 14, 23, 59, 2, DateTimeKind.Utc);
@@ -3193,31 +3188,10 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 var packageName = "A";
                 var outputNupkg = Path.Combine(root, $"{packageName}.nupkg");
                 var packageA = new PackageIdentity(packageName, new NuGetVersion("2.0.3"));
-                var builder = new PackageBuilder(logger) { Id = packageA.Id, Version = packageA.Version, Description = "test description" };
+                var builder = new PackageBuilder(false, logger) { Id = packageA.Id, Version = packageA.Version, Description = "test description" };
                 builder.Authors.Add("Test author");
-
-                var fileList = new List<string>()
-                {
-                    Path.Combine(@"build","foo.props"),
-                    Path.Combine(@"buildCrossTargeting","foo.props"),
-                    Path.Combine(@"buildMultiTargeting","foo.props"),
-                    Path.Combine(@"buildTransitive", "foo.props"),
-                    Path.Combine(@"buildTransitive", "net5.0", "foo.props"),
-                    Path.Combine(@"content", "foo.jpg"),
-                    Path.Combine(@"contentFiles", "any", "any", "foo.png"),
-                    Path.Combine(@"contentFiles", "cs", "net5.0", "foo.cs"),
-                    Path.Combine(@"embed", "net5.0", "foo.dll"),
-                    Path.Combine(@"lib", "net5.0", "foo.dll"),
-                    Path.Combine(@"ref", "net5.0", "foo.dll"),
-                    Path.Combine(@"runtimes", "win", "native", "foo.o"),
-                    Path.Combine(@"tools", "foo.dll"),
-                };
-
-                foreach (string file in fileList)
-                {
-                    CreatePackageFileOnPath(Path.Combine(root, file), year2010);
-                }
-
+                var file = Path.Combine(@"lib", "net5.0", "foo.dll");
+                CreatePackageFileOnPath(Path.Combine(root, file), year2010);
                 builder.AddFiles(root.Path, "**", "Content");
 
                 using (var fileStream = new FileStream(outputNupkg, FileMode.Create, FileAccess.Write))
@@ -3244,13 +3218,9 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     // Assert
                     var installPath = resolver.GetInstallPath(packageA);
                     Assert.True(File.Exists(Path.Combine(installPath, $"{packageA.Id}.{packageA.Version}.nupkg")));
-
-                    foreach (string file in fileList)
-                    {
-                        var extractedTextFile = new FileInfo(Path.Combine(installPath, "Content", file));
-                        Assert.True(File.Exists(extractedTextFile.FullName));
-                        Assert.True(extractedTextFile.LastWriteTime >= year2010.AddSeconds(-1).ToLocalTime() && extractedTextFile.LastWriteTime <= year2010.AddSeconds(1).ToLocalTime());
-                    }
+                    var extractedTextFile = new FileInfo(Path.Combine(installPath, "Content", file));
+                    Assert.True(File.Exists(extractedTextFile.FullName));
+                    Assert.True(extractedTextFile.LastWriteTime >= year2010.AddSeconds(-1).ToLocalTime() && extractedTextFile.LastWriteTime <= year2010.AddSeconds(1).ToLocalTime());
                 }
             }
         }

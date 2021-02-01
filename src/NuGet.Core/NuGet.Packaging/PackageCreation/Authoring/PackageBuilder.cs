@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Xml.Linq;
 using NuGet.Client;
 using NuGet.Common;
@@ -30,8 +31,7 @@ namespace NuGet.Packaging
         private readonly bool _deterministic;
         private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly DateTime ZipFormatMaxDate = new DateTime(2107, 12, 31, 23, 59, 58, DateTimeKind.Utc);
-        private readonly ILogger _logger = NullLogger.Instance;
-        private bool _zipFormatCorrected = false;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Maximum Icon file size: 1 megabyte
@@ -49,9 +49,8 @@ namespace NuGet.Packaging
         }
 
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, ILogger logger)
-            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories, deterministic)
+            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories, deterministic, logger)
         {
-            _logger = logger;
         }
 
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
@@ -103,16 +102,16 @@ namespace NuGet.Packaging
         {
         }
 
-        public PackageBuilder(ILogger logger)
-            : this(includeEmptyDirectories: false, deterministic: false)
+        public PackageBuilder(bool deterministic, ILogger logger)
+            : this(includeEmptyDirectories: false, deterministic: deterministic, logger)
         {
-            _logger = logger;
         }
 
-        private PackageBuilder(bool includeEmptyDirectories, bool deterministic)
+        private PackageBuilder(bool includeEmptyDirectories, bool deterministic, ILogger logger = null)
         {
             _includeEmptyDirectories = includeEmptyDirectories;
             _deterministic = false; // fix in https://github.com/NuGet/Home/issues/8601
+            _logger = logger;
             Files = new Collection<IPackageFile>();
             DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
@@ -909,37 +908,23 @@ namespace NuGet.Packaging
             return entry;
         }
 
-        private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel)
+        private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel, StringBuilder warningMessage)
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
 
-            if (timeOffset < ZipFormatMinDate)
+            if (timeOffset.UtcDateTime < ZipFormatMinDate)
             {
-                if (!_zipFormatCorrected)
-                {
-                    _zipFormatCorrected = true;
-
-                    _logger.Log(PackagingLogMessage.CreateMessage(
-                                    string.Format(
+                warningMessage.AppendLine(string.Format(
                                         CultureInfo.CurrentCulture,
-                                        Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
-                                        LogLevel.Information));
-                }
+                                        Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
 
                 entry.LastWriteTime = ZipFormatMinDate;
             }
-            else if (timeOffset > ZipFormatMaxDate)
+            else if (timeOffset.UtcDateTime > ZipFormatMaxDate)
             {
-                if (!_zipFormatCorrected)
-                {
-                    _zipFormatCorrected = true;
-
-                    _logger.Log(PackagingLogMessage.CreateMessage(
-                                    string.Format(
+                warningMessage.AppendLine(string.Format(
                                         CultureInfo.CurrentCulture,
-                                        Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMinDate.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()),
-                                        LogLevel.Information));
-                }
+                                        Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
 
                 entry.LastWriteTime = ZipFormatMaxDate;
             }
@@ -969,6 +954,7 @@ namespace NuGet.Packaging
         private HashSet<string> WriteFiles(ZipArchive package, HashSet<string> filesWithoutExtensions)
         {
             var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var warningMessage = new StringBuilder();
 
             // Add files that might not come from expanding files on disk
             foreach (IPackageFile file in new HashSet<IPackageFile>(Files))
@@ -981,7 +967,8 @@ namespace NuGet.Packaging
                             package,
                             file.Path,
                             stream,
-                            lastWriteTime: _deterministic ? ZipFormatMinDate : file.LastWriteTime);
+                            lastWriteTime: _deterministic ? ZipFormatMinDate : file.LastWriteTime,
+                            warningMessage);
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)
@@ -1005,6 +992,7 @@ namespace NuGet.Packaging
                 }
             }
 
+            _logger?.Log(PackagingLogMessage.CreateMessage(warningMessage.ToString(), LogLevel.Information));
             return extensions;
         }
 
@@ -1127,7 +1115,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime)
+        private void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime, StringBuilder warningMessage)
         {
             if (PackageHelper.IsNuspec(path))
             {
@@ -1135,7 +1123,7 @@ namespace NuGet.Packaging
             }
 
             string entryName = CreatePartEntryName(path);
-            var entry = CreatePackageFileEntry(package, entryName, lastWriteTime, CompressionLevel.Optimal);
+            var entry = CreatePackageFileEntry(package, entryName, lastWriteTime, CompressionLevel.Optimal, warningMessage);
 
             using (var stream = entry.Open())
             {
