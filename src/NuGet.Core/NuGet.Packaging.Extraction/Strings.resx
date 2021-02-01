@@ -865,4 +865,10 @@ Valid from:</comment>
     <value>'{0}' cannot be null.</value>
     <comment>0 - property name</comment>
   </data>
+  <data name="ZipFileTimeStampModified" xml:space="preserve">
+    <value>Last write timestamp for '{0}' changed from '{1}' to '{2}' because the zip file format does not support timestamp values before 1980 or after 2107.</value>
+    <comment>0 - Entry name
+1 - Original last write timestamp
+2 - Updated last write timestamp</comment>
+  </data>
 </root>

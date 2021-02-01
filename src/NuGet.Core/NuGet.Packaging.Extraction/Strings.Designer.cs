@@ -32,14 +32,6 @@ namespace NuGet.Packaging {
         internal Strings() {
         }
 
-        internal static string ZipFileTimeStampModified
-        {
-            get
-            {
-                return ResourceManager.GetString("ZipFileTimeStampModified", resourceCulture);
-            }
-        }
-
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -1964,6 +1956,17 @@ namespace NuGet.Packaging {
         internal static string VerifyError_TimestampVerifyChainBuildingIssue {
             get {
                 return ResourceManager.GetString("VerifyError_TimestampVerifyChainBuildingIssue", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Last write timestamp for &apos;{0}&apos; changed from &apos;{1}&apos; to &apos;{2}&apos; because the zip file format does not support timestamp values before 1980 or after 2107..
+        /// </summary>
+        internal static string ZipFileTimeStampModified
+        {
+            get
+            {
+                return ResourceManager.GetString("ZipFileTimeStampModified", resourceCulture);
             }
         }
     }

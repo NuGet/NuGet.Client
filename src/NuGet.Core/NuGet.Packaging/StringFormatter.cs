@@ -21,15 +21,15 @@ namespace NuGet.Packaging
                 contentHash);
         }
 
-        internal static string Log_LastWriteTimeStampModified(
+        internal static string ZipFileTimeStampModified(
             string entry,
-            string previousLastWriteTimeStamp,
+            string originalLastWriteTimeStamp,
             string updatedLastWriteTimeStamp)
         {
             return string.Format(CultureInfo.CurrentCulture,
                 Strings.ZipFileTimeStampModified,
                 entry,
-                previousLastWriteTimeStamp,
+                originalLastWriteTimeStamp,
                 updatedLastWriteTimeStamp);
         }
     }
