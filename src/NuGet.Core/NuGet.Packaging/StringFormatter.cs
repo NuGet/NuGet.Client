@@ -20,5 +20,17 @@ namespace NuGet.Packaging
                 source,
                 contentHash);
         }
+
+        internal static string Log_LastWriteTimeStampModified(
+            string entry,
+            string previousLastWriteTimeStamp,
+            string updatedLastWriteTimeStamp)
+        {
+            return string.Format(CultureInfo.CurrentCulture,
+                Strings.ZipFileTimeStampModified,
+                entry,
+                previousLastWriteTimeStamp,
+                updatedLastWriteTimeStamp);
+        }
     }
 }

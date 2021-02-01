@@ -920,18 +920,12 @@ namespace NuGet.Packaging
 
             if (timeOffset.UtcDateTime < ZipFormatMinDate)
             {
-                warningMessage.AppendLine(string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
-
+                warningMessage.AppendLine(StringFormatter.Log_LastWriteTimeStampModified(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
                 entry.LastWriteTime = ZipFormatMinDate;
             }
             else if (timeOffset.UtcDateTime > ZipFormatMaxDate)
             {
-                warningMessage.AppendLine(string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.ZipFileTimeStampModified, entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
-
+                warningMessage.AppendLine(StringFormatter.Log_LastWriteTimeStampModified(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
                 entry.LastWriteTime = ZipFormatMaxDate;
             }
             else

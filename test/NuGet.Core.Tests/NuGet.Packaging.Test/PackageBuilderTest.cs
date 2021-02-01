@@ -2909,38 +2909,6 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         [Fact]
-        public void PackageBuilder_PreserveFileLastWriteTime_Succeeds()
-        {
-            // Act
-            var lastWriteTime = new DateTimeOffset(2017, 1, 15, 23, 59, 0, new TimeSpan(0, 0, 0));
-            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime))
-            {
-                var builder = new PackageBuilder { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
-                builder.Authors.Add("test");
-                builder.AddFiles(directory.Path, "**", "Content");
-
-                using (var stream = new MemoryStream())
-                {
-                    builder.Save(stream);
-
-                    // Assert
-                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
-                    {
-                        foreach (var entry in archive.Entries)
-                        {
-                            var path = directory.Path + Path.DirectorySeparatorChar + entry.Name;
-                            // Only checks the entries that originated from files in test directory
-                            if (File.Exists(path))
-                            {
-                                Assert.Equal(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        [Fact]
         public void EmitRequireLicenseAcceptance_ShouldNotEmitElement()
         {
             var builder = CreateEmitRequireLicenseAcceptancePackageBuilder(
@@ -2983,6 +2951,38 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
             var ex = Assert.Throws<Exception>(() => builder.Save(Stream.Null));
             Assert.Equal(NuGetResources.Manifest_RequireLicenseAcceptanceRequiresEmit, ex.Message);
+        }
+
+        [Fact]
+        public void PackageBuilder_PreserveFileLastWriteTime_Succeeds()
+        {
+            // Act
+            var lastWriteTime = new DateTimeOffset(2017, 1, 15, 23, 59, 0, new TimeSpan(0, 0, 0));
+            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime))
+            {
+                var builder = new PackageBuilder { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                builder.Authors.Add("test");
+                builder.AddFiles(directory.Path, "**", "Content");
+
+                using (var stream = new MemoryStream())
+                {
+                    builder.Save(stream);
+
+                    // Assert
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                    {
+                        foreach (var entry in archive.Entries)
+                        {
+                            var path = directory.Path + Path.DirectorySeparatorChar + entry.Name;
+                            // Only checks the entries that originated from files in test directory
+                            if (File.Exists(path))
+                            {
+                                Assert.Equal(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         [Fact]
