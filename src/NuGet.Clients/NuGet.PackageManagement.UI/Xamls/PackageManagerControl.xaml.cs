@@ -891,13 +891,6 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 FlagTabDataAsLoaded(filterToRender);
-
-                // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
-                // UI filtering for Updates is ready.
-                if (filterToRender == ItemFilter.Installed)
-                {
-                    FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
-                }
             }
             catch (OperationCanceledException)
             {
