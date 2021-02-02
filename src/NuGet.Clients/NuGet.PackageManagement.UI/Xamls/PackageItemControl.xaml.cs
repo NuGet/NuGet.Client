@@ -33,8 +33,8 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            bool newValue = (e.RoutedEvent == CheckBox.CheckedEvent);
-            bool oldValue = !newValue; // Assume the state has actually toggled.
+            var newValue = (e.RoutedEvent == CheckBox.CheckedEvent);
+            var oldValue = !newValue; // Assume the state has actually toggled.
             AutomationPeer peer = UIElementAutomationPeer.FromElement(itemContainer);
             peer?.RaisePropertyChangedEvent(
                 TogglePatternIdentifiers.ToggleStateProperty,
