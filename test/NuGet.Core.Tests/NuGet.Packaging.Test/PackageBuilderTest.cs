@@ -2977,7 +2977,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                             // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
                             {
-                                Assert.Equal(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
+                                Assert.Equal(File.GetLastWriteTimeUtc(path), entry.LastWriteTime.DateTime);
                             }
                         }
                     }
@@ -3044,7 +3044,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                             {
                                 if (path == after1980File1)
                                 {
-                                    Assert.True(entry.LastWriteTime.DateTime == ZipFormatMinDate);
+                                    Assert.Equal(ZipFormatMinDate, entry.LastWriteTime.DateTime);
                                     numberOfDateNotCorrectedFiles++;
                                 }
                                 else if (path == after1980File2 || path == after1980File3)
@@ -3069,11 +3069,11 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
 
-                Assert.True(numberOfDateNotCorrectedFiles == 4);
-                Assert.True(numberOfDateCorrectedFiles == 5);
-                Assert.Equal(innerLogger.LogMessages.Count, 1);
-                string[] logMessages = innerLogger.LogMessages.First().Message.Split('\n');
-                Assert.Equal(logMessages.Count(l => l.Contains("which is out of range of what the zip format supports.")), 5);
+                Assert.Equal(4, numberOfDateNotCorrectedFiles);
+                Assert.Equal(5, numberOfDateCorrectedFiles);
+                ILogMessage logMessage = Assert.Single(innerLogger.LogMessages);
+                string[] logMessages = logMessage.Message.Split('\n');
+                Assert.Equal(5, logMessages.Count(l => l.Contains("changed from")));
             }
         }
 
@@ -3146,7 +3146,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                                 }
                                 else if (path == before2107File4)
                                 {
-                                    Assert.True(entry.LastWriteTime.DateTime == ZipFormatMaxDate);
+                                    Assert.Equal(ZipFormatMaxDate, entry.LastWriteTime.DateTime);
                                     numberOfDateNotCorrectedFiles++;
                                 }
                                 else
@@ -3160,115 +3160,11 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     }
                 }
 
-                Assert.True(numberOfDateNotCorrectedFiles == 4);
-                Assert.True(numberOfDateCorrectedFiles == 5);
-                Assert.Equal(innerLogger.LogMessages.Count, 1);
-                string[] logMessages = innerLogger.LogMessages.First().Message.Split('\n');
-                Assert.Equal(logMessages.Count(l => l.Contains("which is out of range of what the zip format supports.")), 5);
-            }
-        }
-
-        [Fact]
-        public async Task PackAndExtract_TestLastWriteTimeForZipfileUsingLocalTimeAsync_Succeeds()
-        {
-            // Arrange
-            var now = DateTime.Now;
-            TestLogger innerLogger = new TestLogger();
-            ILogger logger = new PackCollectorLogger(innerLogger, new WarningProperties());
-
-            using (var root = TestDirectory.Create())
-            {
-                var resolver = new PackagePathResolver(root);
-                var packageName = "A";
-                var outputNupkg = Path.Combine(root, $"{packageName}.nupkg");
-                var packageA = new PackageIdentity(packageName, new NuGetVersion("2.0.3"));
-                var builder = new PackageBuilder(false, logger) { Id = packageA.Id, Version = packageA.Version, Description = "test description" };
-                builder.Authors.Add("Test author");
-                var file = Path.Combine(@"lib", "net5.0", "foo.dll");
-                CreatePackageFileOnPath(Path.Combine(root, file), now);
-                builder.AddFiles(root.Path, "**", "Content");
-
-                using (var fileStream = new FileStream(outputNupkg, FileMode.Create, FileAccess.Write))
-                {
-                    builder.Save(fileStream);
-                }
-
-                using (FileStream packageStream = File.OpenRead(outputNupkg))
-                {
-                    var packageExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv2,
-                        XmlDocFileSaveMode.None,
-                        clientPolicyContext: null,
-                        logger: NullLogger.Instance);
-
-                    // Act
-                    var packageFiles = await PackageExtractor.ExtractPackageAsync(
-                        root,
-                        packageStream,
-                        resolver,
-                        packageExtractionContext,
-                        CancellationToken.None);
-
-                    // Assert
-                    var installPath = resolver.GetInstallPath(packageA);
-                    Assert.True(File.Exists(Path.Combine(installPath, $"{packageA.Id}.{packageA.Version}.nupkg")));
-                    var extractedTextFile = new FileInfo(Path.Combine(installPath, "Content", file));
-                    Assert.True(File.Exists(extractedTextFile.FullName));
-                    // Since we're using DateTime.Now millisecond precision matters, let's use 2 second interval instead of 1 second.
-                    Assert.True(extractedTextFile.LastWriteTime >= now.AddSeconds(-2) && extractedTextFile.LastWriteTime <= now.AddSeconds(2));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task PackAndExtract_TestLastWriteTimeForZipfileUsingUtcTimeFromPastAsync_Succeeds()
-        {
-            // Arrange
-            var year2010 = new DateTime(2010, 12, 14, 23, 59, 2, DateTimeKind.Utc);
-
-            TestLogger innerLogger = new TestLogger();
-            ILogger logger = new PackCollectorLogger(innerLogger, new WarningProperties());
-
-            using (var root = TestDirectory.Create())
-            {
-                var resolver = new PackagePathResolver(root);
-                var packageName = "A";
-                var outputNupkg = Path.Combine(root, $"{packageName}.nupkg");
-                var packageA = new PackageIdentity(packageName, new NuGetVersion("2.0.3"));
-                var builder = new PackageBuilder(false, logger) { Id = packageA.Id, Version = packageA.Version, Description = "test description" };
-                builder.Authors.Add("Test author");
-                var file = Path.Combine(@"lib", "net5.0", "foo.dll");
-                CreatePackageFileOnPath(Path.Combine(root, file), year2010);
-                builder.AddFiles(root.Path, "**", "Content");
-
-                using (var fileStream = new FileStream(outputNupkg, FileMode.Create, FileAccess.Write))
-                {
-                    builder.Save(fileStream);
-                }
-
-                using (FileStream packageStream = File.OpenRead(outputNupkg))
-                {
-                    var packageExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv2,
-                        XmlDocFileSaveMode.None,
-                        clientPolicyContext: null,
-                        logger: NullLogger.Instance);
-
-                    // Act
-                    var packageFiles = await PackageExtractor.ExtractPackageAsync(
-                        root,
-                        packageStream,
-                        resolver,
-                        packageExtractionContext,
-                        CancellationToken.None);
-
-                    // Assert
-                    var installPath = resolver.GetInstallPath(packageA);
-                    Assert.True(File.Exists(Path.Combine(installPath, $"{packageA.Id}.{packageA.Version}.nupkg")));
-                    var extractedTextFile = new FileInfo(Path.Combine(installPath, "Content", file));
-                    Assert.True(File.Exists(extractedTextFile.FullName));
-                    Assert.True(extractedTextFile.LastWriteTime >= year2010.AddSeconds(-1).ToLocalTime() && extractedTextFile.LastWriteTime <= year2010.AddSeconds(1).ToLocalTime());
-                }
+                Assert.Equal(4, numberOfDateNotCorrectedFiles);
+                Assert.Equal(5, numberOfDateCorrectedFiles);
+                ILogMessage logMessage = Assert.Single(innerLogger.LogMessages);
+                string[] logMessages = logMessage.Message.Split('\n');
+                Assert.Equal(5, logMessages.Count(l => l.Contains("changed from")));
             }
         }
 

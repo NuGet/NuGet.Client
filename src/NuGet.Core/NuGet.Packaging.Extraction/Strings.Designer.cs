@@ -1960,13 +1960,25 @@ namespace NuGet.Packaging {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to File &apos;{0}&apos; was last modified on &apos;{1}&apos;, which is out of range of what the zip format supports. Using &apos;{2}&apos; instead..
+        ///   Looks up a localized string similar to &apos;{0}&apos; changed from &apos;{1}&apos; to &apos;{2}&apos;.
         /// </summary>
-        internal static string ZipFileTimeStampModified
+        internal static string ZipFileLastWriteTimeStampModifiedMessage
         {
             get
             {
-                return ResourceManager.GetString("ZipFileTimeStampModified", resourceCulture);
+                return ResourceManager.GetString("ZipFileLastWriteTimeStampModifiedMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The zip format supports a limited date range. The following files are outside the supported range:
+        ///{0}.
+        /// </summary>
+        internal static string ZipFileTimeStampModifiedWarning
+        {
+            get
+            {
+                return ResourceManager.GetString("ZipFileTimeStampModifiedWarning", resourceCulture);
             }
         }
     }

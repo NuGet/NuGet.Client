@@ -21,16 +21,24 @@ namespace NuGet.Packaging
                 contentHash);
         }
 
-        internal static string ZipFileTimeStampModified(
-            string entry,
+        internal static string ZipFileTimeStampModifiedMessage(
+            string filePath,
             string originalLastWriteTimeStamp,
             string updatedLastWriteTimeStamp)
         {
             return string.Format(CultureInfo.CurrentCulture,
-                Strings.ZipFileTimeStampModified,
-                entry,
+                Strings.ZipFileLastWriteTimeStampModifiedMessage,
+                filePath,
                 originalLastWriteTimeStamp,
                 updatedLastWriteTimeStamp);
+        }
+
+        internal static string ZipFileTimeStampModifiedWarning(
+            string listOfFileTimeStampModifiedMessages)
+        {
+            return string.Format(CultureInfo.CurrentCulture,
+                Strings.ZipFileTimeStampModifiedWarning,
+                listOfFileTimeStampModifiedMessages);
         }
     }
 }

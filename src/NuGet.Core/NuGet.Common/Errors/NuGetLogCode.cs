@@ -873,6 +873,11 @@ namespace NuGet.Common
         NU5131 = 5131,
 
         /// <summary>
+        /// File last write timestamp is out of range of what the zip format supports warning
+        /// </summary>
+        NU5132 = 5132,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,

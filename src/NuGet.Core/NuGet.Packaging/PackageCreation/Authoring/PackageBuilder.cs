@@ -107,7 +107,12 @@ namespace NuGet.Packaging
         {
         }
 
-        private PackageBuilder(bool includeEmptyDirectories, bool deterministic, ILogger logger = null)
+        private PackageBuilder(bool includeEmptyDirectories, bool deterministic)
+            : this(includeEmptyDirectories: false, deterministic: deterministic, logger: NullLogger.Instance)
+        {
+        }
+
+        private PackageBuilder(bool includeEmptyDirectories, bool deterministic, ILogger logger)
         {
             _includeEmptyDirectories = includeEmptyDirectories;
             _deterministic = false; // fix in https://github.com/NuGet/Home/issues/8601
@@ -920,17 +925,17 @@ namespace NuGet.Packaging
 
             if (timeOffset.UtcDateTime < ZipFormatMinDate)
             {
-                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModified(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
+                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModifiedMessage(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
                 entry.LastWriteTime = ZipFormatMinDate;
             }
             else if (timeOffset.UtcDateTime > ZipFormatMaxDate)
             {
-                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModified(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()));
+                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModifiedMessage(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()));
                 entry.LastWriteTime = ZipFormatMaxDate;
             }
             else
             {
-                entry.LastWriteTime = timeOffset;
+                entry.LastWriteTime = timeOffset.UtcDateTime;
             }
 
             return entry;
@@ -992,7 +997,13 @@ namespace NuGet.Packaging
                 }
             }
 
-            _logger?.Log(PackagingLogMessage.CreateMessage(warningMessage.ToString(), LogLevel.Information));
+            var warningMessageString = warningMessage.ToString().Trim();
+
+            if (!string.IsNullOrEmpty(warningMessageString))
+            {
+                _logger?.Log(PackagingLogMessage.CreateWarning(StringFormatter.ZipFileTimeStampModifiedWarning(warningMessageString), NuGetLogCode.NU5132));
+            }
+
             return extensions;
         }
 
