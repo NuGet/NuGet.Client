@@ -1971,8 +1971,7 @@ namespace NuGet.Packaging {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The zip format supports a limited date range. The following files are outside the supported range:
-        ///{0}.
+        ///   Looks up a localized string similar to The zip format supports a limited date range. The following files are outside the supported range:.
         /// </summary>
         internal static string ZipFileTimeStampModifiedWarning
         {

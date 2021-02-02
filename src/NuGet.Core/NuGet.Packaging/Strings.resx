@@ -872,8 +872,6 @@ Valid from:</comment>
 2 - Updated last write timestamp</comment>
   </data>
   <data name="ZipFileTimeStampModifiedWarning" xml:space="preserve">
-    <value>The zip format supports a limited date range. The following files are outside the supported range:
-{0}</value>
-    <comment>0 - List of file last write timestamp changed messages</comment>
+    <value>The zip format supports a limited date range. The following files are outside the supported range:</value>
   </data>
 </root>
