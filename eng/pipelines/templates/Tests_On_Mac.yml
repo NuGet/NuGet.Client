@@ -1,0 +1,44 @@
+steps:
+- task: PowerShell@2
+  displayName: "Update Build Number"
+  inputs:
+    targetType: "inline"
+    script: |
+      Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
+    failOnStderr: "true"
+  condition: "always()"
+
+- task: DownloadBuildArtifacts@0
+  displayName: "Download NuGet.ComamandLine.Test artifacts"
+  inputs:
+    artifactName: "NuGet.CommandLine.Test"
+    downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+
+- task: ShellScript@2
+  displayName: "Run Tests"
+  continueOnError: "true"
+  inputs:
+    scriptPath: "scripts/funcTests/runFuncTests.sh"
+    disableAutoCwd: "true"
+    cwd: "$(Build.Repository.LocalPath)"
+
+- task: PublishTestResults@2
+  displayName: "Publish Test Results"
+  inputs:
+    testRunner: "XUnit"
+    testResultsFiles: "*.xml"
+    searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
+    mergeTestResults: "true"
+    testRunTitle: "NuGet.Client Tests On Mac"
+  condition: "succeededOrFailed()"
+
+- task: PowerShell@2
+  displayName: "Initialize Git Commit Status on GitHub"
+  inputs:
+    targetType: "inline"
+    arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+    script: |
+      . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"        
+    failOnStderr: "true"
+  condition: "always()"

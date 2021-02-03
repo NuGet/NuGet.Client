@@ -1,0 +1,34 @@
+steps:
+- task: PowerShell@1
+  displayName: "Initialize Git Commit Status on GitHub"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+      InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
+
+- task: PowerShell@1
+  displayName: "Update Build Number"
+  name: "updatebuildnumber"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      $revision = Get-Content $env:BUILDCOUNTERFILE
+      $newBuildCounter = [System.Decimal]::Parse($revision)
+      $newBuildCounter++
+      Set-Content $env:BUILDCOUNTERFILE $newBuildCounter
+      $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+      $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
+      $productVersion = $productVersion.Trim()
+      $FullBuildNumber = "$productVersion.$newBuildCounter"
+      Write-Host "##vso[build.updatebuildnumber]$FullBuildNumber"
+      Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
+      Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
+
+- task: PowerShell@1
+  displayName: "Add Build Tags"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEVERSIONAUTHOR"
+      Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEBRANCHNAME" 
