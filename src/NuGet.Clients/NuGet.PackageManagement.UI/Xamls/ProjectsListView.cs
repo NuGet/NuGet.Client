@@ -3,15 +3,17 @@
 
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
-using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class InfiniteScrollListBox : ListBox, ISelectableItemsControl
+    public class ProjectsListView : ListView, ISelectableItemsControl
     {
-        public bool IsItemSelectionEnabled { get; set; }
+        public bool IsItemSelectionEnabled
+        {
+            get => true;
 
-        public ReentrantSemaphore ItemsLock { get; set; }
+            set => throw new System.NotImplementedException();
+        }
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {

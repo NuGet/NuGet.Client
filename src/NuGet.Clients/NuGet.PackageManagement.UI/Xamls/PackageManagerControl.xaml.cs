@@ -1390,7 +1390,7 @@ namespace NuGet.PackageManagement.UI
             {
                 foreach (var packageItem in _packageList.PackageItems)
                 {
-                    packageItem.Selected = true;
+                    packageItem.IsSelected = true;
                 }
             }
             else if (updatePackageOptions.PackagesToUpdate.Any())
@@ -1398,7 +1398,7 @@ namespace NuGet.PackageManagement.UI
                 var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate);
                 foreach (var packageItem in _packageList.PackageItems)
                 {
-                    packageItem.Selected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
+                    packageItem.IsSelected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
                 }
             }
         }
