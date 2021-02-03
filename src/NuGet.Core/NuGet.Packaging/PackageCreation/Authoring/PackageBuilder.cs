@@ -26,11 +26,11 @@ namespace NuGet.Packaging
     public class PackageBuilder : IPackageMetadata
     {
         private static readonly Uri DefaultUri = new Uri("http://defaultcontainer/");
+        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime ZipFormatMaxDate = new DateTime(2107, 12, 31, 23, 59, 58, DateTimeKind.Utc);
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
         private readonly bool _deterministic;
-        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private static readonly DateTime ZipFormatMaxDate = new DateTime(2107, 12, 31, 23, 59, 58, DateTimeKind.Utc);
         private readonly ILogger _logger;
 
         /// <summary>
