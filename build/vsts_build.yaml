@@ -1,4 +1,3 @@
-name: $(SourceBranchName)-$(Date:yyyyMMdd)-$(rev:rr)
 jobs:
 
 - job: Initialize_Build
