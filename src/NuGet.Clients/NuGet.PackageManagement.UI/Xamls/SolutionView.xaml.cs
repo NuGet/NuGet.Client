@@ -12,6 +12,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using Microsoft.VisualStudio.PlatformUI;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
@@ -298,6 +299,24 @@ namespace NuGet.PackageManagement.UI
             };
 
             return versionColumn;
+        }
+
+        private void ItemCheckBox_Toggled(object sender, RoutedEventArgs e)
+        {
+            var itemCheckBox = sender as CheckBox;
+            var itemContainer = itemCheckBox?.FindAncestor<ListViewItem>();
+            if (itemContainer is null)
+            {
+                return;
+            }
+
+            var newValue = (e.RoutedEvent == CheckBox.CheckedEvent);
+            var oldValue = !newValue; // Assume the state has actually toggled.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(itemContainer);
+            peer?.RaisePropertyChangedEvent(
+                TogglePatternIdentifiers.ToggleStateProperty,
+                oldValue ? ToggleState.On : ToggleState.Off,
+                newValue ? ToggleState.On : ToggleState.Off);
         }
     }
 }
