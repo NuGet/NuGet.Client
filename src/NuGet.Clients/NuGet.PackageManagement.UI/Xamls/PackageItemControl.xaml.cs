@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
-using System.Windows.Media;
+using Microsoft.VisualStudio.PlatformUI;
 
 namespace NuGet.PackageManagement.UI
 {
