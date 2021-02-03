@@ -865,4 +865,13 @@ Valid from:</comment>
     <value>'{0}' cannot be null.</value>
     <comment>0 - property name</comment>
   </data>
+  <data name="ZipFileLastWriteTimeStampModifiedMessage" xml:space="preserve">
+    <value>'{0}' changed from '{1}' to '{2}'</value>
+    <comment>0 - File name
+1 - Original last write timestamp
+2 - Updated last write timestamp</comment>
+  </data>
+  <data name="ZipFileTimeStampModifiedWarning" xml:space="preserve">
+    <value>The zip format supports a limited date range. The following files are outside the supported range:</value>
+  </data>
 </root>

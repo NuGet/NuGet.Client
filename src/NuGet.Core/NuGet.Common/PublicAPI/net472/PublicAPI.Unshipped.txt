@@ -1,3 +1,4 @@
+NuGet.Common.NuGetLogCode.NU5132 = 5132 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5501 = 5501 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1012 = 1012 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5045 = 5045 -> NuGet.Common.NuGetLogCode

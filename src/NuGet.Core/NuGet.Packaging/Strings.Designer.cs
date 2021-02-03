@@ -1958,5 +1958,23 @@ namespace NuGet.Packaging {
                 return ResourceManager.GetString("VerifyError_TimestampVerifyChainBuildingIssue", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; changed from &apos;{1}&apos; to &apos;{2}&apos;.
+        /// </summary>
+        internal static string ZipFileLastWriteTimeStampModifiedMessage {
+            get {
+                return ResourceManager.GetString("ZipFileLastWriteTimeStampModifiedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The zip format supports a limited date range. The following files are outside the supported range:.
+        /// </summary>
+        internal static string ZipFileTimeStampModifiedWarning {
+            get {
+                return ResourceManager.GetString("ZipFileTimeStampModifiedWarning", resourceCulture);
+            }
+        }
     }
 }

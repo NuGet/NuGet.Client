@@ -75,7 +75,7 @@ namespace NuGet.Packaging
             {
                 try
                 {
-                    File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.UtcDateTime);
+                    File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime);
                 }
                 catch (ArgumentOutOfRangeException ex)
                 {
