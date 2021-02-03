@@ -1,1 +1,2 @@
-template: ../build/vsts_build.yaml
+extends:
+  template: ../build/vsts_build.yaml
