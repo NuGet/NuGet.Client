@@ -997,7 +997,11 @@ namespace NuGet.Packaging
                 }
             }
 
-            warningMessage.Length -= Environment.NewLine.Length;
+            if (warningMessage.Length > Environment.NewLine.Length)
+            {
+                warningMessage.Length -= Environment.NewLine.Length;
+            }
+
             var warningMessageString = warningMessage.ToString();
 
             if (!string.IsNullOrEmpty(warningMessageString))
