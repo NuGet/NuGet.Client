@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI
         private void CheckBox_Toggled(object sender, RoutedEventArgs e)
         {
             var itemCheckBox = sender as CheckBox;
-            var itemContainer = itemCheckBox?.FindParent<ListBoxItem>();
+            var itemContainer = itemCheckBox?.FindAncestor<ListBoxItem>();
             if (itemContainer is null)
             {
                 return;
