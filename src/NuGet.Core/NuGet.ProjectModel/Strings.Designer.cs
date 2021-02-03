@@ -160,7 +160,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Central package management file doesn&apos;t contain version range for {0} package which is specified as CentralTransitive dependency in the lock file..
+        ///   Looks up a localized string similar to Central package management file(s) doesn&apos;t contain version range for {0} package which is specified as CentralTransitive dependency in the lock file..
         /// </summary>
         internal static string PackagesLockFile_CentralPackageVersionRemoved {
             get {
@@ -169,7 +169,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version specified in the packages.lock.json file is invalid. Current tooling supports version {0} and previous formats..
+        ///   Looks up a localized string similar to Version specified in the packages.lock.json file is incompatible. Current tooling supports version {0} and previous formats..
         /// </summary>
         internal static string PackagesLockFile_IncompatibleLockFileVersion {
             get {
@@ -223,7 +223,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project is mising the required target framework {0}. Target frameworks are out of sync between Project and Restore metadata.Please file a bug with repro steps on NuGet/Home if seen..
+        ///   Looks up a localized string similar to Please file a bug with repro steps on NuGet/Home or VS Feedback ticket if seen..
         /// </summary>
         internal static string PackagesLockFile_ProjectIsMissingRestoreMetadataTfms {
             get {
@@ -259,7 +259,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project reference {0} has changed. Current dependencies count: {1}, lock file&apos;s dependencies count: {2}..
+        ///   Looks up a localized string similar to The project reference {0} has changed. Current dependencies: {1} lock file&apos;s dependencies: {2}..
         /// </summary>
         internal static string PackagesLockFile_ProjectReferencesHasChange {
             get {

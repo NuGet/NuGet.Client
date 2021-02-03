@@ -71,6 +71,12 @@ namespace NuGet.ProjectModel
         /// The second return type is a localized message that indicates in further detail the reason for the inconsistency.</returns>
         public static LockFileValidationResult IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
         {
+            if (dgSpec == null)
+                throw new ArgumentNullException(nameof(dgSpec));
+
+            if (nuGetLockFile == null)
+                throw new ArgumentNullException(nameof(nuGetLockFile));
+
             List<string> invalidReasons = new List<string>();
 
             // Current tools know how to read only previous formats including the current
@@ -81,6 +87,8 @@ namespace NuGet.ProjectModel
                             Strings.PackagesLockFile_IncompatibleLockFileVersion,
                             PackagesLockFileFormat.PackagesLockFileVersion
                             ));
+
+                return new LockFileValidationResult(false, invalidReasons);
             }
 
             var uniqueName = dgSpec.Restore.First();
@@ -160,9 +168,9 @@ namespace NuGet.ProjectModel
                 }
 
                 // Validate all P2P references
-                foreach (var framework in project.RestoreMetadata.TargetFrameworks)
+                foreach (var restoreMetadataFramework in project.RestoreMetadata.TargetFrameworks)
                 {
-                    bool projectTfmFound = project.TargetFrameworks.Any(t => t.FrameworkName.Equals(framework.FrameworkName));
+                    bool projectTfmFound = project.TargetFrameworks.Any(t => t.FrameworkName.Equals(restoreMetadataFramework.FrameworkName));
 
                     if (!projectTfmFound)
                     {
@@ -170,12 +178,12 @@ namespace NuGet.ProjectModel
                         throw new Exception(string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.PackagesLockFile_ProjectIsMissingRestoreMetadataTfms,
-                                    framework.FrameworkName.GetShortFolderName()
+                                    restoreMetadataFramework.FrameworkName.GetShortFolderName()
                                     ));
                     }
 
                     var target = nuGetLockFile.Targets.FirstOrDefault(
-                        t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, framework.FrameworkName));
+                        t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, restoreMetadataFramework.FrameworkName));
 
                     if (target == null)
                         continue;
@@ -183,7 +191,7 @@ namespace NuGet.ProjectModel
                     var queue = new Queue<Tuple<string, string>>();
                     var visitedP2PReference = new HashSet<string>();
 
-                    foreach (var projectReference in framework.ProjectReferences)
+                    foreach (var projectReference in restoreMetadataFramework.ProjectReferences)
                     {
                         if (visitedP2PReference.Add(projectReference.ProjectUniqueName))
                         {
@@ -227,7 +235,7 @@ namespace NuGet.ProjectModel
                                     else
                                     {
                                         // This does not consider ATF.
-                                        p2pSpecTargetFrameworkInformation = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
+                                        p2pSpecTargetFrameworkInformation = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, restoreMetadataFramework.FrameworkName, e => e.FrameworkName);
                                     }
                                     // No compatible framework found
                                     if (p2pSpecTargetFrameworkInformation != null)
@@ -267,7 +275,7 @@ namespace NuGet.ProjectModel
                                                CultureInfo.CurrentCulture,
                                                Strings.PackagesLockFile_ProjectReferenceHasNoCompatibleTargetFramework,
                                                p2pProjectName,
-                                               framework.FrameworkName.GetShortFolderName()
+                                               restoreMetadataFramework.FrameworkName.GetShortFolderName()
                                                ));
                                     }
                                 }
@@ -454,8 +462,8 @@ namespace NuGet.ProjectModel
                             CultureInfo.CurrentCulture,
                             Strings.PackagesLockFile_ProjectReferencesHasChange,
                             projectDependency.Id,
-                            transitivelyFlowingDependencies.Count() + projectRestoreReferences.Count(),
-                            projectDependency.Dependencies.Count
+                            string.Join(",", transitivelyFlowingDependencies.Select(dep => dep.Name).Concat(projectRestoreReferences.Select(dep => dep.ProjectUniqueName))),
+                            string.Join(",", projectDependency.Dependencies.Select(dep => dep.Id))
                             )
                         );
             }
@@ -515,7 +523,6 @@ namespace NuGet.ProjectModel
             // Transitive dependencies moved to be centraly managed will invalidate the lock file
             if (lockTransitiveDependencies.Any(dep => centralPackageVersions.ContainsKey(dep.Id)))
             {
-                //return true;
                 return (true,
                         string.Format(
                             CultureInfo.CurrentCulture,
@@ -579,27 +586,27 @@ namespace NuGet.ProjectModel
             public static readonly LockFileValidityWithMatchedResults Invalid =
                 new LockFileValidityWithMatchedResults(isValid: false, matchedDependencies: null);
         }
+    }
+
+    /// <summary>
+    /// A class to return information about lock file validity with invalid reasons.
+    /// </summary>
+    public class LockFileValidationResult
+    {
+        /// <summary>
+        /// True if the packages.lock.json file dependencies match project.assets.json file dependencies
+        /// </summary>
+        public bool IsValid { get; }
 
         /// <summary>
-        /// A class to return information about lock file validity with invalid reasons.
+        /// A list of reasons why lock file is invalid
         /// </summary>
-        public class LockFileValidationResult
+        public IReadOnlyList<string> InvalidReasons { get; }
+
+        public LockFileValidationResult(bool isValid, IReadOnlyList<string> invalidReasons)
         {
-            /// <summary>
-            /// True if the packages.lock.json file dependencies match project.assets.json file dependencies
-            /// </summary>
-            public bool IsValid { get; }
-
-            /// <summary>
-            /// A list of reasons why lock file is invalid
-            /// </summary>
-            public IReadOnlyList<string> InvalidReasons { get; }
-
-            public LockFileValidationResult(bool isValid, IReadOnlyList<string> invalidReasons)
-            {
-                IsValid = isValid;
-                InvalidReasons = invalidReasons;
-            }
+            IsValid = isValid;
+            InvalidReasons = invalidReasons;
         }
     }
 }

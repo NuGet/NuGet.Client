@@ -320,7 +320,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // The central package version cpvm3 it was removed
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
             Assert.False(actual.IsValid);
-            Assert.Contains("Central package management file doesn't contain version range for cpvm3 package " +
+            Assert.Contains("Central package management file(s) doesn't contain version range for cpvm3 package " +
                 "which is specified as CentralTransitive dependency in the lock file.", actual.InvalidReasons);
         }
 
@@ -712,7 +712,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
             Assert.False(actual.IsValid);
-            Assert.Contains("Version specified in the packages.lock.json file is invalid. Current tooling supports version " +
+            Assert.Contains("Version specified in the packages.lock.json file is incompatible. Current tooling supports version " +
                 $"{PackagesLockFileFormat.PackagesLockFileVersion} and previous formats.", actual.InvalidReasons);
         }
 
@@ -779,8 +779,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
             Assert.False(actual.IsValid);
-            Assert.Contains("The project reference B has changed. Current dependencies count: 1, " +
-                "lock file's dependencies count: 0.", actual.InvalidReasons);
+            Assert.Contains(@"The project reference B has changed. Current dependencies: C:\C\C.csproj lock file's dependencies: .", actual.InvalidReasons);
         }
 
         [Fact]

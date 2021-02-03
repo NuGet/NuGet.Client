@@ -9224,8 +9224,8 @@ namespace NuGet.CommandLine.Test
                     Id = "x",
                     Version = null
                 };
-                packageX100.Files.Clear();
-                packageX100.AddFile("lib/net46/x.dll");
+                packageX100NullVersion.Files.Clear();
+                packageX100NullVersion.AddFile("lib/net46/x.dll");
 
                 var packageX200 = new SimpleTestPackageContext()
                 {
