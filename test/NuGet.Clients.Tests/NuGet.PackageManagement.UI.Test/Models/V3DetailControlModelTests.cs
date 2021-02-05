@@ -124,6 +124,59 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(_testInstance.PackageVulnerabilityMaxSeverity, _testData.TestData.Vulnerabilities.Max(v => v.Severity));
         }
 
+        [Fact]
+        public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDesc()
+        {
+            // Arrange
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01249")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01256")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01265")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0-dev-01187")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0-dev-01191")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0-dev-01211")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
+            };
+
+            var vm = new PackageItemListViewModel()
+            {
+                InstalledVersion = installedVersion,
+                Version = installedVersion,
+                Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions)),
+            };
+
+            // Act
+
+            await _testInstance.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.All,
+                () => vm);
+
+            // Assert
+            var expectedAdditionalInfo = string.Empty;
+
+            // Remove any added `null` separators, and any Additional Info entries (eg, "Latest Prerelease", "Latest Stable").
+            List<DisplayVersion> actualVersions = _testInstance.Versions
+                .Where(v => v != null && v.AdditionalInfo == expectedAdditionalInfo).ToList();
+
+            var expectedVersions = new List<DisplayVersion>() {
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01265"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01256"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01249"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01248"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.0"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01211"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01191"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01187"), additionalInfo: expectedAdditionalInfo),
+            };
+
+            Assert.Equal(expectedVersions, actualVersions);
+        }
+
+
         public Task<object> GetServiceAsync(Type serviceType)
         {
             if (_services.TryGetValue(serviceType, out Task<object> task))
@@ -161,6 +214,87 @@ namespace NuGet.PackageManagement.UI.Test.Models
             {
                 return obj.GUID.GetHashCode();
             }
+        }
+    }
+
+    public class V3PackageSolutionDetailControlModelTests : V3DetailControlModelTestBase
+    {
+        private PackageSolutionDetailControlModel _testInstance;
+
+        public V3PackageSolutionDetailControlModelTests(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
+            : base(sp, testData)
+        {
+            var solMgr = new Mock<INuGetSolutionManagerService>();
+            var serviceBroker = new Mock<IServiceBroker>();
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            projectManagerService.Setup(x => x.GetProjectsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<IProjectContextInfo>());
+
+#pragma warning disable ISB001 // Dispose of proxies
+            serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(projectManagerService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                _testInstance = await PackageSolutionDetailControlModel.CreateAsync(
+                    solutionManager: solMgr.Object,
+                    projects: new List<IProjectContextInfo>(),
+                    packageManagerProviders: new List<IVsPackageManagerProvider>(),
+                    serviceBroker: serviceBroker.Object,
+                    CancellationToken.None);
+            });
+        }
+
+        [Fact]
+        public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDesc()
+        {
+            // Arrange
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01249")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01256")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01265")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0-dev-01187")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0-dev-01191")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0-dev-01211")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
+            };
+
+            var vm = new PackageItemListViewModel()
+            {
+                InstalledVersion = installedVersion,
+                Version = installedVersion,
+                Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions)),
+            };
+
+            // Act
+
+            await _testInstance.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.All,
+                () => vm);
+
+            // Assert
+            var expectedAdditionalInfo = string.Empty;
+
+            // Remove any added `null` separators, and any Additional Info entries (eg, "Latest Prerelease", "Latest Stable").
+            List<DisplayVersion> actualVersions = _testInstance.Versions
+                .Where(v => v != null && v.AdditionalInfo == expectedAdditionalInfo).ToList();
+
+            var expectedVersions = new List<DisplayVersion>() {
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01265"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01256"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01249"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01248"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.0"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01211"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01191"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01187"), additionalInfo: expectedAdditionalInfo),
+            };
+
+            Assert.Equal(expectedVersions, actualVersions);
         }
     }
 }

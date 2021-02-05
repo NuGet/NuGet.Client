@@ -112,7 +112,7 @@ namespace NuGet.PackageManagement.UI
             // installVersion is null if the package is not installed
             var installedVersion = installedDependency?.VersionRange?.MinVersion;
 
-            List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.OrderByDescending(v => v.version.Version).ToList();
+            List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.OrderByDescending(v => v.version).ToList();
 
             // null, if no version constraint defined in package.config
             VersionRange allowedVersions = _projectVersionConstraints.Select(e => e.VersionRange).FirstOrDefault();
