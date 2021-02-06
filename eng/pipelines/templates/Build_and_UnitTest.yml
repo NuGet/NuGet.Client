@@ -187,7 +187,7 @@ steps:
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
-  condition: "always()"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.CommandLine.Test as artifact"

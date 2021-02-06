@@ -92,4 +92,4 @@ steps:
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "$env:AGENT_JOBNAME"
-  condition: "always()"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
