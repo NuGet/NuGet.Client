@@ -6,6 +6,7 @@ steps:
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
 
 - task: PowerShell@1
   displayName: "Update Build Number"

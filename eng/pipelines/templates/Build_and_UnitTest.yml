@@ -88,7 +88,7 @@ steps:
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
-  condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
+  condition: "and(not(eq(variables['ManualGitHubChecks'], 'false')), eq(variables['BuildRTM'], 'true'))"
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.CommandLine.Test as artifact"

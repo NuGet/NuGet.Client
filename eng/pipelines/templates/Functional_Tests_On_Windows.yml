@@ -60,4 +60,4 @@ steps:
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "Functional Tests On Windows"
-  condition: "always()"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
