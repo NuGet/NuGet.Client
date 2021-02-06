@@ -75,4 +75,4 @@ steps:
       . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"
     failOnStderr: "true"
-  condition: "always()"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
