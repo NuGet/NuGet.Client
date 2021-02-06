@@ -129,7 +129,7 @@ steps:
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Apex Tests On Windows"
-  condition: "always()"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
 
 - task: PowerShell@1
   displayName: "Kill running instances of DevEnv"
