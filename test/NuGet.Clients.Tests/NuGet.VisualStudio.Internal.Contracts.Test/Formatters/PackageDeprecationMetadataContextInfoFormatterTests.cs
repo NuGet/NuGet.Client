@@ -41,6 +41,8 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         public static TheoryData TestData => new TheoryData<PackageDeprecationMetadataContextInfo>
             {
                 { new PackageDeprecationMetadataContextInfo("message", new List<string>{"string1" }, new AlternatePackageMetadataContextInfo("packageId", new VersionRange(new NuGetVersion("0.1")))) },
+                { new PackageDeprecationMetadataContextInfo(null, new List<string>{"string1" }, new AlternatePackageMetadataContextInfo("packageId", new VersionRange(new NuGetVersion("0.1")))) },
+                { new PackageDeprecationMetadataContextInfo(string.Empty, new List<string>{"string1" }, new AlternatePackageMetadataContextInfo("packageId", new VersionRange(new NuGetVersion("0.1")))) },
             };
     }
 }
