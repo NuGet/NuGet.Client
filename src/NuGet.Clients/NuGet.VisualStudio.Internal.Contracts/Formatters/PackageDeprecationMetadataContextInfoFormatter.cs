@@ -46,8 +46,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 }
             }
 
-            Assumes.NotNullOrEmpty(message);
-
             return new PackageDeprecationMetadataContextInfo(message, reasons, alternatePackageMetadataContextInfo);
         }
 

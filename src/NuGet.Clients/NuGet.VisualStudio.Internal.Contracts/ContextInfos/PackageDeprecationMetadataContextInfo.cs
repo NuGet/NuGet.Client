@@ -9,12 +9,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public sealed class PackageDeprecationMetadataContextInfo
     {
-        public string Message { get; }
+        public string? Message { get; }
         public IReadOnlyCollection<string>? Reasons { get; }
         public AlternatePackageMetadataContextInfo? AlternatePackage { get; }
 
         public PackageDeprecationMetadataContextInfo(
-            string message,
+            string? message,
             IReadOnlyCollection<string>? reasons,
             AlternatePackageMetadataContextInfo? alternatePackageContextInfo)
         {
