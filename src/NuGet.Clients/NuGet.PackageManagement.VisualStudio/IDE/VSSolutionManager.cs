@@ -39,6 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private static readonly string VSNuGetClientName = "NuGet VS VSIX";
+        private static readonly SemaphoreSlim SemaphoreLock = new SemaphoreSlim(1, 1);
 
         private readonly INuGetLockService _initLock;
 
@@ -59,6 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _initialized;
         private bool _cacheInitialized;
+
 
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
@@ -791,9 +793,22 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 // If already initialized, need not be on the UI thread
-                if (!_initialized)
+                if (_initialized)
                 {
-                    _initialized = true;
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
+                    return;
+                }
+
+                try
+                {
+                    // Ensure all initialization finished when needed, it still runs as async and prevents _initialized set true too early.
+                    // Setting '_initialized = true' too early caused random timing bug.
+                    await SemaphoreLock.WaitAsync();
+
+                    if (_initialized)
+                    {
+                        return;
+                    }
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -804,10 +819,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         await OnSolutionExistsAndFullyLoadedAsync();
                     }
+
+                    _initialized = true;
                 }
-                else
+                finally
                 {
-                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
+                    if (SemaphoreLock.CurrentCount == 0)
+                    {
+                        SemaphoreLock.Release();
+                    }
                 }
             }
             catch (Exception e)
