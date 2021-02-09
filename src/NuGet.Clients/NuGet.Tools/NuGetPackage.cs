@@ -1160,14 +1160,18 @@ namespace NuGetVSExtension
                 {
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
-                // Enable the 'Manage NuGet Packages For Solution' dialog menu
-                // - if the console is NOT busy executing a command, AND
-                // - if the solution exists and not debugging and not building AND
-                // - if there are NuGetProjects. This means there are loaded, supported projects.
-                command.Enabled =
-                    IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
-                    !isConsoleBusy &&
-                    await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
+
+                if (SolutionManager != null)
+                {
+                    // Enable the 'Manage NuGet Packages For Solution' dialog menu
+                    // - if the console is NOT busy executing a command, AND
+                    // - if the solution exists and not debugging and not building AND
+                    // - if there are NuGetProjects. This means there are loaded, supported projects.
+                    command.Enabled =
+                        IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
+                        !isConsoleBusy &&
+                        await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
+                }
             });
         }
 
