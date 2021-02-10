@@ -36,10 +36,6 @@ namespace NuGet.PackageManagement.UI
         private readonly NuGetPackageManager _packageManager;
         private readonly INuGetLockService _lockService;
 
-#pragma warning disable ISB001 // Dispose of proxies
-        private INuGetSourcesService _nugetSourcesService;
-#pragma warning restore ISB001 // Dispose of proxies
-
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
         /// </summary>
@@ -727,13 +723,10 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            if (_nugetSourcesService == null)
-            {
-                _nugetSourcesService = await GetPackageSourcesServiceAsync(token);
-            }
+            using INuGetSourcesService nugetSourcesService = await GetPackageSourcesServiceAsync(token);
 
             // get packages sources
-            IEnumerable<PackageSourceContextInfo> sources = await _nugetSourcesService.GetPackageSourcesAsync(token);
+            IEnumerable<PackageSourceContextInfo> sources = await nugetSourcesService.GetPackageSourcesAsync(token);
 
             List<PackageSearchMetadataContextInfo> licenseMetadata = await GetPackageMetadataAsync(sources.ToList(), licenseCheck, token);
 
@@ -752,15 +745,15 @@ namespace NuGet.PackageManagement.UI
             return true;
         }
 
-        private async ValueTask<INuGetSearchService> GetPackageSourcesServiceAsync(CancellationToken cancellationToken)
+        private async ValueTask<INuGetSourcesService> GetPackageSourcesServiceAsync(CancellationToken cancellationToken)
         {
             IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
 #pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-            INuGetSearchService nugetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
+            INuGetSourcesService nugetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
                 NuGetServices.SourceProviderService,
-                cancellationToken: token);
+                cancellationToken: cancellationToken);
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
             Assumes.NotNull(nugetSourcesService);
             return nugetSourcesService;
@@ -985,7 +978,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             var allPackages = packages.ToArray();
-            INuGetSearchService searchService = await GetSearchServiceAsync(CancellationToken.None);
+            using INuGetSearchService searchService = await GetSearchServiceAsync(CancellationToken.None);
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
