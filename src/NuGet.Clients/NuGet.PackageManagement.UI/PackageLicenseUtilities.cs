@@ -22,9 +22,9 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageLicenseUtilities
     {
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(PackageSearchMetadataContextInfo metadata)
         {
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_LicenseFileWindow, metadata.Id), metadata.PackagePath, new PackageIdentity(metadata.Id, metadata.Version));
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_LicenseFileWindow, metadata.Identity.Id), metadata.PackagePath, metadata.Identity);
         }
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(IPackageSearchMetadata metadata)

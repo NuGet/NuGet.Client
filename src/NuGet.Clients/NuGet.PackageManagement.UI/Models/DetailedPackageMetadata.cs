@@ -111,8 +111,6 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
-        public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
-
         private static readonly IReadOnlyList<PackageDependencySetMetadata> NoDependenciesPlaceholder = new PackageDependencySetMetadata[] { new PackageDependencySetMetadata(dependencyGroup: null) };
 
         public string PackagePath { get; set; }

@@ -18,6 +18,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 using TelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
@@ -34,6 +35,10 @@ namespace NuGet.PackageManagement.UI
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
         private readonly INuGetLockService _lockService;
+
+#pragma warning disable ISB001 // Dispose of proxies
+        private INuGetSourcesService _nugetSourcesService;
+#pragma warning restore ISB001 // Dispose of proxies
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
@@ -722,8 +727,15 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            IEnumerable<SourceRepository> sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-            List<IPackageSearchMetadata> licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, token);
+            if (_nugetSourcesService == null)
+            {
+                _nugetSourcesService = await GetPackageSourcesServiceAsync(token);
+            }
+
+            // get packages sources
+            IEnumerable<PackageSourceContextInfo> sources = await _nugetSourcesService.GetPackageSourcesAsync(token);
+
+            List<PackageSearchMetadataContextInfo> licenseMetadata = await GetPackageMetadataAsync(sources.ToList(), licenseCheck, token);
 
             TelemetryServiceUtility.StopTimer();
 
@@ -740,7 +752,33 @@ namespace NuGet.PackageManagement.UI
             return true;
         }
 
-        private PackageLicenseInfo GeneratePackageLicenseInfo(IPackageSearchMetadata metadata)
+        private async ValueTask<INuGetSearchService> GetPackageSourcesServiceAsync(CancellationToken cancellationToken)
+        {
+            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
+            IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
+
+#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+            INuGetSearchService nugetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
+                NuGetServices.SourceProviderService,
+                cancellationToken: token);
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+            Assumes.NotNull(nugetSourcesService);
+            return nugetSourcesService;
+        }
+
+        private async ValueTask<INuGetSearchService> GetSearchServiceAsync(CancellationToken cancellationToken)
+        {
+            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
+            IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
+
+#pragma warning disable ISB001 // Dispose of proxies
+            INuGetSearchService searchService = await serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies
+            Assumes.NotNull(searchService);
+            return searchService;
+        }
+
+        private PackageLicenseInfo GeneratePackageLicenseInfo(PackageSearchMetadataContextInfo metadata)
         {
             return new PackageLicenseInfo(
                 metadata.Identity.Id,
@@ -928,28 +966,33 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
-        private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
-            IEnumerable<SourceRepository> sources,
+        private async Task<List<PackageSearchMetadataContextInfo>> GetPackageMetadataAsync(
+            IReadOnlyCollection<PackageSourceContextInfo> sources,
             IEnumerable<PackageIdentity> packages,
             CancellationToken token)
         {
-            var results = new List<IPackageSearchMetadata>();
+            var results = new List<PackageSearchMetadataContextInfo>();
 
             // local sources
-            var localSources = new List<SourceRepository>
+            var localSources = new List<PackageSourceContextInfo>
             {
-                _packageManager.PackagesFolderSourceRepository
+                new PackageSourceContextInfo(_packageManager.PackagesFolderSourceRepository.PackageSource.SourceUri.ToString())
             };
-            localSources.AddRange(_packageManager.GlobalPackageFolderRepositories);
+
+            foreach (var repository in _packageManager.GlobalPackageFolderRepositories)
+            {
+                localSources.Add(new PackageSourceContextInfo(repository.PackageSource.SourceUri.ToString()));
+            }
 
             var allPackages = packages.ToArray();
+            INuGetSearchService searchService = await GetSearchServiceAsync(CancellationToken.None);
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
                 // first check all the packages with local sources.
                 var completed = (await TaskCombinators.ThrottledAsync(
                     allPackages,
-                    (p, t) => GetPackageMetadataAsync(localSources, sourceCacheContext, p, t),
+                    (p, t) => GetPackageMetadataAsync(localSources, searchService, sourceCacheContext, p, t),
                     token)).Where(metadata => metadata != null).ToArray();
 
                 results.AddRange(completed);
@@ -961,7 +1004,7 @@ namespace NuGet.PackageManagement.UI
 
                     var remoteResults = (await TaskCombinators.ThrottledAsync(
                         remainingPackages,
-                        (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
+                        (p, t) => GetPackageMetadataAsync(sources, searchService, sourceCacheContext, p, t),
                         token)).Where(metadata => metadata != null).ToArray();
 
                     results.AddRange(remoteResults);
@@ -978,46 +1021,19 @@ namespace NuGet.PackageManagement.UI
             return results;
         }
 
-        private static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
-            IEnumerable<SourceRepository> sources,
+        private static async Task<PackageSearchMetadataContextInfo> GetPackageMetadataAsync(
+            IReadOnlyCollection<PackageSourceContextInfo> sources,
+            INuGetSearchService searchService,
             SourceCacheContext sourceCacheContext,
             PackageIdentity package,
             CancellationToken token)
         {
             var exceptionList = new List<InvalidOperationException>();
 
-            foreach (var source in sources)
-            {
-                var metadataResource = source.GetResource<PackageMetadataResource>();
-                if (metadataResource == null)
-                {
-                    continue;
-                }
+            //TODO: where to get includeprerelease from.
+            (PackageSearchMetadataContextInfo metadataContextInfo, PackageDeprecationMetadataContextInfo deprecationMetadataContextInfo) = await searchService.GetPackageMetadataAsync(package, sources, includePrerelease: true, token);
 
-                try
-                {
-                    var packageMetadata = await metadataResource.GetMetadataAsync(
-                        package,
-                        sourceCacheContext,
-                        log: Common.NullLogger.Instance,
-                        token: token);
-                    if (packageMetadata != null)
-                    {
-                        return packageMetadata;
-                    }
-                }
-                catch (InvalidOperationException e)
-                {
-                    exceptionList.Add(e);
-                }
-            }
-
-            if (exceptionList.Count > 0)
-            {
-                throw new AggregateException(exceptionList);
-            }
-
-            return null;
+            return metadataContextInfo;
         }
     }
 }
