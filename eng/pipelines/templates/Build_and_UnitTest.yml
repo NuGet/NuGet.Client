@@ -80,6 +80,15 @@ steps:
       dotnet tool restore
   condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
+- task: PowerShell@1
+  displayName: "Prepare for source link"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      git remote add github https://github.com/NuGet/NuGet.Client.git
+      Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
+  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))" #run in official non-RTM builds, for generating sourcelink
+
 - task: MSBuild@1
   displayName: "Restore for VS2019"
   inputs:
@@ -94,7 +103,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true"
+    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
 
 - task: MSBuild@1
   displayName: "Ensure msbuild.exe can parse nuget.sln"
