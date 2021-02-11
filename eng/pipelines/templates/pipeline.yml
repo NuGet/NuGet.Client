@@ -11,10 +11,10 @@ jobs:
   - template: Initialize_Build_SemanticVersion.yml
 
 - job: Initialize_Build
-  dependsOn: Initialize_Build_Version
+  dependsOn: Initialize_Build_SemanticVersion
   timeoutInMinutes: 10
   variables:
-    SemanticVersion: $[dependencies.Initialize_Build_Version.outputs['setsemanticversion.SemanticVersion']]
+    SemanticVersion: $[dependencies.Initialize_Build_SemanticVersion.outputs['setsemanticversion.SemanticVersion']]
     BuildRevision: $[counter(format('{0}.{1}', variables['build.definitionname'], variables['SemanticVersion']), 7130)]
 
   pool:
