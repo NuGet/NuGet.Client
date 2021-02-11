@@ -15,7 +15,7 @@ jobs:
   timeoutInMinutes: 10
   variables:
     SemanticVersion: $[dependencies.Initialize_Build_SemanticVersion.outputs['setsemanticversion.SemanticVersion']]
-    BuildRevision: $[counter(format('{0}.{1}', variables['build.definitionname'], variables['SemanticVersion']), 0)]
+    BuildRevision: $[counter(format('{0}.{1}', variables['build.definitionname'], variables['SemanticVersion']), 7130)]
 
   pool:
     name: VSEng-MicroBuildVS2019
