@@ -35,13 +35,10 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       try {
-        $revision = $(BuildRevision)
         Write-Output "Semantic Version is $(SemanticVersion)"
-        Write-Output "Build Revision is $(revision)"
+        Write-Output "Build Revision is $(BuildRevision)"
+        $FullBuildNumber = "$(SemanticVersion).$(BuildRevision)"
         $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
-        $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
-        $productVersion = $productVersion.Trim()
-        $FullBuildNumber = "$productVersion.$revision"
         $targetChannel = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetChannel
         $targetChannel = $targetChannel.Trim()
         $targetMajorVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetMajorVersion
@@ -49,7 +46,7 @@ steps:
         Write-Host "##vso[task.setvariable variable=VsTargetChannel;isOutput=true]$targetChannel"
         Write-Host "##vso[task.setvariable variable=VsTargetMajorVersion;isOutput=true]$targetMajorVersion"
         Write-Host "##vso[build.updatebuildnumber]$FullBuildNumber"
-        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$revision"
+        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$(BuildRevision)"
         Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]Unable to set build number"
