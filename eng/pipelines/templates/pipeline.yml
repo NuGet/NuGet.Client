@@ -1,6 +1,6 @@
 jobs:
 - job: Initialize_Build_SemanticVersion
-  timeoutInMinutes: 1
+  timeoutInMinutes: 2
   pool:
     name: VSEng-MicroBuildVS2019
     demands:

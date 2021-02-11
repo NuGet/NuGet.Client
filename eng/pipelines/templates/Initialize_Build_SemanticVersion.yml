@@ -1,5 +1,5 @@
 steps:
-- task: PowerShell@2
+- task: PowerShell@1
   displayName: "Set Semantic Version"
   name: "setsemanticversion"
   inputs:
