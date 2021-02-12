@@ -24,14 +24,15 @@ namespace NuGet.VisualStudio
         private void Initialize(object automationObject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            using (var serviceProvider = new ServiceProvider((IServiceProvider)automationObject))
+            IComponentModel componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                var componentModel = (IComponentModel)serviceProvider.GetService(typeof(SComponentModel));
-                Assumes.Present(componentModel);
-                using (var container = new CompositionContainer(componentModel.DefaultExportProvider))
-                {
-                    container.ComposeParts(this);
-                }
+                return await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
+            });
+            Assumes.Present(componentModel);
+
+            using (var container = new CompositionContainer(componentModel.DefaultExportProvider))
+            {
+                container.ComposeParts(this);
             }
         }
 

@@ -19,18 +19,6 @@ namespace NuGet.VisualStudio
             return serviceProvider.GetService<SDTE, EnvDTE.DTE>();
         }
 
-        public static IComponentModel GetComponentModel(this IServiceProvider serviceProvider)
-        {
-            return serviceProvider.GetService<SComponentModel, IComponentModel>();
-        }
-
-        public static TService GetService<TService>(
-            this IServiceProvider serviceProvider)
-            where TService : class
-        {
-            return serviceProvider.GetService(typeof(TService)) as TService;
-        }
-
         public static Task<EnvDTE.DTE> GetDTEAsync(
             this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
         {

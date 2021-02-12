@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using Microsoft;
+using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -36,7 +36,7 @@ namespace API.Test.Cmdlets
 
             if (string.IsNullOrEmpty(ProjectName))
             {
-                var services = ServiceLocator.GetComponent<IVsPackageInstallerServices>();
+                var services = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsPackageInstallerServices>();
                 packages = services.GetInstalledPackages();
             }
             else

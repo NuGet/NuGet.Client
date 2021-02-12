@@ -6,6 +6,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -41,7 +42,7 @@ namespace NuGetConsole.Implementation
         /// </summary>
         private IComponentModel ComponentModel
         {
-            get { return this.GetService<IComponentModel>(typeof(SComponentModel)); }
+            get { return (IComponentModel)GetService(typeof(SComponentModel)); }
         }
 
         private PowerConsoleWindow PowerConsoleWindow
@@ -51,7 +52,15 @@ namespace NuGetConsole.Implementation
 
         private IVsUIShell VsUIShell
         {
-            get { return this.GetService<IVsUIShell>(typeof(SVsUIShell)); }
+            get
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetIVsUIShellAsync);
+            }
+        }
+
+        private async Task<IVsUIShell> GetIVsUIShellAsync()
+        {
+            return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
         }
 
         private bool IsToolbarEnabled

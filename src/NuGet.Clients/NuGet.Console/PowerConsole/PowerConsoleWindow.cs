@@ -23,10 +23,6 @@ namespace NuGetConsole.Implementation.PowerConsole
         private HostInfo _activeHostInfo;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        [Import(typeof(SVsServiceProvider))]
-        internal IServiceProvider ServiceProvider { get; set; }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IWpfConsoleService WpfConsoleService { get; set; }
 

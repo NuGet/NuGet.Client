@@ -159,7 +159,7 @@ namespace NuGetVSExtension
             await AddMenuCommandHandlersAsync();
 
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
-            UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(this);
+            UI.Commands.ShowErrorsCommand = new ShowErrorsCommand();
 
             _vsMonitorSelection = new AsyncLazy<IVsMonitorSelection>(
                 async () =>

@@ -60,21 +60,16 @@ namespace NuGetConsole.Implementation.Console
 
         public WpfConsole(
             WpfConsoleService factory,
-            IServiceProvider sp,
             IPrivateConsoleStatus consoleStatus,
             string contentTypeName,
             string hostName)
             : base(factory)
         {
-            UtilityMethods.ThrowIfArgumentNull(sp);
-
             _consoleStatus = consoleStatus;
-            ServiceProvider = sp;
             ContentTypeName = contentTypeName;
             HostName = hostName;
         }
 
-        private IServiceProvider ServiceProvider { get; set; }
         public string ContentTypeName { get; private set; }
         public string HostName { get; private set; }
 
@@ -92,7 +87,15 @@ namespace NuGetConsole.Implementation.Console
 
         public IVsUIShell VsUIShell
         {
-            get { return ServiceProvider.GetService<IVsUIShell>(typeof(SVsUIShell)); }
+            get
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetIVsUIShellAsync);
+            }
+        }
+
+        private async Task<IVsUIShell> GetIVsUIShellAsync()
+        {
+            return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
         }
 
         private IVsStatusbar VsStatusBar
@@ -114,7 +117,15 @@ namespace NuGetConsole.Implementation.Console
 
         private IOleServiceProvider OleServiceProvider
         {
-            get { return ServiceProvider.GetService<IOleServiceProvider>(typeof(IOleServiceProvider)); }
+            get
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetIOleServiceProviderAsync);
+            }
+        }
+
+        private async Task<IOleServiceProvider> GetIOleServiceProviderAsync()
+        {
+            return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IOleServiceProvider>();
         }
 
         private IContentType ContentType

@@ -14,10 +14,9 @@ namespace NuGetConsole
         /// <summary>
         /// Create a new IWpfConsole.
         /// </summary>
-        /// <param name="sp">An IServiceProvider used by the new IWpfConsole.</param>
         /// <param name="contentTypeName">The editor ContentType used by the new IWpfConsole.</param>
         /// <param name="hostName">The HostName identity used by the new IWpfConsole.</param>
-        IWpfConsole CreateConsole(IServiceProvider sp, string contentTypeName, string hostName);
+        IWpfConsole CreateConsole(string contentTypeName, string hostName);
 
         /// <summary>
         /// TryCreate an ICompletionSource for a textBuffer associated with an IWpfConsole.

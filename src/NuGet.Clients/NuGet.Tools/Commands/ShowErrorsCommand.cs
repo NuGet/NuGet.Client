@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 
 namespace NuGetVSExtension
@@ -20,19 +20,15 @@ namespace NuGetVSExtension
         private readonly Lazy<IVsOutputWindow> _vsOutputWindow;
         private readonly Lazy<IVsUIShell> _vsUiShell;
 
-        public ShowErrorsCommand(IServiceProvider serviceProvider)
+        public ShowErrorsCommand()
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
             // get all services we need for display and activation of the NuGet output pane
             _vsOutputWindow = new Lazy<IVsOutputWindow>(() =>
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return (IVsOutputWindow)serviceProvider.GetService(typeof(SVsOutputWindow));
+                    return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsOutputWindow>();
                 });
             });
 
@@ -41,7 +37,7 @@ namespace NuGetVSExtension
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return (IVsUIShell)serviceProvider.GetService(typeof(SVsUIShell));
+                    return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
                 });
             });
         }
