@@ -356,7 +356,7 @@ Test class names end with `Test` and live in a similar namespace as the class be
 
 Unit test method names must be descriptive about *what is being tested*, *under what conditions*, and *what the expectations are*.
 
-Pascal casing and underscores can be used to improve readability. The following test names are correct:
+Pascal casing and underscores should be used to improve readability. The following test names are correct:
 
 ```cs
 PublicApi_Arguments_ShouldNotBeNull
@@ -366,11 +366,16 @@ MsbuildRestore_WithRelativeSource_ResolvesAgainstCurrentWorkingDirectory
 The following test names are incorrect:
 
 ```cs
-PublicApiArgumentsShouldNotBeNull
 Test1
 Constructor
 FormatString
 GetData
+```
+
+The following test names are acceptable, but not preferred:
+
+```cs
+PublicApiArgumentsShouldNotBeNull
 ```
 
 All *new* test cases should follow this convention.
