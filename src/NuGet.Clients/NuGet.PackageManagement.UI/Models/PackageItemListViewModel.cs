@@ -640,21 +640,34 @@ namespace NuGet.PackageManagement.UI
 
         private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
         {
-            var result = await _backgroundLatestVersionLoader.Value;
-
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            LatestVersion = result;
-            Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
+            try
+            {
+                NuGetVersion latestVersion = await _backgroundLatestVersionLoader.Value;
+                LatestVersion = latestVersion;
+                Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
+            }
+            // Cancelled async operations inside of _backgroundLatestVersionLoader callpaths are expected to raise an InvalidOperationException.
+            // One shouldn't spam PostOnFailure since these are to be expected when UI interaction causes previous operations
+            // (searches, or metadata downloads or deprecationMetadata downloads, etc...) to no longer be needed.
+            catch (InvalidOperationException)
+            {
+            }
         }
 
         private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
         {
-            PackageDeprecationMetadataContextInfo result = await _backgroundDeprecationMetadataLoader.Value;
-
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            IsPackageDeprecated = result != null;
+            PackageDeprecationMetadataContextInfo deprecationMetadataContextInfo;
+            try
+            {
+                deprecationMetadataContextInfo = await _backgroundDeprecationMetadataLoader.Value;
+                IsPackageDeprecated = deprecationMetadataContextInfo != null;
+            }
+            // Cancelled async operations inside of _backgroundDeprecationMetadataLoader callpaths are expected to raise an InvalidOperationException.
+            // One shouldn't spam PostOnFailure since these are to be expected when UI interaction causes previous operations
+            // (searches, or metadata downloads or deprecationMetadata downloads, etc...) to no longer be needed.
+            catch (InvalidOperationException)
+            {
+            }
         }
 
         private async System.Threading.Tasks.Task ReloadProvidersAsync()

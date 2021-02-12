@@ -1082,8 +1082,17 @@ namespace NuGet.PackageManagement.UI
 
                 EmitSearchSelectionTelemetry(selectedItem);
 
-                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
-                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
+                try
+                {
+                    await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                    _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
+                }
+                // Cancelled async operations inside of SetCurrentPackageAsync() callpaths are expected to raise an InvalidOperationException.
+                // One shouldn't spam PostOnFailure since these are to be expected when UI interaction causes previous operations
+                // (searches, or metadata downloads or deprecationMetadata downloads, etc...) to no longer be needed.
+                catch (InvalidOperationException)
+                {
+                }
 
                 _packageDetail.ScrollToHome();
 
