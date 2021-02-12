@@ -837,7 +837,7 @@ The search is a case-insensitive string comparison using the supplied value, whi
     <value>The '-Timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/en-us/dotnet/core/tools</value>
   </data>
   <data name="Err_InvalidValue" xml:space="preserve">
-    <value>Invalid value provided for '{0}'. The accepted values are {1).</value>
+    <value>Invalid value provided for '{0}'. The accepted values are {1}.</value>
   </data>
   <data name="SignCommandMultipleCertificateException" xml:space="preserve">
     <value>Multiple options were used to specify a certificate.</value>

@@ -340,7 +340,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value provided for &apos;{0}&apos;. The accepted values are {1)..
+        ///   Looks up a localized string similar to Invalid value provided for &apos;{0}&apos;. The accepted values are {1}..
         /// </summary>
         internal static string Err_InvalidValue {
             get {
@@ -1674,7 +1674,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Subject name of the certificate used to search a local certificate store for the certificate. 
+        ///   Looks up a localized string similar to Subject name of the certificate used to search a local certificate store for the certificate.
         ///The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values. The certificate store can be specified by --certificate-store-name and --certificate-store-location options..
         /// </summary>
         internal static string SignCommandCertificateSubjectNameDescription {

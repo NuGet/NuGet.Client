@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
@@ -22,7 +23,7 @@ namespace NuGet.CommandLine.XPlat
             app.Command("sign", signCmd =>
             {
                 CommandArgument packagePaths = signCmd.Argument(
-                    "<packages-paths>",
+                    "<package-paths>",
                     Strings.SignCommandPackagePathDescription,
                     multipleValues: true);
 
@@ -182,7 +183,8 @@ namespace NuGet.CommandLine.XPlat
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                         Strings.Err_InvalidValue,
-                        nameof(location.LongName), string.Join(",", Enum.GetValues(typeof(StoreLocation)))));
+                        location.LongName,
+                        string.Join(",", Enum.GetValues(typeof(StoreLocation)).Cast<StoreLocation>().ToList())));
                 }
             }
 
@@ -200,7 +202,8 @@ namespace NuGet.CommandLine.XPlat
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                         Strings.Err_InvalidValue,
-                        nameof(store.LongName), string.Join(",", Enum.GetValues(typeof(StoreName)))));
+                        store.LongName,
+                        string.Join(",", Enum.GetValues(typeof(StoreName)).Cast<StoreName>().ToList())));
                 }
             }
 
