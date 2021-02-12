@@ -9506,7 +9506,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: Central package management file doesn't contain version range for y package which is specified as CentralTransitive dependency in the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: Central package management file(s) doesn't contain version range for y package which is specified as CentralTransitive dependency in the lock file."));
             }
         }
 

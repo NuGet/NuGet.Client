@@ -60,7 +60,7 @@ namespace NuGet.Commands.FuncTest
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain("The package references have changed for net46. Lock file's package references: a:[1.0.0, ), project's package references: .");
+                logger.ErrorMessages.Single().Should().Contain("The package references have changed for net46. Lock file's package references: a:[1.0.0, ), project's package references: None.");
             }
         }
 
@@ -871,7 +871,7 @@ namespace NuGet.Commands.FuncTest
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"The project references intermediateproject whose project dependencies has changed.");
+                logger.ErrorMessages.Single().Should().Contain($"The project references intermediateproject whose dependencies has changed.");
             }
         }
 
@@ -944,7 +944,7 @@ namespace NuGet.Commands.FuncTest
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"The project references intermediateproject whose project dependencies has changed.");
+                logger.ErrorMessages.Single().Should().Contain($"The project references intermediateproject whose dependencies has changed.");
             }
         }
     }

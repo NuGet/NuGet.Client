@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using FluentAssertions;
 using NuGet.Commands.Test;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -779,7 +778,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
             Assert.False(actual.IsValid);
-            Assert.Contains(@"The project reference B has changed. Current dependencies: C:\C\C.csproj lock file's dependencies: .", actual.InvalidReasons);
+            Assert.Contains(@"The project reference B has changed. Current dependencies: C:\C\C.csproj lock file's dependencies: None.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -816,7 +815,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
             Assert.False(actual.IsValid);
-            Assert.Contains("The project references B whose project dependencies has changed.", actual.InvalidReasons);
+            Assert.Contains("The project references B whose dependencies has changed.", actual.InvalidReasons);
         }
 
         [Fact]
@@ -864,7 +863,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
             Assert.False(actual.IsValid);
-            Assert.Contains("The project references B whose project dependencies has changed.", actual.InvalidReasons);
+            Assert.Contains("The project references B whose dependencies has changed.", actual.InvalidReasons);
         }
 
         /// <summary>
