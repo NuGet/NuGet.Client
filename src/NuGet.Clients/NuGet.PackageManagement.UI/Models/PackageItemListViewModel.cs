@@ -643,13 +643,14 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 NuGetVersion latestVersion = await _backgroundLatestVersionLoader.Value;
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 LatestVersion = latestVersion;
                 Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
             }
-            // Cancelled async operations inside of _backgroundLatestVersionLoader callpaths are expected to raise an InvalidOperationException.
+            // Cancelled async operations inside of _backgroundLatestVersionLoader callpaths are expected to raise an OperationCanceledException.
             // One shouldn't spam PostOnFailure since these are to be expected when UI interaction causes previous operations
             // (searches, or metadata downloads or deprecationMetadata downloads, etc...) to no longer be needed.
-            catch (InvalidOperationException)
+            catch (OperationCanceledException)
             {
             }
         }
@@ -660,12 +661,13 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 deprecationMetadataContextInfo = await _backgroundDeprecationMetadataLoader.Value;
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 IsPackageDeprecated = deprecationMetadataContextInfo != null;
             }
-            // Cancelled async operations inside of _backgroundDeprecationMetadataLoader callpaths are expected to raise an InvalidOperationException.
+            // Cancelled async operations inside of _backgroundDeprecationMetadataLoader callpaths are expected to raise an OperationCanceledException.
             // One shouldn't spam PostOnFailure since these are to be expected when UI interaction causes previous operations
             // (searches, or metadata downloads or deprecationMetadata downloads, etc...) to no longer be needed.
-            catch (InvalidOperationException)
+            catch (OperationCanceledException)
             {
             }
         }
