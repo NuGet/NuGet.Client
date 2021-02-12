@@ -481,7 +481,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             // The central package version cpvm2 has was changed from transitive to central 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
             Assert.False(actual.IsValid);
-            Assert.Contains("Transitive dependencies moved to be centraly managed invalidated the lock file.", actual.InvalidReasons);
+            Assert.Contains("Transitive dependency cpvm2 moved to be centraly managed invalidated the lock file.", actual.InvalidReasons);
         }
 
         [Fact]

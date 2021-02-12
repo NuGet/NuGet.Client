@@ -149,7 +149,7 @@ namespace NuGet.ProjectModel
 
                     IEnumerable<LockFileDependency> directDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Direct);
 
-                    (var hasProjectDependencyChanged, var pmessage) = HasProjectDependencyChanged(framework.Dependencies, directDependencies, target.TargetFramework);
+                    (var hasProjectDependencyChanged, var pmessage) = HasDirectPackageDependencyChanged(framework.Dependencies, directDependencies, target.TargetFramework);
                     if (hasProjectDependencyChanged)
                     {
                         // lock file is out of sync
@@ -170,18 +170,6 @@ namespace NuGet.ProjectModel
                 // Validate all P2P references
                 foreach (var restoreMetadataFramework in project.RestoreMetadata.TargetFrameworks)
                 {
-                    bool projectTfmFound = project.TargetFrameworks.Any(t => t.FrameworkName.Equals(restoreMetadataFramework.FrameworkName));
-
-                    if (!projectTfmFound)
-                    {
-                        // This should never be hit. A hit implies that project.RestoreMetadata.TargetsFrameworks and project.TargetsFrameworks are not the same.
-                        throw new Exception(string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.PackagesLockFile_ProjectIsMissingRestoreMetadataTfms,
-                                    restoreMetadataFramework.FrameworkName.GetShortFolderName()
-                                    ));
-                    }
-
                     var target = nuGetLockFile.Targets.FirstOrDefault(
                         t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, restoreMetadataFramework.FrameworkName));
 
@@ -395,21 +383,24 @@ namespace NuGet.ProjectModel
             return new LockFileValidityWithMatchedResults(isLockFileStillValid, matchedDependencies);
         }
 
-        private static (bool, string) HasProjectDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<LockFileDependency> lockFileDependencies, NuGetFramework nuGetFramework)
+        private static (bool, string) HasDirectPackageDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<LockFileDependency> lockFileDependencies, NuGetFramework nuGetFramework)
         {
             // If the count is not the same, something has changed.
             // Otherwise the N^2 walk below determines whether anything has changed.
             var newPackageDependencies = newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
 
-            if (newPackageDependencies.Count() != lockFileDependencies.Count())
+            var newPackageDependenciesCount = newPackageDependencies.Count();
+            var lockFileDependenciesCount = lockFileDependencies.Count();
+
+            if (newPackageDependenciesCount != lockFileDependenciesCount)
             {
                 return (true,
                            string.Format(
                                CultureInfo.CurrentCulture,
                                Strings.PackagesLockFile_PackageReferencesHaveChanged,
                                nuGetFramework.GetShortFolderName(),
-                               string.Join(", ", lockFileDependencies.Select(e => e.Id + ":" + e.RequestedVersion.ToNormalizedString())),
-                               string.Join(", ", newPackageDependencies.Select(e => e.LibraryRange.Name + ":" + e.LibraryRange.VersionRange.ToNormalizedString())))
+                               lockFileDependenciesCount > 0 ? string.Join(", ", lockFileDependencies.Select(e => e.Id + ":" + e.RequestedVersion.ToNormalizedString())) : Strings.PackagesLockFile_None,
+                               newPackageDependenciesCount > 0 ? string.Join(", ", newPackageDependencies.Select(e => e.LibraryRange.Name + ":" + e.LibraryRange.VersionRange.ToNormalizedString())) : Strings.PackagesLockFile_None)
                            );
             }
 
@@ -455,15 +446,17 @@ namespace NuGet.ProjectModel
 
             var transitivelyFlowingProjectReferences = projectRestoreReferences.Where(e => e.PrivateAssets != LibraryIncludeFlags.All);
 
-            if (transitivelyFlowingDependencies.Count() + transitivelyFlowingProjectReferences.Count() != projectDependency.Dependencies.Count)
+            var transitiveDependencies = transitivelyFlowingDependencies.Count() + transitivelyFlowingProjectReferences.Count();
+
+            if (transitiveDependencies != projectDependency.Dependencies.Count)
             {
                 return (true,
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.PackagesLockFile_ProjectReferencesHasChange,
                             projectDependency.Id,
-                            string.Join(",", transitivelyFlowingDependencies.Select(dep => dep.Name).Concat(projectRestoreReferences.Select(dep => dep.ProjectUniqueName))),
-                            string.Join(",", projectDependency.Dependencies.Select(dep => dep.Id))
+                            transitiveDependencies > 0 ? string.Join(",", transitivelyFlowingDependencies.Select(dep => dep.Name).Concat(projectRestoreReferences.Select(dep => dep.ProjectUniqueName))) : Strings.PackagesLockFile_None,
+                            projectDependency.Dependencies.Count > 0 ? string.Join(",", projectDependency.Dependencies.Select(dep => dep.Id)) : Strings.PackagesLockFile_None
                             )
                         );
             }
@@ -521,12 +514,15 @@ namespace NuGet.ProjectModel
             IList<LockFileDependency> lockTransitiveDependencies)
         {
             // Transitive dependencies moved to be centraly managed will invalidate the lock file
-            if (lockTransitiveDependencies.Any(dep => centralPackageVersions.ContainsKey(dep.Id)))
+           LockFileDependency dependency =  lockTransitiveDependencies.FirstOrDefault(dep => centralPackageVersions.ContainsKey(dep.Id));
+
+            if (dependency != null)
             {
                 return (true,
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.PackagesLockFile_ProjectTransitiveDependencyChanged
+                            Strings.PackagesLockFile_ProjectTransitiveDependencyChanged,
+                            dependency.Id
                             )
                         );
             }

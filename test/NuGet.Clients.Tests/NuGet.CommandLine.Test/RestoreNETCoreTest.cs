@@ -9392,8 +9392,8 @@ namespace NuGet.CommandLine.Test
                     Id = "x",
                     Version = null
                 };
-                packageX100.Files.Clear();
-                packageX100.AddFile("lib/net46/x.dll");
+                packageX100NullVersion.Files.Clear();
+                packageX100NullVersion.AddFile("lib/net46/x.dll");
 
                 var packageY100 = new SimpleTestPackageContext()
                 {
@@ -9579,7 +9579,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: Transitive dependencies moved to be centraly managed invalidated the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: Transitive dependency y moved to be centraly managed invalidated the lock file."));
             }
         }
 

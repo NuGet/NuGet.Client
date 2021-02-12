@@ -196,6 +196,15 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        internal static string PackagesLockFile_None {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A new package reference was found {0} for the project target framework {1}..
         /// </summary>
         internal static string PackagesLockFile_PackageReferenceAdded {
@@ -223,15 +232,6 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please file a bug with repro steps on NuGet/Home or VS Feedback ticket if seen..
-        /// </summary>
-        internal static string PackagesLockFile_ProjectIsMissingRestoreMetadataTfms {
-            get {
-                return ResourceManager.GetString("PackagesLockFile_ProjectIsMissingRestoreMetadataTfms", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to A new project reference to {0} was found for {1} target framework..
         /// </summary>
         internal static string PackagesLockFile_ProjectReferenceAdded {
@@ -241,7 +241,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project references {0} whose project dependencies has changed..
+        ///   Looks up a localized string similar to The project references {0} whose dependencies has changed..
         /// </summary>
         internal static string PackagesLockFile_ProjectReferenceDependenciesHasChanged {
             get {
@@ -268,7 +268,7 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Transitive dependencies moved to be centraly managed invalidated the lock file..
+        ///   Looks up a localized string similar to Transitive dependency {0} moved to be centraly managed invalidated the lock file..
         /// </summary>
         internal static string PackagesLockFile_ProjectTransitiveDependencyChanged {
             get {

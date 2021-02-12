@@ -166,6 +166,9 @@
     <value>The project target framework {0} was not found in the lock file.</value>
     <comment>0 - project target framework</comment>
   </data>
+  <data name="PackagesLockFile_None" xml:space="preserve">
+    <value>None</value>
+  </data>
   <data name="PackagesLockFile_PackageReferenceAdded" xml:space="preserve">
     <value>A new package reference was found {0} for the project target framework {1}.</value>
   </data>
@@ -176,14 +179,11 @@
   <data name="PackagesLockFile_PackageReferenceVersionChanged" xml:space="preserve">
     <value>The package reference {0} version has changed from {1} to {2}.</value>
   </data>
-  <data name="PackagesLockFile_ProjectIsMissingRestoreMetadataTfms" xml:space="preserve">
-    <value>Please file a bug with repro steps on NuGet/Home or VS Feedback ticket if seen.</value>
-  </data>
   <data name="PackagesLockFile_ProjectReferenceAdded" xml:space="preserve">
     <value>A new project reference to {0} was found for {1} target framework.</value>
   </data>
   <data name="PackagesLockFile_ProjectReferenceDependenciesHasChanged" xml:space="preserve">
-    <value>The project references {0} whose project dependencies has changed.</value>
+    <value>The project references {0} whose dependencies has changed.</value>
   </data>
   <data name="PackagesLockFile_ProjectReferenceHasNoCompatibleTargetFramework" xml:space="preserve">
     <value>The project {0} has no compatible target framework. </value>
@@ -192,7 +192,7 @@
     <value>The project reference {0} has changed. Current dependencies: {1} lock file's dependencies: {2}.</value>
   </data>
   <data name="PackagesLockFile_ProjectTransitiveDependencyChanged" xml:space="preserve">
-    <value>Transitive dependencies moved to be centraly managed invalidated the lock file.</value>
+    <value>Transitive dependency {0} moved to be centraly managed invalidated the lock file.</value>
   </data>
   <data name="PackagesLockFile_ProjectTransitiveDependencyVersionChanged" xml:space="preserve">
     <value>Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. Lock file version {0}, central package management version {1}.</value>
