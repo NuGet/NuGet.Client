@@ -357,7 +357,7 @@ Test class names end with `Test` and live in a similar namespace as the class be
 Unit test method names must be descriptive about *what is being tested*, *under what conditions*, and *what the expectations are*.
 
 All *new* test cases should follow this convention:
-Pascal casing and underscores should be used to improve readability. 
+Pascal casing and underscores should be used to improve readability.
 
 > Format: `<what is being tested>_<under what conditions>_<with what expectations>`
 
