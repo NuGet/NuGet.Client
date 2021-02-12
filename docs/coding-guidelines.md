@@ -354,21 +354,26 @@ Test class names end with `Test` and live in a similar namespace as the class be
 
 #### Unit test method naming
 
-Unit test method names must be descriptive about *what is being tested*, *under what conditions*, and *what the expectations are*. Pascal casing and underscores can be used to improve readability. The following test names are correct:
+Unit test method names must be descriptive about *what is being tested*, *under what conditions*, and *what the expectations are*.
+
+Pascal casing and underscores can be used to improve readability. The following test names are correct:
 
 ```cs
-PublicApiArgumentsShouldNotBeNull
-Public_api_arguments_should_not_be_null
+PublicApi_Arguments_ShouldNotBeNull
+MsbuildRestore_WithRelativeSource_ResolvesAgainstCurrentWorkingDirectory
 ```
 
 The following test names are incorrect:
 
 ```cs
+PublicApiArgumentsShouldNotBeNull
 Test1
 Constructor
 FormatString
 GetData
 ```
+
+All *new* test cases should follow this convention.
 
 #### Unit test structure
 
