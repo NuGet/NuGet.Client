@@ -1084,7 +1084,7 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                    await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem, cancellationToken);
                     _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
                 }
                 // Cancelled async operations inside of SetCurrentPackageAsync() callpaths are expected to raise an OperationCanceledException.

@@ -118,7 +118,8 @@ namespace NuGet.PackageManagement.UI
         public async virtual Task SetCurrentPackageAsync(
             PackageItemListViewModel searchResultPackage,
             ItemFilter filter,
-            Func<PackageItemListViewModel> getPackageItemListViewModel)
+            Func<PackageItemListViewModel> getPackageItemListViewModel,
+            CancellationToken cancellationToken)
         {
             // Clear old data
             PackageMetadata = null;
@@ -146,7 +147,7 @@ namespace NuGet.PackageManagement.UI
                     // cache allowed version range for each nuget project for current selected package
                     IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
                         ServiceBroker,
-                        CancellationToken.None);
+                        cancellationToken);
                     IPackageReferenceContextInfo packageReference = installedPackages
                         .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, searchResultPackage.Id));
 
@@ -156,7 +157,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
                             ServiceBroker,
-                            CancellationToken.None);
+                            cancellationToken);
                         var constraint = new ProjectVersionConstraint()
                         {
                             ProjectName = projectMetadata.Name,
@@ -171,7 +172,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = await project.GetInstalledPackagesAsync(
                         ServiceBroker,
-                        CancellationToken.None);
+                        cancellationToken);
 
                     // Find the lowest auto referenced version of this package.
                     IPackageReferenceContextInfo autoReferenced = packageReferences
@@ -185,7 +186,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
                             ServiceBroker,
-                            CancellationToken.None);
+                            cancellationToken);
 
                         // Add constraint for auto referenced package.
                         var constraint = new ProjectVersionConstraint()
@@ -211,7 +212,7 @@ namespace NuGet.PackageManagement.UI
                 (searchResultPackage.Version, false)
             };
 
-            await CreateVersionsAsync(CancellationToken.None);
+            await CreateVersionsAsync(cancellationToken);
             OnCurrentPackageChanged();
 
             var versions = await getVersionsTask;
@@ -229,7 +230,7 @@ namespace NuGet.PackageManagement.UI
                 .Select(GetVersion)
                 .ToList();
 
-            await CreateVersionsAsync(CancellationToken.None);
+            await CreateVersionsAsync(cancellationToken);
             OnCurrentPackageChanged();
 
             (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
