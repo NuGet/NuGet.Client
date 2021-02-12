@@ -356,7 +356,12 @@ Test class names end with `Test` and live in a similar namespace as the class be
 
 Unit test method names must be descriptive about *what is being tested*, *under what conditions*, and *what the expectations are*.
 
-Pascal casing and underscores should be used to improve readability. The following test names are correct:
+All *new* test cases should follow this convention:
+Pascal casing and underscores should be used to improve readability. 
+
+> Format: `<what is being tested>_<under what conditions>_<with what expectations>`
+
+The following test names are correct:
 
 ```cs
 PublicApi_Arguments_ShouldNotBeNull
@@ -378,7 +383,6 @@ The following test names are acceptable, but not preferred:
 PublicApiArgumentsShouldNotBeNull
 ```
 
-All *new* test cases should follow this convention.
 
 #### Unit test structure
 
