@@ -778,7 +778,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
 
             Assert.False(actual.IsValid);
-            Assert.Contains(@"The project reference B has changed. Current dependencies: C:\C\C.csproj lock file's dependencies: None.", actual.InvalidReasons);
+            Assert.Contains(string.Format("The project reference B has changed. Current dependencies: {0} lock file's dependencies: None.", projectC.FilePath), actual.InvalidReasons);
         }
 
         [Fact]
