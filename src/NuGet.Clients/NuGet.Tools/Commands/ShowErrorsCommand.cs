@@ -17,29 +17,25 @@ namespace NuGetVSExtension
     /// </summary>
     internal sealed class ShowErrorsCommand : ICommand
     {
-        private readonly Lazy<IVsOutputWindow> _vsOutputWindow;
-        private readonly Lazy<IVsUIShell> _vsUiShell;
+        private readonly AsyncLazy<IVsOutputWindow> _vsOutputWindow;
+        private readonly AsyncLazy<IVsUIShell> _vsUiShell;
 
         public ShowErrorsCommand()
         {
             // get all services we need for display and activation of the NuGet output pane
-            _vsOutputWindow = new Lazy<IVsOutputWindow>(() =>
+            _vsOutputWindow = new AsyncLazy<IVsOutputWindow>(async () =>
             {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsOutputWindow>();
-                });
-            });
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsOutputWindow>();
+            },
+            NuGetUIThreadHelper.JoinableTaskFactory);
 
-            _vsUiShell = new Lazy<IVsUIShell>(() =>
+            _vsUiShell = new AsyncLazy<IVsUIShell>(async () =>
             {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
-                });
-            });
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+            },
+            NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         // Actually never raised
@@ -52,7 +48,10 @@ namespace NuGetVSExtension
         // False if services were unavailable during instantiation. Never change.
         public bool CanExecute(object parameter)
         {
-            return _vsUiShell?.Value != null && _vsOutputWindow?.Value != null;
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                return await _vsUiShell?.GetValueAsync() != null && _vsOutputWindow?.GetValueAsync() != null;
+            });
         }
 
         public void Execute(object parameter)
@@ -62,11 +61,13 @@ namespace NuGetVSExtension
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 IVsWindowFrame toolWindow = null;
-                _vsUiShell.Value.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
+                IVsUIShell vsUiShell = await _vsUiShell.GetValueAsync();
+                vsUiShell.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
                 toolWindow?.Show();
 
                 IVsOutputWindowPane pane;
-                if (_vsOutputWindow.Value.GetPane(ref NuGetConsole.GuidList.guidNuGetOutputWindowPaneGuid, out pane) == VSConstants.S_OK)
+                IVsOutputWindow vsOutputWindow = await _vsOutputWindow.GetValueAsync();
+                if (vsOutputWindow.GetPane(ref NuGetConsole.GuidList.guidNuGetOutputWindowPaneGuid, out pane) == VSConstants.S_OK)
                 {
                     pane.Activate();
                 }
