@@ -33,7 +33,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 "3.5.0-beta2",
                 "15e9591f-9391-4ddf-a246-ca9e0351277d",
                 projectType,
-                true);
+                true,
+                @"C:\path\to\project.csproj");
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -64,6 +65,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(isPRUpgradable);
             Assert.IsType<bool>(isPRUpgradable);
             Assert.Equal(projectInformation.IsProjectPRUpgradable, isPRUpgradable);
+
+            var fullPath = lastTelemetryEvent["FullPath"];
+            Assert.NotNull(fullPath);
+            Assert.IsType<string>(fullPath);
+            Assert.Equal(projectInformation.FullPath, fullPath);
         }
 
         [Theory]

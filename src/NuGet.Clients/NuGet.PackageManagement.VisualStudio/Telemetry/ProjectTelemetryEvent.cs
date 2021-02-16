@@ -12,13 +12,15 @@ namespace NuGet.PackageManagement.Telemetry
             string nuGetVersion,
             string projectId,
             NuGetProjectType nuGetProjectType,
-            bool isPRUpgradable) :
+            bool isPRUpgradable,
+            string fullPath) :
             base(ProjectInformationEventName, new Dictionary<string, object>
                 {
                     { nameof(NuGetProjectType), nuGetProjectType },
                     { nameof(NuGetVersion), nuGetVersion },
                     { nameof(ProjectId), projectId.ToString() },
-                    { IsPRUpgradable, isPRUpgradable }
+                    { IsPRUpgradable, isPRUpgradable },
+                    { nameof(FullPath), fullPath },
                 })
         {
         }
@@ -45,5 +47,10 @@ namespace NuGet.PackageManagement.Telemetry
         /// True, if project can be upgraded to PackageReference.
         /// </summary>
         public bool IsProjectPRUpgradable => (bool)base[IsPRUpgradable];
+
+        /// <summary>
+        /// Absolute project path
+        /// </summary>
+        public string FullPath => (string)base[nameof(FullPath)];
     }
 }

@@ -6176,6 +6176,10 @@ namespace NuGet.Test
 
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+
+                Assert.True(telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation")
+                    .All(p => p["FullPath"] != null && File.Exists(p["FullPath"].ToString()) && (p["FullPath"].ToString().EndsWith(".csproj") || p["FullPath"].ToString().EndsWith("project.json") || p["FullPath"].ToString().EndsWith("proj"))));
             }
         }
 
@@ -6247,6 +6251,10 @@ namespace NuGet.Test
                 Assert.True((string)telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation").
                     Last()["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
+
+                Assert.True(telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation")
+                    .All(p => p["FullPath"] != null && File.Exists(p["FullPath"].ToString()) && (p["FullPath"].ToString().EndsWith(".csproj") || p["FullPath"].ToString().EndsWith("project.json") || p["FullPath"].ToString().EndsWith("proj"))));
             }
         }
 
@@ -6321,6 +6329,10 @@ namespace NuGet.Test
                 Assert.True((string)telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation").
                     Last()["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
+
+                Assert.True(telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation")
+                    .All(p => p["FullPath"] != null && File.Exists(p["FullPath"].ToString()) && (p["FullPath"].ToString().EndsWith(".csproj") || p["FullPath"].ToString().EndsWith("project.json") || p["FullPath"].ToString().EndsWith("proj"))));
             }
         }
 
@@ -6600,6 +6612,10 @@ namespace NuGet.Test
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                      Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
+
+                Assert.True(telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation")
+                    .All(p => p["FullPath"] != null && p["FullPath"].ToString().EndsWith("proj")));
             }
         }
 
@@ -6672,11 +6688,15 @@ namespace NuGet.Test
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreTargetGraph").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
 
-
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
+
+                Assert.True(telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation")
+                    .All(p => p["FullPath"] != null && File.Exists(p["FullPath"].ToString()) && (p["FullPath"].ToString().EndsWith(".csproj") || p["FullPath"].ToString().EndsWith("project.json") || p["FullPath"].ToString().EndsWith("proj"))));
+                
             }
         }
 #endif

@@ -42,6 +42,7 @@ namespace NuGet.Commands
         private const string ErrorCodes = "ErrorCodes";
         private const string WarningCodes = "WarningCodes";
         private const string RestoreSuccess = "RestoreSuccess";
+        private const string FullPath = nameof(FullPath);
 
         // names for child events for ProjectRestoreInformation
         private const string GenerateRestoreGraph = "GenerateRestoreGraph";
@@ -107,6 +108,8 @@ namespace NuGet.Commands
         {
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
+                telemetry.TelemetryEvent[FullPath] = _request.Project.FilePath;
+
                 _operationId = telemetry.OperationId;
 
                 var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;

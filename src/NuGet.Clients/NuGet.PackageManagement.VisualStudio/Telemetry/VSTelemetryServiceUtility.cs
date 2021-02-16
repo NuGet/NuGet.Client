@@ -76,11 +76,14 @@ namespace NuGet.PackageManagement.Telemetry
                 NuGetProjectType projectType = GetProjectType(nuGetProject);
                 bool isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
 
+                string fullPath = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
+
                 return new ProjectTelemetryEvent(
                     NuGetVersion.Value,
                     projectId,
                     projectType,
-                    isUpgradable);
+                    isUpgradable,
+                    fullPath);
             }
             catch (Exception ex)
             {
