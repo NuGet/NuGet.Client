@@ -14,7 +14,7 @@ Here is an example using both environment variables in PowerShell:
 
 ```PowerShell
 $Env:NUGET_PLUGIN_ENABLE_LOG='true'
-$Env:NUGET_PLUGIN_LOG_DIRECTORY_PATH='C:\logs'
+$Env:NUGET_PLUGIN_LOG_DIRECTORY_PATH='C:\logs\log.txt'
 
 .\NuGet.exe restore .\MySolution.sln
 ```
