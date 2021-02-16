@@ -2,7 +2,7 @@ jobs:
 - job: Initialize_Build_SemanticVersion
   timeoutInMinutes: 2
   pool:
-    name: VSEng-MicroBuildVS2019
+    vmImage: windows-latest
     demands:
       - DotNetFramework
       - msbuild
@@ -18,7 +18,7 @@ jobs:
     BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 7130)]
 
   pool:
-    name: VSEng-MicroBuildVS2019
+    vmImage: windows-latest
     demands:
       - DotNetFramework
       - msbuild
