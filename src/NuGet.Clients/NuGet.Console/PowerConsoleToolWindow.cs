@@ -50,14 +50,6 @@ namespace NuGetConsole.Implementation
             get { return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow; }
         }
 
-        private IVsUIShell VsUIShell
-        {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetIVsUIShellAsync);
-            }
-        }
-
         private async Task<IVsUIShell> GetIVsUIShellAsync()
         {
             return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
@@ -481,7 +473,11 @@ namespace NuGetConsole.Implementation
                 {
                     if (WpfConsole.Dispatcher.IsStartCompleted)
                     {
-                        OnDispatcherStartCompleted();
+                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                        {
+                            await OnDispatcherStartCompletedAsync();
+                        });
+
                         // if the dispatcher was started before we reach here,
                         // it means the dispatcher has been in read-only mode (due to _startedWritingOutput = false).
                         // enable key input now.
@@ -489,7 +485,15 @@ namespace NuGetConsole.Implementation
                     }
                     else
                     {
-                        WpfConsole.Dispatcher.StartCompleted += (sender, args) => OnDispatcherStartCompleted();
+                        WpfConsole.Dispatcher.StartCompleted += (sender, args) =>
+                        {
+                            // The outer delegate is synchronous, but kicks off async work via a method that accepts an async delegate.
+                            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                            {
+                                await OnDispatcherStartCompletedAsync();
+                            });
+                        };
+
                         WpfConsole.Dispatcher.StartWaitingKey += OnDispatcherStartWaitingKey;
                         WpfConsole.Dispatcher.Start();
                     }
@@ -516,19 +520,16 @@ namespace NuGetConsole.Implementation
             ConsoleParentPane.NotifyInitializationCompleted();
         }
 
-        private void OnDispatcherStartCompleted()
+        private async Task OnDispatcherStartCompletedAsync()
         {
             WpfConsole.Dispatcher.StartWaitingKey -= OnDispatcherStartWaitingKey;
 
             ConsoleParentPane.NotifyInitializationCompleted();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                // force the UI to update the toolbar
-                VsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
-            });
+            // force the UI to update the toolbar
+            (await GetIVsUIShellAsync()).UpdateCommandUI(0 /* false = update UI asynchronously */);
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleLoaded);
         }
