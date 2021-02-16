@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using NuGet.Common;
 
@@ -18,11 +19,25 @@ namespace NuGet.PackageManagement.Telemetry
                 {
                     { nameof(NuGetProjectType), nuGetProjectType },
                     { nameof(NuGetVersion), nuGetVersion },
-                    { nameof(ProjectId), projectId.ToString() },
+                    { nameof(ProjectId), projectId },
                     { IsPRUpgradable, isPRUpgradable },
                     { nameof(FullPath), fullPath },
                 })
         {
+            if (nuGetVersion == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetVersion));
+            }
+
+            if (projectId == null)
+            {
+                throw new ArgumentNullException(nameof(projectId));
+            }
+
+            if (fullPath == null)
+            {
+                throw new ArgumentNullException(nameof(fullPath));
+            }
         }
 
         public const string ProjectInformationEventName = "ProjectInformation";

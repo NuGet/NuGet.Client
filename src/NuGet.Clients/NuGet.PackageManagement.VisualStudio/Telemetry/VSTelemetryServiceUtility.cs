@@ -12,6 +12,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.Telemetry
 {
@@ -66,8 +67,10 @@ namespace NuGet.PackageManagement.Telemetry
 
         public static async Task<ProjectTelemetryEvent> GetProjectTelemetryEventAsync(NuGetProject nuGetProject)
         {
-            // Get the project details.
-            string projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+            if (nuGetProject == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProject));
+            }
 
             // Emit the project information.
             try
@@ -75,7 +78,6 @@ namespace NuGet.PackageManagement.Telemetry
                 string projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
                 NuGetProjectType projectType = GetProjectType(nuGetProject);
                 bool isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
-
                 string fullPath = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
 
                 return new ProjectTelemetryEvent(
@@ -85,16 +87,11 @@ namespace NuGet.PackageManagement.Telemetry
                     isUpgradable,
                     fullPath);
             }
-            catch (Exception ex)
+            catch
             {
-                string message =
-                    $"Failed to emit project information for project '{projectUniqueName}'. Exception:" +
-                    Environment.NewLine +
-                    ex.ToString();
-
-                ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, message);
-                Debug.Fail(message);
-                return null;
+                // ArgumentException means project metadata is empty, so, it's not quite right
+                // DTE exceptions could mean VS process has a severe failure, thus, rethrow the exception
+                throw; 
             }
         }
 

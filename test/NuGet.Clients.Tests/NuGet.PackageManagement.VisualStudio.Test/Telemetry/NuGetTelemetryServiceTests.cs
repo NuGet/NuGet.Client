@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal("ProjectInformation", lastTelemetryEvent.Name);
-            Assert.Equal(4, lastTelemetryEvent.Count);
+            Assert.Equal(5, lastTelemetryEvent.Count);
 
             var nuGetVersion = lastTelemetryEvent["NuGetVersion"];
             Assert.NotNull(nuGetVersion);
