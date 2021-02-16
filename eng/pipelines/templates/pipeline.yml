@@ -37,7 +37,7 @@ jobs:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
-    name: VSEng-MicroBuildVS2017
+    name: VSEngSS-MicroBuild2017
     demands:
         - DotNetFramework
         - msbuild
