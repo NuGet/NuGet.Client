@@ -1082,17 +1082,8 @@ namespace NuGet.PackageManagement.UI
 
                 EmitSearchSelectionTelemetry(selectedItem);
 
-                try
-                {
-                    await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem, cancellationToken);
-                    _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
-                }
-                // Cancelled async operations inside of SetCurrentPackageAsync() callpaths are expected to raise an OperationCanceledException.
-                // One shouldn't spam PostOnFailure since these are to be expected when UI interaction causes previous operations
-                // (searches, or metadata downloads or deprecationMetadata downloads, etc...) to no longer be needed.
-                catch (OperationCanceledException)
-                {
-                }
+                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem, cancellationToken);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
 
                 _packageDetail.ScrollToHome();
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.VisualStudio.Telemetry
@@ -22,6 +23,10 @@ namespace NuGet.VisualStudio.Telemetry
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks - As a fire-and-forget continuation, deadlocks can't happen.
                     await joinableTask.Task.ConfigureAwait(false);
 #pragma warning restore VSTHRD003
+                }
+                catch (TaskCanceledException taskCanceledException)
+                when (taskCanceledException.CancellationToken != null && taskCanceledException.CancellationToken.IsCancellationRequested)
+                {
                 }
                 catch (Exception e)
                 {
