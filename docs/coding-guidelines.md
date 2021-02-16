@@ -371,18 +371,12 @@ MsbuildRestore_WithRelativeSource_ResolvesAgainstCurrentWorkingDirectory
 The following test names are incorrect:
 
 ```cs
+PublicApiArgumentsShouldNotBeNull
 Test1
 Constructor
 FormatString
 GetData
 ```
-
-The following test names are acceptable, but not preferred:
-
-```cs
-PublicApiArgumentsShouldNotBeNull
-```
-
 
 #### Unit test structure
 
