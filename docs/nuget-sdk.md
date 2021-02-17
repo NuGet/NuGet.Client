@@ -74,7 +74,7 @@ When an API is added, the analyzer will display errors unless the API is added t
 
 Unless a PR is specifically for the intent of moving APIs from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt` because a new version of NuGet was shipped, any PR adding APIs to `PublicAPI.Shipped.txt` should be questioned.
 
-Any PR removing APIs from `PublicAPI.Shipped.txt` shoud be seriously questioned. This indicates a breaking change for customers using the NuGet SDK. Usually overloads can be added to avoid breaking changes.
+Any PR removing APIs from `PublicAPI.Shipped.txt` should be seriously questioned. This indicates a breaking change for customers using the NuGet SDK. Usually overloads can be added to avoid breaking changes.
 
 Any removals to `PublicAPI.Unshipped.txt` should be acceptable as when this document's procedures are followed, at worst there are pre-release packages on nuget.org that have the API, but prerelease packages do not have any compatibility promises. Customers using package versions without SemVer2 pre-release labels will not be impacted.
 
@@ -82,4 +82,4 @@ Any additions to `PublicAPI.Unshipped.txt` should be considered, particularly us
 
 ### Shipping NuGet
 
-When NuGet ships a GA release, packages without pre-release versions are published to nuget.org. At this time all APIs listed in any `PublicAPI.Unshipped.txt` should be moved to `PublicAPI.Shipped.txt`. This must be done on the dev branch, but ideally will also be cherry-picked onto the release branch, just in case that branch needs to be serviced in the future. Moving APIs from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt` can be done using [`tools-local\ship-public-apis\`](../tools-internal/ship-public-apis/).
+When NuGet ships a GA release, packages without pre-release versions are published to nuget.org. At this time all APIs listed in any `PublicAPI.Unshipped.txt` should be moved to `PublicAPI.Shipped.txt`. This must be done on the dev branch, but ideally will also be cherry-picked onto the release branch, just in case that branch needs to be serviced in the future. Moving APIs from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt` can be done using [`tools-local\ship-public-apis\`](../tools-local/ship-public-apis/).
