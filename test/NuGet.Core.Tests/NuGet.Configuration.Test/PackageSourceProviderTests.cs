@@ -2253,7 +2253,7 @@ namespace NuGet.Configuration.Test
 
         private static void CreateSettingsFileInTestingGlobalDirectory(TestDirectory directory)
         {
-            var settingsFile = new FileInfo(Path.Combine(directory.Path, "TestingGlobalPath", "NuGet.config"));
+            var settingsFile = new FileInfo(Path.Combine(directory.Path, "TestingGlobalPath", "NuGet.Config"));
 
             settingsFile.Directory.Create();
 
