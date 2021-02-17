@@ -2021,7 +2021,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void LoadSettings_AddsV3ToEmptyConfigFile_OnlyFirstTime()
+        public void LoadSettings_EmptyUserWideConfigFile_DoNotAddsV3()
         {
             using (var mockBaseDirectory = TestDirectory.Create())
             {
@@ -2043,6 +2043,37 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var v3feed = SettingsTestUtils.RemoveWhitespace(@"<add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />");
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>");
+
+                text.Should().NotContain(v3feed);
+                text.Should().Be(result);
+            }
+        }
+
+        [Fact]
+        public void LoadSettings_NonExistingUserWideConfigFile_CreateUserWideConfigFileAndAddsV3Feed()
+        {
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var nugetConfigPath = Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config");
+                File.Exists(nugetConfigPath).Should().BeFalse();
+
+                // Act
+                var settings = Settings.LoadSettings(
+                    root: mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+
+                // Assert
+                File.Exists(nugetConfigPath).Should().BeTrue();
+                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var v3feed = SettingsTestUtils.RemoveWhitespace(@"<add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />");
                 var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -2050,28 +2081,7 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>");
 
-                text.Should().Be(result);
-
-                var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "TestingGlobalPath"));
-
-                // Act
-                var section = settingsFile.GetSection("packageSources");
-                section.Should().NotBeNull();
-                settingsFile.Remove("packageSources", section.Items.First());
-                settingsFile.SaveToDisk();
-
-                settings = Settings.LoadSettings(
-                                    root: mockBaseDirectory,
-                                    configFileName: null,
-                                    machineWideSettings: null,
-                                    loadUserWideSettings: true,
-                                    useTestingGlobalPath: true);
-                // Assert
-                text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration>");
-
+                text.Should().Contain(v3feed);
                 text.Should().Be(result);
             }
         }

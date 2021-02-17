@@ -548,19 +548,14 @@ namespace NuGet.Configuration
                 // If the default user config NuGet.Config does not exist, we need to create it.
                 var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
 
+                var defaultSettingsFilePathExistsPreviously = File.Exists(defaultSettingsFilePath);
+
                 SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
-                if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
+                if (!defaultSettingsFilePathExistsPreviously && File.Exists(defaultSettingsFilePath))
                 {
-                    var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
-
-                    if (!File.Exists(trackFilePath))
-                    {
-                        File.Create(trackFilePath).Dispose();
-
-                        var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
-                        userSpecificSettings.AddOrUpdate(ConfigurationConstants.PackageSources, defaultSource);
-                        userSpecificSettings.SaveToDisk();
-                    }
+                    var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
+                    userSpecificSettings.AddOrUpdate(ConfigurationConstants.PackageSources, defaultSource);
+                    userSpecificSettings.SaveToDisk();
                 }
 
                 yield return userSpecificSettings;
