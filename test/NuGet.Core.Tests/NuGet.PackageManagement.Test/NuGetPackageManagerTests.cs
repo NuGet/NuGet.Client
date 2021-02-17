@@ -6727,8 +6727,15 @@ namespace NuGet.Test
 
                 Assert.True(telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation")
-                    .All(p => p["FullPath"] != null && File.Exists(((string)p["FullPath"])) && (((string)p["FullPath"]).EndsWith(".csproj") || ((string)p["FullPath"]).EndsWith("project.json") || ((string)p["FullPath"]).EndsWith("proj"))));
-                
+                    .All(p =>
+                    {
+                        if (p["FullPath"] == null)
+                        {
+                            return false;
+                        }
+                        var fp = (string)p["FullPath"];
+                        return File.Exists(fp) && (fp.EndsWith(".csproj") || fp.EndsWith("project.json") || fp.EndsWith("proj"));
+                    }));
             }
         }
 #endif
