@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
@@ -44,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal("ProjectInformation", lastTelemetryEvent.Name);
-            Assert.Equal(5, lastTelemetryEvent.Count);
+            Assert.Equal(4, lastTelemetryEvent.Count);
 
             var nuGetVersion = lastTelemetryEvent["NuGetVersion"];
             Assert.NotNull(nuGetVersion);
@@ -66,7 +67,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.IsType<bool>(isPRUpgradable);
             Assert.Equal(projectInformation.IsProjectPRUpgradable, isPRUpgradable);
 
-            var fullPath = lastTelemetryEvent["FullPath"];
+            var fullPath = lastTelemetryEvent
+                .GetPiiData()
+                .Where(kv => kv.Key == nameof(ProjectTelemetryEvent.FullPath))
+                .First()
+                .Value;
             Assert.NotNull(fullPath);
             Assert.IsType<string>(fullPath);
             Assert.Equal(projectInformation.FullPath, fullPath);

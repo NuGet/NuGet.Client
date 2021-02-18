@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using NuGet.Common;
 
@@ -21,7 +22,6 @@ namespace NuGet.PackageManagement.Telemetry
                     { nameof(NuGetVersion), nuGetVersion },
                     { nameof(ProjectId), projectId },
                     { IsPRUpgradable, isPRUpgradable },
-                    { nameof(FullPath), fullPath },
                 })
         {
             if (nuGetVersion == null)
@@ -38,6 +38,8 @@ namespace NuGet.PackageManagement.Telemetry
             {
                 throw new ArgumentNullException(nameof(fullPath));
             }
+
+            AddPiiData(nameof(FullPath), fullPath);
         }
 
         public const string ProjectInformationEventName = "ProjectInformation";
@@ -63,9 +65,6 @@ namespace NuGet.PackageManagement.Telemetry
         /// </summary>
         public bool IsProjectPRUpgradable => (bool)base[IsPRUpgradable];
 
-        /// <summary>
-        /// Absolute project path
-        /// </summary>
-        public string FullPath => (string)base[nameof(FullPath)];
+        public string FullPath => (string)GetPiiData().Where(kv => kv.Key == nameof(FullPath)).First().Value;
     }
 }
