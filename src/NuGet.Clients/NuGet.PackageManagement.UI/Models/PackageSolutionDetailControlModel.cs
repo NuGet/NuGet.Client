@@ -208,7 +208,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             _versions = new List<DisplayVersion>();
-            List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v.version.Version).ToList();
+            List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v.version).ToList();
 
             // null, if no version constraint defined in package.config
             VersionRange allowedVersions = await GetAllowedVersionsAsync(cancellationToken);

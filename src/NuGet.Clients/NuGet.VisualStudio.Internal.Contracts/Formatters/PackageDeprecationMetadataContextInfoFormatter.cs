@@ -46,8 +46,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 }
             }
 
-            Assumes.NotNullOrEmpty(message);
-
             return new PackageDeprecationMetadataContextInfo(message, reasons, alternatePackageMetadataContextInfo);
         }
 
@@ -64,8 +62,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             else
             {
                 options.Resolver.GetFormatter<IReadOnlyCollection<string>>().Serialize(ref writer, value.Reasons, options);
-
             }
+
             writer.Write(AlternatePackageMetadataPropertyName);
             if (value.AlternatePackage == null)
             {

@@ -10,7 +10,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
+using System.Text;
 using System.Xml.Linq;
 using NuGet.Client;
 using NuGet.Common;
@@ -18,7 +18,6 @@ using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
-using NuGet.Packaging.Rules;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -27,10 +26,12 @@ namespace NuGet.Packaging
     public class PackageBuilder : IPackageMetadata
     {
         private static readonly Uri DefaultUri = new Uri("http://defaultcontainer/");
+        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime ZipFormatMaxDate = new DateTime(2107, 12, 31, 23, 59, 58, DateTimeKind.Utc);
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
         private readonly bool _deterministic;
-        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Maximum Icon file size: 1 megabyte
@@ -47,9 +48,20 @@ namespace NuGet.Packaging
         {
         }
 
+        public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, ILogger logger)
+            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories, deterministic, logger)
+        {
+        }
+
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, basePath, propertyProvider, includeEmptyDirectories, deterministic: false)
         {
+        }
+
+        public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, ILogger logger)
+            : this(path, basePath, propertyProvider, includeEmptyDirectories, deterministic)
+        {
+            _logger = logger;
         }
 
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic)
@@ -90,10 +102,21 @@ namespace NuGet.Packaging
         {
         }
 
+        public PackageBuilder(bool deterministic, ILogger logger)
+            : this(includeEmptyDirectories: false, deterministic: deterministic, logger)
+        {
+        }
+
         private PackageBuilder(bool includeEmptyDirectories, bool deterministic)
+            : this(includeEmptyDirectories: false, deterministic: deterministic, logger: NullLogger.Instance)
+        {
+        }
+
+        private PackageBuilder(bool includeEmptyDirectories, bool deterministic, ILogger logger)
         {
             _includeEmptyDirectories = includeEmptyDirectories;
             _deterministic = false; // fix in https://github.com/NuGet/Home/issues/8601
+            _logger = logger;
             Files = new Collection<IPackageFile>();
             DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
@@ -178,6 +201,12 @@ namespace NuGet.Packaging
             get;
             set;
         }
+
+        public bool EmitRequireLicenseAcceptance
+        {
+            get;
+            set;
+        } = true;
 
         public bool Serviceable
         {
@@ -890,10 +919,25 @@ namespace NuGet.Packaging
             return entry;
         }
 
-        private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel)
+        private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel, StringBuilder warningMessage)
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
-            entry.LastWriteTime = timeOffset;
+
+            if (timeOffset.UtcDateTime < ZipFormatMinDate)
+            {
+                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModifiedMessage(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
+                entry.LastWriteTime = ZipFormatMinDate;
+            }
+            else if (timeOffset.UtcDateTime > ZipFormatMaxDate)
+            {
+                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModifiedMessage(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()));
+                entry.LastWriteTime = ZipFormatMaxDate;
+            }
+            else
+            {
+                entry.LastWriteTime = timeOffset.UtcDateTime;
+            }
+
             return entry;
         }
 
@@ -915,6 +959,7 @@ namespace NuGet.Packaging
         private HashSet<string> WriteFiles(ZipArchive package, HashSet<string> filesWithoutExtensions)
         {
             var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var warningMessage = new StringBuilder();
 
             // Add files that might not come from expanding files on disk
             foreach (IPackageFile file in new HashSet<IPackageFile>(Files))
@@ -927,7 +972,8 @@ namespace NuGet.Packaging
                             package,
                             file.Path,
                             stream,
-                            lastWriteTime: _deterministic ? ZipFormatMinDate : file.LastWriteTime);
+                            lastWriteTime: _deterministic ? ZipFormatMinDate : file.LastWriteTime,
+                            warningMessage);
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)
@@ -949,6 +995,18 @@ namespace NuGet.Packaging
                         throw;
                     }
                 }
+            }
+
+            if (warningMessage.Length > Environment.NewLine.Length)
+            {
+                warningMessage.Length -= Environment.NewLine.Length;
+            }
+
+            var warningMessageString = warningMessage.ToString();
+
+            if (!string.IsNullOrEmpty(warningMessageString))
+            {
+                _logger?.Log(PackagingLogMessage.CreateWarning(StringFormatter.ZipFileTimeStampModifiedWarning(warningMessageString), NuGetLogCode.NU5132));
             }
 
             return extensions;
@@ -1073,7 +1131,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime)
+        private void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime, StringBuilder warningMessage)
         {
             if (PackageHelper.IsNuspec(path))
             {
@@ -1081,7 +1139,7 @@ namespace NuGet.Packaging
             }
 
             string entryName = CreatePartEntryName(path);
-            var entry = CreatePackageFileEntry(package, entryName, lastWriteTime, CompressionLevel.Optimal);
+            var entry = CreatePackageFileEntry(package, entryName, lastWriteTime, CompressionLevel.Optimal, warningMessage);
 
             using (var stream = entry.Open())
             {

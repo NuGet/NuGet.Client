@@ -719,7 +719,8 @@ namespace NuGet.Commands
                     path,
                     _packArgs.GetPropertyValue,
                     !_packArgs.ExcludeEmptyDirectories,
-                    _packArgs.Deterministic);
+                    _packArgs.Deterministic,
+                    _packArgs.Logger);
             }
 
             return new PackageBuilder(
@@ -727,7 +728,8 @@ namespace NuGet.Commands
                 _packArgs.BasePath,
                 _packArgs.GetPropertyValue,
                 !_packArgs.ExcludeEmptyDirectories,
-                _packArgs.Deterministic);
+                _packArgs.Deterministic,
+                _packArgs.Logger);
         }
 
         private bool BuildFromProjectFile(string path)
@@ -781,6 +783,8 @@ namespace NuGet.Commands
             }
 
             InitCommonPackageBuilderProperties(mainPackageBuilder);
+
+            mainPackageBuilder.EmitRequireLicenseAcceptance = mainPackageBuilder.RequireLicenseAcceptance;
 
             bool successful = true;
             // Build the main package

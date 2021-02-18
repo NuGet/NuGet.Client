@@ -14,8 +14,10 @@ using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Internal.Contracts;
+using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -222,6 +224,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
+            Assumes.NotNull(packageSearchMetadata);
+
             // If nothing is in the cache this will return null
             object? cacheObject = _inMemoryObjectCache.AddOrGetExisting(
                     PackageSearchMetadataCacheItem.GetCacheId(packageSearchMetadata.Identity.Id, includesPrerelease, _packageSources),
@@ -233,6 +237,50 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 memoryCacheItem.UpdateSearchMetadata(packageSearchMetadata);
             }
+
+            NuGetPackageFileService.AddIconToCache(packageSearchMetadata.Identity, packageSearchMetadata.IconUrl);
+
+            string? packagePath = (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
+                    (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath;
+
+            if (packagePath != null)
+            {
+                LicenseMetadata? licenseMetadata = (packageSearchMetadata as LocalPackageSearchMetadata)?.LicenseMetadata ??
+                    (packageSearchMetadata as ClonedPackageSearchMetadata)?.LicenseMetadata;
+                if (licenseMetadata != null)
+                {
+                    NuGetPackageFileService.AddLicenseToCache(
+                        packageSearchMetadata.Identity,
+                        CreateEmbeddedLicenseUri(packagePath, licenseMetadata));
+                }
+            }
+        }
+
+        private static Uri CreateEmbeddedLicenseUri(string packagePath, LicenseMetadata licenseMetadata)
+        {
+            Uri? baseUri = Convert(packagePath);
+
+            var builder = new UriBuilder(baseUri)
+            {
+                Fragment = licenseMetadata.License
+            };
+
+            return builder.Uri;
+        }
+
+        /// <summary>
+        /// Convert a string to a URI safely. This will return null if there are errors.
+        /// </summary>
+        private static Uri? Convert(string uri)
+        {
+            Uri? fullUri = null;
+
+            if (!string.IsNullOrEmpty(uri))
+            {
+                Uri.TryCreate(uri, UriKind.Absolute, out fullUri);
+            }
+
+            return fullUri;
         }
     }
 }

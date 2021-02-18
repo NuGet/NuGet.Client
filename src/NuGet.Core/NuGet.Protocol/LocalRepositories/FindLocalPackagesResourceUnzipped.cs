@@ -125,7 +125,7 @@ namespace NuGet.Protocol
                     nupkgPath,
                     DateTime.UtcNow,
                     new Lazy<NuspecReader>(() => nuspec),
-                    new Func<PackageReaderBase>(() => GetPackage(rootDirInfo, name))
+                    useFolder: true
                 );
 
                 result.Add(localPackage);

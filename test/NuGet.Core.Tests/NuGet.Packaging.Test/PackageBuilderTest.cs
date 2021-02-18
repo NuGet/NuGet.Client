@@ -8,11 +8,17 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Moq;
+using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
+using NuGet.Packaging.PackageCreation.Resources;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -21,6 +27,9 @@ namespace NuGet.Packaging.Test
 {
     public class PackageBuilderTest
     {
+        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime ZipFormatMaxDate = new DateTime(2107, 12, 31, 23, 59, 58, DateTimeKind.Utc);
+
         [Fact]
         public void CreatePackageWithEmptyFoldersForV3Folders()
         {
@@ -2900,7 +2909,52 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         [Fact]
-        public void PackageBuilderPreserveFileLastWriteTime()
+        public void EmitRequireLicenseAcceptance_ShouldNotEmitElement()
+        {
+            var builder = CreateEmitRequireLicenseAcceptancePackageBuilder(
+                emitRequireLicenseAcceptance: false,
+                requireLicenseAcceptance: false);
+
+            using (SaveToTestDirectory(builder, out var reader, out var nuspecContent))
+            {
+                Assert.False(reader.NuspecReader.GetRequireLicenseAcceptance());
+
+                Assert.DoesNotContain("<requireLicenseAcceptance>", nuspecContent);
+            }
+        }
+
+        [Theory, InlineData(false), InlineData(true)]
+        public void EmitRequireLicenseAcceptance_ShouldEmitElement(bool requireLicenseAcceptance)
+        {
+            var builder = CreateEmitRequireLicenseAcceptancePackageBuilder(
+                emitRequireLicenseAcceptance: true,
+                requireLicenseAcceptance);
+
+            using (SaveToTestDirectory(builder, out var reader, out var nuspecContent))
+            {
+                Assert.Equal(requireLicenseAcceptance, reader.NuspecReader.GetRequireLicenseAcceptance());
+
+                Assert.Contains(
+                    requireLicenseAcceptance
+                        ? "<requireLicenseAcceptance>true</requireLicenseAcceptance>"
+                        : "<requireLicenseAcceptance>false</requireLicenseAcceptance>",
+                    nuspecContent);
+            }
+        }
+
+        [Fact]
+        public void EmitRequireLicenseAcceptance_ShouldThrow()
+        {
+            var builder = CreateEmitRequireLicenseAcceptancePackageBuilder(
+                emitRequireLicenseAcceptance: false,
+                requireLicenseAcceptance: true);
+
+            var ex = Assert.Throws<Exception>(() => builder.Save(Stream.Null));
+            Assert.Equal(NuGetResources.Manifest_RequireLicenseAcceptanceRequiresEmit, ex.Message);
+        }
+
+        [Fact]
+        public void PackageBuilder_PreserveFileLastWriteTime_Succeeds()
         {
             // Act
             var lastWriteTime = new DateTimeOffset(2017, 1, 15, 23, 59, 0, new TimeSpan(0, 0, 0));
@@ -2923,12 +2977,236 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                             // Only checks the entries that originated from files in test directory
                             if (File.Exists(path))
                             {
-                                Assert.Equal(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
+                                Assert.Equal(File.GetLastWriteTimeUtc(path), entry.LastWriteTime.DateTime);
                             }
                         }
                     }
                 }
             }
+        }
+
+        [Fact]
+        public void PackageBuilder_CorrectLastWriteTimeBeforeYear1980_Succeeds()
+        {
+            // Act
+            DateTime year2020Date = new DateTime(2020, 12, 14, 23, 59, 7, DateTimeKind.Utc);
+            DateTimeOffset lastWriteTime = ZipFormatMinDate.AddDays(-1); // 12/31/1979 12:00:00 AM + 00:00
+            int numberOfDateCorrectedFiles = 0;
+            int numberOfDateNotCorrectedFiles = 0;
+            TestLogger innerLogger = new TestLogger();
+            ILogger logger = new PackCollectorLogger(innerLogger, new WarningProperties());
+
+            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime.LocalDateTime))
+            {
+                var builder = new PackageBuilder(false, logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                builder.Authors.Add("test");
+
+                // Additional edge cases
+                string before1980File1 = Path.Combine(directory.Path, "before1980File1.txt");
+                string before1980File2 = Path.Combine(directory.Path, "before1980File2.txt");
+                string after1980File1 = Path.Combine(directory.Path, "after1980File1.txt");
+                string after1980File2 = Path.Combine(directory.Path, "after1980File2.txt");
+                string after1980File3 = Path.Combine(directory.Path, "after1980File3.txt");
+                string after1980File4 = Path.Combine(directory.Path, "after1980File4.txt");
+                File.WriteAllText(before1980File1, string.Empty);
+                File.WriteAllText(before1980File2, string.Empty);
+                File.WriteAllText(after1980File1, string.Empty);
+                File.WriteAllText(after1980File2, string.Empty);
+                File.WriteAllText(after1980File3, string.Empty);
+                File.WriteAllText(after1980File3, string.Empty);
+                File.WriteAllText(after1980File4, string.Empty);
+                File.SetLastWriteTime(before1980File1, ZipFormatMinDate.AddSeconds(-2));
+                File.SetLastWriteTime(before1980File2, ZipFormatMinDate.AddSeconds(-1));
+                File.SetLastWriteTime(after1980File1, ZipFormatMinDate);
+                File.SetLastWriteTime(after1980File2, ZipFormatMinDate.AddSeconds(1));
+                File.SetLastWriteTime(after1980File3, ZipFormatMinDate.AddSeconds(2));
+                File.SetLastWriteTime(after1980File4, year2020Date);
+
+                builder.AddFiles(directory.Path, "**", "Content");
+
+                using (var stream = new MemoryStream())
+                {
+                    builder.Save(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    // Assert
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                    {
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            string path = Path.Combine(directory.Path, entry.Name);
+
+                            // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
+                            // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
+                            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.
+                            // That is why you see this datetime interval instead of actual == of datetimes.
+                            if (File.Exists(path))
+                            {
+                                if (path == after1980File1)
+                                {
+                                    Assert.Equal(ZipFormatMinDate, entry.LastWriteTime.DateTime);
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else if (path == after1980File2 || path == after1980File3)
+                                {
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMinDate && entry.LastWriteTime.DateTime <= ZipFormatMinDate.AddSeconds(2));
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else if (path == after1980File4)
+                                {
+                                    // File from 2020
+                                    Assert.True(entry.LastWriteTime.DateTime >= year2020Date.AddSeconds(-1) && entry.LastWriteTime.DateTime <= year2020Date);
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else
+                                {
+                                    // Files on 1/1/1980 00:00:01 UTC timestamp and before that.
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMinDate.AddSeconds(-1) && entry.LastWriteTime.DateTime <= ZipFormatMinDate);
+                                    numberOfDateCorrectedFiles++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Assert.Equal(4, numberOfDateNotCorrectedFiles);
+                Assert.Equal(5, numberOfDateCorrectedFiles);
+                ILogMessage logMessage = Assert.Single(innerLogger.LogMessages);
+                string[] logMessages = logMessage.Message.Split('\n');
+                Assert.Equal(5, logMessages.Count(l => l.Contains("changed from")));
+            }
+        }
+
+        [Fact]
+        public void PackageBuilder_CorrectTestWriteTimeAfterYear2107_Succeeds()
+        {
+            // Act
+            DateTime year2020Date = new DateTime(2020, 12, 14, 23, 59, 2, DateTimeKind.Utc);
+            DateTimeOffset lastWriteTime = ZipFormatMaxDate.AddDays(1); // 1/1/2108 11:59:58 PM +00:00
+            int numberOfDateCorrectedFiles = 0;
+            int numberOfDateNotCorrectedFiles = 0;
+            TestLogger innerLogger = new TestLogger();
+            ILogger logger = new PackCollectorLogger(innerLogger, new WarningProperties());
+
+            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime.ToLocalTime()))
+            {
+                var builder = new PackageBuilder(false, logger) { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                builder.Authors.Add("test");
+
+                // Additional edge cases
+                string before2107File1 = Path.Combine(directory.Path, "Before2107_1.txt");
+                string before2107File2 = Path.Combine(directory.Path, "Before2107_2.txt");
+                string before2107File3 = Path.Combine(directory.Path, "Before2107_3.txt");
+                string before2107File4 = Path.Combine(directory.Path, "Before2107_4.txt");
+                string after2107File1 = Path.Combine(directory.Path, "After2107_1.txt");
+                string after2107File2 = Path.Combine(directory.Path, "After2107_2.txt");
+                File.WriteAllText(before2107File1, string.Empty);
+                File.WriteAllText(before2107File2, string.Empty);
+                File.WriteAllText(before2107File3, string.Empty);
+                File.WriteAllText(before2107File4, string.Empty);
+                File.WriteAllText(after2107File1, string.Empty);
+                File.WriteAllText(after2107File2, string.Empty);
+                File.SetLastWriteTime(before2107File1, year2020Date);
+                File.SetLastWriteTime(before2107File2, ZipFormatMaxDate.AddSeconds(-2));
+                File.SetLastWriteTime(before2107File3, ZipFormatMaxDate.AddSeconds(-1));
+                File.SetLastWriteTime(before2107File4, ZipFormatMaxDate);
+                File.SetLastWriteTime(after2107File1, ZipFormatMaxDate.AddSeconds(1));
+                File.SetLastWriteTime(after2107File2, ZipFormatMaxDate.AddSeconds(2));
+
+                builder.AddFiles(directory.Path, "**", "Content");
+
+                using (var stream = new MemoryStream())
+                {
+                    builder.Save(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    // Assert
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                    {
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            string path = Path.Combine(directory.Path, entry.Name);
+
+                            // Please note: ZipArchive stream reader sometime changes LastWriteTime by another 1 second off than what "entry.LastWriteTime" has.
+                            // The FAT filesystem of DOS has a timestamp resolution of only two seconds; ZIP file records mimic this.
+                            // As a result, the built -in timestamp resolution of files in a ZIP archive is only two seconds, though extra fields can be used to store more precise timestamps.
+                            // That is why you see this datetime interval instead of actual == of datetimes.
+                            if (File.Exists(path))
+                            {
+                                if (path == before2107File1)
+                                {
+                                    // File from 2020
+                                    Assert.True(entry.LastWriteTime.DateTime >= year2020Date.AddSeconds(-1) && entry.LastWriteTime.DateTime <= year2020Date);
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else if (path == before2107File2 || path == before2107File3)
+                                {
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMaxDate.AddSeconds(-2) && entry.LastWriteTime.DateTime <= ZipFormatMaxDate.AddSeconds(-1));
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else if (path == before2107File4)
+                                {
+                                    Assert.Equal(ZipFormatMaxDate, entry.LastWriteTime.DateTime);
+                                    numberOfDateNotCorrectedFiles++;
+                                }
+                                else
+                                {
+                                    // File from 12/31/2107, 23:59:58 UTC and after that
+                                    Assert.True(entry.LastWriteTime.DateTime >= ZipFormatMaxDate.AddSeconds(-1) && entry.LastWriteTime.DateTime <= ZipFormatMaxDate);
+                                    numberOfDateCorrectedFiles++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Assert.Equal(4, numberOfDateNotCorrectedFiles);
+                Assert.Equal(5, numberOfDateCorrectedFiles);
+                ILogMessage logMessage = Assert.Single(innerLogger.LogMessages);
+                string[] logMessages = logMessage.Message.Split('\n');
+                Assert.Equal(5, logMessages.Count(l => l.Contains("changed from")));
+            }
+        }
+
+        private static PackageBuilder CreateEmitRequireLicenseAcceptancePackageBuilder(bool emitRequireLicenseAcceptance, bool requireLicenseAcceptance)
+        {
+            return new PackageBuilder
+            {
+                Id = "test",
+                Version = new NuGetVersion("0.0.1"),
+                Authors = { "TestAuthors" },
+                Description = "Test package for EmitRequireLicenseAcceptance",
+                EmitRequireLicenseAcceptance = emitRequireLicenseAcceptance,
+                RequireLicenseAcceptance = requireLicenseAcceptance,
+                LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), warningsAndErrors: null, LicenseMetadata.EmptyVersion),
+                DependencyGroups =
+                {
+                    new PackageDependencyGroup(
+                        NuGetFramework.Parse("netstandard1.4"),
+                        new[] { new PackageDependency("another.dep", VersionRange.Parse("0.0.1")) }),
+                },
+            };
+        }
+
+        private static IDisposable SaveToTestDirectory(PackageBuilder builder, out PackageArchiveReader reader, out string nuspecContent)
+        {
+            var testDir = TestDirectory.Create();
+
+            var packagePath = Path.Combine(testDir, "test.0.0.1.nupkg");
+
+            using (var nupkgStream = File.Create(packagePath))
+            {
+                builder.Save(nupkgStream);
+            }
+
+            reader = new PackageArchiveReader(packagePath);
+
+            using (var nureader = new StreamReader(reader.GetNuspec()))
+            {
+                nuspecContent = nureader.ReadToEnd();
+            }
+
+            return testDir;
         }
 
         private static IPackageFile CreatePackageFile(string name)
@@ -2949,6 +3227,29 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 #pragma warning restore CS0618 // Type or member is obsolete
 
             return file.Object;
+        }
+
+        private IPackageFile CreatePackageFileOnPath(string path, DateTime lastWriteTime)
+        {
+            string directorypath = Path.GetDirectoryName(path);
+            if (!Directory.Exists(directorypath))
+            {
+                Directory.CreateDirectory(directorypath);
+            }
+
+            File.WriteAllText(path, string.Empty);
+            File.SetLastWriteTime(path, lastWriteTime);
+
+            using (MemoryStream ms = new MemoryStream())
+            using (FileStream fileStream = File.OpenRead(path))
+            {
+                fileStream.CopyTo(ms);
+                var file = new PhysicalPackageFile(ms)
+                {
+                    TargetPath = path
+                };
+                return file;
+            }
         }
 
         private Stream GetManifestStream(Stream packageStream)

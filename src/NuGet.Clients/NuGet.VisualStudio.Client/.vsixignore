@@ -13,6 +13,7 @@ Microsoft.IdentityModel.Logging.dll
 Microsoft.IdentityModel.Tokens.dll
 Microsoft.Internal.VisualStudio.Shell.Embeddable.dll
 Microsoft.Internal.VisualStudio.Shell.Interop.10.0.DesignTime.dll
+Microsoft.NET.StringTools.dll
 Microsoft.ServiceHub.Client.dll
 Microsoft.ServiceHub.Framework.dll
 Microsoft.ServiceHub.Framework.resources.dll

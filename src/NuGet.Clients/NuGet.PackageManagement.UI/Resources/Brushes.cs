@@ -168,6 +168,10 @@ namespace NuGet.PackageManagement.UI
 
         public static object TabHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
 
+        public static object ListItemBackgroundSelectedColorKey { get; private set; } = SystemColors.HighlightColorKey;
+
+        public static object ListItemTextSelectedColorKey { get; private set; } = SystemColors.HighlightTextColorKey;
+
         public static void LoadVsBrushes()
         {
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey;
@@ -176,19 +180,19 @@ namespace NuGet.PackageManagement.UI
             ComboBoxBorderKey = VsBrushes.ComboBoxBorderKey;
             ControlLinkTextHoverKey = VsBrushes.ControlLinkTextHoverKey;
             ControlLinkTextKey = VsBrushes.ControlLinkTextKey;
-            DetailPaneBackground = CommonDocumentColors.PageBrushKey;
-            HeaderBackground = CommonDocumentColors.PageBrushKey;
+            DetailPaneBackground = VsBrushes.BrandedUIBackgroundKey;
+            HeaderBackground = VsBrushes.BrandedUIBackgroundKey;
             InfoBackgroundKey = VsBrushes.InfoBackgroundKey;
             InfoTextKey = VsBrushes.InfoTextKey;
-            LegalMessageBackground = CommonDocumentColors.PageBrushKey;
-            ListPaneBackground = CommonDocumentColors.PageBrushKey;
+            LegalMessageBackground = VsBrushes.BrandedUIBackgroundKey;
+            ListPaneBackground = VsBrushes.BrandedUIBackgroundKey;
             SplitterBackgroundKey = VsBrushes.CommandShelfBackgroundGradientKey;
             ToolWindowBorderKey = VsBrushes.ToolWindowBorderKey;
             ToolWindowButtonDownBorderKey = VsBrushes.ToolWindowButtonDownBorderKey;
             ToolWindowButtonDownKey = VsBrushes.ToolWindowButtonDownKey;
             ToolWindowButtonHoverActiveBorderKey = VsBrushes.ToolWindowButtonHoverActiveBorderKey;
             ToolWindowButtonHoverActiveKey = VsBrushes.ToolWindowButtonHoverActiveKey;
-            UIText = CommonDocumentColors.PageTextBrushKey;
+            UIText = VsBrushes.BrandedUITextKey;
             WindowTextKey = VsBrushes.WindowTextKey;
 
             HeaderColorsDefaultBrushKey = HeaderColors.DefaultBrushKey;
@@ -249,6 +253,10 @@ namespace NuGet.PackageManagement.UI
             TabHoverBrushKey = CommonDocumentColors.InnerTabInactiveHoverTextBrushKey;
             TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
             TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
+
+            // Mapping color keys directly for use to create brushes using these colors
+            ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;
+            ListItemTextSelectedColorKey = CommonDocumentColors.ListItemTextSelectedColorKey;
         }
     }
 }

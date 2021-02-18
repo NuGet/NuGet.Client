@@ -927,4 +927,13 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="ArgumentNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>
   </data>
+  <data name="Accessibility_ColumnNotSortedHelpText" xml:space="preserve">
+    <value>Not sorted, press space to sort ascending</value>
+  </data>
+  <data name="Accessibility_ColumnSortedAscendingHelpText" xml:space="preserve">
+    <value>Sorted ascending, press space to sort descending</value>
+  </data>
+  <data name="Accessibility_ColumnSortedDescendingHelpText" xml:space="preserve">
+    <value>Sorted descending, press space to sort ascending</value>
+  </data>
 </root>

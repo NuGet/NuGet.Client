@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement.UI
                 if (_checkBoxesEnabled != value)
                 {
                     _checkBoxesEnabled = value;
-                    _list.CheckboxesEnabled = value;
+                    _list.IsItemSelectionEnabled = value;
                 }
             }
         }
@@ -570,7 +570,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         package.PropertyChanged += Package_PropertyChanged;
                         Items.Add(package);
-                        _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
+                        _selectedCount = package.IsSelected ? _selectedCount + 1 : _selectedCount;
                     }
 
                     if (removed)
@@ -610,9 +610,9 @@ namespace NuGet.PackageManagement.UI
         private void Package_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var package = sender as PackageItemListViewModel;
-            if (e.PropertyName == nameof(package.Selected))
+            if (e.PropertyName == nameof(package.IsSelected))
             {
-                if (package.Selected)
+                if (package.IsSelected)
                 {
                     _selectedCount++;
                 }
@@ -742,7 +742,7 @@ namespace NuGet.PackageManagement.UI
                 // for null here.
                 if (package != null)
                 {
-                    package.Selected = true;
+                    package.IsSelected = true;
                 }
             }
         }
@@ -754,14 +754,14 @@ namespace NuGet.PackageManagement.UI
                 var package = item as PackageItemListViewModel;
                 if (package != null)
                 {
-                    package.Selected = false;
+                    package.IsSelected = false;
                 }
             }
         }
 
         private void _updateButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedPackages = PackageItemsFiltered.Where(p => p.Selected).ToArray();
+            var selectedPackages = PackageItemsFiltered.Where(p => p.IsSelected).ToArray();
             UpdateButtonClicked(selectedPackages);
         }
 
@@ -771,7 +771,7 @@ namespace NuGet.PackageManagement.UI
             var package = _list.SelectedItem as PackageItemListViewModel;
             if (package != null && e.Key == Key.Space)
             {
-                package.Selected = !package.Selected;
+                package.IsSelected = !package.IsSelected;
                 e.Handled = true;
             }
         }

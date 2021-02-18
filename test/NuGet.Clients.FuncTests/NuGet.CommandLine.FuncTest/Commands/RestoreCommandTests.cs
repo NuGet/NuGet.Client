@@ -932,6 +932,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.Contains("NU1004:", result.Errors);
                 var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
                 Assert.Contains(NuGetLogCode.NU1004, logCodes);
+                var ridlessMainTarget = projectA.AssetsFile.Targets.FirstOrDefault(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+                Assert.Equal(net461, ridlessMainTarget.TargetFramework);
                 Assert.True(File.Exists(projectA.PropsOutput));
                 Assert.True(File.Exists(projectA.TargetsOutput));
                 Assert.True(File.Exists(projectA.CacheFileOutputPath));

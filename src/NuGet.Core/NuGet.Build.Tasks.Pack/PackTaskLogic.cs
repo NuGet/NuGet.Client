@@ -114,7 +114,7 @@ namespace NuGet.Build.Tasks.Pack
                     assetsFilePath));
             }
 
-            var builder = new PackageBuilder(request.Deterministic)
+            var builder = new PackageBuilder(request.Deterministic, request.Logger)
             {
                 Id = request.PackageId,
                 Description = request.Description,
@@ -122,6 +122,7 @@ namespace NuGet.Build.Tasks.Pack
                 Copyright = request.Copyright,
                 ReleaseNotes = request.ReleaseNotes,
                 RequireLicenseAcceptance = request.RequireLicenseAcceptance,
+                EmitRequireLicenseAcceptance = request.RequireLicenseAcceptance,
                 PackageTypes = ParsePackageTypes(request)
             };
 

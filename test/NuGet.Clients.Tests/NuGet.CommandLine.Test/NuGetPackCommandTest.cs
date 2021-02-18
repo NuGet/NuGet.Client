@@ -6862,6 +6862,44 @@ using System.Runtime.InteropServices;
                 }
             }
         }
+
+        [Fact]
+        public void PackCommand_RequireLicenseAcceptanceNotEmitted()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var projDirectory = TestDirectory.Create())
+            {
+                Util.CreateFile(
+                    projDirectory,
+                    "A.csproj",
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    projDirectory,
+                    "pack A.csproj -build",
+                    waitForExit: true);
+                Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+
+                // Assert
+                using (var package = new PackageArchiveReader(Path.Combine(projDirectory, "A.0.0.0.nupkg")))
+                {
+                    var document = XDocument.Load(package.GetNuspec());
+                    var ns = document.Root.GetDefaultNamespace();
+
+                    Assert.Null(document.Root.Element(ns + "metadata").Element(ns + "requireLicenseAcceptance"));
+                }
+            }
+        }
     }
 
     internal static class PackageArchiveReaderTestExtensions

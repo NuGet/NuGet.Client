@@ -1,5 +1,12 @@
+NuGet.Packaging.ManifestMetadata.EmitRequireLicenseAcceptance.get -> bool
+NuGet.Packaging.ManifestMetadata.EmitRequireLicenseAcceptance.set -> void
 NuGet.Packaging.NupkgMetadataFile.Source.get -> string
 NuGet.Packaging.NupkgMetadataFile.Source.set -> void
+NuGet.Packaging.PackageBuilder.EmitRequireLicenseAcceptance.get -> bool
+NuGet.Packaging.PackageBuilder.EmitRequireLicenseAcceptance.set -> void
+NuGet.Packaging.PackageBuilder.PackageBuilder(bool deterministic, NuGet.Common.ILogger logger) -> void
+NuGet.Packaging.PackageBuilder.PackageBuilder(string path, System.Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, NuGet.Common.ILogger logger) -> void
+NuGet.Packaging.PackageBuilder.PackageBuilder(string path, string basePath, System.Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, NuGet.Common.ILogger logger) -> void
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInDependencyGroupsWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFilesWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning.get -> string

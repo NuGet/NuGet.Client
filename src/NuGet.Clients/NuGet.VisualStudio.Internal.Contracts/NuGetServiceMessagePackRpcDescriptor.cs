@@ -63,6 +63,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 IPackageReferenceContextInfoFormatter.Instance,
                 IProjectContextInfoFormatter.Instance,
                 IProjectMetadataContextInfoFormatter.Instance,
+                LicenseMetadataFormatter.Instance,
                 NuGetFrameworkFormatter.Instance,
                 NuGetVersionFormatter.Instance,
                 PackageDependencyFormatter.Instance,

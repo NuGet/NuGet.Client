@@ -7,9 +7,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using Microsoft.VisualStudio.PlatformUI;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
@@ -113,6 +116,11 @@ namespace NuGet.PackageManagement.UI
 
         public void RestoreUserSettings(UserSettings userSettings)
         {
+            if (userSettings == null)
+            {
+                return;
+            }
+
             // find the column to sort
             var sortColumn = _sortableColumns.FirstOrDefault(
                 column =>
@@ -127,34 +135,12 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            // add new sort description
-            _projectList.Items.SortDescriptions.Clear();
-            _projectList.Items.SortDescriptions.Add(
-                new SortDescription(
-                    userSettings.SortPropertyName,
-                    userSettings.SortDirection));
-
-            // upate sortInfo
-            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: userSettings.SortDirection);
-
-            // clear sort direction of other columns
-            foreach (var column in _sortableColumns)
-            {
-                if (column == sortColumn)
-                {
-                    continue;
-                }
-
-                SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
-            }
+            UpdateColumnSorting(sortColumn, new SortDescription(userSettings.SortPropertyName, userSettings.SortDirection));
         }
 
         private void SortByColumn(GridViewColumnHeader sortColumn)
         {
-            _projectList.Items.SortDescriptions.Clear();
-
             var sortDescription = new SortDescription();
-
             sortDescription.PropertyName = SortableColumnHeaderAttachedProperties.GetSortPropertyName(sortColumn);
             var sortDir = SortableColumnHeaderAttachedProperties.GetSortDirectionProperty(sortColumn);
 
@@ -164,19 +150,53 @@ namespace NuGet.PackageManagement.UI
                     ? ListSortDirection.Descending
                     : ListSortDirection.Ascending;
 
-            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: sortDescription.Direction);
+            UpdateColumnSorting(sortColumn, sortDescription);
+        }
 
+        private void UpdateColumnSorting(GridViewColumnHeader sortColumn, SortDescription sortDescription)
+        {
+            // Add new sort description
+            _projectList.Items.SortDescriptions.Clear();
             _projectList.Items.SortDescriptions.Add(sortDescription);
 
+            // Upate sorting info of the column to sort on
+            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: sortDescription.Direction);
+
+            // Clear sort direction of other columns and update automation properties on all columns
             foreach (var column in _sortableColumns)
             {
                 if (column == sortColumn)
                 {
+                    UpdateHeaderAutomationProperties(column);
                     continue;
                 }
 
                 SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
+                UpdateHeaderAutomationProperties(column);
             }
+        }
+
+        private void UpdateHeaderAutomationProperties(GridViewColumnHeader columnHeader)
+        {
+            var sortDir = SortableColumnHeaderAttachedProperties.GetSortDirectionProperty(columnHeader);
+            string oldHelpText = AutomationProperties.GetHelpText(columnHeader);
+            string newHelpText;
+            if (sortDir == ListSortDirection.Ascending)
+            {
+                newHelpText = Resx.Resources.Accessibility_ColumnSortedAscendingHelpText;
+            }
+            else if (sortDir == ListSortDirection.Descending)
+            {
+                newHelpText = Resx.Resources.Accessibility_ColumnSortedDescendingHelpText;
+            }
+            else
+            {
+                newHelpText = Resx.Resources.Accessibility_ColumnNotSortedHelpText;
+            }
+
+            AutomationProperties.SetHelpText(columnHeader, newHelpText);
+            var peer = UIElementAutomationPeer.FromElement(columnHeader);
+            peer?.RaisePropertyChangedEvent(AutomationElementIdentifiers.HelpTextProperty, oldHelpText, newHelpText);
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -279,6 +299,24 @@ namespace NuGet.PackageManagement.UI
             };
 
             return versionColumn;
+        }
+
+        private void ItemCheckBox_Toggled(object sender, RoutedEventArgs e)
+        {
+            var itemCheckBox = sender as CheckBox;
+            var itemContainer = itemCheckBox?.FindAncestor<ListViewItem>();
+            if (itemContainer is null)
+            {
+                return;
+            }
+
+            var newValue = (e.RoutedEvent == CheckBox.CheckedEvent);
+            var oldValue = !newValue; // Assume the state has actually toggled.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(itemContainer);
+            peer?.RaisePropertyChangedEvent(
+                TogglePatternIdentifiers.ToggleStateProperty,
+                oldValue ? ToggleState.On : ToggleState.Off,
+                newValue ? ToggleState.On : ToggleState.Off);
         }
     }
 }

@@ -86,6 +86,7 @@
     <Compile Include="Services\PackageSearchMetadataCacheItemEntry.cs" />
     <Compile Include="Services\SearchObject.cs" />
     <Compile Include="Services\SharedServiceState.cs" />
+    <Compile Include="Services\NuGetPackageFileService.cs" />
     <Compile Include="Services\NuGetSolutionManagerService.cs" />
     <Compile Include="Services\NuGetSourcesService.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
@@ -170,6 +171,7 @@
     <Compile Include="SourceControl\DTESourceControlUtility.cs" />
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Telemetry\GetInstalledPackagesAsyncTelemetryEvent.cs" />
+    <Compile Include="Telemetry\CacheMissException.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\PackageManagerUIRefreshEvent.cs" />
     <Compile Include="Telemetry\DiagnosticTelemetryEvent.cs" />

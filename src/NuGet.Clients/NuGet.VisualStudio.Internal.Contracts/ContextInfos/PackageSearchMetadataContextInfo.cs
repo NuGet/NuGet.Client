@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
@@ -33,7 +35,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public long? DownloadCount { get; internal set; }
         public IReadOnlyCollection<PackageDependencyGroup>? DependencySets { get; internal set; }
         public LicenseMetadata? LicenseMetadata { get; internal set; }
-        public PackageReaderBase? PackageReader { get; internal set; }
+        public string? PackagePath { get; internal set; }
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; internal set; }
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
@@ -52,6 +54,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Tags = packageSearchMetadata.Tags,
                 Identity = packageSearchMetadata.Identity,
                 LicenseUrl = packageSearchMetadata.LicenseUrl,
+                LicenseMetadata = packageSearchMetadata.LicenseMetadata,
                 IsRecommended = isRecommended,
                 RecommenderVersion = recommenderVersion,
                 Owners = packageSearchMetadata.Owners,
@@ -59,6 +62,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Published = packageSearchMetadata.Published,
                 ReportAbuseUrl = packageSearchMetadata.ReportAbuseUrl,
                 PackageDetailsUrl = packageSearchMetadata.PackageDetailsUrl,
+                PackagePath =
+                    (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
+                    (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath,
                 RequireLicenseAcceptance = packageSearchMetadata.RequireLicenseAcceptance,
                 Summary = packageSearchMetadata.Summary,
                 PrefixReserved = packageSearchMetadata.PrefixReserved,

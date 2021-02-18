@@ -38,6 +38,9 @@ NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.IsProjectUpgr
 NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.SaveProjectAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.UninstallPackagesAsync(string! projectId, System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageIdentity!>! packageIdentities, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 NuGet.VisualStudio.Internal.Contracts.INuGetProjectUpgraderService.UpgradeProjectToPackageReferenceAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>
+NuGet.VisualStudio.Internal.Contracts.INuGetPackageFileService
+NuGet.VisualStudio.Internal.Contracts.INuGetPackageFileService.GetEmbeddedLicenseAsync(NuGet.Packaging.Core.PackageIdentity! packageIdentity, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream?>
+NuGet.VisualStudio.Internal.Contracts.INuGetPackageFileService.GetPackageIconAsync(NuGet.Packaging.Core.PackageIdentity! packageIdentity, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream?>
 NuGet.VisualStudio.Internal.Contracts.INuGetSearchService
 NuGet.VisualStudio.Internal.Contracts.INuGetSearchService.ContinueSearchAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<NuGet.VisualStudio.Internal.Contracts.SearchResultContextInfo!>
 NuGet.VisualStudio.Internal.Contracts.INuGetSearchService.GetAllPackagesAsync(System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IProjectContextInfo!>! projectContextInfos, System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.PackageSourceContextInfo!>! packageSources, System.Collections.Generic.IReadOnlyCollection<string!>! targetFrameworks, NuGet.Protocol.Core.Types.SearchFilter! searchFilter, NuGet.VisualStudio.Internal.Contracts.ItemFilter itemFilter, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo!>!>
@@ -84,8 +87,8 @@ NuGet.VisualStudio.Internal.Contracts.LoadingStatus.Ready = 6 -> NuGet.VisualStu
 NuGet.VisualStudio.Internal.Contracts.LoadingStatus.Unknown = 0 -> NuGet.VisualStudio.Internal.Contracts.LoadingStatus
 NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo
 NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.AlternatePackage.get -> NuGet.VisualStudio.Internal.Contracts.AlternatePackageMetadataContextInfo?
-NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.Message.get -> string!
-NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.PackageDeprecationMetadataContextInfo(string! message, System.Collections.Generic.IReadOnlyCollection<string!>? reasons, NuGet.VisualStudio.Internal.Contracts.AlternatePackageMetadataContextInfo? alternatePackageContextInfo) -> void
+NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.Message.get -> string?
+NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.PackageDeprecationMetadataContextInfo(string? message, System.Collections.Generic.IReadOnlyCollection<string!>? reasons, NuGet.VisualStudio.Internal.Contracts.AlternatePackageMetadataContextInfo? alternatePackageContextInfo) -> void
 NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.Reasons.get -> System.Collections.Generic.IReadOnlyCollection<string!>?
 NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages
 NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages.InstalledAndTransitivePackages(System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>? installedPackages, System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>? transitivePackages) -> void
@@ -107,7 +110,7 @@ NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.LicenseMe
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.LicenseUrl.get -> System.Uri?
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.Owners.get -> string?
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.PackageDetailsUrl.get -> System.Uri?
-NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.PackageReader.get -> NuGet.Packaging.PackageReaderBase?
+NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.PackagePath.get -> string?
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.PackageSearchMetadataContextInfo() -> void
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.PrefixReserved.get -> bool
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.ProjectUrl.get -> System.Uri?
@@ -193,6 +196,7 @@ static NuGet.VisualStudio.Internal.Contracts.RemoteErrorUtility.ToRemoteError(Sy
 static NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo.CreateAsync(NuGet.Protocol.Core.Types.VersionInfo! versionInfo) -> System.Threading.Tasks.ValueTask<NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo!>
 static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.ProjectManagerService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
 static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.ProjectUpgraderService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
+static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.PackageFileService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
 static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.SearchService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
 static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.SolutionManagerService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!
 static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.SolutionService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!

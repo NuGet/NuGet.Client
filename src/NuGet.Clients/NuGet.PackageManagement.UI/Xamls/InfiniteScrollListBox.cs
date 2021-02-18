@@ -7,9 +7,9 @@ using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class InfiniteScrollListBox : ListBox
+    internal class InfiniteScrollListBox : ListBox, ISelectableItemsControl
     {
-        public bool CheckboxesEnabled { get; set; }
+        public bool IsItemSelectionEnabled { get; set; }
 
         public ReentrantSemaphore ItemsLock { get; set; }
 

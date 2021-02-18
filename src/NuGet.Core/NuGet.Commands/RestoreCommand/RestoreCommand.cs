@@ -222,12 +222,18 @@ namespace NuGet.Commands
                 else
                 {
                     // Being in an unsuccessful state before ExecuteRestoreAsync means there was a problem with the
-                    // project. For example, project TFM or package versions couldn't be parsed. Although the minimal
+                    // project or we're in locked mode and out of date.
+                    // For example, project TFM or package versions couldn't be parsed. Although the minimal
                     // fake package spec generated has no packages requested, it also doesn't have any project TFMs
                     // and will generate validation errors if we tried to call ExecuteRestoreAsync. So, to avoid
                     // incorrect validation messages, don't try to restore. It is however, the responsibility for the
                     // caller of RestoreCommand to have provided at least one AdditionalMessage in RestoreArgs.
-                    graphs = Enumerable.Empty<RestoreTargetGraph>();
+                    // The other scenario is when the lock file is not up to date and we're running locked mode.
+                    // In that case we want to write a `target` for each target framework to avoid missing target errors from the SDK build tasks.
+                    graphs = _request.Project.TargetFrameworks.Select(e =>
+                    {
+                        return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.FrameworkName, null);
+                    });
                 }
 
                 LockFile assetsFile = null;
