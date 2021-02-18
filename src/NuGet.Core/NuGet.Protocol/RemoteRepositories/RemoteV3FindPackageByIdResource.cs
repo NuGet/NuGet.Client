@@ -464,7 +464,7 @@ namespace NuGet.Protocol
                     await _dependencyInfoSemaphore.WaitAsync(cancellationToken);
                     if (_dependencyInfoResource == null)
                     {
-                        _dependencyInfoResource = await SourceRepository.GetResourceAsync<DependencyInfoResource>();
+                        _dependencyInfoResource = await SourceRepository.GetResourceAsync<DependencyInfoResource>(cancellationToken);
                     }
                 }
                 finally

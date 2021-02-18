@@ -151,7 +151,7 @@ namespace NuGet.Protocol
         private async Task<ICredentials> AcquireCredentialsAsync(HttpStatusCode statusCode, Guid credentialsVersion, ILogger log, CancellationToken cancellationToken)
         {
             // Only one request may prompt and attempt to auth at a time
-            await _httpClientLock.WaitAsync();
+            await _httpClientLock.WaitAsync(cancellationToken);
 
             try
             {
@@ -233,12 +233,12 @@ namespace NuGet.Protocol
             string message,
             AmbientAuthenticationState authState,
             ILogger log,
-            CancellationToken token)
+            CancellationToken cancellationToken)
         {
             ICredentials promptCredentials;
 
             // Only one prompt may display at a time.
-            await _credentialPromptLock.WaitAsync();
+            await _credentialPromptLock.WaitAsync(cancellationToken);
 
             try
             {
@@ -248,7 +248,7 @@ namespace NuGet.Protocol
                 var proxy = proxyCache?.GetProxy(_packageSource.SourceUri);
 
                 promptCredentials = await _credentialService
-                    .GetCredentialsAsync(_packageSource.SourceUri, proxy, type, message, token);
+                    .GetCredentialsAsync(_packageSource.SourceUri, proxy, type, message, cancellationToken);
 
                 if (promptCredentials == null)
                 {

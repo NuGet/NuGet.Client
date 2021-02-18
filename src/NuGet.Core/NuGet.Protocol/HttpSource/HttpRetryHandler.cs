@@ -90,10 +90,10 @@ namespace NuGet.Protocol
 
                     try
                     {
-                        // The only time that we will be disposing this existing response is if we have 
+                        // The only time that we will be disposing this existing response is if we have
                         // successfully fetched an HTTP response but the response has an status code indicating
                         // failure (i.e. HTTP status code >= 500).
-                        // 
+                        //
                         // If we don't even get an HTTP response message because an exception is thrown, then there
                         // is no response instance to dispose. Additionally, we cannot use a finally here because
                         // the caller needs the response instance returned in a non-disposed state.
@@ -141,7 +141,11 @@ namespace NuGet.Protocol
                         // Wrap the response stream so that the download can timeout.
                         if (response.Content != null)
                         {
-                            var networkStream = await response.Content.ReadAsStreamAsync();
+                            var networkStream = await response.Content.ReadAsStreamAsync(
+#if NET5_0
+                                cancellationToken
+#endif
+                                );
                             var timeoutStream = new DownloadTimeoutStream(requestUri.ToString(), networkStream, request.DownloadTimeout);
                             var inProgressEvent = new ProtocolDiagnosticInProgressHttpEvent(
                                 source,

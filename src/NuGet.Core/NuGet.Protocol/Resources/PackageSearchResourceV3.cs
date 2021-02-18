@@ -39,8 +39,8 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result 
-        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result. 
+        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result
+        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result.
         /// </summary>
         /// <param name="searchTerm">The term we're searching for.</param>
         /// <param name="filter">Filter for whether to include prerelease, delisted, supportedframework flags in query.</param>
@@ -204,8 +204,8 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result 
-        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result. 
+        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result
+        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result.
         /// </summary>
         /// <param name="searchTerm">The term we're searching for.</param>
         /// <param name="filters">Filter for whether to include prerelease, delisted, supportedframework flags in query.</param>
@@ -246,7 +246,7 @@ namespace NuGet.Protocol
             return (await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, (uint)take, token)).Data;
         }
 
-        private async Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
+        private async Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken cancellationToken)
         {
             if (httpInitialResponse == null)
             {
@@ -256,7 +256,11 @@ namespace NuGet.Protocol
             var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
             _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
 
-            using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
+            using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync(
+#if NET5_0
+                cancellationToken
+#endif
+                ))
             using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
             {

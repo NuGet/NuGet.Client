@@ -329,7 +329,7 @@ namespace NuGet.Commands
 
                 if (_throttle != null)
                 {
-                    await _throttle.WaitAsync();
+                    await _throttle.WaitAsync(cancellationToken);
                 }
 
                 // Read package info, this will download the package if needed.
@@ -415,7 +415,7 @@ namespace NuGet.Commands
 
                 if (_throttle != null)
                 {
-                    await _throttle.WaitAsync();
+                    await _throttle.WaitAsync(cancellationToken);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -527,7 +527,7 @@ namespace NuGet.Commands
             {
                 if (_throttle != null)
                 {
-                    await _throttle.WaitAsync();
+                    await _throttle.WaitAsync(cancellationToken);
                 }
                 if (_findPackagesByIdResource == null)
                 {

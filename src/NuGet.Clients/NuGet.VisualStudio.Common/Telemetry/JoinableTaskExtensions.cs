@@ -24,10 +24,6 @@ namespace NuGet.VisualStudio.Telemetry
                     await joinableTask.Task.ConfigureAwait(false);
 #pragma warning restore VSTHRD003
                 }
-                catch (TaskCanceledException taskCanceledException)
-                when (taskCanceledException.CancellationToken != null && taskCanceledException.CancellationToken.IsCancellationRequested)
-                {
-                }
                 catch (Exception e)
                 {
                     await TelemetryUtility.PostFaultAsync(e, callerClassName, callerMemberName);

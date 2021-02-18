@@ -109,7 +109,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
-                () => null).Wait();
+                () => null,
+                CancellationToken.None).Wait();
         }
 
         [Fact]
@@ -153,7 +154,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             var expectedAdditionalInfo = string.Empty;
@@ -274,7 +276,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             var expectedAdditionalInfo = string.Empty;

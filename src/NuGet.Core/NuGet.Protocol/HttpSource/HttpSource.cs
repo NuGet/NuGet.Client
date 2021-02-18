@@ -176,7 +176,11 @@ namespace NuGet.Protocol
                             // the cache. We cannot seek on the network stream and it is not valuable to download the
                             // content twice just to validate the first time (considering that the second download could
                             // be different from the first thus rendering the first validation meaningless).
-                            using (var stream = await throttledResponse.Response.Content.ReadAsStreamAsync())
+                            using (var stream = await throttledResponse.Response.Content.ReadAsStreamAsync(
+#if NET5_0
+                                lockedToken
+#endif
+                                ))
                             using (var httpSourceResult = new HttpSourceResult(
                                 HttpSourceResultStatus.OpenedFromNetwork,
                                 cacheFileName: null,

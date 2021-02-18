@@ -73,7 +73,11 @@ namespace NuGet.Protocol
                 FileShare.None,
                 BufferSize))
             {
-                using (var networkStream = await response.Content.ReadAsStreamAsync())
+                using (var networkStream = await response.Content.ReadAsStreamAsync(
+#if NET5_0
+                    cancellationToken
+#endif
+                    ))
                 {
                     await networkStream.CopyToAsync(fileStream, BufferSize, cancellationToken);
                 }

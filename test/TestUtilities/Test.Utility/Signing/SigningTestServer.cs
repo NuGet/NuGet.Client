@@ -60,7 +60,7 @@ namespace Test.Utility.Signing
             var portReserver = new PortReserver();
 
             return portReserver.ExecuteAsync(
-                (port, token) =>
+                (port, cancellationToken) =>
                 {
                     var url = new Uri($"http://127.0.0.1:{port}/");
                     var httpListener = new HttpListener();
@@ -73,9 +73,9 @@ namespace Test.Utility.Signing
 
                     using (var taskStartedEvent = new ManualResetEventSlim())
                     {
-                        Task.Factory.StartNew(() => server.HandleRequest(taskStartedEvent, token));
+                        Task.Factory.StartNew(() => server.HandleRequest(taskStartedEvent, cancellationToken), cancellationToken);
 
-                        taskStartedEvent.Wait(token);
+                        taskStartedEvent.Wait(cancellationToken);
                     }
 
                     return Task.FromResult(server);

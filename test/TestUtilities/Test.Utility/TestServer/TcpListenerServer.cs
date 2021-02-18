@@ -56,12 +56,12 @@ namespace NuGet.Test.Server
         public TestServerMode Mode { get; set; } = TestServerMode.ServerProtocolViolation;
         public TimeSpan SleepDuration { get; set; } = TimeSpan.FromSeconds(110);
 
-        private async Task StartSlowResponseBody(TcpListener tcpListener, CancellationToken token)
+        private async Task StartSlowResponseBody(TcpListener tcpListener, CancellationToken cancellationToken)
         {
             // This server does not process any request body.
-            while (!token.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                using (var client = await Task.Run(tcpListener.AcceptTcpClientAsync, token))
+                using (var client = await Task.Run(tcpListener.AcceptTcpClientAsync, cancellationToken))
                 using (var stream = client.GetStream())
                 using (var reader = new StreamReader(stream, Encoding.ASCII, false, 1))
                 using (var writer = new StreamWriter(stream, Encoding.ASCII, 1, false))
@@ -80,7 +80,7 @@ namespace NuGet.Test.Server
                     writer.WriteLine();
                     writer.Write(contentBefore);
                     writer.Flush();
-                    await Task.Delay(SleepDuration);
+                    await Task.Delay(SleepDuration, cancellationToken);
                     writer.Write(contentAfter);
                 }
             }
