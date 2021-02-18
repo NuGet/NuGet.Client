@@ -2042,12 +2042,12 @@ namespace NuGet.Configuration.Test
                     useTestingGlobalPath: true);
 
                 // Assert
-                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var expected = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>");
 
-                text.Should().Be(result);
+                actual.Should().Be(expected);
             }
         }
 
@@ -2075,12 +2075,12 @@ namespace NuGet.Configuration.Test
                     useTestingGlobalPath: true);
 
                 // Assert
-                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var expected = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>");
 
-                text.Should().Be(result);
+                actual.Should().Be(expected);
             }
         }
 
@@ -2103,15 +2103,15 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 File.Exists(nugetConfigPath).Should().BeTrue();
-                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var expected = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
     </packageSources>
 </configuration>");
 
-                text.Should().Be(result);
+                actual.Should().Be(expected);
             }
         }
 
