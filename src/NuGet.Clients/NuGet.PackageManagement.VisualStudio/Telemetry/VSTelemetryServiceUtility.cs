@@ -98,7 +98,6 @@ namespace NuGet.PackageManagement.Telemetry
                 // DTE exceptions could mean VS process has a severe failure
                 string message =
                     $"Failed to emit project information for project '{projectUniqueName}'. Exception:" +
-                    projectUniqueName +
                     Environment.NewLine +
                     ex.ToString();
 
