@@ -545,12 +545,13 @@ namespace NuGet.Configuration
                     yield break;
                 }
 
-                // If the default user config NuGet.Config does not exist, we need to create it.
                 var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
 
                 var defaultSettingsFilePathExistsPreviously = File.Exists(defaultSettingsFilePath);
 
+                // If the default user config NuGet.Config does not exist, we need to create an empty one.
                 SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
+
                 if (!defaultSettingsFilePathExistsPreviously && File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
                     var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
