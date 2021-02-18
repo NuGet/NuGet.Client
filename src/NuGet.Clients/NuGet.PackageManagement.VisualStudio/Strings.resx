@@ -307,6 +307,6 @@
   <data name="Warning_GetProjectTelemetryEventAsync" xml:space="preserve">
     <value>Failed to emit project information for project '{0}'. Exception:
 {1}</value>
-    <comment>{0} is a project name, {1} is a Stack trace</comment>
+    <comment>Don't localize this string. {0} is a project name, {1} is a Stack trace. </comment>
   </data>
 </root>
