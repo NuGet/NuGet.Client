@@ -551,7 +551,7 @@ namespace NuGet.Configuration
                 var defaultSettingsFilePathExistsPreviously = File.Exists(defaultSettingsFilePath);
 
                 SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
-                if (!defaultSettingsFilePathExistsPreviously && File.Exists(defaultSettingsFilePath))
+                if (!defaultSettingsFilePathExistsPreviously && File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
                     var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
                     userSpecificSettings.AddOrUpdate(ConfigurationConstants.PackageSources, defaultSource);
