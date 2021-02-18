@@ -2021,7 +2021,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void LoadSettings_EmptyUserWideConfigFile_DoNotAddsV3()
+        public void LoadSettings_EmptyUserWideConfigFileAndNoTrackerFile_DoNotAddsV3()
         {
             using (var mockBaseDirectory = TestDirectory.Create())
             {
@@ -2032,6 +2032,41 @@ namespace NuGet.Configuration.Test
 
                 var nugetConfigPath = "NuGet.Config";
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "TestingGlobalPath"), config);
+
+                // Act
+                var settings = Settings.LoadSettings(
+                    root: mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+
+                // Assert
+                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var v3feed = SettingsTestUtils.RemoveWhitespace(@"<add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />");
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>");
+
+                text.Should().NotContain(v3feed);
+                text.Should().Be(result);
+            }
+        }
+
+        [Fact]
+        public void LoadSettings_EmptyUserWideConfigFileAndHasTrackerFile_DoNotAddsV3()
+        {
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+                var nugetConfigPath = "NuGet.Config";
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "TestingGlobalPath"), config);
+                var trackFilePath = Path.Combine(mockBaseDirectory, "TestingGlobalPath", "nugetorgadd.trk");
+                File.WriteAllText(trackFilePath, "");
 
                 // Act
                 var settings = Settings.LoadSettings(
