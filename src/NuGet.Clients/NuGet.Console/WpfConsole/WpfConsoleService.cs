@@ -77,9 +77,9 @@ namespace NuGetConsole.Implementation.Console
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "Caller's responsibility to dispose.")]
-        public IWpfConsole CreateConsole(string contentTypeName, string hostName)
+        public IWpfConsole CreateConsole(IServiceProvider sp, string contentTypeName, string hostName)
         {
-            return new WpfConsole(this, _privateConsoleStatus, contentTypeName, hostName).MarshaledConsole;
+            return new WpfConsole(this, sp, _privateConsoleStatus, contentTypeName, hostName).MarshaledConsole;
         }
 
         [SuppressMessage(

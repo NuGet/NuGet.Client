@@ -42,7 +42,7 @@ namespace NuGetConsole.Implementation
         /// </summary>
         private IComponentModel ComponentModel
         {
-            get { return (IComponentModel)GetService(typeof(SComponentModel)); }
+            get { return this.GetService<IComponentModel>(typeof(SComponentModel)); }
         }
 
         private PowerConsoleWindow PowerConsoleWindow
