@@ -556,16 +556,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Failed to emit project information for project &apos;{0}&apos;. Exception:
-        ///{1}.
-        /// </summary>
-        public static string Warning_GetProjectTelemetryEventAsync {
-            get {
-                return ResourceManager.GetString("Warning_GetProjectTelemetryEventAsync", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Busca una cadena traducida similar a No exact match found for removing reference &apos;{0}&apos;. Trying No No exact match found for removing reference &apos;{0}&apos;. Trying case-insensitive search...-.
         /// </summary>
         public static string Warning_NoExactMatchForReference {
