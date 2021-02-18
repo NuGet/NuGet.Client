@@ -96,11 +96,11 @@ namespace NuGet.PackageManagement.Telemetry
             {
                 // ArgumentException means project metadata is empty
                 // DTE exceptions could mean VS process has a severe failure
-                string message = string.Format(CultureInfo.InvariantCulture,
-                    "Failed to emit project information for project '{0}'. Exception:{1}{2}",
-                    projectUniqueName,
-                    Environment.NewLine,
-                    ex);
+                string message =
+                    $"Failed to emit project information for project '{projectUniqueName}'. Exception:" +
+                    projectUniqueName +
+                    Environment.NewLine +
+                    ex.ToString();
 
                 ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, message);
                 Debug.Fail(message);
