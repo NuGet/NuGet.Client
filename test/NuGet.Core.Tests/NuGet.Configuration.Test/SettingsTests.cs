@@ -2103,7 +2103,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 File.Exists(nugetConfigPath).Should().BeTrue();
-                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath));
                 var expected = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
