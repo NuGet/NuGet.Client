@@ -9,6 +9,7 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.Resolver;
+using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
@@ -49,6 +50,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken);
+
+        ValueTask<IReadOnlyList<ProjectAction>> GetInstallActionsAsync(
+            IReadOnlyCollection<string> projectIds,
+            PackageIdentity packageIdentity,
+            VersionConstraints versionConstraints,
+            bool includePrelease,
+            DependencyBehavior dependencyBehavior,
+            IReadOnlyList<string> packageSourceNames,
+            CancellationToken cancellationToken,
+            VersionRange versionRange);
 
         ValueTask<IReadOnlyList<ProjectAction>> GetUninstallActionsAsync(
             IReadOnlyCollection<string> projectIds,

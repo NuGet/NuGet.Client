@@ -1544,6 +1544,19 @@ namespace NuGet.PackageManagement
             IReadOnlyCollection<SourceRepository> activeSources,
             CancellationToken token)
         {
+            return await PreviewProjectsInstallPackageAsync(nuGetProjects, packageIdentity, resolutionContext, nuGetProjectContext, activeSources, token, versionRange: null);
+        }
+
+        // Preview and return ResolvedActions for many NuGetProjects.
+        public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
+            IReadOnlyCollection<NuGetProject> nuGetProjects,
+            PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IReadOnlyCollection<SourceRepository> activeSources,
+            CancellationToken token,
+            VersionRange versionRange)
+        {
             if (nuGetProjects == null)
             {
                 throw new ArgumentNullException(nameof(nuGetProjects));
@@ -1608,7 +1621,8 @@ namespace NuGet.PackageManagement
                 packageIdentity,
                 activeSources,
                 nuGetProjectContext,
-                token);
+                token,
+                versionRange);
                 results.AddRange(resolvedActions);
             }
 
@@ -2146,7 +2160,8 @@ namespace NuGet.PackageManagement
                 packageIdentity: null, // since we have nuGetProjectActions no need packageIdentity
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
-                token
+                token,
+                versionRange: null
                 );
 
             return resolvedActions.Select(r => r.Action as BuildIntegratedProjectAction);
@@ -2752,7 +2767,8 @@ namespace NuGet.PackageManagement
                 packageIdentity: null, // since we have nuGetProjectActions no need packageIdentity
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
-                token
+                token,
+                versionRange: null
                 );
 
             return resolvedAction.FirstOrDefault(r => r.Project == buildIntegratedProject)?.Action as BuildIntegratedProjectAction;
@@ -2768,7 +2784,8 @@ namespace NuGet.PackageManagement
             PackageIdentity packageIdentity,
             IReadOnlyCollection<SourceRepository> primarySources,
             INuGetProjectContext nuGetProjectContext,
-            CancellationToken token)
+            CancellationToken token,
+            VersionRange versionRange)
         {
             if (nugetProjectActionsLookup == null)
             {
@@ -2832,7 +2849,7 @@ namespace NuGet.PackageManagement
                         throw new ArgumentNullException(nameof(primarySources), $"Should have value in {nameof(primarySources)} if there is value for {nameof(packageIdentity)}");
                     }
 
-                    var nugetAction = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject);
+                    var nugetAction = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), buildIntegratedProject, versionRange);
                     nuGetProjectActions = new[] { nugetAction };
                     nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath] = nuGetProjectActions;
                 }
@@ -2913,7 +2930,7 @@ namespace NuGet.PackageManagement
                     {
                         if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                         {
-                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, action.VersionRange, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
                         }
                         else
                         {
