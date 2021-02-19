@@ -119,7 +119,7 @@ namespace NuGet.Options
             resources.ApplyResources(this.BrowseButton, "BrowseButton");
             this.BrowseButton.Name = "BrowseButton";
             this.BrowseButton.UseVisualStyleBackColor = true;
-            this.BrowseButton.Click += OnBrowseButtonClicked;
+            this.BrowseButton.Click += new System.EventHandler(this.OnBrowseButtonClicked);
             // 
             // NewPackageSourceLabel
             // 

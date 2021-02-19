@@ -51,11 +51,17 @@ namespace NuGet.PackageManagement.VisualStudio
             _closeCallback = closeCallback;
             if (page == OptionsPage.General)
             {
-                ShowOptionsPage(_generalGUID);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_generalGUID);
+                });
             }
             else if (page == OptionsPage.PackageSources)
             {
-                ShowOptionsPage(_packageSourcesGUID);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_packageSourcesGUID);
+                });
             }
             else
             {
@@ -63,23 +69,19 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private void ShowOptionsPage(string optionsPageGuid)
+        private async System.Threading.Tasks.Task ShowOptionsPageAsync(string optionsPageGuid)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             object targetGuid = optionsPageGuid;
             var toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                IVsUIShell vsUIShell = await _vsUIShell.GetValueAsync();
-                vsUIShell.PostExecCommand(
-                    ref toolsGroupGuid,
-                    (uint)VSConstants.cmdidToolsOptions,
-                    (uint)0,
-                    ref targetGuid);
-
-            });
+            IVsUIShell vsUIShell = await _vsUIShell.GetValueAsync();
+            vsUIShell.PostExecCommand(
+                ref toolsGroupGuid,
+                (uint)VSConstants.cmdidToolsOptions,
+                (uint)0,
+                ref targetGuid);
         }
     }
 }

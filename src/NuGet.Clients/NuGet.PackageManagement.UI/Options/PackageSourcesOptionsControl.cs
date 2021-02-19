@@ -610,8 +610,6 @@ namespace NuGet.Options
 
         private void OnBrowseButtonClicked(object sender, EventArgs args)
         {
-            BrowseButton.Click -= OnBrowseButtonClicked;
-
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await OnBrowseButtonClickedAsync();
