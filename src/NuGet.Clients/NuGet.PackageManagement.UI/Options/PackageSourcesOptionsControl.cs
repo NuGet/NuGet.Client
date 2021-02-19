@@ -23,6 +23,7 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.Options
 {
@@ -38,18 +39,18 @@ namespace NuGet.Options
     {
         private BindingSource _packageSources;
         private BindingSource _machineWidepackageSources;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private bool _initialized;
         private IReadOnlyList<PackageSourceContextInfo> _originalPackageSources;
 #pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
         private INuGetSourcesService _nugetSourcesService; // Store proxy object in case the dialog is up and we lose connection we wont grab the local proxy and try to save to that
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
 
-        public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
+        public PackageSourcesOptionsControl(IAsyncServiceProvider asyncServiceProvider)
         {
             InitializeComponent();
 
-            _serviceProvider = serviceProvider;
+            _asyncServiceProvider = asyncServiceProvider;
 
             SetupEventHandlers();
 
@@ -607,7 +608,17 @@ namespace NuGet.Options
             }
         }
 
-        private void OnBrowseButtonClicked(object sender, EventArgs e)
+        private void OnBrowseButtonClicked(object sender, EventArgs args)
+        {
+            BrowseButton.Click -= OnBrowseButtonClicked;
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await OnBrowseButtonClickedAsync();
+            });
+        }
+
+        private async Task OnBrowseButtonClickedAsync()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -616,7 +627,7 @@ namespace NuGet.Options
             //const int BIF_RETURNONLYFSDIRS = 0x00000001;   // For finding a folder to start document searching.
             const int BIF_BROWSEINCLUDEURLS = 0x00000080; // Allow URLs to be displayed or entered.
 
-            var uiShell = (IVsUIShell2)_serviceProvider.GetService(typeof(SVsUIShell));
+            var uiShell = (IVsUIShell2)(await _asyncServiceProvider.GetServiceAsync(typeof(SVsUIShell)));
             Assumes.Present(uiShell);
             var rgch = new char[MaxDirectoryLength + 1];
 

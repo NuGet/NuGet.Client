@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 namespace NuGet.Options
 {
     partial class PackageSourcesOptionsControl
@@ -119,7 +119,7 @@ namespace NuGet.Options
             resources.ApplyResources(this.BrowseButton, "BrowseButton");
             this.BrowseButton.Name = "BrowseButton";
             this.BrowseButton.UseVisualStyleBackColor = true;
-            this.BrowseButton.Click += new System.EventHandler(this.OnBrowseButtonClicked);
+            this.BrowseButton.Click += OnBrowseButtonClicked;
             // 
             // NewPackageSourceLabel
             // 
