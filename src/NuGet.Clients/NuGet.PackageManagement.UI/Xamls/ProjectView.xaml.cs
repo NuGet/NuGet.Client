@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -48,8 +46,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        //protected TextBox EditableTextBox =>_versions.GetTemplateChild("PART_EditableTextBox") as TextBox;
-
         private void VersionsKeyUp(object sender, KeyEventArgs e)
         {
             switch (e.Key)
@@ -59,31 +55,43 @@ namespace NuGet.PackageManagement.UI
                     break;
                 default:
                     var model = (DetailControlModel)DataContext;
-                    var userInput = _versions.Text;
+                    string userInput = _versions.Text;
+                    model.UserInput = userInput;
 
-                    TextBox textBox1 = _versions.Template.FindName("PART_EditableTextBox", _versions) as TextBox;
-
-                    var isInputValid = VersionRange.TryParse(userInput, true, out VersionRange versionRange);
-                    CollectionView itemsViewOriginal = CollectionViewSource.GetDefaultView(_versions.ItemsSource) as CollectionView;
-                    itemsViewOriginal.Filter = ((o) =>
+                    bool isInputValid = VersionRange.TryParse(userInput, true, out VersionRange versionRange);
+                    if (!isInputValid)
                     {
-                        if (String.IsNullOrEmpty(_versions.Text)) return true;
-                        if (userInput.Length == 0 && userInput.Equals("*", StringComparison.OrdinalIgnoreCase)) return true;
+                        break;
+                    }
+
+                    var textBox1 = _versions.Template.FindName("PART_EditableTextBox", _versions) as TextBox;
+
+                    CollectionView itemsViewOriginal = CollectionViewSource.GetDefaultView(_versions.ItemsSource) as CollectionView;
+                    itemsViewOriginal.Filter = ((obj) =>
+                    {
+                        //No text input, so show all versions.
+                        if (string.IsNullOrEmpty(_versions.Text))
+                        {
+                            return true;
+                        }
+
+                        if (obj != null && (obj.ToString()).StartsWith(Regex.Replace(_versions.Text, @"[\*]", ""), StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
                         else
                         {
-                            if (o != null && (o.ToString()).StartsWith(Regex.Replace(_versions.Text, @"[\*]", ""), StringComparison.OrdinalIgnoreCase)) return true;
-                            else return false;
+                            return false;
                         }
                     });
-                    model.UserInput = userInput;
-                    textBox1.SelectionStart = userInput.Length;
 
-                    if (userInput == "")
+                    if (string.IsNullOrEmpty(userInput))
                     {
                         itemsViewOriginal.Refresh();
                         model.UserInput = userInput;
-                        textBox1.SelectionStart = userInput.Length;
                     }
+
+                    textBox1.SelectionStart = userInput.Length;
                     break;
             }
         }
@@ -97,20 +105,18 @@ namespace NuGet.PackageManagement.UI
 
         private void InstallButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var model = DataContext as PackageDetailControlModel;
+            var model = (PackageDetailControlModel)DataContext;
 
-            if(model.SelectedVersion == null || model.SelectedVersion.Range.OriginalString != _versions.Text)
+            if (model.SelectedVersion == null || model.SelectedVersion.Range.OriginalString != _versions.Text)
             {
-                var IsValid = VersionRange.TryParse(_versions.Text, out VersionRange versionRange);
+                bool IsValid = VersionRange.TryParse(_versions.Text, out VersionRange versionRange);
                 if (IsValid)
                 {
-                    model.SelectedVersion = new DisplayVersion(VersionRange.Parse(_versions.Text, true), additionalInfo: null);
+                    model.SelectedVersion = new DisplayVersion(versionRange, additionalInfo: null);
                 }
             }
-            if (InstallButtonClicked != null)
-            {
-                InstallButtonClicked(this, EventArgs.Empty);
-            }
+
+            InstallButtonClicked?.Invoke(this, EventArgs.Empty);
         }
     }
 }

@@ -404,7 +404,7 @@
         KeyUp="VersionsKeyUp"
         IsTextSearchEnabled="False"
         IsDropDownOpen="True"
-        GotFocus="Start_Combobox"
+        GotFocus="OpenComboBox"
         StaysOpenOnEdit="True"
         Text="{Binding UserInput, Mode=TwoWay}"
         SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
