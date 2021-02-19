@@ -42,7 +42,7 @@ namespace NuGet.Commands
         private const string ErrorCodes = "ErrorCodes";
         private const string WarningCodes = "WarningCodes";
         private const string RestoreSuccess = "RestoreSuccess";
-        private const string FullPath = nameof(FullPath);
+        private const string ProjectFilePath = nameof(ProjectFilePath);
 
         // names for child events for ProjectRestoreInformation
         private const string GenerateRestoreGraph = "GenerateRestoreGraph";
@@ -108,7 +108,7 @@ namespace NuGet.Commands
         {
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
-                telemetry.TelemetryEvent.AddPiiData(FullPath, _request.Project.FilePath);
+                telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
 
                 _operationId = telemetry.OperationId;
 

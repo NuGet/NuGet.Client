@@ -6177,15 +6177,9 @@ namespace NuGet.Test
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
 
-                Assert.True(telemetryEvents
-                    .Where(p => p.Name == "ProjectRestoreInformation")
-                    .SelectMany(x => x.GetPiiData())
-                    .Where(x => x.Key == "FullPath")
-                    .All(p =>
-                    {
-                        var fp = (string)p.Value;
-                        return File.Exists(fp) && (fp.EndsWith(".csproj") || fp.EndsWith("project.json") || fp.EndsWith("proj"));
-                    }));
+                var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
+                Assert.Equal(2, projectFilePaths.Count());
+                Assert.True(projectFilePaths.All(p => p.Value is string y && File.Exists(y) && (y.EndsWith(".csproj") || y.EndsWith("project.json") || y.EndsWith("proj"))));
             }
         }
 
@@ -6258,15 +6252,9 @@ namespace NuGet.Test
                     .Where(p => p.Name == "ProjectRestoreInformation").
                     Last()["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
 
-                Assert.True(telemetryEvents
-                     .Where(p => p.Name == "ProjectRestoreInformation")
-                     .SelectMany(x => x.GetPiiData())
-                     .Where(x => x.Key == "FullPath")
-                     .All(p =>
-                     {
-                         var fp = (string)p.Value;
-                         return File.Exists(fp) && (fp.EndsWith(".csproj") || fp.EndsWith("project.json") || fp.EndsWith("proj"));
-                     }));
+                var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
+                Assert.Equal(2, projectFilePaths.Count());
+                Assert.True(projectFilePaths.All(p => p.Value is string y && File.Exists(y) && (y.EndsWith(".csproj") || y.EndsWith("project.json") || y.EndsWith("proj"))));
             }
         }
 
@@ -6342,15 +6330,9 @@ namespace NuGet.Test
                     .Where(p => p.Name == "ProjectRestoreInformation").
                     Last()["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
 
-                Assert.True(telemetryEvents
-                    .Where(p => p.Name == "ProjectRestoreInformation")
-                    .SelectMany(x => x.GetPiiData())
-                    .Where(x => x.Key == "FullPath")
-                    .All(p =>
-                    {
-                        var fp = (string)p.Value;
-                        return File.Exists(fp) && (fp.EndsWith(".csproj") || fp.EndsWith("project.json") || fp.EndsWith("proj"));
-                    }));
+                var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
+                Assert.Equal(2, projectFilePaths.Count());
+                Assert.True(projectFilePaths.All(p => p.Value is string y && File.Exists(y) && (y.EndsWith(".csproj") || y.EndsWith("project.json") || y.EndsWith("proj"))));
             }
         }
 
@@ -6434,6 +6416,11 @@ namespace NuGet.Test
                 Assert.True((string)telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation").
                     Last()["WarningCodes"] == NuGetLogCode.NU1603.ToString());
+
+                var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
+                Assert.Equal(2, projectFilePaths.Count());
+                Assert.True(projectFilePaths.All(p => p.Value is string y && File.Exists(y) && (y.EndsWith(".csproj") || y.EndsWith("project.json") || y.EndsWith("proj"))));
+
             }
         }
 
@@ -6508,6 +6495,10 @@ namespace NuGet.Test
                 Assert.True((string)telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation").
                     Last()["WarningCodes"] == NuGetLogCode.NU1603.ToString());
+
+                var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
+                Assert.Equal(2, projectFilePaths.Count());
+                Assert.True(projectFilePaths.All(p => p.Value is string y && File.Exists(y) && (y.EndsWith(".csproj") || y.EndsWith("project.json") || y.EndsWith("proj"))));
             }
         }
 
@@ -6630,18 +6621,6 @@ namespace NuGet.Test
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                      Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
-
-                Assert.True(telemetryEvents
-                    .Where(p => p.Name == "ProjectRestoreInformation")
-                    .All(p =>
-                    {
-                        if (p["FullPath"] == null)
-                        {
-                            return false;
-                        }
-                        var fp = (string)p["FullPath"];
-                        return File.Exists(fp) && (fp.EndsWith(".csproj") || fp.EndsWith("project.json") || fp.EndsWith("proj"));
-                    }));
             }
         }
 
@@ -6719,15 +6698,9 @@ namespace NuGet.Test
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
 
-                Assert.True(telemetryEvents
-                     .Where(p => p.Name == "ProjectRestoreInformation")
-                     .SelectMany(x => x.GetPiiData())
-                     .Where(x => x.Key == "FullPath")
-                     .All(p =>
-                     {
-                         var fp = (string)p.Value;
-                         return File.Exists(fp) && (fp.EndsWith(".csproj") || fp.EndsWith("project.json") || fp.EndsWith("proj"));
-                     }));
+                var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
+                Assert.Equal(2, projectFilePaths.Count());
+                Assert.True(projectFilePaths.All(p => p.Value is string y && File.Exists(y) && (y.EndsWith(".csproj") || y.EndsWith("project.json") || y.EndsWith("proj"))));
             }
         }
 #endif

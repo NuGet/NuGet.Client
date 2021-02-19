@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.Telemetry
             string projectId,
             NuGetProjectType nuGetProjectType,
             bool isPRUpgradable,
-            string fullPath) :
+            string projectFilePath) :
             base(ProjectInformationEventName, new Dictionary<string, object>
                 {
                     { nameof(NuGetProjectType), nuGetProjectType },
@@ -34,17 +34,17 @@ namespace NuGet.PackageManagement.Telemetry
                 throw new ArgumentNullException(nameof(projectId));
             }
 
-            if (fullPath == null)
+            if (projectFilePath == null)
             {
-                throw new ArgumentNullException(nameof(fullPath));
+                throw new ArgumentNullException(nameof(projectFilePath));
             }
 
-            AddPiiData(FullPath, fullPath);
+            AddPiiData(ProjectFilePath, projectFilePath);
         }
 
         public const string ProjectInformationEventName = "ProjectInformation";
         public const string IsPRUpgradable = "IsPRUpgradable";
-        public const string FullPath = nameof(FullPath);
+        public const string ProjectFilePath = nameof(ProjectFilePath);
 
         /// <summary>
         /// The version of NuGet that emitted this event.
