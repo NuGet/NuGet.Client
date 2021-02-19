@@ -473,7 +473,7 @@ namespace NuGetConsole.Implementation
                 {
                     if (WpfConsole.Dispatcher.IsStartCompleted)
                     {
-                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                        NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
                             await OnDispatcherStartCompletedAsync();
                         });
@@ -485,15 +485,7 @@ namespace NuGetConsole.Implementation
                     }
                     else
                     {
-                        WpfConsole.Dispatcher.StartCompleted += (sender, args) =>
-                        {
-                            // The outer delegate is synchronous, but kicks off async work via a method that accepts an async delegate.
-                            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                            {
-                                await OnDispatcherStartCompletedAsync();
-                            });
-                        };
-
+                        WpfConsole.Dispatcher.StartCompleted += OnDispatcherStartCompleted;
                         WpfConsole.Dispatcher.StartWaitingKey += OnDispatcherStartWaitingKey;
                         WpfConsole.Dispatcher.Start();
                     }
@@ -518,6 +510,16 @@ namespace NuGetConsole.Implementation
             WpfConsole.Dispatcher.StartWaitingKey -= OnDispatcherStartWaitingKey;
             // we want to hide the text "initialize host..." when waiting for key input
             ConsoleParentPane.NotifyInitializationCompleted();
+        }
+
+        private void OnDispatcherStartCompleted(object sender, EventArgs args)
+        {
+            WpfConsole.Dispatcher.StartCompleted -= OnDispatcherStartCompleted;
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await OnDispatcherStartCompletedAsync();
+            });
         }
 
         private async Task OnDispatcherStartCompletedAsync()
