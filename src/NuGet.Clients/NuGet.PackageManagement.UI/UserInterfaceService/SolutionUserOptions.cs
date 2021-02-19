@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -22,25 +21,16 @@ namespace NuGet.PackageManagement.UI
     {
         private const string NuGetOptionsStreamKey = "nuget";
 
+        private readonly IServiceProvider _serviceProvider;
         private readonly NuGetSettingsSerializer _serializer;
         private NuGetSettings _settings = new NuGetSettings();
 
-        private IVsUIShell IVsUIShell
-        {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetIVsUIShellAsync);
-            }
-        }
-
-        private async Task<IVsUIShell> GetIVsUIShellAsync()
-        {
-            return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
-        }
-
         [ImportingConstructor]
-        public SolutionUserOptions()
+        public SolutionUserOptions(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _serializer = new NuGetSettingsSerializer();
         }
 
@@ -64,7 +54,8 @@ namespace NuGet.PackageManagement.UI
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (var windowFrame in VsUtility.GetDocumentWindows(IVsUIShell))
+            var uiShell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
+            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                 packageManagerControl?.ApplyShowDeprecatedFrameworkSetting(show);
@@ -75,7 +66,8 @@ namespace NuGet.PackageManagement.UI
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (var windowFrame in VsUtility.GetDocumentWindows(IVsUIShell))
+            var uiShell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
+            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                 packageManagerControl?.ApplyShowPreviewSetting(show);
