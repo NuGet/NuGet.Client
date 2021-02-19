@@ -69,12 +69,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var fullPath = lastTelemetryEvent
                 .GetPiiData()
-                .Where(kv => kv.Key == nameof(ProjectTelemetryEvent.FullPath))
+                .Where(kv => kv.Key == ProjectTelemetryEvent.FullPath)
                 .First()
                 .Value;
             Assert.NotNull(fullPath);
             Assert.IsType<string>(fullPath);
-            Assert.Equal(projectInformation.FullPath, fullPath);
         }
 
         [Theory]

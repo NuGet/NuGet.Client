@@ -39,11 +39,12 @@ namespace NuGet.PackageManagement.Telemetry
                 throw new ArgumentNullException(nameof(fullPath));
             }
 
-            AddPiiData(nameof(FullPath), fullPath);
+            AddPiiData(FullPath, fullPath);
         }
 
         public const string ProjectInformationEventName = "ProjectInformation";
         public const string IsPRUpgradable = "IsPRUpgradable";
+        public const string FullPath = nameof(FullPath);
 
         /// <summary>
         /// The version of NuGet that emitted this event.
@@ -64,7 +65,5 @@ namespace NuGet.PackageManagement.Telemetry
         /// True, if project can be upgraded to PackageReference.
         /// </summary>
         public bool IsProjectPRUpgradable => (bool)base[IsPRUpgradable];
-
-        public string FullPath => (string)GetPiiData().Where(kv => kv.Key == nameof(FullPath)).First().Value;
     }
 }
