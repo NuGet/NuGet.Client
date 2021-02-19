@@ -15,23 +15,20 @@ namespace NuGet.PackageManagement.VisualStudio
     internal sealed class VsSourceControlManagerProvider : ISourceControlManagerProvider
     {
         private const string TfsProviderName = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
-
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly Configuration.ISettings _settings;
-        private readonly Lazy<EnvDTE.DTE> _dte;
 
         [ImportingConstructor]
         public VsSourceControlManagerProvider(
             [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
+            IAsyncServiceProvider asyncServiceProvider,
             Configuration.ISettings vsSettings)
         {
-            Assumes.Present(serviceProvider);
+            Assumes.NotNull(asyncServiceProvider);
+            _asyncServiceProvider = asyncServiceProvider;
             Assumes.Present(vsSettings);
 
             _settings = vsSettings;
-
-            _dte = new Lazy<EnvDTE.DTE>(
-                () => serviceProvider.GetDTE());
         }
 
         public SourceControlManager GetSourceControlManager()
@@ -39,17 +36,18 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                EnvDTE.DTE dte = await _asyncServiceProvider.GetDTEAsync();
 
-                if (_dte.Value.SourceControl != null)
+                if (dte.SourceControl != null)
                 {
-                    var sourceControl = (SourceControl2)_dte.Value.SourceControl;
+                    var sourceControl = (SourceControl2)dte.SourceControl;
                     if (sourceControl != null)
                     {
                         SourceControlBindings sourceControlBindings = null;
                         try
                         {
                             // Get the binding for this solution
-                            sourceControlBindings = sourceControl.GetBindings(_dte.Value.Solution.FullName);
+                            sourceControlBindings = sourceControl.GetBindings(dte.Solution.FullName);
                         }
                         catch (NotImplementedException)
                         {

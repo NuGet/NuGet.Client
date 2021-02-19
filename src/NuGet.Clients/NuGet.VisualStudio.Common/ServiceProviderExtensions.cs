@@ -14,14 +14,6 @@ namespace NuGet.VisualStudio
     /// </summary>
     public static class ServiceProviderExtensions
     {
-        public static EnvDTE.DTE GetDTE(this IServiceProvider serviceProvider)
-        {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<EnvDTE.DTE>();
-            });
-        }
-
         public static Task<EnvDTE.DTE> GetDTEAsync(
             this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
         {

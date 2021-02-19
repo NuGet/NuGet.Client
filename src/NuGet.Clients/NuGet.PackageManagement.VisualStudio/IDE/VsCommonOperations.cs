@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -14,43 +15,33 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ICommonOperations))]
     internal sealed class VsCommonOperations : ICommonOperations
     {
-        private readonly Lazy<EnvDTE.DTE> _dte;
         private IDictionary<string, ISet<VsHierarchyItem>> _expandedNodes;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
 
         [ImportingConstructor]
         public VsCommonOperations(
             [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider)
+            IAsyncServiceProvider asyncServiceProvider)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            _dte = new Lazy<EnvDTE.DTE>(
-                () => serviceProvider.GetDTE());
+            Assumes.NotNull(asyncServiceProvider);
+            _asyncServiceProvider = asyncServiceProvider;
         }
 
-        public Task OpenFile(string fullPath)
+        public async Task OpenFile(string fullPath)
         {
             if (fullPath == null)
             {
                 throw new ArgumentNullException(nameof(fullPath));
             }
 
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            EnvDTE.DTE dte = await _asyncServiceProvider.GetDTEAsync();
 
-                    if (_dte.Value.ItemOperations != null
-                        && File.Exists(fullPath))
-                    {
-                        var window = _dte.Value.ItemOperations.OpenFile(fullPath);
-                        return Task.FromResult(0);
-                    }
-
-                    return Task.CompletedTask;
-                });
+            if (dte.ItemOperations != null
+                && File.Exists(fullPath))
+            {
+                dte.ItemOperations.OpenFile(fullPath);
+            }
         }
 
         public Task SaveSolutionExplorerNodeStates(ISolutionManager solutionManager)
