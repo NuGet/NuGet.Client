@@ -2043,9 +2043,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                var expected = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration>");
+                var expected = SettingsTestUtils.RemoveWhitespace(config);
 
                 actual.Should().Be(expected);
             }
@@ -2076,9 +2074,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                var expected = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration>");
+                var expected = SettingsTestUtils.RemoveWhitespace(config);
 
                 actual.Should().Be(expected);
             }

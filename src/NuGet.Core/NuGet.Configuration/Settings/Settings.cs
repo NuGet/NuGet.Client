@@ -549,7 +549,7 @@ namespace NuGet.Configuration
 
                 var defaultSettingsFilePathExistsPreviously = File.Exists(defaultSettingsFilePath);
 
-                // If the default user config NuGet.Config does not exist, we need to create an empty one.
+                // ReadSettings will try to create the config file if it doesn't exist, which is why we should check if it exists again afterwards
                 SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
 
                 if (!defaultSettingsFilePathExistsPreviously && File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
