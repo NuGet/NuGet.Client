@@ -23,6 +23,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
@@ -399,6 +400,19 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken)
         {
+            return await GetInstallActionsAsync(projectIds, packageIdentity, versionConstraints, includePrelease, dependencyBehavior, packageSourceNames, cancellationToken, versionRange: null);
+        }
+
+        public async ValueTask<IReadOnlyList<ProjectAction>> GetInstallActionsAsync(
+            IReadOnlyCollection<string> projectIds,
+            PackageIdentity packageIdentity,
+            VersionConstraints versionConstraints,
+            bool includePrelease,
+            DependencyBehavior dependencyBehavior,
+            IReadOnlyList<string> packageSourceNames,
+            CancellationToken cancellationToken,
+            VersionRange? versionRange)
+        {
             Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
             Assumes.NotNullOrEmpty(packageSourceNames);
@@ -436,7 +450,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     resolutionContext,
                     projectContext,
                     sourceRepositories,
-                    cancellationToken);
+                    cancellationToken,
+                    versionRange);
 
                 var projectActions = new List<ProjectAction>();
 

@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public NuGetProject Project { get; private set; }
 
-        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository)
+        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository = null)
         {
             if (packageIdentity == null)
             {
