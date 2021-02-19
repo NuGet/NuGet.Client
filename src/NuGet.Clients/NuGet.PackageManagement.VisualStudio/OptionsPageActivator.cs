@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -69,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private async System.Threading.Tasks.Task ShowOptionsPageAsync(string optionsPageGuid)
+        private async Task ShowOptionsPageAsync(string optionsPageGuid)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
