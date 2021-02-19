@@ -22,8 +22,8 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
-using Task = System.Threading.Tasks.Task;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.Options
 {
