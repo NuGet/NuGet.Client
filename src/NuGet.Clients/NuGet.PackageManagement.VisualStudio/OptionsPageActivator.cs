@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -55,14 +56,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     await ShowOptionsPageAsync(_generalGUID);
-                });
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
             else if (page == OptionsPage.PackageSources)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     await ShowOptionsPageAsync(_packageSourcesGUID);
-                });
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
             else
             {
@@ -76,7 +77,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             object targetGuid = optionsPageGuid;
             var toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;
-
             IVsUIShell vsUIShell = await _vsUIShell.GetValueAsync();
             vsUIShell.PostExecCommand(
                 ref toolsGroupGuid,

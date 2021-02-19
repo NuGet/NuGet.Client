@@ -22,6 +22,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -613,7 +614,7 @@ namespace NuGet.Options
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await OnBrowseButtonClickedAsync();
-            });
+            }).PostOnFailure(nameof(PackageSourcesOptionsControl), nameof(OnBrowseButtonClicked));
         }
 
         private async Task OnBrowseButtonClickedAsync()

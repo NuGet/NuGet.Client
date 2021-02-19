@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using NuGetConsole.Implementation.Console;
 using NuGetConsole.Implementation.PowerConsole;
 using Task = System.Threading.Tasks.Task;
@@ -519,7 +520,7 @@ namespace NuGetConsole.Implementation
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await OnDispatcherStartCompletedAsync();
-            });
+            }).PostOnFailure(nameof(PowerConsoleToolWindow), nameof(OnDispatcherStartCompleted));
         }
 
         private async Task OnDispatcherStartCompletedAsync()
