@@ -290,7 +290,7 @@ namespace NuGet.VisualStudio
 
         private async Task RunDesignTimeBuildAsync(Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var solution = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsSolution>() as IVsSolution;
 

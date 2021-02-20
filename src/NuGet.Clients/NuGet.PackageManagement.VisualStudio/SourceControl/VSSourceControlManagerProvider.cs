@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -17,6 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string TfsProviderName = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
         private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly Configuration.ISettings _settings;
+        private readonly AsyncLazy<EnvDTE.DTE> _dte;
 
         [ImportingConstructor]
         public VsSourceControlManagerProvider(
@@ -29,6 +31,10 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsSettings);
 
             _settings = vsSettings;
+            _dte = new AsyncLazy<EnvDTE.DTE>(async () =>
+            {
+                return await asyncServiceProvider.GetDTEAsync();
+            }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public SourceControlManager GetSourceControlManager()
@@ -36,9 +42,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                EnvDTE.DTE dte = await _asyncServiceProvider.GetDTEAsync();
+                EnvDTE.DTE dte = await _dte.GetValueAsync();
 
-                if (dte.SourceControl != null)
+                if (dte != null)
                 {
                     var sourceControl = (SourceControl2)dte.SourceControl;
                     if (sourceControl != null)

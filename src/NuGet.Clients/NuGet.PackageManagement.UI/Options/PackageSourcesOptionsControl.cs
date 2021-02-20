@@ -611,15 +611,12 @@ namespace NuGet.Options
 
         private void OnBrowseButtonClicked(object sender, EventArgs args)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                await OnBrowseButtonClickedAsync();
-            }).PostOnFailure(nameof(PackageSourcesOptionsControl), nameof(OnBrowseButtonClicked));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnBrowseButtonClickedAsync).PostOnFailure(nameof(PackageSourcesOptionsControl), nameof(OnBrowseButtonClicked));
         }
 
         private async Task OnBrowseButtonClickedAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             const int MaxDirectoryLength = 1000;
 

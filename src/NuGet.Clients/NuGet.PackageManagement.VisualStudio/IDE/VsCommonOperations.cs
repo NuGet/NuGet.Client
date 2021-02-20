@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -15,6 +16,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ICommonOperations))]
     internal sealed class VsCommonOperations : ICommonOperations
     {
+        private readonly AsyncLazy<EnvDTE.DTE> _dte;
         private IDictionary<string, ISet<VsHierarchyItem>> _expandedNodes;
         private readonly IAsyncServiceProvider _asyncServiceProvider;
 
@@ -25,6 +27,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.NotNull(asyncServiceProvider);
             _asyncServiceProvider = asyncServiceProvider;
+            _dte = new AsyncLazy<EnvDTE.DTE>(async () =>
+            {
+                return await asyncServiceProvider.GetDTEAsync();
+            }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public async Task OpenFile(string fullPath)
@@ -35,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            EnvDTE.DTE dte = await _asyncServiceProvider.GetDTEAsync();
+            EnvDTE.DTE dte = await _dte.GetValueAsync();
 
             if (dte.ItemOperations != null
                 && File.Exists(fullPath))

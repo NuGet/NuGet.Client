@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task ShowOptionsPageAsync(string optionsPageGuid)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             object targetGuid = optionsPageGuid;
             var toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;

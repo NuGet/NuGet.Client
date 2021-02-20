@@ -51,11 +51,6 @@ namespace NuGetConsole.Implementation
             get { return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow; }
         }
 
-        private async Task<IVsUIShell> GetIVsUIShellAsync()
-        {
-            return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
-        }
-
         private bool IsToolbarEnabled
         {
             get
@@ -474,10 +469,7 @@ namespace NuGetConsole.Implementation
                 {
                     if (WpfConsole.Dispatcher.IsStartCompleted)
                     {
-                        NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                        {
-                            await OnDispatcherStartCompletedAsync();
-                        });
+                        NuGetUIThreadHelper.JoinableTaskFactory.Run(OnDispatcherStartCompletedAsync);
 
                         // if the dispatcher was started before we reach here,
                         // it means the dispatcher has been in read-only mode (due to _startedWritingOutput = false).
@@ -532,7 +524,8 @@ namespace NuGetConsole.Implementation
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // force the UI to update the toolbar
-            (await GetIVsUIShellAsync()).UpdateCommandUI(0 /* false = update UI asynchronously */);
+            IVsUIShell vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+            vsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleLoaded);
         }
