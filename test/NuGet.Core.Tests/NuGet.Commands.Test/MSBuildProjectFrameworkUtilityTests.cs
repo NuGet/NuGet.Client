@@ -237,10 +237,6 @@ namespace NuGet.Commands.Test
         [InlineData(".NETCoreApp,Version=v6.0", "UAP,Version=10.0.1.2", "10.0.1.3", "uap10.0.1.3")]
         [InlineData(".NETCoreApp,Version=v3.0", "android,Version=10.0", "", "netcoreapp3.0")]
         [InlineData(".NETCoreApp,Version=v3.0", "android,Version=10.0", "9.0", "netcoreapp3.0")]
-        // Hack scenarios: See https://github.com/NuGet/Home/issues/9913
-        [InlineData(".NETCoreApp,Version=v5.0", " ,Version= ", "", "net5.0")]
-        [InlineData(".NETCoreApp,Version=v5.0", ",Version= ", "", "net5.0")]
-        [InlineData(".NETCoreApp,Version=v5.0", " ,Version=", "", "net5.0")]
         public void GetProjectFramework_WithCanonicalProperties_Succeeds(
                 string targetFrameworkMoniker,
                 string targetPlatformMoniker,

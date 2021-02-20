@@ -148,7 +148,7 @@ namespace NuGet.Frameworks
                 ));
             }
 
-            if (!string.IsNullOrEmpty(targetPlatformMoniker) && isNet5EraTfm && !IgnoreTargetPlatformMoniker(targetPlatformMoniker))
+            if (!string.IsNullOrEmpty(targetPlatformMoniker) && isNet5EraTfm)
             {
                 string targetPlatformIdentifier;
                 Version platformVersion;
@@ -161,15 +161,6 @@ namespace NuGet.Frameworks
             }
 
             return result;
-        }
-
-        private static bool IgnoreTargetPlatformMoniker(string targetPlatformMoniker)
-        {
-            if (targetPlatformMoniker.Trim().Equals(",Version=", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            return false;
         }
 
         private static string[] GetParts(string targetPlatformMoniker)

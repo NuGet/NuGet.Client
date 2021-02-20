@@ -68,10 +68,6 @@ namespace NuGet.Test
         [InlineData("netcoreapp3.1-client", ".NETCoreApp,Version=3.1,Profile=client", null)]
         [InlineData("netcoreapp3.0-client", ".NETCoreApp,Version=v3.0,Profile=client", "Windows,Version=7.0")]
         [InlineData("netcoreapp3.0", ".NETCoreApp,Version=v3.0", "Windows,Version=7.0")]
-        // Hack scenarios: See https://github.com/NuGet/Home/issues/9913
-        [InlineData("net5.0", ".NETCoreApp,Version=5.0", ",Version=")]
-        [InlineData("net5.0", ".NETCoreApp,Version=5.0", " ,Version=")]
-        [InlineData("net5.0", ".NETCoreApp,Version=5.0", " ,Version= ")]
         public void NuGetFramework_ParseToShortName(string expected, string targetFrameworkMoniker, string targetPlatformMoniker)
         {
             // Arrange
@@ -142,10 +138,6 @@ namespace NuGet.Test
         [InlineData(".NETCoreApp,Version=v3.1,Profile=client", "10.15.2.3", ".NETCoreApp,Version=v3.1,Profile=Client")]
         [InlineData(".NETCoreApp,Version=v3.1,Profile=client", null, ".NETCoreApp,Version=v3.1,Profile=Client")]
         [InlineData(".NETCoreApp,Version=v3.0,Profile=client", "Windows,Version=7.0", ".NETCoreApp,Version=v3.0,Profile=Client")]
-        // Hack scenarios: See https://github.com/NuGet/Home/issues/9913
-        [InlineData(".NETCoreApp,Version=5.0", ",Version=", ".NETCoreApp,Version=v5.0")]
-        [InlineData(".NETCoreApp,Version=5.0", " ,Version=", ".NETCoreApp,Version=v5.0")]
-        [InlineData(".NETCoreApp,Version=5.0", " ,Version= ", ".NETCoreApp,Version=v5.0")]
         public void NuGetFramework_Basic(string targetFrameworkMoniker, string targetPlatformMoniker, string fullName)
         {
             string output = NuGetFramework.ParseComponents(targetFrameworkMoniker, targetPlatformMoniker).DotNetFrameworkName;
