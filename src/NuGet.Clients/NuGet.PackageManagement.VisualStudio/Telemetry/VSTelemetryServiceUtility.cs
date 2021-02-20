@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.Telemetry
             {
                 throw new ArgumentNullException(nameof(nuGetProject));
             }
-            string projectUniqueName = "";
+            string projectUniqueName = string.Empty;
             ProjectTelemetryEvent returnValue = null;
 
             try
