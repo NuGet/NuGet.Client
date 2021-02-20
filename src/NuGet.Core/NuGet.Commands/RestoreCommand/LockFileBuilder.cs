@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
@@ -298,11 +297,6 @@ namespace NuGet.Commands
                     var first = item.First();
                     var second = item.Last();
 
-                    if (first.Type == second.Type)
-                    {
-                        throw new Exception($"Duplicate conflicting references detected for {first.Name} {first.Version}");
-                    }
-
                     // Prefer project reference over package reference, so remove the the package reference.
                     libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
                 }
@@ -325,11 +319,6 @@ namespace NuGet.Commands
                 {
                     var first = item.First();
                     var second = item.Last();
-
-                    if (first.Type == second.Type)
-                    {
-                        throw new Exception($"Duplicate conflicting references detected for {first.Name} {first.Version}");
-                    }
 
                     // Prefer project reference over package reference, so remove the the package reference.
                     libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
