@@ -67,13 +67,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.IsType<bool>(isPRUpgradable);
             Assert.Equal(projectInformation.IsProjectPRUpgradable, isPRUpgradable);
 
-            var fullPath = lastTelemetryEvent
+            var projectFilePath = lastTelemetryEvent
                 .GetPiiData()
                 .Where(kv => kv.Key == ProjectTelemetryEvent.ProjectFilePath)
                 .First()
                 .Value;
-            Assert.NotNull(fullPath);
-            Assert.IsType<string>(fullPath);
+            Assert.IsType<string>(projectFilePath);
+            Assert.True(!string.IsNullOrEmpty((string)projectFilePath));
         }
 
         [Theory]
