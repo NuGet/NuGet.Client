@@ -562,7 +562,7 @@ namespace NuGet.Commands
                     // check if lock file is out of sync with project data
                     lockFileTelemetry.StartIntervalMeasure();
 
-                    LockFileValidationResult lockFileResult = PackagesLockFileUtilities.IsLockFileStillValid(_request.DependencyGraphSpec, packagesLockFile);
+                    LockFileValidationResult lockFileResult = PackagesLockFileUtilities.IsLockFileValid(_request.DependencyGraphSpec, packagesLockFile);
                     isLockFileValid = lockFileResult.IsValid;
 
                     lockFileTelemetry.EndIntervalMeasure(ValidateLockFileDuration);

@@ -56,6 +56,12 @@ namespace NuGet.ProjectModel
             return Path.Combine(baseDirectory, PackagesLockFileFormat.LockFileName);
         }
 
+        [Obsolete("Use IsLockFileValid instead.")]
+        public static bool IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
+        {
+            return IsLockFileValid(dgSpec, nuGetLockFile).IsValid;
+        }
+
         /// <summary>
         /// The lock file will get invalidated if one or more of the below are true
         ///     1. The target frameworks list of the current project was updated.
@@ -69,7 +75,7 @@ namespace NuGet.ProjectModel
         /// <param name="nuGetLockFile">The current <see cref="PackagesLockFile"/>.</param>
         /// <returns>Returns LockFileValidityWithInvalidReasons object with IsValid set to true if the lock file is valid false otherwise.
         /// The second return type is a localized message that indicates in further detail the reason for the inconsistency.</returns>
-        public static LockFileValidationResult IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
+        public static LockFileValidationResult IsLockFileValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
         {
             if (dgSpec == null)
                 throw new ArgumentNullException(nameof(dgSpec));
