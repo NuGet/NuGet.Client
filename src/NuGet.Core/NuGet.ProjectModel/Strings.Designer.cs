@@ -160,6 +160,15 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        internal static string None {
+            get {
+                return ResourceManager.GetString("None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Central package management file(s) doesn&apos;t contain version range for {0} package which is specified as CentralTransitive dependency in the lock file..
         /// </summary>
         internal static string PackagesLockFile_CentralPackageVersionRemoved {
@@ -192,15 +201,6 @@ namespace NuGet.ProjectModel {
         internal static string PackagesLockFile_NewTargetFramework {
             get {
                 return ResourceManager.GetString("PackagesLockFile_NewTargetFramework", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to None.
-        /// </summary>
-        internal static string PackagesLockFile_None {
-            get {
-                return ResourceManager.GetString("PackagesLockFile_None", resourceCulture);
             }
         }
         

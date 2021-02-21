@@ -399,8 +399,8 @@ namespace NuGet.ProjectModel
                                CultureInfo.CurrentCulture,
                                Strings.PackagesLockFile_PackageReferencesHaveChanged,
                                nuGetFramework.GetShortFolderName(),
-                               lockFileDependenciesCount > 0 ? string.Join(", ", lockFileDependencies.Select(e => e.Id + ":" + e.RequestedVersion.ToNormalizedString())) : Strings.PackagesLockFile_None,
-                               newPackageDependenciesCount > 0 ? string.Join(", ", newPackageDependencies.Select(e => e.LibraryRange.Name + ":" + e.LibraryRange.VersionRange.ToNormalizedString())) : Strings.PackagesLockFile_None)
+                               lockFileDependenciesCount > 0 ? string.Join(", ", lockFileDependencies.Select(e => e.Id + ":" + e.RequestedVersion.ToNormalizedString()).OrderBy(dep => dep)) : Strings.None,
+                               newPackageDependenciesCount > 0 ? string.Join(", ", newPackageDependencies.Select(e => e.LibraryRange.Name + ":" + e.LibraryRange.VersionRange.ToNormalizedString()).OrderBy(dep => dep)) : Strings.None)
                            );
             }
 
@@ -455,8 +455,8 @@ namespace NuGet.ProjectModel
                             CultureInfo.CurrentCulture,
                             Strings.PackagesLockFile_ProjectReferencesHasChange,
                             projectDependency.Id,
-                            transitiveDependencies > 0 ? string.Join(",", transitivelyFlowingDependencies.Select(dep => dep.Name).Concat(projectRestoreReferences.Select(dep => dep.ProjectUniqueName))) : Strings.PackagesLockFile_None,
-                            projectDependency.Dependencies.Count > 0 ? string.Join(",", projectDependency.Dependencies.Select(dep => dep.Id)) : Strings.PackagesLockFile_None
+                            transitiveDependencies > 0 ? string.Join(",", transitivelyFlowingDependencies.Select(dep => dep.Name).Concat(projectRestoreReferences.Select(dep => dep.ProjectUniqueName)).OrderBy(dep => dep)) : Strings.None,
+                            projectDependency.Dependencies.Count > 0 ? string.Join(",", projectDependency.Dependencies.Select(dep => dep.Id).OrderBy(dep => dep)) : Strings.None
                             )
                         );
             }

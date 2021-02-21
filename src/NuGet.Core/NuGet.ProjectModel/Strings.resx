@@ -152,6 +152,9 @@
   <data name="MissingVersionOnTool" xml:space="preserve">
     <value>Tools must specify a version range.</value>
   </data>
+  <data name="None" xml:space="preserve">
+    <value>None</value>
+  </data>
   <data name="PackagesLockFile_CentralPackageVersionRemoved" xml:space="preserve">
     <value>Central package management file(s) doesn't contain version range for {0} package which is specified as CentralTransitive dependency in the lock file.</value>
   </data>
@@ -165,9 +168,6 @@
   <data name="PackagesLockFile_NewTargetFramework" xml:space="preserve">
     <value>The project target framework {0} was not found in the lock file.</value>
     <comment>0 - project target framework</comment>
-  </data>
-  <data name="PackagesLockFile_None" xml:space="preserve">
-    <value>None</value>
   </data>
   <data name="PackagesLockFile_PackageReferenceAdded" xml:space="preserve">
     <value>A new package reference was found {0} for the project target framework {1}.</value>

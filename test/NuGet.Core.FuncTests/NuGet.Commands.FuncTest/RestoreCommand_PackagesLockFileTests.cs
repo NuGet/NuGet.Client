@@ -511,7 +511,7 @@ namespace NuGet.Commands.FuncTest
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"The project reference intermediateproject has changed. Current dependencies: b,LeafProject1,LeaftProject2 lock file's dependencies: LeafProject1,b.");
+                logger.ErrorMessages.Single().Should().Contain($"The project reference intermediateproject has changed. Current dependencies: b,LeafProject1,LeaftProject2 lock file's dependencies: b,LeafProject1.");
             }
         }
 
@@ -718,7 +718,7 @@ namespace NuGet.Commands.FuncTest
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"The project reference intermediateproject has changed. Current dependencies: b,c,LeafProject lock file's dependencies: LeafProject,b.");
+                logger.ErrorMessages.Single().Should().Contain($"The project reference intermediateproject has changed. Current dependencies: b,c,LeafProject lock file's dependencies: b,LeafProject.");
             }
         }
 
