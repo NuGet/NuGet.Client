@@ -81,7 +81,18 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public void Dispose()
         {
-            if (!_isDisposed)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
             {
                 Certificate?.Dispose();
                 Chain?.Dispose();
@@ -89,11 +100,9 @@ namespace NuGet.Packaging.Signing
 #if IS_SIGNING_SUPPORTED
                 PrivateKey?.Dispose();
 #endif
-
-                GC.SuppressFinalize(this);
-
-                _isDisposed = true;
             }
+
+            _isDisposed = true;
         }
 
         internal void BuildSigningCertificateChainOnce(ILogger logger)

@@ -412,6 +412,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        public static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
         /// </summary>
         public static string SolutionIsNotSaved {
@@ -480,6 +489,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string UnresolvedItemDuringProjectClosureWalk {
             get {
                 return ResourceManager.GetString("UnresolvedItemDuringProjectClosureWalk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The feed type &apos;{0}&apos; is unsupported..
+        /// </summary>
+        public static string UnsupportedFeedType {
+            get {
+                return ResourceManager.GetString("UnsupportedFeedType", resourceCulture);
             }
         }
         

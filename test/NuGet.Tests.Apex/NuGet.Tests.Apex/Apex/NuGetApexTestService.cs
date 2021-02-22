@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
@@ -192,7 +193,7 @@ namespace NuGet.Tests.Apex
         public NuGetUIProjectTestExtension GetUIWindowfromProject(ProjectTestExtension project, TimeSpan timeout, TimeSpan interval)
         {
             var uiproject = NuGetApexUITestService.GetApexTestUIProject(project.Name, timeout, interval);
-            return new NuGetUIProjectTestExtension(uiproject);
+            return new NuGetUIProjectTestExtension(uiproject, Logger);
         }
 
         /// <summary>
@@ -202,7 +203,7 @@ namespace NuGet.Tests.Apex
         public NuGetUIProjectTestExtension GetUIWindowfromProject(ProjectTestExtension project)
         {
             var uiproject = NuGetApexUITestService.GetApexTestUIProject(project.Name, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(1));
-            return new NuGetUIProjectTestExtension(uiproject);
+            return new NuGetUIProjectTestExtension(uiproject, Logger);
         }
 
         public NuGetConsoleTestExtension GetPackageManagerConsole(string project)

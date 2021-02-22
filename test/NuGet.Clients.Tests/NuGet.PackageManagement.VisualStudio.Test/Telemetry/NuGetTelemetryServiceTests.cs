@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
@@ -33,7 +34,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 "3.5.0-beta2",
                 "15e9591f-9391-4ddf-a246-ca9e0351277d",
                 projectType,
-                true);
+                true,
+                @"C:\path\to\project.csproj");
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -64,6 +66,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(isPRUpgradable);
             Assert.IsType<bool>(isPRUpgradable);
             Assert.Equal(projectInformation.IsProjectPRUpgradable, isPRUpgradable);
+
+            var projectFilePath = lastTelemetryEvent
+                .GetPiiData()
+                .Where(kv => kv.Key == ProjectTelemetryEvent.ProjectFilePath)
+                .First()
+                .Value;
+            Assert.IsType<string>(projectFilePath);
+            Assert.True(!string.IsNullOrEmpty((string)projectFilePath));
         }
 
         [Theory]

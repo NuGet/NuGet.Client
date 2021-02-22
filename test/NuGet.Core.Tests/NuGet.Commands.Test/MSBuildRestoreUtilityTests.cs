@@ -237,14 +237,14 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 // Verify package dependencies and framework references are the same
-                project1SpecWithSameCasings.TargetFrameworks.ShouldBeEquivalentTo(project1SpecWithDifferentCasings.TargetFrameworks);
-                project2SpecWithSameCasings.TargetFrameworks.ShouldBeEquivalentTo(project2SpecWithDifferentCasings.TargetFrameworks);
+                project1SpecWithSameCasings.TargetFrameworks.Should().BeEquivalentTo(project1SpecWithDifferentCasings.TargetFrameworks);
+                project2SpecWithSameCasings.TargetFrameworks.Should().BeEquivalentTo(project2SpecWithDifferentCasings.TargetFrameworks);
 
                 // Verify project references are the same
                 var projectReferencesSame = project1SpecWithSameCasings.RestoreMetadata.TargetFrameworks[0].ProjectReferences.Select(e => e.ProjectPath.ToLowerInvariant());
                 var projectReferencesDiff = project1SpecWithDifferentCasings.RestoreMetadata.TargetFrameworks[0].ProjectReferences.Select(e => e.ProjectPath.ToLowerInvariant());
 
-                projectReferencesSame.ShouldBeEquivalentTo(projectReferencesDiff);
+                projectReferencesSame.Should().BeEquivalentTo(projectReferencesDiff);
             }
         }
 
@@ -711,7 +711,7 @@ namespace NuGet.Commands.Test
             var expectedValues = expected.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
             MSBuildRestoreUtility.AggregateSources(inputValues, excludeValues)
-                .ShouldBeEquivalentTo(expectedValues);
+                .Should().BeEquivalentTo(expectedValues);
         }
 
         [Fact]
@@ -2691,8 +2691,8 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 props.AllWarningsAsErrors.Should().BeTrue();
-                props.NoWarn.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1100, NuGetLogCode.NU1101 });
-                props.WarningsAsErrors.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1001, NuGetLogCode.NU1002 });
+                props.NoWarn.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1100, NuGetLogCode.NU1101 });
+                props.WarningsAsErrors.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1001, NuGetLogCode.NU1002 });
             }
         }
 
@@ -2806,7 +2806,7 @@ namespace NuGet.Commands.Test
                 var packageDependency = project1Spec.TargetFrameworks[0].Dependencies[0];
 
                 // Assert
-                packageDependency.NoWarn.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1001, NuGetLogCode.NU1002 });
+                packageDependency.NoWarn.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1001, NuGetLogCode.NU1002 });
             }
         }
 
@@ -2956,7 +2956,7 @@ namespace NuGet.Commands.Test
 
             // Assert
             codes.Should().NotBeNull();
-            codes.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1107 });
+            codes.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1107 });
         }
 
         [Theory]
@@ -3006,7 +3006,7 @@ namespace NuGet.Commands.Test
 
             // Assert
             codes.Should().NotBeNull();
-            codes.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1107, NuGetLogCode.NU1701 });
+            codes.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1107, NuGetLogCode.NU1701 });
         }
 
         [Theory]

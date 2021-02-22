@@ -61,7 +61,8 @@ namespace NuGet.Commands.Test
         public void AddNuGetProperty_WithPackageFolders_AddsSourceRootItem()
         {
             // Arrange
-            var packageFolders = @"/tmp/gpf;/tmp/fallbackFolder";
+            var separator = Path.DirectorySeparatorChar;
+            var packageFolders = $"{separator}tmp{separator}gpf;{separator}tmp{separator}fallbackFolder";
 
             var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
 
@@ -76,11 +77,14 @@ namespace NuGet.Commands.Test
 
             var props = TargetsUtility.GetMSBuildProperties(doc);
             var items = TargetsUtility.GetMSBuildItems(doc);
+            var sourceRootItems = items.Where(e => e.Item1.Equals("SourceRoot")).Select(e => e.Item2).ToList();
 
             // Assert
             Assert.Equal(packageFolders, props["NuGetPackageFolders"]);
-            Assert.Equal(1, items.Count);
-            Assert.Equal("$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))", items["SourceRoot"]["Include"]);
+            Assert.Equal(2, items.Count);
+            Assert.Equal(2, sourceRootItems.Count);
+            Assert.Equal($"{separator}tmp{separator}gpf{separator}", sourceRootItems[0]["Include"]);
+            Assert.Equal($"{separator}tmp{separator}fallbackFolder{separator}", sourceRootItems[1]["Include"]);
         }
 
         [Fact]
@@ -102,6 +106,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("Compile", metadata["NuGetItemType"]);
             Assert.Equal("False", metadata["Private"]);
             Assert.Equal("test/test.cs", metadata["Link"].Replace('\\', '/'));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Fact]
@@ -128,6 +133,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("PreserveNewest", metadata["CopyToOutputDirectory"]);
             Assert.Equal("a/b/", metadata["DestinationSubDirectory"].Replace('\\', '/'));
             Assert.Equal("a/b/c.txt", metadata["TargetPath"].Replace('\\', '/'));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Fact]
@@ -154,6 +160,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("a/b/c.txt", metadata["Link"].Replace('\\', '/'));
             Assert.Equal("PreserveNewest", metadata["CopyToOutputDirectory"]);
             Assert.False(metadata.ContainsKey("DestinationSubDirectory"));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Theory]

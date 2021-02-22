@@ -157,7 +157,7 @@ namespace NuGet.Protocol
                 }
                 else
                 {
-                    // We can't parse it, add an error 
+                    // We can't parse it, add an error
                     if (errors == null)
                     {
                         errors = new List<string>();

@@ -83,7 +83,7 @@ namespace NuGet.Build.Tasks.Test
                 }
             };
 
-            act.ShouldThrow<ArgumentOutOfRangeException>();
+            act.Should().Throw<ArgumentOutOfRangeException>();
         }
     }
 }

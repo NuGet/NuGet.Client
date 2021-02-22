@@ -858,7 +858,12 @@ namespace NuGetConsole.Implementation.Console
 
             public void SetExecutionMode(bool isExecuting)
             {
-                Invoke(() => _impl.SetExecutionMode(isExecuting));
+                Invoke(() =>
+                {
+                    ThreadHelper.ThrowIfNotOnUIThread();
+
+                    _impl.SetExecutionMode(isExecuting);
+                });
             }
 
             public object Content

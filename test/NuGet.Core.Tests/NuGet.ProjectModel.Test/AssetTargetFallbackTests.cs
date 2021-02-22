@@ -38,7 +38,7 @@ namespace NuGet.ProjectModel.Test
             spec.TargetFrameworks[0].Imports.Add(net461);
 
             var outSpec = spec.RoundTrip();
-            outSpec.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { net461 });
+            outSpec.TargetFrameworks[0].Imports.Should().BeEquivalentTo(new[] { net461 });
         }
 
         [Fact]

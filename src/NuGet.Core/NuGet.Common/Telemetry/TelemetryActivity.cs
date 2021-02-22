@@ -16,6 +16,7 @@ namespace NuGet.Common
         private readonly Stopwatch _intervalWatch = new Stopwatch();
         private readonly List<Tuple<string, TimeSpan>> _intervalList;
         private readonly IDisposable _telemetryActivity;
+        private bool _disposed;
 
         /// <summary> Telemetry event which represents end of telemetry activity. </summary>
         public TelemetryEvent TelemetryEvent { get; set; }
@@ -83,34 +84,50 @@ namespace NuGet.Common
         /// <summary> Stops tracking the activity and emits a telemetry event. </summary>
         public void Dispose()
         {
-            _stopwatch.Stop();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (NuGetTelemetryService != null && TelemetryEvent != null)
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                var endTime = DateTime.UtcNow;
-                TelemetryEvent["StartTime"] = _startTime.ToString("O");
-                TelemetryEvent["EndTime"] = endTime.ToString("O");
-                TelemetryEvent["Duration"] = _stopwatch.Elapsed.TotalSeconds;
-
-                if (ParentId != Guid.Empty)
-                {
-                    TelemetryEvent[nameof(ParentId)] = ParentId.ToString();
-                }
-
-                if (OperationId != Guid.Empty)
-                {
-                    TelemetryEvent[nameof(OperationId)] = OperationId.ToString();
-                }
-
-                foreach (var interval in _intervalList)
-                {
-                    TelemetryEvent[interval.Item1] = interval.Item2.TotalSeconds;
-                }
-
-                NuGetTelemetryService.EmitTelemetryEvent(TelemetryEvent);
+                return;
             }
 
-            _telemetryActivity?.Dispose();
+            if (disposing)
+            {
+                _stopwatch.Stop();
+
+                if (NuGetTelemetryService != null && TelemetryEvent != null)
+                {
+                    var endTime = DateTime.UtcNow;
+                    TelemetryEvent["StartTime"] = _startTime.ToString("O");
+                    TelemetryEvent["EndTime"] = endTime.ToString("O");
+                    TelemetryEvent["Duration"] = _stopwatch.Elapsed.TotalSeconds;
+
+                    if (ParentId != Guid.Empty)
+                    {
+                        TelemetryEvent[nameof(ParentId)] = ParentId.ToString();
+                    }
+
+                    if (OperationId != Guid.Empty)
+                    {
+                        TelemetryEvent[nameof(OperationId)] = OperationId.ToString();
+                    }
+
+                    foreach (var interval in _intervalList)
+                    {
+                        TelemetryEvent[interval.Item1] = interval.Item2.TotalSeconds;
+                    }
+
+                    NuGetTelemetryService.EmitTelemetryEvent(TelemetryEvent);
+                }
+
+                _telemetryActivity?.Dispose();
+            }
+
+            _disposed = true;
         }
 
         /// <summary> Emit a singular telemetry event. </summary>

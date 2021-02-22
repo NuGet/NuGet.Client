@@ -139,6 +139,16 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public static void RemoveSource(XDocument doc, string key)
+        {
+            var packageSources = GetOrAddSection(doc, "packageSources");
+
+            foreach (var item in packageSources.Elements(XName.Get("add")).Where(e => e.FirstAttribute.Value.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray())
+            {
+                item.Remove();
+            }
+        }
+
         // Add NetStandard.Library and NetCorePlatforms to the feed and save the file.
         public void AddNetStandardFeeds()
         {

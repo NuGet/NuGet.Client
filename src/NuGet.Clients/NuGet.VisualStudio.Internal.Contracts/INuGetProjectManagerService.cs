@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.Resolver;
@@ -14,6 +15,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
     public interface INuGetProjectManagerService : IDisposable
     {
         ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken);
+        ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken);
+        ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(

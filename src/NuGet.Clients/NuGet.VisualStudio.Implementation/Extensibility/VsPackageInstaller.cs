@@ -25,6 +25,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio
@@ -38,6 +39,7 @@ namespace NuGet.VisualStudio
         private readonly IVsSolutionManager _solutionManager;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private bool _isCPSJTFLoaded;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         // Reason it's lazy<object> is because we don't want to load any CPS assemblies until
         // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
@@ -51,13 +53,15 @@ namespace NuGet.VisualStudio
             ISourceRepositoryProvider sourceRepositoryProvider,
             ISettings settings,
             IVsSolutionManager solutionManager,
-            IDeleteOnRestartManager deleteOnRestartManager)
+            IDeleteOnRestartManager deleteOnRestartManager,
+            INuGetTelemetryProvider telemetryProvider)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
             _deleteOnRestartManager = deleteOnRestartManager;
             _isCPSJTFLoaded = false;
+            _telemetryProvider = telemetryProvider;
 
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
         }
@@ -93,49 +97,73 @@ namespace NuGet.VisualStudio
             bool includePrerelease,
             bool ignoreDependencies)
         {
-            RunJTFWithCorrectContext(project, () => InstallPackageAsync(
-                source,
-                project,
-                packageId,
-                version: null,
-                includePrerelease: includePrerelease,
-                ignoreDependencies: ignoreDependencies));
+            try
+            {
+                RunJTFWithCorrectContext(project, () => InstallPackageAsync(
+                    source,
+                    project,
+                    packageId,
+                    version: null,
+                    includePrerelease: includePrerelease,
+                    ignoreDependencies: ignoreDependencies));
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPackageInstaller).FullName);
+                throw;
+            }
         }
 
         public void InstallPackage(string source, Project project, string packageId, Version version, bool ignoreDependencies)
         {
-            NuGetVersion semVer = null;
-
-            if (version != null)
+            try
             {
-                semVer = new NuGetVersion(version);
-            }
+                NuGetVersion semVer = null;
 
-            RunJTFWithCorrectContext(project, () => InstallPackageAsync(
-                source,
-                project,
-                packageId,
-                version: semVer,
-                includePrerelease: false,
-                ignoreDependencies: ignoreDependencies));
+                if (version != null)
+                {
+                    semVer = new NuGetVersion(version);
+                }
+
+                RunJTFWithCorrectContext(project, () => InstallPackageAsync(
+                    source,
+                    project,
+                    packageId,
+                    version: semVer,
+                    includePrerelease: false,
+                    ignoreDependencies: ignoreDependencies));
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPackageInstaller).FullName);
+                throw;
+            }
         }
 
         public void InstallPackage(string source, Project project, string packageId, string version, bool ignoreDependencies)
         {
-            NuGetVersion semVer = null;
-
-            if (!string.IsNullOrEmpty(version))
+            try
             {
-                NuGetVersion.TryParse(version, out semVer);
-            }
+                NuGetVersion semVer = null;
 
-            RunJTFWithCorrectContext(project, () => InstallPackageAsync(
-                source,
-                project,
-                packageId,
-                version: semVer,
-                includePrerelease: false,
-                ignoreDependencies: ignoreDependencies));
+                if (!string.IsNullOrEmpty(version))
+                {
+                    NuGetVersion.TryParse(version, out semVer);
+                }
+
+                RunJTFWithCorrectContext(project, () => InstallPackageAsync(
+                    source,
+                    project,
+                    packageId,
+                    version: semVer,
+                    includePrerelease: false,
+                    ignoreDependencies: ignoreDependencies));
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPackageInstaller).FullName);
+                throw;
+            }
         }
 
         private Task InstallPackageAsync(string source, Project project, string packageId, NuGetVersion version, bool includePrerelease, bool ignoreDependencies)
@@ -194,44 +222,52 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersions));
             }
 
-            RunJTFWithCorrectContext(project, async () =>
-                {
-                    // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source 
-                    // (located at C:\Program Files (x86)\Microsoft SDKs\NuGetPackages) follows the V3
-                    // folder version format.
-                    if (isPreUnzipped)
+            try
+            {
+                RunJTFWithCorrectContext(project, async () =>
                     {
-                        var isProjectJsonProject = await EnvDTEProjectUtility.HasBuildIntegratedConfig(project);
-                        isPreUnzipped = isProjectJsonProject ? false : isPreUnzipped;
-                    }
+                        // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source 
+                        // (located at C:\Program Files (x86)\Microsoft SDKs\NuGetPackages) follows the V3
+                        // folder version format.
+                        if (isPreUnzipped)
+                        {
+                            var isProjectJsonProject = await EnvDTEProjectUtility.HasBuildIntegratedConfig(project);
+                            isPreUnzipped = isProjectJsonProject ? false : isPreUnzipped;
+                        }
 
-                    // create a repository provider with only the registry repository
-                    var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
-                    repoProvider.AddFromRegistry(keyName, isPreUnzipped);
+                        // create a repository provider with only the registry repository
+                        var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
+                        repoProvider.AddFromRegistry(keyName, isPreUnzipped);
 
-                    var toInstall = GetIdentitiesFromDict(packageVersions);
+                        var toInstall = GetIdentitiesFromDict(packageVersions);
 
-                    // Skip assembly references and disable binding redirections should be done together
-                    var disableBindingRedirects = skipAssemblyReferences;
+                        // Skip assembly references and disable binding redirections should be done together
+                        var disableBindingRedirects = skipAssemblyReferences;
 
-                    var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects)
-                    {
-                        PackageExtractionContext = new PackageExtractionContext(
-                            PackageSaveMode.Defaultv2,
-                            PackageExtractionBehavior.XmlDocFileSaveMode,
-                            ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
-                            NullLogger.Instance)
-                    };
+                        var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects)
+                        {
+                            PackageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                                NullLogger.Instance)
+                        };
 
-                    await InstallInternalAsync(
-                        project,
-                        toInstall,
-                        repoProvider,
-                        projectContext,
-                        includePrerelease: false,
-                        ignoreDependencies: ignoreDependencies,
-                        token: CancellationToken.None);
-                });
+                        await InstallInternalAsync(
+                            project,
+                            toInstall,
+                            repoProvider,
+                            projectContext,
+                            includePrerelease: false,
+                            ignoreDependencies: ignoreDependencies,
+                            token: CancellationToken.None);
+                    });
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPackageInstaller).FullName);
+                throw;
+            }
         }
 
         public void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions)
@@ -262,34 +298,42 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersions));
             }
 
-            RunJTFWithCorrectContext(project, () =>
-                {
-                    var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
-                    repoProvider.AddFromExtension(_sourceRepositoryProvider, extensionId);
-
-                    var toInstall = GetIdentitiesFromDict(packageVersions);
-
-                    // Skip assembly references and disable binding redirections should be done together
-                    var disableBindingRedirects = skipAssemblyReferences;
-
-                    var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects)
+            try
+            {
+                RunJTFWithCorrectContext(project, () =>
                     {
-                        PackageExtractionContext = new PackageExtractionContext(
-                            PackageSaveMode.Defaultv2,
-                            PackageExtractionBehavior.XmlDocFileSaveMode,
-                            ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
-                            NullLogger.Instance)
-                    };
+                        var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
+                        repoProvider.AddFromExtension(_sourceRepositoryProvider, extensionId);
 
-                    return InstallInternalAsync(
-                        project,
-                        toInstall,
-                        repoProvider,
-                        projectContext,
-                        includePrerelease: false,
-                        ignoreDependencies: ignoreDependencies,
-                        token: CancellationToken.None);
-                });
+                        var toInstall = GetIdentitiesFromDict(packageVersions);
+
+                        // Skip assembly references and disable binding redirections should be done together
+                        var disableBindingRedirects = skipAssemblyReferences;
+
+                        var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects)
+                        {
+                            PackageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                                NullLogger.Instance)
+                        };
+
+                        return InstallInternalAsync(
+                            project,
+                            toInstall,
+                            repoProvider,
+                            projectContext,
+                            includePrerelease: false,
+                            ignoreDependencies: ignoreDependencies,
+                            token: CancellationToken.None);
+                    });
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPackageInstaller).FullName);
+                throw;
+            }
         }
 
         private static List<PackageIdentity> GetIdentitiesFromDict(IDictionary<string, string> packageVersions)

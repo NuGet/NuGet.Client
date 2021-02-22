@@ -302,10 +302,10 @@ namespace NuGet.Commands.Test
 
             // Assert
             mergedNoWarnForNet461.Should().NotBeNull();
-            mergedNoWarnForNet461.ShouldBeEquivalentTo(expectedNoWarnForNet461);
+            mergedNoWarnForNet461.Should().BeEquivalentTo(expectedNoWarnForNet461);
 
             mergedNoWarnForNetcoreapp.Should().NotBeNull();
-            mergedNoWarnForNetcoreapp.ShouldBeEquivalentTo(expectedNoWarnForNetcoreapp);
+            mergedNoWarnForNetcoreapp.Should().BeEquivalentTo(expectedNoWarnForNetcoreapp);
         }
 
         // Tests for TransitiveNoWarnUtils.MergeProjectWideWarningProperties
@@ -393,7 +393,7 @@ namespace NuGet.Commands.Test
 
             // Assert
             merged.Should().NotBeNull();
-            merged.ShouldBeEquivalentTo(expected);
+            merged.Should().BeEquivalentTo(expected);
         }
 
 
@@ -488,7 +488,7 @@ namespace NuGet.Commands.Test
 
             // Assert
             result.Should().NotBeNull();
-            result.ShouldBeEquivalentTo(expected);
+            result.Should().BeEquivalentTo(expected);
         }
 
         // Tests for TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework
@@ -586,9 +586,9 @@ namespace NuGet.Commands.Test
 
             // Assert
             resultNet461.Should().NotBeNull();
-            resultNet461.ShouldBeEquivalentTo(expected[net461]);
+            resultNet461.Should().BeEquivalentTo(expected[net461]);
             resultNetcoreapp.Should().NotBeNull();
-            resultNetcoreapp.ShouldBeEquivalentTo(expected[netcoreapp]);
+            resultNetcoreapp.Should().BeEquivalentTo(expected[netcoreapp]);
         }
 
         // Tests for TransitiveNoWarnUtils.DependencyNode equality

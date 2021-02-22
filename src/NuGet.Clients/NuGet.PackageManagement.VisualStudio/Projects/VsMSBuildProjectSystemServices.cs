@@ -49,6 +49,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public bool NominatesOnSolutionLoad => false;
+
         public VsMSBuildProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
             VsMSBuildProjectSystem vsProjectSystem,

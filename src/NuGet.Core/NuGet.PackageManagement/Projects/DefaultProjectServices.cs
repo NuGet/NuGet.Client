@@ -36,6 +36,8 @@ namespace NuGet.ProjectManagement
 
         public bool SupportsPackageReferences => false;
 
+        public bool NominatesOnSolutionLoad => false;
+
         public Task AddOrUpdatePackageReferenceAsync(
             LibraryDependency packageReference,
             CancellationToken _)

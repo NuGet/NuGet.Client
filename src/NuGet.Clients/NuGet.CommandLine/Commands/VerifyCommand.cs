@@ -36,7 +36,7 @@ namespace NuGet.CommandLine
 
             if (string.IsNullOrEmpty(PackagePath))
             {
-                throw new ArgumentNullException(nameof(PackagePath));
+                throw new ArgumentException(nameof(PackagePath));
             }
 
             var verifyArgs = new VerifyArgs()

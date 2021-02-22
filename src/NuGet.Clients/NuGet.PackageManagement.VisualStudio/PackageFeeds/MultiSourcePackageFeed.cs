@@ -12,6 +12,7 @@ using NuGet.Indexing;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio

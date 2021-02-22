@@ -7,16 +7,18 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
-using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -742,6 +744,170 @@ namespace NuGet.XPlat.FuncTest
                     Assert.NotNull(itemGroup);
                     Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
                 }
+            }
+        }
+
+        [Fact]
+        public async Task AddPkg_V3LocalSourceFeed_WithAbsolutePath_NoVersionSpecified_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectFrameworks = "net472";
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    customSourcePath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageX_V1_Context, packageX_V2_Context });
+
+                // Since user is not inputing a version, it is converted to a " * " in the command
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, "*",
+                    projectA,
+                    sources: customSourcePath);
+
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
+
+                // Assert
+                Assert.Equal(0, result);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.Equal(sources.Count(), 1);
+                Assert.Equal(sources[0], customSourcePath);
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
+                // Should resolve to highest available version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V2.Version));
+            }
+        }
+
+        [Fact]
+        public async Task AddPkg_V3LocalSourceFeed_WithAbsolutePath_NoVersionSpecified_Fail()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectFrameworks = "net472";
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
+                var packageX = "packageX";
+                var packageY = "packageY";
+                var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX, frameworkString: packageFrameworks);
+                var packageY_V1_Context = XPlatTestUtils.CreatePackage(packageY, frameworkString: packageFrameworks);
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    customSourcePath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageY_V1_Context });
+
+                // Since user is not inputing a version, it is converted to a " * " in the command
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX, "*",
+                    projectA,
+                    sources: customSourcePath);
+
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
+
+                // Assert
+                Assert.Equal(1, result);
+            }
+        }
+
+        [Fact]
+        public async Task AddPkg_V3LocalSourceFeed_WithAbsolutePath_VersionSpecified_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectFrameworks = "net472";
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX_V1.Id, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX_V2.Id, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    customSourcePath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageX_V1_Context, packageX_V2_Context });
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V1.Id, packageX_V1.Version.ToString(),
+                    projectA,
+                    sources: customSourcePath);
+
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
+
+                // Assert
+                Assert.Equal(0, result);
+
+                // Make sure source is replaced in generated dgSpec file.
+                PackageSpec packageSpec = projectA.AssetsFile.PackageSpec;
+                string[] sources = packageSpec.RestoreMetadata.Sources.Select(s => s.Name).ToArray();
+                Assert.Equal(sources.Count(), 1);
+                Assert.Equal(sources[0], customSourcePath);
+
+                var ridlessTarget = projectA.AssetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Single();
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == packageX);
+                // Should resolve to specified version.
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageX_V1.Version));
+            }
+        }
+
+        [Fact]
+        public async Task AddPkg_V3LocalSourceFeed_WithAbsolutePath_VersionSpecified_Fail()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectFrameworks = "net472";
+                var packageFrameworks = "net472; netcoreapp2.0";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
+                var packageX = "packageX";
+                var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
+                var packageX_V2 = new PackageIdentity(packageX, new NuGetVersion("2.0.0"));
+                var packageX_V3 = new PackageIdentity(packageX, new NuGetVersion("3.0.0"));
+                var packageX_V1_Context = XPlatTestUtils.CreatePackage(packageX, packageX_V1.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var packageX_V2_Context = XPlatTestUtils.CreatePackage(packageX, packageX_V2.Version.Version.ToString(), frameworkString: packageFrameworks);
+                var customSourcePath = Path.Combine(pathContext.WorkingDirectory, "Custompackages");
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    customSourcePath,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext[] { packageX_V1_Context, packageX_V2_Context });
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX_V3.Id, packageX_V3.Version.ToString(),
+                    projectA,
+                    sources: customSourcePath);
+
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = await commandRunner.ExecuteCommand(packageArgs, MsBuild);
+
+                // Assert
+                Assert.Equal(1, result);
             }
         }
 

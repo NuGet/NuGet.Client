@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -37,7 +38,8 @@ namespace NuGet.Packaging.Test
             string packageId = null;
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgumentException(() => PackageIdValidator.IsValidPackageId(packageId), "packageId");
+            Assert.Throws<ArgumentNullException>(paramName: "packageId",
+                testCode: () => PackageIdValidator.IsValidPackageId(packageId));
         }
 
         [Fact]

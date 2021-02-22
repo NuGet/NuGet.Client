@@ -316,7 +316,7 @@ namespace NuGet.VisualStudio.Telemetry
         {
             if (source.IsHttp)
             {
-                if (TelemetryUtility.IsNuGetOrg(source))
+                if (TelemetryUtility.IsNuGetOrg(source.Source))
                 {
                     return "nuget.org";
                 }

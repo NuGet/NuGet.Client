@@ -83,7 +83,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var source = new PackageSource(sourceUrl);
 
             // Act
-            var actual = TelemetryUtility.IsNuGetOrg(source);
+            var actual = TelemetryUtility.IsNuGetOrg(source.Source);
 
             // Assert
             Assert.Equal(expected, actual);

@@ -52,7 +52,8 @@ param (
     [switch]$CI,
     [switch]$PackageEndToEnd,
     [switch]$SkipDelaySigning,
-    [switch]$Binlog
+    [switch]$Binlog,
+    [switch]$IncludeApex
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -115,7 +116,7 @@ Invoke-BuildStep 'Running Restore' {
     Trace-Log ". `"$MSBuildExe`" $args"
     & $MSBuildExe @args
 
-    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/v:m", "/m:1"
+    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:IncludeApex=$IncludeApex", "/v:m", "/m:1"
     if ($Binlog)
     {
         $args += "-bl:msbuild.restore.binlog"
@@ -134,7 +135,7 @@ Invoke-BuildStep 'Running Restore' {
 
 Invoke-BuildStep $VSMessage {
 
-    $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1'
+    $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:IncludeApex=$IncludeApex", '/v:m', '/m:1'
 
     If ($SkipDelaySigning)
     {

@@ -5,6 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using NuGet.PackageManagement;
 
@@ -42,6 +43,8 @@ namespace NuGetConsole
         /// </summary>
         public static void Execute(this IOleCommandTarget target, Guid guidCommand, uint idCommand, object args = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             IntPtr varIn = IntPtr.Zero;
             try
             {
@@ -69,6 +72,8 @@ namespace NuGetConsole
         /// </summary>
         public static void Execute(this IOleCommandTarget target, VSConstants.VSStd2KCmdID idCommand, object args = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             target.Execute(VSConstants.VSStd2K, (uint)idCommand, args);
         }
     }

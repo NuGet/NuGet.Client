@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -19,11 +18,11 @@ namespace NuGet.PackageManagement.UI
 
         IServiceBroker ServiceBroker { get; }
 
-        ISourceRepositoryProvider SourceProvider { get; }
-
         IVsSolutionManager SolutionManager { get; }
 
         INuGetSolutionManagerService SolutionManagerService { get; }
+
+        INuGetSourcesService SourceService { get; }
 
         NuGetPackageManager PackageManager { get; }
 

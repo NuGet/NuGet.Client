@@ -144,13 +144,10 @@ namespace NuGet.PackageManagement
                     };
 
                     folders.AddRange(pathContext.FallbackPackageFolders);
-
                     foreach (var folder in folders)
                     {
                         // Create a repo for each folder
-                        var source = SourceRepositoryProvider.CreateRepository(
-                            new PackageSource(folder),
-                            FeedType.FileSystemV3);
+                        var source = SourceRepositoryProvider.CreateRepository(new PackageSource(folder), FeedType.FileSystemV3);
 
                         sources.Add(source);
                     }
@@ -608,6 +605,11 @@ namespace NuGet.PackageManagement
                 IEnumerable<SourceRepository> secondarySources,
                 CancellationToken token)
         {
+            if (packageIdentities == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentities));
+            }
+
             if (nuGetProjects == null)
             {
                 throw new ArgumentNullException(nameof(nuGetProjects));
@@ -1477,14 +1479,18 @@ namespace NuGet.PackageManagement
             var packageIdentity = packages.FirstOrDefault(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             if (packageIdentity == null)
             {
-                throw new ArgumentException("packages");
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PackageNotFound, id),
+                    paramName: nameof(packages));
             }
 
             // now look up the dependencies of this exact package identity
             var sourceDepInfo = available.SingleOrDefault(p => packageIdentity.Equals(p));
             if (sourceDepInfo == null)
             {
-                throw new ArgumentException("available");
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PackageNotFound, id),
+                    paramName: nameof(available));
             }
 
             // iterate through all the dependencies and call recursively to collect dependencies
@@ -1659,12 +1665,16 @@ namespace NuGet.PackageManagement
 
             if (!primarySources.Any())
             {
-                throw new ArgumentException(nameof(primarySources));
+                throw new ArgumentException(
+                    message: Strings.Argument_Cannot_Be_Null_Or_Empty,
+                    paramName: nameof(primarySources));
             }
 
             if (packageIdentity.Version == null)
             {
-                throw new ArgumentNullException("packageIdentity.Version");
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(packageIdentity.Version)),
+                    paramName: nameof(packageIdentity));
             }
 
             if (nuGetProject is INuGetIntegratedProject)
@@ -1934,7 +1944,7 @@ namespace NuGet.PackageManagement
             // TODO: move this timeout to a better place
             // TODO: what should the timeout be?
             // Give up after 5 minutes
-            var tokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            using var tokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
             var results = new Queue<KeyValuePair<SourceRepository, Task<bool>>>();
 
@@ -2037,7 +2047,9 @@ namespace NuGet.PackageManagement
             {
                 if (project == null)
                 {
-                    throw new ArgumentNullException(nameof(project));
+                    throw new ArgumentException(
+                        message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(project)),
+                        paramName: nameof(nuGetProjects));
                 }
 
                 if (project is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
@@ -2068,7 +2080,9 @@ namespace NuGet.PackageManagement
             {
                 if (project == null)
                 {
-                    throw new ArgumentNullException(nameof(project));
+                    throw new ArgumentException(
+                        message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(project)),
+                        paramName: nameof(nuGetProjects));
                 }
 
                 // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
@@ -2611,9 +2625,9 @@ namespace NuGet.PackageManagement
                             await result.EnsureResultAsync();
                             result.Dispose();
                         }
-
-                        downloadTokenSource.Dispose();
                     }
+
+                    downloadTokenSource?.Dispose();
 
                     if (msbuildProject != null)
                     {
@@ -2740,7 +2754,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Run project actions for build integrated many projects.
         /// </summary>
-        private async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
+        internal async Task<IEnumerable<ResolvedAction>> PreviewBuildIntegratedProjectsActionsAsync(
             IReadOnlyCollection<BuildIntegratedNuGetProject> buildIntegratedProjects,
             Dictionary<string, NuGetProjectAction[]> nugetProjectActionsLookup,
             PackageIdentity packageIdentity,
@@ -2818,7 +2832,9 @@ namespace NuGet.PackageManagement
                 {
                     if (!nugetProjectActionsLookup.ContainsKey(buildIntegratedProject.MSBuildProjectPath))
                     {
-                        throw new ArgumentNullException($"Either should have value in {nameof(nugetProjectActionsLookup)} for {buildIntegratedProject.MSBuildProjectPath} or {nameof(packageIdentity)} & {nameof(primarySources)}");
+                        throw new ArgumentException(
+                            message: string.Format(CultureInfo.CurrentCulture, Strings.UnableToFindPathInLookupOrList, nameof(nugetProjectActionsLookup), buildIntegratedProject.MSBuildProjectPath, nameof(packageIdentity), nameof(primarySources)),
+                            paramName: nameof(nugetProjectActionsLookup));
                     }
 
                     nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath];

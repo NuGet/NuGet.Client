@@ -1,0 +1,165 @@
+jobs:
+- job: Initialize_Build_SemanticVersion
+  timeoutInMinutes: 2
+  pool:
+    vmImage: windows-latest
+    demands:
+      - DotNetFramework
+      - msbuild
+
+  steps:
+  - template: Initialize_Build_SemanticVersion.yml
+
+- job: Initialize_Build
+  dependsOn: Initialize_Build_SemanticVersion
+  timeoutInMinutes: 10
+  variables:
+    SemanticVersion: $[dependencies.Initialize_Build_SemanticVersion.outputs['setsemanticversion.SemanticVersion']]
+    BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 0)]
+
+  pool:
+    vmImage: windows-latest
+    demands:
+      - DotNetFramework
+      - msbuild
+
+  steps:
+  - template: Initialize_Build.yml
+
+- job: Build_and_UnitTest_NonRTM
+  dependsOn: Initialize_Build
+  timeoutInMinutes: 170
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
+    VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+    LocalizedLanguageCount: "13"
+    BuildRTM: "false"
+
+  pool:
+    name: VSEng-MicroBuildVS2019
+    demands:
+      - DotNetFramework
+      - msbuild
+
+  steps:
+  - template: Build_and_UnitTest.yml
+
+- job: Build_and_UnitTest_RTM
+  dependsOn: Initialize_Build
+  timeoutInMinutes: 170
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
+    VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+    LocalizedLanguageCount: "13"
+    BuildRTM: "true"
+
+  pool:
+    name: VSEng-MicroBuildVS2019
+    demands:
+      - DotNetFramework
+      - msbuild
+
+  steps:
+  - template: Build_and_UnitTest.yml
+
+- job: Functional_Tests_On_Windows
+  dependsOn: Initialize_Build
+  timeoutInMinutes: 120
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
+  pool:
+    name: VSEngSS-MicroBuild2019
+    demands:
+        - DotNetFramework
+        - msbuild
+  strategy:
+    matrix:
+      IsDesktop:
+        SkipCoreAssemblies: "true"
+      IsCore:
+        SkipDesktopAssemblies: "true"
+
+  steps:
+  - template: Functional_Tests_On_Windows.yml
+
+- job: Tests_On_Linux
+  dependsOn: Initialize_Build
+  timeoutInMinutes: 45
+  variables:
+    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+    MSBUILDDISABLENODEREUSE: 1
+  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
+  pool:
+    vmImage: ubuntu-latest
+    demands: sh
+
+  steps:
+  - template: Tests_On_Linux.yml
+
+- job: Tests_On_Mac
+  dependsOn:
+  - Build_and_UnitTest_NonRTM
+  - Initialize_Build
+  timeoutInMinutes: 90
+  variables:
+    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+  condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
+  pool:
+    vmImage: macos-latest
+
+  steps:
+  - template: Tests_On_Mac.yml
+
+- job: End_To_End_Tests_On_Windows
+  dependsOn:
+  - Build_and_UnitTest_NonRTM
+  - Initialize_Build
+  timeoutInMinutes: 100
+  variables:
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
+  pool:
+    name: DDNuGet-Windows
+    demands:
+    - DotNetFramework
+    - Allow_NuGet_E2E_Tests -equals true
+  strategy:
+    matrix:
+      Part1:
+        Part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1,PackageRestoreTest.ps1"
+      Part2:
+        Part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
+
+  steps:
+  - template: End_To_End_Tests_On_Windows.yml
+
+- job: Apex_Tests_On_Windows
+  dependsOn:
+  - Build_and_UnitTest_NonRTM
+  - Initialize_Build
+  timeoutInMinutes: 120
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
+  pool:
+    name: DDNuGet-Windows
+    demands:
+    - DotNetFramework
+    - Allow_NuGet_Apex_Tests -equals true
+
+  steps:
+  - template: Apex_Tests_On_Windows.yml

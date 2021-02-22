@@ -10,6 +10,7 @@ namespace NuGet.Packaging.Signing
     public class KeyPairFileWriter : IDisposable
     {
         private readonly StreamWriter _writer;
+        private bool _disposed;
 
         public KeyPairFileWriter(Stream stream, Encoding encoding, bool leaveOpen)
         {
@@ -71,7 +72,23 @@ namespace NuGet.Packaging.Signing
 
         public void Dispose()
         {
-            _writer.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _writer.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

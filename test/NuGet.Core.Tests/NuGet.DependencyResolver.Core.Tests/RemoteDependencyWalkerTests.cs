@@ -1669,7 +1669,144 @@ namespace NuGet.DependencyResolver.Tests
             Assert.True(downgrade.DowngradedTo.Item.IsCentralTransitive);
             Assert.Equal("D", downgrade.DowngradedFrom.Key.Name);
             Assert.Equal("2.0.0", downgrade.DowngradedFrom.Key.VersionRange.OriginalString);
+        }
 
+        /// <summary>
+        ///   -> B 1.0.0 -> D [1.0.0] (PrivateAssets1)
+        /// A
+        ///   -> C 1.0.0 -> D [2.0.0] (PrivateAssets2)
+        /// </summary>
+        [Theory]
+        [InlineData(null, null, 1)]
+        [InlineData(LibraryIncludeFlags.All, null, 0)]
+        [InlineData(null, LibraryIncludeFlags.All, 0)]
+        [InlineData(LibraryIncludeFlags.All, LibraryIncludeFlags.All, 0)]
+        public async Task PrivateAssetsAll_VersionConflicts(LibraryIncludeFlags? privateAssets1,
+            LibraryIncludeFlags? privateAssets2, int expectedConflicts)
+        {
+            var framework = NuGetFramework.Parse("net45");
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("A", "1.0.0")
+                .DependsOn("B", "1.0.0")
+                .DependsOn("C", "1.0.0");
+
+            provider.Package("B", "1.0.0")
+                .DependsOn("D", "[1.0.0]", privateAssets: privateAssets1);
+
+            provider.Package("C", "1.0.0")
+                .DependsOn("D", "[2.0.0]", privateAssets: privateAssets2);
+
+            provider.Package("D", "1.0.0");
+            provider.Package("D", "2.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            // Assert
+            Assert.Equal(expectedConflicts, result.VersionConflicts.Count);
+            Assert.Empty(result.Downgrades);
+
+            if (expectedConflicts == 1)
+            {
+                AssertPath(result.VersionConflicts[0].Conflicting, "A 1.0.0", "B 1.0.0", "D 1.0.0");
+                AssertPath(result.VersionConflicts[0].Selected, "A 1.0.0", "C 1.0.0", "D 2.0.0");
+            }
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 2.0.0 (PrivateAssets1)
+        ///   -> C 1.0.0 (PrivateAssets2)
+        /// </summary>
+        [Theory]
+        [InlineData(null, null, 1)]
+        [InlineData(LibraryIncludeFlags.All, null, 0)]
+        [InlineData(null, LibraryIncludeFlags.All, 1)]
+        [InlineData(LibraryIncludeFlags.All, LibraryIncludeFlags.All, 0)]
+        public async Task PrivateAssetsAll_VersionDowngrades(LibraryIncludeFlags? privateAssets1, LibraryIncludeFlags? privateAssets2, int expectedDowngrades)
+        {
+            var framework = NuGetFramework.Parse("net45");
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("A", "1.0.0")
+                .DependsOn("B", "1.0.0")
+                .DependsOn("C", "1.0.0", privateAssets: privateAssets2);
+
+            provider.Package("B", "1.0.0")
+                   .DependsOn("C", "2.0.0", privateAssets: privateAssets1);
+
+            provider.Package("C", "1.0.0");
+            provider.Package("C", "2.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            // Assert
+            Assert.Equal(expectedDowngrades, result.Downgrades.Count);
+            Assert.Empty(result.VersionConflicts);
+
+            if (expectedDowngrades == 1)
+            {
+                GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+                GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+                AssertPath(downgraded, "A 1.0.0", "B 1.0.0", "C 2.0.0");
+                AssertPath(downgradedBy, "A 1.0.0", "C 1.0.0");
+            }
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 (PrivateAssets) -> C 2.0.0
+        ///   -> C 1.0.0
+        /// </summary>
+        [Theory]
+        [InlineData(null, 1)]
+        [InlineData(LibraryIncludeFlags.All, 1)]
+        public async Task PrivateAssetsAll_VersionDowngradesForTransitiveDependencies(LibraryIncludeFlags? privateAssets, int expectedDowngrades)
+        {
+            var framework = NuGetFramework.Parse("net45");
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("A", "1.0.0")
+                .DependsOn("B", "1.0.0", privateAssets: privateAssets)
+                .DependsOn("C", "1.0.0");
+
+            provider.Package("B", "1.0.0")
+                .DependsOn("C", "2.0.0");
+
+            provider.Package("C", "1.0.0");
+            provider.Package("C", "2.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            // Assert
+            Assert.Equal(expectedDowngrades, result.Downgrades.Count);
+            Assert.Empty(result.VersionConflicts);
+
+            if (expectedDowngrades == 1)
+            {
+                GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+                GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+                AssertPath(downgraded, "A 1.0.0", "B 1.0.0", "C 2.0.0");
+                AssertPath(downgradedBy, "A 1.0.0", "C 1.0.0");
+            }
         }
 
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
@@ -1682,7 +1819,7 @@ namespace NuGet.DependencyResolver.Tests
                 node = node.OuterNode;
             }
 
-            Assert.Equal(matches, items);
+            Assert.Equal(items, matches);
         }
 
         private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name)

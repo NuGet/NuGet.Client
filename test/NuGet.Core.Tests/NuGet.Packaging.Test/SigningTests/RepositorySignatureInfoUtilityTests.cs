@@ -25,7 +25,7 @@ namespace NuGet.Packaging.Test
             Action action = () => RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo: null, fallbackSettings: null);
 
             // Assert
-            action.ShouldThrow<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace NuGet.Packaging.Test
             var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, _defaultSettings);
 
             // Assert
-            settings.ShouldBeEquivalentTo(_defaultSettings);
+            settings.Should().BeEquivalentTo(_defaultSettings);
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace NuGet.Packaging.Test
             var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, _verifyCommandDefaultSettings);
 
             // Assert
-            settings.ShouldBeEquivalentTo(_verifyCommandDefaultSettings);
+            settings.Should().BeEquivalentTo(_verifyCommandDefaultSettings);
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace NuGet.Packaging.Test
             var allowList = RepositorySignatureInfoUtility.GetRepositoryAllowList(repoCertificateInfo);
 
             // Assert
-            allowList.ShouldBeEquivalentTo(expectedAllowList);
+            allowList.Should().BeEquivalentTo(expectedAllowList);
         }
 
         [Fact]
@@ -210,7 +210,7 @@ namespace NuGet.Packaging.Test
             var allowList = RepositorySignatureInfoUtility.GetRepositoryAllowList(repoCertificateInfo);
 
             // Assert
-            allowList.ShouldBeEquivalentTo(expectedAllowList);
+            allowList.Should().BeEquivalentTo(expectedAllowList);
         }
     }
 }

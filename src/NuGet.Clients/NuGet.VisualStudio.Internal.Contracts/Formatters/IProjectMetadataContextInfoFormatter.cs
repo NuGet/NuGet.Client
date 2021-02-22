@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using MessagePack;
 using MessagePack.Formatters;
 using Microsoft;
@@ -10,7 +8,7 @@ using NuGet.Frameworks;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal sealed class IProjectMetadataContextInfoFormatter : IMessagePackFormatter<IProjectMetadataContextInfo?>
+    internal sealed class IProjectMetadataContextInfoFormatter : NuGetMessagePackFormatter<IProjectMetadataContextInfo>
     {
         private const string FullPathPropertyName = "fullpath";
         private const string NamePropertyName = "name";
@@ -25,91 +23,69 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public IProjectMetadataContextInfo? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override IProjectMetadataContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            string? fullPath = null;
+            string? name = null;
+            string? projectId = null;
+            NuGetFramework[]? supportedFrameworks = null;
+            NuGetFramework? targetFramework = null;
+            string? uniqueName = null;
+
+            int propertyCount = reader.ReadMapHeader();
+
+            for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                string? fullPath = null;
-                string? name = null;
-                string? projectId = null;
-                NuGetFramework[]? supportedFrameworks = null;
-                NuGetFramework? targetFramework = null;
-                string? uniqueName = null;
-
-                int propertyCount = reader.ReadMapHeader();
-
-                for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case FullPathPropertyName:
-                            fullPath = reader.ReadString();
-                            break;
+                    case FullPathPropertyName:
+                        fullPath = reader.ReadString();
+                        break;
 
-                        case NamePropertyName:
-                            name = reader.ReadString();
-                            break;
+                    case NamePropertyName:
+                        name = reader.ReadString();
+                        break;
 
-                        case ProjectIdPropertyName:
-                            projectId = reader.ReadString();
-                            break;
+                    case ProjectIdPropertyName:
+                        projectId = reader.ReadString();
+                        break;
 
-                        case SupportedFrameworksPropertyName:
-                            if (!reader.TryReadNil())
+                    case SupportedFrameworksPropertyName:
+                        if (!reader.TryReadNil())
+                        {
+                            int elementCount = reader.ReadArrayHeader();
+                            supportedFrameworks = new NuGetFramework[elementCount];
+
+                            for (var i = 0; i < elementCount; ++i)
                             {
-                                int elementCount = reader.ReadArrayHeader();
-                                supportedFrameworks = new NuGetFramework[elementCount];
+                                NuGetFramework? framework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
 
-                                for (var i = 0; i < elementCount; ++i)
-                                {
-                                    NuGetFramework? framework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
+                                Assumes.NotNull(framework);
 
-                                    Assumes.NotNull(framework);
-
-                                    supportedFrameworks[i] = framework;
-                                }
+                                supportedFrameworks[i] = framework;
                             }
-                            break;
+                        }
+                        break;
 
-                        case TargetFrameworkPropertyName:
-                            targetFramework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case TargetFrameworkPropertyName:
+                        targetFramework = NuGetFrameworkFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        case UniqueNamePropertyName:
-                            uniqueName = reader.ReadString();
-                            break;
+                    case UniqueNamePropertyName:
+                        uniqueName = reader.ReadString();
+                        break;
 
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    default:
+                        reader.Skip();
+                        break;
                 }
+            }
 
-                return new ProjectMetadataContextInfo(fullPath, name, projectId, supportedFrameworks, targetFramework, uniqueName);
-            }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+            return new ProjectMetadataContextInfo(fullPath, name, projectId, supportedFrameworks, targetFramework, uniqueName);
         }
 
-        public void Serialize(ref MessagePackWriter writer, IProjectMetadataContextInfo? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, IProjectMetadataContextInfo value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 6);
             writer.Write(FullPathPropertyName);
             writer.Write(value.FullPath);

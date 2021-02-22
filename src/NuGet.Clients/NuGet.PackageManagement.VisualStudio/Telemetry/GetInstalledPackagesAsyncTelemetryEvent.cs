@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.Telemetry
 {
@@ -9,7 +10,7 @@ namespace NuGet.PackageManagement.Telemetry
     {
         private const string Data = "Data";
 
-        private static readonly string EventName = $"{DiagnosticEventName}/GetInstalledPackagesAsync";
+        private const string EventName = DiagnosticEventName + "/GetInstalledPackagesAsync";
 
         public GetInstalledPackagesAsyncTelemetryEvent()
             : base(EventName)
@@ -18,43 +19,33 @@ namespace NuGet.PackageManagement.Telemetry
 
         public void AddProject(NuGetProjectType projectType, string projectId, int nullCount, int totalCount)
         {
-            ProjectTypeAndData projectTypeAndData;
+            List<ProjectData> projectDatas;
 
-            if (ComplexData.TryGetValue(Data, out object value) && value is ProjectTypeAndData data)
+            if (ComplexData.TryGetValue(Data, out object value) && value is List<ProjectData> data)
             {
-                projectTypeAndData = data;
+                projectDatas = data;
             }
             else
             {
-                projectTypeAndData = new ProjectTypeAndData(projectType.ToString());
+                projectDatas = new List<ProjectData>();
 
-                ComplexData[Data] = projectTypeAndData;
+                ComplexData[Data] = projectDatas;
             }
 
-            projectTypeAndData.Projects.Add(new ProjectData(projectId, nullCount, totalCount));
-        }
-
-        private sealed class ProjectTypeAndData
-        {
-            public string ProjectType { get; }
-            public List<ProjectData> Projects { get; }
-
-            internal ProjectTypeAndData(string projectType)
-            {
-                ProjectType = projectType;
-                Projects = new List<ProjectData>();
-            }
+            projectDatas.Add(new ProjectData(projectId, projectType, nullCount, totalCount));
         }
 
         private sealed class ProjectData
         {
-            public string ProjectId { get; }
+            public TelemetryPiiProperty ProjectId { get; }
+            public string ProjectType { get; }
             public int NullCount { get; }
             public int TotalCount { get; }
 
-            internal ProjectData(string projectId, int nullCount, int totalCount)
+            internal ProjectData(string projectId, NuGetProjectType projectType, int nullCount, int totalCount)
             {
-                ProjectId = projectId;
+                ProjectId = new TelemetryPiiProperty(projectId);
+                ProjectType = projectType.ToString();
                 NullCount = nullCount;
                 TotalCount = totalCount;
             }

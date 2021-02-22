@@ -17,8 +17,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(ImplicitProjectActions))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(ImplicitProjectAction expectedResult)
         {
-            ImplicitProjectAction actualResult = SerializeThenDeserialize(ImplicitProjectActionFormatter.Instance, expectedResult);
+            ImplicitProjectAction? actualResult = SerializeThenDeserialize(ImplicitProjectActionFormatter.Instance, expectedResult);
 
+            Assert.NotNull(actualResult);
             Assert.Equal(expectedResult, actualResult);
         }
 

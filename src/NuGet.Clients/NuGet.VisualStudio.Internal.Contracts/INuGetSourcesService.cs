@@ -11,9 +11,18 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public interface INuGetSourcesService : IDisposable
     {
-        ValueTask<IReadOnlyList<PackageSource>> GetPackageSourcesAsync(CancellationToken cancellationToken);
-#pragma warning disable CS0618 // Type or member is obsolete
+        /// <remarks> First available in version 1.0.1 </remarks>
+        event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
+
+        /// <remarks> First available in version 1.0.1 </remarks>
+        ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken);
+
+        /// <remarks> First available in version 1.0.1 </remarks>
+        ValueTask SavePackageSourceContextInfosAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken);
+
+        ValueTask<IReadOnlyList<PackageSourceContextInfo>> GetPackageSourcesAsync(CancellationToken cancellationToken);
+
+        [Obsolete("Remove in next version")]
         ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, PackageSourceUpdateOptions packageSourceUpdateOptions, CancellationToken cancellationToken);
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackagesWithUpdatesAsync_WithAllVersions_RetrievesSingleUpdate()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), installedReferences: null);
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
@@ -63,9 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 serviceBroker.Object,
                 new[] { testPackageIdentity },
                 _metadataProvider,
-                new[] { projectA },
-                optionalCachedUpdates: null,
-                NullLogger.Instance);
+                new[] { projectA });
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(
@@ -89,7 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackagesWithUpdatesAsync_WithAllowedVersions_RetrievesSingleUpdate()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), installedReferences: null);
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
@@ -100,9 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 serviceBroker.Object,
                 new[] { testPackageIdentity },
                 _metadataProvider,
-                new[] { projectA },
-                optionalCachedUpdates: null,
-                NullLogger.Instance);
+                new[] { projectA });
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(
@@ -126,7 +122,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultipleProjects_RetrievesSingleUpdate1()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), installedReferences: null);
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
@@ -141,9 +137,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 serviceBroker.Object,
                 new[] { testPackageIdentity },
                 _metadataProvider,
-                new[] { projectA, projectB },
-                optionalCachedUpdates: null,
-                NullLogger.Instance);
+                new[] { projectA, projectB });
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(
@@ -168,7 +162,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultipleProjects_RetrievesSingleUpdate2()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), installedReferences: null);
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
@@ -183,9 +177,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 serviceBroker.Object,
                 new[] { testPackageIdentity },
                 _metadataProvider,
-                new[] { projectA, projectB },
-                optionalCachedUpdates: null,
-                NullLogger.Instance);
+                new[] { projectA, projectB });
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(
@@ -210,7 +202,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultipleProjects_RetrievesSingleUpdate3()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), installedReferences: null);
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
@@ -225,9 +217,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 serviceBroker.Object,
                 new[] { testPackageIdentity },
                 _metadataProvider,
-                new[] { projectA, projectB },
-                optionalCachedUpdates: null,
-                NullLogger.Instance);
+                new[] { projectA, projectB });
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(
@@ -252,7 +242,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultipleProjects_RetrievesNoUpdates()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), installedReferences: null);
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
@@ -260,13 +250,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             IProjectContextInfo projectB = SetupProject(projectManagerService, "FakePackage", "1.0.1", "[1,2)");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
-            UpdatePackageFeed _target = new UpdatePackageFeed(
+            var _target = new UpdatePackageFeed(
                 serviceBroker.Object,
                 new[] { testPackageIdentity },
                 _metadataProvider,
-                new[] { projectA, projectB },
-                optionalCachedUpdates: null,
-                NullLogger.Instance);
+                new[] { projectA, projectB });
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(
@@ -282,7 +270,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackagesWithUpdatesAsync_WithHttpCache_RetrievesUpdate()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), installedReferences: null);
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
@@ -293,9 +281,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 serviceBroker.Object,
                 new[] { testPackageIdentity },
                 _metadataProvider,
-                new[] { projectA },
-                optionalCachedUpdates: null,
-                NullLogger.Instance);
+                new[] { projectA });
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(
@@ -377,9 +363,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultiplePackages_SortedByPackageId()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), null);
-            var testPackageIdentity2 = new PackageCollectionItem("AFakePackage", NuGetVersion.Parse("1.0.0"), null);
-            var testPackageIdentity3 = new PackageCollectionItem("ZFakePackage", NuGetVersion.Parse("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), installedReferences: null);
+            var testPackageIdentity2 = new PackageCollectionItem("AFakePackage", NuGetVersion.Parse("1.0.0"), installedReferences: null);
+            var testPackageIdentity3 = new PackageCollectionItem("ZFakePackage", NuGetVersion.Parse("1.0.0"), installedReferences: null);
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
@@ -394,9 +380,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 serviceBroker.Object,
                 new[] { testPackageIdentity, testPackageIdentity2, testPackageIdentity3 },
                 _metadataProvider,
-                new[] { projectA, projectB, projectC },
-                optionalCachedUpdates: null,
-                NullLogger.Instance);
+                new[] { projectA, projectB, projectC });
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(

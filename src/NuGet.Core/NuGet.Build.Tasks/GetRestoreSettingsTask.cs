@@ -95,7 +95,7 @@ namespace NuGet.Build.Tasks
         public override bool Execute()
         {
 #if DEBUG
-            var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
+            var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_SETTINGS_TASK");
             if (!string.IsNullOrEmpty(debugRestoreTask) && debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
                 System.Diagnostics.Debugger.Launch();

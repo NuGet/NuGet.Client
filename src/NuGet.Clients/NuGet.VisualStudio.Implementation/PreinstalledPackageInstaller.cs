@@ -360,8 +360,7 @@ namespace NuGet.VisualStudio
 
                 DirectoryInfo packageFolder = new DirectoryInfo(Path.Combine(repositoryPath, packagePath));
 
-                PackageFolderReader reader = new PackageFolderReader(packageFolder);
-
+                using var reader = new PackageFolderReader(packageFolder);
                 var frameworkGroups = reader.GetReferenceItems();
 
                 var groups = reader.GetReferenceItems();

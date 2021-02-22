@@ -3,9 +3,8 @@
 
 using System;
 using System.Linq;
-using System.Threading;
 using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Threading;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -24,23 +23,16 @@ namespace NuGet.PackageManagement.UI.Test
     [Collection(MockedVS.Collection)]
     public class NuGetUITests : IDisposable
     {
-        private readonly JoinableTaskContext _joinableTaskContext;
         private readonly TestDirectory _testDirectory;
 
-        public NuGetUITests()
+        public NuGetUITests(GlobalServiceProvider sp)
         {
-#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-            _joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
-#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_joinableTaskContext.Factory);
-
+            sp.Reset();
             _testDirectory = TestDirectory.Create();
         }
 
         public void Dispose()
         {
-            _joinableTaskContext?.Dispose();
             _testDirectory.Dispose();
         }
 
@@ -109,9 +101,38 @@ namespace NuGet.PackageManagement.UI.Test
                         && logMessage.Message == ExceptionUtilities.DisplayMessage(exception, indent))));
             projectLogger.Setup(
                 x => x.Log(
-                    It.Is<ILogMessage>(
-                        logMessage => logMessage.Level == LogLevel.Error
-                        && logMessage.Message == exception.ToString())));
+                    It.Is<MessageLevel>(level => level == MessageLevel.Error),
+                    It.Is<string>(message => message == exception.ToString())));
+
+            using (NuGetUI ui = CreateNuGetUI(defaultLogger.Object, projectLogger.Object))
+            {
+                ui.ShowError(exception);
+
+                defaultLogger.VerifyAll();
+                projectLogger.VerifyAll();
+            }
+        }
+
+        [Fact]
+        public void ShowError_WhenArgumentIsRemoteInvocationExceptionForOtherException_ShowsError()
+        {
+            var remoteException = new ArgumentException(message: "a", new DivideByZeroException(message: "b"));
+            var remoteError = RemoteErrorUtility.ToRemoteError(remoteException);
+            var exception = new RemoteInvocationException(
+                message: "c",
+                errorCode: 0,
+                errorData: null,
+                deserializedErrorData: remoteError);
+            var defaultLogger = new Mock<INuGetUILogger>();
+            var projectLogger = new Mock<INuGetUILogger>();
+
+            defaultLogger.Setup(
+                x => x.ReportError(
+                    It.Is<ILogMessage>(logMessage => ReferenceEquals(logMessage, remoteError.LogMessage))));
+            projectLogger.Setup(
+                x => x.Log(
+                    It.Is<MessageLevel>(level => level == MessageLevel.Error),
+                    It.Is<string>(message => message == remoteException.ToString())));
 
             using (NuGetUI ui = CreateNuGetUI(defaultLogger.Object, projectLogger.Object))
             {
@@ -150,7 +171,6 @@ namespace NuGet.PackageManagement.UI.Test
                 _testDirectory.Path);
 
             return new NuGetUIContext(
-                sourceRepositoryProvider,
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<IVsSolutionManager>(),
                 new NuGetSolutionManagerServiceWrapper(),
@@ -162,7 +182,8 @@ namespace NuGet.PackageManagement.UI.Test
                 Mock.Of<IPackageRestoreManager>(),
                 Mock.Of<IOptionsPageActivator>(),
                 Mock.Of<IUserSettingsManager>(),
-                Enumerable.Empty<IVsPackageManagerProvider>());
+                Enumerable.Empty<IVsPackageManagerProvider>(),
+                new NuGetSourcesServiceWrapper());
         }
     }
 }

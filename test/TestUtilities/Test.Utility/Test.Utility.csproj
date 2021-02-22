@@ -46,6 +46,7 @@
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Resolver\NuGet.Resolver.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,8 +75,7 @@
 
   <!-- Remove files that do not support netcore -->
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <Compile Remove="PackageManagement\*.cs" />
-    <Compile Remove="ProjectManagement\*.cs" />
+    <Compile Remove="ProjectManagement\TestProjectKProject.cs" />
     <Compile Remove="Threading\*.cs" />
   </ItemGroup>
 

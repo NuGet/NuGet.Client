@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -95,7 +94,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         FileConflictAction FileConflictAction { get; }
 
-        IEnumerable<SourceRepository> ActiveSources { get; }
+        PackageSourceMoniker ActivePackageSourceMoniker { get; }
 
         bool RemoveDependencies { get; }
 

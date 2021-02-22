@@ -7,8 +7,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
-using Moq;
 using NuGet.VisualStudio;
 using Xunit;
 
@@ -78,65 +76,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void WhenMultipleProvidersMatchingVstsContractFound_ThenInsertAll()
-        {
-            // Arrange
-            // This simulates the fact that a third-party credential provider could export using the same 
-            // contract name as the VisualStudioAccountProvider from TeamExplorer.
-            // When this happens, both should just happily load.
-            var importer = GetTestableImporter();
-            var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
-            importer.VisualStudioAccountProviders = new List<Lazy<IVsCredentialProvider>>
-            {
-                new Lazy<IVsCredentialProvider>(() => testableProvider),
-                new Lazy<IVsCredentialProvider>(() => new NonFailingCredentialProvider())
-            };
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            // We expect 2 providers:
-            Assert.Equal(2, results.Count);
-            Assert.DoesNotContain(_visualStudioAccountProvider, results);
-        }
-
-        [Fact]
-        public void ImportsAllFoundProviders()
-        {
-            // Arrange
-            // This test verifies the scenario where multiple credential providers are found, both third-party,
-            // as well as matching the contract name of the "VisualStudioAccountProvider".
-            // All of them should just happily import.
-            var importer = GetTestableImporter();
-            var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
-            importer.VisualStudioAccountProviders = new List<Lazy<IVsCredentialProvider>>
-            {
-                new Lazy<IVsCredentialProvider>(() => testableProvider),
-                new Lazy<IVsCredentialProvider>(() => new NonFailingCredentialProvider()),
-                // This one will not be imported
-                new Lazy<IVsCredentialProvider>(() => new FailingCredentialProvider())
-            };
-            importer.ImportedProviders = new List<Lazy<IVsCredentialProvider>>
-            {
-                new Lazy<IVsCredentialProvider>(() => new ThirdPartyCredentialProvider()),
-                // This one will not be imported
-                new Lazy<IVsCredentialProvider>(() => new FailingCredentialProvider())
-            };
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            // We expect 3 providers:
-            // The 2 proviers matching the "VisualStudioAccountProvider" contract name,
-            // and the "third party" provider.
-            // The "failing" credential providers will not be imported, as they are failing :)
-            Assert.Equal(3, results.Count);
-            Assert.DoesNotContain(_visualStudioAccountProvider, results);
-        }
-
-        [Fact]
         public void WhenVstsIntializerThrows_ThenExceptionBubblesOut()
         {
             // Arrange
@@ -148,29 +87,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Act & Assert
             var actual = Assert.Throws<ArgumentException>(() => importer.GetProviders());
             Assert.Same(exception, actual);
-        }
-
-        [Fact]
-        public void WhenImportedProviderFailsOnDev15_ThenOtherProvidersAreStillImportedExcludingBuiltInProvider()
-        {
-            // Arrange
-            var importer = GetTestableImporter();
-            var nonFailingProviderFactory = new Lazy<IVsCredentialProvider>(() => new NonFailingCredentialProvider());
-            var failingProviderFactory = new Lazy<IVsCredentialProvider>(() => new FailingCredentialProvider());
-            importer.ImportedProviders = new List<Lazy<IVsCredentialProvider>>
-            {
-                nonFailingProviderFactory,
-                failingProviderFactory
-            };
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            // We expect a single provider:
-            // The non-failing provider, and NO built-in provider on dev15
-            Assert.Equal(1, results.Count);
-            Assert.DoesNotContain(_visualStudioAccountProvider, results);
         }
     }
 }

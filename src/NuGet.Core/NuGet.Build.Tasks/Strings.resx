@@ -169,4 +169,10 @@
   <data name="DeterminingProjectsToRestore" xml:space="preserve">
     <value>Determining projects to restore...</value>
   </data>
+  <data name="Error_DgSpecGenerationFailed" xml:space="preserve">
+    <value>Cannot write the dependency graph spec because the generation failed.</value>
+  </data>
+  <data name="Error_MissingRestoreGraphOutputPath" xml:space="preserve">
+    <value>Cannot write the dependency graph spec because the `RestoreGraphOutputPath` is missing.</value>
+  </data>
 </root>

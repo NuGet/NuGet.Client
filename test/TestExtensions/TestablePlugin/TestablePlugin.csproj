@@ -18,7 +18,6 @@
 
   <ItemGroup Condition="'$(IsCore)' == 'true'">
     <PackageReference Include="System.Collections" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Diagnostics.Debug" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.Runtime.Extensions" Version="$(SystemPackagesVersion)" />

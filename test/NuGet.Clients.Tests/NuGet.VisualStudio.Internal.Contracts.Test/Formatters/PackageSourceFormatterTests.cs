@@ -15,9 +15,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(PackageSources))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(PackageSource expectedResult)
         {
-            PackageSource actualResult = SerializeThenDeserialize(PackageSourceFormatter.Instance, expectedResult);
+            PackageSource? actualResult = SerializeThenDeserialize(PackageSourceFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.Name, actualResult.Name);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.Name, actualResult!.Name);
             Assert.Equal(expectedResult.Source, actualResult.Source);
             Assert.Equal(expectedResult.IsEnabled, actualResult.IsEnabled);
             Assert.Equal(expectedResult.IsMachineWide, actualResult.IsMachineWide);

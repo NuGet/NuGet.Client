@@ -44,7 +44,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
                 var actual = MSBuildStaticGraphRestore.GetFrameworkReferences(project);
 
-                actual.ShouldBeEquivalentTo(new List<FrameworkDependency>
+                actual.Should().BeEquivalentTo(new List<FrameworkDependency>
                 {
                     new FrameworkDependency("FrameworkA", FrameworkDependencyFlags.None),
                     new FrameworkDependency("FrameworkB", FrameworkDependencyFlags.All),
@@ -68,7 +68,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
             var actual = MSBuildStaticGraphRestore.GetTargetFrameworkStrings(project);
 
-            actual.ShouldBeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
                 var actual = MSBuildStaticGraphRestore.GetPackageDownloads(project);
 
-                actual.ShouldBeEquivalentTo(new List<DownloadDependency>
+                actual.Should().BeEquivalentTo(new List<DownloadDependency>
                 {
                     new DownloadDependency("PackageA", VersionRange.Parse("[1.1.1]")),
                     new DownloadDependency("PackageB", VersionRange.Parse("[1.2.3]")),
@@ -125,7 +125,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
 
-                act.ShouldThrow<ArgumentException>().WithMessage($"'{expected ?? VersionRange.Parse(version).OriginalString}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.");
+                act.Should().Throw<ArgumentException>().WithMessage($"'{expected ?? VersionRange.Parse(version).OriginalString}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.");
             }
         }
 
@@ -157,7 +157,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
                 var actual = MSBuildStaticGraphRestore.GetPackageReferences(project, false);
 
-                actual.ShouldBeEquivalentTo(new List<LibraryDependency>
+                actual.Should().BeEquivalentTo(new List<LibraryDependency>
                 {
                     new LibraryDependency
                     {
@@ -294,7 +294,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
                 var actual = MSBuildStaticGraphRestore.GetProjectReferences(project);
 
-                actual.ShouldBeEquivalentTo(new[]
+                actual.Should().BeEquivalentTo(new[]
                 {
                     new ProjectRestoreReference
                     {
@@ -364,7 +364,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
                 var actual = MSBuildStaticGraphRestore.GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projects);
 
-                actual.ShouldBeEquivalentTo(new[]
+                actual.Should().BeEquivalentTo(new[]
                 {
                     new ProjectRestoreMetadataFrameworkInfo(FrameworkConstants.CommonFrameworks.Net45)
                     {
@@ -438,14 +438,14 @@ namespace NuGet.Build.Tasks.Console.Test
 
                 var actual = MSBuildStaticGraphRestore.GetProjectTargetFrameworks(project, innerNodes);
 
-                actual.Keys.ShouldBeEquivalentTo(
+                actual.Keys.Should().BeEquivalentTo(
                     new[]
                     {
                         "net45",
                         "netstandard2.0"
                     });
 
-                actual.Values.Select(i => i.FullPath).ShouldBeEquivalentTo(
+                actual.Values.Select(i => i.FullPath).Should().BeEquivalentTo(
                     new[]
                     {
                         "Project-net45",
@@ -600,7 +600,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
             var actual = MSBuildStaticGraphRestore.GetSources(project, projectsByTargetFramework, settings);
 
-            actual.ShouldBeEquivalentTo(new[]
+            actual.Should().BeEquivalentTo(new[]
             {
                 new PackageSource("https://source1"),
                 new PackageSource("https://source2"),
@@ -633,7 +633,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
             var actual = MSBuildStaticGraphRestore.GetSources(project, new[] { project }, settings);
 
-            actual.ShouldBeEquivalentTo(new[]
+            actual.Should().BeEquivalentTo(new[]
             {
                 new PackageSource("https://source3"),
             });
@@ -659,7 +659,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
             var actual = MSBuildStaticGraphRestore.GetSources(project, new[] { project }, settings);
 
-            actual.ShouldBeEquivalentTo(new[]
+            actual.Should().BeEquivalentTo(new[]
             {
                 new PackageSource("https://source1"),
                 new PackageSource("https://source2"),

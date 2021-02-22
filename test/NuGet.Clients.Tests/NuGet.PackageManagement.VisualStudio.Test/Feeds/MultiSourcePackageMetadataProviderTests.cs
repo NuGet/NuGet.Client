@@ -199,6 +199,26 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
 
             [Fact]
+            public async Task GetPackageMetadataForIdentityAsync_WithoutVersions()
+            {
+                // Arrange
+                var testProject = SetupProject(TestPackageIdentity, "[1,2)");
+                SetupRemotePackageMetadata(TestPackageIdentity.Id, "0.0.1", "1.0.0", "1.12", "2.0.1", "2.0.0", "1.0.1");
+
+                // Act
+                var specificVersion = await _target.GetPackageMetadataForIdentityAsync(
+                    new PackageIdentity(TestPackageIdentity.Id, new NuGetVersion("1.12")),
+                    cancellationToken: CancellationToken.None);
+
+                // Assert
+                Assert.NotNull(specificVersion);
+                Assert.Equal("1.12", specificVersion.Identity.Version.ToString());
+
+                var actualVersions = await specificVersion.GetVersionsAsync();
+                Assert.Equal(new[] { "1.12" }, actualVersions.Select(v => v.Version.ToString()).ToArray());
+            }
+
+            [Fact]
             public async Task GetLatestPackageMetadataAsync_WithAllowedVersions_RetrievesLatestVersion()
             {
                 // Arrange

@@ -3766,7 +3766,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_LogsSourceOnVerboseLevel()
+        public async Task InstallFromSourceAsync_LogsSourceOnNormalLevel()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -3803,7 +3803,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
-                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source}");
+                    var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }
@@ -3854,7 +3855,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_WithPackageDownloader_LogsSourceOnVerboseLevel()
+        public async Task InstallFromSourceAsync_WithPackageDownloader_LogsSourceOnNormalLevel()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -3897,7 +3898,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
-                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source}");
+                    var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }

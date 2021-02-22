@@ -87,8 +87,11 @@
                     Margin="4,12,4,0"
                     VerticalAlignment="top"
                     Visibility="{Binding CheckBoxesEnabled, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}, Converter={StaticResource NonVisualStateHiddenBooleanToVisibilityConverter}}"
+                    Focusable="False"
                     AutomationProperties.Name="{x:Static nuget:Resources.CheckBox_Selected}"
-                    IsChecked="{Binding Selected}" />
+                    IsChecked="{Binding IsSelected}"
+                    Checked="CheckBox_Toggled"
+                    Unchecked="CheckBox_Toggled"/>
 
       <!-- Icon -->
       <Grid
@@ -219,9 +222,9 @@
       </Grid>
 
       <Grid
-                    Grid.Column="3"
-                    VerticalAlignment="Top"
-                    Margin="10,0,0,0">
+              Grid.Column="3"
+              VerticalAlignment="Top"
+              Margin="10,0,0,0">
         <Grid.RowDefinitions>
           <RowDefinition />
           <RowDefinition />
@@ -229,58 +232,53 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="auto" />
           <ColumnDefinition Width="auto" />
+          <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
 
         <!-- row 0: -->
-        <Grid
+        <!-- deprecation indicator -->
+        <imaging:CrispImage
+                      x:Name="_deprecationIndicator"
                       Grid.Row="0"
                       Grid.Column="0"
-                      HorizontalAlignment="Right">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-          </Grid.ColumnDefinitions>
+                      Visibility="{Binding IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
+                      VerticalAlignment="Center"
+                      ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
+                      AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
+                      Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
 
-          <!-- deprecation indicator -->
-          <imaging:CrispImage
-                        x:Name="_deprecationIndicator"
-                        Grid.Column="0"
-                        Visibility="{Binding IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
-                        VerticalAlignment="Center"
-                        ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
-                        AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
-                        Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
-
-          <!-- installed version -->
-          <TextBlock
-                        x:Name="_installedVersion"
-                        Grid.Column="1"
-                        Margin="4,0,4,0"
-                        VerticalAlignment="Center"
-                        Visibility="{Binding IsNotInstalled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
-                        Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}">
-            <TextBlock.ToolTip>
-              <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
-                <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
-              </MultiBinding>
-            </TextBlock.ToolTip>
-            <AutomationProperties.Name>
-              <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
-                <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
-              </MultiBinding>
-            </AutomationProperties.Name>
-          </TextBlock>
-        </Grid>
+        <!-- installed version -->
+        <TextBlock
+                      x:Name="_installedVersion"
+                      Grid.Row="0"
+                      Grid.Column="1"
+                      Margin="4,0,4,0"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Right"
+                      Visibility="{Binding IsNotInstalled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+                      Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}">
+          <TextBlock.ToolTip>
+            <MultiBinding Converter="{StaticResource StringFormatConverter}">
+              <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
+              <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
+            </MultiBinding>
+          </TextBlock.ToolTip>
+          <AutomationProperties.Name>
+            <MultiBinding Converter="{StaticResource StringFormatConverter}">
+              <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
+              <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
+            </MultiBinding>
+          </AutomationProperties.Name>
+        </TextBlock>
 
         <!-- version to install. It occupies the same position as the installed version -->
         <TextBlock
                       x:Name="_versionToInstall"
                       Grid.Row="0"
-                      Grid.Column="0"
+                      Grid.Column="1"
                       Margin="2,0,4,0"
                       VerticalAlignment="Center"
+                      HorizontalAlignment="Right"
                       TextAlignment="Right"
                       Visibility="{Binding IsNotInstalled, Converter={StaticResource BooleanToVisibilityConverter}}"
                       Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}"
@@ -291,7 +289,7 @@
         <Button
                       x:Name="_uninstallButton"
                       Grid.Row="0"
-                      Grid.Column="1"
+                      Grid.Column="2"
                       Command="{x:Static nuget:Commands.UninstallPackageCommand}"
                       CommandParameter="{Binding}"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Uninstall}"
@@ -338,7 +336,7 @@
         <Button
                       x:Name="_installButton"
                       Grid.Row="0"
-                      Grid.Column="1"
+                      Grid.Column="2"
                       Command="{x:Static nuget:Commands.InstallPackageCommand}"
                       CommandParameter="{Binding}"
                       ToolTip="{Binding InstalledVersionToolTip}"
@@ -378,7 +376,7 @@
         <TextBlock
                       x:Name="_versionToUpdateTo"
                       Grid.Row="1"
-                      Grid.Column="0"
+                      Grid.Column="1"
                       Margin="2,5,4,0"
                       VerticalAlignment="Center"
                       TextAlignment="Right"

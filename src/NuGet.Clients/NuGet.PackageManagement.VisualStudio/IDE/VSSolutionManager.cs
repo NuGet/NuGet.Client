@@ -26,6 +26,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -184,8 +185,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
             });
 
-            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
-
             _vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
 
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
@@ -278,7 +277,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<bool> IsAllProjectsNominatedAsync()
         {
-            var netCoreProjects = (await GetNuGetProjectsAsync()).OfType<CpsPackageReferenceProject>().ToList();
+            var netCoreProjects = (await GetNuGetProjectsAsync())
+                            .Where(e => IsRestoredOnSolutionLoad(e))
+                            .Cast<BuildIntegratedNuGetProject>()
+                            .ToList();
 
             foreach (var project in netCoreProjects)
             {
@@ -294,6 +296,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // return true if all the net core projects have been nominated.
             return true;
+        }
+
+
+        private static bool IsRestoredOnSolutionLoad(NuGetProject nuGetProject)
+        {
+            if (nuGetProject is CpsPackageReferenceProject)
+            {
+                return true;
+            }
+            if (nuGetProject is LegacyPackageReferenceProject legacyPackageReferenceProject)
+            {
+                return legacyPackageReferenceProject.ProjectServices.Capabilities.NominatesOnSolutionLoad;
+            }
+            return false;
         }
 
         /// <summary>
@@ -482,6 +498,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SolutionOpening?.Invoke(this, EventArgs.Empty);
 
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
             if (!await IsSolutionOpenAsync())
@@ -509,6 +527,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnBeforeClosing()
         {
+            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+
             SolutionClosing?.Invoke(this, EventArgs.Empty);
         }
 
@@ -787,14 +807,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else
                 {
-                    // Check if the cache is initialized.
-                    // It is possible that the cache is not initialized, since,
-                    // the solution was not saved and/or there were no projects in the solution
-                    if (!_cacheInitialized && _solutionOpenedRaised)
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        await EnsureNuGetAndVsProjectAdapterCacheAsync();
-                    }
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
                 }
             }
             catch (Exception e)

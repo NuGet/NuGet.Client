@@ -81,13 +81,10 @@ namespace NuGet.Protocol
                         headerStopwatch = new Stopwatch();
                         stopwatches.Add(headerStopwatch);
                     }
-#if USE_HTTPREQUESTMESSAGE_OPTIONS
+#if NET5_0
                     requestMessage.Options.Set(new HttpRequestOptionsKey<List<Stopwatch>>(StopwatchPropertyName), stopwatches);
 #else
-                    // stop ignoring CS0618 when fixing https://github.com/NuGet/Home/issues/9981
-#pragma warning disable CS0618
                     requestMessage.Properties[StopwatchPropertyName] = stopwatches;
-#pragma warning restore CS0618
 #endif
                     var requestUri = requestMessage.RequestUri;
 

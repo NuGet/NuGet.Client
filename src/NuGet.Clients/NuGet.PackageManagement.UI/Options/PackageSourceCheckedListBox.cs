@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using NuGet.PackageManagement.UI;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.Options
 {
@@ -44,7 +45,7 @@ namespace NuGet.Options
                 return;
             }
 
-            var currentItem = (Configuration.PackageSource)currentListBox.Items[e.Index];
+            var currentItem = (PackageSourceContextInfo)currentListBox.Items[e.Index];
 
             using (var drawFormat = new StringFormat())
             {

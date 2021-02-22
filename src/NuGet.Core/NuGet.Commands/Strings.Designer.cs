@@ -1682,6 +1682,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Skipping the lock file regeneration for &apos;{0}&apos;..
+        /// </summary>
+        internal static string Log_SkippingPackagesLockFileGeneration {
+            get {
+                return ResourceManager.GetString("Log_SkippingPackagesLockFileGeneration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Skipping runtime dependency walk, no runtimes defined in project.json..
         /// </summary>
         internal static string Log_SkippingRuntimeWalk {

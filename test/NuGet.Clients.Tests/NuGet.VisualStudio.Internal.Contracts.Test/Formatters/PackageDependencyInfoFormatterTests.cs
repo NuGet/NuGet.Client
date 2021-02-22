@@ -18,8 +18,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(PackageDependencyInfos))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(PackageDependencyInfo expectedResult)
         {
-            PackageDependencyInfo actualResult = SerializeThenDeserialize(PackageDependencyInfoFormatter.Instance, expectedResult);
+            PackageDependencyInfo? actualResult = SerializeThenDeserialize(PackageDependencyInfoFormatter.Instance, expectedResult);
 
+            Assert.NotNull(actualResult);
             Assert.Equal(expectedResult, actualResult);
         }
 

@@ -13,9 +13,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(IProjectContextInfos))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(IProjectContextInfo expectedResult)
         {
-            IProjectContextInfo actualResult = SerializeThenDeserialize(IProjectContextInfoFormatter.Instance, expectedResult);
+            IProjectContextInfo? actualResult = SerializeThenDeserialize(IProjectContextInfoFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.ProjectId, actualResult.ProjectId);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.ProjectId, actualResult!.ProjectId);
             Assert.Equal(expectedResult.ProjectStyle, actualResult.ProjectStyle);
             Assert.Equal(expectedResult.ProjectKind, actualResult.ProjectKind);
         }

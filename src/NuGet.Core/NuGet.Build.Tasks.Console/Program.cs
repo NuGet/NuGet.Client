@@ -76,6 +76,16 @@ namespace NuGet.Build.Tasks.Console
             }
 #endif
 
+            // Check whether the ask is to generate the restore graph file.
+            if (MSBuildStaticGraphRestore.IsOptionTrue("GenerateRestoreGraphFile", arguments.Options))
+            {
+                using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(debug: debug))
+                {
+                    return dependencyGraphSpecGenerator.WriteDependencyGraphSpec(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
+                }
+            }
+
+            // Otherwise run restore!
             using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(debug: debug))
             {
                 return await dependencyGraphSpecGenerator.RestoreAsync(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;

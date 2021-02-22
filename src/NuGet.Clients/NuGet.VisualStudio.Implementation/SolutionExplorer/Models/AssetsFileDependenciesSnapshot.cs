@@ -102,7 +102,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             DataByTarget = dataByTarget.ToImmutable();
             return;
 
-            static ImmutableArray<AssetsFileLogMessage> ParseLogMessages(LockFile lockFile, AssetsFileTarget previousTarget, string target)
+            static ImmutableArray<AssetsFileLogMessage> ParseLogMessages(LockFile lockFile, AssetsFileTarget? previousTarget, string target)
             {
                 if (lockFile.LogMessages.Count == 0)
                 {
