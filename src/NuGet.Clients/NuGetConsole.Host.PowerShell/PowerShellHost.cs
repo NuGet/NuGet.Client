@@ -553,7 +553,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 await ExecuteInitScriptsAsync();
             });
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
             ActiveConsole = console;
 
             string fullCommand;
@@ -571,8 +570,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         protected void OnExecuteCommandEnd()
         {
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionEnd);
-
             // dispose token source related to this current command
             _tokenSource?.Dispose();
             _token = CancellationToken.None;
