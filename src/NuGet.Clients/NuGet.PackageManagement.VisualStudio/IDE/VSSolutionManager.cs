@@ -39,9 +39,9 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private static readonly string VSNuGetClientName = "NuGet VS VSIX";
-        private static readonly SemaphoreSlim SemaphoreLock = new SemaphoreSlim(1, 1);
 
         private readonly INuGetLockService _initLock;
+        private readonly ReentrantSemaphore _semaphoreLock = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
 
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
@@ -60,7 +60,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _initialized;
         private bool _cacheInitialized;
-
 
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
@@ -799,12 +798,11 @@ namespace NuGet.PackageManagement.VisualStudio
                     return;
                 }
 
-                try
-                {
-                    // Ensure all initialization finished when needed, it still runs as async and prevents _initialized set true too early.
-                    // Setting '_initialized = true' too early caused random timing bug.
-                    await SemaphoreLock.WaitAsync();
+                // Ensure all initialization finished when needed, it still runs as async and prevents _initialized set true too early.
+                // Setting '_initialized = true' too early caused random timing bug.
 
+                await _semaphoreLock.ExecuteAsync(async () =>
+                {
                     if (_initialized)
                     {
                         return;
@@ -821,14 +819,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
 
                     _initialized = true;
-                }
-                finally
-                {
-                    if (SemaphoreLock.CurrentCount == 0)
-                    {
-                        SemaphoreLock.Release();
-                    }
-                }
+                });
             }
             catch (Exception e)
             {
