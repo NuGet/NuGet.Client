@@ -56,7 +56,7 @@ namespace NuGet.ProjectModel
             return Path.Combine(baseDirectory, PackagesLockFileFormat.LockFileName);
         }
 
-        [Obsolete("Use IsLockFileValid instead.")]
+        [Obsolete("This method is obsolete. Call IsLockFileValid instead.")]
         public static bool IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
         {
             return IsLockFileValid(dgSpec, nuGetLockFile).IsValid;
