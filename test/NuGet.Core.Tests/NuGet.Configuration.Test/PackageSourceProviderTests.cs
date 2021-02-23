@@ -1814,7 +1814,7 @@ namespace NuGet.Configuration.Test
                 List<PackageSource> sources = LoadPackageSources(useStaticMethod, settings);
 
                 // Assert
-                Assert.Equal(1, sources.Count);
+                Assert.Equal(0, sources.Count);
             }
         }
 
@@ -2253,7 +2253,7 @@ namespace NuGet.Configuration.Test
 
         private static void CreateSettingsFileInTestingGlobalDirectory(TestDirectory directory)
         {
-            var settingsFile = new FileInfo(Path.Combine(directory.Path, "TestingGlobalPath", "NuGet.config"));
+            var settingsFile = new FileInfo(Path.Combine(directory.Path, "TestingGlobalPath", "NuGet.Config"));
 
             settingsFile.Directory.Create();
 

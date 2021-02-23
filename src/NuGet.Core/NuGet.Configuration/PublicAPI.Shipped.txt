@@ -484,7 +484,6 @@ static readonly NuGet.Configuration.ConfigurationConstants.UserKey -> string
 static readonly NuGet.Configuration.ConfigurationConstants.UsernameToken -> string
 static readonly NuGet.Configuration.ConfigurationConstants.ValidAuthenticationTypesToken -> string
 static readonly NuGet.Configuration.ConfigurationConstants.ValueAttribute -> string
-static readonly NuGet.Configuration.NuGetConstants.AddV3TrackFile -> string
 static readonly NuGet.Configuration.NuGetConstants.DefaultConfigContent -> string
 static readonly NuGet.Configuration.NuGetConstants.DefaultGalleryServerUrl -> string
 static readonly NuGet.Configuration.NuGetConstants.DefaultSymbolServerUrl -> string
