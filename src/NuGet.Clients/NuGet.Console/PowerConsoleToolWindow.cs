@@ -509,10 +509,8 @@ namespace NuGetConsole.Implementation
         {
             WpfConsole.Dispatcher.StartCompleted -= OnDispatcherStartCompleted;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                await OnDispatcherStartCompletedAsync();
-            }).PostOnFailure(nameof(PowerConsoleToolWindow), nameof(OnDispatcherStartCompleted));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnDispatcherStartCompletedAsync)
+                .PostOnFailure(nameof(PowerConsoleToolWindow), nameof(OnDispatcherStartCompleted));
         }
 
         private async Task OnDispatcherStartCompletedAsync()
