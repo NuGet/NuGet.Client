@@ -233,6 +233,21 @@ namespace NuGet.Versioning
                 }
             }
 
+            if (isMinInclusive && !isMaxInclusive)
+            {
+                if(minVersion > maxVersion)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (minVersion < maxVersion)
+                {
+                    return false;
+                }
+            }
+
             // Successful parse!
             versionRange = new VersionRange(
                 minVersion: minVersion,

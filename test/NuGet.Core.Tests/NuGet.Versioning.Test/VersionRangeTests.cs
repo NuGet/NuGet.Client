@@ -1503,5 +1503,17 @@ namespace NuGet.Versioning.Test
 
             Assert.Equal("1.9.0--beta", range.FindBestMatch(versions).ToNormalizedString());
         }
+
+        [Fact]
+        public void VersionRange_LogicallyIncorrectRanges_ReturnEmpty()
+        {
+            // Arrange
+            var range = "[1.1.4, 1.1.2)";
+
+            // Act & Assert
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => VersionRange.Parse(range));
+            Assert.Equal($"'{range}' is not a valid version string.", exception.Message);
+        }
     }
 }
