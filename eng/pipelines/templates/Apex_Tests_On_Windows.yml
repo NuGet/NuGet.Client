@@ -23,12 +23,6 @@ steps:
     versionSpec: "4.5.0"
 
 - task: PowerShell@1
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
-    arguments: '$(SDKVersionForBuild)'
-  displayName: "Install .NET 5.0 for build"
-
-- task: PowerShell@1
   displayName: "Define variables"
   inputs:
     scriptType: "inlineScript"

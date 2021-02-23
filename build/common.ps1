@@ -121,10 +121,6 @@ Function Invoke-BuildStep {
             else {
                 Error-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
-
-            if ($env:TEAMCITY_VERSION) {
-                Write-Output "##teamcity[blockClosed name='$BuildStep']"
-            }
         }
     }
     else {
@@ -257,8 +253,10 @@ Function Install-DotnetCLI {
     }
 
     # Install the 2.x runtime because our tests target netcoreapp2x
-    # Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath"
-    # & $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
+    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath"
+    # Work around the following install script bug https://github.com/dotnet/install-scripts/issues/152.
+    # Start a new process to avoid the ev getting populated.
+    & powershell $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
     # Display build info
     & $DotNetExe --info
 }
