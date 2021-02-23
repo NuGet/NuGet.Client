@@ -561,7 +561,10 @@ namespace NuGet.Commands
                 {
                     // check if lock file is out of sync with project data
                     lockFileTelemetry.StartIntervalMeasure();
-                    isLockFileValid = PackagesLockFileUtilities.IsLockFileStillValid(_request.DependencyGraphSpec, packagesLockFile);
+
+                    LockFileValidationResult lockFileResult = PackagesLockFileUtilities.IsLockFileValid(_request.DependencyGraphSpec, packagesLockFile);
+                    isLockFileValid = lockFileResult.IsValid;
+
                     lockFileTelemetry.EndIntervalMeasure(ValidateLockFileDuration);
 
                     if (isLockFileValid)
@@ -581,9 +584,16 @@ namespace NuGet.Commands
                     else if (_request.IsRestoreOriginalAction && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode)
                     {
                         success = false;
+                        var invalidReasons = string.Join(Environment.NewLine, lockFileResult.InvalidReasons);
 
                         // bail restore since it's the locked mode but required to update the lock file.
-                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
+                        var message = RestoreLogMessage.CreateError(NuGetLogCode.NU1004,
+                                                string.Format(
+                                                CultureInfo.CurrentCulture,
+                                                string.Concat(invalidReasons,
+                                                Strings.Error_RestoreInLockedMode)));
+
+                        await _logger.LogAsync(message);
                     }
                 }
             }

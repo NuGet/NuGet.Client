@@ -1,0 +1,5 @@
+NuGet.ProjectModel.LockFileValidationResult
+NuGet.ProjectModel.LockFileValidationResult.InvalidReasons.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.ProjectModel.LockFileValidationResult.IsValid.get -> bool
+NuGet.ProjectModel.LockFileValidationResult.LockFileValidationResult(bool isValid, System.Collections.Generic.IReadOnlyList<string> invalidReasons) -> void
+static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> NuGet.ProjectModel.LockFileValidationResult
