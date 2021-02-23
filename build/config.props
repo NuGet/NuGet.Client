@@ -32,17 +32,7 @@
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
 
-    <!-- .NET Core SDK Insertion Logic -->
-    <!--We don't have .NET5 installed on CI, so we need to get version from CliVersionForBuilding and install it-->
-    <!--TODO: remove temporary workaround of using LockSDKVersion. Tracking issue: https://github.com/NuGet/Home/issues/9712 -->
-    <LockSDKVersion>true</LockSDKVersion>
-    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'false'"></OverrideCliBranchForTesting>
-    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">master 5.0.100</OverrideCliBranchForTesting>
-    <CliVersionForBuilding>"master 5.0.100"</CliVersionForBuilding>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">master</CliBranchForTesting>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</CliTargetBranches>
+    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">5.0.3xx</CliBranchForTesting>
   </PropertyGroup>
 
   <!-- Config -->
@@ -82,13 +72,7 @@
   <Target Name="GetVsTargetChannel">
     <Message Text="$(VsTargetChannel)" Importance="High"/>
   </Target>
-  <Target Name="GetCliTargetBranches">
-    <Message Text="$(CliTargetBranches)" Importance="High"/>
-  </Target>
   <Target Name="GetCliBranchForTesting">
       <Message Text="$(CliBranchForTesting)" Importance="High"/>
-  </Target>
-  <Target Name="GetCliVersionForBuilding">
-      <Message Text="$(CliVersionForBuilding)" Importance="High"/>
   </Target>
 </Project>
