@@ -123,6 +123,7 @@ namespace NuGet.Versioning
             NuGetVersion minVersion = null;
             NuGetVersion maxVersion = null;
             FloatRange floatRange = null;
+            int partsLength = 0;
 
             if (charArray[0] == '('
                 || charArray[0] == '[')
@@ -158,7 +159,9 @@ namespace NuGet.Versioning
 
                 // Split by comma, and make sure we don't get more than two pieces
                 var parts = trimmedValue.Split(',');
-                if (parts.Length > 2)
+                partsLength = parts.Length;
+
+                if (partsLength > 2)
                 {
                     return false;
                 }
@@ -233,13 +236,9 @@ namespace NuGet.Versioning
                 }
             }
 
-            if ((minVersion != null && maxVersion != null)
-                && ((isMinInclusive ^ isMaxInclusive) || (isMinInclusive && isMaxInclusive) || (!isMinInclusive && !isMaxInclusive)))
+            if (partsLength > 1 && minVersion != null && maxVersion != null && minVersion >= maxVersion)
             {
-                if (minVersion >= maxVersion)
-                {
-                    return false;
-                }
+                return false;
             }
 
             // Successful parse!
