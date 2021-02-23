@@ -244,8 +244,8 @@ namespace NuGet.PackageManagement.UI
             ContentMouseOverTextBrushKey = CommonDocumentColors.ListItemTextHoverBrushKey;
             ContentInactiveSelectedBrushKey = CommonDocumentColors.ListItemBackgroundUnfocusedBrushKey;
             ContentInactiveSelectedTextBrushKey = CommonDocumentColors.ListItemTextUnfocusedBrushKey;
-            ContentSelectedBrushKey = CommonDocumentColors.ListItemBackgroundFocusedBrushKey;
-            ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextFocusedBrushKey;
+            ContentSelectedBrushKey = CommonDocumentColors.ListItemBackgroundSelectedBrushKey;
+            ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextSelectedBrushKey;
 
             // Brushes/Colors for FilterLabel (Top Tabs)
             TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
