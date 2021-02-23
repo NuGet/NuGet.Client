@@ -1513,13 +1513,10 @@ namespace NuGet.Versioning.Test
         [InlineData("(1.1.4, 1.1.2)")]
         [InlineData("(1.1.4, 1.1.2]")]
         [InlineData("[1.0.0, 1.0.0)")]
-        [InlineData("(1.0.0, 1.0.0)")]
         [InlineData("(1.0.0, 1.0.0]")]
         [InlineData("[*, *)")]
-        [InlineData("(*, *)")]
         [InlineData("(*, *]")]
         [InlineData("[1.0.0-beta, 1.0.0-beta+900)")]
-        [InlineData("(1.0.0-beta+700, 1.0.0-beta)")]
         [InlineData("(1.0.0-beta+600, 1.0.0-beta]")]
         public void VersionRange_LogicallyIncorrectRanges_ReturnEmpty(string range)
         {
