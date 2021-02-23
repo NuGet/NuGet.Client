@@ -160,17 +160,17 @@ Function Install-DotnetCLI {
     $vsMajorVersion = Get-VSMajorVersion
     $MSBuildExe = Get-MSBuildExe $vsMajorVersion
     $CliBranchListForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
-    $CliBranchList = $CliBranchListForTesting.Split(';');
+    $CliBranchList = $CliBranchListForTesting.Trim().Split(';');
 
     $DotNetInstall = Join-Path $CLIRoot 'dotnet-install.ps1'
 
     #If "-force" is specified, or dotnet.exe under cli folder doesn't exist, create cli folder and download dotnet-install.ps1 into cli folder.
     if ($Force -or -not (Test-Path $DotNetExe)) {
-        Trace-Log "Downloading .NET CLI $CliBranchForTesting"
+        Trace-Log "Downloading .NET CLI '$CliBranchList'"
 
         New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
 
-        Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
+        Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $DotNetInstall
     }
 
     ForEach ($CliBranch in $CliBranchList) {
@@ -205,7 +205,19 @@ Function Install-DotnetCLI {
 
         if ($Version -eq 'latest') {
             #Get the latest specific version number for a certain channel from url like : https://dotnetcli.blob.core.windows.net/dotnet/Sdk/release/3.0.1xx/latest.version"
-            $httpGetUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $Channel + "/latest.version"
+            $latestVersionLink = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $Channel + "/latest.version"
+            $latestVersionFile = Invoke-RestMethod -Method Get -Uri $latestVersionLink
+
+            $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $latestVersionFile
+            [int]$count = 0
+            while ( $line = $stringReader.ReadLine() ) {
+                if ($count -eq 1) {
+                    $expectedVersion = $line.trim()
+                }
+                $count += 1
+            }
+
+            $httpGetUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $expectedVersion + "/productVersion.txt"
             $versionFile = Invoke-RestMethod -Method Get -Uri $httpGetUrl
 
             $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $versionFile
@@ -229,6 +241,7 @@ Function Install-DotnetCLI {
 
         #If "-force" is specified, or folder with specific version doesn't exist, the download command will run"
         if ($Force -or -not (Test-Path $probeDotnetPath)) {
+            Trace-Log "$DotNetInstall -Channel $($cli.Channel) -i $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
             & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
 
