@@ -547,17 +547,8 @@ namespace NuGet.Configuration
 
                 var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
 
-                var defaultSettingsFilePathExistsPreviously = File.Exists(defaultSettingsFilePath);
-
-                // ReadSettings will try to create the config file if it doesn't exist, which is why we should check if it exists again afterwards
+                // ReadSettings will try to create the default config file if it doesn't exist
                 SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
-
-                if (!defaultSettingsFilePathExistsPreviously && File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
-                {
-                    var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
-                    userSpecificSettings.AddOrUpdate(ConfigurationConstants.PackageSources, defaultSource);
-                    userSpecificSettings.SaveToDisk();
-                }
 
                 yield return userSpecificSettings;
 
