@@ -1504,13 +1504,25 @@ namespace NuGet.Versioning.Test
             Assert.Equal("1.9.0--beta", range.FindBestMatch(versions).ToNormalizedString());
         }
 
-        [Fact]
-        public void VersionRange_LogicallyIncorrectRanges_ReturnEmpty()
+        [Theory]
+        [InlineData("[1.1.4, 1.1.2)")]
+        [InlineData("[1.1.4, 1.1.2]")]
+        [InlineData("(1.1.4, 1.1.2)")]
+        [InlineData("(1.1.4, 1.1.2]")]
+        [InlineData("[1.0.0, 1.0.0)")]
+        [InlineData("[1.0.0, 1.0.0]")]
+        [InlineData("(1.0.0, 1.0.0)")]
+        [InlineData("(1.0.0, 1.0.0]")]
+        [InlineData("[*, *)")]
+        [InlineData("[*, *]")]
+        [InlineData("(*, *)")]
+        [InlineData("(*, *]")]
+        [InlineData("[1.0.0-beta, 1.0.0-beta+900)")]
+        [InlineData("[1.0.0-beta, 1.0.0-beta+800]")]
+        [InlineData("(1.0.0-beta, 1.0.0-beta+700)")]
+        [InlineData("(1.0.0-beta+600, 1.0.0-beta]")]
+        public void VersionRange_LogicallyIncorrectRanges_ReturnEmpty(string range)
         {
-            // Arrange
-            var range = "[1.1.4, 1.1.2)";
-
-            // Act & Assert
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => VersionRange.Parse(range));
             Assert.Equal($"'{range}' is not a valid version string.", exception.Message);

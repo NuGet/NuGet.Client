@@ -233,16 +233,10 @@ namespace NuGet.Versioning
                 }
             }
 
-            if (isMinInclusive && !isMaxInclusive)
+            if ((minVersion != null && maxVersion != null)
+                && ((isMinInclusive ^ isMaxInclusive) || (isMinInclusive && isMaxInclusive) || (!isMinInclusive && !isMaxInclusive)))
             {
-                if(minVersion > maxVersion)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (minVersion < maxVersion)
+                if (minVersion >= maxVersion)
                 {
                     return false;
                 }
