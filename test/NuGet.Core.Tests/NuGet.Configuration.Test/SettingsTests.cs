@@ -2021,7 +2021,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void LoadSettings_AddsV3ToEmptyConfigFile_OnlyFirstTime()
+        public void LoadSettings_EmptyUserWideConfigFile_DoNotAddNuGetOrg()
         {
             using (var mockBaseDirectory = TestDirectory.Create())
             {
@@ -2042,37 +2042,41 @@ namespace NuGet.Configuration.Test
                     useTestingGlobalPath: true);
 
                 // Assert
-                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var expected = SettingsTestUtils.RemoveWhitespace(config);
+
+                actual.Should().Be(expected);
+            }
+        }
+
+        [Fact]
+        public void LoadSettings_NonExistingUserWideConfigFile_CreateUserWideConfigFileWithNuGetOrg()
+        {
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var nugetConfigPath = Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config");
+                File.Exists(nugetConfigPath).Should().BeFalse();
+
+                // Act
+                var settings = Settings.LoadSettings(
+                    root: mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+
+                // Assert
+                File.Exists(nugetConfigPath).Should().BeTrue();
+                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath));
+                var expected = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
     </packageSources>
 </configuration>");
 
-                text.Should().Be(result);
-
-                var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "TestingGlobalPath"));
-
-                // Act
-                var section = settingsFile.GetSection("packageSources");
-                section.Should().NotBeNull();
-                settingsFile.Remove("packageSources", section.Items.First());
-                settingsFile.SaveToDisk();
-
-                settings = Settings.LoadSettings(
-                                    root: mockBaseDirectory,
-                                    configFileName: null,
-                                    machineWideSettings: null,
-                                    loadUserWideSettings: true,
-                                    useTestingGlobalPath: true);
-                // Assert
-                text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration>");
-
-                text.Should().Be(result);
+                actual.Should().Be(expected);
             }
         }
 

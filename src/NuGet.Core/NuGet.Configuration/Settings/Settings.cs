@@ -545,23 +545,10 @@ namespace NuGet.Configuration
                     yield break;
                 }
 
-                // If the default user config NuGet.Config does not exist, we need to create it.
                 var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
 
+                // ReadSettings will try to create the default config file if it doesn't exist
                 SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
-                if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
-                {
-                    var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
-
-                    if (!File.Exists(trackFilePath))
-                    {
-                        File.Create(trackFilePath).Dispose();
-
-                        var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
-                        userSpecificSettings.AddOrUpdate(ConfigurationConstants.PackageSources, defaultSource);
-                        userSpecificSettings.SaveToDisk();
-                    }
-                }
 
                 yield return userSpecificSettings;
 
