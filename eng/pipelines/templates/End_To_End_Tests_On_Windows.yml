@@ -1,3 +1,4 @@
+steps:
 - task: PowerShell@1
   displayName: "Define variables"
   inputs:
