@@ -67,9 +67,11 @@ steps:
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
+      git remote remove github
+      Write-Host "If the above command failed, it's ok. It's not easy to check if the remote exists or not. We want to ignore that error."
       git remote add github https://github.com/NuGet/NuGet.Client.git
       Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))" #run in official non-RTM builds, for generating sourcelink
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))" #run in official non-RTM builds, for generating sourcelink
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
