@@ -1401,6 +1401,13 @@ namespace NuGet.PackageManagement.UI
                     packageItem.IsSelected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
                 }
             }
+
+            var firstSelected = _packageList.PackageItems.FirstOrDefault(p => p.IsSelected);
+            if (firstSelected != null)
+            {
+                _packageList._list.SelectedItem = firstSelected;
+                _packageList._list.ScrollIntoView(firstSelected);
+            }
         }
 
         public void CleanUp()
