@@ -88,6 +88,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attempted to pack multiple files into the same location: &apos;{0}&apos;.
+        /// </summary>
+        internal static string FoundDuplicateFile {
+            get {
+                return ResourceManager.GetString("FoundDuplicateFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot open the icon file &apos;{0}&apos;: {1}..
         /// </summary>
         internal static string IconCannotOpenFile {

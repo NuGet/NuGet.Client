@@ -878,6 +878,11 @@ namespace NuGet.Common
         NU5132 = 5132,
 
         /// <summary>
+        /// Attempted to write files from multiple sources into the same location
+        /// </summary>
+        NU5133 = 5133,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,

@@ -1383,6 +1383,23 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void AddingDuplicateFiles_Throws()
+        {
+            // Arrange
+            var builder = new PackageBuilder
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Test",
+            };
+            builder.Authors.Add("Test");
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Foo.dll" });
+
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()), @"Attempted to pack multiple files into the same location: 'lib\net5.0\Foo.dll'");
+        }
+
+        [Fact]
         public void SavingPackageValidatesReferences()
         {
             // Arrange
