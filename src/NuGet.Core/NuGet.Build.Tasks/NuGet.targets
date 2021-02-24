@@ -110,6 +110,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectStyleTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.NuGetMessageTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.CheckForDuplicateNuGetItems" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
@@ -1297,6 +1298,27 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <Target Name="CheckForDuplicatePackageReferences" BeforeTargets="CollectPackageReferences">
+
+    <!-- NOTE for design-time builds we continue on errors and remove the duplicate items.
+         This is because otherwise there won't be any references to pass to the compiler, leading to design-time
+         compilation errors for every API that is used in the project.  Amidst all the compile errors, it would
+         be easy to miss the duplicate items error which is the real source of the problem. -->
+
+    <CheckForDuplicateNuGetItems
+      Items="@(PackageReference)"
+      ItemName="PackageReference"
+      ContinueOnError="$(ContinueOnError)">
+      <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageReferences" />
+    </CheckForDuplicateNuGetItems>
+
+    <!--<ItemGroup Condition="'$(DesignTimeBuild)' == 'true' And '@(DeduplicatedPackageReferences)' != ''">
+      <PackageReference Remove="@(PackageReference)" />
+      <PackageReference Include="@(DeduplicatedPackageReferences)" />
+    </ItemGroup>-->
+
+  </Target>
+  
   <!--
     ============================================================
     Import NuGet.RestoreEx.targets if the MSBuild property 'RestoreEnableStaticGraph'

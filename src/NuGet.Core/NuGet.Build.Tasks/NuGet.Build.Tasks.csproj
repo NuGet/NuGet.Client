@@ -9,7 +9,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <PackProject>true</PackProject>
     <Description>NuGet tasks for MSBuild and dotnet restore.</Description>    
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0016</NoWarn>
     <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 
