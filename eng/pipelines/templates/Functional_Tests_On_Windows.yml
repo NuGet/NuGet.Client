@@ -88,8 +88,7 @@ steps:
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
     scriptType: "inlineScript"
-    arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "$env:AGENT_JOBNAME"
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(System.AccessToken) -TestName "$env:AGENT_JOBNAME"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
