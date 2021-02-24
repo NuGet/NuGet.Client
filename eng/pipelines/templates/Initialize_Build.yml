@@ -17,7 +17,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      CheckVstsPersonalAccessToken -VstsPersonalAccessToken $(VstsPersonalAccessToken)
+      CheckVstsPersonalAccessToken -VstsPersonalAccessToken $(System.AccessToken)
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
