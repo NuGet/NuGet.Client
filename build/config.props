@@ -32,7 +32,7 @@
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
 
-    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">release/5.0.2xx</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">release/5.0.2xx 5.0.200-servicing.21120.4</CliBranchForTesting>
   </PropertyGroup>
 
   <!-- Config -->
