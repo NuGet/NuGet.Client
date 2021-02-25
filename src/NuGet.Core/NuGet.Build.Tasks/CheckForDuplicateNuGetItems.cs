@@ -40,7 +40,8 @@ namespace NuGet.Build.Tasks
             {
                 AnyItemsDeduplicated = true;
                 string duplicateItemsFormatted = string.Join("; ", duplicateItems.Select(d => string.Join(", ", d.Select(e => $"{e.ItemSpec} {e.GetMetadata("version")}"))));
-                NuGetLogCode logCode = Enum.Parse(typeof(NuGetLogCode), LogCode);
+
+                NuGetLogCode logCode = (NuGetLogCode) Enum.Parse(typeof(NuGetLogCode), LogCode);
 
                 var logMessage = new RestoreLogMessage(
                     LogLevel.Error,
