@@ -40,13 +40,14 @@ namespace NuGet.Build.Tasks
             {
                 AnyItemsDeduplicated = true;
                 string duplicateItemsFormatted = string.Join("; ", duplicateItems.Select(d => string.Join(", ", d.Select(e => $"{e.ItemSpec} {e.GetMetadata("version")}"))));
-                var logCode = Enum.Parse(typeof(NuGetLogCode), LogCode);
+                NuGetLogCode logCode = Enum.Parse(typeof(NuGetLogCode), LogCode);
+
                 var logMessage = new RestoreLogMessage(
                     LogLevel.Error,
+                    logCode,
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Error_DuplicateItems,
-                        logCode,
                         ItemName,
                         duplicateItemsFormatted));
 
