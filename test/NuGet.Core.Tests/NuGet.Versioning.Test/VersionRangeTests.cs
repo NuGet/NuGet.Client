@@ -317,6 +317,10 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("1.0.0", "2.0.0")]
         [InlineData("[1.0.0, 2.0.0]", "2.0.0")]
+        [InlineData("[2.0.0)", "2.1.0")]
+        [InlineData("[2.0.0)", "2.0.0")]
+        [InlineData("(2.0.0]", "2.0.0")]
+        [InlineData("[2.0.0, )", "2.0.0")]
         [InlineData("1.0.0", "1.0.0")]
         [InlineData("[1.0.0]", "1.0.0")]
         [InlineData("[1.0.0, 1.0.0]", "1.0.0")]
@@ -419,7 +423,6 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("1.2.0", "[1.2.0, )")]
         [InlineData("1.2.3-beta.2.4.55.X+900", "[1.2.3-beta.2.4.55.X, )")]
-        [InlineData("[1.2.0)", "[1.2.0, 1.2.0)")]
         public void ParseVersionRangeToString(string version, string expected)
         {
             // Act
@@ -710,6 +713,16 @@ namespace NuGet.Versioning.Test
             Assert.Equal("(1.0.0, 1.2.0]", VersionRange.Parse(versionString).ToString());
         }
 
+        [Fact]
+        public void ParseSpecialCaseVersionToNormalizedVersion()
+        {
+            // Arrange
+            var versionString = "(2.0.0]";
+
+            // Assert
+            Assert.Equal("(2.0.0, 2.0.0]", VersionRange.Parse(versionString).ToNormalizedString());
+        }
+
         [Theory]
         [InlineData("1.2.0")]
         [InlineData("1.2.3")]
@@ -717,12 +730,12 @@ namespace NuGet.Versioning.Test
         [InlineData("1.2.3-beta+900")]
         [InlineData("1.2.3-beta.2.4.55.X+900")]
         [InlineData("1.2.3-0+900")]
-        [InlineData("[1.2.0)")]
-        [InlineData("[1.2.3)")]
-        [InlineData("[1.2.3-beta)")]
-        [InlineData("[1.2.3-beta+900)")]
-        [InlineData("[1.2.3-beta.2.4.55.X+900)")]
-        [InlineData("[1.2.3-0+900)")]
+        [InlineData("[1.2.0]")]
+        [InlineData("[1.2.3]")]
+        [InlineData("[1.2.3-beta]")]
+        [InlineData("[1.2.3-beta+900]")]
+        [InlineData("[1.2.3-beta.2.4.55.X+900]")]
+        [InlineData("[1.2.3-0+900]")]
         [InlineData("(, 1.2.0)")]
         [InlineData("(, 1.2.3)")]
         [InlineData("(, 1.2.3-beta)")]
@@ -777,7 +790,6 @@ namespace NuGet.Versioning.Test
         [InlineData("[2.3.7, 3.2.4.5]", "2.3.7", true, "3.2.4.5", true)]
         [InlineData("(, 3.2.4.5]", null, false, "3.2.4.5", true)]
         [InlineData("(1.6, ]", "1.6", false, null, true)]
-        [InlineData("(1.6)", "1.6", false, "1.6", false)]
         [InlineData("[2.7]", "2.7", true, "2.7", true)]
         public void ParseVersionParsesTokensVersionsCorrectly(string versionString, string min, bool incMin, string max, bool incMax)
         {
@@ -1520,6 +1532,10 @@ namespace NuGet.Versioning.Test
         [InlineData("[1.0.0-beta, 1.0.0-beta+900)")]
         [InlineData("(1.0.0-beta+600, 1.0.0-beta]")]
         [InlineData("(1.0)")]
+        [InlineData("(1.0.0)")]
+        [InlineData("[2.0.0)")]
+        [InlineData("(2.0.0]")]
+        [InlineData("[2.0.0, *)")]
         public void VersionRange_LogicallyIncorrectRanges_Throws(string range)
         {
             // Act & Assert

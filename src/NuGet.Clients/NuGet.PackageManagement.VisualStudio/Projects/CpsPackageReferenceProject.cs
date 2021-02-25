@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -370,6 +371,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
+                var stopWatch = Stopwatch.StartNew();
                 // Install the package to all frameworks.
                 var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
 
@@ -378,6 +380,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     .PackageReferences
                     .AddAsync(packageId, formattedRange);
 
+                nuGetProjectContext.Log(
+    MessageLevel.Info, "----Duration---------- " + DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed));
                 // This is the update operation
                 if (!result.Added)
                 {

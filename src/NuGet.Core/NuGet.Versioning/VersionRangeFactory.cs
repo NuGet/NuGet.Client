@@ -240,9 +240,10 @@ namespace NuGet.Versioning
                 && minVersion >= maxVersion
                 && !(minVersion == maxVersion && isMinInclusive && isMaxInclusive))
             {
-                if (partsLength == 1
+                if ((partsLength == 1 && minVersion == maxVersion
+                            && (isMinInclusive ^ isMaxInclusive || !isMinInclusive && !isMaxInclusive))
                     || (partsLength > 1
-                          && !(minVersion == maxVersion && !isMinInclusive && !isMaxInclusive)))
+                            && !(minVersion == maxVersion && !isMinInclusive && !isMaxInclusive)))
                 {
                     return false;
                 }
