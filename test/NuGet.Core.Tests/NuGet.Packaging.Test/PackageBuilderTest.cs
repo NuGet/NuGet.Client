@@ -1396,7 +1396,7 @@ namespace NuGet.Packaging.Test
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Foo.dll" });
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Foo.dll" });
 
-            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()), @"Attempted to pack multiple files into the same location: 'lib\net5.0\Foo.dll'");
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()), $@"Attempted to pack multiple files into the same location: 'lib{Path.DirectorySeparatorChar}net5.0{Path.DirectorySeparatorChar}Foo.dll'");
         }
 
         [Fact]
