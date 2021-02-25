@@ -4,7 +4,6 @@ steps:
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
-      Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
       $EndToEndTestCommandToRunPart = '"' + "Run-Test -Exclude '${env:PART}' -Verbose *>&1 | Tee-Object $(System.DefaultWorkingDirectory)\artifacts\EndToEnd\FullLog_$(Build.BuildNumber).txt" +'"'
       Write-Host "##vso[task.setvariable variable=EndToEndTestCommandToRunPart]$EndToEndTestCommandToRunPart"
 
