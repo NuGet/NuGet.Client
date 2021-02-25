@@ -185,6 +185,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Items="@(PackageReference)"
       ItemName="PackageReference"
       LogCode="NU1013"
+      ContinueOnError="$(ContinueOnError)"
       >
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageReferences" />
       <Output TaskParameter="AnyItemsDeduplicated" ItemName="AnyItemsDeduplicated" />
@@ -213,6 +214,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Items="@(PackageVersion)"
       ItemName="PackageVersion"
       LogCode="NU1015"
+      ContinueOnError="$(ContinueOnError)"
       >
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageVersions" />
       <Output TaskParameter="AnyItemsDeduplicated" ItemName="AnyItemsDeduplicated" />
@@ -223,7 +225,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PackageReference Include="@(DeduplicatedPackageVersions)" />
     </ItemGroup>
     
-  </Target>>
+  </Target>
 
   <!--
     ============================================================
@@ -242,6 +244,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Items="@(PackageDownload)"
       ItemName="PackageDownload"
       LogCode="NU1014"
+      ContinueOnError="$(ContinueOnError)"
       >
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageDownloads" />
       <Output TaskParameter="AnyItemsDeduplicated" ItemName="AnyItemsDeduplicated" />
