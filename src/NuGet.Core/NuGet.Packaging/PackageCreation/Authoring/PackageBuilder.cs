@@ -407,6 +407,7 @@ namespace NuGet.Packaging
             }
 
             ValidateDependencies(Version, DependencyGroups);
+            ValidateFilesUnique(Files);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
             ValidateFrameworkAssemblies(FrameworkReferences, FrameworkReferenceGroups);
             ValidateLicenseFile(Files, LicenseMetadata);
@@ -679,6 +680,24 @@ namespace NuGet.Packaging
 
             // We searched all of the package files and didn't find what we were looking for
             return null;
+        }
+
+        private void ValidateFilesUnique(IEnumerable<IPackageFile> files)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var duplicates = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string destination in files.Where(t => t.Path != null).Select(t => PathUtility.GetPathWithDirectorySeparator(t.Path)))
+            {
+                if (!seen.Add(destination))
+                {
+                    duplicates.Add(destination);
+                }
+            }
+            if (duplicates.Any())
+            {
+                throw new PackagingException(NuGetLogCode.NU5050, string.Format(CultureInfo.CurrentCulture, NuGetResources.FoundDuplicateFile, string.Join(", ", duplicates)));
+            }
+
         }
 
         private void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)
