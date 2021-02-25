@@ -236,13 +236,16 @@ namespace NuGet.Versioning
                 }
             }
 
-            if (partsLength > 1
-                && minVersion != null && maxVersion != null
+            if (minVersion != null && maxVersion != null
                 && minVersion >= maxVersion
-                && !(minVersion == maxVersion && isMinInclusive && isMaxInclusive)
-                && !(minVersion == maxVersion && !isMinInclusive && !isMaxInclusive))
+                && !(minVersion == maxVersion && isMinInclusive && isMaxInclusive))
             {
-                return false;
+                if (partsLength == 1
+                    || (partsLength > 1
+                          && !(minVersion == maxVersion && !isMinInclusive && !isMaxInclusive)))
+                {
+                    return false;
+                }
             }
 
             // Successful parse!
