@@ -62,6 +62,11 @@ steps:
       dotnet tool restore
   condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
+# NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
+# However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
+# won't be able to determine the URL to embed in the pdbs.
+# Therefore, when the git origin remote is not github (official builds), we need to add the GitHub repo URL as a remote, and
+# tell SourceLink.GitHub what that remote name is
 - task: PowerShell@1
   displayName: "Prepare for source link"
   inputs:
@@ -71,7 +76,7 @@ steps:
       Write-Host "If the above command failed, it's ok. It's not easy to check if the remote exists or not. We want to ignore that error."
       git remote add github https://github.com/NuGet/NuGet.Client.git
       Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
-  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))" #run in official non-RTM builds, for generating sourcelink
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
