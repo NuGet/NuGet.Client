@@ -37,10 +37,10 @@ namespace NuGet.VisualStudio
         private IEnumerable<PreinstalledPackageConfiguration> _configurations;
 
         private DTE _dte;
+        private PreinstalledPackageInstaller _preinstalledPackageInstaller;
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IOutputConsoleProvider _consoleProvider;
         private readonly IVsSolutionManager _solutionManager;
-        private readonly PreinstalledPackageInstaller _preinstalledPackageInstaller;
         private readonly Configuration.ISettings _settings;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
@@ -66,9 +66,20 @@ namespace NuGet.VisualStudio
             _sourceProvider = sourceProvider;
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
 
-            _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
-
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+        }
+
+        private PreinstalledPackageInstaller PreinstalledPackageInstaller
+        {
+            get
+            {
+                if (_preinstalledPackageInstaller == null)
+                {
+                    _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
+                }
+
+                return _preinstalledPackageInstaller;
+            }
         }
 
         private IEnumerable<PreinstalledPackageConfiguration> GetConfigurationsFromVsTemplateFile(string vsTemplatePath)
@@ -204,7 +215,7 @@ namespace NuGet.VisualStudio
                 throw new WizardBackoutException();
             }
 
-            return _preinstalledPackageInstaller.GetExtensionRepositoryPath(repositoryId, vsExtensionManager, ThrowWizardBackoutError);
+            return PreinstalledPackageInstaller.GetExtensionRepositoryPath(repositoryId, vsExtensionManager, ThrowWizardBackoutError);
         }
 
         private string GetRegistryRepositoryPath(XElement packagesElement, IEnumerable<IRegistryKey> registryKeys)
@@ -216,7 +227,7 @@ namespace NuGet.VisualStudio
                 throw new WizardBackoutException();
             }
 
-            return _preinstalledPackageInstaller.GetRegistryRepositoryPath(keyName, registryKeys, ThrowWizardBackoutError);
+            return PreinstalledPackageInstaller.GetRegistryRepositoryPath(keyName, registryKeys, ThrowWizardBackoutError);
         }
 
         private RepositoryType GetRepositoryType(XElement packagesElement)
@@ -268,7 +279,7 @@ namespace NuGet.VisualStudio
                     var packageManagementFormat = new PackageManagementFormat(_settings);
                     // 1 means PackageReference
                     var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat == 1;
-                    await _preinstalledPackageInstaller.PerformPackageInstallAsync(_installer,
+                    await PreinstalledPackageInstaller.PerformPackageInstallAsync(_installer,
                         project,
                         configuration,
                         preferPackageReference,
@@ -323,7 +334,7 @@ namespace NuGet.VisualStudio
             }
 
             _dte = (DTE)automationObject;
-            _preinstalledPackageInstaller.InfoHandler = message => _dte.StatusBar.Text = message;
+            PreinstalledPackageInstaller.InfoHandler = message => _dte.StatusBar.Text = message;
 
             if (customParams.Length > 0)
             {
