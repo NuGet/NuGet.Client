@@ -88,7 +88,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attempted to pack multiple files into the same location(s). The following destinations were used multiple times: &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Attempted to pack multiple files into the same location(s). The following destinations were used multiple times: {0}.
         /// </summary>
         internal static string FoundDuplicateFile {
             get {

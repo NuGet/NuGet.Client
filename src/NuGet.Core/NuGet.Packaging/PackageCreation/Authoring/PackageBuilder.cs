@@ -695,7 +695,7 @@ namespace NuGet.Packaging
             }
             if (duplicates.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU5050, string.Format(CultureInfo.CurrentCulture, NuGetResources.FoundDuplicateFile, string.Join(",", duplicates)));
+                throw new PackagingException(NuGetLogCode.NU5050, string.Format(CultureInfo.CurrentCulture, NuGetResources.FoundDuplicateFile, string.Join(", ", duplicates)));
             }
 
         }
