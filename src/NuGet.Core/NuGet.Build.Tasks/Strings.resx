@@ -175,4 +175,7 @@
   <data name="Error_MissingRestoreGraphOutputPath" xml:space="preserve">
     <value>Cannot write the dependency graph spec because the `RestoreGraphOutputPath` is missing.</value>
   </data>
+  <data name="Error_DuplicateItems" xml:space="preserve">
+    <value>"Duplicate '{0}' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate '{0}' items are: {1}"</value>
+  </data>
 </root>

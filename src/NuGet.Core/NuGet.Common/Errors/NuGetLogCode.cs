@@ -117,6 +117,21 @@ namespace NuGet.Common
         NU1012 = 1012,
 
         /// <summary>
+        /// Duplicate PackageReference found
+        /// </summary>
+        NU1013 = 1013,
+
+        /// <summary>
+        /// Duplicate PackageDownload found
+        /// </summary>
+        NU1014 = 1014,
+
+        /// <summary>
+        /// Duplicate PackageVersion found
+        /// </summary>
+        NU1015 = 1015,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
