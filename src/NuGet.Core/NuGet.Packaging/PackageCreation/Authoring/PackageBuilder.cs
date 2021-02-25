@@ -684,14 +684,20 @@ namespace NuGet.Packaging
 
         private void ValidateFilesUnique(IEnumerable<IPackageFile> files)
         {
-            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (string file in files.Where(t => t.Path != null).Select(t => PathUtility.GetPathWithDirectorySeparator(t.Path)))
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var duplicates = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string destination in files.Where(t => t.Path != null).Select(t => PathUtility.GetPathWithDirectorySeparator(t.Path)))
             {
-                if (!set.Add(file))
+                if (!seen.Add(destination))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5133, string.Format(CultureInfo.CurrentCulture, NuGetResources.FoundDuplicateFile, file));
+                    duplicates.Add(destination);
                 }
             }
+            if (duplicates.Any())
+            {
+                throw new PackagingException(NuGetLogCode.NU5050, string.Format(CultureInfo.CurrentCulture, NuGetResources.FoundDuplicateFile, string.Join(",", duplicates)));
+            }
+
         }
 
         private void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)

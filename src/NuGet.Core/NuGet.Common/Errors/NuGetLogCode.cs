@@ -718,6 +718,11 @@ namespace NuGet.Common
         NU5049 = 5049,
 
         /// <summary>
+        /// Attempted to write files from multiple sources into the same location
+        /// </summary>
+        NU5050 = 5050,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,
@@ -876,11 +881,6 @@ namespace NuGet.Common
         /// File last write timestamp is out of range of what the zip format supports warning
         /// </summary>
         NU5132 = 5132,
-
-        /// <summary>
-        /// Attempted to write files from multiple sources into the same location
-        /// </summary>
-        NU5133 = 5133,
 
         /// <summary>
         /// Undefined package warning
