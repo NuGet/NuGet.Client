@@ -154,21 +154,7 @@ namespace NuGet.CommandLine.XPlat
                 return isDeprecated ? ReportType.Deprecated : isOutdated ? ReportType.Outdated : ReportType.Vulnerable;
             }
 
-            // We have a conflict - throw with appropriate message
-            var firstOption = string.Empty;
-            var incompatibleOption = string.Empty;
-            if (isOutdated)
-            {
-                firstOption = "--outdated";
-                incompatibleOption = isDeprecated ? "--deprecated" : "--vulnerable";
-            }
-            else if (isDeprecated)
-            {
-                firstOption = "--deprecated";
-                incompatibleOption = "--vulnerable";
-            }
-
-            throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions, firstOption, incompatibleOption));
+            throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions));
         }
 
         private static void DisplayMessages(ListPackageArgs packageRefArgs)
