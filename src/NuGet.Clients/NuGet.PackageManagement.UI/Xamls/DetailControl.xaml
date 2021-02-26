@@ -146,7 +146,7 @@
         Height="4"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
-        Margin="-24,0,-7,0"
+        Margin="-24,0,-7,12"
         AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_ThumbName}"
         AutomationProperties.HelpText="{x:Static nuget:Resources.Accessibility_ThumbHelp}"
         Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}"
