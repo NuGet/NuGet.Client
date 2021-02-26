@@ -37,7 +37,7 @@ namespace NuGet.VisualStudio
         private IEnumerable<PreinstalledPackageConfiguration> _configurations;
 
         private DTE _dte;
-        private PreinstalledPackageInstaller _preinstalledPackageInstaller;
+        private Lazy<PreinstalledPackageInstaller> _preinstalledPackageInstaller;
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IOutputConsoleProvider _consoleProvider;
         private readonly IVsSolutionManager _solutionManager;
@@ -65,7 +65,10 @@ namespace NuGet.VisualStudio
             _settings = settings;
             _sourceProvider = sourceProvider;
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
-
+            _preinstalledPackageInstaller = new Lazy<PreinstalledPackageInstaller>(() =>
+                                            {
+                                                return new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
+                                            });
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
@@ -73,12 +76,7 @@ namespace NuGet.VisualStudio
         {
             get
             {
-                if (_preinstalledPackageInstaller == null)
-                {
-                    _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
-                }
-
-                return _preinstalledPackageInstaller;
+                return _preinstalledPackageInstaller.Value;
             }
         }
 
