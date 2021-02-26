@@ -232,6 +232,15 @@ steps:
     msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
+  # The list of nupkgs in the script might change, so we publish it as artifact, in order to make sure release pipeline check the right list.
+- task: PublishBuildArtifacts@1
+  displayName: "Publish EnsureAllPackagesExist script"
+  inputs:
+    PathtoPublish: "$(Build.Repository.LocalPath)\\scripts\utils\EnsureAllPackagesExist.ps1"
+    ArtifactName: "EnsureAllPackagesExist.ps1"
+    ArtifactType: "Container"
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
 - task: MSBuild@1
   displayName: "Pack VSIX"
   inputs:
