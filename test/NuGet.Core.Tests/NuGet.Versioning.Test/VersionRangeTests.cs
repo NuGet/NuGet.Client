@@ -317,7 +317,6 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("1.0.0", "2.0.0")]
         [InlineData("[1.0.0, 2.0.0]", "2.0.0")]
-        [InlineData("(2.0.0,)", "2.0.0")]
         [InlineData("(2.0.0,)", "2.1.0")]
         [InlineData("[2.0.0]", "2.0.0")]
         [InlineData("(,2.0.0]", "2.0.0")]
@@ -713,16 +712,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal("(1.0.0, 1.2.0]", VersionRange.Parse(versionString).ToString());
-        }
-
-        [Fact]
-        public void ParseSpecialCaseVersionToNormalizedVersion()
-        {
-            // Arrange
-            var versionString = "(2.0.0]";
-
-            // Assert
-            Assert.Equal("(2.0.0, 2.0.0]", VersionRange.Parse(versionString).ToNormalizedString());
         }
 
         [Theory]
