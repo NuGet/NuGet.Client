@@ -237,7 +237,7 @@ steps:
   displayName: "Publish EnsureAllPackagesExist script"
   inputs:
     PathtoPublish: "$(Build.Repository.LocalPath)\\scripts\utils\EnsureAllPackagesExist.ps1"
-    ArtifactName: "EnsureAllPackagesExist.ps1"
+    ArtifactName: "Scripts"
     ArtifactType: "Container"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
