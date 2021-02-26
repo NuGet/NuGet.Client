@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<NuGetProjectAction>? actions = packageIdentities
                 .Select(packageIdentity => NuGetProjectAction.CreateUninstallProjectAction(packageIdentity, project));
 
-            NuGetPackageManager packageManager = await _state.PackageManager.GetValueAsync(cancellationToken);
+            NuGetPackageManager packageManager = await _state.GetPackageManagerAsync(cancellationToken);
             Assumes.NotNull(packageManager);
 
             INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<NuGetProjectAction>? actions = packageIdentities
                 .Select(packageIdentity => NuGetProjectAction.CreateInstallProjectAction(packageIdentity, sourceRepository, project));
 
-            NuGetPackageManager packageManager = await _state.PackageManager.GetValueAsync(cancellationToken);
+            NuGetPackageManager packageManager = await _state.GetPackageManagerAsync(cancellationToken);
             Assumes.NotNull(packageManager);
 
             INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
