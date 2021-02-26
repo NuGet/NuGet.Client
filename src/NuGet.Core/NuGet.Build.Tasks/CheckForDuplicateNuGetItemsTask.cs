@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace NuGet.Build.Tasks
 {
-    public class CheckForDuplicateNuGetItems : Task
+    public class CheckForDuplicateNuGetItemsTask : Task
     {
         [Required]
         public ITaskItem[] Items { get; set; }

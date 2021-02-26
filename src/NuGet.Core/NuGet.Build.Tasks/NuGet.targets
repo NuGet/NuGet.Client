@@ -110,7 +110,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectStyleTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.NuGetMessageTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
-  <UsingTask TaskName="NuGet.Build.Tasks.CheckForDuplicateNuGetItems" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
@@ -180,8 +180,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- NOTE for design-time builds we continue on error and remove the duplicate items.
          This is because otherwise there won't be any PackageReference passed, leading to potentially many compile errors due to missing references.
          Amidst all the compile errors, it would be easy to miss the duplicate items error which is the real source of the problem. -->
-    
-    <CheckForDuplicateNuGetItems
+
+    <CheckForDuplicateNuGetItemsTask
       Items="@(PackageReference)"
       ItemName="PackageReference"
       LogCode="NU1013"
@@ -189,9 +189,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       >
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageReferences" />
       <Output TaskParameter="AnyItemsDeduplicated" ItemName="AnyItemsDeduplicated" />
-    </CheckForDuplicateNuGetItems>
+    </CheckForDuplicateNuGetItemsTask>
 
-    <ItemGroup Condition="'$(DesignTimeBuild)' == 'true' And '$(AnyItemsDeduplicated)' != 'true'">
+    <ItemGroup Condition="'$(DesignTimeBuild)' == 'true' And '$(AnyItemsDeduplicated)' == 'true'">
       <PackageReference Remove="@(PackageReference)" />
       <PackageReference Include="@(DeduplicatedPackageReferences)" />
     </ItemGroup>
@@ -210,7 +210,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          This is because otherwise there won't be any PackageVersion passed, leading to potentially many compile errors due to missing references.
          Amidst all the compile errors, it would be easy to miss the duplicate items error which is the real source of the problem. -->
 
-    <CheckForDuplicateNuGetItems
+    <CheckForDuplicateNuGetItemsTask
       Items="@(PackageVersion)"
       ItemName="PackageVersion"
       LogCode="NU1015"
@@ -218,9 +218,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       >
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageVersions" />
       <Output TaskParameter="AnyItemsDeduplicated" ItemName="AnyItemsDeduplicated" />
-    </CheckForDuplicateNuGetItems>
+    </CheckForDuplicateNuGetItemsTask>
 
-    <ItemGroup Condition="'$(DesignTimeBuild)' == 'true' And '$(AnyItemsDeduplicated)' != 'true'">
+    <ItemGroup Condition="'$(DesignTimeBuild)' == 'true' And '$(AnyItemsDeduplicated)' == 'true'">
       <PackageReference Remove="@(PackageVersion)" />
       <PackageReference Include="@(DeduplicatedPackageVersions)" />
     </ItemGroup>
@@ -240,7 +240,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          This is because otherwise there won't be any PackageDownload passed, leading to potentially many compile errors due to missing references.
          Amidst all the compile errors, it would be easy to miss the duplicate items error which is the real source of the problem. -->
 
-    <CheckForDuplicateNuGetItems
+    <CheckForDuplicateNuGetItemsTask
       Items="@(PackageDownload)"
       ItemName="PackageDownload"
       LogCode="NU1014"
@@ -248,9 +248,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       >
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageDownloads" />
       <Output TaskParameter="AnyItemsDeduplicated" ItemName="AnyItemsDeduplicated" />
-    </CheckForDuplicateNuGetItems>
+    </CheckForDuplicateNuGetItemsTask>
 
-    <ItemGroup Condition="'$(DesignTimeBuild)' == 'true' And '$(AnyItemsDeduplicated)' != 'true'">
+    <ItemGroup Condition="'$(DesignTimeBuild)' == 'true' And '$(AnyItemsDeduplicated)' == 'true'">
       <PackageReference Remove="@(PackageDownload)" />
       <PackageReference Include="@(DeduplicatedPackageDownloads)" />
     </ItemGroup>

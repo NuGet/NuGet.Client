@@ -1,3 +1,15 @@
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.AnyItemsDeduplicated.get -> bool
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.AnyItemsDeduplicated.set -> void
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.CheckForDuplicateNuGetItemsTask() -> void
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.DeduplicatedItems.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.DeduplicatedItems.set -> void
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.ItemName.get -> string
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.ItemName.set -> void
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.Items.get -> Microsoft.Build.Framework.ITaskItem[]
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.Items.set -> void
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.LogCode.get -> string
+NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.LogCode.set -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Cancel() -> void
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Dispose() -> void
@@ -18,9 +30,11 @@ NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.get -> string
 NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.get -> string
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.set -> void
+override NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask.Execute() -> bool
 override NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Execute() -> bool
 static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string startupDirectory, string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string startupDirectory, string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
+static NuGet.Build.Tasks.Strings.Error_DuplicateItems.get -> string
 virtual NuGet.Build.Tasks.LoggingQueue<T>.Dispose(bool disposing) -> void
 virtual NuGet.Build.Tasks.RestoreTask.Dispose(bool disposing) -> void
 static NuGet.Build.Tasks.Strings.Error_DgSpecGenerationFailed.get -> string
