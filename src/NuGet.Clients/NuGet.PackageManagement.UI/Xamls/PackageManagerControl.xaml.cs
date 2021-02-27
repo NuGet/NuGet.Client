@@ -1396,17 +1396,17 @@ namespace NuGet.PackageManagement.UI
             else if (updatePackageOptions.PackagesToUpdate.Any())
             {
                 var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate);
+                PackageItemListViewModel firstSelectedItem = null;
                 foreach (var packageItem in _packageList.PackageItems)
                 {
                     packageItem.IsSelected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
-                }
-            }
 
-            var firstSelected = _packageList.PackageItems.FirstOrDefault(p => p.IsSelected);
-            if (firstSelected != null)
-            {
-                _packageList._list.SelectedItem = firstSelected;
-                _packageList._list.ScrollIntoView(firstSelected);
+                    if (packageItem.IsSelected && firstSelectedItem is null)
+                    {
+                        firstSelectedItem = packageItem;
+                        _packageList._list.ScrollIntoView(firstSelectedItem);
+                    }
+                }
             }
         }
 
