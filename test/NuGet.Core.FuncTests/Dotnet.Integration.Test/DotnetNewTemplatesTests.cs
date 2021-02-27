@@ -39,9 +39,9 @@ namespace Dotnet.Integration.Test
                 string effectiveOutput = output;
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
 
-                if(string.IsNullOrEmpty(name))
+                if (string.IsNullOrEmpty(name))
                 {
-                    if(!string.IsNullOrEmpty(effectiveOutput))
+                    if (!string.IsNullOrEmpty(effectiveOutput))
                     {
                         projectName = effectiveOutput;
                     }
@@ -57,9 +57,9 @@ namespace Dotnet.Integration.Test
                 }
 
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string targetFrameworkArg = string.IsNullOrEmpty(targetFramework) ? string.Empty : "-f "+ targetFramework;
-                string nameArg = string.IsNullOrEmpty(name) ? string.Empty : "-n "+ name;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o "+ effectiveOutput;
+                string targetFrameworkArg = string.IsNullOrEmpty(targetFramework) ? string.Empty : "-f " + targetFramework;
+                string nameArg = string.IsNullOrEmpty(name) ? string.Empty : "-n " + name;
+                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
                 string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
                 string norestoreArg = norestore ? "--no-restore" : string.Empty;
                 var projectFilePath = string.Empty;
@@ -92,7 +92,7 @@ namespace Dotnet.Integration.Test
                 }
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new console {targetFrameworkArg} {nameArg} {outputArg} {langArg} {norestoreArg}");
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new console {targetFrameworkArg} {nameArg} {outputArg} {langArg} {norestoreArg}".Trim());
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -305,7 +305,7 @@ namespace Dotnet.Integration.Test
                         LockFile assetFile = format.Read(Path.Combine(projectDirectory, "obj", "project.assets.json"));
                         PackageSpec packageSpec = assetFile.PackageSpec;
 
-                        if(targetFramework == "netcoreapp3.0")
+                        if (targetFramework == "netcoreapp3.0")
                         {
                             Assert.True(packageSpec.TargetFrameworks.Single().TargetAlias == targetFramework);
                         }
@@ -800,7 +800,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-
         [Theory]
         [InlineData("", "", "", "", false)]
         [InlineData("", "ProjectA", "", "VB", true)]
@@ -867,97 +866,6 @@ namespace Dotnet.Integration.Test
 
                 // Act
                 CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformslib {targetFrameworkArg} {nameArg} {outputArg} {langArg} {norestoreArg}");
-
-                // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(libPath));
-
-                if (norestore)
-                {
-                    Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
-                }
-                else
-                {
-                    Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-
-                    if (!string.IsNullOrWhiteSpace(targetFramework))
-                    {
-                        var format = new LockFileFormat();
-                        LockFile assetFile = format.Read(Path.Combine(projectDirectory, "obj", "project.assets.json"));
-                        PackageSpec packageSpec = assetFile.PackageSpec;
-                        Assert.True(packageSpec.TargetFrameworks.Single().TargetAlias == targetFramework + "-windows");
-                    }
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("", "", "", "", false)]
-        [InlineData("", "ProjectA", "", "VB", true)]
-        [InlineData("", "ProjectA", "Myoutput", "VB", false)]
-        [InlineData("net5.0", "", "", "", false)]
-        [InlineData("net5.0", "", "", "C#", false)]
-        [InlineData("net5.0", "ProjectA", "", "C#", false)]
-        [InlineData("netcoreapp3.1", "", "", "VB", true)]
-        [InlineData("netcoreapp3.1", "", "Myoutput", "", true)]
-        public void Dotnet_New_Worker_Success(string targetFramework, string name, string output, string lang, bool norestore)
-        {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                string effectiveOutput = output;
-                var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-
-                if (string.IsNullOrEmpty(name))
-                {
-                    if (!string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        projectName = effectiveOutput;
-                    }
-                }
-                else
-                {
-                    projectName = name;
-
-                    if (string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveOutput = name;
-                    }
-                }
-
-                var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string targetFrameworkArg = string.IsNullOrEmpty(targetFramework) ? string.Empty : "-f " + targetFramework;
-                string nameArg = string.IsNullOrEmpty(name) ? string.Empty : "-n " + name;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
-                string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
-                string norestoreArg = norestore ? "--no-restore" : string.Empty;
-                var projectFilePath = string.Empty;
-                var libPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    switch (lang)
-                    {
-                        case "C#":
-                            projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                            libPath = Path.Combine(projectDirectory, "Class1.cs");
-                            break;
-                        case "VB":
-                            projectFilePath = Path.Combine(projectDirectory, $"{projectName}.vbproj");
-                            libPath = Path.Combine(projectDirectory, "Class1.vb");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                    libPath = Path.Combine(projectDirectory, "Class1.cs");
-                }
-
-                // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new worker {targetFrameworkArg} {nameArg} {outputArg} {langArg} {norestoreArg}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
