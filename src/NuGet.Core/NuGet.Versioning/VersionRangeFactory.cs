@@ -236,16 +236,27 @@ namespace NuGet.Versioning
                 }
             }
 
+            // Illogical version range detection
             if (minVersion != null && maxVersion != null
                 && minVersion >= maxVersion
-                && !(minVersion == maxVersion && isMinInclusive && isMaxInclusive))
+                && !(minVersion == maxVersion && isMinInclusive && isMaxInclusive))  // Exclude (9.0.0,9.0.0) since it's used as empty version range.
             {
-                if ((partsLength == 1 && minVersion == maxVersion
-                            && (isMinInclusive ^ isMaxInclusive || !isMinInclusive && !isMaxInclusive))
-                    || (partsLength > 1
-                            && !(minVersion == maxVersion && !isMinInclusive && !isMaxInclusive)))
+                if (partsLength == 1)
                 {
-                    return false;
+                    var onePartValidation = isMinInclusive ^ isMaxInclusive; // (1.0.0] and [1.0.0) are invalid
+                    onePartValidation |= !isMinInclusive && !isMaxInclusive; ; // or (1.0.0) is invalid
+                    if (onePartValidation)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    var manyPartsValidation = minVersion != maxVersion | isMinInclusive | isMaxInclusive;
+                    if (manyPartsValidation)
+                    {
+                        return false;
+                    }
                 }
             }
 

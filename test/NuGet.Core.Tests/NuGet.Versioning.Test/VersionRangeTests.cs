@@ -1518,7 +1518,6 @@ namespace NuGet.Versioning.Test
         [InlineData("[1.0.0, 1.0.0)")]
         [InlineData("(1.0.0, 1.0.0]")]
         [InlineData("(1.0, 1.0.0]")]
-        [InlineData("[*, *)")]
         [InlineData("(*, *]")]
         [InlineData("[1.0.0-beta, 1.0.0-beta+900)")]
         [InlineData("(1.0.0-beta+600, 1.0.0-beta]")]
@@ -1526,8 +1525,7 @@ namespace NuGet.Versioning.Test
         [InlineData("(1.0.0)")]
         [InlineData("[2.0.0)")]
         [InlineData("(2.0.0]")]
-        [InlineData("[2.0.0, *)")]
-        public void VersionRange_LogicallyIncorrectRanges_Throws(string range)
+        public void Parse_Illogical_VersionRange_Throws(string range)
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => VersionRange.Parse(range));
