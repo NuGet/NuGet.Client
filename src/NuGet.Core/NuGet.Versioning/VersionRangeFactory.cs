@@ -252,7 +252,9 @@ namespace NuGet.Versioning
                 }
                 else
                 {
-                    var manyPartsValidation = minVersion != maxVersion | isMinInclusive | isMaxInclusive;
+                    var manyPartsValidation = minVersion > maxVersion // If a > b then (a, b) range is invalid. But below 2 cases tests are a = b (equals).
+                                              | isMinInclusive // [1.0.0, 1.0.0) is invalid
+                                              | isMaxInclusive; // (1.0.0, 1.0.0] and [1.0.0, 1.0.0] are invalid
                     if (manyPartsValidation)
                     {
                         return false;
