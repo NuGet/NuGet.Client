@@ -6,7 +6,10 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -20,20 +23,16 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string _generalGUID = "0F052CF7-BF62-4743-B190-87FA4D49421E";
 
         private Action _closeCallback;
-        private readonly Lazy<IVsUIShell> _vsUIShell;
+        private readonly AsyncLazy<IVsUIShell> _vsUIShell;
 
         [ImportingConstructor]
-        public OptionsPageActivator(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider)
+        public OptionsPageActivator()
         {
-            if (serviceProvider == null)
+            _vsUIShell = new AsyncLazy<IVsUIShell>(async () =>
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            _vsUIShell = new Lazy<IVsUIShell>(
-                () => serviceProvider.GetService<SVsUIShell, IVsUIShell>());
+                return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+            },
+            NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public void NotifyOptionsDialogClosed()
@@ -54,11 +53,17 @@ namespace NuGet.PackageManagement.VisualStudio
             _closeCallback = closeCallback;
             if (page == OptionsPage.General)
             {
-                ShowOptionsPage(_generalGUID);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_generalGUID);
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
             else if (page == OptionsPage.PackageSources)
             {
-                ShowOptionsPage(_packageSourcesGUID);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_packageSourcesGUID);
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
             else
             {
@@ -66,13 +71,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private void ShowOptionsPage(string optionsPageGuid)
+        private async Task ShowOptionsPageAsync(string optionsPageGuid)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             object targetGuid = optionsPageGuid;
             var toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;
-            _vsUIShell.Value.PostExecCommand(
+            IVsUIShell vsUIShell = await _vsUIShell.GetValueAsync();
+            vsUIShell.PostExecCommand(
                 ref toolsGroupGuid,
                 (uint)VSConstants.cmdidToolsOptions,
                 (uint)0,

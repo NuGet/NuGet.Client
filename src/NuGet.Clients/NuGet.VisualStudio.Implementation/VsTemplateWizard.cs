@@ -293,15 +293,15 @@ namespace NuGet.VisualStudio
 
             if (forceDesignTimeBuild)
             {
-                RunDesignTimeBuild(project);
+                await RunDesignTimeBuildAsync(project);
             }
         }
 
-        private void RunDesignTimeBuild(Project project)
+        private async Task RunDesignTimeBuildAsync(Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution = ServiceProvider.GlobalProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+            var solution = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsSolution>() as IVsSolution;
 
             if (solution != null)
             {
