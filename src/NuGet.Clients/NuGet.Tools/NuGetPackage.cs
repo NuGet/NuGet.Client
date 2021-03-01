@@ -1161,7 +1161,7 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
 
-                try
+                if (SolutionManager != null)
                 {
                     // Enable the 'Manage NuGet Packages For Solution' dialog menu
                     // - if the console is NOT busy executing a command, AND
@@ -1171,10 +1171,6 @@ namespace NuGetVSExtension
                         IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
                         !isConsoleBusy &&
                         await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
-                }
-                catch (Exception e)
-                {
-                    await TelemetryUtility.PostFaultAsync(e, nameof(NuGetPackage), nameof(BeforeQueryStatusForAddPackageForSolutionDialog));
                 }
             });
         }
