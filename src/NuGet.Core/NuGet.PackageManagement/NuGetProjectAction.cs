@@ -55,20 +55,13 @@ namespace NuGet.PackageManagement
         /// </summary>
         public NuGetProject Project { get; private set; }
 
-        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository = null)
+        // 1.0 BACKCOMPAT OVERLOAD -- DO NOT TOUCH
+        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository)
+            : this(packageIdentity, nuGetProjectActionType, project, sourceRepository, versionRange: null)
         {
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
-            PackageIdentity = packageIdentity;
-            NuGetProjectActionType = nuGetProjectActionType;
-            SourceRepository = sourceRepository;
-            Project = project;
         }
 
-        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository, VersionRange versionRange)
+        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository = null, VersionRange versionRange = null)
         {
             if (packageIdentity == null)
             {
