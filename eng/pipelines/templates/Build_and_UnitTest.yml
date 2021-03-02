@@ -1,29 +1,11 @@
 steps:
 - task: PowerShell@1
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
-    arguments: '$(SDKVersionForBuild)'
-  displayName: "Install .NET 5.0 for build"
-
-- task: PowerShell@1
   displayName: "Update Build Number"
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
       Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
-
-- task: PowerShell@1
-  displayName: "Define variables"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-
-- task: NuGetToolInstaller@0
-  displayName: "Use NuGet 5.0.0"
-  inputs:
-    versionSpec: "5.0.0"
 
 - task: PowerShell@1
   inputs:

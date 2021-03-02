@@ -17,24 +17,6 @@ steps:
     artifactName: "$(VsixPublishDir)"
     downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
-- task: NuGetToolInstaller@0
-  displayName: "Use NuGet 4.5.0"
-  inputs:
-    versionSpec: "4.5.0"
-
-- task: PowerShell@1
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
-    arguments: '$(SDKVersionForBuild)'
-  displayName: "Install .NET 5.0 for build"
-
-- task: PowerShell@1
-  displayName: "Define variables"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-
 - task: MSBuild@1
   displayName: "Bootstrap NuGet packages"
   inputs:
