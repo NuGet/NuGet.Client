@@ -348,7 +348,7 @@ namespace NuGet.Versioning
                 var enumerable = version.ReleaseLabels;
                 labels = enumerable as string[];
 
-                if (labels != null && enumerable != null)
+                if (labels == null && enumerable != null)
                 {
                     // This is not the expected type, enumerate and convert to an array.
                     labels = enumerable.ToArray();
