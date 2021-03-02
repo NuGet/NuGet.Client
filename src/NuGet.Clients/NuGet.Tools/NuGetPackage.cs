@@ -88,6 +88,7 @@ namespace NuGetVSExtension
 
         private AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
         private IVsMonitorSelection VsMonitorSelection => ThreadHelper.JoinableTaskFactory.Run(_vsMonitorSelection.GetValueAsync);
+        private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
 
         private DTE _dte;
         private DTEEvents _dteEvents;
@@ -196,53 +197,61 @@ namespace NuGetVSExtension
         /// </summary>
         private async Task InitializeMEFAsync()
         {
-            _initialized = true;
-
-            var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
-            Assumes.Present(componentModel);
-            componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
-
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            SolutionManager.Value.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
-
-            Brushes.LoadVsBrushes();
-
-            _dte = (DTE)await GetServiceAsync(typeof(SDTE));
-            Assumes.Present(_dte);
-
-            _dteEvents = _dte.Events.DTEEvents;
-            _dteEvents.OnBeginShutdown += OnBeginShutDown;
-
-            if (SolutionManager.Value.NuGetProjectContext == null)
+            await _semaphore.ExecuteAsync(async () =>
             {
-                SolutionManager.Value.NuGetProjectContext = ProjectContext.Value;
-            }
+                if (_initialized)
+                {
+                    return;
+                }
 
-            // when NuGet loads, if the current solution has some package
-            // folders marked for deletion (because a previous uninstalltion didn't succeed),
-            // delete them now.
-            if (await SolutionManager.Value.IsSolutionOpenAsync())
-            {
-                await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
-            }
+                var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+                Assumes.Present(componentModel);
+                componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
-            IVsTrackProjectRetargeting vsTrackProjectRetargeting = await this.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
-            IVsMonitorSelection vsMonitorSelection = await this.GetServiceAsync<IVsMonitorSelection>();
-            ProjectRetargetingHandler = new ProjectRetargetingHandler(
-                    _dte,
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                SolutionManager.Value.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
+
+                Brushes.LoadVsBrushes();
+
+                _dte = (DTE)await GetServiceAsync(typeof(SDTE));
+                Assumes.Present(_dte);
+
+                _dteEvents = _dte.Events.DTEEvents;
+                _dteEvents.OnBeginShutdown += OnBeginShutDown;
+
+                if (SolutionManager.Value.NuGetProjectContext == null)
+                {
+                    SolutionManager.Value.NuGetProjectContext = ProjectContext.Value;
+                }
+
+                // when NuGet loads, if the current solution has some package
+                // folders marked for deletion (because a previous uninstalltion didn't succeed),
+                // delete them now.
+                if (await SolutionManager.Value.IsSolutionOpenAsync())
+                {
+                    await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
+                }
+
+                IVsTrackProjectRetargeting vsTrackProjectRetargeting = await this.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
+                IVsMonitorSelection vsMonitorSelection = await this.GetServiceAsync<IVsMonitorSelection>();
+                ProjectRetargetingHandler = new ProjectRetargetingHandler(
+                        _dte,
+                        SolutionManager.Value,
+                        this,
+                        componentModel,
+                        vsTrackProjectRetargeting,
+                        vsMonitorSelection);
+
+                IVsSolution2 vsSolution2 = await this.GetServiceAsync<SVsSolution, IVsSolution2>();
+                ProjectUpgradeHandler = new ProjectUpgradeHandler(
                     SolutionManager.Value,
-                    this,
-                    componentModel,
-                    vsTrackProjectRetargeting,
-                    vsMonitorSelection);
+                    vsSolution2);
 
-            IVsSolution2 vsSolution2 = await this.GetServiceAsync<SVsSolution, IVsSolution2>();
-            ProjectUpgradeHandler = new ProjectUpgradeHandler(
-                SolutionManager.Value,
-                vsSolution2);
+                SolutionUserOptions.Value.LoadSettings();
 
-            SolutionUserOptions.Value.LoadSettings();
+                _initialized = true;
+            });
         }
 
         private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)
@@ -1160,18 +1169,14 @@ namespace NuGetVSExtension
                 {
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
-
-                if (SolutionManager != null)
-                {
-                    // Enable the 'Manage NuGet Packages For Solution' dialog menu
-                    // - if the console is NOT busy executing a command, AND
-                    // - if the solution exists and not debugging and not building AND
-                    // - if there are NuGetProjects. This means there are loaded, supported projects.
-                    command.Enabled =
-                        IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
-                        !isConsoleBusy &&
-                        await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
-                }
+                // Enable the 'Manage NuGet Packages For Solution' dialog menu
+                // - if the console is NOT busy executing a command, AND
+                // - if the solution exists and not debugging and not building AND
+                // - if there are NuGetProjects. This means there are loaded, supported projects.
+                command.Enabled =
+                    IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
+                    !isConsoleBusy &&
+                    await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
             });
         }
 
