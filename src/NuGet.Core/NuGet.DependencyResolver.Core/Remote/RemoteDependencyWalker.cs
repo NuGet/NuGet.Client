@@ -456,7 +456,7 @@ namespace NuGet.DependencyResolver
             {
                 lock (_transitiveCentralPackageVersions)
                 {
-                    if (!_transitiveCentralPackageVersions.TryGetValue(centralPackageVersionDependency.Name, out var list)
+                    if (!_transitiveCentralPackageVersions.TryGetValue(centralPackageVersionDependency.Name, out var list))
                     {
                         list = new List<GraphNode<RemoteResolveResult>>();
                         _transitiveCentralPackageVersions.Add(centralPackageVersionDependency.Name, list);
