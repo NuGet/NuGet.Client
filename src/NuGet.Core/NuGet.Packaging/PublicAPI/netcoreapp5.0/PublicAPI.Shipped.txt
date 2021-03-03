@@ -506,6 +506,8 @@ NuGet.Packaging.NupkgMetadataFile.ContentHash.get -> string
 NuGet.Packaging.NupkgMetadataFile.ContentHash.set -> void
 NuGet.Packaging.NupkgMetadataFile.Equals(NuGet.Packaging.NupkgMetadataFile other) -> bool
 NuGet.Packaging.NupkgMetadataFile.NupkgMetadataFile() -> void
+NuGet.Packaging.NupkgMetadataFile.Source.get -> string
+NuGet.Packaging.NupkgMetadataFile.Source.set -> void
 NuGet.Packaging.NupkgMetadataFile.Version.get -> int
 NuGet.Packaging.NupkgMetadataFile.Version.set -> void
 NuGet.Packaging.NupkgMetadataFileFormat
@@ -1597,6 +1599,11 @@ static NuGet.Packaging.Rules.AnalysisResources.IconUrlDeprecationWarning.get -> 
 static NuGet.Packaging.Rules.AnalysisResources.InvalidFrameworkWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidPlaceholderFileWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.InvalidPrereleaseDependencyWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInDependencyGroupsWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFilesWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkInReferenceGroupsWarning.get -> string
+static NuGet.Packaging.Rules.AnalysisResources.InvalidUndottedFrameworkWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.LegacyVersionWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.LicenseUrlDeprecationWarning.get -> string
 static NuGet.Packaging.Rules.AnalysisResources.Migrator_AssemblyDirectlyUnderLibWarning.get -> string
@@ -1875,8 +1882,12 @@ virtual NuGet.Packaging.PackageReaderBase.GetToolItemsAsync(System.Threading.Can
 virtual NuGet.Packaging.PackageReaderBase.IsServiceable() -> bool
 virtual NuGet.Packaging.PackageReaderBase.IsServiceableAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
 virtual NuGet.Packaging.PackageReaderBase.NuspecReader.get -> NuGet.Packaging.NuspecReader
+virtual NuGet.Packaging.PackagesConfigWriter.Dispose(bool disposing) -> void
+virtual NuGet.Packaging.Signing.KeyPairFileReader.Dispose(bool disposing) -> void
+virtual NuGet.Packaging.Signing.KeyPairFileWriter.Dispose(bool disposing) -> void
 virtual NuGet.Packaging.Signing.PackageVerificationResult.Issues.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog>
 virtual NuGet.Packaging.Signing.PackageVerificationResult.Trust.get -> NuGet.Packaging.Signing.SignatureVerificationStatus
+virtual NuGet.Packaging.Signing.SignPackageRequest.Dispose(bool disposing) -> void
 virtual NuGet.Packaging.Signing.Signature.FriendlyName.get -> string
 virtual NuGet.Packaging.Signing.Signature.Verify(NuGet.Packaging.Signing.Timestamp timestamp, NuGet.Packaging.Signing.SignatureVerifySettings settings, NuGet.Common.HashAlgorithmName fingerprintAlgorithm, System.Security.Cryptography.X509Certificates.X509Certificate2Collection certificateExtraStore) -> NuGet.Packaging.Signing.SignatureVerificationSummary
 virtual NuGet.Packaging.VersionFolderPathResolver.GetInstallPath(string packageId, NuGet.Versioning.NuGetVersion version) -> string
