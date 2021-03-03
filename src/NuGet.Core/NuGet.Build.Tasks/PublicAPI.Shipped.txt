@@ -80,6 +80,8 @@ NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectName.get 
 NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectName.set -> void
 NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetFramework.get -> string
 NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetFramework.set -> void
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetPlatform.get -> string
+NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.CurrentProjectTargetPlatform.set -> void
 NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.FallbackTargetFrameworks.get -> string[]
 NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.FallbackTargetFrameworks.set -> void
 NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.GetReferenceNearestTargetFrameworkTask() -> void
@@ -275,6 +277,8 @@ NuGet.Build.Tasks.RestoreTaskEx.MSBuildBinPath.get -> string
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildBinPath.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.NoCache.get -> bool
 NuGet.Build.Tasks.RestoreTaskEx.NoCache.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.get -> string
+NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.ProjectFullPath.get -> string
 NuGet.Build.Tasks.RestoreTaskEx.ProjectFullPath.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.Recursive.get -> bool

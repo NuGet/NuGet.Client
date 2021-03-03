@@ -20,7 +20,7 @@ Alternatively, if you build the the repository under a `Debug` configuration, wh
 ## Debugging and testing NuGet in Visual Studio
 
 Testing the NuGet Visual Studio functionality is equally as easy as testing NuGet.exe.
-The start-up project is [NuGet.VisualStudio.Client](../src/NuGet.Clients/NuGet.VisualStudio.Client/NuGet.VisualStudio.Client.csproj). Starting this will launch the [experimental instance](https://docs.microsoft.com/en-us/visualstudio/extensibility/the-experimental-instance) of Visual Studio.
+The start-up project is [NuGet.VisualStudio.Client](../src/NuGet.Clients/NuGet.VisualStudio.Client/NuGet.VisualStudio.Client.csproj). Starting this project will build the VSIX, then install that VSIX onto and launch your [experimental instance](https://docs.microsoft.com/en-us/visualstudio/extensibility/the-experimental-instance) of Visual Studio.
 
 ### Testing the build of NuGet in Visual Studio
 

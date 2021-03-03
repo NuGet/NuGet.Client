@@ -10,7 +10,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
+using System.Text;
 using System.Xml.Linq;
 using NuGet.Client;
 using NuGet.Common;
@@ -18,7 +18,6 @@ using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
-using NuGet.Packaging.Rules;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -26,12 +25,13 @@ namespace NuGet.Packaging
 {
     public class PackageBuilder : IPackageMetadata
     {
-        private const string DefaultContentType = "application/octet";
         private static readonly Uri DefaultUri = new Uri("http://defaultcontainer/");
+        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime ZipFormatMaxDate = new DateTime(2107, 12, 31, 23, 59, 58, DateTimeKind.Utc);
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
         private readonly bool _deterministic;
-        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Maximum Icon file size: 1 megabyte
@@ -48,9 +48,20 @@ namespace NuGet.Packaging
         {
         }
 
+        public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, ILogger logger)
+            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories, deterministic, logger)
+        {
+        }
+
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, basePath, propertyProvider, includeEmptyDirectories, deterministic: false)
         {
+        }
+
+        public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, ILogger logger)
+            : this(path, basePath, propertyProvider, includeEmptyDirectories, deterministic)
+        {
+            _logger = logger;
         }
 
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic)
@@ -91,10 +102,21 @@ namespace NuGet.Packaging
         {
         }
 
+        public PackageBuilder(bool deterministic, ILogger logger)
+            : this(includeEmptyDirectories: false, deterministic: deterministic, logger)
+        {
+        }
+
         private PackageBuilder(bool includeEmptyDirectories, bool deterministic)
+            : this(includeEmptyDirectories: false, deterministic: deterministic, logger: NullLogger.Instance)
+        {
+        }
+
+        private PackageBuilder(bool includeEmptyDirectories, bool deterministic, ILogger logger)
         {
             _includeEmptyDirectories = includeEmptyDirectories;
             _deterministic = false; // fix in https://github.com/NuGet/Home/issues/8601
+            _logger = logger;
             Files = new Collection<IPackageFile>();
             DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
@@ -179,6 +201,12 @@ namespace NuGet.Packaging
             get;
             set;
         }
+
+        public bool EmitRequireLicenseAcceptance
+        {
+            get;
+            set;
+        } = true;
 
         public bool Serviceable
         {
@@ -315,7 +343,7 @@ namespace NuGet.Packaging
         {
             get
             {
-                return String.Join(" ", Tags);
+                return string.Join(" ", Tags);
             }
         }
 
@@ -581,7 +609,7 @@ namespace NuGet.Packaging
             }
 
             var libFiles = new HashSet<string>(from file in files
-                                               where !String.IsNullOrEmpty(file.Path) && file.Path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
+                                               where !string.IsNullOrEmpty(file.Path) && file.Path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
                                                select Path.GetFileName(file.Path), StringComparer.OrdinalIgnoreCase);
 
             foreach (var reference in packageAssemblyReferences.SelectMany(p => p.References))
@@ -591,7 +619,7 @@ namespace NuGet.Packaging
                     !libFiles.Contains(reference + ".exe") &&
                     !libFiles.Contains(reference + ".winmd"))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5018, String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
+                    throw new PackagingException(NuGetLogCode.NU5018, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
                 }
             }
         }
@@ -620,6 +648,39 @@ namespace NuGet.Packaging
             }
         }
 
+        /// <summary>Looks for the specified file within the package</summary>
+        /// <param name="filePath">The file path to search for</param>
+        /// <param name="packageFiles">The list of files to search within</param>
+        /// <param name="filePathIncorrectCase">If the file was not found, this will be a path which almost matched but had the incorrect case</param>
+        /// <returns>An <see cref="IPackageFile"/> matching the specified path or <c>null</c></returns>
+        private static IPackageFile FindFileInPackage(string filePath, IEnumerable<IPackageFile> packageFiles, out string filePathIncorrectCase)
+        {
+            filePathIncorrectCase = null;
+            var strippedFilePath = PathUtility.StripLeadingDirectorySeparators(filePath);
+
+            foreach (var packageFile in packageFiles)
+            {
+                var strippedPackageFilePath = PathUtility.StripLeadingDirectorySeparators(packageFile.Path);
+
+                // This must use a case-sensitive string comparison, even on systems where file paths are normally case-sensitive.
+                // This is because Zip files are treated as case-sensitive. (See https://github.com/NuGet/Home/issues/9817)
+                if (strippedPackageFilePath.Equals(strippedFilePath, StringComparison.Ordinal))
+                {
+                    // Found the requested file in the package
+                    filePathIncorrectCase = null;
+                    return packageFile;
+                }
+                // Check for files that exist with the wrong file casing
+                else if (filePathIncorrectCase is null && strippedPackageFilePath.Equals(strippedFilePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    filePathIncorrectCase = strippedPackageFilePath;
+                }
+            }
+
+            // We searched all of the package files and didn't find what we were looking for
+            return null;
+        }
+
         private void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)
         {
             if (!PackageTypes.Contains(PackageType.SymbolsPackage) && licenseMetadata?.Type == LicenseType.File)
@@ -631,42 +692,63 @@ namespace NuGet.Packaging
                 {
                     throw new PackagingException(NuGetLogCode.NU5031, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileExtensionIsInvalid, licenseMetadata.License));
                 }
-                var strippedLicenseFileLocation = PathUtility.StripLeadingDirectorySeparators(licenseMetadata.License);
-                var count = files.Where(e => PathUtility.StripLeadingDirectorySeparators(e.Path).Equals(strippedLicenseFileLocation, PathUtility.GetStringComparisonBasedOnOS())).Count();
-                if (count == 0)
+
+                if (FindFileInPackage(licenseMetadata.License, files, out var licenseFilePathWithIncorrectCase) is null)
                 {
-                    throw new PackagingException(NuGetLogCode.NU5030, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkg, licenseMetadata.License));
+                    string errorMessage;
+                    if (licenseFilePathWithIncorrectCase is null)
+                    {
+                        errorMessage = string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkg, licenseMetadata.License);
+                    }
+                    else
+                    {
+                        errorMessage = string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkgWithHint, licenseMetadata.License, licenseFilePathWithIncorrectCase);
+                    }
+
+                    throw new PackagingException(NuGetLogCode.NU5030, errorMessage);
                 }
             }
         }
 
         /// <summary>
         /// Given a list of resolved files,
-        /// determine which file will be used as the icon file and validate its size.
+        /// determine which file will be used as the icon file and validate its size and extension.
         /// </summary>
         /// <param name="files">Files resolved from the file entries in the nuspec</param>
-        /// <param name="iconPath">iconpath found in the .nuspec</param>
+        /// <param name="iconPath">icon entry found in the .nuspec</param>
         /// <exception cref="PackagingException">When a validation rule is not met</exception>
         private void ValidateIconFile(IEnumerable<IPackageFile> files, string iconPath)
         {
             if (!PackageTypes.Contains(PackageType.SymbolsPackage) && !string.IsNullOrEmpty(iconPath))
             {
-                // Validate entry
-                var iconPathStripped = PathUtility.StripLeadingDirectorySeparators(iconPath);
-
-                var iconFileList = files.Where(f =>
-                        iconPathStripped.Equals(
-                            PathUtility.StripLeadingDirectorySeparators(f.Path),
-                            PathUtility.GetStringComparisonBasedOnOS()));
-
-                if (iconFileList.Count() == 0)
+                var ext = Path.GetExtension(iconPath);
+                if (string.IsNullOrEmpty(ext) || (
+                        !ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) &&
+                        !ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) &&
+                        !ext.Equals(".png", StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new PackagingException(
-                        NuGetLogCode.NU5046,
-                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconNoFileElement, iconPath));
+                        NuGetLogCode.NU5045,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconInvalidExtension, iconPath));
                 }
 
-                IPackageFile iconFile = iconFileList.First();
+                // Validate entry
+                IPackageFile iconFile = FindFileInPackage(iconPath, files, out var iconPathWithIncorrectCase);
+
+                if (iconFile is null)
+                {
+                    string errorMessage;
+                    if (iconPathWithIncorrectCase is null)
+                    {
+                        errorMessage = string.Format(CultureInfo.CurrentCulture, NuGetResources.IconNoFileElement, iconPath);
+                    }
+                    else
+                    {
+                        errorMessage = string.Format(CultureInfo.CurrentCulture, NuGetResources.IconNoFileElementWithHint, iconPath, iconPathWithIncorrectCase);
+                    }
+
+                    throw new PackagingException(NuGetLogCode.NU5046, errorMessage);
+                }
 
                 try
                 {
@@ -837,10 +919,25 @@ namespace NuGet.Packaging
             return entry;
         }
 
-        private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel)
+        private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel, StringBuilder warningMessage)
         {
             var entry = package.CreateEntry(entryName, compressionLevel);
-            entry.LastWriteTime = timeOffset;
+
+            if (timeOffset.UtcDateTime < ZipFormatMinDate)
+            {
+                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModifiedMessage(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMinDate.ToShortDateString()));
+                entry.LastWriteTime = ZipFormatMinDate;
+            }
+            else if (timeOffset.UtcDateTime > ZipFormatMaxDate)
+            {
+                warningMessage.AppendLine(StringFormatter.ZipFileTimeStampModifiedMessage(entryName, timeOffset.DateTime.ToShortDateString(), ZipFormatMaxDate.ToShortDateString()));
+                entry.LastWriteTime = ZipFormatMaxDate;
+            }
+            else
+            {
+                entry.LastWriteTime = timeOffset.UtcDateTime;
+            }
+
             return entry;
         }
 
@@ -862,6 +959,7 @@ namespace NuGet.Packaging
         private HashSet<string> WriteFiles(ZipArchive package, HashSet<string> filesWithoutExtensions)
         {
             var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var warningMessage = new StringBuilder();
 
             // Add files that might not come from expanding files on disk
             foreach (IPackageFile file in new HashSet<IPackageFile>(Files))
@@ -874,7 +972,8 @@ namespace NuGet.Packaging
                             package,
                             file.Path,
                             stream,
-                            lastWriteTime: _deterministic ? ZipFormatMinDate : file.LastWriteTime);
+                            lastWriteTime: _deterministic ? ZipFormatMinDate : file.LastWriteTime,
+                            warningMessage);
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)
@@ -896,6 +995,18 @@ namespace NuGet.Packaging
                         throw;
                     }
                 }
+            }
+
+            if (warningMessage.Length > Environment.NewLine.Length)
+            {
+                warningMessage.Length -= Environment.NewLine.Length;
+            }
+
+            var warningMessageString = warningMessage.ToString();
+
+            if (!string.IsNullOrEmpty(warningMessageString))
+            {
+                _logger?.Log(PackagingLogMessage.CreateWarning(StringFormatter.ZipFileTimeStampModifiedWarning(warningMessageString), NuGetLogCode.NU5132));
             }
 
             return extensions;
@@ -921,7 +1032,7 @@ namespace NuGet.Packaging
             if (!PathResolver.IsWildcardSearch(source) && !PathResolver.IsDirectoryPath(source) && !searchFiles.Any() && string.IsNullOrEmpty(exclude))
             {
                 throw new PackagingException(NuGetLogCode.NU5019,
-                    String.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
+                    string.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
             }
 
             Files.AddRange(searchFiles);
@@ -975,7 +1086,7 @@ namespace NuGet.Packaging
             {
                 packagePath = Path.GetFileName(fullPath);
             }
-            return Path.Combine(targetPath ?? String.Empty, packagePath);
+            return Path.Combine(targetPath ?? string.Empty, packagePath);
         }
 
         /// <summary>
@@ -1006,7 +1117,7 @@ namespace NuGet.Packaging
 
         private static void ExcludeFiles(List<PhysicalPackageFile> searchFiles, string basePath, string exclude)
         {
-            if (String.IsNullOrEmpty(exclude))
+            if (string.IsNullOrEmpty(exclude))
             {
                 return;
             }
@@ -1020,7 +1131,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime)
+        private void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime, StringBuilder warningMessage)
         {
             if (PackageHelper.IsNuspec(path))
             {
@@ -1028,7 +1139,7 @@ namespace NuGet.Packaging
             }
 
             string entryName = CreatePartEntryName(path);
-            var entry = CreatePackageFileEntry(package, entryName, lastWriteTime, CompressionLevel.Optimal);
+            var entry = CreatePackageFileEntry(package, entryName, lastWriteTime, CompressionLevel.Optimal, warningMessage);
 
             using (var stream = entry.Open())
             {
@@ -1155,7 +1266,7 @@ namespace NuGet.Packaging
                     new XAttribute(XNamespace.Xmlns + "dc", dcText),
                     new XAttribute(XNamespace.Xmlns + "dcterms", dctermsText),
                     new XAttribute(XNamespace.Xmlns + "xsi", xsiText),
-                    new XElement(dc + "creator", String.Join(", ", Authors)),
+                    new XElement(dc + "creator", string.Join(", ", Authors)),
                     new XElement(dc + "description", Description),
                     new XElement(dc + "identifier", Id),
                     new XElement(core + "version", Version.ToString()),

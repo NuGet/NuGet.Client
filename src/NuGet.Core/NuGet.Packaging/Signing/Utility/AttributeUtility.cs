@@ -239,7 +239,7 @@ namespace NuGet.Packaging.Signing
                 case SignatureType.Repository:
                     return Oids.CommitmentTypeIdentifierProofOfReceipt;
                 default:
-                    throw new ArgumentException(nameof(signatureType));
+                    throw new ArgumentOutOfRangeException(paramName: nameof(signatureType));
             }
         }
 

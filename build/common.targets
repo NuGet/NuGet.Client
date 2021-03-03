@@ -151,6 +151,19 @@
 
   <!--
     ============================================================
+    _IsProjectNeedsPack
+    Verify if the project needs to be packed.
+    ============================================================
+  -->
+  <Target Name="_IsProjectNeedsPack" Returns="@(PackProjects)">
+    <ItemGroup Condition="'$(PackProject)' == 'true'">
+      <PackProjects Include="$(MSBuildProjectFullPath)">
+      </PackProjects>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
     GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that
     need to be indexed on the symbol server
     ============================================================
@@ -378,6 +391,6 @@ Condition=" ('%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPl
       Condition=" '%(PackageReference.Version)' != '' AND '%(PackageReference.IsImplicitlyDefined)' != 'true' AND '%(PackageReference.Identity)' != 'Microsoft.NET.Test.Sdk' " />
   </Target>
 
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\packages\Microsoft.VisualStudioEng.MicroBuild.Core.0.4.1\build\Microsoft.VisualStudioEng.MicroBuild.Core.targets" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), &quot;README.md&quot;))\packages\Microsoft.VisualStudioEng.MicroBuild.Core.0.4.1\build\Microsoft.VisualStudioEng.MicroBuild.Core.targets')" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\packages\Microsoft.VisualStudioEng.MicroBuild.Core\0.4.1\build\Microsoft.VisualStudioEng.MicroBuild.Core.targets" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), &quot;README.md&quot;))\packages\Microsoft.VisualStudioEng.MicroBuild.Core\0.4.1\build\Microsoft.VisualStudioEng.MicroBuild.Core.targets')" />
 
 </Project>

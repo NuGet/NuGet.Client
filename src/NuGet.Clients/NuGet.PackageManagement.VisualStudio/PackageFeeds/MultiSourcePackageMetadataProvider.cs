@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -52,27 +51,22 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger;
         }
 
+        public async Task<IPackageSearchMetadata> GetPackageMetadataForIdentityAsync(PackageIdentity identity, CancellationToken cancellationToken)
+        {
+            List<Task<IPackageSearchMetadata>> tasks = _sourceRepositories
+                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataForIdentityAsync(identity, cancellationToken)))
+                .ToList();
+
+            return await GetPackageMetadataAsync(identity, tasks, cancellationToken);
+        }
+
         public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var tasks = _sourceRepositories
+            List<Task<IPackageSearchMetadata>> tasks = _sourceRepositories
                 .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
                 .ToList();
 
-            if (_localRepository != null)
-            {
-                tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
-            }
-
-            var completed = (await Task.WhenAll(tasks))
-                .Where(m => m != null);
-
-            var master = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
-                ?? completed.FirstOrDefault()
-                ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
-
-            return master.WithVersions(
-                asyncValueFactory: () => MergeVersionsAsync(identity, completed));
+            return await GetPackageMetadataAsync(identity, tasks, cancellationToken);
         }
 
         public async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
@@ -173,6 +167,26 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return null;
+        }
+
+        private async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, List<Task<IPackageSearchMetadata>> tasks, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (_localRepository != null)
+            {
+                tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
+            }
+
+            IEnumerable<IPackageSearchMetadata> completed = (await Task.WhenAll(tasks))
+                .Where(m => m != null);
+
+            IPackageSearchMetadata master = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
+                ?? completed.FirstOrDefault()
+                ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
+
+            return master.WithVersions(
+                asyncValueFactory: () => MergeVersionsAsync(identity, completed));
         }
 
         private static async Task<IEnumerable<VersionInfo>> MergeVersionsAsync(PackageIdentity identity, IEnumerable<IPackageSearchMetadata> packages)

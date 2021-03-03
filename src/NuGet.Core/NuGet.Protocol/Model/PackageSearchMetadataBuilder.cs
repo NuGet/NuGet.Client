@@ -54,7 +54,9 @@ namespace NuGet.Protocol.Core.Types
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
             public bool IsListed { get; set; }
+            [Obsolete("PackagePath is recommended in place of PackageReader")]
             public Func<PackageReaderBase> PackageReader { get; set; }
+            public string PackagePath { get; set; }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
@@ -104,9 +106,14 @@ namespace NuGet.Protocol.Core.Types
                 LicenseMetadata = _metadata.LicenseMetadata,
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
                 Vulnerabilities = _metadata.Vulnerabilities,
+#pragma warning disable CS0618 // Type or member is obsolete
                 PackageReader =
                     (_metadata as LocalPackageSearchMetadata)?.PackageReader ??
                     (_metadata as ClonedPackageSearchMetadata)?.PackageReader,
+#pragma warning restore CS0618 // Type or member is obsolete
+                PackagePath =
+                    (_metadata as LocalPackageSearchMetadata)?.PackagePath ??
+                    (_metadata as ClonedPackageSearchMetadata)?.PackagePath,
             };
 
             return clonedMetadata;

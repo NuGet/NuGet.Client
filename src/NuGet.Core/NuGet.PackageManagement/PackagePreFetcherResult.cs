@@ -23,6 +23,7 @@ namespace NuGet.PackageManagement
         private readonly DateTimeOffset _downloadStartTime;
         private DateTimeOffset _packageFetchTime;
         private DateTimeOffset _taskReturnTime;
+        private bool _disposed = false;
 
         /// <summary>
         /// True if the result came from the packages folder.
@@ -156,11 +157,27 @@ namespace NuGet.PackageManagement
 
         public void Dispose()
         {
-            // The task should be awaited before calling dispose
-            if (_result != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                _result.Dispose();
+                return;
             }
+
+            if (disposing)
+            {
+                // The task should be awaited before calling dispose
+                if (_result != null)
+                {
+                    _result.Dispose();
+                }
+            }
+
+            _disposed = true;
         }
 
         public void EmitTelemetryEvent(Guid parentId)

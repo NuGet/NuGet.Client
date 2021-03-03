@@ -601,6 +601,15 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        internal static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package Installation Error.
         /// </summary>
         internal static string TemplateWizard_ErrorDialogTitle {

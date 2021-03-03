@@ -779,7 +779,7 @@ namespace NuGet.Commands
             spec.FilePath = specItem.GetProperty("ProjectPath");
             spec.RestoreMetadata.ProjectName = specItem.GetProperty("ProjectName");
 
-            if (projectStyle == ProjectStyle.DotnetCliTool || projectStyle == ProjectStyle.Unknown)
+            if (projectStyle == ProjectStyle.DotnetCliTool || projectStyle == ProjectStyle.Unknown || projectStyle == ProjectStyle.PackagesConfig)
             {
                 var tfmProperty = specItem.GetProperty("TargetFrameworks");
                 if (!string.IsNullOrEmpty(tfmProperty))

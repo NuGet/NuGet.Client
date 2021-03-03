@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using MessagePack;
 using MessagePack.Formatters;
 using Microsoft;
@@ -11,7 +9,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal sealed class ImplicitProjectActionFormatter : IMessagePackFormatter<ImplicitProjectAction?>
+    internal sealed class ImplicitProjectActionFormatter : NuGetMessagePackFormatter<ImplicitProjectAction>
     {
         private const string IdPropertyName = "id";
         private const string PackageIdentityPropertyName = "packageidentity";
@@ -23,67 +21,45 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public ImplicitProjectAction? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override ImplicitProjectAction? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            string? id = null;
+            PackageIdentity? packageIdentity = null;
+            NuGetProjectActionType? projectActionType = null;
+
+            int propertyCount = reader.ReadMapHeader();
+
+            for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                string? id = null;
-                PackageIdentity? packageIdentity = null;
-                NuGetProjectActionType? projectActionType = null;
-
-                int propertyCount = reader.ReadMapHeader();
-
-                for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case IdPropertyName:
-                            id = reader.ReadString();
-                            break;
+                    case IdPropertyName:
+                        id = reader.ReadString();
+                        break;
 
-                        case PackageIdentityPropertyName:
-                            packageIdentity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case PackageIdentityPropertyName:
+                        packageIdentity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        case ProjectActionTypePropertyName:
-                            projectActionType = options.Resolver.GetFormatter<NuGetProjectActionType>().Deserialize(ref reader, options);
-                            break;
+                    case ProjectActionTypePropertyName:
+                        projectActionType = options.Resolver.GetFormatter<NuGetProjectActionType>().Deserialize(ref reader, options);
+                        break;
 
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNullOrEmpty(id);
-                Assumes.NotNull(packageIdentity);
-                Assumes.True(projectActionType.HasValue);
-
-                return new ImplicitProjectAction(id, packageIdentity, projectActionType!.Value);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.NotNullOrEmpty(id);
+            Assumes.NotNull(packageIdentity);
+            Assumes.True(projectActionType.HasValue);
+
+            return new ImplicitProjectAction(id, packageIdentity, projectActionType!.Value);
         }
 
-        public void Serialize(ref MessagePackWriter writer, ImplicitProjectAction? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, ImplicitProjectAction value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 3);
             writer.Write(IdPropertyName);
             writer.Write(value.Id);

@@ -15,10 +15,11 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(FloatRanges))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(FloatRange expectedResult)
         {
-            FloatRange actualResult = SerializeThenDeserialize(FloatRangeFormatter.Instance, expectedResult);
+            FloatRange? actualResult = SerializeThenDeserialize(FloatRangeFormatter.Instance, expectedResult);
 
+            Assert.NotNull(actualResult);
             Assert.Equal(expectedResult, actualResult);
-            Assert.Equal(expectedResult.OriginalReleasePrefix, actualResult.OriginalReleasePrefix);
+            Assert.Equal(expectedResult.OriginalReleasePrefix, actualResult!.OriginalReleasePrefix);
         }
 
         public static TheoryData FloatRanges => new TheoryData<FloatRange>

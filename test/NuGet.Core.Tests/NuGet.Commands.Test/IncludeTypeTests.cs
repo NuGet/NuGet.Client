@@ -1782,7 +1782,7 @@ namespace NuGet.Commands.Test
             Directory.CreateDirectory(testProject2Dir);
 
             var specPath1 = Path.Combine(testProject1Dir, "project.json");
-            var spec1 = JsonPackageSpecReader.GetPackageSpec(configJson1, "TestProject1", specPath1);
+            var spec1 = JsonPackageSpecReader.GetPackageSpec(configJson1, "TestProject1", specPath1).EnsureProjectJsonRestoreMetadata();
 
             using (var writer = new StreamWriter(File.OpenWrite(specPath1)))
             {
@@ -1790,7 +1790,7 @@ namespace NuGet.Commands.Test
             }
 
             var specPath2 = Path.Combine(testProject2Dir, "project.json");
-            var spec2 = JsonPackageSpecReader.GetPackageSpec(configJson2, "TestProject2", specPath2);
+            var spec2 = JsonPackageSpecReader.GetPackageSpec(configJson2, "TestProject2", specPath2).EnsureProjectJsonRestoreMetadata();
 
             using (var writer = new StreamWriter(File.OpenWrite(specPath2)))
             {
@@ -1853,21 +1853,21 @@ namespace NuGet.Commands.Test
             Directory.CreateDirectory(testProject3Dir);
 
             var specPath1 = Path.Combine(testProject1Dir, "project.json");
-            var spec1 = JsonPackageSpecReader.GetPackageSpec(configJson1, "TestProject1", specPath1);
+            var spec1 = JsonPackageSpecReader.GetPackageSpec(configJson1, "TestProject1", specPath1).EnsureProjectJsonRestoreMetadata();
             using (var writer = new StreamWriter(File.OpenWrite(specPath1)))
             {
                 writer.WriteLine(configJson1);
             }
 
             var specPath2 = Path.Combine(testProject2Dir, "project.json");
-            var spec2 = JsonPackageSpecReader.GetPackageSpec(configJson2, "TestProject2", specPath2);
+            var spec2 = JsonPackageSpecReader.GetPackageSpec(configJson2, "TestProject2", specPath2).EnsureProjectJsonRestoreMetadata();
             using (var writer = new StreamWriter(File.OpenWrite(specPath2)))
             {
                 writer.WriteLine(configJson2);
             }
 
             var specPath3 = Path.Combine(testProject3Dir, "project.json");
-            var spec3 = JsonPackageSpecReader.GetPackageSpec(configJson3, "TestProject3", specPath3);
+            var spec3 = JsonPackageSpecReader.GetPackageSpec(configJson3, "TestProject3", specPath3).EnsureProjectJsonRestoreMetadata();
             using (var writer = new StreamWriter(File.OpenWrite(specPath3)))
             {
                 writer.WriteLine(configJson3);
@@ -1919,7 +1919,7 @@ namespace NuGet.Commands.Test
             };
 
             var specPath = Path.Combine(testProjectDir, "project.json");
-            var spec = JsonPackageSpecReader.GetPackageSpec(configJson, "TestProject", specPath);
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson, "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
 
             var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
             {

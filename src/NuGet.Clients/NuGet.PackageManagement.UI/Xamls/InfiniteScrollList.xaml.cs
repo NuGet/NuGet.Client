@@ -17,8 +17,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
         /// <summary>
-        /// This exists only to facilitate unit testing.
+        /// Fires when the items in the list have finished loading.
         /// It is triggered at <see cref="RepopulatePackageList(PackageItemListViewModel, IPackageItemLoader, CancellationToken) " />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
@@ -48,8 +48,9 @@ namespace NuGet.PackageManagement.UI
         private CancellationTokenSource _loadCts;
         private IPackageItemLoader _loader;
         private INuGetUILogger _logger;
-        private Task<SearchResult<IPackageSearchMetadata>> _initialSearchResultTask;
+        private Task<SearchResultContextInfo> _initialSearchResultTask;
         private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
+        private bool _checkBoxesEnabled;
 
         private const string LogEntrySource = "NuGet Package Manager";
 
@@ -98,7 +99,18 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        public bool CheckBoxesEnabled { get; set; }
+        public bool CheckBoxesEnabled
+        {
+            get => _checkBoxesEnabled;
+            set
+            {
+                if (_checkBoxesEnabled != value)
+                {
+                    _checkBoxesEnabled = value;
+                    _list.IsItemSelectionEnabled = value;
+                }
+            }
+        }
 
         public bool IsSolution { get; set; }
 
@@ -156,7 +168,7 @@ namespace NuGet.PackageManagement.UI
             IPackageItemLoader loader,
             string loadingMessage,
             INuGetUILogger logger,
-            Task<SearchResult<IPackageSearchMetadata>> searchResultTask,
+            Task<SearchResultContextInfo> searchResultTask,
             CancellationToken token)
         {
             if (loader == null)
@@ -420,8 +432,7 @@ namespace NuGet.PackageManagement.UI
                 token.ThrowIfCancellationRequested();
 
                 // update initial progress
-                var cleanState = SearchResult.Empty<IPackageSearchMetadata>();
-                await currentLoader.UpdateStateAndReportAsync(cleanState, progress, token);
+                await currentLoader.UpdateStateAndReportAsync(new SearchResultContextInfo(), progress, token);
 
                 var results = await _initialSearchResultTask;
 
@@ -559,7 +570,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         package.PropertyChanged += Package_PropertyChanged;
                         Items.Add(package);
-                        _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
+                        _selectedCount = package.IsSelected ? _selectedCount + 1 : _selectedCount;
                     }
 
                     if (removed)
@@ -599,9 +610,9 @@ namespace NuGet.PackageManagement.UI
         private void Package_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var package = sender as PackageItemListViewModel;
-            if (e.PropertyName == nameof(package.Selected))
+            if (e.PropertyName == nameof(package.IsSelected))
             {
-                if (package.Selected)
+                if (package.IsSelected)
                 {
                     _selectedCount++;
                 }
@@ -731,7 +742,7 @@ namespace NuGet.PackageManagement.UI
                 // for null here.
                 if (package != null)
                 {
-                    package.Selected = true;
+                    package.IsSelected = true;
                 }
             }
         }
@@ -743,14 +754,14 @@ namespace NuGet.PackageManagement.UI
                 var package = item as PackageItemListViewModel;
                 if (package != null)
                 {
-                    package.Selected = false;
+                    package.IsSelected = false;
                 }
             }
         }
 
         private void _updateButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedPackages = PackageItemsFiltered.Where(p => p.Selected).ToArray();
+            var selectedPackages = PackageItemsFiltered.Where(p => p.IsSelected).ToArray();
             UpdateButtonClicked(selectedPackages);
         }
 
@@ -760,7 +771,7 @@ namespace NuGet.PackageManagement.UI
             var package = _list.SelectedItem as PackageItemListViewModel;
             if (package != null && e.Key == Key.Space)
             {
-                package.Selected = !package.Selected;
+                package.IsSelected = !package.IsSelected;
                 e.Handled = true;
             }
         }

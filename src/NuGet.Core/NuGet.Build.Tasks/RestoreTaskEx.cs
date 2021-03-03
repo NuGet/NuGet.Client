@@ -106,6 +106,11 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public string ProcessFileName { get; set; }
 
+        /// <summary>
+        /// MSBuildStartupDirectory - Used to calculate relative paths
+        /// </summary>
+        public string MSBuildStartupDirectory { get; set; }
+
         /// <inheritdoc cref="ICancelableTask.Cancel" />
         public void Cancel() => _cancellationTokenSource.Cancel();
 
@@ -206,9 +211,8 @@ namespace NuGet.Build.Tasks
                 [nameof(Interactive)] = Interactive,
                 [nameof(NoCache)] = NoCache,
                 [nameof(Recursive)] = Recursive,
-                [nameof(RestorePackagesConfig)] = RestorePackagesConfig
+                [nameof(RestorePackagesConfig)] = RestorePackagesConfig,
             };
-
             // Semicolon delimited list of options
             yield return string.Join(";", options.Where(i => i.Value).Select(i => $"{i.Key}={i.Value}"));
 
@@ -226,7 +230,9 @@ namespace NuGet.Build.Tasks
                     : ProjectFullPath;
 
             // Semicolon delimited list of MSBuild global properties
-            yield return string.Join(";", GetGlobalProperties().Select(i => $"{i.Key}={i.Value}"));
+            var globalProperties = GetGlobalProperties().Select(i => $"{i.Key}={i.Value}").Concat(new string[] { $"OriginalMSBuildStartupDirectory={MSBuildStartupDirectory}" });
+
+            yield return string.Join(";", globalProperties);
         }
 
         /// <summary>

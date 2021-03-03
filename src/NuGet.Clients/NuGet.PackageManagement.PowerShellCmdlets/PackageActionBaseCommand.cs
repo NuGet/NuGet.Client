@@ -251,11 +251,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="project"></param>
         protected void NormalizePackageId(NuGetProject project)
         {
-            if (!(project is ProjectKNuGetProjectBase))
-            {
-                return;
-            }
-
             var metadata = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetPackagesFromRemoteSourceAsync(Id, includePrerelease: true));
             if (!metadata.Any())
             {

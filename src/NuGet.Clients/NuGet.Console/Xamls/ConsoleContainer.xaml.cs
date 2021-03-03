@@ -13,6 +13,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGetConsole
@@ -27,6 +28,9 @@ namespace NuGetConsole
         public ConsoleContainer()
         {
             InitializeComponent();
+
+            Loaded += ConsoleContainer_Loaded;
+            Unloaded += ConsoleContainer_UnLoaded;
 
             ThreadHelper.JoinableTaskFactory.StartOnIdle(
                 async () =>
@@ -76,6 +80,9 @@ namespace NuGetConsole
 
         public void Dispose()
         {
+            Loaded -= ConsoleContainer_Loaded;
+            Unloaded -= ConsoleContainer_UnLoaded;
+
             // Use more verbose null-checking syntax to avoid ISB001 misfiring.
             if (_solutionManager != null)
             {
@@ -83,6 +90,16 @@ namespace NuGetConsole
             }
 
             GC.SuppressFinalize(this);
+        }
+
+        void ConsoleContainer_Loaded(object sender, RoutedEventArgs e)
+        {
+            NuGetPowerShellUsage.RaisePmcWindowsLoadEvent(isLoad: true);
+        }
+
+        void ConsoleContainer_UnLoaded(object sender, RoutedEventArgs e)
+        {
+            NuGetPowerShellUsage.RaisePmcWindowsLoadEvent(isLoad: false);
         }
     }
 }

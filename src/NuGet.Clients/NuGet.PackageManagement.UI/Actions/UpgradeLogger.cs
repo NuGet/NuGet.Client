@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (string.IsNullOrEmpty(reportName))
             {
-                throw new ArgumentException(nameof(reportName));
+                throw new ArgumentException(Resources.ArgumentNullOrEmpty, nameof(reportName));
             }
 
             if (string.IsNullOrEmpty(backupPath) || !Directory.Exists(backupPath))

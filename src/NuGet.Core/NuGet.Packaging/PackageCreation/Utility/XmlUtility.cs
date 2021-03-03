@@ -1,38 +1,27 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
-using System.Xml;
 using System.Xml.Linq;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.Packaging
 {
+    [Obsolete("This class is obsolete and will be removed in a future release.")]
     public static class XmlUtility
     {
         public static XDocument LoadSafe(Stream input)
         {
-            var settings = CreateSafeSettings();
-            var reader = XmlReader.Create(input, settings);
-            return XDocument.Load(reader);
+            return Shared.XmlUtility.Load(input);
         }
 
         public static XDocument LoadSafe(Stream input, bool ignoreWhiteSpace)
         {
-            var settings = CreateSafeSettings(ignoreWhiteSpace);
-            var reader = XmlReader.Create(input, settings);
-            return XDocument.Load(reader);
-        }
+            if (ignoreWhiteSpace)
+                return Shared.XmlUtility.Load(input);
 
-        private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
-        {
-            var safeSettings = new XmlReaderSettings
-            {
-                DtdProcessing = DtdProcessing.Prohibit,
-                IgnoreWhitespace = ignoreWhiteSpace
-            };
-
-            return safeSettings;
+            return Shared.XmlUtility.Load(input, LoadOptions.PreserveWhitespace);
         }
     }
 }
-

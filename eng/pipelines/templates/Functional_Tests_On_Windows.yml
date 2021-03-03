@@ -1,0 +1,94 @@
+steps:
+- task: PowerShell@1
+  inputs:
+    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+    arguments: '$(SDKVersionForBuild)'
+  displayName: "Install .NET 5.0 for build"
+
+- task: PowerShell@1
+  displayName: "Define variables"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
+
+- task: PowerShell@1
+  displayName: "Print Environment Variables"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+      Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+
+- task: PowerShell@1
+  displayName: "Download Config Files"
+  enabled: "false"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      $url = $(VstsConfigFileRootUrl) -f 'NuGet.Core.FuncTests.Config'
+      Invoke-RestMethod -Method Get -Uri $url -UseDefaultCredentials -OutFile $(Build.Repository.LocalPath)\\NuGet.Core.FuncTests.Config
+      $url = $(VstsConfigFileRootUrl) -f 'NuGet.Protocol.FuncTest.Config'
+      Invoke-RestMethod -Method Get -Uri $url -UseDefaultCredentials -OutFile $(Build.Repository.LocalPath)\\NuGet.Protocol.FuncTest.Config
+
+- task: PowerShell@1
+  displayName: "Run Configure.ps1"
+  inputs:
+    scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+    arguments: "-Force -CleanCache"
+
+- task: MSBuild@1
+  displayName: "Restore for VS2019"
+  inputs:
+    solution: "build\\build.proj"
+    msbuildVersion: "16.0"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+
+- task: MSBuild@1
+  displayName: "Run Functional Tests (continue on error)"
+  continueOnError: "true"
+  inputs:
+    solution: "build\\build.proj"
+    msbuildVersion: "16.0"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+  condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+
+- task: MSBuild@1
+  displayName: "Run Functional Tests (stop on error)"
+  continueOnError: "false"
+  inputs:
+    solution: "build\\build.proj"
+    msbuildVersion: "16.0"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+
+- task: PublishTestResults@2
+  displayName: "Publish Test Results"
+  continueOnError: "true"
+  inputs:
+    testRunner: "XUnit"
+    testResultsFiles: "*.xml"
+    searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
+    mergeTestResults: "true"
+    testRunTitle: "NuGet.Client Functional Tests On Windows"
+  condition: "succeededOrFailed()"
+
+- task: PublishBuildArtifacts@1
+  displayName: "Publish Test Hang Dump"
+  inputs:
+    PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+    ArtifactName: "$(Agent.JobName)"
+    ArtifactType: "Container"
+  condition: "or(failed(), canceled())"
+
+- task: PowerShell@1
+  displayName: "Initialize Git Commit Status on GitHub"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(System.AccessToken) -TestName "$env:AGENT_JOBNAME"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"

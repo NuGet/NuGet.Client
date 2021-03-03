@@ -38,6 +38,9 @@
       <Group guid="guidPackageManagementCmdSet" id="idPackageManagementGroup" priority="0x0100">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PACKAGEREFERENCE_GROUP"/>
       </Group>
+      <Group guid="guidPackageManagementCmdSet" id="idPackageUpdateGroup" priority="0x0100">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PACKAGEREFERENCE"/>
+      </Group>
     </Groups>
 
     <Buttons>
@@ -128,6 +131,28 @@
         <Strings>
           <CommandName>cmdidGeneralSettings</CommandName>
           <ButtonText>&amp;Package Manager Settings</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidDialogCmdSet" id="cmdidUpdatePackage" priority="0x0100" type="Button">
+        <Parent guid="guidPackageManagementCmdSet" id="idPackageUpdateGroup" />
+        <CommandFlag>AllowParams</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <CommandName>cmdidUpdatePackage</CommandName>
+          <ButtonText>U&amp;pdate...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidDialogCmdSet" id="cmdidUpdatePackages" priority="0x0100" type="Button">
+        <Parent guid="guidPackageManagementCmdSet" id="idPackageManagementGroup" />
+        <CommandFlag>AllowParams</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <CommandName>cmdidUpdatePackages</CommandName>
+          <ButtonText>U&amp;pdate...</ButtonText>
         </Strings>
       </Button>
     </Buttons>
@@ -253,6 +278,8 @@
       <IDSymbol name="cmdidRestorePackages" value="0x0300" />
       <IDSymbol name="cmdidUpgradeNuGetProject" value="0x0400" />
       <IDSymbol name="cmdidUpgradePackagesConfig" value="0x0410" />
+      <IDSymbol name="cmdidUpdatePackage" value="0x0500" />
+      <IDSymbol name="cmdidUpdatePackages" value="0x0600" />
     </GuidSymbol>
     <GuidSymbol name="guidVenusCmdId" value="{C7547851-4E3A-4E5B-9173-FA6E9C8BD82C}" >
       <IDSymbol name="IDG_VENUS_CTX_REFERENCE" value="27" />
@@ -262,6 +289,7 @@
     <GuidSymbol name="guidReferenceContext" value="{D309F791-903F-11D0-9EFC-00A0C911004F}">
       <IDSymbol name="cmdAddReferenceGroup" value="0x450" />
       <IDSymbol name="IDM_VS_CTXT_PACKAGEREFERENCE_GROUP" value="0x04A2"/>
+      <IDSymbol name="IDM_VS_CTXT_PACKAGEREFERENCE" value="0x04A3"/>
     </GuidSymbol>
     <GuidSymbol name="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" value="{D0E4DEEC-1B53-4CDA-8559-D454583AD23B}" />
     <GuidSymbol name="guidNuGetDebugConsoleCmdSet" value="{DDC61543-6CA7-4A6F-A5B7-984BE723C52F}">
@@ -275,6 +303,7 @@
     </GuidSymbol>
     <GuidSymbol name="guidPackageManagementCmdSet" value="{E586270E-92EC-427D-B218-0E81A25226F5}">
       <IDSymbol name="idPackageManagementGroup" value="0x0100" />
+      <IDSymbol name="idPackageUpdateGroup" value="0x0200" />
     </GuidSymbol>
   </Symbols>
 

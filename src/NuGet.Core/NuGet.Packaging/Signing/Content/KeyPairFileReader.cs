@@ -14,6 +14,7 @@ namespace NuGet.Packaging.Signing
         private static readonly Regex NamePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$", RegexOptions.CultureInvariant);
 
         private readonly StreamReader _reader;
+        private bool _disposed;
 
         public KeyPairFileReader(Stream stream, Encoding encoding)
         {
@@ -104,7 +105,23 @@ namespace NuGet.Packaging.Signing
 
         public void Dispose()
         {
-            _reader.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _reader.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

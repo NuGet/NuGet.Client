@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
@@ -13,9 +14,10 @@ namespace NuGet.VisualStudio
     public class VsPackageSourceProvider : IVsPackageSourceProvider
     {
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
-        public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepositoryProvider)
+        public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepositoryProvider, INuGetTelemetryProvider telemetryProvider)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -23,6 +25,8 @@ namespace NuGet.VisualStudio
             }
 
             _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
+            _telemetryProvider = telemetryProvider;
+
             _packageSourceProvider.PackageSourcesChanged += PackageSourcesChanged;
         }
 
@@ -45,6 +49,7 @@ namespace NuGet.VisualStudio
             }
             catch (Exception ex) when (!IsExpected(ex))
             {
+                _telemetryProvider.PostFault(ex, typeof(VsPackageSourceProvider).FullName);
                 throw new InvalidOperationException(ex.Message, ex);
             }
 

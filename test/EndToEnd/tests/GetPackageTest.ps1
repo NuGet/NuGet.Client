@@ -497,6 +497,7 @@ function Test-GetInstalledPackageWithFilterReturnsCorrectPackage
 
 function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPackageId
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/10254')]
     param
     (
         $context

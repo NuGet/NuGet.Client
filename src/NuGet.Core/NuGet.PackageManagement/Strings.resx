@@ -510,4 +510,15 @@
     <value>File {0} does not exist.</value>
     <comment>{0} is the filename.</comment>
   </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>'{0}' cannot be null.</value>
+    <comment>0 - property name</comment>
+  </data>
+  <data name="UnableToFindPathInLookupOrList" xml:space="preserve">
+    <value>Either should have value in {0} for {1} or {2} &amp; {3}.</value>
+    <comment>0 - Lookup table
+1 - Project Path
+2 - Package ID
+3 - Package Sources</comment>
+  </data>
 </root>

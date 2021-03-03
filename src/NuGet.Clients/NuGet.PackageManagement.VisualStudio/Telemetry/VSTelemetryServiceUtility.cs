@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
@@ -13,6 +12,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.Telemetry
 {
@@ -67,67 +67,76 @@ namespace NuGet.PackageManagement.Telemetry
 
         public static async Task<ProjectTelemetryEvent> GetProjectTelemetryEventAsync(NuGetProject nuGetProject)
         {
-            // Get the project details.
-            var projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+            if (nuGetProject == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProject));
+            }
+            string projectUniqueName = string.Empty;
+            ProjectTelemetryEvent returnValue = null;
 
-            // Emit the project information.
             try
             {
-                var projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                // Get the project details.
+                projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                string projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                NuGetProjectType projectType = GetProjectType(nuGetProject);
+                bool isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
+                string fullPath = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
 
-                // Get project type.
-                var projectType = NuGetProjectType.Unknown;
-                if (nuGetProject is MSBuildNuGetProject)
-                {
-                    var msbuildProject = nuGetProject as MSBuildNuGetProject;
-
-                    if (msbuildProject?.DoesPackagesConfigExists() == true)
-                    {
-                        projectType = NuGetProjectType.PackagesConfig;
-                    }
-                    else
-                    {
-                        projectType = NuGetProjectType.UnconfiguredNuGetType;
-                    }
-                }
-#if VS15
-                else if (nuGetProject is CpsPackageReferenceProject)
-                {
-                    projectType = NuGetProjectType.CPSBasedPackageRefs;
-                }
-                else if (nuGetProject is LegacyPackageReferenceProject)
-                {
-                    projectType = NuGetProjectType.LegacyProjectSystemWithPackageRefs;
-                }
-#endif
-                else if (nuGetProject is ProjectJsonNuGetProject)
-                {
-                    projectType = NuGetProjectType.UwpProjectJson;
-                }
-                else if (nuGetProject is ProjectKNuGetProjectBase)
-                {
-                    projectType = NuGetProjectType.XProjProjectJson;
-                }
-
-                var isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
-
-                return new ProjectTelemetryEvent(
+                returnValue = new ProjectTelemetryEvent(
                     NuGetVersion.Value,
                     projectId,
                     projectType,
-                    isUpgradable);
+                    isUpgradable,
+                    fullPath);
             }
             catch (Exception ex)
             {
-                var message =
+                // ArgumentException means project metadata is empty
+                // DTE exceptions could mean VS process has a severe failure
+                string message =
                     $"Failed to emit project information for project '{projectUniqueName}'. Exception:" +
                     Environment.NewLine +
                     ex.ToString();
 
                 ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, message);
                 Debug.Fail(message);
-                return null;
+
+                await TelemetryUtility.PostFaultAsync(ex, nameof(VSTelemetryServiceUtility), nameof(GetProjectTelemetryEventAsync));
             }
+
+            return returnValue;
+        }
+
+        public static NuGetProjectType GetProjectType(NuGetProject nuGetProject)
+        {
+            NuGetProjectType projectType = NuGetProjectType.Unknown;
+
+            if (nuGetProject is MSBuildNuGetProject msbuildProject)
+            {
+                if (msbuildProject.DoesPackagesConfigExists())
+                {
+                    projectType = NuGetProjectType.PackagesConfig;
+                }
+                else
+                {
+                    projectType = NuGetProjectType.UnconfiguredNuGetType;
+                }
+            }
+            else if (nuGetProject is CpsPackageReferenceProject)
+            {
+                projectType = NuGetProjectType.CPSBasedPackageRefs;
+            }
+            else if (nuGetProject is LegacyPackageReferenceProject)
+            {
+                projectType = NuGetProjectType.LegacyProjectSystemWithPackageRefs;
+            }
+            else if (nuGetProject is ProjectJsonNuGetProject)
+            {
+                projectType = NuGetProjectType.UwpProjectJson;
+            }
+
+            return projectType;
         }
     }
 }

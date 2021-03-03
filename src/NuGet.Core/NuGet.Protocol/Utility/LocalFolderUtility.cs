@@ -626,7 +626,6 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            var packageHelper = new Func<PackageReaderBase>(() => new PackageArchiveReader(nupkgPath));
             var nuspecHelper = new Lazy<NuspecReader>(() => new NuspecReader(nuspecPath));
 
             return new LocalPackageInfo(
@@ -634,7 +633,7 @@ namespace NuGet.Protocol
                 nupkgPath,
                 File.GetLastWriteTimeUtc(nupkgPath),
                 nuspecHelper,
-                packageHelper
+                useFolder: false
             );
         }
 
@@ -1097,7 +1096,6 @@ namespace NuGet.Protocol
                 {
                     var nuspec = package.NuspecReader;
 
-                    var packageHelper = new Func<PackageReaderBase>(() => new PackageArchiveReader(nupkgFile.FullName));
                     var nuspecHelper = new Lazy<NuspecReader>(() => nuspec);
 
                     return new LocalPackageInfo(
@@ -1105,7 +1103,7 @@ namespace NuGet.Protocol
                         nupkgFile.FullName,
                         nupkgFile.LastWriteTimeUtc,
                         nuspecHelper,
-                        packageHelper
+                        useFolder: false
                     );
                 }
             }

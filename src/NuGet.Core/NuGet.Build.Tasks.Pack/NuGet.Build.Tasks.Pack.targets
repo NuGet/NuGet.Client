@@ -432,6 +432,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_GetBuildOutputFilesWithTfm"
           DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;SatelliteDllsProjectOutputGroup;_AddPriFileToPackBuildOutput;$(TargetsForTfmSpecificBuildOutput)"
+          Condition="'$(IncludeBuildOutput)' == 'true'"
           Returns="@(BuildOutputInPackage)">
     <ItemGroup>
       <BuildOutputInPackage Include="@(SatelliteDllsProjectOutputGroupOutput);
@@ -455,6 +456,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_GetDebugSymbolsWithTfm"
           DependsOnTargets="DebugSymbolsProjectOutputGroup"
+          Condition="'$(IncludeBuildOutput)' == 'true'"
           Returns="@(_TargetPathsToSymbolsWithTfm)">
     <ItemGroup>
       <_TargetPathsToSymbolsWithTfm Include="@(DebugSymbolsProjectOutputGroupOutput)">

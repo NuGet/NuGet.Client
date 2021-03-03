@@ -144,7 +144,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -198,7 +198,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -287,7 +287,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: symbolSource,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -353,7 +353,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: symbolSource,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -427,7 +427,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: symbolSource,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -503,7 +503,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -556,7 +556,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -606,7 +606,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -669,7 +669,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: packageInfo.FullName,
+                    packagePaths: new[] { packageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
@@ -704,21 +704,20 @@ namespace NuGet.Protocol.Tests
                 var apiKey = "serverapikey";
 
                 var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
-                var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
+                var symbolPackageInfo =
+                    await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
 
                 var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
                 {
                     {
-                        "https://www.myget.org/api/v2/",
-                        request =>
+                        "https://www.myget.org/api/v2/", request =>
                         {
                             sourceRequest = request;
                             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
                         }
                     },
                     {
-                        "https://nuget.smbsrc.net/api/v2/package/",
-                        request =>
+                        "https://nuget.smbsrc.net/api/v2/package/", request =>
                         {
                             symbolRequest = request;
                             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
@@ -731,7 +730,6 @@ namespace NuGet.Protocol.Tests
                             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
                         }
                     }
-
                 };
 
                 var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
@@ -741,7 +739,7 @@ namespace NuGet.Protocol.Tests
                 // Act
                 var ex = await Assert.ThrowsAsync<HttpRequestException>(
                     async () => await resource.Push(
-                        packagePath: packageInfo.FullName,
+                        packagePaths: new[] { packageInfo.FullName },
                         symbolSource: symbolSource,
                         timeoutInSecond: 5,
                         disableBuffering: false,
@@ -808,7 +806,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 await resource.Push(
-                    packagePath: symbolPackageInfo.FullName,
+                    packagePaths: new[] { symbolPackageInfo.FullName },
                     symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,

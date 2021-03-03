@@ -1,0 +1,71 @@
+steps:
+- task: ShellScript@2
+  displayName: "Install .NET 5.0 for build"
+  continueOnError: "true"
+  inputs:
+    scriptPath: "scripts/utils/InstallCLIforBuild.sh"
+    disableAutoCwd: "true"
+    cwd: "$(Build.Repository.LocalPath)"
+    args: '$(SDKVersionForBuild)'
+
+- task: PowerShell@2
+  displayName: "Define variables"
+  inputs:
+    targetType: "inline"
+    script: |
+      Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
+
+- task: PowerShell@2
+  displayName: "Update Build Number"
+  inputs:
+    targetType: "inline"
+    script: |
+      Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
+    failOnStderr: "true"
+  condition: "always()"
+
+- task: ShellScript@2
+  displayName: "Run Tests (continue on error)"
+  continueOnError: "true"
+  inputs:
+    scriptPath: "scripts/funcTests/runFuncTests.sh"
+    disableAutoCwd: "true"
+    cwd: "$(Build.Repository.LocalPath)"
+  condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+
+- task: ShellScript@2
+  displayName: "Run Tests (stop on error)"
+  continueOnError: "false"
+  inputs:
+    scriptPath: "scripts/funcTests/runFuncTests.sh"
+    disableAutoCwd: "true"
+    cwd: "$(Build.Repository.LocalPath)"
+  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+
+- task: PublishTestResults@2
+  displayName: "Publish Test Results"
+  inputs:
+    testRunner: "XUnit"
+    testResultsFiles: "*.xml"
+    testRunTitle: "NuGet.Client Tests On Linux"
+    searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
+    mergeTestResults: "true"
+  condition: "succeededOrFailed()"
+
+- task: PublishBuildArtifacts@1
+  displayName: "Publish Test Hang Dump"
+  inputs:
+    PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+    ArtifactName: "$(Agent.JobName)"
+    ArtifactType: "Container"
+  condition: "or(failed(), canceled())"
+
+- task: PowerShell@2
+  displayName: "Initialize Git Commit Status on GitHub"
+  inputs:
+    targetType: "inline"
+    script: |
+      . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"
+    failOnStderr: "true"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"

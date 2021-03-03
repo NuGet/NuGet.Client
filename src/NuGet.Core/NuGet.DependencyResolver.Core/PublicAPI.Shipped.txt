@@ -30,6 +30,9 @@ NuGet.DependencyResolver.GraphItem<TItem>.IsCentralTransitive.get -> bool
 NuGet.DependencyResolver.GraphItem<TItem>.IsCentralTransitive.set -> void
 NuGet.DependencyResolver.GraphItem<TItem>.Key.get -> NuGet.LibraryModel.LibraryIdentity
 NuGet.DependencyResolver.GraphItem<TItem>.Key.set -> void
+NuGet.DependencyResolver.GraphItemKeyComparer<T>
+NuGet.DependencyResolver.GraphItemKeyComparer<T>.Equals(NuGet.DependencyResolver.GraphItem<T> x, NuGet.DependencyResolver.GraphItem<T> y) -> bool
+NuGet.DependencyResolver.GraphItemKeyComparer<T>.GetHashCode(NuGet.DependencyResolver.GraphItem<T> obj) -> int
 NuGet.DependencyResolver.GraphNode<TItem>
 NuGet.DependencyResolver.GraphNode<TItem>.Disposition.get -> NuGet.DependencyResolver.Disposition
 NuGet.DependencyResolver.GraphNode<TItem>.Disposition.set -> void
@@ -134,6 +137,7 @@ override NuGet.DependencyResolver.LockFileCacheKey.GetHashCode() -> int
 override NuGet.DependencyResolver.LockFileCacheKey.ToString() -> string
 override NuGet.DependencyResolver.RemoteMatch.Equals(object obj) -> bool
 override NuGet.DependencyResolver.RemoteMatch.GetHashCode() -> int
+static NuGet.DependencyResolver.GraphItemKeyComparer<T>.Instance.get -> NuGet.DependencyResolver.GraphItemKeyComparer<T>
 static NuGet.DependencyResolver.GraphOperations.Analyze(this NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult> root) -> NuGet.DependencyResolver.AnalyzeResult<NuGet.DependencyResolver.RemoteResolveResult>
 static NuGet.DependencyResolver.GraphOperations.Dump<TItem>(this NuGet.DependencyResolver.GraphNode<TItem> root, System.Action<string> write) -> void
 static NuGet.DependencyResolver.GraphOperations.ForEach<TItem, TContext>(this NuGet.DependencyResolver.GraphNode<TItem> root, System.Action<NuGet.DependencyResolver.GraphNode<TItem>, TContext> visitor, TContext context) -> void

@@ -38,7 +38,7 @@ namespace NuGet.Commands.Test
                 message.Code.Should().Be(NuGetLogCode.NU1105);
                 message.LibraryId.Should().Be(path);
                 message.Message.Should().Contain($"Unable to find project information for '{path}'");
-                message.TargetGraphs.ShouldBeEquivalentTo(new[] { "abc" });
+                message.TargetGraphs.Should().BeEquivalentTo(new[] { "abc" });
                 message.Level.Should().Be(LogLevel.Error);
             }
         }
@@ -55,7 +55,7 @@ namespace NuGet.Commands.Test
             message.Code.Should().Be(NuGetLogCode.NU1104);
             message.LibraryId.Should().Be(path);
             message.Message.Should().Contain($"Unable to find project '{path}'");
-            message.TargetGraphs.ShouldBeEquivalentTo(new[] { "abc" });
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { "abc" });
             message.Level.Should().Be(LogLevel.Error);
         }
 
@@ -70,7 +70,7 @@ namespace NuGet.Commands.Test
             message.Code.Should().Be(NuGetLogCode.NU1100);
             message.LibraryId.Should().Be("x");
             message.Message.Should().Contain("Unable to resolve 'reference/x ' for 'abc'");
-            message.TargetGraphs.ShouldBeEquivalentTo(new[] { "abc" });
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { "abc" });
             message.Level.Should().Be(LogLevel.Error);
         }
 
@@ -86,7 +86,7 @@ namespace NuGet.Commands.Test
             message.LibraryId.Should().Be("x");
             message.Message.Should().Contain("Unable to find package x with version (>= 4.0.0-beta && <= 5.0.0)");
             message.Message.Should().Contain("Found 2 version(s) in http://nuget.org/a/ [ Nearest version: 4.4.0-beta.2 ]");
-            message.TargetGraphs.ShouldBeEquivalentTo(new[] { "abc" });
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { "abc" });
             message.Level.Should().Be(LogLevel.Error);
         }
 
@@ -102,7 +102,7 @@ namespace NuGet.Commands.Test
             message.LibraryId.Should().Be("x");
             message.Message.Should().Contain("Unable to find a stable package x with version (>= 4.0.0 && <= 5.0.0)");
             message.Message.Should().Contain("Found 2 version(s) in http://nuget.org/a/ [ Nearest version: 4.4.0-beta.2 ]");
-            message.TargetGraphs.ShouldBeEquivalentTo(new[] { "abc" });
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { "abc" });
             message.Level.Should().Be(LogLevel.Error);
         }
 
@@ -118,7 +118,7 @@ namespace NuGet.Commands.Test
             message.LibraryId.Should().Be("x");
             message.Message.Should().Contain("Unable to find package x with version (= 4.0.0)");
             message.Message.Should().Contain("Found 2 version(s) in http://nuget.org/a/ [ Nearest version: 5.0.0 ]");
-            message.TargetGraphs.ShouldBeEquivalentTo(new[] { "abc" });
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { "abc" });
             message.Level.Should().Be(LogLevel.Error);
         }
 
@@ -141,7 +141,7 @@ namespace NuGet.Commands.Test
             message.Code.Should().Be(NuGetLogCode.NU1101);
             message.LibraryId.Should().Be("x");
             message.Message.Should().Be("Unable to find package x. No packages exist with this id in source(s): http://nuget.org/a/, http://nuget.org/b/");
-            message.TargetGraphs.ShouldBeEquivalentTo(new[] { targetGraphName });
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { targetGraphName });
             message.Level.Should().Be(LogLevel.Error);
         }
 
@@ -156,7 +156,7 @@ namespace NuGet.Commands.Test
             message.Code.Should().Be(NuGetLogCode.NU1101);
             message.LibraryId.Should().Be("x");
             message.Message.Should().Be("Unable to find package x. No packages exist with this id in source(s): http://nuget.org/a/");
-            message.TargetGraphs.ShouldBeEquivalentTo(new[] { "abc" });
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { "abc" });
             message.Level.Should().Be(LogLevel.Error);
         }
 
@@ -184,8 +184,8 @@ namespace NuGet.Commands.Test
             var infos = await UnresolvedMessages.GetSourceInfosForIdAsync("a", VersionRange.Parse("1.0.0"), remoteLibraryProviders, cacheContext.Object, NullLogger.Instance, CancellationToken.None);
 
             infos.Count.Should().Be(2);
-            infos[0].Value.ShouldBeEquivalentTo(versions1);
-            infos[1].Value.ShouldBeEquivalentTo(versions2);
+            infos[0].Value.Should().BeEquivalentTo(versions1);
+            infos[1].Value.Should().BeEquivalentTo(versions2);
             infos[0].Key.Source.Should().Be("http://nuget.org/a/");
             infos[1].Key.Source.Should().Be("http://nuget.org/b/");
         }
@@ -209,7 +209,7 @@ namespace NuGet.Commands.Test
 
             var info = await UnresolvedMessages.GetSourceInfoForIdAsync(provider.Object, "a", context.Object, NullLogger.Instance, CancellationToken.None);
 
-            info.Value.ShouldBeEquivalentTo(versions);
+            info.Value.Should().BeEquivalentTo(versions);
             info.Key.Source.Should().Be(source.Source);
         }
 
@@ -239,7 +239,7 @@ namespace NuGet.Commands.Test
                 NuGetVersion.Parse("2.0.0")
             };
 
-            UnresolvedMessages.GetBestMatch(versions, range).ShouldBeEquivalentTo(NuGetVersion.Parse("1.0.0"));
+            UnresolvedMessages.GetBestMatch(versions, range).Should().BeEquivalentTo(NuGetVersion.Parse("1.0.0"));
         }
 
         [Fact]
@@ -251,7 +251,7 @@ namespace NuGet.Commands.Test
                 NuGetVersion.Parse("2.0.0")
             };
 
-            UnresolvedMessages.GetBestMatch(versions, range).ShouldBeEquivalentTo(NuGetVersion.Parse("2.0.0"));
+            UnresolvedMessages.GetBestMatch(versions, range).Should().BeEquivalentTo(NuGetVersion.Parse("2.0.0"));
         }
 
         [Theory]
@@ -270,7 +270,7 @@ namespace NuGet.Commands.Test
             var range = VersionRange.Parse("[1.0.0, 2.0.0]");
             var versions = new SortedSet<NuGetVersion>(versionStrings.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(NuGetVersion.Parse));
 
-            UnresolvedMessages.GetBestMatch(versions, range).ShouldBeEquivalentTo(NuGetVersion.Parse(expected));
+            UnresolvedMessages.GetBestMatch(versions, range).Should().BeEquivalentTo(NuGetVersion.Parse(expected));
         }
 
         [Theory]
@@ -288,7 +288,7 @@ namespace NuGet.Commands.Test
             var range = VersionRange.Parse(versionRange);
             var versions = new SortedSet<NuGetVersion>(versionStrings.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(NuGetVersion.Parse));
             Assert.Null(range.FindBestMatch(versions));
-            UnresolvedMessages.GetBestMatch(versions, range).ShouldBeEquivalentTo(NuGetVersion.Parse(expectedVersion));
+            UnresolvedMessages.GetBestMatch(versions, range).Should().BeEquivalentTo(NuGetVersion.Parse(expectedVersion));
         }
 
         [Fact]

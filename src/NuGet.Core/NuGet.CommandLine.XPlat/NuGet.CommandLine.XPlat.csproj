@@ -11,10 +11,11 @@
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <XPLATProject>true</XPLATProject>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj" />
   </ItemGroup>
 
   <ItemGroup>

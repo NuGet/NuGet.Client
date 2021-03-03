@@ -1,4 +1,0 @@
-NuGet.DependencyResolver.GraphItemKeyComparer<T>
-NuGet.DependencyResolver.GraphItemKeyComparer<T>.Equals(NuGet.DependencyResolver.GraphItem<T> x, NuGet.DependencyResolver.GraphItem<T> y) -> bool
-NuGet.DependencyResolver.GraphItemKeyComparer<T>.GetHashCode(NuGet.DependencyResolver.GraphItem<T> obj) -> int
-static NuGet.DependencyResolver.GraphItemKeyComparer<T>.Instance.get -> NuGet.DependencyResolver.GraphItemKeyComparer<T>

@@ -31,7 +31,7 @@ namespace NuGet.Packaging {
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Strings() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -39,7 +39,7 @@ namespace NuGet.Packaging {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Extraction.Strings", typeof(Strings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -745,11 +745,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing {0} {1}..
+        ///   Looks up a localized string similar to Installed {0} {1} from {2} with content hash {3}..
         /// </summary>
-        internal static string Log_InstallingPackage {
+        internal static string Log_InstalledPackage {
             get {
-                return ResourceManager.GetString("Log_InstallingPackage", resourceCulture);
+                return ResourceManager.GetString("Log_InstalledPackage", resourceCulture);
             }
         }
         
@@ -786,6 +786,51 @@ namespace NuGet.Packaging {
         internal static string MissingPackageTypeName {
             get {
                 return ResourceManager.GetString("MissingPackageTypeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some dependency group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromDependencyGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromDependencyGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some reference assembly group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromFrameworkAssemblyGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromFrameworkAssemblyGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some framework assembly reference TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromFrameworkAssemblyReferences {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromFrameworkAssemblyReferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some included files are included under TFMs which are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromIncludedFiles {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromIncludedFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some reference group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromReferenceGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromReferenceGroups", resourceCulture);
             }
         }
         
@@ -1146,6 +1191,15 @@ namespace NuGet.Packaging {
         internal static string PrimarySignatureHasNoTimestamp {
             get {
                 return ResourceManager.GetString("PrimarySignatureHasNoTimestamp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        internal static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
             }
         }
         
@@ -1902,6 +1956,28 @@ namespace NuGet.Packaging {
         internal static string VerifyError_TimestampVerifyChainBuildingIssue {
             get {
                 return ResourceManager.GetString("VerifyError_TimestampVerifyChainBuildingIssue", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; changed from &apos;{1}&apos; to &apos;{2}&apos;.
+        /// </summary>
+        internal static string ZipFileLastWriteTimeStampModifiedMessage
+        {
+            get
+            {
+                return ResourceManager.GetString("ZipFileLastWriteTimeStampModifiedMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The zip format supports a limited date range. The following files are outside the supported range:.
+        /// </summary>
+        internal static string ZipFileTimeStampModifiedWarning
+        {
+            get
+            {
+                return ResourceManager.GetString("ZipFileTimeStampModifiedWarning", resourceCulture);
             }
         }
     }

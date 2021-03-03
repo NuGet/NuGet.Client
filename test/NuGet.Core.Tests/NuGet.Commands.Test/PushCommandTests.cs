@@ -33,13 +33,17 @@ namespace NuGet.Commands.Test
                     new PackageSource(packagePushDest.FullName)
                 };
 
-                var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+                var packageInfoCollection = new[]
+                {
+                    await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test1", "1.0.0"),
+                    await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test2", "1.0.0")
+                };
 
                 // Act
                 await PushRunner.Run(
                     Settings.LoadDefaultSettings(null, null, null),
                     new TestPackageSourceProvider(packageSources),
-                    packageInfo.FullName,
+                    new[] { packageInfoCollection[0].FullName, packageInfoCollection[1].FullName },
                     packagePushDest.FullName,
                     null, // api key
                     null, // symbols source
@@ -52,8 +56,11 @@ namespace NuGet.Commands.Test
                     new TestLogger());
 
                 // Assert
-                var destFile = Path.Combine(packagePushDest.FullName, packageInfo.Name);
-                Assert.Equal(true, File.Exists(destFile));
+                foreach (var packageInfo in packageInfoCollection)
+                {
+                    var destFile = Path.Combine(packagePushDest.FullName, packageInfo.Name);
+                    Assert.True(File.Exists(destFile));
+                }
             }
         }
     }

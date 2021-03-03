@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -21,24 +21,24 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
-using Test.Utility.Threading;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
-    public class LegacyPackageReferenceRestoreUtilityTests
+    [Collection(MockedVS.Collection)]
+    public class LegacyPackageReferenceRestoreUtilityTests : MockedVSCollectionTests
     {
         private readonly IVsProjectThreadingService _threadingService;
 
         private static readonly string _projectGuid1 = Guid.NewGuid().ToString();
         private static readonly string _projectGuid2 = Guid.NewGuid().ToString();
 
-        public LegacyPackageReferenceRestoreUtilityTests(DispatcherThreadFixture fixture)
+        public LegacyPackageReferenceRestoreUtilityTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
         {
-            Assumes.Present(fixture);
+            globalServiceProvider.Reset();
 
-            _threadingService = new TestProjectThreadingService(fixture.JoinableTaskFactory);
+            _threadingService = new TestProjectThreadingService(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         [Fact]

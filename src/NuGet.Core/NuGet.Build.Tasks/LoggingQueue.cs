@@ -12,6 +12,8 @@ namespace NuGet.Build.Tasks
     /// <typeparam name="T">The type of object to be added to the queue.</typeparam>
     public abstract class LoggingQueue<T> : IDisposable
     {
+        private bool _disposed = false;
+
         /// <summary>
         /// Stores the queue of actions to be executed.
         /// </summary>
@@ -43,11 +45,27 @@ namespace NuGet.Build.Tasks
 
         public void Dispose()
         {
-            // Signals the queue that no more actions should be added
-            _queue.Complete();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            // Waits for all actions in the queue to be completed
-            _queue.Completion.Wait();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // Signals the queue that no more actions should be added
+                _queue.Complete();
+
+                // Waits for all actions in the queue to be completed
+                _queue.Completion.Wait();
+            }
+
+            _disposed = true;
         }
 
         /// <summary>

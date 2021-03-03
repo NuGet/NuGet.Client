@@ -182,6 +182,7 @@ NuGet.PackageManagement.NuGetPackageManager.PreviewInstallPackageAsync(NuGet.Pro
 NuGet.PackageManagement.NuGetPackageManager.PreviewInstallPackageAsync(NuGet.ProjectManagement.NuGetProject nuGetProject, NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.PackageManagement.ResolutionContext resolutionContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> primarySources, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> secondarySources, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.NuGetProjectAction>>
 NuGet.PackageManagement.NuGetPackageManager.PreviewInstallPackageAsync(NuGet.ProjectManagement.NuGetProject nuGetProject, string packageId, NuGet.PackageManagement.ResolutionContext resolutionContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, NuGet.Protocol.Core.Types.SourceRepository primarySourceRepository, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> secondarySources, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.NuGetProjectAction>>
 NuGet.PackageManagement.NuGetPackageManager.PreviewInstallPackageAsync(NuGet.ProjectManagement.NuGetProject nuGetProject, string packageId, NuGet.PackageManagement.ResolutionContext resolutionContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> primarySources, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> secondarySources, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.NuGetProjectAction>>
+NuGet.PackageManagement.NuGetPackageManager.PreviewProjectsInstallPackageAsync(System.Collections.Generic.IReadOnlyCollection<NuGet.ProjectManagement.NuGetProject> nuGetProjects, NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.PackageManagement.ResolutionContext resolutionContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Collections.Generic.IReadOnlyCollection<NuGet.Protocol.Core.Types.SourceRepository> activeSources, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.ResolvedAction>>
 NuGet.PackageManagement.NuGetPackageManager.PreviewUninstallPackageAsync(NuGet.ProjectManagement.NuGetProject nuGetProject, NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.PackageManagement.UninstallationContext uninstallationContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.NuGetProjectAction>>
 NuGet.PackageManagement.NuGetPackageManager.PreviewUninstallPackageAsync(NuGet.ProjectManagement.NuGetProject nuGetProject, string packageId, NuGet.PackageManagement.UninstallationContext uninstallationContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.NuGetProjectAction>>
 NuGet.PackageManagement.NuGetPackageManager.PreviewUpdatePackagesAsync(NuGet.Packaging.Core.PackageIdentity packageIdentity, System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject> nuGetProjects, NuGet.PackageManagement.ResolutionContext resolutionContext, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> primarySources, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> secondarySources, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.NuGetProjectAction>>
@@ -363,6 +364,7 @@ NuGet.ProjectManagement.BuildIntegratedInstallationContext.SuppressParent.set ->
 NuGet.ProjectManagement.BuildIntegratedInstallationContext.UnsuccessfulFrameworks.get -> System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework>
 NuGet.ProjectManagement.BuildIntegratedPackageReference
 NuGet.ProjectManagement.BuildIntegratedPackageReference.BuildIntegratedPackageReference(NuGet.LibraryModel.LibraryDependency dependency, NuGet.Frameworks.NuGetFramework projectFramework) -> void
+NuGet.ProjectManagement.BuildIntegratedPackageReference.BuildIntegratedPackageReference(NuGet.LibraryModel.LibraryDependency dependency, NuGet.Frameworks.NuGetFramework projectFramework, NuGet.Packaging.Core.PackageIdentity installedVersion) -> void
 NuGet.ProjectManagement.BuildIntegratedPackageReference.Dependency.get -> NuGet.LibraryModel.LibraryDependency
 NuGet.ProjectManagement.BuildIntegratedProjectUtility
 NuGet.ProjectManagement.CollectionsUtility
@@ -559,6 +561,7 @@ NuGet.ProjectManagement.MessageLevel.Debug = 2 -> NuGet.ProjectManagement.Messag
 NuGet.ProjectManagement.MessageLevel.Error = 3 -> NuGet.ProjectManagement.MessageLevel
 NuGet.ProjectManagement.MessageLevel.Info = 0 -> NuGet.ProjectManagement.MessageLevel
 NuGet.ProjectManagement.MessageLevel.Warning = 1 -> NuGet.ProjectManagement.MessageLevel
+NuGet.ProjectManagement.MessageLevelExtensions
 NuGet.ProjectManagement.NuGetActionType
 NuGet.ProjectManagement.NuGetActionType.Install = 0 -> NuGet.ProjectManagement.NuGetActionType
 NuGet.ProjectManagement.NuGetActionType.Reinstall = 2 -> NuGet.ProjectManagement.NuGetActionType
@@ -616,8 +619,6 @@ NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject.IsUAPFramework(NuGet.Fr
 NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject.JsonConfigPath.get -> string
 NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject.ProjectJsonNuGetProject(string jsonConfig, string msBuildProjectPath) -> void
 NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject.RemoveDependencyAsync(string packageId, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
-NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase
-NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase.ProjectKNuGetProjectBase() -> void
 NuGet.ProjectManagement.SourceControlManager
 NuGet.ProjectManagement.SourceControlManager.IsPackagesFolderBoundToSourceControl() -> bool
 NuGet.ProjectManagement.SourceControlManager.Settings.get -> NuGet.Configuration.ISettings
@@ -690,10 +691,14 @@ const NuGet.ProjectManagement.ProjectBuildProperties.RuntimeIdentifierGraphPath 
 const NuGet.ProjectManagement.ProjectBuildProperties.RuntimeIdentifiers = "RuntimeIdentifiers" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.RuntimeSupports = "RuntimeSupports" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFramework = "TargetFramework" -> string
+const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkIdentifier = "TargetFrameworkIdentifier" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkMoniker = "TargetFrameworkMoniker" -> string
+const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkProfile = "TargetFrameworkProfile" -> string
+const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkVersion = "TargetFrameworkVersion" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworks = "TargetFrameworks" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformIdentifier = "TargetPlatformIdentifier" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformMinVersion = "TargetPlatformMinVersion" -> string
+const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformMoniker = "TargetPlatformMoniker" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformVersion = "TargetPlatformVersion" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.TreatWarningsAsErrors = "TreatWarningsAsErrors" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.Version = "Version" -> string
@@ -848,6 +853,7 @@ static NuGet.ProjectManagement.JsonConfigUtility.RemoveDependency(Newtonsoft.Jso
 static NuGet.ProjectManagement.MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(NuGet.Frameworks.NuGetFramework projectTargetFramework, System.Collections.Generic.IEnumerable<NuGet.Packaging.FrameworkSpecificGroup> itemGroups) -> NuGet.Packaging.FrameworkSpecificGroup
 static NuGet.ProjectManagement.MSBuildNuGetProjectSystemUtility.IsValid(NuGet.Packaging.FrameworkSpecificGroup frameworkSpecificGroup) -> bool
 static NuGet.ProjectManagement.MSBuildNuGetProjectSystemUtility.Normalize(NuGet.Packaging.FrameworkSpecificGroup group) -> NuGet.Packaging.FrameworkSpecificGroup
+static NuGet.ProjectManagement.MessageLevelExtensions.ToLogLevel(this NuGet.ProjectManagement.MessageLevel messageLevel) -> NuGet.Common.LogLevel
 static NuGet.ProjectManagement.NuGetProject.GetUniqueNameOrName(NuGet.ProjectManagement.NuGetProject nuGetProject) -> string
 static NuGet.ProjectManagement.SourceControlUtility.DisableSourceControlMode(NuGet.Configuration.ISettings settings) -> void
 static NuGet.ProjectManagement.SourceControlUtility.GetSourceControlManager(NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext) -> NuGet.ProjectManagement.SourceControlManager

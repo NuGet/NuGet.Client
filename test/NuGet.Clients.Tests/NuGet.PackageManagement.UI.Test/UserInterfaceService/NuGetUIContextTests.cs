@@ -146,7 +146,6 @@ namespace NuGet.PackageManagement.UI.Test.UserInterfaceService
                 _testDirectory.Path);
 
             return new NuGetUIContext(
-                sourceRepositoryProvider,
                 Mock.Of<IServiceBroker>(),
                 _solutionManager.Object,
                 new NuGetSolutionManagerServiceWrapper(),
@@ -158,7 +157,8 @@ namespace NuGet.PackageManagement.UI.Test.UserInterfaceService
                 Mock.Of<IPackageRestoreManager>(),
                 Mock.Of<IOptionsPageActivator>(),
                 Mock.Of<IUserSettingsManager>(),
-                Enumerable.Empty<IVsPackageManagerProvider>());
+                Enumerable.Empty<IVsPackageManagerProvider>(),
+                new NuGetSourcesServiceWrapper());
         }
 
         private sealed class TestNuGetProject : NuGetProject

@@ -745,11 +745,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing {0} {1}..
+        ///   Looks up a localized string similar to Installed {0} {1} from {2} with content hash {3}..
         /// </summary>
-        internal static string Log_InstallingPackage {
+        internal static string Log_InstalledPackage {
             get {
-                return ResourceManager.GetString("Log_InstallingPackage", resourceCulture);
+                return ResourceManager.GetString("Log_InstalledPackage", resourceCulture);
             }
         }
         
@@ -1191,6 +1191,15 @@ namespace NuGet.Packaging {
         internal static string PrimarySignatureHasNoTimestamp {
             get {
                 return ResourceManager.GetString("PrimarySignatureHasNoTimestamp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        internal static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
             }
         }
         
@@ -1947,6 +1956,24 @@ namespace NuGet.Packaging {
         internal static string VerifyError_TimestampVerifyChainBuildingIssue {
             get {
                 return ResourceManager.GetString("VerifyError_TimestampVerifyChainBuildingIssue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; changed from &apos;{1}&apos; to &apos;{2}&apos;.
+        /// </summary>
+        internal static string ZipFileLastWriteTimeStampModifiedMessage {
+            get {
+                return ResourceManager.GetString("ZipFileLastWriteTimeStampModifiedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The zip format supports a limited date range. The following files are outside the supported range:.
+        /// </summary>
+        internal static string ZipFileTimeStampModifiedWarning {
+            get {
+                return ResourceManager.GetString("ZipFileTimeStampModifiedWarning", resourceCulture);
             }
         }
     }

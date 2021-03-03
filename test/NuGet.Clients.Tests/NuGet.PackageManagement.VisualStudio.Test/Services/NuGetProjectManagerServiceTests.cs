@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -19,6 +21,7 @@ using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -31,37 +34,29 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
 using Test.Utility;
-using Test.Utility.Threading;
 using Xunit;
+using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
-    public sealed class NuGetProjectManagerServiceTests : IAsyncServiceProvider, IDisposable
+    [Collection(MockedVS.Collection)]
+    public sealed class NuGetProjectManagerServiceTests : MockedVSCollectionTests, IDisposable
     {
         private NuGetPackageManager _packageManager;
         private NuGetProjectManagerService _projectManager;
-        private TestNuGetProjectContext _projectContext;
-        private readonly Dictionary<Type, Task<object>> _services;
+        private readonly TestNuGetProjectContext _projectContext;
         private TestSharedServiceState _sharedState;
         private TestVsSolutionManager _solutionManager;
         private NuGetProjectManagerServiceState _state;
         private TestDirectory _testDirectory;
 
-        public NuGetProjectManagerServiceTests(DispatcherThreadFixture dispatcherThreadFixture)
+        public NuGetProjectManagerServiceTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
         {
-            Assert.NotNull(dispatcherThreadFixture);
-
             _projectContext = new TestNuGetProjectContext();
-            _services = new Dictionary<Type, Task<object>>()
-            {
-                {  typeof(INuGetProjectContext), Task.FromResult<object>(_projectContext) }
-            };
 
-            ServiceLocator.InitializePackageServiceProvider(this);
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(dispatcherThreadFixture.JoinableTaskFactory);
+            AddService<INuGetProjectContext>(Task.FromResult<object>(_projectContext));
         }
 
         public void Dispose()
@@ -99,6 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.IsType<RemoteError>(exception.ErrorData);
 
                 var remoteError = (RemoteError)exception.ErrorData;
+                string expectedProjectContextLogMessage = exception.InnerException.ToString();
 
                 Assert.Null(remoteError.ActivityLogMessage);
                 Assert.Equal(NuGetLogCode.Undefined, remoteError.LogMessage.Code);
@@ -108,13 +104,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.InRange(remoteError.LogMessage.Time, DateTimeOffset.UtcNow.AddSeconds(-10), DateTimeOffset.UtcNow.AddSeconds(1));
                 Assert.Equal(WarningLevel.Severe, remoteError.LogMessage.WarningLevel);
                 Assert.Null(remoteError.LogMessages);
-                Assert.Null(remoteError.ProjectContextLogMessage);
+                Assert.Equal(expectedProjectContextLogMessage, remoteError.ProjectContextLogMessage);
                 Assert.Equal(typeof(ArgumentException).FullName, remoteError.TypeName);
             });
         }
 
         [Fact]
-        public async Task GetInstallActionsAsync_WithProjectReferenceProject_WhenUpdatingPackage_ReturnsCorrectActions()
+        public async Task GetInstallActionsAsync_WithPackageReferenceProject_WhenUpdatingPackage_ReturnsCorrectActions()
         {
             const string projectName = "a";
             string projectId = Guid.NewGuid().ToString();
@@ -173,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 PackageSpec packageSpec = CreatePackageSpec(
                     project.ProjectName,
                     Path.Combine(testDirectory, "package.spec"));
-                DependencyGraphSpec projectRestoreInfo = ProjectJsonTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectRestoreInfo.AddProject(packageSpec);
                 var projectNames = new ProjectNames(
                     fullName: projectFullPath,
@@ -216,6 +212,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(NuGetProjectActionType.Install, implicitAction.ProjectActionType);
 
                     await projectManager.ExecuteActionsAsync(actions, CancellationToken.None);
+
+                    AddPackageDependency(projectSystemCache, projectNames, packageSpec, packageV1);
                 });
 
                 await PerformOperationAsync(async (projectManager) =>
@@ -258,7 +256,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             const string projectName = "a";
             string projectId = Guid.NewGuid().ToString();
-            var projectSystemCache = new ProjectSystemCache();
 
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
@@ -341,6 +338,216 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async Task GetInstalledPackagesAsync_WhenProjectReturnsNullPackageReference_NullIsRemoved()
+        {
+            const string projectName = "a";
+            string projectId = Guid.NewGuid().ToString();
+
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                Initialize();
+
+                string projectFullPath = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
+                NuGetFramework targetFramework = NuGetFramework.Parse("net46");
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(targetFramework, new TestNuGetProjectContext());
+                var project = new TestMSBuildNuGetProject(msBuildNuGetProjectSystem, testDirectory.Path, projectFullPath, projectId);
+                var packageReference = new PackageReference(
+                    new PackageIdentity(id: "b", NuGetVersion.Parse("1.0.0")),
+                    targetFramework);
+                project.InstalledPackageReferences = Task.FromResult<IEnumerable<PackageReference>>(new[]
+                {
+                    null,
+                    packageReference
+                });
+
+                _solutionManager.NuGetProjects.Add(project);
+
+                var telemetrySession = new Mock<ITelemetrySession>();
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+
+                telemetrySession
+                    .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+                TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+                IReadOnlyCollection<IPackageReferenceContextInfo> packages = await _projectManager.GetInstalledPackagesAsync(
+                    new[] { projectId },
+                    CancellationToken.None);
+
+                Assert.Equal(1, packages.Count);
+                IPackageReferenceContextInfo expected = PackageReferenceContextInfo.Create(packageReference);
+                IPackageReferenceContextInfo actual = packages.Single();
+
+                Assert.Equal(expected.AllowedVersions, actual.AllowedVersions);
+                Assert.Equal(expected.Framework, actual.Framework);
+                Assert.Equal(expected.Identity, actual.Identity);
+                Assert.Equal(expected.IsAutoReferenced, actual.IsAutoReferenced);
+                Assert.Equal(expected.IsDevelopmentDependency, actual.IsDevelopmentDependency);
+                Assert.Equal(expected.IsUserInstalled, actual.IsUserInstalled);
+
+                Assert.Equal(1, telemetryEvents.Count);
+            }
+        }
+
+        [Fact]
+        public async Task GetUpdateActionsAsync_WithPackageReferenceProject_WhenUpdatingPackage_ReturnsCorrectActions()
+        {
+            const string projectName = "a";
+            string projectId = Guid.NewGuid().ToString();
+            var projectSystemCache = new ProjectSystemCache();
+
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                var packageV1 = new SimpleTestPackageContext(packageId: "b", version: "1.0.0");
+                var packageV2 = new SimpleTestPackageContext(packageV1.Id, version: "2.0.0");
+                string packageSourceDirectoryPath = Path.Combine(testDirectory, "packageSource");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSourceDirectoryPath,
+                    PackageSaveMode.Defaultv3,
+                    packageV1,
+                    packageV2);
+
+                var packageSource = new PackageSource(packageSourceDirectoryPath);
+                var packageSources = new List<PackageSource>() { packageSource };
+
+                Initialize(packageSources);
+
+                string projectFullPath = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
+                var unconfiguredProject = new Mock<UnconfiguredProject>();
+                var configuredProject = new Mock<ConfiguredProject>();
+                var projectServices = new Mock<ConfiguredProjectServices>();
+                var packageReferencesService = new Mock<IPackageReferencesService>();
+                var result = new Mock<IUnresolvedPackageReference>();
+
+                unconfiguredProject.Setup(x => x.GetSuggestedConfiguredProjectAsync())
+                    .ReturnsAsync(configuredProject.Object);
+
+                configuredProject.SetupGet(x => x.Services)
+                    .Returns(projectServices.Object);
+
+                projectServices.SetupGet(x => x.PackageReferences)
+                    .Returns(packageReferencesService.Object);
+
+                packageReferencesService.Setup(x => x.AddAsync(It.IsNotNull<string>(), It.IsNotNull<string>()))
+                    .ReturnsAsync(new AddReferenceResult<IUnresolvedPackageReference>(result.Object, added: true));
+
+                var nuGetProjectServices = new Mock<INuGetProjectServices>();
+
+                nuGetProjectServices.SetupGet(x => x.ScriptService)
+                    .Returns(Mock.Of<IProjectScriptHostService>());
+
+                var project = new CpsPackageReferenceProject(
+                    projectName: projectName,
+                    projectUniqueName: projectFullPath,
+                    projectFullPath: projectFullPath,
+                    projectSystemCache,
+                    unconfiguredProject.Object,
+                    nuGetProjectServices.Object,
+                    projectId);
+
+                PackageSpec packageSpec = CreatePackageSpec(
+                    project.ProjectName,
+                    Path.Combine(testDirectory, "package.spec"));
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                projectRestoreInfo.AddProject(packageSpec);
+                var projectNames = new ProjectNames(
+                    fullName: projectFullPath,
+                    uniqueName: projectFullPath,
+                    shortName: projectName,
+                    customUniqueName: projectName,
+                    projectId: projectId);
+                projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, Array.Empty<IAssetsLogMessage>());
+
+                _solutionManager.NuGetProjects.Add(project);
+
+                string[] projectIds = new[] { projectId };
+                string[] packageSourceNames = new[] { packageSource.Name };
+
+                await PerformOperationAsync(async (projectManager) =>
+                {
+                    IReadOnlyList<ProjectAction> actions = await projectManager.GetInstallActionsAsync(
+                        projectIds,
+                        packageV1.Identity,
+                        VersionConstraints.None,
+                        includePrelease: true,
+                        DependencyBehavior.Lowest,
+                        packageSourceNames,
+                        CancellationToken.None);
+
+                    Assert.NotEmpty(actions);
+                    Assert.Equal(1, actions.Count);
+
+                    ProjectAction action = actions[0];
+
+                    Assert.Equal(packageV1.Identity, action.PackageIdentity);
+                    Assert.Equal(NuGetProjectActionType.Install, action.ProjectActionType);
+                    Assert.Equal(projectId, action.ProjectId);
+
+                    Assert.Equal(1, action.ImplicitActions.Count);
+
+                    ImplicitProjectAction implicitAction = action.ImplicitActions[0];
+
+                    Assert.Equal(packageV1.Identity, implicitAction.PackageIdentity);
+                    Assert.Equal(NuGetProjectActionType.Install, implicitAction.ProjectActionType);
+
+                    await projectManager.ExecuteActionsAsync(actions, CancellationToken.None);
+
+                    AddPackageDependency(projectSystemCache, projectNames, packageSpec, packageV1);
+                });
+
+                await PerformOperationAsync(async (projectManager) =>
+                {
+                    IReadOnlyList<ProjectAction> actions = await projectManager.GetUpdateActionsAsync(
+                        projectIds,
+                        new[] { packageV2.Identity },
+                        VersionConstraints.None,
+                        includePrelease: true,
+                        DependencyBehavior.Lowest,
+                        packageSourceNames,
+                        CancellationToken.None);
+
+                    Assert.NotEmpty(actions);
+                    Assert.Equal(1, actions.Count);
+
+                    ProjectAction action = actions[0];
+
+                    Assert.Equal(packageV2.Identity, action.PackageIdentity);
+                    Assert.Equal(NuGetProjectActionType.Install, action.ProjectActionType);
+                    Assert.Equal(projectId, action.ProjectId);
+
+                    Assert.Equal(2, action.ImplicitActions.Count);
+
+                    ImplicitProjectAction implicitAction = action.ImplicitActions[0];
+
+                    Assert.Equal(packageV1.Identity, implicitAction.PackageIdentity);
+                    Assert.Equal(NuGetProjectActionType.Uninstall, implicitAction.ProjectActionType);
+
+                    implicitAction = action.ImplicitActions[1];
+
+                    Assert.Equal(packageV2.Identity, implicitAction.PackageIdentity);
+                    Assert.Equal(NuGetProjectActionType.Install, implicitAction.ProjectActionType);
+                });
+            }
+        }
+
+        private static void AddPackageDependency(ProjectSystemCache projectSystemCache, ProjectNames projectNames, PackageSpec packageSpec, SimpleTestPackageContext package)
+        {
+            var dependency = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange(
+                    name: package.Id,
+                    versionRange: new VersionRange(package.Identity.Version),
+                    typeConstraint: LibraryDependencyTarget.Package)
+            };
+
+            packageSpec.TargetFrameworks.First().Dependencies.Add(dependency);
+            DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+            projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, Array.Empty<IAssetsLogMessage>());
+        }
+
         private void Initialize(IReadOnlyList<PackageSource> packageSources = null)
         {
             SourceRepositoryProvider sourceRepositoryProvider;
@@ -369,24 +576,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     () => Task.FromResult(_packageManager)),
                 new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolutionManager>(
                     () => Task.FromResult<IVsSolutionManager>(_solutionManager)),
-                new Microsoft.VisualStudio.Threading.AsyncLazy<ISourceRepositoryProvider>(
-                    () => Task.FromResult<ISourceRepositoryProvider>(sourceRepositoryProvider)));
+                sourceRepositoryProvider,
+                new Microsoft.VisualStudio.Threading.AsyncLazy<IReadOnlyCollection<SourceRepository>>(
+                    () => Task.FromResult<IReadOnlyCollection<SourceRepository>>(sourceRepositoryProvider.GetRepositories().ToList())));
             _projectManager = new NuGetProjectManagerService(
                 default(ServiceActivationOptions),
                 Mock.Of<IServiceBroker>(),
                 new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                 _state,
                 _sharedState);
-        }
-
-        public Task<object> GetServiceAsync(Type serviceType)
-        {
-            if (_services.TryGetValue(serviceType, out Task<object> task))
-            {
-                return task;
-            }
-
-            return Task.FromResult<object>(null);
         }
 
         private async Task PerformOperationAsync(Func<NuGetProjectManagerService, Task> testAsync)
@@ -439,7 +637,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         private sealed class TestMSBuildNuGetProject : MSBuildNuGetProject
         {
-            public IReadOnlyList<ExternalProjectReference> ProjectClosure { get; set; }
+            internal Task<IEnumerable<PackageReference>> InstalledPackageReferences { get; set; }
 
             public TestMSBuildNuGetProject(
                 IMSBuildProjectSystem msbuildProjectSystem,
@@ -451,6 +649,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packagesConfigFolderPath)
             {
                 InternalMetadata[NuGetProjectMetadataKeys.ProjectId] = projectId;
+            }
+
+            public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+            {
+                return InstalledPackageReferences ?? base.GetInstalledPackagesAsync(token);
             }
         }
 

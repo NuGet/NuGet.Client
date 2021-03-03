@@ -36,6 +36,8 @@ namespace NuGet.PackageManagement.UI.Test
 
         public Uri PackageDetailsUrl { get; set; }
 
+        public string PackagePath { get; set; }
+
         public DateTimeOffset? Published { get; set; }
 
         public string Owners { get; set; }

@@ -72,6 +72,7 @@ NuGet.ProjectModel.DependencyGraphSpec.Json.get -> Newtonsoft.Json.Linq.JObject
 NuGet.ProjectModel.DependencyGraphSpec.Projects.get -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 NuGet.ProjectModel.DependencyGraphSpec.Restore.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.ProjectModel.DependencyGraphSpec.Save(string path) -> void
+NuGet.ProjectModel.DependencyGraphSpec.WithPackageSpecs(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.PackageSpec> packageSpecs) -> NuGet.ProjectModel.DependencyGraphSpec
 NuGet.ProjectModel.DependencyGraphSpec.WithProjectClosure(string projectUniqueName) -> NuGet.ProjectModel.DependencyGraphSpec
 NuGet.ProjectModel.DependencyGraphSpec.WithReplacedSpec(NuGet.ProjectModel.PackageSpec project) -> NuGet.ProjectModel.DependencyGraphSpec
 NuGet.ProjectModel.DependencyGraphSpec.WithoutRestores() -> NuGet.ProjectModel.DependencyGraphSpec
@@ -145,6 +146,7 @@ NuGet.ProjectModel.LockFile.CentralTransitiveDependencyGroups.set -> void
 NuGet.ProjectModel.LockFile.Equals(NuGet.ProjectModel.LockFile other) -> bool
 NuGet.ProjectModel.LockFile.GetLibrary(string name, NuGet.Versioning.NuGetVersion version) -> NuGet.ProjectModel.LockFileLibrary
 NuGet.ProjectModel.LockFile.GetTarget(NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier) -> NuGet.ProjectModel.LockFileTarget
+NuGet.ProjectModel.LockFile.GetTarget(string frameworkAlias, string runtimeIdentifier) -> NuGet.ProjectModel.LockFileTarget
 NuGet.ProjectModel.LockFile.IsValidForPackageSpec(NuGet.ProjectModel.PackageSpec spec) -> bool
 NuGet.ProjectModel.LockFile.IsValidForPackageSpec(NuGet.ProjectModel.PackageSpec spec, int requestLockFileVersion) -> bool
 NuGet.ProjectModel.LockFile.Libraries.get -> System.Collections.Generic.IList<NuGet.ProjectModel.LockFileLibrary>
@@ -488,6 +490,8 @@ NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.ProjectReferences.get -> 
 NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.ProjectReferences.set -> void
 NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.ProjectRestoreMetadataFrameworkInfo() -> void
 NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.ProjectRestoreMetadataFrameworkInfo(NuGet.Frameworks.NuGetFramework frameworkName) -> void
+NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.get -> string
+NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.set -> void
 NuGet.ProjectModel.ProjectRestoreReference
 NuGet.ProjectModel.ProjectRestoreReference.Clone() -> NuGet.ProjectModel.ProjectRestoreReference
 NuGet.ProjectModel.ProjectRestoreReference.Equals(NuGet.ProjectModel.ProjectRestoreReference other) -> bool
@@ -540,6 +544,8 @@ NuGet.ProjectModel.TargetFrameworkInformation.Imports.get -> System.Collections.
 NuGet.ProjectModel.TargetFrameworkInformation.Imports.set -> void
 NuGet.ProjectModel.TargetFrameworkInformation.RuntimeIdentifierGraphPath.get -> string
 NuGet.ProjectModel.TargetFrameworkInformation.RuntimeIdentifierGraphPath.set -> void
+NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.get -> string
+NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.set -> void
 NuGet.ProjectModel.TargetFrameworkInformation.TargetFrameworkInformation() -> void
 NuGet.ProjectModel.TargetFrameworkInformation.Warn.get -> bool
 NuGet.ProjectModel.TargetFrameworkInformation.Warn.set -> void

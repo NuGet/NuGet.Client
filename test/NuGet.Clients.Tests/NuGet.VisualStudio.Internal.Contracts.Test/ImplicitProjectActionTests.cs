@@ -31,7 +31,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         public void Constructor_WhenPackageIdentityIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 () => new ImplicitProjectAction(Id, packageIdentity: null, NuGetProjectActionType.Uninstall));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
             Assert.Equal("packageIdentity", exception.ParamName);
         }
@@ -51,7 +53,9 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [Fact]
         public void Equals_WithObject_WhenArgumentIsNull_ReturnsFalse()
         {
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
             Assert.False(Action.Equals(obj: null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         }
 
         [Fact]

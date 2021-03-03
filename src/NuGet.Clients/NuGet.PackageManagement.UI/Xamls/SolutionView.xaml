@@ -183,7 +183,7 @@
       Grid.Row="0"
       Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 
-    <ListView
+    <local:ProjectsListView
       Grid.Row="1"
       x:Name="_projectList"
       Margin="0,8,0,0"
@@ -269,6 +269,8 @@
                   IsTabStop="False"
                   AutomationProperties.AutomationId="{Binding ProjectName, Mode=OneWay, StringFormat='ProjectCheckBox_{0}'}"
                   IsChecked="{Binding IsSelected}"
+                  Checked="ItemCheckBox_Toggled"
+                  Unchecked="ItemCheckBox_Toggled"
                   AutomationProperties.Name="{Binding ProjectName, Mode=OneWay}"
                   AutomationProperties.HelpText="{Binding ProjectName, Mode=OneWay, StringFormat='{x:Static local:Resources.CheckBox_SelectProject_HelpText}'}"/>
               </DataTemplate>
@@ -326,7 +328,7 @@
           </GridViewColumn>
         </GridView>
       </ListView.View>
-    </ListView>
+    </local:ProjectsListView>
 
     <Grid
       Grid.Row="2"

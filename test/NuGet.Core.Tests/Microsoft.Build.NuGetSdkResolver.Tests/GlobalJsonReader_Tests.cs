@@ -43,7 +43,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 var context = new MockSdkResolverContext(Path.Combine(testDirectory, "foo.proj"));
 
-                GlobalJsonReader.GetMSBuildSdkVersions(context).ShouldAllBeEquivalentTo(new Dictionary<string, string>
+                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeEquivalentTo(new Dictionary<string, string>
                 {
                     ["foo"] = "1.0.0"
                 });

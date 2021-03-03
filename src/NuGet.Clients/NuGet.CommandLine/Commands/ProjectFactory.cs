@@ -59,7 +59,6 @@ namespace NuGet.CommandLine
         private const string ContentItemType = "Content";
         private const string ProjectReferenceItemType = "ProjectReference";
         private const string ReferenceOutputAssembly = "ReferenceOutputAssembly";
-        private const string PackagesFolder = "packages";
         private const string TransformFileExtension = ".transform";
 
         [Import]
@@ -229,7 +228,7 @@ namespace NuGet.CommandLine
                         Path.GetFullPath(Path.GetDirectoryName(TargetPath))), LogLevel.Minimal));
             }
 
-            builder = new Packaging.PackageBuilder();
+            builder = new PackageBuilder(false, Logger);
 
             try
             {

@@ -11,5 +11,7 @@ namespace NuGet.ProjectManagement
     public interface IProjectSystemCapabilities
     {
         bool SupportsPackageReferences { get; }
+
+        bool NominatesOnSolutionLoad { get; }
     }
 }

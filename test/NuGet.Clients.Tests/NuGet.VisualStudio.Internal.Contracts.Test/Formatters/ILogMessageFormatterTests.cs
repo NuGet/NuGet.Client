@@ -16,9 +16,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(ILogMessages))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(ILogMessage expectedResult)
         {
-            ILogMessage actualResult = SerializeThenDeserialize(ILogMessageFormatter.Instance, expectedResult);
+            ILogMessage? actualResult = SerializeThenDeserialize(ILogMessageFormatter.Instance, expectedResult);
 
-            TestUtility.AssertEqual(expectedResult, actualResult);
+            Assert.NotNull(actualResult);
+            TestUtility.AssertEqual(expectedResult, actualResult!);
         }
 
         public static TheoryData ILogMessages => new TheoryData<ILogMessage>

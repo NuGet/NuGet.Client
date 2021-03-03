@@ -39,12 +39,14 @@ namespace NuGet.Client
 
         private static readonly Dictionary<string, object> NetTFMTable = new Dictionary<string, object>
         {
-            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) },
+            { "tfm_raw", "net0" }
         };
 
         private static readonly Dictionary<string, object> DefaultTfmAny = new Dictionary<string, object>
         {
-            { PropertyNames.TargetFrameworkMoniker, AnyFramework.Instance }
+            { PropertyNames.TargetFrameworkMoniker, AnyFramework.Instance },
+            { PropertyNames.TargetFrameworkMoniker + "_raw", "any" }
         };
 
         private static readonly PatternTable DotnetAnyTable = new PatternTable(new[]
@@ -201,7 +203,7 @@ namespace NuGet.Client
                 return result;
             }
 
-            // Everything should be in the folder format, but fallback to 
+            // Everything should be in the folder format, but fallback to
             // full parsing for legacy support.
             result = NuGetFramework.ParseFrameworkName(name, DefaultFrameworkNameProvider.Instance);
 

@@ -19,9 +19,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(PackageReferences))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(PackageReference expectedResult)
         {
-            PackageReference actualResult = SerializeThenDeserialize(PackageReferenceFormatter.Instance, expectedResult);
+            PackageReference? actualResult = SerializeThenDeserialize(PackageReferenceFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.AllowedVersions, actualResult.AllowedVersions);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.AllowedVersions, actualResult!.AllowedVersions);
             Assert.Equal(expectedResult.HasAllowedVersions, actualResult.HasAllowedVersions);
             Assert.Equal(expectedResult.IsDevelopmentDependency, actualResult.IsDevelopmentDependency);
             Assert.Equal(expectedResult.IsUserInstalled, actualResult.IsUserInstalled);

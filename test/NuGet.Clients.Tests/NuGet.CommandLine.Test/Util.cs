@@ -762,7 +762,7 @@ namespace NuGet.CommandLine.Test
 
             var catalogEntry = new JObject();
             item.Add(new JProperty("catalogEntry", catalogEntry));
-            item.Add(new JProperty("packageContent", $"{server.Uri}packages/{id}.{version}.nupkg"));
+            item.Add(new JProperty("packageContent", $"{server.Uri}flat/{id}/{version}/{id}.{version}.nupkg"));
             item.Add(new JProperty("registration", indexUrl));
 
             catalogEntry.Add(new JProperty("@id",

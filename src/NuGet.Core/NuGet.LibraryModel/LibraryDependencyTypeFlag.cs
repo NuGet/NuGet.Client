@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using NuGet.Shared;
 
 namespace NuGet.LibraryModel
 {
@@ -40,7 +41,9 @@ namespace NuGet.LibraryModel
 
         public override int GetHashCode()
         {
-            return StringComparer.Ordinal.GetHashCode(_value);
+            var combiner = new HashCodeCombiner();
+            combiner.AddSequence(_value);
+            return combiner.CombinedHash;
         }
 
         public override string ToString()

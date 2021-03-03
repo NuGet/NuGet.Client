@@ -38,6 +38,7 @@
       <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="VSLangProj140">
       <HintPath>$(SolutionPackagesFolder)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -70,29 +71,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\IProjectContextInfoExtensions.cs" />
+    <Compile Include="Common\InstalledAndTransitivePackageCollections.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
+    <Compile Include="Projects\PackageReferenceProject.cs" />
+    <Compile Include="Projects\ProjectPackages.cs" />
     <Compile Include="Services\ISharedServiceState.cs" />
+    <Compile Include="Services\NuGetPackageSearchService.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceState.cs" />
     <Compile Include="Services\NuGetProjectUpgraderService.cs" />
+    <Compile Include="Services\PackageSearchMetadataCacheItem.cs" />
+    <Compile Include="Services\PackageSearchMetadataCacheItemEntry.cs" />
+    <Compile Include="Services\SearchObject.cs" />
     <Compile Include="Services\SharedServiceState.cs" />
+    <Compile Include="Services\NuGetPackageFileService.cs" />
     <Compile Include="Services\NuGetSolutionManagerService.cs" />
     <Compile Include="Services\NuGetSourcesService.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
     <Compile Include="Migrate\ProjectJsonToPackageRefMigrator.cs" />
     <Compile Include="CommonResources.cs" />
-    <Compile Include="Common\AsyncLockAwaiter.cs" />
-    <Compile Include="Common\AsyncLockReleaser.cs" />
-    <Compile Include="Common\IAsyncLockAwaitable.cs" />
     <Compile Include="Common\PackageCollection.cs" />
     <Compile Include="Common\PackageCollectionExtensions.cs" />
     <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
     <Compile Include="PackageFeeds\LoadingStatusExtensionMethods.cs" />
-    <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
     <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
     <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
@@ -109,7 +114,6 @@
     <Compile Include="PackageFeeds\InstalledPackageFeed.cs" />
     <Compile Include="PackageFeeds\IPackageFeed.cs" />
     <Compile Include="PackageFeeds\IPackageMetadataProvider.cs" />
-    <Compile Include="PackageFeeds\LoadingStatus.cs" />
     <Compile Include="PackageFeeds\MultiSourceAutoCompleteProvider.cs" />
     <Compile Include="PackageFeeds\MultiSourcePackageFeed.cs" />
     <Compile Include="PackageFeeds\MultiSourcePackageMetadataProvider.cs" />
@@ -121,7 +125,6 @@
     <Compile Include="PackageFeeds\SourceRepositoryExtensions.cs" />
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
     <Compile Include="Services\BrokeredServicesUtilities.cs" />
-    <Compile Include="Services\DeferredProjectWorkspaceService.cs" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
@@ -129,7 +132,6 @@
     <Compile Include="Projects\INuGetProjectProvider.cs" />
     <Compile Include="Projects\MSBuildNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectJsonProjectProvider.cs" />
-    <Compile Include="Projects\ProjectKNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectSystemCache.cs" />
     <Compile Include="Projects\CpsPackageReferenceProjectProvider.cs" />
     <Compile Include="Projects\ProjectProviderContext.cs" />
@@ -152,7 +154,6 @@
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\NativeProjectSystem.cs" />
-    <Compile Include="Projects\ProjectKNuGetProject.cs" />
     <Compile Include="ProjectSystems\WebProjectSystem.cs" />
     <Compile Include="ProjectSystems\WebSiteProjectSystem.cs" />
     <Compile Include="ProjectSystems\WindowsStoreProjectSystem.cs" />
@@ -169,8 +170,11 @@
     <Compile Include="Setting\WritableSettingsStoreWrapper.cs" />
     <Compile Include="SourceControl\DTESourceControlUtility.cs" />
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
+    <Compile Include="Telemetry\GetInstalledPackagesAsyncTelemetryEvent.cs" />
+    <Compile Include="Telemetry\CacheMissException.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\PackageManagerUIRefreshEvent.cs" />
+    <Compile Include="Telemetry\DiagnosticTelemetryEvent.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchPageTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchSelectionTelemetryEvent.cs" />
@@ -212,7 +216,6 @@
     <Compile Include="Utility\MicrosoftBuildEvaluationProjectUtility.cs" />
     <Compile Include="IDE\VSSolutionManager.cs" />
     <Compile Include="Services\DefaultProjectThreadingService.cs" />
-    <Compile Include="ProjectServices\DeferredProjectServicesProxy.cs" />
     <Compile Include="Projects\IVsProjectAdapterProvider.cs" />
     <Compile Include="Services\IVsProjectThreadingService.cs" />
     <Compile Include="ProjectServices\VsProjectBuildProperties.cs" />
@@ -220,8 +223,6 @@
     <Compile Include="Projects\VsProjectAdapter.cs" />
     <Compile Include="Projects\VsProjectAdapterProvider.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemServices.cs" />
-    <Compile Include="ProjectServices\WorkspaceProjectBuildProperties.cs" />
-    <Compile Include="ProjectServices\WorkspaceProjectServices.cs" />
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -309,14 +310,16 @@
     <Compile Include="$(SharedDirectory)\EqualityUtility.cs">
       <Link>EqualityUtility.cs</Link>
     </Compile>
+    <Compile Include="$(SharedDirectory)\XmlUtility.cs">
+      <Link>XmlUtility.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <!-- This causes a NU5104 warning. When upgrading to a stable version of this package, remove the above no warn. -->
     <PackageReference Include="Microsoft.DataAI.NuGetRecommender.Contracts" />
-    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="VSLangProj110" />
-    <PackageReference Include="VSLangProj2" />
+    <PackageReference Include="VSLangProj" />
+    <PackageReference Include="VSLangProj80" />
     <PackageReference Include="VSLangProj157" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />

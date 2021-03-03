@@ -26,8 +26,7 @@ namespace NuGet.Options
         protected override void OnActivate(CancelEventArgs e)
         {
             base.OnActivate(e);
-            PackageSourcesControl.Font = VsShellUtilities.GetEnvironmentFont(this);
-
+            PackageSourcesControl.Font = VsShellUtilities.GetEnvironmentFont(ServiceProvider.GlobalProvider);
             DoCancelableOperationWithProgressUI(() =>
             {
                 // Normally we shouldn't wrap JTF around BrokeredCalls but this is in a cancelable operation already
@@ -73,7 +72,7 @@ namespace NuGet.Options
             {
                 if (_optionsWindow == null)
                 {
-                    _optionsWindow = new PackageSourcesOptionsControl(this);
+                    _optionsWindow = new PackageSourcesOptionsControl(ServiceProvider.GlobalProvider);
                     _optionsWindow.Location = new Point(0, 0);
                 }
 

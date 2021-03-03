@@ -45,18 +45,12 @@ namespace NuGet.Versioning
         /// <summary>
         /// Default Version comparer
         /// </summary>
-        public static IVersionRangeComparer Default
-        {
-            get { return new VersionRangeComparer(VersionComparison.Default); }
-        }
+        public static IVersionRangeComparer Default { get; } = new VersionRangeComparer(VersionComparison.Default);
 
         /// <summary>
         /// Compare versions using the Version and Release
         /// </summary>
-        public static IVersionRangeComparer VersionRelease
-        {
-            get { return new VersionRangeComparer(VersionComparison.VersionRelease); }
-        }
+        public static IVersionRangeComparer VersionRelease { get; } = new VersionRangeComparer(VersionComparison.VersionRelease);
 
         /// <summary>
         /// Checks if two version ranges are equivalent. This follows the rules of the version comparer
@@ -64,13 +58,11 @@ namespace NuGet.Versioning
         /// </summary>
         public bool Equals(VersionRangeBase x, VersionRangeBase y)
         {
-            // same object
             if (ReferenceEquals(x, y))
             {
                 return true;
             }
 
-            // null checks
             if (ReferenceEquals(y, null)
                 || ReferenceEquals(x, null))
             {
@@ -78,9 +70,9 @@ namespace NuGet.Versioning
             }
 
             return x.IsMinInclusive == y.IsMinInclusive
-                    && y.IsMaxInclusive == x.IsMaxInclusive
-                    && _versionComparer.Equals(y.MinVersion, x.MinVersion)
-                    && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
+                && y.IsMaxInclusive == x.IsMaxInclusive
+                && _versionComparer.Equals(y.MinVersion, x.MinVersion)
+                && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
         }
 
         /// <summary>

@@ -12,13 +12,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public interface IVsProjectAdapterProvider
     {
         /// <summary>
-        /// Check if given file path exists from AnyCode api in LSL mode.
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns>true, if file path exists</returns>
-        Task<bool> EntityExistsAsync(string filePath);
-
-        /// <summary>
         /// Creates a project adapter for fully loaded project represented by DTE object.
         /// </summary>
         /// <param name="dteProject">Input project object</param>

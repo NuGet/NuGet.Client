@@ -83,19 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapter vsProjectAdapter, VsMSBuildProjectSystem projectSystem)
         {
             var componentModel = await _componentModel.GetValueAsync();
-
-            if (vsProjectAdapter.IsDeferred)
-            {
-                return new DeferredProjectServicesProxy(
-                    vsProjectAdapter,
-                    new DeferredProjectCapabilities { SupportsPackageReferences = false },
-                    () => new VsMSBuildProjectSystemServices(vsProjectAdapter, projectSystem, componentModel),
-                    componentModel);
-            }
-            else
-            {
-                return new VsMSBuildProjectSystemServices(vsProjectAdapter, projectSystem, componentModel);
-            }
+            return new VsMSBuildProjectSystemServices(vsProjectAdapter, projectSystem, componentModel);
         }
     }
 }

@@ -22,6 +22,13 @@ namespace NuGet.Build.Tasks.Console
         string FullPath { get; }
 
         /// <summary>
+        /// Retrieve global property value and trim.
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns>Trimmed global property value</returns>
+        string GetGlobalProperty(string property);
+
+        /// <summary>
         /// Gets items in the project with the specified name.
         /// </summary>
         /// <param name="name">The name of the item to get.</param>

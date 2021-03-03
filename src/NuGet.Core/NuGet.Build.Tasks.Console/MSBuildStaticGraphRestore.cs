@@ -130,6 +130,42 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
+        /// Generates a dependency graph spec for the given properties.
+        /// </summary>
+        /// <param name="entryProjectFilePath">The main project to generate that graph for.  This can be a project for a Visual Studio© Solution File.</param>
+        /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
+        /// <param name="options">The set of options to use to generate the graph, including the restore graph output path.</param>
+        /// <returns><code>true</code> if the dependency graph spec was generated and written, otherwise <code>false</code>.</returns>
+        public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
+        {
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties);
+
+            try
+            {
+                if (dependencyGraphSpec == null)
+                {
+                    LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_DgSpecGenerationFailed);
+                    return false;
+                }
+
+                if (options.TryGetValue("RestoreGraphOutputPath", out var path))
+                {
+                    dependencyGraphSpec.Save(path);
+                    return true;
+                }
+                else
+                {
+                    LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_MissingRestoreGraphOutputPath);
+                }
+            }
+            catch (Exception e)
+            {
+                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Gets the framework references per target framework for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get framework references for.</param>
@@ -247,7 +283,7 @@ namespace NuGet.Build.Tasks.Console
         internal static string GetPackagesPath(IMSBuildProject project, ISettings settings)
         {
             return RestoreSettingsUtils.GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPathOverride")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestorePackagesPath")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPath")),
                 () => SettingsUtility.GetGlobalPackagesFolder(settings));
         }
@@ -405,7 +441,7 @@ namespace NuGet.Build.Tasks.Console
         internal static string GetRepositoryPath(IMSBuildProject project, ISettings settings)
         {
             return RestoreSettingsUtils.GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreRepositoryPathOverride")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestoreRepositoryPath")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreRepositoryPath")),
                 () => SettingsUtility.GetRepositoryPath(settings),
                 () =>
@@ -442,9 +478,10 @@ namespace NuGet.Build.Tasks.Console
         internal static List<PackageSource> GetSources(IMSBuildProject project, IReadOnlyCollection<IMSBuildProject> innerNodes, ISettings settings)
         {
             return BuildTasksUtility.GetSources(
+                project.GetGlobalProperty("OriginalMSBuildStartupDirectory"),
                 project.Directory,
                 project.SplitPropertyValueOrNull("RestoreSources"),
-                project.SplitPropertyValueOrNull("RestoreSourcesOverride"),
+                project.SplitGlobalPropertyValueOrNull("RestoreSources"),
                 innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectSources"))),
                 settings)
                 .Select(i => new PackageSource(i))
@@ -623,7 +660,6 @@ namespace NuGet.Build.Tasks.Console
                                 projectPathLookup.TryAdd(projectPath, projectPath);
                             }
 
-                            // TODO: Remove this lock once https://github.com/NuGet/Home/issues/9002 is fixed
                             lock (dependencyGraphSpec)
                             {
                                 dependencyGraphSpec.AddProject(packageSpec);
@@ -765,9 +801,10 @@ namespace NuGet.Build.Tasks.Console
                     CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && (
                         projectsByTargetFramework.Count > 1 || !string.IsNullOrWhiteSpace(project.GetProperty("TargetFrameworks"))),
                     FallbackFolders = BuildTasksUtility.GetFallbackFolders(
+                        project.GetProperty("MSBuildStartupDirectory"),
                         project.Directory,
                         project.SplitPropertyValueOrNull("RestoreFallbackFolders"),
-                        project.SplitPropertyValueOrNull("RestoreFallbackFoldersOverride"),
+                        project.SplitGlobalPropertyValueOrNull("RestoreFallbackFolders"),
                         innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFolders"))),
                         innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
                         settings),

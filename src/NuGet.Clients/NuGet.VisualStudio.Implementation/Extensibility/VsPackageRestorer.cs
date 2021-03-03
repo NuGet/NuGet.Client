@@ -9,6 +9,7 @@ using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
@@ -18,19 +19,36 @@ namespace NuGet.VisualStudio
         private readonly Configuration.ISettings _settings;
         private readonly ISolutionManager _solutionManager;
         private readonly IPackageRestoreManager _restoreManager;
+        private readonly IVsProjectThreadingService _threadingService;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
-        public VsPackageRestorer(Configuration.ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager)
+        public VsPackageRestorer(
+            Configuration.ISettings settings,
+            ISolutionManager solutionManager,
+            IPackageRestoreManager restoreManager,
+            IVsProjectThreadingService threadingService,
+            INuGetTelemetryProvider telemetryProvider)
         {
             _settings = settings;
             _solutionManager = solutionManager;
             _restoreManager = restoreManager;
+            _threadingService = threadingService;
+            _telemetryProvider = telemetryProvider;
         }
 
         public bool IsUserConsentGranted()
         {
-            var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
-            return packageRestoreConsent.IsGranted;
+            try
+            {
+                var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
+                return packageRestoreConsent.IsGranted;
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(IVsPackageRestorer).FullName);
+                throw;
+            }
         }
 
         public void RestorePackages(Project project)
@@ -45,15 +63,15 @@ namespace NuGet.VisualStudio
                 // as part of the operations performed below. Powershell scripts need to be executed on the
                 // pipeline execution thread and they might try to access DTE. Doing that under
                 // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
+                _threadingService.JoinableTaskFactory.Run(() =>
                     _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
                     nuGetProjectContext,
                     NullLogger.Instance,
                     CancellationToken.None));
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                ExceptionHelper.WriteErrorToActivityLog(ex);
+                _telemetryProvider.PostFault(exception, typeof(VsPackageRestorer).FullName);
             }
         }
     }

@@ -53,11 +53,20 @@ NuGet.VisualStudio.IVsFrameworkCompatibility.GetNearest(System.Runtime.Versionin
 NuGet.VisualStudio.IVsFrameworkCompatibility.GetNetStandardFrameworks() -> System.Collections.Generic.IEnumerable<System.Runtime.Versioning.FrameworkName>
 NuGet.VisualStudio.IVsFrameworkCompatibility2
 NuGet.VisualStudio.IVsFrameworkCompatibility2.GetNearest(System.Runtime.Versioning.FrameworkName targetFramework, System.Collections.Generic.IEnumerable<System.Runtime.Versioning.FrameworkName> fallbackTargetFrameworks, System.Collections.Generic.IEnumerable<System.Runtime.Versioning.FrameworkName> frameworks) -> System.Runtime.Versioning.FrameworkName
+NuGet.VisualStudio.IVsFrameworkCompatibility3
+NuGet.VisualStudio.IVsFrameworkCompatibility3.GetNearest(NuGet.VisualStudio.IVsNuGetFramework targetFramework, System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsNuGetFramework> fallbackTargetFrameworks, System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsNuGetFramework> frameworks) -> NuGet.VisualStudio.IVsNuGetFramework
+NuGet.VisualStudio.IVsFrameworkCompatibility3.GetNearest(NuGet.VisualStudio.IVsNuGetFramework targetFramework, System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsNuGetFramework> frameworks) -> NuGet.VisualStudio.IVsNuGetFramework
 NuGet.VisualStudio.IVsFrameworkParser
 NuGet.VisualStudio.IVsFrameworkParser.GetShortFrameworkName(System.Runtime.Versioning.FrameworkName frameworkName) -> string
 NuGet.VisualStudio.IVsFrameworkParser.ParseFrameworkName(string shortOrFullName) -> System.Runtime.Versioning.FrameworkName
+NuGet.VisualStudio.IVsFrameworkParser2
+NuGet.VisualStudio.IVsFrameworkParser2.TryParse(string input, out NuGet.VisualStudio.IVsNuGetFramework nuGetFramework) -> bool
 NuGet.VisualStudio.IVsGlobalPackagesInitScriptExecutor
 NuGet.VisualStudio.IVsGlobalPackagesInitScriptExecutor.ExecuteInitScriptAsync(string packageId, string packageVersion) -> System.Threading.Tasks.Task<bool>
+NuGet.VisualStudio.IVsNuGetFramework
+NuGet.VisualStudio.IVsNuGetFramework.TargetFrameworkMoniker.get -> string
+NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformMinVersion.get -> string
+NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformMoniker.get -> string
 NuGet.VisualStudio.IVsPackageInstaller
 NuGet.VisualStudio.IVsPackageInstaller.InstallPackage(NuGet.IPackageRepository repository, EnvDTE.Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences) -> void
 NuGet.VisualStudio.IVsPackageInstaller.InstallPackage(string source, EnvDTE.Project project, string packageId, System.Version version, bool ignoreDependencies) -> void

@@ -21,7 +21,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             string projectId,
             PackageIdentity packageIdentity,
             NuGetProjectActionType projectActionType,
-            IReadOnlyList<ImplicitProjectAction> implicitActions)
+            IReadOnlyList<ImplicitProjectAction>? implicitActions)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -40,7 +40,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             ImplicitActions = implicitActions ?? Array.Empty<ImplicitProjectAction>();
         }
 
-        public bool Equals(ProjectAction other)
+        public bool Equals(ProjectAction? other)
         {
             if (other == null)
             {

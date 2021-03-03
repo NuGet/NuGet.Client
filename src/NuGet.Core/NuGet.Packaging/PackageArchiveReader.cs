@@ -23,7 +23,6 @@ namespace NuGet.Packaging
     public class PackageArchiveReader : PackageReaderBase
     {
         private readonly ZipArchive _zipArchive;
-        private readonly Encoding _utf8Encoding = new UTF8Encoding();
         private readonly SigningSpecifications _signingSpecifications = SigningSpecifications.V1;
 
         /// <summary>

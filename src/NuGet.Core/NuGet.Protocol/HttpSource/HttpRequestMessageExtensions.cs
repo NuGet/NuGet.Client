@@ -34,20 +34,17 @@ namespace NuGet.Protocol
                 clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
-#if USE_HTTPREQUESTMESSAGE_OPTIONS
+#if NET5_0
             var clonedOptions = (IDictionary<string, object>)clone.Options;
             foreach (var option in request.Options)
             {
                 clonedOptions.Add(option.Key, option.Value);
             }
 #else
-            // stop ignoring CS0618 when fixing https://github.com/NuGet/Home/issues/9981
-#pragma warning disable CS0618
             foreach (var property in request.Properties)
             {
                 clone.Properties.Add(property);
             }
-#pragma warning restore CS0618
 #endif
             return clone;
         }
@@ -121,27 +118,21 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-#if USE_HTTPREQUESTMESSAGE_OPTIONS
+#if NET5_0
             request.Options.Set(new HttpRequestOptionsKey<HttpRequestMessageConfiguration>(NuGetConfigurationKey), configuration);
 #else
-            // stop ignoring CS0618 when fixing https://github.com/NuGet/Home/issues/9981
-#pragma warning disable CS0618
             request.Properties[NuGetConfigurationKey] = configuration;
-#pragma warning restore CS0618
 #endif
         }
 
         private static T GetProperty<T>(this HttpRequestMessage request, string key)
         {
 
-#if USE_HTTPREQUESTMESSAGE_OPTIONS
+#if NET5_0
             if (request.Options.TryGetValue<T>(new HttpRequestOptionsKey<T>(key), out T result))
 #else
-            // stop ignoring CS0618 when fixing https://github.com/NuGet/Home/issues/9981
-#pragma warning disable CS0618
             object result;
             if (request.Properties.TryGetValue(key, out result) && result is T)
-#pragma warning restore CS0618
 #endif
             {
                 return (T)result;

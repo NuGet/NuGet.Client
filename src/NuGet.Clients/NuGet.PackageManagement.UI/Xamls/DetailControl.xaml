@@ -129,8 +129,7 @@
       <nuget:ProjectView
         Grid.Row="1"
         Margin="0,8"
-        InstallButtonClicked="ProjectInstallButtonClicked"
-        UninstallButtonClicked="ProjectUninstallButtonClicked"
+        x:Name="_projectView"
         Visibility="{Binding Path=IsSolution, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" />
 
       <!-- solution view when in solution package manager -->
@@ -139,8 +138,6 @@
         x:Name="_solutionView"
         Grid.Row="1"
         Margin="0,8"
-        InstallButtonClicked="SolutionInstallButtonClicked"
-        UninstallButtonClicked="SolutionUninstallButtonClicked"
         Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}" />
 
       <!-- the splitter is shown when in solution package manager -->

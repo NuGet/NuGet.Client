@@ -25,7 +25,6 @@ namespace NuGet.CommandLine.XPlat
         private const string VERSION_TAG = "Version";
         private const string FRAMEWORK_TAG = "TargetFramework";
         private const string FRAMEWORKS_TAG = "TargetFrameworks";
-        private const string ASSETS_DIRECTORY_TAG = "MSBuildProjectExtensionsPath";
         private const string RESTORE_STYLE_TAG = "RestoreProjectStyle";
         private const string NUGET_STYLE_TAG = "NuGetProjectStyle";
         private const string ASSETS_FILE_PATH_TAG = "ProjectAssetsFile";

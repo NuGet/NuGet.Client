@@ -36,7 +36,7 @@ namespace NuGet.Build.Tasks.Console.Test
                 items.Count.Should().Be(1);
             };
 
-            act.ShouldNotThrow();
+            act.Should().NotThrow();
         }
     }
 }

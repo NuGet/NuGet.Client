@@ -398,12 +398,6 @@ namespace NuGet.Packaging
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                            logger.LogInformation(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_InstallingPackage,
-                                packageIdentity.Id,
-                                packageIdentity.Version));
-
                             cancellationToken.ThrowIfCancellationRequested();
 
                             // We do not stop the package extraction after this point
@@ -432,6 +426,7 @@ namespace NuGet.Packaging
                             var tempHashPath = Path.Combine(targetPath, Path.GetRandomFileName());
                             var tempNupkgMetadataPath = Path.Combine(targetPath, Path.GetRandomFileName());
                             var packageSaveMode = packageExtractionContext.PackageSaveMode;
+                            string contentHash;
 
                             try
                             {
@@ -494,12 +489,13 @@ namespace NuGet.Packaging
                                         File.WriteAllText(tempHashPath, packageHash);
 
                                         // get hash for the unsigned content of package
-                                        var contentHash = packageReader.GetContentHash(cancellationToken, GetUnsignedPackageHash: () => packageHash);
+                                        contentHash = packageReader.GetContentHash(cancellationToken, GetUnsignedPackageHash: () => packageHash);
 
                                         // write the new hash file
                                         var hashFile = new NupkgMetadataFile()
                                         {
-                                            ContentHash = contentHash
+                                            ContentHash = contentHash,
+                                            Source = source
                                         };
 
                                         NupkgMetadataFileFormat.Write(tempNupkgMetadataPath, hashFile);
@@ -553,7 +549,7 @@ namespace NuGet.Packaging
 
                             File.Move(tempNupkgMetadataPath, nupkgMetadataFilePath);
 
-                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version} from {source}");
+                            logger.LogInformation(StringFormatter.Log_InstalledPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, source, contentHash));
 
                             packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;
@@ -640,12 +636,6 @@ namespace NuGet.Packaging
                         {
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
-
-                            logger.LogInformation(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_InstallingPackage,
-                                packageIdentity.Id,
-                                packageIdentity.Version));
 
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -786,7 +776,8 @@ namespace NuGet.Packaging
                             // write the new hash file
                             var hashFile = new NupkgMetadataFile()
                             {
-                                ContentHash = contentHash
+                                ContentHash = contentHash,
+                                Source = packageDownloader.Source
                             };
 
                             NupkgMetadataFileFormat.Write(tempNupkgMetadataFilePath, hashFile);
@@ -825,7 +816,7 @@ namespace NuGet.Packaging
 
                             File.Move(tempNupkgMetadataFilePath, nupkgMetadataFilePath);
 
-                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version} from {packageDownloader.Source}");
+                            logger.LogInformation(StringFormatter.Log_InstalledPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, packageDownloader.Source, contentHash));
 
                             packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;

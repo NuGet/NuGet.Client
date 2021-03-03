@@ -126,7 +126,7 @@ namespace NuGetConsole.Implementation.PowerConsole
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var vsUIShell = ServiceProvider.GetService<IVsUIShell>(typeof(SVsUIShell));
+                var vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
                 if (vsUIShell != null)
                 {
                     var guid = typeof(PowerConsoleToolWindow).GUID;

@@ -5,8 +5,12 @@ namespace NuGet.Common
 {
     /// <summary>
     /// This enum is used to quantify NuGet error and warning codes.
+    /// </summary>
+    /// <remarks>
+    /// <para>
     /// Format - NUxyzw where NU is the prefix indicating NuGet and xyzw is a 4 digit code
-    ///
+    /// </para>
+    /// 
     /// Numbers - xyzw
     ///     x - 'x' is the largest digit and should be used to quantify a set of errors.
     ///         For example 1yzw are set of restore related errors and no other code path should use the range 1000 to 1999 for errors or warnings.
@@ -18,12 +22,15 @@ namespace NuGet.Common
     ///
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
-    ///
+    /// 
+    /// <para>
     /// Groups:
     /// 1000-1999 - Restore
     /// 3000-3999 - Signing
     /// 5000-5999 - Packaging
+    /// </para>
     ///
+    /// <para>
     /// Sub groups for Restore:
     /// error/warning - Reason
     /// 1000/1500     - Input
@@ -31,10 +38,12 @@ namespace NuGet.Common
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
+    /// </para>
     ///
+    /// <para>
     /// All new codes need a corresponding MarkDown file under https://github.com/NuGet/docs.microsoft.com-nuget/tree/master/docs/reference/errors-and-warnings.
-    ///
-    /// </summary>
+    /// </para>
+    /// </remarks>
     public enum NuGetLogCode
     {
         /// <summary>
@@ -684,6 +693,11 @@ namespace NuGet.Common
         NU5037 = 5037,
 
         /// <summary>
+        /// Invalid icon extension error
+        /// </summary>
+        NU5045 = 5045,
+
+        /// <summary>
         /// Error_Manifest_IconCannotOpenFile
         /// </summary>
         NU5046 = 5046,
@@ -857,6 +871,11 @@ namespace NuGet.Common
         /// References in the nuspec don't match up with the ref folder in the package
         /// </summary>
         NU5131 = 5131,
+
+        /// <summary>
+        /// File last write timestamp is out of range of what the zip format supports warning
+        /// </summary>
+        NU5132 = 5132,
 
         /// <summary>
         /// Undefined package warning

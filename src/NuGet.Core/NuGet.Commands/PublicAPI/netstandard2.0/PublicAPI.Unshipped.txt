@@ -1,3 +1,1 @@
-NuGet.Commands.VerifyArgs.PackagePaths.get -> System.Collections.Generic.IReadOnlyList<string>
-NuGet.Commands.VerifyArgs.PackagePaths.set -> void
-static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion) -> NuGet.Frameworks.NuGetFramework
+static NuGet.Commands.PushRunner.Run(NuGet.Configuration.ISettings settings, NuGet.Configuration.IPackageSourceProvider sourceProvider, System.Collections.Generic.IList<string> packagePaths, string source, string apiKey, string symbolSource, string symbolApiKey, int timeoutSeconds, bool disableBuffering, bool noSymbols, bool noServiceEndpoint, bool skipDuplicate, NuGet.Common.ILogger logger) -> System.Threading.Tasks.Task

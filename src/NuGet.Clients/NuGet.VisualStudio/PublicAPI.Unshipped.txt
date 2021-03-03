@@ -1,9 +1,0 @@
-NuGet.VisualStudio.IVsFrameworkCompatibility3
-NuGet.VisualStudio.IVsFrameworkCompatibility3.GetNearest(NuGet.VisualStudio.IVsNuGetFramework targetFramework, System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsNuGetFramework> fallbackTargetFrameworks, System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsNuGetFramework> frameworks) -> NuGet.VisualStudio.IVsNuGetFramework
-NuGet.VisualStudio.IVsFrameworkCompatibility3.GetNearest(NuGet.VisualStudio.IVsNuGetFramework targetFramework, System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsNuGetFramework> frameworks) -> NuGet.VisualStudio.IVsNuGetFramework
-NuGet.VisualStudio.IVsFrameworkParser2
-NuGet.VisualStudio.IVsFrameworkParser2.TryParse(string input, out NuGet.VisualStudio.IVsNuGetFramework nuGetFramework) -> bool
-NuGet.VisualStudio.IVsNuGetFramework
-NuGet.VisualStudio.IVsNuGetFramework.TargetFrameworkMoniker.get -> string
-NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformMinVersion.get -> string
-NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformMoniker.get -> string

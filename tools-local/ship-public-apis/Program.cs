@@ -80,7 +80,8 @@ namespace NuGet.Internal.Tools.ShipPublicApis
                     throw new FileNotFoundException($"Cannot migrate APIs from {unshippedTxtPath.FullName}. {shippedTxtPath} not found.");
                 }
 
-                var lines = new List<string>();
+                var shippedLines = new List<string>();
+                var unshippedLines = new List<string>();
                 int unshippedApiCount = 0;
                 using (var stream = unshippedTxtPath.OpenText())
                 {
@@ -89,8 +90,15 @@ namespace NuGet.Internal.Tools.ShipPublicApis
                     {
                         if (!string.IsNullOrWhiteSpace(line))
                         {
-                            lines.Add(line);
-                            unshippedApiCount++;
+                            if (line.StartsWith("#"))
+                            {
+                                unshippedLines.Add(line);
+                            }
+                            else
+                            {
+                                shippedLines.Add(line);
+                                unshippedApiCount++;
+                            }
                         }
                     }
                 }
@@ -109,8 +117,8 @@ namespace NuGet.Internal.Tools.ShipPublicApis
 
                 lines.Sort(StringComparer.Ordinal);
 
-                await File.WriteAllLinesAsync(shippedTxtPath, lines);
-                await File.WriteAllBytesAsync(unshippedTxtPath.FullName, Array.Empty<byte>());
+                await File.WriteAllLinesAsync(shippedTxtPath, shippedLines);
+                await File.WriteAllLinesAsync(unshippedTxtPath.FullName, unshippedLines);
 
                 Console.WriteLine($"{unshippedTxtPath.FullName}: Shipped {unshippedApiCount} APIs.");
             }

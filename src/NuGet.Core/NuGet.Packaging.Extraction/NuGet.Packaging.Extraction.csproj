@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <Import Project="ilmerge.props" />
@@ -291,6 +291,7 @@
     <Compile Include="..\NuGet.Packaging\PackagingConstants.cs" Link="NuGet.Packaging\PackagingConstants.cs" />
     <Compile Include="..\NuGet.Packaging\VersionFolderPathResolver.cs" Link="NuGet.Packaging\VersionFolderPathResolver.cs" />
     <Compile Include="..\NuGet.Packaging\Sha512HashFunction.cs" Link="NuGet.Packaging\Sha512HashFunction.cs" />
+    <Compile Include="..\NuGet.Packaging\StringFormatter.cs" Link="NuGet.Packaging\StringFormatter.cs" />
     <Compile Include="..\NuGet.Packaging\PackageCreation\Extensions\CollectionExtensions.cs" Link="NuGet.Packaging\PackageCreation\Extensions\CollectionExtensions.cs" />
     <Compile Include="..\NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Link="NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Condition="'$(TargetFramework)' == 'net472'" />
     <Compile Include="..\NuGet.Packaging\Core\FrameworkReference.cs" Link="NuGet.Packaging\Core\FrameworkReference.cs" Condition="'$(TargetFramework)' == 'net472'" />

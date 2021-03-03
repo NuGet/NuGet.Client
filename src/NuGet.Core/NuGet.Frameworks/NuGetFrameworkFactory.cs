@@ -148,7 +148,7 @@ namespace NuGet.Frameworks
                 ));
             }
 
-            if (!string.IsNullOrEmpty(targetPlatformMoniker) && isNet5EraTfm && !IgnoreTargetPlatformMoniker(targetPlatformMoniker))
+            if (!string.IsNullOrEmpty(targetPlatformMoniker) && isNet5EraTfm)
             {
                 string targetPlatformIdentifier;
                 Version platformVersion;
@@ -161,15 +161,6 @@ namespace NuGet.Frameworks
             }
 
             return result;
-        }
-
-        private static bool IgnoreTargetPlatformMoniker(string targetPlatformMoniker)
-        {
-            if (targetPlatformMoniker.Trim().Equals(",Version=", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            return false;
         }
 
         private static string[] GetParts(string targetPlatformMoniker)
@@ -342,7 +333,10 @@ namespace NuGet.Frameworks
                             var profileShort = parts.Item3;
 
                             if (version.Major >= 5
-                                && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework))
+                                && (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework)
+                                    || StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, framework)
+                                   )
+                                )
                             {
                                 // net should be treated as netcoreapp in 5.0 and later
                                 framework = FrameworkConstants.FrameworkIdentifiers.NetCoreApp;

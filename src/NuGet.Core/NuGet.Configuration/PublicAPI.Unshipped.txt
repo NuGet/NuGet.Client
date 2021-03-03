@@ -1,8 +1,0 @@
-NuGet.Configuration.IPackageSourceProvider2
-NuGet.Configuration.IPackageSourceProvider2.SavePackageSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource> sources, NuGet.Configuration.PackageSourceUpdateOptions packageSourceUpdateOptions) -> void
-NuGet.Configuration.PackageSourceProvider.SavePackageSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource> sources, NuGet.Configuration.PackageSourceUpdateOptions sourceUpdateSettings) -> void
-NuGet.Configuration.PackageSourceUpdateOptions
-NuGet.Configuration.PackageSourceUpdateOptions.PackageSourceUpdateOptions(bool updateCredentials, bool updateEnabled) -> void
-NuGet.Configuration.PackageSourceUpdateOptions.UpdateCredentials.get -> bool
-NuGet.Configuration.PackageSourceUpdateOptions.UpdateEnabled.get -> bool
-static readonly NuGet.Configuration.PackageSourceUpdateOptions.Default -> NuGet.Configuration.PackageSourceUpdateOptions

@@ -117,6 +117,8 @@ namespace NuGet.Protocol
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => null;
 
+        public string PackagePath => _package.Path;
+
         private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
 
         public string LoadFileAsText(string path)

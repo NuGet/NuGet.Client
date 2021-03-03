@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System.Collections.Generic;
 using MessagePack;
 using MessagePack.Formatters;
@@ -12,7 +10,7 @@ using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal sealed class PackageDependencyFormatter : IMessagePackFormatter<PackageDependency?>
+    internal sealed class PackageDependencyFormatter : NuGetMessagePackFormatter<PackageDependency>
     {
         private const string ExcludePropertyName = "exclude";
         private const string IdPropertyName = "id";
@@ -25,70 +23,48 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public PackageDependency? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override PackageDependency? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            string? id = null;
+            VersionRange? versionRange = null;
+            IReadOnlyList<string>? include = null;
+            IReadOnlyList<string>? exclude = null;
+
+            int propertyCount = reader.ReadMapHeader();
+
+            for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                string? id = null;
-                VersionRange? versionRange = null;
-                IReadOnlyList<string>? include = null;
-                IReadOnlyList<string>? exclude = null;
-
-                int propertyCount = reader.ReadMapHeader();
-
-                for (var propertyIndex = 0; propertyIndex < propertyCount; ++propertyIndex)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case ExcludePropertyName:
-                            exclude = options.Resolver.GetFormatter<IReadOnlyList<string>>().Deserialize(ref reader, options);
-                            break;
+                    case ExcludePropertyName:
+                        exclude = options.Resolver.GetFormatter<IReadOnlyList<string>>().Deserialize(ref reader, options);
+                        break;
 
-                        case IdPropertyName:
-                            id = reader.ReadString();
-                            break;
+                    case IdPropertyName:
+                        id = reader.ReadString();
+                        break;
 
-                        case IncludePropertyName:
-                            include = options.Resolver.GetFormatter<IReadOnlyList<string>>().Deserialize(ref reader, options);
-                            break;
+                    case IncludePropertyName:
+                        include = options.Resolver.GetFormatter<IReadOnlyList<string>>().Deserialize(ref reader, options);
+                        break;
 
-                        case VersionRangePropertyName:
-                            versionRange = VersionRangeFormatter.Instance.Deserialize(ref reader, options);
-                            break;
+                    case VersionRangePropertyName:
+                        versionRange = VersionRangeFormatter.Instance.Deserialize(ref reader, options);
+                        break;
 
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    default:
+                        reader.Skip();
+                        break;
                 }
-
-                Assumes.NotNullOrEmpty(id);
-
-                return new PackageDependency(id, versionRange, include, exclude);
             }
-            finally
-            {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+
+            Assumes.NotNullOrEmpty(id);
+
+            return new PackageDependency(id, versionRange, include, exclude);
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageDependency? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, PackageDependency value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 4);
             writer.Write(IdPropertyName);
             writer.Write(value.Id);

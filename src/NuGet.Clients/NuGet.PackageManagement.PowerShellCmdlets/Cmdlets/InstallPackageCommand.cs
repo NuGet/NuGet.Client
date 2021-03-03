@@ -240,10 +240,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         Source = Path.GetDirectoryName(fullPath);
                     }
                 }
-                else
-                {
-                    NormalizePackageId(Project);
-                }
             }
         }
 

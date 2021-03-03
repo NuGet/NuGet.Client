@@ -19,20 +19,13 @@ namespace NuGet.Options
     {
         private readonly ISettings _settings;
         private bool _initialized;
-        private readonly IServiceProvider _serviceprovider;
         private readonly INuGetUILogger _outputConsoleLogger;
         private readonly LocalsCommandRunner _localsCommandRunner;
 
-        public GeneralOptionControl(IServiceProvider serviceProvider)
+        public GeneralOptionControl()
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
             InitializeComponent();
             _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
-            _serviceprovider = serviceProvider;
             _outputConsoleLogger = ServiceLocator.GetInstance<INuGetUILogger>();
             _localsCommandRunner = new LocalsCommandRunner();
             AutoScroll = true;

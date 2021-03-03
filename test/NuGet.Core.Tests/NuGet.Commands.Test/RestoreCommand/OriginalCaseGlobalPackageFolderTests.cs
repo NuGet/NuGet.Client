@@ -14,7 +14,6 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -23,7 +22,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
+    using LocalPackageArchiveDownloader = Protocol.LocalPackageArchiveDownloader;
 
     [Collection(nameof(NotThreadSafeResourceCollection))]
     public class OriginalCaseGlobalPackageFolderTests
@@ -216,15 +215,18 @@ namespace NuGet.Commands.Test
 
         private static RestoreRequest GetRestoreRequest(string packagesDirectory, TestLogger logger, params string[] fallbackDirectories)
         {
-            return new TestRestoreRequest(
-                new PackageSpec(),
-                Enumerable.Empty<PackageSource>(),
-                packagesDirectory,
-                fallbackDirectories,
-                logger)
+            using (var testDirectory = TestDirectory.Create())
             {
-                IsLowercasePackagesDirectory = false
-            };
+                return new TestRestoreRequest(
+                    new PackageSpec() { FilePath = testDirectory.Path + "a.csproj" }.EnsureProjectJsonRestoreMetadata(),
+                    Enumerable.Empty<PackageSource>(),
+                    packagesDirectory,
+                    fallbackDirectories,
+                    logger)
+                {
+                    IsLowercasePackagesDirectory = false
+                };
+            }
         }
 
         public static RestoreTargetGraph GetRestoreTargetGraph(

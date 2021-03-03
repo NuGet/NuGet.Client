@@ -322,7 +322,7 @@ namespace NuGet.CommandLine.Test
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("b");
                 log.Level.Should().Be(LogLevel.Error);
-                log.TargetGraphs.ShouldBeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
+                log.TargetGraphs.Should().BeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
                 log.Message.Should().Be("Project b is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Project b supports: netcoreapp2.0 (.NETCoreApp,Version=v2.0)");
             }
         }
@@ -364,7 +364,7 @@ namespace NuGet.CommandLine.Test
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("x");
                 log.Level.Should().Be(LogLevel.Error);
-                log.TargetGraphs.ShouldBeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
+                log.TargetGraphs.Should().BeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
                 log.Message.Should().Be("Package x 1.0.0 is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Package x 1.0.0 supports: netcoreapp2.0 (.NETCoreApp,Version=v2.0)");
             }
         }
@@ -2128,6 +2128,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 r.AllOutput.Should().Contain("NU1004");
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                logCodes.Should().Contain(NuGetLogCode.NU1004);
             }
         }
     }

@@ -42,6 +42,7 @@ namespace NuGet.Commands
         private const string ErrorCodes = "ErrorCodes";
         private const string WarningCodes = "WarningCodes";
         private const string RestoreSuccess = "RestoreSuccess";
+        private const string ProjectFilePath = nameof(ProjectFilePath);
 
         // names for child events for ProjectRestoreInformation
         private const string GenerateRestoreGraph = "GenerateRestoreGraph";
@@ -80,7 +81,9 @@ namespace NuGet.Commands
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
             {
                 Debug.Fail($"Lock file version {_request.LockFileVersion} is not supported.");
-                throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
+                throw new ArgumentOutOfRangeException(
+                    paramName: nameof(request),
+                    message: nameof(request.LockFileVersion));
             }
 
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
@@ -105,6 +108,8 @@ namespace NuGet.Commands
         {
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
+                telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
+
                 _operationId = telemetry.OperationId;
 
                 var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
@@ -187,6 +192,7 @@ namespace NuGet.Commands
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
                 var isLockFileValid = false;
                 PackagesLockFile packagesLockFile = null;
+                var regenerateLockFile = true;
 
                 using (var lockFileTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: RestoreLockFileInformation))
                 {
@@ -198,35 +204,8 @@ namespace NuGet.Commands
                     lockFileTelemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
                     lockFileTelemetry.TelemetryEvent[LockFileEvaluationResult] = result;
 
-                    if (!result)
-                    {
-                        _success = result;
-
-                        // Replay Warnings and Errors from an existing lock file
-                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
-
-                        if (cacheFile != null)
-                        {
-                            cacheFile.Success = _success;
-                        }
-
-                        return new RestoreResult(
-                            success: _success,
-                            restoreGraphs: new List<RestoreTargetGraph>(),
-                            compatibilityCheckResults: new List<CompatibilityCheckResult>(),
-                            msbuildFiles: new List<MSBuildOutputFile>(),
-                            lockFile: _request.ExistingLockFile,
-                            previousLockFile: _request.ExistingLockFile,
-                            lockFilePath: _request.ExistingLockFile?.Path,
-                            cacheFile: cacheFile,
-                            cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
-                            packagesLockFilePath: packagesLockFilePath,
-                            packagesLockFile: packagesLockFile,
-                            dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
-                            dependencyGraphSpec: _request.DependencyGraphSpec,
-                            projectStyle: _request.ProjectStyle,
-                            elapsedTime: restoreTime.Elapsed);
-                    }
+                    regenerateLockFile = result; // Ensure that the lock file *does not* get rewritten, when the lock file is out of date and the status is false.
+                    _success &= result;
                 }
 
                 IEnumerable<RestoreTargetGraph> graphs = null;
@@ -246,12 +225,18 @@ namespace NuGet.Commands
                 else
                 {
                     // Being in an unsuccessful state before ExecuteRestoreAsync means there was a problem with the
-                    // project. For example, project TFM or package versions couldn't be parsed. Although the minimal
+                    // project or we're in locked mode and out of date.
+                    // For example, project TFM or package versions couldn't be parsed. Although the minimal
                     // fake package spec generated has no packages requested, it also doesn't have any project TFMs
                     // and will generate validation errors if we tried to call ExecuteRestoreAsync. So, to avoid
                     // incorrect validation messages, don't try to restore. It is however, the responsibility for the
                     // caller of RestoreCommand to have provided at least one AdditionalMessage in RestoreArgs.
-                    graphs = Enumerable.Empty<RestoreTargetGraph>();
+                    // The other scenario is when the lock file is not up to date and we're running locked mode.
+                    // In that case we want to write a `target` for each target framework to avoid missing target errors from the SDK build tasks.
+                    graphs = _request.Project.TargetFrameworks.Select(e =>
+                    {
+                        return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.FrameworkName, null);
+                    });
                 }
 
                 LockFile assetsFile = null;
@@ -341,9 +326,17 @@ namespace NuGet.Commands
                     }
                     else if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project))
                     {
-                        // generate packages.lock.json file if enabled
-                        packagesLockFile = new PackagesLockFileBuilder()
-                            .CreateNuGetLockFile(assetsFile);
+                        if (regenerateLockFile)
+                        {
+                            // generate packages.lock.json file if enabled
+                            packagesLockFile = new PackagesLockFileBuilder()
+                                .CreateNuGetLockFile(assetsFile);
+                        }
+                        else
+                        {
+                            packagesLockFile = null;
+                            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingPackagesLockFileGeneration, packagesLockFilePath));
+                        }
                     }
 
                     // Write the logs into the assets file
@@ -528,10 +521,9 @@ namespace NuGet.Commands
         /// <param name="packagesLockFilePath"></param>
         /// <param name="contextForProject"></param>
         /// <returns>result of packages.lock.json file evaluation where
-        /// Item1 is the status of evaluating packages lock file if false, then bail restore
-        /// Item2 is also a tuple which has 2 parts -
-        ///     Item1 tells whether lock file is still valid to be consumed for this restore
-        ///     Item2 is the PackagesLockFile instance
+        /// success is whether the lock file is in a valid state (ex. locked mode, but not up to date)
+        /// isLockFileValid tells whether lock file is still valid to be consumed for this restore
+        /// packagesLockFile is the PackagesLockFile instance
         /// </returns>
         private async Task<(bool success, bool isLockFileValid, PackagesLockFile packagesLockFile)> EvaluatePackagesLockFileAsync(
             string packagesLockFilePath,
@@ -569,7 +561,10 @@ namespace NuGet.Commands
                 {
                     // check if lock file is out of sync with project data
                     lockFileTelemetry.StartIntervalMeasure();
-                    isLockFileValid = PackagesLockFileUtilities.IsLockFileStillValid(_request.DependencyGraphSpec, packagesLockFile);
+
+                    LockFileValidationResult lockFileResult = PackagesLockFileUtilities.IsLockFileValid(_request.DependencyGraphSpec, packagesLockFile);
+                    isLockFileValid = lockFileResult.IsValid;
+
                     lockFileTelemetry.EndIntervalMeasure(ValidateLockFileDuration);
 
                     if (isLockFileValid)
@@ -589,11 +584,16 @@ namespace NuGet.Commands
                     else if (_request.IsRestoreOriginalAction && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode)
                     {
                         success = false;
+                        var invalidReasons = string.Join(Environment.NewLine, lockFileResult.InvalidReasons);
 
                         // bail restore since it's the locked mode but required to update the lock file.
-                        // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
-                        // be skipped for netcore projects.
-                        await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
+                        var message = RestoreLogMessage.CreateError(NuGetLogCode.NU1004,
+                                                string.Format(
+                                                CultureInfo.CurrentCulture,
+                                                string.Concat(invalidReasons,
+                                                Strings.Error_RestoreInLockedMode)));
+
+                        await _logger.LogAsync(message);
                     }
                 }
             }
@@ -621,8 +621,7 @@ namespace NuGet.Commands
             // DgSpec doesn't contain log messages, so skip no-op if there are any, as it's not taken into account in the hash
             if (_request.AllowNoOp &&
                 !_request.RestoreForceEvaluate &&
-                File.Exists(_request.Project.RestoreMetadata.CacheFilePath) ||
-                _request.AdditionalMessages?.Count > 0)
+                File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
@@ -955,9 +954,6 @@ namespace NuGet.Commands
             // with the RestoreRequest spec.
             var updatedExternalProjects = GetProjectReferences(context);
 
-            // Determine if the targets and props files should be written out.
-            context.IsMsBuildBased = _request.ProjectStyle != ProjectStyle.DotnetCliTool;
-
             // Load repositories
             // the external project provider is specific to the current restore project
             context.ProjectLibraryProviders.Add(
@@ -1173,6 +1169,9 @@ namespace NuGet.Commands
             {
                 context.RemoteLibraryProviders.Add(provider);
             }
+
+            // Determine if the targets and props files should be written out.
+            context.IsMsBuildBased = request.ProjectStyle != ProjectStyle.DotnetCliTool;
 
             return context;
         }

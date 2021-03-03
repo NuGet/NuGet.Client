@@ -21,8 +21,6 @@ namespace NuGet.Commands
         private ILogger _logger;
 
         // Packaging folders
-        private static readonly string ReferenceFolder = PackagingConstants.Folders.Lib;
-        private static readonly string ToolsFolder = PackagingConstants.Folders.Tools;
         private static readonly string SourcesFolder = PackagingConstants.Folders.Source;
 
         private MSBuildPackTargetArgs PackTargetArgs { get; set; }

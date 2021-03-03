@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Moq;
 using NuGet.ProjectManagement;
 using NuGet.Test.Utility;
@@ -88,7 +89,7 @@ namespace NuGet.PackageManagement.Test
                             using (var reader = new StreamReader(stream))
                             {
                                 var actualResult = reader.ReadToEnd();
-                                var expectedResult = "<a><x>\t\t<y>\t\t\t<z>d</z>\t\t</y>\t</x></a>";
+                                var expectedResult = "<a>\r\n  <x>\r\n    <y>\r\n      <z>d</z>\r\n    </y>\r\n  </x>\r\n</a>";
 
                                 Assert.Equal(expectedResult, actualResult);
                             }
@@ -99,6 +100,40 @@ namespace NuGet.PackageManagement.Test
                     test.TargetFile.Name,
                     test.ProjectSystem.Object,
                     CancellationToken.None);
+            }
+        }
+
+        [Fact]
+        public async Task PerformXdtTransformAsync_InSecureXmlFailsToTransform_Throws()
+        {
+            using (var test = new XdtTransformerTest("<a xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><x><y xdt:Transform=\"Insert\"><z>$c$</z></y></x></a>"))
+            {
+                var projectFileOriginalContent =
+                @"<?xml version=""1.0""?>
+<!DOCTYPE a [
+   <!ENTITY greeting ""Hello"">
+   <!ENTITY name ""NuGet Client "">
+   <!ENTITY sayhello ""&greeting; &name;"">
+]>
+<a><x name=""&sayhello;"" /></a>";
+
+                File.WriteAllText(test.TargetFile.FullName, projectFileOriginalContent);
+
+                test.ProjectSystem.SetupGet(x => x.ProjectFullPath)
+                    .Returns(test.TargetFile.DirectoryName);
+                test.ProjectSystem.SetupGet(x => x.ProjectName)
+                    .Returns("ProjectName");
+                test.ProjectSystem.Setup(x => x.GetPropertyValue(It.IsNotNull<string>()))
+                    .Returns("d");
+
+                var exception = await Assert.ThrowsAsync<InvalidDataException>(
+                    () => XdtTransformer.PerformXdtTransformAsync(
+                        test.StreamTaskFactory,
+                        test.TargetFile.Name,
+                        test.ProjectSystem.Object,
+                        CancellationToken.None));
+
+                Assert.IsType<XmlException>(exception.InnerException);
             }
         }
 

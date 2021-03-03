@@ -227,8 +227,9 @@ namespace NuGet.Packaging.Rules
                 {
                     foreach (ContentItem item in group.Items)
                     {
-                        var frameworkString = (string)item.Properties["tfm_raw"];
-                        if (string.IsNullOrEmpty(frameworkString))
+                        var exists = item.Properties.TryGetValue("tfm_raw", out var frameworkRaw);
+                        string frameworkString = (string)frameworkRaw;
+                        if (!exists || string.IsNullOrEmpty(frameworkString))
                         {
                             continue;
                         }

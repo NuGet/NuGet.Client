@@ -7,47 +7,39 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Cache;
 using System.Runtime.Caching;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
     // This is the model class behind the package items in the infinite scroll list.
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
-    public class PackageItemListViewModel : INotifyPropertyChanged
+    public class PackageItemListViewModel : INotifyPropertyChanged, ISelectableItem
     {
-        private static readonly Common.AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
-            Common.AsyncLazy.New(Enumerable.Empty<VersionInfo>());
-
-        private static readonly Common.AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
-            Common.AsyncLazy.New((PackageDeprecationMetadata)null);
+        private static readonly Common.AsyncLazy<IReadOnlyCollection<VersionInfoContextInfo>> LazyEmptyVersionInfo =
+            AsyncLazy.New((IReadOnlyCollection<VersionInfoContextInfo>)Array.Empty<VersionInfoContextInfo>());
+        private static readonly Common.AsyncLazy<PackageDeprecationMetadataContextInfo> LazyNullDeprecationMetadata =
+            AsyncLazy.New((PackageDeprecationMetadataContextInfo)null);
+        private static readonly Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> LazyNullDetailedPackageSearchMetadata =
+            AsyncLazy.New(((PackageSearchMetadataContextInfo)null, (PackageDeprecationMetadataContextInfo)null));
 
         internal const int DecodePixelWidth = 32;
 
         // same URIs can reuse the bitmapImage that we've already used.
         private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
-
-        private static readonly WebExceptionStatus[] BadNetworkErrors = new[]
-        {
-            WebExceptionStatus.ConnectFailure,
-            WebExceptionStatus.RequestCanceled,
-            WebExceptionStatus.ConnectionClosed,
-            WebExceptionStatus.Timeout,
-            WebExceptionStatus.UnknownError
-        };
 
         private static readonly RequestCachePolicy RequestCacheIfAvailable = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
 
@@ -60,6 +52,8 @@ namespace NuGet.PackageManagement.UI
         public NuGetVersion Version { get; set; }
 
         public VersionRange AllowedVersions { get; set; }
+
+        public IReadOnlyCollection<PackageSourceContextInfo> Sources { get; set; }
 
         private string _author;
         public string Author
@@ -194,17 +188,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _selected;
+        private bool _isSelected;
 
-        public bool Selected
+        public bool IsSelected
         {
-            get { return _selected; }
+            get { return _isSelected; }
             set
             {
-                if (_selected != value)
+                if (_isSelected != value)
                 {
-                    _selected = value;
-                    OnPropertyChanged(nameof(Selected));
+                    _isSelected = value;
+                    OnPropertyChanged(nameof(IsSelected));
                 }
             }
         }
@@ -317,6 +311,17 @@ namespace NuGet.PackageManagement.UI
                     _recommended = value;
                     OnPropertyChanged(nameof(Recommended));
                 }
+            }
+        }
+
+        private (string modelVersion, string vsixVersion)? _recommenderVersion;
+        public (string modelVersion, string vsixVersion)? RecommenderVersion
+        {
+            get { return _recommenderVersion; }
+            set
+            {
+                _recommenderVersion = value;
+                OnPropertyChanged(nameof(RecommenderVersion));
             }
         }
 
@@ -437,7 +442,7 @@ namespace NuGet.PackageManagement.UI
                         {
                             BitmapStatus = IconBitmapStatus.Fetching;
                             NuGetUIThreadHelper.JoinableTaskFactory
-                                .RunAsync(FetchThenSetIconBitmapAsync)
+                                .RunAsync(FetchIconAsync)
                                 .PostOnFailure(nameof(PackageItemListViewModel), nameof(IconBitmap));
                         }
                     }
@@ -455,16 +460,19 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Lazy<Task<IEnumerable<VersionInfo>>> Versions { private get; set; }
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
+        public Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>> Versions { get; set; }
+        public Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
 
-        public Lazy<Task<PackageDeprecationMetadata>> DeprecationMetadata { private get; set; }
-        public Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
+        public Lazy<Task<PackageDeprecationMetadataContextInfo>> DeprecationMetadata { private get; set; }
+        public Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
 
-        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
+        public Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> DetailedPackageSearchMetadata { get; set; }
+        public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync() => (DetailedPackageSearchMetadata ?? LazyNullDetailedPackageSearchMetadata).Value;
+
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
-        private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
+        private Lazy<Task<PackageDeprecationMetadataContextInfo>> _backgroundDeprecationMetadataLoader;
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
         {
@@ -497,7 +505,7 @@ namespace NuGet.PackageManagement.UI
                     if (ErrorFloodGate.HasTooManyNetworkErrors)
                     {
                         imageBitmap = Images.DefaultPackageIcon;
-                        status = IconBitmapStatus.DefaultIconDueToNetworkFailures;
+                        status = IconBitmapStatus.DefaultIconDueToNullStream;
                     }
                     else
                     {
@@ -508,77 +516,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             return (imageBitmap, status);
-        }
-
-        private async Task FetchThenSetIconBitmapAsync()
-        {
-            await TaskScheduler.Default;
-
-            if (IsEmbeddedIconUri(IconUrl))
-            {
-                if (PackageReader is Func<PackageReaderBase> lazyReader)
-                {
-                    FetchEmbeddedImage(lazyReader, IconUrl);
-                }
-                else // Identified an embedded icon URI, but we are unable to process it
-                {
-                    IconBitmap = Images.DefaultPackageIcon;
-                    BitmapStatus = IconBitmapStatus.DefaultIconDueToNoPackageReader;
-                }
-            }
-            else
-            {
-                // download http or file image
-                await FetchImageAsync(IconUrl);
-            }
-
-            if (IconBitmap != null)
-            {
-                string cacheKey = GenerateKeyFromIconUri(IconUrl);
-                AddToCache(cacheKey, IconBitmap);
-            }
-        }
-
-        private void FetchEmbeddedImage(Func<PackageReaderBase> lazyReader, Uri iconUrl)
-        {
-            var iconBitmapImage = new BitmapImage();
-            iconBitmapImage.BeginInit();
-            try
-            {
-                using (PackageReaderBase reader = lazyReader()) // Always returns a new reader. That avoids using an already disposed one
-                {
-                    if (reader is PackageArchiveReader par) // This reader is closed in BitmapImage events
-                    {
-                        string iconEntryNormalized = PathUtility.StripLeadingDirectorySeparators(
-                            Uri.UnescapeDataString(iconUrl.Fragment)
-                                .Substring(1)); // Substring skips the '#' in the URI fragment
-
-                        // need to use a memorystream, or the bitmapimage won't be freezable.
-                        using (Stream parStream = par.GetEntry(iconEntryNormalized).Open())
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            parStream.CopyTo(memoryStream);
-                            iconBitmapImage.StreamSource = memoryStream;
-                            FinalizeBitmapImage(iconBitmapImage);
-                        }
-
-                        iconBitmapImage.Freeze();
-
-                        IconBitmap = iconBitmapImage;
-                        BitmapStatus = IconBitmapStatus.EmbeddedIcon;
-                    }
-                    else // we cannot use the reader object
-                    {
-                        IconBitmap = Images.DefaultPackageIcon;
-                        BitmapStatus = IconBitmapStatus.DefaultIconDueToNoPackageReader;
-                    }
-                }
-            }
-            catch (Exception ex) when (IsHandleableBitmapEncodingException(ex))
-            {
-                IconBitmap = Images.DefaultPackageIcon;
-                BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
-            }
         }
 
         private static bool IsHandleableBitmapEncodingException(Exception ex)
@@ -593,36 +530,46 @@ namespace NuGet.PackageManagement.UI
                 ex is UnauthorizedAccessException;
         }
 
-        private async Task FetchImageAsync(Uri iconUrl)
+        private async Task FetchIconAsync()
         {
-            if (iconUrl is null)
-            {
-                return;
-            }
+            await TaskScheduler.Default;
 
-            using (Stream stream = await GetStream(iconUrl))
+            Assumes.NotNull(IconUrl);
+
+            using (Stream stream = await PackageFileService.GetPackageIconAsync(new PackageIdentity(Id, Version), CancellationToken.None))
             {
                 if (stream != null)
                 {
                     var iconBitmapImage = new BitmapImage();
                     iconBitmapImage.BeginInit();
-                    iconBitmapImage.StreamSource = stream;
 
-                    try
+                    // BitmapImage can download on its own from URIs, but in order
+                    // to support downloading on a worker thread, we need to download the image
+                    // data and put into a memorystream. Then have the BitmapImage decode the
+                    // image from the memorystream.
+                    using (var memoryStream = new MemoryStream())
                     {
-                        FinalizeBitmapImage(iconBitmapImage);
-                        iconBitmapImage.Freeze();
-                        IconBitmap = iconBitmapImage;
-                        BitmapStatus = IconBitmapStatus.DownloadedIcon;
-                    }
-                    catch (Exception ex) when (IsHandleableBitmapEncodingException(ex))
-                    {
-                        IconBitmap = Images.DefaultPackageIcon;
-                        BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
+                        // Cannot call CopyToAsync as we'll get an InvalidOperationException due to CheckAccess() in next line.
+                        stream.CopyTo(memoryStream);
+                        iconBitmapImage.StreamSource = memoryStream;
+
+                        try
+                        {
+                            FinalizeBitmapImage(iconBitmapImage);
+                            iconBitmapImage.Freeze();
+                            IconBitmap = iconBitmapImage;
+                            BitmapStatus = IconBitmapStatus.FetchedIcon;
+                        }
+                        catch (Exception ex) when (IsHandleableBitmapEncodingException(ex))
+                        {
+                            IconBitmap = Images.DefaultPackageIcon;
+                            BitmapStatus = IconBitmapStatus.DefaultIconDueToDecodingError;
+                        }
                     }
                 }
                 else
                 {
+                    ErrorFloodGate.ReportBadNetworkError();
                     if (BitmapStatus == IconBitmapStatus.Fetching)
                     {
                         BitmapStatus = IconBitmapStatus.DefaultIconDueToNullStream;
@@ -630,6 +577,12 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 ErrorFloodGate.ReportAttempt();
+
+                if (IconBitmap != null)
+                {
+                    string cacheKey = GenerateKeyFromIconUri(IconUrl);
+                    AddToCache(cacheKey, IconBitmap);
+                }
             }
         }
 
@@ -652,20 +605,6 @@ namespace NuGet.PackageManagement.UI
             iconBitmapImage.EndInit();
         }
 
-        /// <summary>
-        /// NuGet Embedded Icon Uri verification
-        /// </summary>
-        /// <param name="iconUrl">An URI to test</param>
-        /// <returns><c>true</c> if <c>iconUrl</c> is an URI to an embedded icon in a NuGet package</returns>
-        public static bool IsEmbeddedIconUri(Uri iconUrl)
-        {
-            return iconUrl != null
-                && iconUrl.IsAbsoluteUri
-                && iconUrl.IsFile
-                && !string.IsNullOrEmpty(iconUrl.Fragment)
-                && iconUrl.Fragment.Length > 1;
-        }
-
         private static string GenerateKeyFromIconUri(Uri iconUrl)
         {
             return iconUrl == null ? string.Empty : iconUrl.ToString();
@@ -680,38 +619,6 @@ namespace NuGet.PackageManagement.UI
             BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
         }
 
-        private async Task<Stream> GetStream(Uri imageUri)
-        {
-            // BitmapImage can download on its own from URIs, but in order
-            // to support downloading on a worker thread, we need to download the image
-            // data and put into a memorystream. Then have the BitmapImage decode the
-            // image from the memorystream.
-            byte[] imageData = null;
-            MemoryStream ms = null;
-
-            using (var wc = new System.Net.WebClient())
-            {
-                try
-                {
-                    imageData = await wc.DownloadDataTaskAsync(imageUri);
-                    ms = new MemoryStream(imageData, writable: false);
-                }
-                catch (WebException webex)
-                {
-                    if (BadNetworkErrors.Any(c => webex.Status == c))
-                    {
-                        ErrorFloodGate.ReportBadNetworkError();
-                        BitmapStatus = IconBitmapStatus.DefaultIconDueToWebExceptionBadNetwork;
-                    }
-                    else
-                    {
-                        BitmapStatus = IconBitmapStatus.DefaultIconDueToWebExceptionOther;
-                    }
-                }
-            }
-
-            return ms;
-        }
 
         private void TriggerStatusLoader()
         {
@@ -743,7 +650,7 @@ namespace NuGet.PackageManagement.UI
 
         private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
         {
-            var result = await _backgroundDeprecationMetadataLoader.Value;
+            PackageDeprecationMetadataContextInfo result = await _backgroundDeprecationMetadataLoader.Value;
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -772,10 +679,10 @@ namespace NuGet.PackageManagement.UI
             _backgroundLatestVersionLoader = AsyncLazy.New(
                 async () =>
                 {
-                    var packageVersions = await GetVersionsAsync();
+                    IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
 
                     // filter package versions based on allowed versions in packages.config
-                    packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version));
+                    packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
                     var latestAvailableVersion = packageVersions
                         .Select(p => p.Version)
                         .MaxOrDefault();
@@ -783,7 +690,11 @@ namespace NuGet.PackageManagement.UI
                     return latestAvailableVersion;
                 });
 
-            _backgroundDeprecationMetadataLoader = AsyncLazy.New(GetPackageDeprecationMetadataAsync);
+            _backgroundDeprecationMetadataLoader = AsyncLazy.New(
+                async () =>
+                {
+                    return await GetPackageDeprecationMetadataAsync();
+                });
 
             OnPropertyChanged(nameof(Status));
         }
@@ -821,7 +732,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Func<PackageReaderBase> PackageReader { get; set; }
+        public string PackagePath { get; set; }
+        public INuGetPackageFileService PackageFileService { get; internal set; }
 
         public override string ToString()
         {

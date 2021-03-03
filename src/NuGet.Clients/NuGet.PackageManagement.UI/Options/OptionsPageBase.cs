@@ -12,7 +12,7 @@ using NuGet.VisualStudio;
 namespace NuGet.Options
 {
     [ComVisible(true)]
-    public abstract class OptionsPageBase : DialogPage, IServiceProvider
+    public abstract class OptionsPageBase : DialogPage
     {
         protected OptionsPageBase()
         {
@@ -62,11 +62,6 @@ namespace NuGet.Options
 
         public override void SaveSettingsToStorage()
         {
-        }
-
-        object IServiceProvider.GetService(Type serviceType)
-        {
-            return this.GetService(serviceType);
         }
     }
 }

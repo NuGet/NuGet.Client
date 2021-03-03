@@ -57,7 +57,8 @@ namespace NuGet.Test.Utility
 
             foreach (var project in Projects)
             {
-                sb.AppendLine("Project(\"{" + SolutionGuid.ToString() + "}" + $"\") = \"{project.ProjectName}\", " + "\"" + project.ProjectPath + "\", \"{" + project.ProjectGuid + "}\"");
+                sb.AppendLine("Project(\"{" + "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC" + "}"
+                    + $"\") = \"{project.ProjectName}\", " + "\"" + project.ProjectPath + "\", \"{" + project.ProjectGuid.ToString().ToUpperInvariant() + "}\"");
                 sb.AppendLine("EndProject");
             }
 
@@ -69,10 +70,11 @@ namespace NuGet.Test.Utility
             sb.AppendLine("  GlobalSection(ProjectConfigurationPlatforms) = postSolution");
             foreach (var project in Projects)
             {
-                sb.AppendLine("    {" + project.ProjectGuid + "}.Debug|Any CPU.ActiveCfg = Debug|Any CPU");
-                sb.AppendLine("    {" + project.ProjectGuid + "}.Debug|Any CPU.Build.0 = Debug|Any CPU");
-                sb.AppendLine("    {" + project.ProjectGuid + "}.Release|Any CPU.ActiveCfg = Release|Any CPU");
-                sb.AppendLine("    {" + project.ProjectGuid + "}.Release|Any CPU.Build.0 = Release|Any CPU");
+                // this should probably be uppercase?
+                sb.AppendLine("    {" + project.ProjectGuid.ToString().ToUpperInvariant() + "}.Debug|Any CPU.ActiveCfg = Debug|Any CPU");
+                sb.AppendLine("    {" + project.ProjectGuid.ToString().ToUpperInvariant() + "}.Debug|Any CPU.Build.0 = Debug|Any CPU");
+                sb.AppendLine("    {" + project.ProjectGuid.ToString().ToUpperInvariant() + "}.Release|Any CPU.ActiveCfg = Release|Any CPU");
+                sb.AppendLine("    {" + project.ProjectGuid.ToString().ToUpperInvariant() + "}.Release|Any CPU.Build.0 = Release|Any CPU");
             }
             sb.AppendLine("  EndGlobalSection");
             sb.AppendLine("  GlobalSection(SolutionProperties) = preSolution");

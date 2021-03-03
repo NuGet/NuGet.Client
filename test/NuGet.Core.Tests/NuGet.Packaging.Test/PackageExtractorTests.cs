@@ -3766,7 +3766,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_LogsSourceOnVerboseLevel()
+        public async Task InstallFromSourceAsync_LogsSourceOnNormalLevel()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -3803,13 +3803,59 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
-                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source}");
+                    var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_WithPackageDownloader_LogsSourceOnVerboseLevel()
+        public async Task InstallFromSourceAsync_WriteSourceToNupkgMetadata()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var source = Path.Combine(testDirectory, "source");
+                Directory.CreateDirectory(source);
+                var resolver = new VersionFolderPathResolver(Path.Combine(testDirectory, "gpf"));
+                var identity = new PackageIdentity("A", new NuGetVersion("1.2.3"));
+
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   source,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "content/A.nupkg");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        NullLogger.Instance);
+
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        source,
+                        identity,
+                        (stream) => packageStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        resolver,
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    var nupkgMetadataPath = resolver.GetNupkgMetadataPath(identity.Id, identity.Version);
+                    Assert.True(File.Exists(nupkgMetadataPath));
+
+                    var nupkgMetadata = NupkgMetadataFileFormat.Read(nupkgMetadataPath);
+                    Assert.Equal(source, nupkgMetadata.Source);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_WithPackageDownloader_LogsSourceOnNormalLevel()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -3852,7 +3898,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
-                    testLogger.VerboseMessages.Should().Contain($"Completed installation of {identity.Id} {identity.Version} from {source}");
+                    var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }

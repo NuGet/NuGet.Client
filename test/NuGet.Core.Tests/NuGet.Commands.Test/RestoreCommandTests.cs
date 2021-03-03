@@ -22,6 +22,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
+using Test.Utility.ProjectManagement;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -71,7 +72,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -140,7 +141,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -210,7 +211,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -280,7 +281,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(projectDir.FullName, "project.json"), projectJson);
 
                 var specPath = Path.Combine(projectDir.FullName, "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath);
+                var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(
@@ -358,7 +359,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(projectDir.FullName, "project.json"), projectJson);
 
                 var specPath = Path.Combine(projectDir.FullName, "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath);
+                var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var lockFilePath = Path.Combine(projectDir.FullName, "project.lock.json");
@@ -480,7 +481,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -542,7 +543,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -602,7 +603,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -662,7 +663,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "PROJECT1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "PROJECT1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -729,7 +730,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -799,7 +800,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -869,7 +870,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -939,7 +940,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -1009,7 +1010,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
 
@@ -1079,7 +1080,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
 
@@ -1146,7 +1147,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -1209,7 +1210,7 @@ namespace NuGet.Commands.Test
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "project1", "1.0.0");
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -1272,7 +1273,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -1327,7 +1328,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -1364,7 +1365,7 @@ namespace NuGet.Commands.Test
                 project1.Create();
                 sources.Add(new PackageSource(packageSource.FullName));
 
-                var dgspec1 = CreateMinimalDependencyGraphSpec(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
+                var dgspec1 = DependencyGraphSpecTestUtilities.CreateMinimalDependencyGraphSpec(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
                 var spec1 = dgspec1.Projects[0];
 
                 var logger = new TestLogger();
@@ -1396,7 +1397,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                         LibraryDependencyType.Default,
                         LibraryIncludeFlags.All,
@@ -1418,6 +1419,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1455,7 +1457,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 var dependencyBar = new LibraryDependency(new LibraryRange(autoreferencedpackageId, VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
@@ -1477,6 +1479,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1718,7 +1721,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 // Package Bar does not have a corresponding PackageVersion
                 var packageRefDependecyFoo = new LibraryDependency()
                 {
@@ -1737,6 +1740,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -1775,7 +1779,7 @@ namespace NuGet.Commands.Test
             {
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-
+                var outputPath = Path.Combine(projectPath, "obj");
                 // Package Bar does not have a corresponding PackageVersion
                 var packageRefDependecyBar = new LibraryDependency()
                 {
@@ -1794,6 +1798,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = projectName,
                     CentralPackageVersionsEnabled = true,
                     ProjectStyle = ProjectStyle.PackageReference,
+                    OutputPath = outputPath,
                 };
                 packageSpec.FilePath = projectPath;
 
@@ -2028,21 +2033,6 @@ namespace NuGet.Commands.Test
             };
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
-        }
-
-        private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
-        {
-            var packageSpec = new PackageSpec();
-            packageSpec.FilePath = projectPath;
-            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
-            packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
-            packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
-            packageSpec.RestoreMetadata.OutputPath = outputPath;
-
-            var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(packageSpec);
-
-            return dgSpec;
         }
     }
 }

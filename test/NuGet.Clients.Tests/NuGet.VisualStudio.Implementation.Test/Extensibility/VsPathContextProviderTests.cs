@@ -22,17 +22,15 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 {
-    [Collection(MockedVs.CollectionName)]
     public class VsPathContextProviderTests
     {
-        public VsPathContextProviderTests(GlobalServiceProvider serviceProvider)
-        {
-            serviceProvider.Reset();
-        }
+        // known/expected errors should not be reported to telemetry, hence use MockBehavior.Strict
+        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
 
         [Fact]
         public void GetSolutionPathContext_WithConfiguredUserPackageFolder()
@@ -53,7 +51,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings,
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                getLockFileOrNullAsync: null,
+                _telemetryProvider.Object);
 
             // Act
             var actual = target.GetSolutionPathContext();
@@ -84,7 +83,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings.Object,
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                getLockFileOrNullAsync: null,
+                _telemetryProvider.Object);
 
             // Act
             var actual = target.GetSolutionPathContext();
@@ -151,7 +151,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                         };
 
                         return Task.FromResult(lockFile);
-                    });
+                    },
+                    _telemetryProvider.Object);
 
                 var project = Mock.Of<BuildIntegratedNuGetProject>();
 
@@ -203,7 +204,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings,
                     Mock.Of<IVsSolutionManager>(),
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    getLockFileOrNullAsync: null,
+                    _telemetryProvider.Object);
 
                 var project = new Mock<MSBuildNuGetProject>(
                     Mock.Of<IMSBuildProjectSystem>(), userPackageFolder, testDirectory.Path);
@@ -252,7 +254,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings,
                     Mock.Of<IVsSolutionManager>(),
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    getLockFileOrNullAsync: null,
+                    _telemetryProvider.Object);
 
                 var projectUniqueName = Guid.NewGuid().ToString();
 
@@ -306,7 +309,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings,
                     solutionManager.Object,
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    getLockFileOrNullAsync: null,
+                    _telemetryProvider.Object);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -345,7 +349,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings.Object,
                     solutionManager.Object,
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    getLockFileOrNullAsync: null,
+                    _telemetryProvider.Object);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -387,7 +392,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings,
                 solutionManager.Object,
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                getLockFileOrNullAsync: null,
+                _telemetryProvider.Object);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -412,7 +418,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 Mock.Of<ISettings>(),
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                getLockFileOrNullAsync: null,
+                _telemetryProvider.Object);
 
                 // Act
                 var result = target.TryCreateSolutionContext(testDirectory.Path, out var actual);
@@ -432,7 +439,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 Mock.Of<ISettings>(),
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile));
+                getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile),
+                _telemetryProvider.Object);
 
             var projectUniqueName = Guid.NewGuid().ToString();
 

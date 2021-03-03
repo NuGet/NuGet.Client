@@ -385,6 +385,9 @@ namespace NuGet.SolutionRestoreManager
                 {
                     // Run solution based up to date check.
                     var projectsNeedingRestore = _solutionUpToDateChecker.PerformUpToDateCheck(originalDgSpec, _logger).AsList();
+                    var specialReferencesCount = originalDgSpec.Projects
+                        .Where(x => x.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference && x.RestoreMetadata.ProjectStyle != ProjectStyle.PackagesConfig && x.RestoreMetadata.ProjectStyle != ProjectStyle.ProjectJson)
+                        .Count();
                     dgSpec = originalDgSpec;
                     // Only use the optimization results if the restore is not `force`.
                     // Still run the optimization check anyways to prep the cache.
@@ -394,10 +397,10 @@ namespace NuGet.SolutionRestoreManager
                         dgSpec = originalDgSpec.WithoutRestores();
                         foreach (var uniqueProjectId in projectsNeedingRestore)
                         {
-                            dgSpec.AddRestore(uniqueProjectId);
+                            dgSpec.AddRestore(uniqueProjectId); // Fill DGSpec copy only with restore-needed projects
                         }
-                        // recorded the number of up to date projects
-                        _upToDateProjectCount = originalDgSpec.Restore.Count - projectsNeedingRestore.Count;
+                        // Calculate the number of up to date projects
+                        _upToDateProjectCount = originalDgSpec.Restore.Count - specialReferencesCount - projectsNeedingRestore.Count;
                         _noOpProjectsCount = _upToDateProjectCount;
                     }
                 }

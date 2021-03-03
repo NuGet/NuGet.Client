@@ -71,7 +71,7 @@ namespace NuGet.ProjectManagement
             // Get the xml fragment
             var xmlFragment = await GetXmlAsync(streamTaskFactory, projectSystem, cancellationToken);
 
-            var transformDocument = XmlUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, projectSystem);
+            var transformDocument = MSBuildNuGetProjectSystemUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, projectSystem);
 
             // Do a merge
             transformDocument.Root.MergeWith(xmlFragment, _nodeActions);
@@ -153,21 +153,20 @@ namespace NuGet.ProjectManagement
         {
             string content;
 
-            using (var packageStream = File.OpenRead(packageFileInfo.ZipArchivePath))
+            using var packageStream = File.OpenRead(packageFileInfo.ZipArchivePath);
+            using var zipArchive = new ZipArchive(packageStream);
+
+            var zipArchivePackageEntry = PathUtility.GetEntry(zipArchive, packageFileInfo.ZipArchiveEntryFullName);
+
+            if (zipArchivePackageEntry == null)
             {
-                var zipArchive = new ZipArchive(packageStream);
-                var zipArchivePackageEntry = PathUtility.GetEntry(zipArchive, packageFileInfo.ZipArchiveEntryFullName);
-
-                if (zipArchivePackageEntry == null)
-                {
-                    throw new ArgumentException("internalZipFileInfo");
-                }
-
-                content = await Preprocessor.ProcessAsync(
-                    () => Task.FromResult(zipArchivePackageEntry.Open()),
-                    projectSystem,
-                    cancellationToken);
+                throw new ArgumentException("internalZipFileInfo");
             }
+
+            content = await Preprocessor.ProcessAsync(
+                () => Task.FromResult(zipArchivePackageEntry.Open()),
+                projectSystem,
+                cancellationToken);
 
             return XElement.Parse(content, LoadOptions.PreserveWhitespace);
         }

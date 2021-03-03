@@ -37,7 +37,8 @@ namespace NuGet.Options
         protected override void OnActivate(CancelEventArgs e)
         {
             base.OnActivate(e);
-            GeneralControl.Font = VsShellUtilities.GetEnvironmentFont(this);
+
+            GeneralControl.Font = VsShellUtilities.GetEnvironmentFont(ServiceProvider.GlobalProvider);
             GeneralControl.OnActivated();
         }
 
@@ -53,8 +54,10 @@ namespace NuGet.Options
             {
                 if (_optionsWindow == null)
                 {
-                    _optionsWindow = new GeneralOptionControl(this);
-                    _optionsWindow.Location = new Point(0, 0);
+                    _optionsWindow = new GeneralOptionControl
+                    {
+                        Location = new Point(0, 0)
+                    };
                 }
 
                 return _optionsWindow;

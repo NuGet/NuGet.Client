@@ -17,8 +17,7 @@
         '$(AssemblyName)' == 'NuGet.Protocol' or
         '$(AssemblyName)' == 'NuGet.SolutionRestoreManager' or
         '$(AssemblyName)' == 'NuGet.Versioning' or
-        '$(AssemblyName)' == 'NuGet.VisualStudio.Common' or
-        '$(AssemblyName)' == 'NuGet.VisualStudio'
+        '$(AssemblyName)' == 'NuGet.VisualStudio.Common'
       )">
     <OptProf Include="$(OutputPath)$(AssemblyName).dll">
       <Technology>IBC</Technology>

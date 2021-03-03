@@ -377,11 +377,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(envDTEProject);
 
-            if (SupportsProjectKPackageManager(envDTEProject))
-            {
-                return true;
-            }
-
             if (await IsProjectCapabilityCompliantAsync(envDTEProject))
             {
                 return true;
@@ -650,55 +645,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var parentEnvDTEProject = envDTEProject.ParentProjectItem.ContainingProject;
             return IsExplicitlyUnsupported(parentEnvDTEProject);
-        }
-
-        public static bool SupportsProjectKPackageManager(EnvDTE.Project envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var projectKProject = GetProjectKPackageManager(envDTEProject);
-            return projectKProject != null;
-        }
-
-        public static INuGetPackageManager GetProjectKPackageManager(EnvDTE.Project project)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var vsProject = project as IVsProject;
-            if (vsProject == null)
-            {
-                return null;
-            }
-
-            Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider = null;
-            vsProject.GetItemContext(
-                (uint)VSConstants.VSITEMID.Root,
-                out serviceProvider);
-            if (serviceProvider == null)
-            {
-                return null;
-            }
-
-            using (var sp = new ServiceProvider(serviceProvider))
-            {
-                var retValue = sp.GetService(typeof(INuGetPackageManager));
-                if (retValue == null)
-                {
-                    return null;
-                }
-
-                if (!(retValue is INuGetPackageManager))
-                {
-                    // Workaround a bug in Dev14 prereleases where Lazy<INuGetPackageManager> was returned.
-                    var properties = retValue.GetType().GetProperties().Where(p => p.Name == "Value");
-                    if (properties.Count() == 1)
-                    {
-                        retValue = properties.First().GetValue(retValue);
-                    }
-                }
-
-                return retValue as INuGetPackageManager;
-            }
         }
 
         /// <summary>

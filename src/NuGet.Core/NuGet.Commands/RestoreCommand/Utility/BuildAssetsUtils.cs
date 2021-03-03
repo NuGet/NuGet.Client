@@ -16,7 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.Versioning;
-using XmlUtility = NuGet.Common.XmlUtility;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.Commands
 {
@@ -164,6 +164,7 @@ namespace NuGet.Commands
             string assetsFilePath,
             bool success)
         {
+
             doc.Root.AddFirst(
                 new XElement(Namespace + "PropertyGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
@@ -176,7 +177,7 @@ namespace NuGet.Commands
                             GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())),
                 new XElement(Namespace + "ItemGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
-                            GenerateItem("SourceRoot", "$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))")));
+                            packageFolders.Select(e => GenerateItem("SourceRoot", PathUtility.EnsureTrailingSlash(e)))));
         }
 
         /// <summary>
@@ -222,7 +223,8 @@ namespace NuGet.Commands
                                 new XAttribute("Condition", $"Exists('{path}')"),
                                 new XElement(Namespace + "NuGetPackageId", packageId),
                                 new XElement(Namespace + "NuGetPackageVersion", packageVersion),
-                                new XElement(Namespace + "NuGetItemType", item.BuildAction));
+                                new XElement(Namespace + "NuGetItemType", item.BuildAction),
+                                new XElement(Namespace + "Pack", false));
 
             var privateFlag = false;
 
@@ -539,7 +541,8 @@ namespace NuGet.Commands
                 var projectGraph = targetGraph.Graphs.FirstOrDefault();
 
                 // Packages with GeneratePathProperty=true
-                var packageIdsToCreatePropertiesFor = new HashSet<string>(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name), StringComparer.OrdinalIgnoreCase);
+                var packages = projectGraph?.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name);
+                var packageIdsToCreatePropertiesFor = packages != null ? new HashSet<string>(packages, StringComparer.OrdinalIgnoreCase) : Enumerable.Empty<string>();
 
                 var localPackages = sortedPackages.Select(e => e.Value);
 

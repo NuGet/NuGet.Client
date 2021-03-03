@@ -369,22 +369,26 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Formatting = Formatting.Indented
             };
 
+            var jsonModelBefore = JObject.FromObject(target, JsonSerializer.Create(settings));
+
             // Exclude properties on the build task but not used for the pack task request.
-            var excludedProperties = new[]
+            var excludedBuildEngineProperty = new List<string>(jsonModelBefore.Properties().
+                Where(p => p.Name.StartsWith("BuildEngine", StringComparison.OrdinalIgnoreCase)).
+                Select(p => p.Name));
+
+            var excludedOtherProperties = new[]
             {
-                "BuildEngine",
-                "BuildEngine2",
-                "BuildEngine3",
-                "BuildEngine4",
-                "BuildEngine5",
-                "BuildEngine6",
                 "HostObject",
                 "Log",
                 "PackTaskLogic",
             };
 
-            var jsonModelBefore = JObject.FromObject(target, JsonSerializer.Create(settings));
-            foreach (var property in excludedProperties)
+            foreach (var property in excludedBuildEngineProperty)
+            {
+                jsonModelBefore.Remove(property);
+            }
+
+            foreach (var property in excludedOtherProperties)
             {
                 jsonModelBefore.Remove(property);
             }

@@ -38,6 +38,19 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
+        /// Splits the value of the specified property and returns an array if the property has a value, otherwise returns <code>null</code>.
+        /// </summary>
+        /// <param name="item">The <see cref="IMSBuildItem" /> to get the property value from.</param>
+        /// <param name="name">The name of the property to get the value of and split.</param>
+        /// <returns>A <see cref="T:string[]" /> containing the split value of the property if the property had a value, otherwise <code>null</code>.</returns>
+        public static string[] SplitGlobalPropertyValueOrNull(this IMSBuildProject item, string name)
+        {
+            string value = item.GetGlobalProperty(name);
+
+            return value == null ? null : MSBuildStringUtility.Split(value);
+        }
+
+        /// <summary>
         /// Determines if the specified value is equal to <see cref="bool.TrueString" />.
         /// </summary>
         /// <param name="value">The value to compare to <see cref="bool.TrueString" />.</param>

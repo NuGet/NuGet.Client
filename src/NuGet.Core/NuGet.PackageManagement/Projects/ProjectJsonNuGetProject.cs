@@ -220,7 +220,7 @@ namespace NuGet.ProjectManagement.Projects
 
                 var references = (await ProjectServices
                     .ReferencesReader
-                    .GetProjectReferencesAsync(context.Logger, CancellationToken.None))
+                    .GetProjectReferencesAsync(context?.Logger ?? NullLogger.Instance, CancellationToken.None))
                     .ToList();
 
                 if (references != null && references.Count > 0)

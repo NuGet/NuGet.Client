@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {

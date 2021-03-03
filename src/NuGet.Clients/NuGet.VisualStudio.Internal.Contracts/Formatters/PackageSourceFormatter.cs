@@ -1,15 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using MessagePack;
 using MessagePack.Formatters;
 using NuGet.Configuration;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal class PackageSourceFormatter : IMessagePackFormatter<PackageSource?>
+    internal sealed class PackageSourceFormatter : NuGetMessagePackFormatter<PackageSource>
     {
         private const string NamePropertyName = "name";
         private const string SourcePropertyName = "source";
@@ -22,66 +20,44 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
         }
 
-        public PackageSource? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override PackageSource? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (reader.TryReadNil())
+            string? name = null;
+            string? source = null;
+            bool isEnabled = false;
+            bool isMachineWide = false;
+
+            int propertyCount = reader.ReadMapHeader();
+            for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                return null;
-            }
-
-            // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-            options.Security.DepthStep(ref reader);
-
-            try
-            {
-                string? name = null;
-                string? source = null;
-                bool isEnabled = false;
-                bool isMachineWide = false;
-
-                int propertyCount = reader.ReadMapHeader();
-                for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+                switch (reader.ReadString())
                 {
-                    switch (reader.ReadString())
-                    {
-                        case NamePropertyName:
-                            name = reader.ReadString();
-                            break;
-                        case SourcePropertyName:
-                            source = reader.ReadString();
-                            break;
-                        case IsEnabledPropertyName:
-                            isEnabled = reader.ReadBoolean();
-                            break;
-                        case IsMachineWidePropertyName:
-                            isMachineWide = reader.ReadBoolean();
-                            break;
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    case NamePropertyName:
+                        name = reader.ReadString();
+                        break;
+                    case SourcePropertyName:
+                        source = reader.ReadString();
+                        break;
+                    case IsEnabledPropertyName:
+                        isEnabled = reader.ReadBoolean();
+                        break;
+                    case IsMachineWidePropertyName:
+                        isMachineWide = reader.ReadBoolean();
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
+            }
 
-                return new PackageSource(source, name, isEnabled)
-                {
-                    IsMachineWide = isMachineWide
-                };
-            }
-            finally
+            return new PackageSource(source, name, isEnabled)
             {
-                // stack overflow mitigation - see https://github.com/neuecc/MessagePack-CSharp/security/advisories/GHSA-7q36-4xx7-xcxf
-                reader.Depth--;
-            }
+                IsMachineWide = isMachineWide
+            };
         }
 
-        public void Serialize(ref MessagePackWriter writer, PackageSource? value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, PackageSource value, MessagePackSerializerOptions options)
         {
-            if (value == null)
-            {
-                writer.WriteNil();
-                return;
-            }
-
             writer.WriteMapHeader(count: 4);
             writer.Write(NamePropertyName);
             writer.Write(value.Name);

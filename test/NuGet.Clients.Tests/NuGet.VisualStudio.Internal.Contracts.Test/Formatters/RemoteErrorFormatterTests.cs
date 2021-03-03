@@ -17,9 +17,10 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         [MemberData(nameof(RemoteErrors))]
         public void SerializeThenDeserialize_WithValidArguments_RoundTrips(RemoteError expectedResult)
         {
-            RemoteError actualResult = SerializeThenDeserialize(RemoteErrorFormatter.Instance, expectedResult);
+            RemoteError? actualResult = SerializeThenDeserialize(RemoteErrorFormatter.Instance, expectedResult);
 
-            Assert.Equal(expectedResult.ActivityLogMessage, actualResult.ActivityLogMessage);
+            Assert.NotNull(actualResult);
+            Assert.Equal(expectedResult.ActivityLogMessage, actualResult!.ActivityLogMessage);
             TestUtility.AssertEqual(expectedResult.LogMessage, actualResult.LogMessage);
             TestUtility.AssertEqual(expectedResult.LogMessages, actualResult.LogMessages);
             Assert.Equal(expectedResult.ProjectContextLogMessage, actualResult.ProjectContextLogMessage);

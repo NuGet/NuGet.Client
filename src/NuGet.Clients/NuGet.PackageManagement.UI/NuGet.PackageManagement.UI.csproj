@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="UIAutomationProvider" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -52,7 +53,11 @@
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
     <Compile Include="Actions\UpgradeLogger.cs" />
+    <Compile Include="Automation\ISelectableItem.cs" />
+    <Compile Include="Automation\ISelectableItemsControl.cs" />
+    <Compile Include="Automation\ListBoxToggleableItemsAutomationPeer.cs" />
     <Compile Include="Automation\TabItemButtonAutomationPeer.cs" />
+    <Compile Include="Automation\ToggleableItemAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
@@ -119,6 +124,7 @@
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ShowUpdatePackageOptions.cs" />
     <Compile Include="Telemetry\UpgradeInformationTelemetryEvent.cs" />
     <Compile Include="UserInterfaceService\DataStreamFromComStream.cs" />
     <Compile Include="UserInterfaceService\IModalProgressDialogSession.cs" />
@@ -127,6 +133,7 @@
     <Compile Include="UserInterfaceService\NuGetSettings.cs" />
     <Compile Include="UserInterfaceService\NuGetSettingsSerializer.cs" />
     <Compile Include="UserInterfaceService\NuGetSolutionManagerServiceWrapper.cs" />
+    <Compile Include="UserInterfaceService\NuGetSourcesServiceWrapper.cs" />
     <Compile Include="UserInterfaceService\NuGetUIFactory.cs" />
     <Compile Include="UserInterfaceService\SolutionUserOptions.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgress.cs" />
@@ -155,6 +162,7 @@
     <Compile Include="Xamls\PRMigratorBar.xaml.cs">
       <DependentUpon>PRMigratorBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\ProjectsListView.cs" />
     <Compile Include="Xamls\RestartRequestBar.xaml.cs">
       <DependentUpon>RestartRequestBar.xaml</DependentUpon>
     </Compile>
@@ -501,9 +509,11 @@
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Utilities" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>

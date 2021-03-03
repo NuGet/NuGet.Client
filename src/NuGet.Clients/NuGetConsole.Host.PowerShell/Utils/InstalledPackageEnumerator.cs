@@ -127,13 +127,9 @@ namespace NuGetConsole.Host.PowerShell
             // if A -> B, we invoke B's init.ps1 before A's.
             var installedPackages = new List<PackageItem>();
 
-            var projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
-
-            // Skip project K projects.
-            projects.RemoveAll(p => p is ProjectKNuGetProjectBase);
-
             // Sort projects by type
-            var projectLookup = projects.ToLookup(p => p is BuildIntegratedNuGetProject);
+            var projectLookup = (await _solutionManager.GetNuGetProjectsAsync())
+                .ToLookup(p => p is BuildIntegratedNuGetProject);
 
             // Each id/version should only be executed once
             var finishedPackages = new HashSet<PackageIdentity>();

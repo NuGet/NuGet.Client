@@ -168,6 +168,10 @@ namespace NuGet.PackageManagement.UI
 
         public static object TabHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
 
+        public static object ListItemBackgroundSelectedColorKey { get; private set; } = SystemColors.HighlightColorKey;
+
+        public static object ListItemTextSelectedColorKey { get; private set; } = SystemColors.HighlightTextColorKey;
+
         public static void LoadVsBrushes()
         {
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey;
@@ -240,8 +244,8 @@ namespace NuGet.PackageManagement.UI
             ContentMouseOverTextBrushKey = CommonDocumentColors.ListItemTextHoverBrushKey;
             ContentInactiveSelectedBrushKey = CommonDocumentColors.ListItemBackgroundUnfocusedBrushKey;
             ContentInactiveSelectedTextBrushKey = CommonDocumentColors.ListItemTextUnfocusedBrushKey;
-            ContentSelectedBrushKey = CommonDocumentColors.ListItemBackgroundFocusedBrushKey;
-            ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextFocusedBrushKey;
+            ContentSelectedBrushKey = CommonDocumentColors.ListItemBackgroundSelectedBrushKey;
+            ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextSelectedBrushKey;
 
             // Brushes/Colors for FilterLabel (Top Tabs)
             TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
@@ -249,6 +253,10 @@ namespace NuGet.PackageManagement.UI
             TabHoverBrushKey = CommonDocumentColors.InnerTabInactiveHoverTextBrushKey;
             TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
             TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
+
+            // Mapping color keys directly for use to create brushes using these colors
+            ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;
+            ListItemTextSelectedColorKey = CommonDocumentColors.ListItemTextSelectedColorKey;
         }
     }
 }

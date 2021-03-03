@@ -8,9 +8,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace Msbuild.Integration.Test
@@ -232,7 +235,9 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
-                Assert.Contains("Installing x 1.0.0", result.AllOutput);
+                var resolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
+                var nupkg = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(packageX.Id, NuGetVersion.Parse(packageX.Version)), NullLogger.Instance);
+                Assert.Contains($"Installed x 1.0.0 from {pathContext.PackageSource} with content hash {nupkg.ContentHash}.", result.AllOutput);
                 Assert.Contains(configAPath, result.AllOutput);
             }
         }
@@ -289,7 +294,9 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
-                Assert.Contains("Installing x 1.0.0", result.AllOutput);
+                var resolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
+                var nupkg = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(packageX.Id, NuGetVersion.Parse(packageX.Version)), NullLogger.Instance);
+                Assert.Contains($"Installed x 1.0.0 from {pathContext.PackageSource} with content hash {nupkg.ContentHash}.", result.AllOutput);
                 Assert.Contains(configAPath, result.AllOutput);
             }
         }
@@ -581,6 +588,9 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     fileInfo.Exists.Should().BeTrue(because: result.AllOutput);
                     fileInfo.LastWriteTimeUtc.Should().Be(projectOutputTimestamps[asset]);
                 }
+
+                result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {project.ProjectPath}", ignoreExitCode: true);
+                result.Success.Should().BeTrue(result.AllOutput);
             }
         }
 
@@ -633,6 +643,64 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 result.Success.Should().BeFalse(because: result.AllOutput);
 
                 result.AllOutput.Should().Contain($"error : Invalid restore input. Missing required property 'OutputPath' for project type 'PackageReference'. Input files: {project.ProjectPath}.");
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task MsbuildRestore_WithRelativeSource_ResolvesAgainstCurrentWorkingDirectory(bool isStaticGraphRestore)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var project = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.Files.Clear();
+                project.AddPackageToAllFrameworks(packageX);
+                packageX.AddFile("lib/net461/a.dll");
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+                var relativePath = "relativeSource";
+                var relativeSource = Path.Combine(pathContext.WorkingDirectory, relativePath);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    relativeSource,
+                    packageX);
+
+                var projectOutputPaths = new[]
+                {
+                    project.AssetsFileOutputPath,
+                    project.PropsOutput,
+                    project.TargetsOutput,
+                    project.CacheFileOutputPath,
+                };
+
+                // Restore the project with a PackageReference which generates assets
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {project.ProjectPath} /p:RestoreSources=\"{relativePath}\"" +
+                    (isStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty),
+                    ignoreExitCode: true);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                foreach (var asset in projectOutputPaths)
+                {
+                    new FileInfo(asset).Exists.Should().BeTrue(because: result.AllOutput);
+                }
             }
         }
     }

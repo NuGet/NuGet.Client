@@ -28,7 +28,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             ProjectActionType = projectActionType;
         }
 
-        public bool Equals(ImplicitProjectAction other)
+        public bool Equals(ImplicitProjectAction? other)
         {
             if (other == null)
             {

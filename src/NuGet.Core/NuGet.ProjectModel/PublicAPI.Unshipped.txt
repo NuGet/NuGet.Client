@@ -1,6 +1,5 @@
-NuGet.ProjectModel.DependencyGraphSpec.WithPackageSpecs(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.PackageSpec> packageSpecs) -> NuGet.ProjectModel.DependencyGraphSpec
-NuGet.ProjectModel.LockFile.GetTarget(string frameworkAlias, string runtimeIdentifier) -> NuGet.ProjectModel.LockFileTarget
-NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.get -> string
-NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo.TargetAlias.set -> void
-NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.get -> string
-NuGet.ProjectModel.TargetFrameworkInformation.TargetAlias.set -> void
+NuGet.ProjectModel.LockFileValidationResult
+NuGet.ProjectModel.LockFileValidationResult.InvalidReasons.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.ProjectModel.LockFileValidationResult.IsValid.get -> bool
+NuGet.ProjectModel.LockFileValidationResult.LockFileValidationResult(bool isValid, System.Collections.Generic.IReadOnlyList<string> invalidReasons) -> void
+static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> NuGet.ProjectModel.LockFileValidationResult

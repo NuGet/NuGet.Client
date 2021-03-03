@@ -3,15 +3,24 @@
 
 #nullable enable
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public interface ISharedServiceState
+    public interface ISharedServiceState : IDisposable
     {
         AsyncLazy<NuGetPackageManager> PackageManager { get; }
         AsyncLazy<IVsSolutionManager> SolutionManager { get; }
-        AsyncLazy<ISourceRepositoryProvider> SourceRepositoryProvider { get; }
+        ISourceRepositoryProvider SourceRepositoryProvider { get; }
+        AsyncLazy<IReadOnlyCollection<SourceRepository>> SourceRepositories { get; }
+        ValueTask<IReadOnlyCollection<SourceRepository>> GetRepositoriesAsync(
+            IReadOnlyCollection<PackageSourceContextInfo> packageSourceContextInfos,
+            CancellationToken cancellationToken);
     }
 }

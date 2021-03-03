@@ -24,7 +24,6 @@ namespace NuGet.Frameworks
         private readonly string _frameworkProfile;
         private string _targetFrameworkMoniker;
         private string _targetPlatformMoniker;
-        private const string Portable = "portable";
         private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)

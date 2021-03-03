@@ -7,8 +7,11 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using Microsoft.Web.XmlTransform;
 using NuGet.PackageManagement;
+using static NuGet.Shared.XmlUtility;
 
 namespace NuGet.ProjectManagement
 {
@@ -91,7 +94,7 @@ namespace NuGet.ProjectManagement
             await PerformXdtTransformAsync(streamTaskFactory, targetPath, projectSystem, cancellationToken);
         }
 
-        private static async Task PerformXdtTransformAsync(
+        internal static async Task PerformXdtTransformAsync(
             Func<Task<Stream>> streamTaskFactory,
             string targetPath,
             IMSBuildProjectSystem msBuildNuGetProjectSystem,
@@ -107,13 +110,12 @@ namespace NuGet.ProjectManagement
                     {
                         using (var document = new XmlTransformableDocument())
                         {
-                            document.PreserveWhitespace = true;
-
                             // make sure we close the input stream immediately so that we can override 
                             // the file below when we save to it.
-                            using (var inputStream = File.OpenRead(FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath)))
+                            string path = FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath);
+                            using (var reader = XmlReader.Create(path, GetXmlReaderSettings(LoadOptions.PreserveWhitespace)))
                             {
-                                document.Load(inputStream);
+                                document.Load(reader);
                             }
 
                             var succeeded = transformation.Apply(document);

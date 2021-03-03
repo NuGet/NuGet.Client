@@ -42,9 +42,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
+        public void Log(MessageLevel level, string message, params object[] args)
         {
-            _logger.Log(new LogMessage(level.ToLogLevel(), string.Format(CultureInfo.CurrentCulture, message, args)));
+            _logger.Log(level, message, args);
         }
 
         public FileConflictAction ShowFileConflictResolution(string message)

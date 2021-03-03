@@ -15,9 +15,13 @@ namespace NuGet.Common
         private static readonly Lazy<bool> _isFileSystemCaseInsensitive = new Lazy<bool>(CheckIfFileSystemIsCaseInsensitive);
 
         /// <summary>
-        /// Returns OrdinalIgnoreCase windows and mac. Ordinal for linux.
+        /// Returns OrdinalIgnoreCase Windows and Mac. Ordinal for Linux. (Do not use with package paths)
         /// </summary>
         /// <returns></returns>
+        /// <remarks>
+        /// This method should not be used with package paths.
+        /// Package paths are always case sensitive, using this with package paths leads to bugs like https://github.com/NuGet/Home/issues/9817.
+        /// </remarks>
         public static StringComparer GetStringComparerBasedOnOS()
         {
             if (IsFileSystemCaseInsensitive)
@@ -29,9 +33,13 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Returns OrdinalIgnoreCase windows and mac. Ordinal for linux.
+        /// Returns OrdinalIgnoreCase Windows and Mac. Ordinal for Linux. (Do not use with package paths)
         /// </summary>
         /// <returns></returns>
+        /// <remarks>
+        /// This method should not be used with package paths.
+        /// Package paths are always case sensitive, using this with package paths leads to bugs like https://github.com/NuGet/Home/issues/9817.
+        /// </remarks>
         public static StringComparison GetStringComparisonBasedOnOS()
         {
             if (IsFileSystemCaseInsensitive)

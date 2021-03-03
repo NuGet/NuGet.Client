@@ -948,6 +948,8 @@ NuGet.Commands.VerifyArgs.Logger.get -> NuGet.Common.ILogger
 NuGet.Commands.VerifyArgs.Logger.set -> void
 NuGet.Commands.VerifyArgs.PackagePath.get -> string
 NuGet.Commands.VerifyArgs.PackagePath.set -> void
+NuGet.Commands.VerifyArgs.PackagePaths.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.Commands.VerifyArgs.PackagePaths.set -> void
 NuGet.Commands.VerifyArgs.Verification
 NuGet.Commands.VerifyArgs.Verification.All = 1 -> NuGet.Commands.VerifyArgs.Verification
 NuGet.Commands.VerifyArgs.Verification.Signatures = 2 -> NuGet.Commands.VerifyArgs.Verification
@@ -1089,6 +1091,7 @@ static NuGet.Commands.LockFileUtils.ExcludeItems(NuGet.ProjectModel.LockFileTarg
 static NuGet.Commands.LockFileUtils.ToDirectorySeparator(string path) -> string
 static NuGet.Commands.MSBuildProjectFactory.GetTargetPathForSourceFile(string sourcePath, string projectDirectory) -> string
 static NuGet.Commands.MSBuildProjectFactory.ProjectCreator(NuGet.Commands.PackArgs packArgs, string path) -> NuGet.Commands.IProjectFactory
+static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFrameworkReplacement(NuGet.Frameworks.NuGetFramework framework) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(string projectFilePath, string targetFrameworks, string targetFramework, string targetFrameworkMoniker, string targetPlatformIdentifier, string targetPlatformVersion, string targetPlatformMinVersion) -> System.Collections.Generic.IEnumerable<string>
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(string projectFilePath, string targetFrameworks, string targetFramework, string targetFrameworkMoniker, string targetPlatformIdentifier, string targetPlatformVersion, string targetPlatformMinVersion, bool isXnaWindowsPhoneProject, bool isManagementPackProject) -> System.Collections.Generic.IEnumerable<string>
