@@ -68,6 +68,7 @@ namespace NuGet.Commands
             var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
             var restoreTasks = new List<Task<RestoreSummary>>(maxTasks);
             var restoreSummaries = new List<RestoreSummary>(requests.Count);
+            var lockFileBuilderCache = new LockFileBuilderCache();
 
             // Run requests
             while (requests.Count > 0)
@@ -81,7 +82,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(() => ExecuteAndCommitAsync(request, token), token);
+                var task = Task.Run(() => ExecuteAndCommitAsync(request, lockFileBuilderCache, token), token);
                 restoreTasks.Add(task);
             }
 
@@ -123,6 +124,7 @@ namespace NuGet.Commands
             var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
             var restoreTasks = new List<Task<RestoreResultPair>>(maxTasks);
             var restoreResults = new List<RestoreResultPair>(maxTasks);
+            var lockFileBuilderCache = new LockFileBuilderCache();
 
             // Run requests
             while (requests.Count > 0)
@@ -136,7 +138,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(() => ExecuteAsync(request, CancellationToken.None));
+                var task = Task.Run(() => ExecuteAsync(request, lockFileBuilderCache, CancellationToken.None));
                 restoreTasks.Add(task);
             }
 
@@ -226,14 +228,14 @@ namespace NuGet.Commands
             return maxTasks;
         }
 
-        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
+        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, LockFileBuilderCache lockFileBuilderCache, CancellationToken token)
         {
-            var result = await ExecuteAsync(summaryRequest, token);
+            var result = await ExecuteAsync(summaryRequest, lockFileBuilderCache, token);
 
             return await CommitAsync(result, token);
         }
 
-        private static async Task<RestoreResultPair> ExecuteAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
+        private static async Task<RestoreResultPair> ExecuteAsync(RestoreSummaryRequest summaryRequest, LockFileBuilderCache lockFileBuilderCache, CancellationToken token)
         {
             var log = summaryRequest.Request.Log;
 
@@ -245,7 +247,7 @@ namespace NuGet.Commands
             // Run the restore
             var request = summaryRequest.Request;
 
-            var command = new RestoreCommand(request);
+            var command = new RestoreCommand(request, lockFileBuilderCache);
             var result = await command.ExecuteAsync(token);
 
             return new RestoreResultPair(summaryRequest, result);

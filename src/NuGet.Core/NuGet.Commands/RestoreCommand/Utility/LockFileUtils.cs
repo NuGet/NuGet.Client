@@ -81,6 +81,10 @@ namespace NuGet.Commands
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
 
+            var cached = cache.TryGetLockFileTargetLibrary(targetGraph, framework, library, libraryDependency, dependencyType);
+            if (cached != null)
+                return cached;
+
             // This will throw an appropriate error if the nuspec is missing
             var nuspec = package.Nuspec;
 
@@ -134,6 +138,7 @@ namespace NuGet.Commands
             // Exclude items
             ExcludeItems(lockFileLib, dependencyType);
 
+            cache.TryAddLockFileTargetLibrary(targetGraph, framework, library, libraryDependency, dependencyType, lockFileLib);
             return lockFileLib;
         }
 

@@ -375,7 +375,6 @@ NuGet.Commands.LocalsCommandRunner
 NuGet.Commands.LocalsCommandRunner.ExecuteCommand(NuGet.Commands.LocalsArgs localsArgs) -> void
 NuGet.Commands.LocalsCommandRunner.LocalsCommandRunner() -> void
 NuGet.Commands.LockFileBuilder
-NuGet.Commands.LockFileBuilder.CreateLockFile(NuGet.ProjectModel.LockFile previousLockFile, NuGet.ProjectModel.PackageSpec project, System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> targetGraphs, System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository> localRepositories, NuGet.DependencyResolver.RemoteWalkContext context) -> NuGet.ProjectModel.LockFile
 NuGet.Commands.LockFileBuilder.LockFileBuilder(int lockFileVersion, NuGet.Common.ILogger logger, System.Collections.Generic.Dictionary<NuGet.Commands.RestoreTargetGraph, System.Collections.Generic.Dictionary<string, NuGet.LibraryModel.LibraryIncludeFlags>> includeFlagGraphs) -> void
 NuGet.Commands.LockFileBuilderCache
 NuGet.Commands.LockFileBuilderCache.GetContentItems(NuGet.ProjectModel.LockFileLibrary library, NuGet.Repositories.LocalPackageInfo package) -> NuGet.ContentModel.ContentItemCollection

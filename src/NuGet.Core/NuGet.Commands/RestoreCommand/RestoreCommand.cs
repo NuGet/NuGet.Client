@@ -28,6 +28,8 @@ namespace NuGet.Commands
 
         private readonly RestoreRequest _request;
 
+        private readonly LockFileBuilderCache _lockFileBuilderCache;
+
         private bool _success;
 
         private Guid _operationId;
@@ -73,9 +75,14 @@ namespace NuGet.Commands
         // names for central package management version information
         private const string IsCentralVersionManagementEnabled = "IsCentralVersionManagementEnabled";
 
-        public RestoreCommand(RestoreRequest request)
+        public RestoreCommand(RestoreRequest request) : this(request, new LockFileBuilderCache())
+        {
+        }
+
+        public RestoreCommand(RestoreRequest request, LockFileBuilderCache lockFileBuilderCache)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
+            _lockFileBuilderCache = lockFileBuilderCache ?? throw new ArgumentNullException(nameof(lockFileBuilderCache));
 
             // Validate the lock file version requested
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
@@ -248,7 +255,8 @@ namespace NuGet.Commands
                     _request.Project,
                     graphs,
                     localRepositories,
-                    contextForProject);
+                    contextForProject
+                    );
                 }
 
                 IList<CompatibilityCheckResult> checkResults = null;
@@ -740,7 +748,8 @@ namespace NuGet.Commands
                         project,
                         graphs,
                         localRepositories,
-                        contextForProject);
+                        contextForProject,
+                        _lockFileBuilderCache);
 
             return lockFile;
         }

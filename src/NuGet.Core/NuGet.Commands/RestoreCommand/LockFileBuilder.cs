@@ -36,7 +36,8 @@ namespace NuGet.Commands
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
-            RemoteWalkContext context)
+            RemoteWalkContext context,
+            LockFileBuilderCache lockFileBuilderCache)
         {
             var lockFile = new LockFile()
             {
@@ -154,9 +155,6 @@ namespace NuGet.Commands
 
             var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
-            // Cache package data and selection criteria across graphs.
-            var builderCache = new LockFileBuilderCache();
-
             // Add the targets
             foreach (var targetGraph in targetGraphs
                 .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
@@ -226,7 +224,7 @@ namespace NuGet.Commands
                             dependencyType: includeFlags,
                             targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies,
-                            cache: builderCache);
+                            cache: lockFileBuilderCache);
 
                         target.Libraries.Add(targetLibrary);
 
@@ -243,7 +241,7 @@ namespace NuGet.Commands
                                 targetFrameworkOverride: nonFallbackFramework,
                                 dependencyType: includeFlags,
                                 dependencies: graphItem.Data.Dependencies,
-                                cache: builderCache);
+                                cache: lockFileBuilderCache);
 
                             if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                             {
