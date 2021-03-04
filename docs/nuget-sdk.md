@@ -82,4 +82,5 @@ Any additions to `PublicAPI.Unshipped.txt` should be considered, particularly us
 
 ### Shipping NuGet
 
-When NuGet ships a GA release, packages without pre-release versions are published to nuget.org. At this time all APIs listed in any `PublicAPI.Unshipped.txt` should be moved to `PublicAPI.Shipped.txt`. This must be done on the dev branch, but ideally will also be cherry-picked onto the release branch, just in case that branch needs to be serviced in the future. Moving APIs from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt` can be done using [`tools-local\ship-public-apis\`](../tools-local/ship-public-apis/).
+When NuGet ships a GA release, packages without pre-release versions are published to nuget.org. At this time all APIs listed in any `PublicAPI.Unshipped.txt` should be moved to `PublicAPI.Shipped.txt`. This must be done on the release-#.#.x branch, then should be cherry-picked onto the dev branch. Moving APIs from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt` should be done using [`tools-local\ship-public-apis\`](../tools-local/ship-public-apis/) -- from root of enlistment, you can run: "dotnet run --project tools-local\ship-public-apis\ship-public-apis.csproj".
+
