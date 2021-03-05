@@ -243,7 +243,7 @@ namespace NuGet.PackageManagement.UI.Test
                         taskCompletionSource.TrySetResult("GetCurrent() was called before waiting for initial results.");
                     }
 
-                    return Enumerable.Empty<PackageItemListViewModel>();
+                    return Enumerable.Empty<PackageItemViewModel>();
                 });
 
             await list.LoadItemsAsync(
@@ -299,7 +299,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(0));
             loaderMock.Setup(x => x.GetCurrent())
-                .Returns(() => searchItems.Select(x => new PackageItemListViewModel()));
+                .Returns(() => searchItems.Select(x => new PackageItemViewModel()));
 
             list.LoadItemsCompleted += (sender, args) =>
             {

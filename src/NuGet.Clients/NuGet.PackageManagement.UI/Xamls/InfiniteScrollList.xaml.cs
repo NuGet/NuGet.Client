@@ -36,12 +36,12 @@ namespace NuGet.PackageManagement.UI
 
         public event SelectionChangedEventHandler SelectionChanged;
 
-        public delegate void UpdateButtonClickEventHandler(PackageItemListViewModel[] selectedPackages);
+        public delegate void UpdateButtonClickEventHandler(PackageItemViewModel[] selectedPackages);
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
         /// <summary>
         /// Fires when the items in the list have finished loading.
-        /// It is triggered at <see cref="RepopulatePackageList(PackageItemListViewModel, IPackageItemLoader, CancellationToken) " />, just before it is finished
+        /// It is triggered at <see cref="RepopulatePackageList(PackageItemViewModel, IPackageItemLoader, CancellationToken) " />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
@@ -137,18 +137,18 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// All loaded Items (excluding Loading indicator) regardless of filtering.
         /// </summary>
-        public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
+        public IEnumerable<PackageItemViewModel> PackageItems => Items.OfType<PackageItemViewModel>().ToArray();
 
         /// <summary>
         /// Items (excluding Loading indicator) that are currently shown after applying any UI filtering.
         /// </summary>
-        public IEnumerable<PackageItemListViewModel> PackageItemsFiltered
+        public IEnumerable<PackageItemViewModel> PackageItemsFiltered
         {
             get
             {
                 if (CollectionView.Filter != null)
                 {
-                    return CollectionView.OfType<PackageItemListViewModel>();
+                    return CollectionView.OfType<PackageItemViewModel>();
                 }
                 else
                 {
@@ -157,7 +157,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
+        public PackageItemViewModel SelectedPackageItem => _list.SelectedItem as PackageItemViewModel;
 
         public int SelectedIndex => _list.SelectedIndex;
 
@@ -214,7 +214,7 @@ namespace NuGet.PackageManagement.UI
         /// Otherwise, select the first on the search if none was selected before.
         /// </summary>
         /// <param name="selectedItem">Previously selected item</param>
-        internal void UpdateSelectedItem(PackageItemListViewModel selectedItem)
+        internal void UpdateSelectedItem(PackageItemViewModel selectedItem)
         {
             if (selectedItem != null)
             {
@@ -227,7 +227,7 @@ namespace NuGet.PackageManagement.UI
             _list.SelectedItem = selectedItem ?? PackageItemsFiltered.FirstOrDefault();
         }
 
-        private async Task LoadItemsAsync(PackageItemListViewModel selectedPackageItem, CancellationToken token)
+        private async Task LoadItemsAsync(PackageItemViewModel selectedPackageItem, CancellationToken token)
         {
             // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.UI
             await RepopulatePackageListAsync(selectedPackageItem, _loader, loadCts);
         }
 
-        private async Task RepopulatePackageListAsync(PackageItemListViewModel selectedPackageItem, IPackageItemLoader currentLoader, CancellationTokenSource loadCts)
+        private async Task RepopulatePackageListAsync(PackageItemViewModel selectedPackageItem, IPackageItemLoader currentLoader, CancellationTokenSource loadCts)
         {
             await TaskScheduler.Default;
 
@@ -372,7 +372,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ApplyUIFilterForUpdatesAvailable()
         {
-            CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
+            CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemViewModel).IsUpdateAvailable;
         }
 
         private void ClearUIFilter()
@@ -420,7 +420,7 @@ namespace NuGet.PackageManagement.UI
             token.ThrowIfCancellationRequested();
         }
 
-        private async Task<IEnumerable<PackageItemListViewModel>> LoadNextPageAsync(IPackageItemLoader currentLoader, CancellationToken token)
+        private async Task<IEnumerable<PackageItemViewModel>> LoadNextPageAsync(IPackageItemLoader currentLoader, CancellationToken token)
         {
             var progress = new Progress<IItemLoaderState>(
                 s => HandleItemLoaderStateChange(currentLoader, s));
@@ -454,7 +454,7 @@ namespace NuGet.PackageManagement.UI
             return currentLoader.GetCurrent();
         }
 
-        private async Task WaitForCompletionAsync(IItemLoader<PackageItemListViewModel> currentLoader, CancellationToken token)
+        private async Task WaitForCompletionAsync(IItemLoader<PackageItemViewModel> currentLoader, CancellationToken token)
         {
             var progress = new Progress<IItemLoaderState>(
                 s => HandleItemLoaderStateChange(currentLoader, s));
@@ -468,7 +468,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         private async Task WaitForInitialResultsAsync(
-            IItemLoader<PackageItemListViewModel> currentLoader,
+            IItemLoader<PackageItemViewModel> currentLoader,
             IProgress<IItemLoaderState> progress,
             CancellationToken token)
         {
@@ -485,7 +485,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="loader">Current loader</param>
         /// <param name="state">Progress reported by the <c>Progress</c> callback</param>
-        private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
+        private void HandleItemLoaderStateChange(IItemLoader<PackageItemViewModel> loader, IItemLoaderState state)
         {
             _joinableTaskFactory.Value.Run(async () =>
             {
@@ -518,7 +518,7 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        private Visibility EvaluateStatusBarVisibility(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
+        private Visibility EvaluateStatusBarVisibility(IItemLoader<PackageItemViewModel> loader, IItemLoaderState state)
         {
             var statusBarVisibility = Visibility.Hidden;
 
@@ -550,7 +550,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="packages">Packages collection to add</param>
         /// <param name="refresh">Clears <see cref="Items"> list if set to <c>true</c></param>
-        private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
+        private void UpdatePackageList(IEnumerable<PackageItemViewModel> packages, bool refresh)
         {
             _joinableTaskFactory.Value.Run(async () =>
             {
@@ -609,7 +609,7 @@ namespace NuGet.PackageManagement.UI
 
         private void Package_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var package = sender as PackageItemListViewModel;
+            var package = sender as PackageItemViewModel;
             if (e.PropertyName == nameof(package.IsSelected))
             {
                 if (package.IsSelected)
@@ -660,11 +660,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageItemListViewModel SelectedItem
+        public PackageItemViewModel SelectedItem
         {
             get
             {
-                return _list.SelectedItem as PackageItemListViewModel;
+                return _list.SelectedItem as PackageItemViewModel;
             }
             internal set
             {
@@ -736,7 +736,7 @@ namespace NuGet.PackageManagement.UI
         {
             foreach (var item in _list.Items)
             {
-                var package = item as PackageItemListViewModel;
+                var package = item as PackageItemViewModel;
 
                 // note that item could be the loading indicator, thus we need to check
                 // for null here.
@@ -751,7 +751,7 @@ namespace NuGet.PackageManagement.UI
         {
             foreach (var item in _list.Items)
             {
-                var package = item as PackageItemListViewModel;
+                var package = item as PackageItemViewModel;
                 if (package != null)
                 {
                     package.IsSelected = false;
@@ -768,7 +768,7 @@ namespace NuGet.PackageManagement.UI
         private void List_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             // toggle the selection state when user presses the space bar
-            var package = _list.SelectedItem as PackageItemListViewModel;
+            var package = _list.SelectedItem as PackageItemViewModel;
             if (package != null && e.Key == Key.Space)
             {
                 package.IsSelected = !package.IsSelected;
@@ -778,7 +778,7 @@ namespace NuGet.PackageManagement.UI
 
         private void _loadingStatusBar_ShowMoreResultsClick(object sender, RoutedEventArgs e)
         {
-            var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemListViewModel>();
+            var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemViewModel>();
             UpdatePackageList(packageItems, refresh: true);
             _loadingStatusBar.ItemsLoaded = _loader?.State.ItemsCount ?? 0;
 
