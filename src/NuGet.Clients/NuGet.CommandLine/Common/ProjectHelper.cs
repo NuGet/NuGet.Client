@@ -16,6 +16,7 @@ namespace NuGet.Common
             ".jsproj",
             ".wixproj",
             ".nuproj",
+            ".nfproj",
         };
 
         public static HashSet<string> SupportedProjectExtensions

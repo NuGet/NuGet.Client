@@ -1677,5 +1677,161 @@ namespace NuGet.CommandLine.Test
                 result.AllOutput.Contains(NuGetResources.Error_UpdateSelf_Source);
             }
         }
+
+        [Fact]
+        public async Task UpdateCommand_NF_Project_Success()
+        {
+            using (TestDirectory packagesSourceDirectory = TestDirectory.Create())
+            using (TestDirectory solutionDirectory = TestDirectory.Create())
+            using (TestDirectory workingPath = TestDirectory.Create())
+            {
+                // setup directories
+                string projectDirectory1 = Path.Combine(solutionDirectory, "proj1");
+                string projectDirectory2 = Path.Combine(solutionDirectory, "proj2");
+                string packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
+                // create packages IDs
+                PackageIdentity a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                PackageIdentity a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+
+                PackageIdentity b1 = new PackageIdentity("B", new NuGetVersion("1.0.0"));
+                PackageIdentity b2 = new PackageIdentity("B", new NuGetVersion("2.0.0"));
+
+                // create packages
+                var a1Package = new SimpleTestPackageContext()
+                {
+                    Id = a1.Id,
+                    Version = a1.Version.ToString()
+                };
+                a1Package.Files.Clear();
+                a1Package.AddFile($"lib/{a1.Id}.dll");
+
+                var a1File = await a1Package.CreateAsFileAsync(packagesSourceDirectory, a1Package.PackageName);
+
+                var a2Package = new SimpleTestPackageContext()
+                {
+                    Id = a2.Id,
+                    Version = a2.Version.ToString()
+                };
+                a2Package.Files.Clear();
+                a2Package.AddFile($"lib/{a2.Id}.dll");
+
+                await a2Package.CreateAsFileAsync(packagesSourceDirectory, a2Package.PackageName);
+
+                var b1Package = new SimpleTestPackageContext()
+                {
+                    Id = b1.Id,
+                    Version = b1.Version.ToString()
+                };
+                b1Package.Files.Clear();
+                b1Package.AddFile($"lib/{b1.Id}.dll");
+
+                var b1File = await a1Package.CreateAsFileAsync(packagesSourceDirectory, b1Package.PackageName);
+
+                var b2Package = new SimpleTestPackageContext()
+                {
+                    Id = b2.Id,
+                    Version = b2.Version.ToString()
+                };
+                b2Package.Files.Clear();
+                b2Package.AddFile($"lib/{b2.Id}.dll");
+
+                await b2Package.CreateAsFileAsync(packagesSourceDirectory, b2Package.PackageName);
+
+                // build list of packages (initial versions on the project files)
+                var packages = new List<(string, string)>();
+                packages.Add((a1.Id, a1.Version.ToString()));
+                packages.Add((b1.Id, b1.Version.ToString()));
+
+                // create everything related with project 1
+                Directory.CreateDirectory(projectDirectory1);
+
+                Util.CreateFile(
+                    projectDirectory1,
+                    "proj1.nfproj",
+                    Util.GetNFProjXML(
+                        "proj1",
+                        packages));
+
+                Util.CreateFile(
+                    projectDirectory1,
+                    "packages.config",
+                    Util.GetNFPackageConfig(packages));
+
+                // create everything related with project 2
+                Directory.CreateDirectory(projectDirectory2);
+
+                Util.CreateFile(
+                    projectDirectory2,
+                    "proj2.nfproj",
+                    Util.GetNFProjXML(
+                        "proj2",
+                        packages));
+
+                Util.CreateFile(
+                    projectDirectory1,
+                    "packages.config",
+                    Util.GetNFPackageConfig(packages));
+
+                List<string> projectList = new string[] { "proj1", "proj2" }.ToList();
+
+                // create solution file
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateNFSolutionFileContent(projectList));
+
+                // get paths for projects and solutions
+                string projectFile1 = Path.Combine(projectDirectory1, "proj1.nfproj");
+                string projectFile2 = Path.Combine(projectDirectory2, "proj2.nfproj");
+                string solutionFile = Path.Combine(solutionDirectory, "a.sln");
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                string msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
+                var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
+                var projectSystem2 = new MSBuildProjectSystem(msbuildDirectory, projectFile2, testNuGetProjectContext);
+                var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);
+                var msBuildProject2 = new MSBuildNuGetProject(projectSystem2, packagesDirectory, projectDirectory2);
+
+                using (FileStream stream = File.OpenRead(a1File.FullName))
+                {
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
+                    await msBuildProject1.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+
+                using (FileStream stream = File.OpenRead(b1File.FullName))
+                {
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
+                    await msBuildProject2.InstallPackageAsync(
+                        b1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+
+                projectSystem1.Save();
+                projectSystem2.Save();
+
+                var args = new[]
+                {
+                    "update",
+                    solutionFile,
+                    "-Source",
+                    packagesSourceDirectory
+                };
+
+                CommandRunnerResult r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                Assert.True(r.ExitCode == 0, "Output is " + r.AllOutput + ". Error is " + r.Errors);
+                Assert.Contains($"Successfully installed '{a2.Id} {a2.Version}'", r.AllOutput);
+                Assert.Contains($"Successfully installed '{b2.Id} {b2.Version}'", r.AllOutput);
+            }
+        }
     }
 }
