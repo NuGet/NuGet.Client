@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
     public abstract class V3DetailControlModelTestBase : IClassFixture<V3PackageSearchMetadataFixture>
     {
         protected readonly V3PackageSearchMetadataFixture _testData;
-        protected readonly PackageItemListViewModel _testViewModel;
+        protected readonly PackageItemViewModel _testViewModel;
 
         public V3DetailControlModelTestBase(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
         {
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion(0, 0, 2))
             };
 
-            _testViewModel = new PackageItemListViewModel()
+            _testViewModel = new PackageItemViewModel()
             {
                 Id = "nuget.psm",
                 Version = testVersion,
@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
             };
 
-            var vm = new PackageItemListViewModel()
+            var vm = new PackageItemViewModel()
             {
                 InstalledVersion = installedVersion,
                 Version = installedVersion,
@@ -262,7 +262,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
             };
 
-            var vm = new PackageItemListViewModel()
+            var vm = new PackageItemViewModel()
             {
                 InstalledVersion = installedVersion,
                 Version = installedVersion,

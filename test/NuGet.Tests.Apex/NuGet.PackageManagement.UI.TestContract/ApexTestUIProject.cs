@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI.TestContract
             _packageManagerControl = packageManagerControl ?? throw new ArgumentNullException(nameof(packageManagerControl));
         }
 
-        public IEnumerable<PackageItemListViewModel> PackageItems
+        public IEnumerable<PackageItemViewModel> PackageItems
         {
             get
             {
@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI.TestContract
             }
         }
 
-        public PackageItemListViewModel SelectedPackage
+        public PackageItemViewModel SelectedPackage
         {
             get
             {

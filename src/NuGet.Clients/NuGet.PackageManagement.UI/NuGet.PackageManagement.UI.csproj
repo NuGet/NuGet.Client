@@ -80,7 +80,7 @@
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
-    <Compile Include="Models\LoadingStatusViewModel.cs" />
+    <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
     <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
     <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
@@ -198,7 +198,7 @@
     <Compile Include="InfiniteScrollListItemStyleSelector.cs" />
     <Compile Include="LoadingStatusIndicator.cs" />
     <Compile Include="Models\AlternativePackageManagerProviders.cs" />
-    <Compile Include="Models\PackageItemListViewModel.cs" />
+    <Compile Include="ViewModels\PackageItemViewModel.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Converters\NotNullToBooleanConverter.cs" />
     <Compile Include="PackageInstallationInfo.cs" />

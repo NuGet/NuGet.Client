@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// This enhance IItemLoader by adding package specific methods.
     /// </summary>
-    internal interface IPackageItemLoader : IItemLoader<PackageItemListViewModel>
+    internal interface IPackageItemLoader : IItemLoader<PackageItemViewModel>
     {
         Task<SearchResultContextInfo> SearchAsync(CancellationToken cancellationToken);
 

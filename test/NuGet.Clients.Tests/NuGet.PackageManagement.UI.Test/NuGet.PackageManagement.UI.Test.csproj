@@ -39,7 +39,7 @@
     <Compile Include="Models\PackageDependencySetMetadataTests.cs" />
     <Compile Include="Models\V3DetailControlModelTests.cs" />
     <Compile Include="Models\LocalDetailControlModelTests.cs" />
-    <Compile Include="Models\PackageItemListViewModelTests.cs" />
+    <Compile Include="Models\PackageItemViewModelTests.cs" />
     <Compile Include="Models\PreviewWindowModelTests.cs" />
     <Compile Include="Models\DetailedPackageMetadataTests.cs" />
     <Compile Include="NuGetSettingsSerializerTests.cs" />
