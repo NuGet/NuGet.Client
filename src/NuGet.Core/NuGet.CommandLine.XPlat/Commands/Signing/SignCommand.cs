@@ -22,7 +22,7 @@ namespace NuGet.CommandLine.XPlat
             app.Command("sign", signCmd =>
             {
                 CommandArgument packagePaths = signCmd.Argument(
-                    "<packages-path>",
+                    "<packages-paths>",
                     Strings.SignCommandPackagePathDescription,
                     multipleValues: true);
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -81,27 +82,132 @@ namespace NuGet.Commands.Test
             }
         }
 
+        // Skip the tests when signing is not supported.
+#if IS_SIGNING_SUPPORTED
         [Fact]
-        public async Task ExecuteCommandAsync_WithIncorrectPassword_ThrowsAsync()
+        public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndNoPassword_Succeed()
+        {
+            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            {
+                const string fileName = "ExistingCertFile.pfx";
+                var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
+
+                var bytes = test.Certificate.Export(X509ContentType.Pfx);
+
+                File.WriteAllBytes(certificateFilePath, bytes);
+
+                test.Args.CertificatePath = certificateFilePath;
+
+                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+
+                var returncode = test.Runner.ExecuteCommandAsync(test.Args).Result;
+                Assert.Equal(returncode, 0);
+
+                var packagePaths = test.Args.PackagePaths;
+                Assert.Equal(packagePaths.Count, 1);
+
+                var packagePath = packagePaths[0];
+                using (var zip = new ZipArchive(File.OpenRead(packagePath), ZipArchiveMode.Read))
+                {
+                    var signatureEntry = zip.GetEntry(".signature.p7s");
+
+                    Assert.NotNull(signatureEntry);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndCorrectPassword_Succeed()
         {
             const string password = "password";
 
-            using (var test = await Test.CreateAsync(_fixture.GetCertificateWithPassword(password)))
+            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
-                var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
+                const string fileName = "ExistingCertFile.pfx";
+                var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
 
-                File.WriteAllBytes(certificateFilePath, test.Certificate.Export(X509ContentType.Pkcs12, password));
+                var bytes = test.Certificate.Export(X509ContentType.Pfx, password);
+
+                File.WriteAllBytes(certificateFilePath, bytes);
+
+                test.Args.CertificatePath = certificateFilePath;
+                test.Args.CertificatePassword = "password";
+
+                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+
+                var returncode = test.Runner.ExecuteCommandAsync(test.Args).Result;
+                Assert.Equal(returncode, 0);
+
+                var packagePaths = test.Args.PackagePaths;
+                Assert.Equal(packagePaths.Count, 1);
+
+                var packagePath = packagePaths[0];
+                using (var zip = new ZipArchive(File.OpenRead(packagePath), ZipArchiveMode.Read))
+                {
+                    var signatureEntry = zip.GetEntry(".signature.p7s");
+
+                    Assert.NotNull(signatureEntry);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndWrongPassword_ThrowsAsync()
+        {
+            const string password = "password";
+
+            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            {
+                const string fileName = "ExistingCertFile.pfx";
+                var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
+
+                var bytes = test.Certificate.Export(X509ContentType.Pfx, password);
+
+                File.WriteAllBytes(certificateFilePath, bytes);
 
                 test.Args.CertificatePath = certificateFilePath;
                 test.Args.CertificatePassword = "incorrect password";
 
+                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
                     () => test.Runner.ExecuteCommandAsync(test.Args));
 
-                Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
                 Assert.Equal($"Invalid password was provided for the certificate file '{certificateFilePath}'. Provide a valid password using the '-CertificatePassword' option", exception.Message);
             }
         }
+
+        [Fact]
+        public async Task ExecuteCommandAsync_WithExistingCertificateFromStoreAndNoPassword_Succeed()
+        {
+            using (var test = await Test.CreateAsync(_fixture.GetTrustedCertificate()))
+            {
+                test.Args.CertificateStoreName = StoreName.My;
+                test.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
+                test.Args.CertificateFingerprint = test.Certificate.Thumbprint;
+
+                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+
+                var returncode = test.Runner.ExecuteCommandAsync(test.Args).Result;
+                Assert.Equal(returncode, 0);
+
+                var packagePaths = test.Args.PackagePaths;
+                Assert.Equal(packagePaths.Count, 1);
+
+                var packagePath = packagePaths[0];
+                using (var zip = new ZipArchive(File.OpenRead(packagePath), ZipArchiveMode.Read))
+                {
+                    var signatureEntry = zip.GetEntry(".signature.p7s");
+
+                    Assert.NotNull(signatureEntry);
+                }
+            }
+        }
+#endif
 
         [Fact]
         public async Task ExecuteCommandAsync_WithAmbiguousMatch_ThrowsAsync()
@@ -121,18 +227,20 @@ namespace NuGet.Commands.Test
             }
         }
 
-        //skip this test when signing is not supported, as the signing APIs are not implemented.
+        //skip this test when signing is not supported.
 #if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnceAsync()
         {
             const string password = "password";
 
-            using (var test = await Test.CreateAsync(_fixture.GetCertificateWithPassword(password)))
+            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
 
-                File.WriteAllBytes(certificateFilePath, test.Certificate.Export(X509ContentType.Pkcs12, password));
+                var bytes = test.Certificate.Export(X509ContentType.Pfx, password);
+
+                File.WriteAllBytes(certificateFilePath, bytes);
 
                 test.Args.CertificatePath = certificateFilePath;
                 test.Args.CertificatePassword = password;
@@ -152,6 +260,7 @@ namespace NuGet.Commands.Test
             }
         }
 #endif
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
