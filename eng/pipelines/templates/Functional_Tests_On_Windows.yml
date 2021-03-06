@@ -43,7 +43,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\restore.binlog"
 
 - task: MSBuild@1
   displayName: "Run Functional Tests (continue on error)"
@@ -52,7 +52,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+    msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\test.binlog"
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
@@ -62,7 +62,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+    msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\test.binlog"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PublishTestResults@2
@@ -83,6 +83,13 @@ steps:
     ArtifactName: "$(Agent.JobName)"
     ArtifactType: "Container"
   condition: "or(failed(), canceled())"
+
+- task: PublishPipelineArtifact@1
+  displayName: "Publish binlogs"
+  inputs:
+    artifactName: binlog - $(Agent.JobName)
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\binlog"
+  condition: "always()"
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
