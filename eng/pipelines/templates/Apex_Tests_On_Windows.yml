@@ -23,7 +23,7 @@ steps:
     solution: "build\\bootstrap.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Restore"
+    msbuildArguments: "/t:Restore -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\bootstrap.binlog"
 
 - task: PowerShell@1
   displayName: "Bootstrap.ps1"
@@ -69,7 +69,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber)"
+    msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber) -bl:$(Build.Repositoru.LocalPath)\\artifacts\\binlog\\restore.binlog"
 
 - task: MSBuild@1
   displayName: "Run Apex Tests (continue on error)"
@@ -79,7 +79,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\test.binlog"
     maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -91,7 +91,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\test.binlog"
     maximumCpuCount: true
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
@@ -104,6 +104,13 @@ steps:
     mergeTestResults: "true"
     testRunTitle: "NuGet.Client Apex Tests On Windows"
   condition: "succeededOrFailed()"
+
+- task: PublishPipelineArtifact@1
+  displayName: "Publish binlogs"
+  inputs:
+    artifactName: binlog - $(Agent.JobName)
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\binlog"
+  condition: "always()"
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
