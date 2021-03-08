@@ -54,7 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build">
-      <HintPath>$(SolutionPackagesFolder)microsoft.build\15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)microsoft.build\15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -311,6 +311,7 @@
     <PackageReference Include="VSLangProj80" />
     <PackageReference Include="VSLangProj157" />
     <PackageReference Include="Microsoft.VisualStudio.Composition" />
+    <PackageDownload Include="Microsoft.Build" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />

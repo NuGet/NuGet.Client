@@ -69,6 +69,9 @@
         <PackageReference Update="VSLangProj80" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="VSLangProj157" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="VSSDK.TemplateWizardInterface" Version="12.0.4" />
+        <!-- PackageDownload -->
+        <PackageDownload Update="Microsoft.Build" Version="[15.1.262-preview5]" />
+        
     </ItemGroup>
 
     <!-- Test and utility packages -->
