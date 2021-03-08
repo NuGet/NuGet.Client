@@ -28,13 +28,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="VSLangProj140">
       <HintPath>$(SolutionPackagesFolder)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
@@ -46,7 +39,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />

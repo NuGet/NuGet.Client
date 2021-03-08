@@ -84,15 +84,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <ItemGroup>
