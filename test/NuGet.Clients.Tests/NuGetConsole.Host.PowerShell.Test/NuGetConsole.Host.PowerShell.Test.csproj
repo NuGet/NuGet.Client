@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-    <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit and integration tests for NuGetConsole.Host.PowerShell.</Description>
   </PropertyGroup>
