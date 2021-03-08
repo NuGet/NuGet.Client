@@ -30,11 +30,11 @@
   <ItemGroup>
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="VSLangProj140">
-      <HintPath>$(SolutionPackagesFolder)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="VSLangProj150">
-      <HintPath>$(SolutionPackagesFolder)vslangproj150\1.0.0\lib\net46\VSLangProj150.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)vslangproj150\1.0.0\lib\net46\VSLangProj150.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
@@ -304,14 +304,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <!-- This causes a NU5104 warning. When upgrading to a stable version of this package, remove the above no warn. -->
+    <PackageDownload Include="Microsoft.Build" />
+    <PackageDownload Include="VSLangProj140" />
+    <PackageDownload Include="VSLangProj150" />
     <PackageReference Include="Microsoft.DataAI.NuGetRecommender.Contracts" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="VSLangProj" />
     <PackageReference Include="VSLangProj80" />
     <PackageReference Include="VSLangProj157" />
     <PackageReference Include="Microsoft.VisualStudio.Composition" />
-    <PackageDownload Include="Microsoft.Build" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
