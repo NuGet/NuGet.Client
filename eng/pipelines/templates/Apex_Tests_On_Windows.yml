@@ -80,6 +80,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+    maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
@@ -91,6 +92,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+    maximumCpuCount: true
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PublishTestResults@2

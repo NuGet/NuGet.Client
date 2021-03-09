@@ -40,6 +40,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+    maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
@@ -50,6 +51,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+    maximumCpuCount: true
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PublishTestResults@2
