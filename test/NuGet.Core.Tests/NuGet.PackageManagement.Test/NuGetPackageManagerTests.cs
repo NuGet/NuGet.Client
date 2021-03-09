@@ -4480,12 +4480,10 @@ namespace NuGet.Test
         public async Task TestPacManInstallPackageEFFromV3()
         {
             // Arrange
-            //var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
             {
                 TestSourceRepositoryUtility.V3PackageSource,
-                new NuGet.Configuration.PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
+                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json"),
             });
 
             using (var testSolutionManager = new TestSolutionManager())
