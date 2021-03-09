@@ -3,7 +3,6 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <!-- TODO NK - This should be .NET Framework only. -->
     <Description>NuGet's dependency resolver for packages.config based projects.</Description>
     <TargetFrameworks>$(TargetFrameworksLibraryForSigning)</TargetFrameworks>
     <TargetFramework />

@@ -308,11 +308,11 @@
     <PackageDownload Include="VSLangProj140" />
     <PackageDownload Include="VSLangProj150" />
     <PackageReference Include="Microsoft.DataAI.NuGetRecommender.Contracts" />
+    <PackageReference Include="Microsoft.VisualStudio.Composition" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="VSLangProj" />
     <PackageReference Include="VSLangProj80" />
     <PackageReference Include="VSLangProj157" />
-    <PackageReference Include="Microsoft.VisualStudio.Composition" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
