@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 #if IS_SIGNING_SUPPORTED
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +26,8 @@ namespace Dotnet.Integration.Test
         private SignCommandTestFixture _signFixture;
 
         private const string _packageAlreadySignedError = "NU3001: The package already contains a signature. Please remove the existing signature before adding a new signature.";
-        private readonly string _invalidPasswordErrorCode = NuGetLogCode.NU3001.ToString();
+        //private readonly string _invalidPasswordErrorCode = NuGetLogCode.NU3001.ToString(); No code
+        private readonly string _invalidPasswordErrorCode = "Invalid password was provided for the certificate file";
         private readonly string _chainBuildFailureErrorCode = NuGetLogCode.NU3018.ToString();
         //Strings.SignCommandNoCertException;
         private readonly string _noCertFoundErrorCode = "No certificates were found that meet all the given criteria.";
@@ -219,34 +222,25 @@ namespace Dotnet.Integration.Test
                 result.AllOutput.Should().Contain(_noCertFoundErrorCode);
             }
         }
-        //copied from nuget.exe
-        /*
 
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithUnknownRevocationCertChainAsync()
+        [Fact]
+        public async Task DotnetSign_SignPackageWithUnknownRevocationCertChain_SucceedsAsync()
         {
             // Arrange
-            var cert = _testFixture.RevocationUnknownTestCertificateWithChain;
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
-
-                // Act
-                var result = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
-                    waitForExit: true);
+                var revocationUnknownCert = _signFixture.RevocationUnknownTestCertificateWithChain;
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                        pathContext.PackageSource,
+                        $"nuget sign {packageFilePath} --certificate-fingerprint {revocationUnknownCert.Source.Cert.Thumbprint} --certificate-store-name {revocationUnknownCert.StoreName} --certificate-store-location {revocationUnknownCert.StoreLocation}",
+                        ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -256,33 +250,28 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithOutputDirectoryAsync()
+        [Fact]
+        public async Task DotnetSign_SignPackageWithOutputDirectory_SucceedsAsync()
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var outputDir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packageFileName = Guid.NewGuid().ToString();
-                var packagePath = Path.Combine(dir, packageFileName);
-                var signedPackagePath = Path.Combine(outputDir, packageFileName);
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
+                var outputDir = pathContext.PackagesV2;
 
-                // Act
-                var result = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -OutputDirectory {outputDir}",
-                    waitForExit: true);
+                var trustedCert = _trustedTestCert;
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                        pathContext.PackageSource,
+                        $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --output {outputDir}",
+                        ignoreExitCode: true);
+
+                var signedPackagePath = Path.Combine(outputDir, "PackageA.1.0.0.nupkg");
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -291,36 +280,29 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
-        public async Task SignCommand_ResignPackageWithoutOverwriteFailsAsync()
+        [Fact]
+        public async Task DotnetSign_ResignPackageWithoutOverwrite_FailsAsync()
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
+                var trustedCert = _trustedTestCert;
+                //Act
+                var firstResult = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    ignoreExitCode: true);
 
-                var firstResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    waitForExit: true);
-
-                // Act
-                var secondResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    waitForExit: true);
+                var secondResult = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    ignoreExitCode: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -330,36 +312,29 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
-        public async Task SignCommand_ResignPackageWithOverwriteSuccessAsync()
+        [Fact]
+        public async Task DotnetSign_ResignPackageWithOverwrite_SuccessAsync()
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
+                var trustedCert = _trustedTestCert;
+                //Act
+                var firstResult = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    ignoreExitCode: true);
 
-                // Act
-                var firstResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    waitForExit: true);
-
-                var secondResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Overwrite",
-                    waitForExit: true);
+                var secondResult = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --overwrite",
+                    ignoreExitCode: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -369,30 +344,24 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithOverwriteSuccessAsync()
+        [Fact]
+        public async Task DotnetSign_SignPackageWithOverwrite_SuccessAsync()
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
-
-                // Act
-                var firstResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Overwrite",
-                    waitForExit: true);
+                var trustedCert = _trustedTestCert;
+                //Act
+                var firstResult = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --overwrite",
+                    ignoreExitCode: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -400,279 +369,130 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithPfxFileSuccessAsync()
+        [Fact]
+        public async Task DotnetSign_SignPackageWithPfxFile_SuccessAsync()
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-                var pfxPath = Path.Combine(dir, Guid.NewGuid().ToString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
+
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+
+                var pfxPath = Path.Combine(pathContext.WorkingDirectory, Guid.NewGuid().ToString());
 
                 var password = Guid.NewGuid().ToString();
                 var pfxBytes = _trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, password);
+                File.WriteAllBytes(pfxPath, pfxBytes);
 
-                using (var fileStream = File.OpenWrite(pfxPath))
-                using (var pfxStream = new MemoryStream(pfxBytes))
-                {
-                    pfxStream.CopyTo(fileStream);
-                }
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
-
-                // Act
-                var firstResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificatePath {pfxPath} -CertificatePassword {password}",
-                    waitForExit: true);
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-path {pfxPath} --certificate-password {password}",
+                    ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeTrue();
-                firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.Success.Should().BeTrue();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
 
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithPfxFileInteractiveSuccessAsync()
+        [Fact]
+        public async Task DotnetSign_SignPackageWithPfxFileWithoutPasswordAndWithNonInteractive_FailsAsync()
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-                var pfxPath = Path.Combine(dir, Guid.NewGuid().ToString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
+
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+
+                var pfxPath = Path.Combine(pathContext.WorkingDirectory, Guid.NewGuid().ToString());
 
                 var password = Guid.NewGuid().ToString();
                 var pfxBytes = _trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, password);
+                File.WriteAllBytes(pfxPath, pfxBytes);
 
-                using (var fileStream = File.OpenWrite(pfxPath))
-                using (var pfxStream = new MemoryStream(pfxBytes))
-                {
-                    pfxStream.CopyTo(fileStream);
-                }
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
-
-                // Act
-                var firstResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificatePath {pfxPath}",
-                    waitForExit: true,
-                    inputAction: (w) =>
-                    {
-                        w.WriteLine(password);
-                    });
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-path {pfxPath}",
+                    ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeTrue();
-                firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.Success.Should().BeFalse();
+                //result.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
+                result.AllOutput.Should().Contain(_invalidPasswordErrorCode);
             }
         }
 
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithPfxFileInteractiveInvalidPasswordFailsAsync()
+        [Fact]
+        public async Task DotnetSign_SignPackageWithUntrustedSelfIssuedCertificateInCertificateStore_SuccessAsync()
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-                var pfxPath = Path.Combine(dir, Guid.NewGuid().ToString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var password = Guid.NewGuid().ToString();
-                var pfxBytes = _trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, password);
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                using (var fileStream = File.OpenWrite(pfxPath))
-                using (var pfxStream = new MemoryStream(pfxBytes))
-                {
-                    pfxStream.CopyTo(fileStream);
-                }
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
-
-                // Act
-                var firstResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificatePath {pfxPath}",
-                    waitForExit: true,
-                    inputAction: (w) =>
-                    {
-                        w.WriteLine(Guid.NewGuid().ToString());
-                    });
+                var untrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
+                
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificateFingerprint {untrustedSelfIssuedCert.Thumbprint}",
+                    ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
+                result.Success.Should().BeTrue();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
 
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithPfxFileWithoutPasswordAndWithNonInteractiveFailsAsync()
+        [Fact]
+        public async Task DotnetSign_SignPackageWithUnsuportedTimestampHashAlgorithm_FailsAsync()
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-                var pfxPath = Path.Combine(dir, Guid.NewGuid().ToString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var password = Guid.NewGuid().ToString();
-                var pfxBytes = _trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, password);
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                var originalFile = File.ReadAllBytes(packageFilePath);
 
-                using (var fileStream = File.OpenWrite(pfxPath))
-                using (var pfxStream = new MemoryStream(pfxBytes))
+                var testServer = await _signFixture.GetSigningTestServerAsync();
+                var certificateAuthority = await _signFixture.GetDefaultTrustedCertificateAuthorityAsync();
+                var options = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
+                var timestampService = TimestampService.Create(certificateAuthority, options);
+
+                using (testServer.RegisterResponder(timestampService))
+                using (var UntrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore)
                 {
-                    pfxStream.CopyTo(fileStream);
-                }
+                    //Act
+                    var result = _msbuildFixture.RunDotnet(
+                        pathContext.PackageSource,
+                        $"nuget sign {packageFilePath} --certificateFingerprint {UntrustedSelfIssuedCert.Thumbprint} --timestamper {timestampService.Url}",
+                        ignoreExitCode: true);
 
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
-
-                // Act
-                var firstResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificatePath {pfxPath} -NonInteractive",
-                    waitForExit: true);
-
-                // Assert
-                firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithPfxFileWithNonInteractiveAndStdInPasswordFailsAsync()
-        {
-            // Arrange
-            var package = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var zipStream = await package.CreateAsStreamAsync())
-            {
-                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-                var pfxPath = Path.Combine(dir, Guid.NewGuid().ToString());
-
-                var password = Guid.NewGuid().ToString();
-                var pfxBytes = _trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, password);
-
-                using (var fileStream = File.OpenWrite(pfxPath))
-                using (var pfxStream = new MemoryStream(pfxBytes))
-                {
-                    pfxStream.CopyTo(fileStream);
-                }
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
-
-                // Act
-                var firstResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"sign {packagePath} -CertificatePath {pfxPath} -NonInteractive",
-                    waitForExit: true,
-                    inputAction: (w) =>
-                    {
-                        w.WriteLine(Guid.NewGuid().ToString());
-                    });
-
-                // Assert
-                firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithUntrustedSelfIssuedCertificateInCertificateStoreAsync()
-        {
-            using (var directory = TestDirectory.Create())
-            {
-                var packageContext = new SimpleTestPackageContext();
-                var packageFile = await packageContext.CreateAsFileAsync(directory, fileName: Guid.NewGuid().ToString());
-
-                using (var certificate = _testFixture.UntrustedSelfIssuedCertificateInCertificateStore)
-                {
-                    var result = CommandRunner.Run(
-                        _nugetExePath,
-                        directory,
-                        $"sign {packageFile.FullName} -CertificateFingerprint {certificate.Thumbprint}",
-                        waitForExit: true);
-
-                    Assert.True(result.Success);
-                    Assert.Contains(_noTimestamperWarningCode, result.AllOutput);
-                }
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithUnsuportedTimestampHashAlgorithm_ShouldNotModifyPackageAsync()
-        {
-            var testServer = await _testFixture.GetSigningTestServerAsync();
-            var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
-            var options = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
-            var timestampService = TimestampService.Create(certificateAuthority, options);
-
-            using (testServer.RegisterResponder(timestampService))
-            using (var directory = TestDirectory.Create())
-            {
-                var packageContext = new SimpleTestPackageContext();
-                var packageFile = await packageContext.CreateAsFileAsync(directory, fileName: Guid.NewGuid().ToString());
-                var originalFile = File.ReadAllBytes(packageFile.FullName);
-
-                using (var certificate = _testFixture.UntrustedSelfIssuedCertificateInCertificateStore)
-                {
-                    var result = CommandRunner.Run(
-                        _nugetExePath,
-                        directory,
-                        $"sign {packageFile.FullName} -CertificateFingerprint {certificate.Thumbprint} -Timestamper {timestampService.Url}",
-                        waitForExit: true);
-
-                    Assert.False(result.Success);
-                    Assert.Contains(_timestampUnsupportedDigestAlgorithmCode, result.AllOutput);
+                    // Assert
+                    result.Success.Should().BeFalse();
+                    result.AllOutput.Should().Contain(_timestampUnsupportedDigestAlgorithmCode);
                     Assert.Contains("The timestamp signature has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.", result.AllOutput);
 
-                    var resultingFile = File.ReadAllBytes(packageFile.FullName);
+                    var resultingFile = File.ReadAllBytes(packageFilePath);
                     Assert.Equal(resultingFile, originalFile);
-                }
+                } 
             }
         }
-        */
-        //end of copy
     }
 }
 #endif
