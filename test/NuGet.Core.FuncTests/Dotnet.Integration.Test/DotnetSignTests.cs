@@ -160,7 +160,7 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} -Timestamper {timestampService.Url.OriginalString}",
+                        $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --timestamper {timestampService.Url.OriginalString}",
                         ignoreExitCode: true);
 
                 // Assert
@@ -190,7 +190,7 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 result.Success.Should().BeTrue();
-                result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
 
@@ -215,7 +215,7 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 result.Success.Should().BeFalse();
-                result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_noCertFoundErrorCode);
             }
         }
