@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
