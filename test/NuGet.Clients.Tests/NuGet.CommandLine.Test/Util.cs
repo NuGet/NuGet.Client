@@ -1061,19 +1061,6 @@ EndProject";
                  </Project>".Replace("$NAME$", projectName);
         }
 
-        public static void ClearWebCache()
-        {
-            var nugetExe = Util.GetNuGetExePath();
-
-            var r = CommandRunner.Run(
-            nugetExe,
-            ".",
-            "locals http-cache -Clear",
-            waitForExit: true);
-
-            Assert.Equal(0, r.Item1);
-        }
-
         public static string CreateBasicTwoProjectSolution(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName)
         {
             var repositoryPath = Path.Combine(workingPath, "Repository");
