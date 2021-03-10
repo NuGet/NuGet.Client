@@ -307,7 +307,7 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeTrue(because: result.AllOutput);
+                firstResult.Success.Should().BeTrue(because: firstResult.AllOutput);
                 firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 secondResult.Success.Should().BeFalse();
                 secondResult.AllOutput.Should().Contain(_packageAlreadySignedError);
@@ -339,7 +339,7 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeTrue(because: result.AllOutput);
+                firstResult.Success.Should().BeTrue(because: firstResult.AllOutput);
                 firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 secondResult.Success.Should().BeTrue();
                 secondResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -360,14 +360,14 @@ namespace Dotnet.Integration.Test
 
                 var trustedCert = _trustedTestCert;
                 //Act
-                var firstResult = _msbuildFixture.RunDotnet(
+                var result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --overwrite",
                     ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeTrue(because: result.AllOutput);
-                firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
 
