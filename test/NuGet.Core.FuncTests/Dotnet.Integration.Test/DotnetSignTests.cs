@@ -89,7 +89,7 @@ namespace Dotnet.Integration.Test
                         ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_noCertFoundErrorCode);
             }
@@ -115,7 +115,7 @@ namespace Dotnet.Integration.Test
                         ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_noCertFoundErrorCode);
             }
@@ -141,7 +141,7 @@ namespace Dotnet.Integration.Test
                         ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_noCertFoundErrorCode);
             }
@@ -168,7 +168,7 @@ namespace Dotnet.Integration.Test
                         ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
             }
         }
@@ -193,7 +193,7 @@ namespace Dotnet.Integration.Test
                         ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -218,7 +218,7 @@ namespace Dotnet.Integration.Test
                         ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_noCertFoundErrorCode);
             }
@@ -244,10 +244,10 @@ namespace Dotnet.Integration.Test
                         ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain("The revocation function was unable to check revocation for the certificate");
+                result.AllOutput.Should().Contain(X509ChainStatusFlags.RevocationStatusUnknown.ToString());
             }
         }
 
@@ -263,7 +263,8 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var outputDir = pathContext.PackagesV2;
+                var outputDir = Path.Combine(pathContext.WorkingDirectory, "Output");
+                Directory.CreateDirectory(outputDir);
 
                 var trustedCert = _trustedTestCert;
                 //Act
@@ -275,7 +276,7 @@ namespace Dotnet.Integration.Test
                 var signedPackagePath = Path.Combine(outputDir, "PackageA.1.0.0.nupkg");
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 File.Exists(signedPackagePath).Should().BeTrue();
             }
@@ -306,10 +307,10 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeTrue();
+                firstResult.Success.Should().BeTrue(because: result.AllOutput);
                 firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 secondResult.Success.Should().BeFalse();
-                secondResult.Errors.Should().Contain(_packageAlreadySignedError);
+                secondResult.AllOutput.Should().Contain(_packageAlreadySignedError);
             }
         }
 
@@ -338,7 +339,7 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeTrue();
+                firstResult.Success.Should().BeTrue(because: result.AllOutput);
                 firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 secondResult.Success.Should().BeTrue();
                 secondResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -365,7 +366,7 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                firstResult.Success.Should().BeTrue();
+                firstResult.Success.Should().BeTrue(because: result.AllOutput);
                 firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -395,7 +396,7 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -425,7 +426,7 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeFalse(because: result.AllOutput);
                 //result.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
                 result.AllOutput.Should().Contain(_invalidPasswordErrorCode);
             }
@@ -452,7 +453,7 @@ namespace Dotnet.Integration.Test
                     ignoreExitCode: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -485,7 +486,7 @@ namespace Dotnet.Integration.Test
                         ignoreExitCode: true);
 
                     // Assert
-                    result.Success.Should().BeFalse();
+                    result.Success.Should().BeFalse(because: result.AllOutput);
                     result.AllOutput.Should().Contain(_timestampUnsupportedDigestAlgorithmCode);
                     Assert.Contains("The timestamp signature has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.", result.AllOutput);
 
