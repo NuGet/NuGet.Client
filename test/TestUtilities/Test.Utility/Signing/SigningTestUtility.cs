@@ -162,7 +162,8 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority);
+                    StoreName certificateAuthorityStoreName = CertificateStoreUtilities.GetCertificateAuthorityStoreName();
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(certificateAuthorityStoreName);
                     issuer = cert;
                 }
                 else // leaf cert

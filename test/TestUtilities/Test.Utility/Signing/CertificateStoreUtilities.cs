@@ -18,5 +18,14 @@ namespace Test.Utility.Signing
             }
             return (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ? StoreLocation.LocalMachine : StoreLocation.CurrentUser;
         }
+
+        public static StoreName GetCertificateAuthorityStoreName()
+        {
+            // According to https://github.com/dotnet/runtime/issues/48207#issuecomment-778293907,
+            // only My, Root (RO), and Disallowed stores work on macOS.
+            // So use different approaches for Windows, Mac and Linux.
+
+            return (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux) ? StoreName.CertificateAuthority : StoreName.My;
+        }
     }
 }
