@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Security;
 using System.Windows;
+using Microsoft.VisualStudio.Experimentation;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 
@@ -174,25 +173,27 @@ namespace NuGet.PackageManagement.UI
 
         public static void LoadVsBrushes()
         {
+            var isBgColorFlightEnabled = IsBackgroundColorFlightEnabled();
+
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey;
             ActiveBorderKey = VsBrushes.ActiveBorderKey;
             BorderBrush = VsBrushes.BrandedUIBorderKey;
             ComboBoxBorderKey = VsBrushes.ComboBoxBorderKey;
             ControlLinkTextHoverKey = VsBrushes.ControlLinkTextHoverKey;
             ControlLinkTextKey = VsBrushes.ControlLinkTextKey;
-            DetailPaneBackground = VsBrushes.BrandedUIBackgroundKey;
-            HeaderBackground = VsBrushes.BrandedUIBackgroundKey;
+            DetailPaneBackground = isBgColorFlightEnabled ? CommonDocumentColors.PageBrushKey : VsBrushes.BrandedUIBackgroundKey;
+            HeaderBackground = isBgColorFlightEnabled ? CommonDocumentColors.PageBrushKey : VsBrushes.BrandedUIBackgroundKey;
             InfoBackgroundKey = VsBrushes.InfoBackgroundKey;
             InfoTextKey = VsBrushes.InfoTextKey;
-            LegalMessageBackground = VsBrushes.BrandedUIBackgroundKey;
-            ListPaneBackground = VsBrushes.BrandedUIBackgroundKey;
+            LegalMessageBackground = isBgColorFlightEnabled ? CommonDocumentColors.PageBrushKey : VsBrushes.BrandedUIBackgroundKey;
+            ListPaneBackground = isBgColorFlightEnabled ? CommonDocumentColors.PageBrushKey : VsBrushes.BrandedUIBackgroundKey;
             SplitterBackgroundKey = VsBrushes.CommandShelfBackgroundGradientKey;
             ToolWindowBorderKey = VsBrushes.ToolWindowBorderKey;
             ToolWindowButtonDownBorderKey = VsBrushes.ToolWindowButtonDownBorderKey;
             ToolWindowButtonDownKey = VsBrushes.ToolWindowButtonDownKey;
             ToolWindowButtonHoverActiveBorderKey = VsBrushes.ToolWindowButtonHoverActiveBorderKey;
             ToolWindowButtonHoverActiveKey = VsBrushes.ToolWindowButtonHoverActiveKey;
-            UIText = VsBrushes.BrandedUITextKey;
+            UIText = isBgColorFlightEnabled ? CommonDocumentColors.PageTextBrushKey : VsBrushes.BrandedUITextKey;
             WindowTextKey = VsBrushes.WindowTextKey;
 
             HeaderColorsDefaultBrushKey = HeaderColors.DefaultBrushKey;
@@ -257,6 +258,21 @@ namespace NuGet.PackageManagement.UI
             // Mapping color keys directly for use to create brushes using these colors
             ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;
             ListItemTextSelectedColorKey = CommonDocumentColors.ListItemTextSelectedColorKey;
+        }
+
+        private static bool IsBackgroundColorFlightEnabled()
+        {
+            var forceFlightEnabled = false;
+            try
+            {
+                forceFlightEnabled = Environment.GetEnvironmentVariable(ExperimentationConstants.EnvironmentVariables.PackageManagerBackgroundColor) == "1";
+            }
+            catch (SecurityException)
+            {
+                // Don't force the flight to be enabled if we are not able to read the environment variable
+            }
+
+            return forceFlightEnabled || ExperimentationService.Default.IsCachedFlightEnabled(ExperimentationConstants.FlightFlags.PackageManagerBackgroundColor);
         }
     }
 }
