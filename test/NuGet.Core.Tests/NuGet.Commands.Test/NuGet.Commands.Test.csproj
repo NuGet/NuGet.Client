@@ -4,8 +4,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFrameworksForSigning)</TargetFrameworks>
-    <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Commands.</Description>
   </PropertyGroup>
