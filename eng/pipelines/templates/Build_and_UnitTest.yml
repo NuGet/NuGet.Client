@@ -95,7 +95,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\restore.binlog"
+    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
 
 - task: MSBuild@1
   displayName: "Build for VS2019"
@@ -103,7 +103,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\build.binlog"
+    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
 
 - task: MSBuild@1
   displayName: "Ensure msbuild.exe can parse nuget.sln"
@@ -111,7 +111,7 @@ steps:
   inputs:
     solution: "nuget.sln"
     msbuildVersion: "16.0"
-    msbuildArguments: "/t:EnsureNewtonsoftJsonVersion -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\EnsureNewtonsoftJsonVersion.binlog"
+    msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
   condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
@@ -120,7 +120,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
-    msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\EnsurePackageReferenceVersionsInSolution.binlog"
+    msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution"
   condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
 
@@ -130,7 +130,7 @@ steps:
     solution: "build\\loc.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\localize.binlog"
+    msbuildArguments: "/t:AfterBuild"
 
 - task: MSBuild@1
   displayName: "Build Final NuGet.exe (via ILMerge)"
@@ -138,7 +138,7 @@ steps:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\ILMergeNuGetExe.binlog"
+    msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
 
 - task: MSBuild@1
   displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
@@ -146,7 +146,7 @@ steps:
     solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\CopyFinalNuGetExeToOutputPath.binlog"
+    msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -156,7 +156,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\tests.binlog"
+    msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: MSBuild@1
@@ -166,7 +166,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\tests.binlog"
+    msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishTestResults@2
@@ -212,7 +212,7 @@ steps:
     solution: "build\\sign.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\sign.binlog"
+    msbuildArguments: "/t:AfterBuild"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
@@ -221,7 +221,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\pack.binlog"
+    msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
@@ -230,7 +230,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\EnsurePackagesExist.binlog"
+    msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
@@ -239,7 +239,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\BuildVSIX.binlog"
+    msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -248,7 +248,7 @@ steps:
     solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\BuildTools.binlog"
+    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -257,7 +257,7 @@ steps:
     solution: "build\\sign.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild /p:SignPackages=true -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\SignPackages.binlog"
+    msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: NuGetCommand@2
@@ -299,7 +299,6 @@ steps:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "-bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\NuGetCoreVsman.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: MSBuild@1
@@ -308,7 +307,6 @@ steps:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "-bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\BuildToolsVsman.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
@@ -386,7 +384,7 @@ steps:
   inputs:
     solution: 'build\NuGet.OptProfV2.runsettingsproj'
     msbuildVersion: '16.0'
-    msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="$(TestDrop)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\GenerateRunsettings.binlog'
+    msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="$(TestDrop)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
@@ -442,7 +440,7 @@ steps:
     solution: "build\\symbols.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\CollectSymbols.binlog"
+    msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: CopyFiles@2
@@ -506,20 +504,13 @@ steps:
 - task: CmdLine@2
   displayName: "Publish to the .NET Core build asset registry (BAR)"
   inputs:
-    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /p:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken) -bl:$(Build.Repository.LocalPath)\\artifacts\\binlog\\PublishBAR.binlog
+    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /p:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken)
     workingDirectory: cli
     failOnStderr: true
   env:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_MULTILEVEL_LOOKUP: true
   condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
-  inputs:
-    artifactName: binlog - $(Agent.JobName)
-    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\binlog"
-  condition: "always()"
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"
