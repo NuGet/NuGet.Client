@@ -454,13 +454,13 @@ steps:
   inputs:
     SourceFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PublishPipelineArtifact@1
-  displayName: "Upload localizeInputs artifact"
+  displayName: "Upload localizationArtifacts artifact"
   inputs:
-    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localize\\"
-    artifactName: "localizeInputs"
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
+    artifactName: "localizationArtifacts"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PublishPipelineArtifact@1
