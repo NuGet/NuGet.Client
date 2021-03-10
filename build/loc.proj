@@ -75,25 +75,23 @@
     <Copy SourceFiles="@(EulaFiles->'%(Identity)')" DestinationFiles="@(EulaFiles->'%(DestinationDir)')"/>
   </Target>
 
-  <Target Name="MoveLcgFilesToArtifacts" AfterTargets="Localize">
+  <Target Name="CopyLcgFilesToArtifacts" AfterTargets="Localize">
     <ItemGroup>
-      <_MoveLcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg'">
+      <_LcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg'">
         <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedToolFiles.lang), %(LocalizedToolFiles.RootDir)%(LocalizedToolFiles.Directory)))%(LocalizedToolFiles.Culture)\%(LocalizedToolFiles.Filename)%(LocalizedToolFiles.Extension)</DestinationDir>
-      </_MoveLcgFiles>
+      </_LcgFiles>
     </ItemGroup>
-    <Move SourceFiles="@(_MoveLcgFiles->'%(Identity)')" DestinationFiles="@(_MoveLcgFiles->'%(DestinationDir)')"/>
+    <Copy SourceFiles="@(_LcgFiles->'%(Identity)')" DestinationFiles="@(_LcgFiles->'%(DestinationDir)')"/>
   </Target>
 
-  <!--
   <Target Name="CopyBinariesToLocalizeENU" AfterTargets="Localize">
     <ItemGroup>
-      <_EnglishBinaires Include="@(FilesToLocalize)" Condition="'%(FilesToLocalize.Extension)'== '.dll'">
+      <_EnglishBinaries Include="@(FilesToLocalize)" Condition="'%(FilesToLocalize.Extension)'== '.dll'">
         <DestinationPath>$(ArtifactsDirectory)localize\ENU\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
-      </_EnglishBinaires>
+      </_EnglishBinaries>
     </ItemGroup>
-    <Copy SourceFiles="@(_EnglishBinaires)" DestinationFiles="@(_EnglishBinaires->'%(DestinationPath)')" />
+    <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
   </Target>
--->
 
   <Target Name="AfterBuild" DependsOnTargets="LocalizeNonProjectFiles;BatchLocalize"/>
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
