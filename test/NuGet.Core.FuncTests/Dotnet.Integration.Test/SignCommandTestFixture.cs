@@ -8,10 +8,8 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Dotnet.Integration.Test;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
-using NuGet;
 using Test.Utility.Signing;
 
 namespace Dotnet.Integration.Test

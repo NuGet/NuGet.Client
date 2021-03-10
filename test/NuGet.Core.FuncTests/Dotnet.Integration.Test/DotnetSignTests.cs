@@ -445,11 +445,11 @@ namespace Dotnet.Integration.Test
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
                 var untrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
-                
+
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificateFingerprint {untrustedSelfIssuedCert.Thumbprint}",
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {untrustedSelfIssuedCert.Thumbprint}",
                     ignoreExitCode: true);
 
                 // Assert
@@ -482,7 +482,7 @@ namespace Dotnet.Integration.Test
                     //Act
                     var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificateFingerprint {UntrustedSelfIssuedCert.Thumbprint} --timestamper {timestampService.Url}",
+                        $"nuget sign {packageFilePath} --certificate-fingerprint {UntrustedSelfIssuedCert.Thumbprint} --timestamper {timestampService.Url}",
                         ignoreExitCode: true);
 
                     // Assert
@@ -492,7 +492,7 @@ namespace Dotnet.Integration.Test
 
                     var resultingFile = File.ReadAllBytes(packageFilePath);
                     Assert.Equal(resultingFile, originalFile);
-                } 
+                }
             }
         }
     }
