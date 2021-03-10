@@ -144,7 +144,7 @@ steps:
     solution: "build\\loc.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild /bl:$(Build.Repository.LocalPath)\\artifacts\\localize\\loc.binlog"
+    msbuildArguments: "/t:AfterBuild /bl:$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\loc.binlog"
 
 - task: MSBuild@1
   displayName: "Build Final NuGet.exe (via ILMerge)"
@@ -457,7 +457,7 @@ steps:
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PublishPipelineArtifact@1
-  displayName: "Upload localizationArtifacts artifact"
+  displayName: "Publish localizationArtifacts artifact"
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
     artifactName: "localizationArtifacts"
