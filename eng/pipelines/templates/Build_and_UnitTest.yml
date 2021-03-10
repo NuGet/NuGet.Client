@@ -144,7 +144,7 @@ steps:
     solution: "build\\loc.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild"
+    msbuildArguments: "/t:AfterBuild /bl:$(Build.Repository.LocalPath)\\artifacts\\localize\\loc.binlog"
 
 - task: MSBuild@1
   displayName: "Build Final NuGet.exe (via ILMerge)"
