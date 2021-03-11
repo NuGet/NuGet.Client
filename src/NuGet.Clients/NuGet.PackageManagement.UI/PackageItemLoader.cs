@@ -256,14 +256,14 @@ namespace NuGet.PackageManagement.UI
             _state = new PackageFeedSearchState();
         }
 
-        public IEnumerable<PackageItemListViewModel> GetCurrent()
+        public IEnumerable<PackageItemViewModel> GetCurrent()
         {
             if (_state.ItemsCount == 0)
             {
-                return Enumerable.Empty<PackageItemListViewModel>();
+                return Enumerable.Empty<PackageItemViewModel>();
             }
 
-            var listItemViewModels = new List<PackageItemListViewModel>();
+            var listItemViewModels = new List<PackageItemViewModel>();
 
             foreach (PackageSearchMetadataContextInfo metadata in _state.Results.PackageSearchItems)
             {
@@ -281,7 +281,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                var listItem = new PackageItemListViewModel
+                var listItem = new PackageItemViewModel
                 {
                     Id = metadata.Identity.Id,
                     Version = metadata.Identity.Version,

@@ -110,12 +110,12 @@ namespace NuGet.Internal.Tools.ShipPublicApis
                     {
                         if (!string.IsNullOrWhiteSpace(line))
                         {
-                            lines.Add(line);
+                            shippedLines.Add(line);
                         }
                     }
                 }
 
-                lines.Sort(StringComparer.Ordinal);
+                shippedLines.Sort(StringComparer.Ordinal);
 
                 await File.WriteAllLinesAsync(shippedTxtPath, shippedLines);
                 await File.WriteAllLinesAsync(unshippedTxtPath.FullName, unshippedLines);

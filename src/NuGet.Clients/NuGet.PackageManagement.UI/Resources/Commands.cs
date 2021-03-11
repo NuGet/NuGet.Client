@@ -9,10 +9,14 @@ namespace NuGet.PackageManagement.UI
     {
         public static ICommand FocusOnSearchBox { get; } = new RoutedCommand();
 
-        // The parameter of this command is PackageItemListViewModel
+        /// <summary>
+        /// The parameter of this command is <see cref="PackageItemViewModel"/>
+        /// </summary>
         public static ICommand UninstallPackageCommand { get; } = new RoutedCommand();
 
-        // The parameter of this command is PackageItemListViewModel
+        /// <summary>
+        /// The parameter of this command is <see cref="PackageItemViewModel"/>
+        /// </summary>
         public static ICommand InstallPackageCommand { get; } = new RoutedCommand();
 
         // no parameters

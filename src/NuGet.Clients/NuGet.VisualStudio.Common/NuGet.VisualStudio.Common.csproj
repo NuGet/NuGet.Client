@@ -11,9 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(EnlistmentRoot)packages\microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -25,6 +22,7 @@
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Embeddable" ExcludeAssets="build" />
     <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
+    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" />
     <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" />

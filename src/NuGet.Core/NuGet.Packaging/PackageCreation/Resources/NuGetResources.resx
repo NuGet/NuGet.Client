@@ -227,4 +227,8 @@
   <data name="Manifest_RequireLicenseAcceptanceRequiresEmit" xml:space="preserve">
     <value>EmitRequireLicenseAcceptance must not be set to false if RequireLicenseAcceptance is set to true.</value>
   </data>
+  <data name="FoundDuplicateFile" xml:space="preserve">
+    <value>Attempted to pack multiple files into the same location(s). The following destinations were used multiple times: {0}</value>
+    <comment>0 - One or more duplicate files</comment>
+  </data>
 </root>

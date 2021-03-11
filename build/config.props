@@ -31,18 +31,10 @@
     <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
-
-    <!-- .NET Core SDK Insertion Logic -->
-    <!--We don't have .NET5 installed on CI, so we need to get version from CliVersionForBuilding and install it-->
-    <!--TODO: remove temporary workaround of using LockSDKVersion. Tracking issue: https://github.com/NuGet/Home/issues/9712 -->
-    <LockSDKVersion>true</LockSDKVersion>
-    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'false'"></OverrideCliBranchForTesting>
-    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">master 5.0.100</OverrideCliBranchForTesting>
-    <CliVersionForBuilding>"master 5.0.100"</CliVersionForBuilding>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">master</CliBranchForTesting>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</CliTargetBranches>
+    <!-- Specifies the SDK version to download to use for testing. The first value represents the channel, the second value represents the exact SDK version to be download. If a version is not specified, the latest version from the channel will be downloaded. 
+    Note that multiple SDKs can be downloaded by using `;` as a separator.
+    -->
+    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">release/5.0.2xx 5.0.200-servicing.21120.4</CliBranchForTesting>
   </PropertyGroup>
 
   <!-- Config -->
@@ -82,13 +74,7 @@
   <Target Name="GetVsTargetChannel">
     <Message Text="$(VsTargetChannel)" Importance="High"/>
   </Target>
-  <Target Name="GetCliTargetBranches">
-    <Message Text="$(CliTargetBranches)" Importance="High"/>
-  </Target>
   <Target Name="GetCliBranchForTesting">
       <Message Text="$(CliBranchForTesting)" Importance="High"/>
-  </Target>
-  <Target Name="GetCliVersionForBuilding">
-      <Message Text="$(CliVersionForBuilding)" Importance="High"/>
   </Target>
 </Project>

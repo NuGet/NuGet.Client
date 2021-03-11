@@ -15,10 +15,11 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public interface ISharedServiceState : IDisposable
     {
-        AsyncLazy<NuGetPackageManager> PackageManager { get; }
         AsyncLazy<IVsSolutionManager> SolutionManager { get; }
         ISourceRepositoryProvider SourceRepositoryProvider { get; }
         AsyncLazy<IReadOnlyCollection<SourceRepository>> SourceRepositories { get; }
+
+        ValueTask<NuGetPackageManager> GetPackageManagerAsync(CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<SourceRepository>> GetRepositoriesAsync(
             IReadOnlyCollection<PackageSourceContextInfo> packageSourceContextInfos,
             CancellationToken cancellationToken);

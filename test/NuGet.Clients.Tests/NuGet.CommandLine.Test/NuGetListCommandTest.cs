@@ -475,13 +475,15 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_Prerelease()
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestDirectory.Create())
-            using (var randomTestFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
+                var packageDirectory = Path.Combine(pathContext.WorkingDirectory, "packageFolder");
+                Directory.CreateDirectory(packageDirectory);
+                var solutionFolder = Path.Combine(pathContext.SolutionRoot);
+
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -509,7 +511,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -Prerelease -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        randomTestFolder,
+                        solutionFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -533,13 +535,15 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_AllVersionsPrerelease()
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestDirectory.Create())
-            using (var randomTestFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
+                var packageDirectory = Path.Combine(pathContext.WorkingDirectory, "packageFolder");
+                Directory.CreateDirectory(packageDirectory);
+                var solutionFolder = Path.Combine(pathContext.SolutionRoot);
+
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -567,7 +571,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -AllVersions -Prerelease -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        randomTestFolder,
+                        solutionFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -590,13 +594,14 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_SimpleV3()
         {
-            Util.ClearWebCache();
-
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
+                var packageDirectory = Path.Combine(pathContext.WorkingDirectory, "packageFolder");
+                Directory.CreateDirectory(packageDirectory);
+
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -664,7 +669,7 @@ namespace NuGet.CommandLine.Test
                         var args = "list test -Source " + serverV3.Uri + "index.json";
                         var result = CommandRunner.Run(
                             nugetexe,
-                            Directory.GetCurrentDirectory(),
+                            pathContext.SolutionRoot,
                             args,
                             waitForExit: true);
 
@@ -690,12 +695,15 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_SimpleV3_NoListEndpoint()
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packageDirectory = TestDirectory.Create())
+
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
                 // Server setup
+                var packageDirectory = Path.Combine(pathContext.WorkingDirectory, "packageFolder");
+                Directory.CreateDirectory(packageDirectory);
+
                 var indexJson = Util.CreateIndexJson();
                 using (var serverV3 = new MockServer())
                 {
@@ -722,7 +730,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -Source " + serverV3.Uri + "index.json";
                     var result = CommandRunner.Run(
                         nugetexe,
-                        Directory.GetCurrentDirectory(),
+                        pathContext.SolutionRoot,
                         args,
                         waitForExit: true);
 
@@ -747,11 +755,8 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_UnavailableV3()
         {
-            Util.ClearWebCache();
-
             var nugetexe = Util.GetNuGetExePath();
-            using (var packageDirectory = TestDirectory.Create())
-
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
                 // Server setup
@@ -780,7 +785,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -Source " + serverV3.Uri + "index.json";
                     var result = CommandRunner.Run(
                         nugetexe,
-                        Directory.GetCurrentDirectory(),
+                        pathContext.SolutionRoot,
                         args,
                         waitForExit: true);
 
@@ -801,31 +806,31 @@ namespace NuGet.CommandLine.Test
         [InlineData("invalid")]
         public void ListCommand_InvalidInput_NonSource(string invalidInput)
         {
-            Util.ClearWebCache();
-
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Act
+                var args = "list test -Source " + invalidInput;
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.SolutionRoot,
+                    args,
+                    waitForExit: true);
 
-            // Act
-            var args = "list test -Source " + invalidInput;
-            var result = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                args,
-                waitForExit: true);
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-            // Assert
-            Assert.True(
-                result.Item1 != 0,
-                "The run did not fail as desired. Simply got this output:" + result.Item2);
-
-            Assert.True(
-                result.Item3.Contains(
-                    string.Format(
-                        "The specified source '{0}' is invalid. Please provide a valid source.",
-                        invalidInput)),
-                "Expected error message not found in " + result.Item3
-                );
+                Assert.True(
+                    result.Item3.Contains(
+                        string.Format(
+                            "The specified source '{0}' is invalid. Please provide a valid source.",
+                            invalidInput)),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
         }
 
         [Theory]
@@ -834,23 +839,25 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_InvalidInput_V2_NonExistent(string invalidInput)
         {
             // Arrange
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var args = "list test -Source " + invalidInput;
-            var result = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                args,
-                waitForExit: true);
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var args = "list test -Source " + invalidInput;
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.SolutionRoot,
+                    args,
+                    waitForExit: true);
 
-            // Assert
-            Assert.True(
-                result.Item1 != 0,
-                "The run did not fail as desired. Simply got this output:" + result.Item2);
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-            Assert.Contains($"Unable to load the service index for source {invalidInput}.", result.Item3);
+                Assert.Contains($"Unable to load the service index for source {invalidInput}.", result.Item3);
+            }
         }
 
         [Theory]
@@ -885,26 +892,28 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_InvalidInput_V3_NonExistent(string invalidInput)
         {
             // Arrange
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var args = "list test -Source " + invalidInput;
-            var result = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                args,
-                waitForExit: true);
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var args = "list test -Source " + invalidInput;
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.SolutionRoot,
+                    args,
+                    waitForExit: true);
 
-            // Assert
-            Assert.True(
-                result.Item1 != 0,
-                "The run did not fail as desired. Simply got this output:" + result.Item2);
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-            Assert.True(
-                result.Item3.Contains($"Unable to load the service index for source {invalidInput}."),
-                "Expected error message not found in " + result.Item3
-                );
+                Assert.True(
+                    result.Item3.Contains($"Unable to load the service index for source {invalidInput}."),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
         }
 
         [Theory]
@@ -912,40 +921,42 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_InvalidInput_V3_NotFound(string invalidInput)
         {
             // Arrange
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var args = "list test -Source " + invalidInput;
-            var result = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                args,
-                waitForExit: true);
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var args = "list test -Source " + invalidInput;
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.SolutionRoot,
+                    args,
+                    waitForExit: true);
 
-            // Assert
-            Assert.True(
-                result.Item1 != 0,
-                "The run did not fail as desired. Simply got this output:" + result.Item2);
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-            Assert.True(
-                result.Item3.Contains("400 (Bad Request)"),
-                "Expected error message not found in " + result.Item3
-                );
+                Assert.True(
+                    result.Item3.Contains("400 (Bad Request)"),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
         }
 
         [Fact]
         public void ListCommand_WithAuthenticatedSource_AppliesCredentialsFromSettings()
         {
-            Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
             var listEndpoint = Guid.NewGuid().ToString() + "/api/v2";
             bool serverReceiveProperAuthorizationHeader = false;
 
-            using (var randomTestFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
-                var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
+                var repo = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", repo);
                 var package1 = new ZipPackage(packageFileName1);
 
                 // Server setup
@@ -1004,30 +1015,29 @@ namespace NuGet.CommandLine.Test
                         return "OK";
                     });
 
-                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
-                                <configuration>
-                                  <packageSources>
-                                    <add key='vsts' value='{serverV3.Uri}index.json' protocolVersion='3' />
-                                  </packageSources>
-                                  <packageSourceCredentials>
-                                    <vsts>
-                                      <add key='Username' value='user' />
-                                      <add key='ClearTextPassword' value='password' />
-                                    </vsts>
-                                  </packageSourceCredentials>
-                                 </configuration>";
-                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
-                    File.WriteAllText(configFileName, config);
+                    // Add source into NuGet.Config file
+                    var settings = pathContext.Settings;
+                    SimpleTestSettingsContext.RemoveSource(settings.XML, "source");
+
+                    var source = serverV3.Uri + "index.json";
+                    var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, "vsts", source, additionalAtrributeName: "protocolVersion", additionalAttributeValue: "3");
+
+                    //var packageSourceCredentialsSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSourceCredentials");
+                    SimpleTestSettingsContext.AddPackageSourceCredentialsSection(settings.XML, "vsts", "user", "password", clearTextPassword: true);
+                    settings.Save();
 
                     serverV3.Start();
 
                     // Act
                     var result = CommandRunner.Run(
                         Util.GetNuGetExePath(),
-                        Directory.GetCurrentDirectory(),
-                        $"list test -source {serverV3.Uri}index.json -configfile {configFileName} -verbosity detailed -noninteractive",
+                        pathContext.SolutionRoot,
+                        $"list test -source {serverV3.Uri}index.json -configfile {pathContext.NuGetConfig} -verbosity detailed -noninteractive",
                         waitForExit: true);
+
                     serverV3.Stop();
+
                     // Assert
                     Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
                     Assert.True(serverReceiveProperAuthorizationHeader);
@@ -1038,17 +1048,18 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
+
         [Fact]
         public void ListCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings()
         {
-            Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
             var listEndpoint = "api/v2";
             bool serverReceiveProperAuthorizationHeader = false;
-            using (var randomTestFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
-                var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
+                var repo = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", repo);
                 var package1 = new ZipPackage(packageFileName1);
 
                 // Server setup
@@ -1107,20 +1118,16 @@ namespace NuGet.CommandLine.Test
                         return "OK";
                     });
 
-                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
-                    <configuration>
-                      <packageSources>
-                        <add key='vsts' value='{serverV3.Uri}api/v2' protocolVersion='2' />
-                      </packageSources>
-                      <packageSourceCredentials>
-                        <vsts>
-                          <add key='Username' value='user' />
-                          <add key='ClearTextPassword' value='password' />
-                        </vsts>
-                      </packageSourceCredentials>
-                     </configuration>";
-                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
-                    File.WriteAllText(configFileName, config);
+                    // Add source into NuGet.Config file
+                    var settings = pathContext.Settings;
+                    SimpleTestSettingsContext.RemoveSource(settings.XML, "source");
+
+                    var source = $"{serverV3.Uri}api/v2";
+                    var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, "vsts", source, additionalAtrributeName: "protocolVersion", additionalAttributeValue: "2");
+
+                    SimpleTestSettingsContext.AddPackageSourceCredentialsSection(settings.XML, "vsts", "user", "password", clearTextPassword: true);
+                    settings.Save();
 
                     serverV3.Start();
 
@@ -1128,7 +1135,7 @@ namespace NuGet.CommandLine.Test
                     var result = CommandRunner.Run(
                         Util.GetNuGetExePath(),
                         Directory.GetCurrentDirectory(),
-                        $"list test -source {serverV3.Uri}api/v2 -configfile {configFileName} -verbosity detailed -noninteractive",
+                        $"list test -source {serverV3.Uri}api/v2 -configfile {pathContext.NuGetConfig} -verbosity detailed -noninteractive",
                         waitForExit: true);
                     serverV3.Stop();
 

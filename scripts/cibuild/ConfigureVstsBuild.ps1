@@ -118,9 +118,6 @@ else
 {
     $newBuildCounter = $env:BUILD_BUILDNUMBER
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
-    $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
-    $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
-    $ToolsetTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetToolsetTargetBranches
     Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
@@ -129,9 +126,6 @@ else
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
         VsTargetBranch = $VsTargetBranch.Trim()
-        CliTargetBranches = $CliTargetBranches.Trim()
-        SdkTargetBranches = $SdkTargetBranches.Trim()
-        ToolsetTargetBranches = $ToolsetTargetBranches.Trim()
     }
 
     # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.

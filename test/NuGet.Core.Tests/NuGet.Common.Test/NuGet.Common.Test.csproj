@@ -3,9 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFrameworksForSigning)</TargetFrameworks>
-    <TestProject>true</TestProject>
+    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Common.</Description>
   </PropertyGroup>

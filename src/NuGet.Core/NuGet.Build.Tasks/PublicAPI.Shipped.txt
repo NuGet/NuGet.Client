@@ -43,6 +43,24 @@ NuGet.Build.Tasks.ConsoleOutLogMessageType.Error = 1 -> NuGet.Build.Tasks.Consol
 NuGet.Build.Tasks.ConsoleOutLogMessageType.Message = 3 -> NuGet.Build.Tasks.ConsoleOutLogMessageType
 NuGet.Build.Tasks.ConsoleOutLogMessageType.None = 0 -> NuGet.Build.Tasks.ConsoleOutLogMessageType
 NuGet.Build.Tasks.ConsoleOutLogMessageType.Warning = 2 -> NuGet.Build.Tasks.ConsoleOutLogMessageType
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Cancel() -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Dispose() -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.GenerateRestoreGraphFileTask() -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildBinPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildBinPath.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildStartupDirectory.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.MSBuildStartupDirectory.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProcessFileName.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProcessFileName.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProjectFullPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.ProjectFullPath.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Recursive.get -> bool
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Recursive.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.RestoreGraphOutputPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.RestoreGraphOutputPath.set -> void
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.get -> string
+NuGet.Build.Tasks.GenerateRestoreGraphFileTask.SolutionPath.set -> void
 NuGet.Build.Tasks.GetCentralPackageVersionsTask
 NuGet.Build.Tasks.GetCentralPackageVersionsTask.CentralPackageVersions.get -> Microsoft.Build.Framework.ITaskItem[]
 NuGet.Build.Tasks.GetCentralPackageVersionsTask.CentralPackageVersions.set -> void
@@ -275,6 +293,8 @@ NuGet.Build.Tasks.RestoreTaskEx.Interactive.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.IsSolutionPathDefined.get -> bool
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildBinPath.get -> string
 NuGet.Build.Tasks.RestoreTaskEx.MSBuildBinPath.set -> void
+NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.get -> string
+NuGet.Build.Tasks.RestoreTaskEx.MSBuildStartupDirectory.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.NoCache.get -> bool
 NuGet.Build.Tasks.RestoreTaskEx.NoCache.set -> void
 NuGet.Build.Tasks.RestoreTaskEx.ProcessFileName.get -> string
@@ -307,6 +327,7 @@ abstract NuGet.Build.Tasks.LoggingQueue<T>.Process(T item) -> void
 override NuGet.Build.MSBuildLogger.Log(NuGet.Common.ILogMessage message) -> void
 override NuGet.Build.MSBuildLogger.LogAsync(NuGet.Common.ILogMessage message) -> System.Threading.Tasks.Task
 override NuGet.Build.MSBuildTaskItem.ToString() -> string
+override NuGet.Build.Tasks.GenerateRestoreGraphFileTask.Execute() -> bool
 override NuGet.Build.Tasks.GetCentralPackageVersionsTask.Execute() -> bool
 override NuGet.Build.Tasks.GetProjectTargetFrameworksTask.Execute() -> bool
 override NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask.Execute() -> bool
@@ -331,11 +352,13 @@ static NuGet.Build.Tasks.BuildTasksUtility.CopyPropertyIfExists(Microsoft.Build.
 static NuGet.Build.Tasks.BuildTasksUtility.CopyPropertyIfExists(Microsoft.Build.Framework.ITaskItem item, System.Collections.Generic.IDictionary<string, string> properties, string key, string toKey) -> void
 static NuGet.Build.Tasks.BuildTasksUtility.DoesProjectSupportRestore(NuGet.ProjectModel.PackageSpec packageSpec) -> bool
 static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
+static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string startupDirectory, string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyle(NuGet.ProjectModel.ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, NuGet.Common.ILogger log) -> (NuGet.ProjectModel.ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath)
 static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, NuGet.Common.ILogger log) -> (NuGet.ProjectModel.ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath)
 static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(string restoreProjectStyleProperty) -> NuGet.ProjectModel.ProjectStyle?
 static NuGet.Build.Tasks.BuildTasksUtility.GetPropertyIfExists(Microsoft.Build.Framework.ITaskItem item, string key) -> string
 static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
+static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string startupDirectory, string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.LogInputParam(NuGet.Common.ILogger log, string name, params string[] values) -> void
 static NuGet.Build.Tasks.BuildTasksUtility.LogOutputParam(NuGet.Common.ILogger log, string name, params string[] values) -> void
 static NuGet.Build.Tasks.BuildTasksUtility.RestoreAsync(NuGet.ProjectModel.DependencyGraphSpec dependencyGraphSpec, bool interactive, bool recursive, bool noCache, bool ignoreFailedSources, bool disableParallel, bool force, bool forceEvaluate, bool hideWarningsAndErrors, bool restorePC, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
@@ -351,6 +374,8 @@ static NuGet.Build.Tasks.Strings.CreatedDependencyGraphSpec.get -> string
 static NuGet.Build.Tasks.Strings.Culture.get -> System.Globalization.CultureInfo
 static NuGet.Build.Tasks.Strings.Culture.set -> void
 static NuGet.Build.Tasks.Strings.DeterminingProjectsToRestore.get -> string
+static NuGet.Build.Tasks.Strings.Error_DgSpecGenerationFailed.get -> string
+static NuGet.Build.Tasks.Strings.Error_MissingRestoreGraphOutputPath.get -> string
 static NuGet.Build.Tasks.Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed.get -> string
 static NuGet.Build.Tasks.Strings.Error_PackagesConfigParseError.get -> string
 static NuGet.Build.Tasks.Strings.ImportsFallbackWarning.get -> string
@@ -366,3 +391,5 @@ static NuGet.Build.Tasks.Strings.UnsupportedFallbackFramework.get -> string
 static NuGet.Build.Tasks.Strings.UnsupportedTargetFramework.get -> string
 static NuGet.Build.Tasks.Strings.Warning_InvalidPackageSaveMode.get -> string
 static readonly NuGet.Build.Tasks.RestoreSettingsUtils.Clear -> string
+virtual NuGet.Build.Tasks.LoggingQueue<T>.Dispose(bool disposing) -> void
+virtual NuGet.Build.Tasks.RestoreTask.Dispose(bool disposing) -> void

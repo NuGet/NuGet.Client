@@ -304,59 +304,55 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_WithApiKeyFromConfig(string configKeyFormatString)
         {
             // Arrange
-            Util.ClearWebCache();
             var testApiKey = Guid.NewGuid().ToString();
 
-            using (var testFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            using (var server = new MockServer())
             {
-                using (var server = new MockServer())
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+
+                Util.AddFlatContainerResource(indexJson, server);
+                Util.AddPublishResource(indexJson, server);
+
+                server.Get.Add("/index.json", r =>
                 {
-                    // Server setup
-                    var indexJson = Util.CreateIndexJson();
-
-                    Util.AddFlatContainerResource(indexJson, server);
-                    Util.AddPublishResource(indexJson, server);
-
-                    server.Get.Add("/index.json", r =>
+                    return new Action<HttpListenerResponse>(response =>
                     {
-                        return new Action<HttpListenerResponse>(response =>
-                        {
-                            response.StatusCode = 200;
-                            response.ContentType = "text/javascript";
-                            MockServer.SetResponseContent(response, indexJson.ToString());
-                        });
+                        response.StatusCode = 200;
+                        response.ContentType = "text/javascript";
+                        MockServer.SetResponseContent(response, indexJson.ToString());
                     });
+                });
 
-                    server.Delete.Add("/push/testPackage1/1.1", r =>
+                server.Delete.Add("/push/testPackage1/1.1", r =>
+                {
+                    var h = r.Headers[ApiKeyHeader];
+                    if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
                     {
-                        var h = r.Headers[ApiKeyHeader];
-                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return HttpStatusCode.Unauthorized;
-                        }
+                        return HttpStatusCode.Unauthorized;
+                    }
+                    return HttpStatusCode.OK;
+                });
 
-                        return HttpStatusCode.OK;
-                    });
+                server.Start();
 
-                    server.Start();
+                // Add the source and apikeys into NuGet.Config file
+                var settings = pathContext.Settings;
+                SimpleTestSettingsContext.RemoveSource(settings.XML, "source");
 
-                    var configKey = string.Format(configKeyFormatString, server.Uri);
+                var source = server.Uri + "index.json";
+                var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
+                SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"MockServer", source);
 
-                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
-<configuration>
-    <packageSources>
-        <add key='MockServer' value='{server.Uri}index.json' protocolVersion='3' />
-    </packageSources>
-    <apikeys>
-        <add key='{configKey}' value='{Configuration.EncryptionUtility.EncryptString(testApiKey)}' />
-    </apikeys>
-</configuration>";
+                var configKey = string.Format(configKeyFormatString, server.Uri);
+                var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
+                var apikeysSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "apikeys");
+                SimpleTestSettingsContext.AddEntry(apikeysSection, configKey, configValue);
+                settings.Save();
 
-                    var configFileName = Path.Combine(testFolder, "nuget.config");
-                    File.WriteAllText(configFileName, config);
-
-                    // Act
-                    var args = new[]
+                // Act
+                var args = new[]
                     {
                         "delete",
                         "testPackage1",
@@ -364,22 +360,21 @@ namespace NuGet.CommandLine.Test
                         "-Source",
                         "MockServer",
                         "-ConfigFile",
-                        configFileName,
+                        pathContext.NuGetConfig,
                         "-NonInteractive"
                     };
 
-                    var result = CommandRunner.Run(
-                        NuGetExePath,
-                        Directory.GetCurrentDirectory(),
-                        string.Join(" ", args),
-                        waitForExit: true);
+                var result = CommandRunner.Run(
+                    NuGetExePath,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
 
-                    server.Stop();
+                server.Stop();
 
-                    // Assert
-                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                    Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
-                }
+                // Assert
+                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
             }
         }
 

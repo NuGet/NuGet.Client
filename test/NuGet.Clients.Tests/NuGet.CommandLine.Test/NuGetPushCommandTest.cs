@@ -1302,12 +1302,12 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3()
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
                 string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
 
@@ -1364,7 +1364,7 @@ namespace NuGet.CommandLine.Test
 
                         var result = CommandRunner.Run(
                                         nugetexe,
-                                        Directory.GetCurrentDirectory(),
+                                        pathContext.SolutionRoot,
                                         string.Join(" ", args),
                                         true);
                         serverV2.Stop();
@@ -1383,12 +1383,12 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3_NoPushEndpoint()
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
 
             {
                 // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
                 string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
 
@@ -1419,7 +1419,7 @@ namespace NuGet.CommandLine.Test
                     // Act
                     var result = CommandRunner.Run(
                                     nugetexe,
-                                    Directory.GetCurrentDirectory(),
+                                    pathContext.SolutionRoot,
                                     $"push {packageFileName} -Source {serverV3.Uri}index.json",
                                     true);
 
@@ -1442,12 +1442,12 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3_Unavailable()
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
                 string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
 
@@ -1486,7 +1486,7 @@ namespace NuGet.CommandLine.Test
 
                     var result = CommandRunner.Run(
                                     nugetexe,
-                                    Directory.GetCurrentDirectory(),
+                                    pathContext.SolutionRoot,
                                     string.Join(" ", args),
                                     true);
 
@@ -1508,12 +1508,12 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var testApiKey = Guid.NewGuid().ToString();
-            Util.ClearWebCache();
 
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
 
                 using (var server = new MockServer())
                 {
@@ -1535,7 +1535,7 @@ namespace NuGet.CommandLine.Test
                     // Act
                     var result = CommandRunner.Run(
                         NuGetExePath,
-                        Directory.GetCurrentDirectory(),
+                        pathContext.SolutionRoot,
                         $"push {packageFileName} {testApiKey} -Source {server.Uri}nuget -NonInteractive",
                         waitForExit: true);
 
@@ -1554,10 +1554,10 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var testApiKey = Guid.NewGuid().ToString();
-            Util.ClearWebCache();
 
-            using (var packagesDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
                 var outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
 
@@ -1610,7 +1610,7 @@ namespace NuGet.CommandLine.Test
 
                     var result = CommandRunner.Run(
                         NuGetExePath,
-                        Directory.GetCurrentDirectory(),
+                        pathContext.SolutionRoot,
                         string.Join(" ", args),
                         waitForExit: true);
 
@@ -1630,13 +1630,13 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_PushToServerV3_ApiKeyFromConfig(string configKeyFormatString)
         {
             var testApiKey = Guid.NewGuid().ToString();
-            Util.ClearWebCache();
 
-            using (var randomTestFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
-                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
-                string outputFileName = Path.Combine(randomTestFolder, "t1.nupkg");
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
 
                 using (var serverV3 = new MockServer())
                 {
@@ -1672,20 +1672,17 @@ namespace NuGet.CommandLine.Test
 
                     serverV3.Start();
 
+                    // Add source into NuGet.Config file
+                    var settings = pathContext.Settings;
+                    var source = serverV3.Uri + "index.json";
+                    var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"nuget.org", source);
+
                     var configKey = string.Format(configKeyFormatString, serverV3.Uri);
-
-                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
-<configuration>
-    <packageSources>
-        <add key='nuget.org' value='{serverV3.Uri}index.json' protocolVersion='3' />
-    </packageSources>
-    <apikeys>
-        <add key='{configKey}' value='{Configuration.EncryptionUtility.EncryptString(testApiKey)}' />
-    </apikeys>
-</configuration>";
-
-                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
-                    File.WriteAllText(configFileName, config);
+                    var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
+                    var apikeysSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "apikeys");
+                    SimpleTestSettingsContext.AddEntry(apikeysSection, configKey, configValue);
+                    settings.Save();
 
                     // Act
                     var args = new[]
@@ -1695,13 +1692,13 @@ namespace NuGet.CommandLine.Test
                         "-Source",
                         "nuget.org",
                         "-ConfigFile",
-                        configFileName,
+                        settings.ConfigPath,
                         "-NonInteractive"
                     };
 
                     var result = CommandRunner.Run(
                         NuGetExePath,
-                        Directory.GetCurrentDirectory(),
+                        pathContext.SolutionRoot,
                         string.Join(" ", args),
                         waitForExit: true);
 
@@ -1718,14 +1715,14 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_FailWhenNoSourceSpecified()
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var randomDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
 
             {
                 // Arrange
-                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomDirectory);
-                string outputFileName = Path.Combine(randomDirectory, "t1.nupkg");
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
 
                 // Act
                 string[] args = new string[]
@@ -1738,7 +1735,7 @@ namespace NuGet.CommandLine.Test
 
                 var result = CommandRunner.Run(
                                 nugetexe,
-                                Directory.GetCurrentDirectory(),
+                                pathContext.SolutionRoot,
                                 string.Join(" ", args),
                                 true);
 
@@ -1964,12 +1961,12 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
         public void PushCommand_InvalidInput_V3_NonExistent(string invalidInput)
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
 
             {
                 // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
 
                 // Act
@@ -1983,7 +1980,7 @@ namespace NuGet.CommandLine.Test
 
                 var result = CommandRunner.Run(
                                 nugetexe,
-                                Directory.GetCurrentDirectory(),
+                                pathContext.SolutionRoot,
                                 string.Join(" ", args),
                                 true);
 
@@ -2010,12 +2007,12 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://api.nuget.org/v4/index.json")]
         public void PushCommand_InvalidInput_V3_NotFound(string invalidInput)
         {
-            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
 
             {
                 // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
 
                 // Act
@@ -2029,7 +2026,7 @@ namespace NuGet.CommandLine.Test
 
                 var result = CommandRunner.Run(
                                 nugetexe,
-                                Directory.GetCurrentDirectory(),
+                                pathContext.SolutionRoot,
                                 string.Join(" ", args),
                                 true);
 
