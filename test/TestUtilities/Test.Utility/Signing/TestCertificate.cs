@@ -63,7 +63,7 @@ namespace Test.Utility.Signing
         /// <remarks>Dispose of the object returned!</remarks>
         /// On MacOs, if we add the leaf or self-issued certificate into LocalMachine\Root, the private key will not be accessed. So the dotnet signing command tests will fail for:
         ///  "Object contains only the public half of a key pair. A private key must also be provided."
-        internal TrustedTestCert<TestCertificate> WithPrivateKeyAndTrustForLeafOrSelfIssued()
+        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrustForLeafOrSelfIssued()
         {
             StoreName storeName = CertificateStoreUtilities.GetCertificateAuthorityStoreNameForLeafOrSelfIssued();
             StoreLocation storeLocation = CertificateStoreUtilities.GetLeafTrustedCertificateStoreLocationForLeafOrSelfIssued();
