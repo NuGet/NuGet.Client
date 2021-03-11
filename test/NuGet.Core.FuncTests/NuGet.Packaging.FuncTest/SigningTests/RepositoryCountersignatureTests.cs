@@ -140,7 +140,6 @@ namespace NuGet.Packaging.FuncTest
             {
                 v3ServiceIndexUrl = v3ServiceIndexUrl ?? new Uri("https://test.test");
 
-                var packageContext = new SimpleTestPackageContext();
                 var test = await CreateWithoutRepositoryCountersignatureAsync(certificate);
                 var request = new RepositorySignPackageRequest(
                     new X509Certificate2(certificate),

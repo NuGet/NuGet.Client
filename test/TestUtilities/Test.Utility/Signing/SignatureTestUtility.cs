@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Xunit;
 
 namespace Test.Utility.Signing
 {
@@ -35,12 +36,14 @@ namespace Test.Utility.Signing
             DateTimeOffset notAfter = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
 
             // Ensure the certificate has expired.
-            var delay = notAfter.AddSeconds(1) - DateTimeOffset.UtcNow;
+            TimeSpan delay = notAfter.AddSeconds(1) - DateTimeOffset.UtcNow;
 
             if (delay > TimeSpan.Zero)
             {
                 return Task.Delay(delay);
             }
+
+            Assert.True(DateTimeOffset.Now > notAfter);
 
             return Task.CompletedTask;
         }
