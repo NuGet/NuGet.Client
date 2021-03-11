@@ -198,7 +198,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
         public async Task DotnetSign_SignPackageWithRevokedLeafCertChain_FailsAsync()
         {
             // Arrange
