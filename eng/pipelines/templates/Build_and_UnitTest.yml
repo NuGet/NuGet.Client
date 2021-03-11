@@ -62,14 +62,43 @@ steps:
       dotnet tool restore
   condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
+# NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
+# However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
+# won't be able to determine the URL to embed in the pdbs.
+# Therefore, when the git origin remote is not github (official builds), we need to add the GitHub repo URL as a remote, and
+# tell SourceLink.GitHub what that remote name is
 - task: PowerShell@1
   displayName: "Prepare for source link"
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
-      git remote add github https://github.com/NuGet/NuGet.Client.git
-      Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))" #run in official non-RTM builds, for generating sourcelink
+      try {
+        $nugetUrl = "https://github.com/NuGet/NuGet.Client.git"
+        if (@(& git remote).Contains("github"))
+        {
+          $currentGitHubRemoteUrl = & git remote get-url github
+          Write-Host "Current github remote URL: $currentGitHubRemoteUrl"
+          if ($currentGitHubRemoteUrl -ne $nugetUrl)
+          {
+            Write-Host "git remote set-url github $nugetUrl"
+            & git remote set-url github $nugetUrl
+          }
+          else
+          {
+            Write-Host "Git remote url already correct"
+          }
+        }
+        else
+        {
+          Write-Host "git remote add github $nugetUrl"
+          & git remote add github $nugetUrl
+        }
+        Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
+        exit 1
+      }
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
