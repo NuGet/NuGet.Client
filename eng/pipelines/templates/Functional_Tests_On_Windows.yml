@@ -76,7 +76,7 @@ steps:
 - task: PublishPipelineArtifact@1
   displayName: "Publish binlogs"
   inputs:
-    artifactName: binlog - $(Agent.JobName)
+    artifactName: binlog - $(Agent.JobName) - Attempt $(System.JobAttempt)
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\binlog"
   condition: "always()"
 
