@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.UI
 
         public static void LoadVsBrushes()
         {
-            var isBgColorFlightEnabled = IsBackgroundColorFlightEnabled();
+            bool isBgColorFlightEnabled = IsBackgroundColorFlightEnabled();
 
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey;
             ActiveBorderKey = VsBrushes.ActiveBorderKey;
@@ -260,7 +260,11 @@ namespace NuGet.PackageManagement.UI
             ListItemTextSelectedColorKey = CommonDocumentColors.ListItemTextSelectedColorKey;
         }
 
-        private static bool IsBackgroundColorFlightEnabled()
+        private static bool IsBackgroundColorFlightEnabled() =>
+            ExperimentationService.Default.IsCachedFlightEnabled(ExperimentationConstants.FlightFlags.PackageManagerBackgroundColor)
+            || IsForceBackgroundColorFlightEnabled();
+
+        private static bool IsForceBackgroundColorFlightEnabled()
         {
             var forceFlightEnabled = false;
             try
@@ -271,8 +275,7 @@ namespace NuGet.PackageManagement.UI
             {
                 // Don't force the flight to be enabled if we are not able to read the environment variable
             }
-
-            return forceFlightEnabled || ExperimentationService.Default.IsCachedFlightEnabled(ExperimentationConstants.FlightFlags.PackageManagerBackgroundColor);
+            return forceFlightEnabled;
         }
     }
 }
