@@ -53,7 +53,7 @@ namespace Dotnet.Integration.Test
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCert = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrustForLeafOrSelfIssued();
+                    _trustedTestCert = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust();
                 }
 
                 return _trustedTestCert;
@@ -70,7 +70,7 @@ namespace Dotnet.Integration.Test
 
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertWithInvalidEku = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrustForLeafOrSelfIssued();
+                    _trustedTestCertWithInvalidEku = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust();
                 }
 
                 return _trustedTestCertWithInvalidEku;
@@ -88,7 +88,7 @@ namespace Dotnet.Integration.Test
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrustForLeafOrSelfIssued();
+                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust();
                 }
 
                 return _trustedTestCertExpired;
@@ -106,7 +106,7 @@ namespace Dotnet.Integration.Test
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrustForLeafOrSelfIssued();
+                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust();
                 }
 
                 return _trustedTestCertNotYetValid;
