@@ -14,6 +14,8 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Crypto;
 using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
@@ -827,6 +829,7 @@ namespace NuGet.Packaging.FuncTest
         [Collection(SigningTestCollection.Name)]
         public class RepositoryPrimarySignatures
         {
+            private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
             private readonly SigningTestFixture _fixture;
             private readonly SignatureTrustAndValidityVerificationProvider _provider;
 
@@ -1129,11 +1132,33 @@ namespace NuGet.Packaging.FuncTest
                     Assert.Equal("Verification settings require a repository countersignature, but the package does not have a repository countersignature.", error.Message);
                 }
             }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_WithExpiredSignature_ReturnsValidAsync()
+            {
+                using (X509Certificate2 certificate = await GetExpiringCertificateAsync(_fixture))
+                using (Test test = await Test.CreateRepositoryPrimarySignedPackageAsync(certificate))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(certificate);
+
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultSettings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    Assert.Collection(
+                        status.GetWarningIssues(),
+                        logMessage => Assert.Equal(NuGetLogCode.NU3027, logMessage.Code),
+                        logMessage => Assert.Equal(NuGetLogCode.NU3037, logMessage.Code));
+                    Assert.Empty(status.GetErrorIssues());
+                }
+            }
         }
 
         [Collection(SigningTestCollection.Name)]
         public class RepositoryCountersignatures
         {
+            private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
             private readonly SigningTestFixture _fixture;
             private readonly SignatureTrustAndValidityVerificationProvider _provider;
 
@@ -1443,6 +1468,55 @@ namespace NuGet.Packaging.FuncTest
                     }
                 }
             }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_WithExpiredPrimaryCertificateAndExpiredRepositoryCertificateAndNoTimestamps_ReturnsValidAsync()
+            {
+                TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+                using (X509Certificate2 authorCertificate = await GetExpiringCertificateAsync(_fixture))
+                using (X509Certificate2 repoCertificate = await GetExpiringCertificateAsync(_fixture))
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate,
+                    repoCertificate,
+                    timestampService.Url,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(authorCertificate);
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(repoCertificate);
+
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultSettings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    Assert.Empty(status.GetWarningIssues());
+                    Assert.Empty(status.GetErrorIssues());
+                }
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_WithExpiredRepositoryCertificateAndNoTimestamp_ReturnsValidAsync()
+            {
+                TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+                using (X509Certificate2 repoCertificate = await GetExpiringCertificateAsync(_fixture))
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    _fixture.TrustedTestCertificate.Source.Cert,
+                    repoCertificate,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(repoCertificate);
+
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultSettings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    Assert.Empty(status.GetWarningIssues());
+                    Assert.Empty(status.GetErrorIssues());
+                }
+            }
         }
 
         private sealed class Test : IDisposable
@@ -1553,6 +1627,24 @@ namespace NuGet.Packaging.FuncTest
                         .ToList();
                 }
             }
+        }
+
+        private static async Task<X509Certificate2> GetExpiringCertificateAsync(SigningTestFixture fixture)
+        {
+            CertificateAuthority ca = await fixture.GetDefaultTrustedCertificateAuthorityAsync();
+
+            AsymmetricCipherKeyPair keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            var issueOptions = new IssueCertificateOptions()
+            {
+                KeyPair = keyPair,
+                NotAfter = now.AddSeconds(10),
+                NotBefore = now.AddSeconds(-2),
+                SubjectName = new X509Name("CN=NuGet Test Expired Certificate")
+            };
+            BcX509Certificate bcCertificate = ca.IssueCertificate(issueOptions);
+
+            return CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, keyPair);
         }
 
         private static byte[] GetResource(string name)
