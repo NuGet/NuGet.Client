@@ -73,7 +73,7 @@ steps:
 
 - task: MSBuild@1
   displayName: "Run Apex Tests (continue on error)"
-  timeoutInMinutes: 45
+  timeoutInMinutes: 120
   continueOnError: "true"
   inputs:
     solution: "build\\build.proj"
@@ -85,7 +85,7 @@ steps:
 
 - task: MSBuild@1
   displayName: "Run Apex Tests (stop on error)"
-  timeoutInMinutes: 45
+  timeoutInMinutes: 120
   continueOnError: "false"
   inputs:
     solution: "build\\build.proj"
