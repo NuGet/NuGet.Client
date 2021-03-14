@@ -29,7 +29,7 @@ namespace NuGet.Common
             {
                 string path = getPath(item);
                 return filters.Any(f => f.IsMatch(path));
-            }).ToList();
+            });
         }
 
         /// <summary>
@@ -89,12 +89,12 @@ namespace NuGet.Common
             {
                 // regex wildcard adjustments for Windows-style file systems
                 pattern = pattern
-                    .Replace("/", @"\\")                 // On Windows, / is treated the same as \.
-                    .Replace(@"\.\*\*", @"\.[^\\.]*")    // .** should not match on ../file or ./file but will match .file
+                    .Replace("/", @"\\") // On Windows, / is treated the same as \.
+                    .Replace(@"\.\*\*", @"\.[^\\.]*") // .** should not match on ../file or ./file but will match .file
                     .Replace(@"\*\*\\", @"([^\\]+\\)*?") //For recursive wildcards \**\, include the current directory.
-                    .Replace(@"\*\*", ".*")              // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
-                    .Replace(@"\*", @"[^\\]*(\\)?")      // For non recursive searches, limit it any character that is not a directory separator
-                    .Replace(@"\?", ".");                // ? translates to a single any character
+                    .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
+                    .Replace(@"\*", @"[^\\]*(\\)?") // For non recursive searches, limit it any character that is not a directory separator
+                    .Replace(@"\?", "."); // ? translates to a single any character
             }
 
             return new Regex('^' + pattern + '$', RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
