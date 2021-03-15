@@ -32,6 +32,21 @@ namespace NuGet.Commands
             _includeFlagGraphs = includeFlagGraphs;
         }
 
+        [Obsolete("Use method with LockFileBuilderCache parameter")]
+        public LockFile CreateLockFile(LockFile previousLockFile,
+            PackageSpec project,
+            IEnumerable<RestoreTargetGraph> targetGraphs,
+            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
+            RemoteWalkContext context)
+        {
+            return CreateLockFile(previousLockFile,
+                project,
+                targetGraphs,
+                localRepositories,
+                context,
+                new LockFileBuilderCache());
+        }
+
         public LockFile CreateLockFile(LockFile previousLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
@@ -368,7 +383,7 @@ namespace NuGet.Commands
             }
 
             // Do not pack anything from the runtime graphs
-            // The runtime graphs are added in addition to the graphs without a runtime 
+            // The runtime graphs are added in addition to the graphs without a runtime
             foreach (var targetGraph in targetGraphs.Where(targetGraph => string.IsNullOrEmpty(targetGraph.RuntimeIdentifier)))
             {
                 var centralPackageVersionsForFramework = project.TargetFrameworks.Where(tfmi => tfmi.FrameworkName.Equals(targetGraph.Framework)).FirstOrDefault()?.CentralPackageVersions;
