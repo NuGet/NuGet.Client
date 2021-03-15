@@ -1470,7 +1470,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithExpiredPrimaryCertificateAndExpiredRepositoryCertificateAndNoTimestamps_ReturnsValidAsync()
+            public async Task GetTrustResultAsync_WithExpiredPrimaryCertificateAndExpiredRepositoryCertificateAndValidTimestamps_ReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 

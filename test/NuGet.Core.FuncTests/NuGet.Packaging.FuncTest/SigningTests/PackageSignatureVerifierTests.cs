@@ -37,6 +37,7 @@ namespace NuGet.Packaging.FuncTest
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
+        [CIOnlyFact]
         public void Constructor_WhenArgumentIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
