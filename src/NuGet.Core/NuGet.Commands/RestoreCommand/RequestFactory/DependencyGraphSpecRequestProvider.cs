@@ -25,6 +25,7 @@ namespace NuGet.Commands
 
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
+        private readonly LockFileBuilderCache _lockFileBuilderCache;
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
@@ -32,6 +33,7 @@ namespace NuGet.Commands
         {
             _dgFile = dgFile;
             _providerCache = providerCache;
+            _lockFileBuilderCache = new LockFileBuilderCache();
         }
 
         public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(RestoreArgs restoreContext)
@@ -175,7 +177,8 @@ namespace NuGet.Commands
                 sharedCache,
                 restoreArgs.CacheContext,
                 clientPolicyContext,
-                restoreArgs.Log)
+                restoreArgs.Log,
+                _lockFileBuilderCache)
             {
                 // Set properties from the restore metadata
                 ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,

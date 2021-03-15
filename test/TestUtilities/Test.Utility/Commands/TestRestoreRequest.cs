@@ -79,7 +79,8 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 clientPolicyContext,
-                log)
+                log,
+                new LockFileBuilderCache())
         {
         }
 
@@ -151,7 +152,8 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 clientPolicyContext,
-                log)
+                log,
+                new LockFileBuilderCache())
         {
             // We need the dependency graph spec to go through the proper no-op code paths
             DependencyGraphSpec = new DependencyGraphSpec();

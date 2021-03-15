@@ -95,7 +95,7 @@ namespace NuGet.Commands
 
             for (var i = 0; i < orderedCriteriaSets.Count; i++)
             {
-                // Create a new library each time to avoid 
+                // Create a new library each time to avoid
                 // assets being added from other criteria.
                 lockFileLib = new LockFileTargetLibrary()
                 {
@@ -355,7 +355,7 @@ namespace NuGet.Commands
             {
                 // Runtime targets contain all the runtime specific assets
                 // that could be contained in the runtime specific target graphs.
-                // These items are contained in a flat list and have additional properties 
+                // These items are contained in a flat list and have additional properties
                 // for the RID and lock file section the assembly would belong to.
                 var runtimeTargetItems = new List<LockFileRuntimeTarget>();
 
@@ -529,7 +529,7 @@ namespace NuGet.Commands
 
                 // Find all dependencies which would be in the nuspec
                 // Include dependencies with no constraints, or package/project/external
-                // Exclude suppressed dependencies, the top level project is not written 
+                // Exclude suppressed dependencies, the top level project is not written
                 // as a target so the node depth does not matter.
                 Dependencies = graphItem.Data.Dependencies
                     .Where(
@@ -816,7 +816,7 @@ namespace NuGet.Commands
 
 
         /// <summary>
-        /// Clears a lock file group and replaces the first item with _._ if 
+        /// Clears a lock file group and replaces the first item with _._ if
         /// the group has items. Empty groups are left alone.
         /// </summary>
         private static void ClearIfExists<T>(IList<T> group) where T : LockFileItem
@@ -845,7 +845,7 @@ namespace NuGet.Commands
                 // Create a new item with the _._ path
                 var emptyItem = (T)Activator.CreateInstance(typeof(T), new[] { emptyDir });
 
-                // Copy over the properties from the first 
+                // Copy over the properties from the first
                 foreach (var pair in firstItem.Properties)
                 {
                     emptyItem.Properties.Add(pair.Key, pair.Value);
@@ -864,7 +864,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Group all items by the primary key, then select the nearest TxM 
+        /// Group all items by the primary key, then select the nearest TxM
         /// within each group.
         /// Items that do not contain the primaryKey will be filtered out.
         /// </summary>
