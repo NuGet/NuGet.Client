@@ -100,11 +100,12 @@ namespace NuGet.VisualStudio
             string repositoryValue = null;
 
             // When pulling the repository from the registry, use CurrentUser first, falling back onto LocalMachine
+            // Documented here: https://docs.microsoft.com/nuget/visual-studio-extensibility/visual-studio-templates#registry-specified-folder-path
             registryKeys = registryKeys ??
                            new[]
                                {
-                                   new RegistryKeyWrapper(Registry.CurrentUser),
-                                   new RegistryKeyWrapper(Registry.LocalMachine)
+                                   new RegistryKeyWrapper(RegistryHive.CurrentUser),
+                                   new RegistryKeyWrapper(RegistryHive.LocalMachine, RegistryView.Registry32)
                                };
 
             // Find the first registry key that supplies the necessary subkey/value

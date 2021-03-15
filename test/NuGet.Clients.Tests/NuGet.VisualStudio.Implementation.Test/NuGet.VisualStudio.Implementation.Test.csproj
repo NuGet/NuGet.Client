@@ -5,7 +5,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
-    <TestProject>true</TestProject>
     <SkipShared>true</SkipShared>
     <Description>Unit and integration tests for NuGet.VisualStudio.Implementation.</Description>
   </PropertyGroup>

@@ -718,7 +718,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Option &apos;{0}&apos; and &apos;{1}&apos; cannot be combined..
+        ///   Looks up a localized string similar to Options &apos;--outdated&apos;, &apos;--deprecated&apos; and &apos;--vulnerable&apos; cannot be combined..
         /// </summary>
         internal static string ListPkg_InvalidOptions {
             get {

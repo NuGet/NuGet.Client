@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI
 
                 // Instead of scaling larger images and keeping larger image in memory, this makes it so we scale it down, and throw away the bigger image.
                 // Only need to set this on one dimension, to preserve aspect ratio
-                image.DecodePixelWidth = PackageItemListViewModel.DecodePixelWidth;
+                image.DecodePixelWidth = PackageItemViewModel.DecodePixelWidth;
 
                 image.EndInit();
                 image.Freeze();
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI
             }
             else // for tests, don't actually load the icon, just use a 32x32 image.
             {
-                const int size = PackageItemListViewModel.DecodePixelWidth;
+                const int size = PackageItemViewModel.DecodePixelWidth;
                 var bytes = new List<byte>();
                 byte[] pixel = new byte[] { 0, 0, 255, 0 };
                 for (int y = 0; y < size; y++)

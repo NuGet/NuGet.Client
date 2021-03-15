@@ -20,7 +20,7 @@
     </DataTemplate>
 
     <DataTemplate
-      DataType="{x:Type nuget:PackageItemListViewModel}">
+      DataType="{x:Type nuget:PackageItemViewModel}">
       <nuget:PackageItemControl
         DataContext="{Binding}" />
     </DataTemplate>

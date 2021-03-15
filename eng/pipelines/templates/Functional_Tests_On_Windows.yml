@@ -1,18 +1,5 @@
 steps:
 - task: PowerShell@1
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
-    arguments: '$(SDKVersionForBuild)'
-  displayName: "Install .NET 5.0 for build"
-
-- task: PowerShell@1
-  displayName: "Define variables"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-
-- task: PowerShell@1
   displayName: "Print Environment Variables"
   inputs:
     scriptType: "inlineScript"
@@ -53,6 +40,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+    maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
@@ -63,6 +51,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+    maximumCpuCount: true
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PublishTestResults@2

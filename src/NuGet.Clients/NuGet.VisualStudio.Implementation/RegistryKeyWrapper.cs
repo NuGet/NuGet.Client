@@ -12,7 +12,12 @@ namespace NuGet.VisualStudio
     {
         private readonly RegistryKey _registryKey;
 
-        public RegistryKeyWrapper(RegistryKey registryKey)
+        public RegistryKeyWrapper(RegistryHive registryHive, RegistryView registryView = RegistryView.Registry32)
+        {
+            _registryKey = RegistryKey.OpenBaseKey(registryHive, registryView);
+        }
+
+        private RegistryKeyWrapper(RegistryKey registryKey)
         {
             Debug.Assert(registryKey != null);
             _registryKey = registryKey;

@@ -144,6 +144,9 @@ namespace NuGet.Versioning
             : base(version, releaseLabels, metadata)
         {
             _originalString = originalVersion;
+
+            Version = NormalizeVersionValue(version);
+            Revision = Version.Revision;
         }
 
         /// <summary>
@@ -167,26 +170,20 @@ namespace NuGet.Versioning
         /// <summary>
         /// A System.Version representation of the version without metadata or release labels.
         /// </summary>
-        public Version Version
-        {
-            get { return _version; }
-        }
+        public Version Version { get; }
 
         /// <summary>
         /// True if the NuGetVersion is using legacy behavior.
         /// </summary>
         public virtual bool IsLegacyVersion
         {
-            get { return Version.Revision > 0; }
+            get { return Revision > 0; }
         }
 
         /// <summary>
         /// Revision version R (x.y.z.R)
         /// </summary>
-        public int Revision
-        {
-            get { return _version.Revision; }
-        }
+        public int Revision { get; }
 
         /// <summary>
         /// Returns true if version is a SemVer 2.0.0 version

@@ -30,18 +30,18 @@ namespace NuGet.PackageManagement.UI
         }
 
         public async override Task SetCurrentPackageAsync(
-            PackageItemListViewModel searchResultPackage,
+            PackageItemViewModel searchResultPackage,
             ItemFilter filter,
-            Func<PackageItemListViewModel> getPackageItemListViewModel)
+            Func<PackageItemViewModel> getPackageItemViewModel)
         {
             // Set InstalledVersion before fetching versions list.
             InstalledVersion = searchResultPackage.InstalledVersion;
 
-            await base.SetCurrentPackageAsync(searchResultPackage, filter, getPackageItemListViewModel);
+            await base.SetCurrentPackageAsync(searchResultPackage, filter, getPackageItemViewModel);
 
             // SetCurrentPackage can take long time to return, user might changed selected package.
             // Check selected package.
-            if (getPackageItemListViewModel() != searchResultPackage)
+            if (getPackageItemViewModel() != searchResultPackage)
             {
                 return;
             }

@@ -206,8 +206,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            NuGetPackageManager? packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
-            Assumes.NotNull(packageManager);
+            NuGetPackageManager packageManager = await _sharedState.GetPackageManagerAsync(cancellationToken);
 
             NuGetProject? project = await SolutionUtility.GetNuGetProjectAsync(
                 _sharedState.SolutionManager,
@@ -371,7 +370,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     Assumes.NotNullOrEmpty(nugetProjectActions);
 
-                    NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                    NuGetPackageManager packageManager = await _sharedState.GetPackageManagerAsync(cancellationToken);
                     IEnumerable<NuGetProject> projects = nugetProjectActions.Select(action => action.Project);
 
                     await packageManager.ExecuteNuGetProjectActionsAsync(
@@ -430,7 +429,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     new GatherCache(),
                     _state.SourceCacheContext);
 
-                NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                NuGetPackageManager packageManager = await _sharedState.GetPackageManagerAsync(cancellationToken);
                 IEnumerable<ResolvedAction> resolvedActions = await packageManager.PreviewProjectsInstallPackageAsync(
                     projects,
                     _state.PackageIdentity,
@@ -478,7 +477,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var projectActions = new List<ProjectAction>();
                 var uninstallationContext = new UninstallationContext(removeDependencies, forceRemove);
 
-                NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                NuGetPackageManager packageManager = await _sharedState.GetPackageManagerAsync(cancellationToken);
                 IEnumerable<NuGetProjectAction> projectsWithActions = await packageManager.PreviewProjectsUninstallPackageAsync(
                     projects,
                     packageIdentity.Id,
@@ -553,7 +552,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     new GatherCache(),
                     _state.SourceCacheContext);
 
-                NuGetPackageManager packageManager = await _sharedState.PackageManager.GetValueAsync(cancellationToken);
+                NuGetPackageManager packageManager = await _sharedState.GetPackageManagerAsync(cancellationToken);
                 IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewUpdatePackagesAsync(
                     packageIdentities.ToList(),
                     projects,

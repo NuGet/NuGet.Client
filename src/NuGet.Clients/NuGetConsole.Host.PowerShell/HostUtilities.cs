@@ -151,6 +151,7 @@ namespace NuGetConsole.Host.PowerShell
         {
             string engineKeyPath = MonadRootKeyPath + "\\" + RegistryVersionKey + "\\" + MonadEngineKey;
 
+            // Registration exists in both 32bit and 64bit localmachine keys, no need for explicit use of RegistryHive.
             using (RegistryKey engineKey = Registry.LocalMachine.OpenSubKey(engineKeyPath))
             {
                 if (engineKey != null)
@@ -164,7 +165,7 @@ namespace NuGetConsole.Host.PowerShell
             Assembly assem = Assembly.GetEntryAssembly();
             if (assem != null)
             {
-                // For minishells, we just return the executable path. 
+                // For minishells, we just return the executable path.
                 return Path.GetDirectoryName(assem.Location);
             }
 
@@ -173,7 +174,7 @@ namespace NuGetConsole.Host.PowerShell
             assem = Assembly.GetAssembly(typeof(PSObject));
             if (assem != null)
             {
-                // For other hosts. 
+                // For other hosts.
                 return Path.GetDirectoryName(assem.Location);
             }
 

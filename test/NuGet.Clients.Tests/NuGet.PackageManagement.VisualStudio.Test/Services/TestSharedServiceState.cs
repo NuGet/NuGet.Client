@@ -13,7 +13,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     internal sealed class TestSharedServiceState : ISharedServiceState
     {
-        public AsyncLazy<NuGetPackageManager> PackageManager { get; }
+        private readonly AsyncLazy<NuGetPackageManager> _packageManager;
+
         public AsyncLazy<IVsSolutionManager> SolutionManager { get; }
         public ISourceRepositoryProvider SourceRepositoryProvider { get; }
         public AsyncLazy<IReadOnlyCollection<SourceRepository>> SourceRepositories { get; }
@@ -24,10 +25,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             ISourceRepositoryProvider sourceRepositoryProvider,
             AsyncLazy<IReadOnlyCollection<SourceRepository>> sourceRepositories)
         {
-            PackageManager = packageManager;
+            _packageManager = packageManager;
             SolutionManager = solutionManager;
             SourceRepositoryProvider = sourceRepositoryProvider;
             SourceRepositories = sourceRepositories;
+        }
+
+        public async ValueTask<NuGetPackageManager> GetPackageManagerAsync(CancellationToken cancellationToken)
+        {
+            return await _packageManager.GetValueAsync(cancellationToken);
         }
 
         public async ValueTask<IReadOnlyCollection<SourceRepository>> GetRepositoriesAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSourceContextInfos, CancellationToken cancellationToken)

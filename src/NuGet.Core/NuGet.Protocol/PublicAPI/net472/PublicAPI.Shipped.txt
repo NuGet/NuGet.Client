@@ -179,6 +179,8 @@ NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetada
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Owners.set -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.PackageDetailsUrl.get -> System.Uri
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.PackageDetailsUrl.set -> void
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.PackagePath.get -> string
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.PackagePath.set -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.PackageReader.get -> System.Func<NuGet.Packaging.PackageReaderBase>
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.PackageReader.set -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.PrefixReserved.get -> bool
@@ -207,6 +209,7 @@ NuGet.Protocol.Core.Types.PackageSearchResource.PackageSearchResource() -> void
 NuGet.Protocol.Core.Types.PackageUpdateResource
 NuGet.Protocol.Core.Types.PackageUpdateResource.Delete(string packageId, string packageVersion, System.Func<string, string> getApiKey, System.Func<string, bool> confirm, bool noServiceEndpoint, NuGet.Common.ILogger log) -> System.Threading.Tasks.Task
 NuGet.Protocol.Core.Types.PackageUpdateResource.PackageUpdateResource(string source, NuGet.Protocol.HttpSource httpSource) -> void
+NuGet.Protocol.Core.Types.PackageUpdateResource.Push(System.Collections.Generic.IList<string> packagePaths, string symbolSource, int timeoutInSecond, bool disableBuffering, System.Func<string, string> getApiKey, System.Func<string, string> getSymbolApiKey, bool noServiceEndpoint, bool skipDuplicate, NuGet.Protocol.Core.Types.SymbolPackageUpdateResourceV3 symbolPackageUpdateResource, NuGet.Common.ILogger log) -> System.Threading.Tasks.Task
 NuGet.Protocol.Core.Types.PackageUpdateResource.Push(string packagePath, string symbolSource, int timeoutInSecond, bool disableBuffering, System.Func<string, string> getApiKey, System.Func<string, string> getSymbolApiKey, bool noServiceEndpoint, NuGet.Common.ILogger log) -> System.Threading.Tasks.Task
 NuGet.Protocol.Core.Types.PackageUpdateResource.Push(string packagePath, string symbolSource, int timeoutInSecond, bool disableBuffering, System.Func<string, string> getApiKey, System.Func<string, string> getSymbolApiKey, bool noServiceEndpoint, bool skipDuplicate, NuGet.Protocol.Core.Types.SymbolPackageUpdateResourceV3 symbolPackageUpdateResource, NuGet.Common.ILogger log) -> System.Threading.Tasks.Task
 NuGet.Protocol.Core.Types.PackageUpdateResource.Settings.get -> NuGet.Configuration.ISettings
@@ -602,6 +605,7 @@ NuGet.Protocol.LocalPackageFileCache.Sha512Exists(string sha512Path) -> bool
 NuGet.Protocol.LocalPackageInfo
 NuGet.Protocol.LocalPackageInfo.LocalPackageInfo() -> void
 NuGet.Protocol.LocalPackageInfo.LocalPackageInfo(NuGet.Packaging.Core.PackageIdentity identity, string path, System.DateTime lastWriteTimeUtc, System.Lazy<NuGet.Packaging.NuspecReader> nuspec, System.Func<NuGet.Packaging.PackageReaderBase> getPackageReader) -> void
+NuGet.Protocol.LocalPackageInfo.LocalPackageInfo(NuGet.Packaging.Core.PackageIdentity identity, string path, System.DateTime lastWriteTimeUtc, System.Lazy<NuGet.Packaging.NuspecReader> nuspec, bool useFolder) -> void
 NuGet.Protocol.LocalPackageListResource
 NuGet.Protocol.LocalPackageListResource.LocalPackageListResource(NuGet.Protocol.Core.Types.PackageSearchResource localPackageSearchResource, string baseAddress) -> void
 NuGet.Protocol.LocalPackageMetadataResource
@@ -624,6 +628,7 @@ NuGet.Protocol.LocalPackageSearchMetadata.LoadFileAsText(string path) -> string
 NuGet.Protocol.LocalPackageSearchMetadata.LocalPackageSearchMetadata(NuGet.Protocol.LocalPackageInfo package) -> void
 NuGet.Protocol.LocalPackageSearchMetadata.Owners.get -> string
 NuGet.Protocol.LocalPackageSearchMetadata.PackageDetailsUrl.get -> System.Uri
+NuGet.Protocol.LocalPackageSearchMetadata.PackagePath.get -> string
 NuGet.Protocol.LocalPackageSearchMetadata.PackageReader.get -> System.Func<NuGet.Packaging.PackageReaderBase>
 NuGet.Protocol.LocalPackageSearchMetadata.PrefixReserved.get -> bool
 NuGet.Protocol.LocalPackageSearchMetadata.ProjectUrl.get -> System.Uri
@@ -1241,6 +1246,7 @@ NuGet.Protocol.Plugins.ProtocolException
 NuGet.Protocol.Plugins.ProtocolException.ProtocolException(string message) -> void
 NuGet.Protocol.Plugins.ProtocolException.ProtocolException(string message, System.Exception innerException) -> void
 NuGet.Protocol.Plugins.Receiver
+NuGet.Protocol.Plugins.Receiver.Dispose() -> void
 NuGet.Protocol.Plugins.Receiver.Faulted -> System.EventHandler<NuGet.Protocol.Plugins.ProtocolErrorEventArgs>
 NuGet.Protocol.Plugins.Receiver.FireFaultEvent(System.Exception exception, NuGet.Protocol.Plugins.Message message) -> void
 NuGet.Protocol.Plugins.Receiver.FireMessageReceivedEvent(NuGet.Protocol.Plugins.Message message) -> void
@@ -1521,6 +1527,7 @@ abstract NuGet.Protocol.Plugins.OutboundRequestContext.HandleFault(NuGet.Protoco
 abstract NuGet.Protocol.Plugins.OutboundRequestContext.HandleProgress(NuGet.Protocol.Plugins.Message progress) -> void
 abstract NuGet.Protocol.Plugins.OutboundRequestContext.HandleResponse(NuGet.Protocol.Plugins.Message response) -> void
 abstract NuGet.Protocol.Plugins.Receiver.Connect() -> void
+abstract NuGet.Protocol.Plugins.Receiver.Dispose(bool disposing) -> void
 const NuGet.Protocol.CachingUtility.BufferSize = 8192 -> int
 const NuGet.Protocol.Core.Types.NuGetResourceProviderPositions.First = "First" -> string
 const NuGet.Protocol.Core.Types.NuGetResourceProviderPositions.Last = "Last" -> string
@@ -2036,8 +2043,10 @@ virtual NuGet.Protocol.Core.Types.SourceRepository.GetResourceAsync<T>(System.Th
 virtual NuGet.Protocol.Core.Types.SourceRepository.PackageSource.get -> NuGet.Configuration.PackageSource
 virtual NuGet.Protocol.FindLocalPackagesResource.Exists(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> bool
 virtual NuGet.Protocol.FindLocalPackagesResource.Exists(string packageId, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> bool
+virtual NuGet.Protocol.HttpSource.Dispose(bool disposing) -> void
 virtual NuGet.Protocol.HttpSource.GetAsync<T>(NuGet.Protocol.HttpSourceCachedRequest request, System.Func<NuGet.Protocol.HttpSourceResult, System.Threading.Tasks.Task<T>> processAsync, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
 virtual NuGet.Protocol.HttpSource.TryReadCacheFile(string uri, System.TimeSpan maxAge, string cacheFile) -> System.IO.Stream
+virtual NuGet.Protocol.HttpSourceResult.Dispose(bool disposing) -> void
 virtual NuGet.Protocol.LocalPackageInfo.GetReader() -> NuGet.Packaging.PackageReaderBase
 virtual NuGet.Protocol.LocalPackageInfo.Identity.get -> NuGet.Packaging.Core.PackageIdentity
 virtual NuGet.Protocol.LocalPackageInfo.IsNupkg.get -> bool

@@ -1,29 +1,11 @@
 steps:
 - task: PowerShell@1
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
-    arguments: '$(SDKVersionForBuild)'
-  displayName: "Install .NET 5.0 for build"
-
-- task: PowerShell@1
   displayName: "Update Build Number"
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
       Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
-
-- task: PowerShell@1
-  displayName: "Define variables"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-
-- task: NuGetToolInstaller@0
-  displayName: "Use NuGet 5.0.0"
-  inputs:
-    versionSpec: "5.0.0"
 
 - task: PowerShell@1
   inputs:
@@ -80,14 +62,43 @@ steps:
       dotnet tool restore
   condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
+# NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
+# However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
+# won't be able to determine the URL to embed in the pdbs.
+# Therefore, when the git origin remote is not github (official builds), we need to add the GitHub repo URL as a remote, and
+# tell SourceLink.GitHub what that remote name is
 - task: PowerShell@1
   displayName: "Prepare for source link"
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
-      git remote add github https://github.com/NuGet/NuGet.Client.git
-      Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))" #run in official non-RTM builds, for generating sourcelink
+      try {
+        $nugetUrl = "https://github.com/NuGet/NuGet.Client.git"
+        if (@(& git remote).Contains("github"))
+        {
+          $currentGitHubRemoteUrl = & git remote get-url github
+          Write-Host "Current github remote URL: $currentGitHubRemoteUrl"
+          if ($currentGitHubRemoteUrl -ne $nugetUrl)
+          {
+            Write-Host "git remote set-url github $nugetUrl"
+            & git remote set-url github $nugetUrl
+          }
+          else
+          {
+            Write-Host "Git remote url already correct"
+          }
+        }
+        else
+        {
+          Write-Host "git remote add github $nugetUrl"
+          & git remote add github $nugetUrl
+        }
+        Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
+        exit 1
+      }
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
@@ -96,6 +107,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
+    maximumCpuCount: true
 
 - task: MSBuild@1
   displayName: "Build for VS2019"
@@ -104,6 +116,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
+    maximumCpuCount: true
 
 - task: MSBuild@1
   displayName: "Ensure msbuild.exe can parse nuget.sln"
@@ -112,6 +125,7 @@ steps:
     solution: "nuget.sln"
     msbuildVersion: "16.0"
     msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
+    maximumCpuCount: true
   condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
@@ -212,6 +226,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild"
+    maximumCpuCount: true
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
@@ -221,6 +236,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+    maximumCpuCount: true
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
@@ -239,6 +255,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
+    maximumCpuCount: true
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -449,6 +466,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
+    maximumCpuCount: true
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: CopyFiles@2

@@ -32,21 +32,20 @@
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed" />
+    <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" />
     <PackageReference Include="Microsoft.VisualStudio.Composition" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS">
-      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.VS.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.VS.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed">
-      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem.managed\16.7.0-beta1-65318-02\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed\16.7.0-beta1-65318-02\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS">
-      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem.managed.vs\16.7.0-beta1-65318-02\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed.vs\16.7.0-beta1-65318-02\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

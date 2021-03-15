@@ -110,11 +110,41 @@ namespace NuGet.Test.Utility
             return node;
         }
 
+        public static void AddPackageSourceCredentialsSection(XDocument doc, string sourceName, string userName, string password, bool clearTextPassword)
+        {
+            var root = doc.Element(XName.Get("configuration"));
+
+            var sourceNode = new XElement(XName.Get(sourceName));
+            AddEntry(sourceNode, "Username", userName);
+            if (clearTextPassword)
+            {
+                AddEntry(sourceNode, "ClearTextPassword", password);
+            }
+            else
+            {
+                AddEntry(sourceNode, "Password", password);
+            }
+
+            var packageSourceCredentialsNode = new XElement(XName.Get("packageSourceCredentials"));
+            packageSourceCredentialsNode.Add(sourceNode);
+
+            root.Add(packageSourceCredentialsNode);
+        }
+
         public static void AddEntry(XElement section, string key, string value)
         {
             var setting = new XElement(XName.Get("add"));
             setting.Add(new XAttribute(XName.Get("key"), key));
             setting.Add(new XAttribute(XName.Get("value"), value));
+            section.Add(setting);
+        }
+
+        public static void AddEntry(XElement section, string key, string value, string additionalAtrributeName, string additionalAttributeValue)
+        {
+            var setting = new XElement(XName.Get("add"));
+            setting.Add(new XAttribute(XName.Get("key"), key));
+            setting.Add(new XAttribute(XName.Get("value"), value));
+            setting.Add(new XAttribute(XName.Get(additionalAtrributeName), additionalAttributeValue));
             section.Add(setting);
         }
 
