@@ -5,13 +5,12 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TargetFramework Condition=" '$(IsXPlat)' == 'true' "></TargetFramework>
-    <TestProject>true</TestProject>
     <Description>An end-to-end test suite for NuGet.CommandLine. Contains tests for every nuget.exe CLI command. Overlaps in tests with NuGet.CommandLine.FuncTest.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="NuGet.Core">
-      <HintPath>..\..\..\packages\nuget.core\2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)nuget.core\$(NuGetCoreV2Version)\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Aliases>global</Aliases>
     </Reference>
     <Reference Include="System" />
@@ -38,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageDownload Include="NuGet.Core" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
   </ItemGroup>
 

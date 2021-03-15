@@ -406,8 +406,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<IReadOnlyList<SourceRepository>> GetGlobalPackageFolderRepositoriesAsync()
         {
-            var settings = ServiceLocator.GetInstance<ISettings>();
-            NuGetPackageManager packageManager = await _sharedServiceState.PackageManager.GetValueAsync();
+            NuGetPackageManager packageManager = await _sharedServiceState.GetPackageManagerAsync(CancellationToken.None);
+
             return packageManager.GlobalPackageFolderRepositories;
         }
 

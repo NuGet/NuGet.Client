@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI
 {
     // This is the model class behind the package items in the infinite scroll list.
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
-    public class PackageItemListViewModel : INotifyPropertyChanged, ISelectableItem
+    public class PackageItemViewModel : INotifyPropertyChanged, ISelectableItem
     {
         private static readonly Common.AsyncLazy<IReadOnlyCollection<VersionInfoContextInfo>> LazyEmptyVersionInfo =
             AsyncLazy.New((IReadOnlyCollection<VersionInfoContextInfo>)Array.Empty<VersionInfoContextInfo>());
@@ -337,7 +337,7 @@ namespace NuGet.PackageManagement.UI
                     _providersLoaderStarted = true;
                     NuGetUIThreadHelper.JoinableTaskFactory
                         .RunAsync(ReloadProvidersAsync)
-                        .PostOnFailure(nameof(PackageItemListViewModel), nameof(ReloadProvidersAsync));
+                        .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadProvidersAsync));
                 }
 
                 return _providers;
@@ -443,7 +443,7 @@ namespace NuGet.PackageManagement.UI
                             BitmapStatus = IconBitmapStatus.Fetching;
                             NuGetUIThreadHelper.JoinableTaskFactory
                                 .RunAsync(FetchIconAsync)
-                                .PostOnFailure(nameof(PackageItemListViewModel), nameof(IconBitmap));
+                                .PostOnFailure(nameof(PackageItemViewModel), nameof(IconBitmap));
                         }
                     }
                 }
@@ -626,7 +626,7 @@ namespace NuGet.PackageManagement.UI
             {
                 NuGetUIThreadHelper.JoinableTaskFactory
                     .RunAsync(ReloadPackageVersionsAsync)
-                    .PostOnFailure(nameof(PackageItemListViewModel), nameof(ReloadPackageVersionsAsync));
+                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
             }
 
 
@@ -634,7 +634,7 @@ namespace NuGet.PackageManagement.UI
             {
                 NuGetUIThreadHelper.JoinableTaskFactory
                     .RunAsync(ReloadPackageDeprecationAsync)
-                    .PostOnFailure(nameof(PackageItemListViewModel), nameof(ReloadPackageDeprecationAsync));
+                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageDeprecationAsync));
             }
         }
 

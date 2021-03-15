@@ -27,16 +27,16 @@ using Xunit.Abstractions;
 namespace NuGet.PackageManagement.UI.Test
 {
     [Collection(MockedVS.Collection)]
-    public class PackageItemListViewModelTests : MockedVSCollectionTests, IClassFixture<LocalPackageSearchMetadataFixture>, IClassFixture<DispatcherThreadFixture>
+    public class PackageItemViewModelTests : MockedVSCollectionTests, IClassFixture<LocalPackageSearchMetadataFixture>, IClassFixture<DispatcherThreadFixture>
     {
         private readonly LocalPackageSearchMetadataFixture _testData;
-        private readonly PackageItemListViewModel _testInstance;
+        private readonly PackageItemViewModel _testInstance;
         private readonly ITestOutputHelper _output;
         private readonly INuGetPackageFileService _packageFileService;
         private Mock<IServiceBroker> _serviceBroker = new Mock<IServiceBroker>();
         private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
 
-        public PackageItemListViewModelTests(
+        public PackageItemViewModelTests(
             GlobalServiceProvider globalServiceProvider,
             ITestOutputHelper output,
             LocalPackageSearchMetadataFixture testData)
@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI.Test
             _packageFileService = new NuGetPackageFileService(_serviceBroker.Object, _telemetryProvider.Object);
 
             _testData = testData;
-            _testInstance = new PackageItemListViewModel()
+            _testInstance = new PackageItemViewModel()
             {
                 PackagePath = _testData.TestData.PackagePath,
                 PackageFileService = _packageFileService,
@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var iconUrl = new Uri("httphttphttp://fake.test/image.png");
 
-            var packageItemListViewModel = new PackageItemListViewModel()
+            var packageItemViewModel = new PackageItemViewModel()
             {
                 Id = "PackageId.IconUrl_WithMalformedUrlScheme_ReturnsDefaultInitallyAndFinally",
                 Version = new NuGetVersion("1.0.0"),
@@ -82,16 +82,16 @@ namespace NuGet.PackageManagement.UI.Test
                 PackageFileService = _packageFileService,
             };
 
-            var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, packageItemListViewModel.Version);
-            NuGetPackageFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
+            var packageIdentity = new PackageIdentity(packageItemViewModel.Id, packageItemViewModel.Version);
+            NuGetPackageFileService.AddIconToCache(packageIdentity, packageItemViewModel.IconUrl);
 
             // initial result should be fetching and defaultpackageicon
-            BitmapSource initialResult = packageItemListViewModel.IconBitmap;
+            BitmapSource initialResult = packageItemViewModel.IconBitmap;
             Assert.Same(initialResult, Images.DefaultPackageIcon);
 
-            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel, addIconToCache: false);
-            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemListViewModel.BitmapStatus);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel, addIconToCache: false);
+            VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var iconUrl = new Uri(@"C:\path\to\image.png");
 
-            var packageItemListViewModel = new PackageItemListViewModel()
+            var packageItemViewModel = new PackageItemViewModel()
             {
                 Id = "PackageId.IconUrl_WhenFileNotFound_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
@@ -107,10 +107,10 @@ namespace NuGet.PackageManagement.UI.Test
                 PackageFileService = _packageFileService,
             };
 
-            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
 
-            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemListViewModel.BitmapStatus);
+            VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // relative URIs are not supported in viewmodel.
             var iconUrl = new Uri("resources/testpackageicon.png", UriKind.Relative);
-            var packageItemListViewModel = new PackageItemListViewModel()
+            var packageItemViewModel = new PackageItemViewModel()
             {
                 Id = "PackageId.IconUrl_RelativeUri_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
@@ -126,10 +126,10 @@ namespace NuGet.PackageManagement.UI.Test
                 PackageFileService = _packageFileService,
             };
 
-            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
 
-            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(IconBitmapStatus.DefaultIconDueToRelativeUri, packageItemListViewModel.BitmapStatus);
+            VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIconDueToRelativeUri, packageItemViewModel.BitmapStatus);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.UI.Test
             using (var testDir = TestDirectory.Create())
             {
                 byte[] bytes;
-                Assembly testAssembly = typeof(PackageItemListViewModelTests).Assembly;
+                Assembly testAssembly = typeof(PackageItemViewModelTests).Assembly;
 
                 using (Stream sourceStream = testAssembly.GetManifestResourceStream("NuGet.PackageManagement.UI.Test.Resources.grayicc.png"))
                 using (var memoryStream = new MemoryStream())
@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI.Test
                 string grayiccImagePath = Path.Combine(testDir, "grayicc.png");
                 File.WriteAllBytes(grayiccImagePath, bytes);
 
-                var packageItemListViewModel = new PackageItemListViewModel()
+                var packageItemViewModel = new PackageItemViewModel()
                 {
                     Id = "PackageId.IconUrl_WithLocalPathAndColorProfile_LoadsImage",
                     Version = new NuGetVersion("1.0.0"),
@@ -160,11 +160,11 @@ namespace NuGet.PackageManagement.UI.Test
                 };
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
 
                 // Assert
-                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemListViewModel.BitmapStatus);
+                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemViewModel.BitmapStatus);
             }
         }
 
@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var iconUrl = new Uri("http://fake.test/image.png");
 
-            var packageItemListViewModel = new PackageItemListViewModel()
+            var packageItemViewModel = new PackageItemViewModel()
             {
                 Id = "PackageId.IconUrl_WithValidImageUrl_FailsDownloadsImage_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
@@ -181,10 +181,10 @@ namespace NuGet.PackageManagement.UI.Test
                 PackageFileService = _packageFileService,
             };
 
-            BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+            BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
 
-            VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-            Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemListViewModel.BitmapStatus);
+            VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+            Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemViewModel.BitmapStatus);
         }
 
         [LocalOnlyTheory]
@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Fragment = iconElement
                 };
 
-                var packageItemListViewModel = new PackageItemListViewModel()
+                var packageItemViewModel = new PackageItemViewModel()
                 {
                     Id = "PackageId.IconUrl_EmbeddedIcon_HappyPath_LoadsImage",
                     Version = new NuGetVersion("1.0.0"),
@@ -229,12 +229,12 @@ namespace NuGet.PackageManagement.UI.Test
                 _output.WriteLine($"Url {builder.Uri}");
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
 
                 // Assert
                 _output.WriteLine($"result {result}");
-                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemListViewModel.BitmapStatus);
-                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemViewModel.BitmapStatus);
+                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
             }
         }
 
@@ -246,7 +246,7 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 var imagePath = Path.Combine(testDir, "image.png");
                 CreateNoisePngImage(path: imagePath);
-                var packageItemListViewModel = new PackageItemListViewModel()
+                var packageItemViewModel = new PackageItemViewModel()
                 {
                     Id = "PackageId.IconUrl_FileUri_LoadsImage",
                     Version = new NuGetVersion("1.0.0"),
@@ -255,11 +255,11 @@ namespace NuGet.PackageManagement.UI.Test
                 };
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
 
                 // Assert
-                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemListViewModel.BitmapStatus);
+                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemViewModel.BitmapStatus);
             }
         }
 
@@ -280,7 +280,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Fragment = $"..{separator}icon.png"
                 };
 
-                var packageItemListViewModel = new PackageItemListViewModel()
+                var packageItemViewModel = new PackageItemViewModel()
                 {
                     Id = "PackageId.IconUrl_EmbeddedIcon_RelativeParentPath_ReturnsDefault",
                     Version = new NuGetVersion("1.0.0"),
@@ -290,11 +290,11 @@ namespace NuGet.PackageManagement.UI.Test
                 };
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
 
                 // Assert
-                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
-                Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemListViewModel.BitmapStatus);
+                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.DefaultIconDueToNullStream, packageItemViewModel.BitmapStatus);
             }
         }
 
@@ -348,23 +348,23 @@ namespace NuGet.PackageManagement.UI.Test
         /// <summary>
         /// Tests the final bitmap returned by the view model, by waiting for the BitmapStatus to be "complete".
         /// </summary>
-        private static async Task<BitmapSource> GetFinalIconBitmapAsync(PackageItemListViewModel packageItemListViewModel, bool addIconToCache = true)
+        private static async Task<BitmapSource> GetFinalIconBitmapAsync(PackageItemViewModel packageItemViewModel, bool addIconToCache = true)
         {
             if (addIconToCache)
             {
-                var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, packageItemListViewModel.Version);
-                NuGetPackageFileService.AddIconToCache(packageIdentity, packageItemListViewModel.IconUrl);
+                var packageIdentity = new PackageIdentity(packageItemViewModel.Id, packageItemViewModel.Version);
+                NuGetPackageFileService.AddIconToCache(packageIdentity, packageItemViewModel.IconUrl);
             }
 
-            BitmapSource result = packageItemListViewModel.IconBitmap;
+            BitmapSource result = packageItemViewModel.IconBitmap;
             int millisecondsToWait = 3000;
-            while (!IconBitmapStatusUtility.GetIsCompleted(packageItemListViewModel.BitmapStatus) && millisecondsToWait >= 0)
+            while (!IconBitmapStatusUtility.GetIsCompleted(packageItemViewModel.BitmapStatus) && millisecondsToWait >= 0)
             {
                 await Task.Delay(250);
                 millisecondsToWait -= 250;
             }
 
-            result = packageItemListViewModel.IconBitmap;
+            result = packageItemViewModel.IconBitmap;
             return result;
         }
 
@@ -395,7 +395,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Fragment = iconElement
                 };
 
-                var packageItemListViewModel = new PackageItemListViewModel()
+                var packageItemViewModel = new PackageItemViewModel()
                 {
                     Id = "PackageId.IconUrl_FileUri_LoadsImage" + iconElement,
                     Version = new NuGetVersion("1.0.0"),
@@ -409,16 +409,16 @@ namespace NuGet.PackageManagement.UI.Test
                 _output.WriteLine($"Url {builder.Uri}");
 
                 // Act
-                BitmapSource result = await GetFinalIconBitmapAsync(packageItemListViewModel);
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
 
-                VerifyImageResult(result, packageItemListViewModel.BitmapStatus);
+                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
 
                 _output.WriteLine($"result {result}");
                 string resultFormat = result != null ? result.Format.ToString() : "";
                 _output.WriteLine($"Pixel format: {resultFormat}");
 
                 // Assert
-                Assert.Equal(IconBitmapStatus.DefaultIconDueToDecodingError, packageItemListViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.DefaultIconDueToDecodingError, packageItemViewModel.BitmapStatus);
             }
         }
 
@@ -428,8 +428,8 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.True(result is BitmapImage || result is CachedBitmap);
             var image = result as BitmapSource;
             Assert.NotNull(image);
-            Assert.Equal(PackageItemListViewModel.DecodePixelWidth, image.PixelWidth);
-            Assert.Equal(PackageItemListViewModel.DecodePixelWidth, image.PixelHeight);
+            Assert.Equal(PackageItemViewModel.DecodePixelWidth, image.PixelWidth);
+            Assert.Equal(PackageItemViewModel.DecodePixelWidth, image.PixelHeight);
         }
 
         /// <summary>

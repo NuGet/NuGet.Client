@@ -10,7 +10,7 @@ namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Automation peer to represent ListBox items which are used as toggles for an associated checkbox.
-    /// Specifically, this is used for the representation of <see cref="PackageItemListViewModel"/> in
+    /// Specifically, this is used for the representation of <see cref="PackageItemViewModel"/> in
     /// the <see cref="InfiniteScrollList"/> control for selecting packages to be Updated (eg, Updates tab).
     /// </summary>
     internal class ListBoxToggleableItemsAutomationPeer : ListBoxAutomationPeer

@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// This control is used as list items in the package list. Its DataContext is
-    /// PackageItemListViewModel.
+    /// <see cref="PackageItemViewModel"/>.
     /// </summary>
     public partial class PackageItemControl : UserControl
     {

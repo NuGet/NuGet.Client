@@ -1,20 +1,4 @@
 steps:
-- task: ShellScript@2
-  displayName: "Install .NET 5.0 for build"
-  continueOnError: "true"
-  inputs:
-    scriptPath: "scripts/utils/InstallCLIforBuild.sh"
-    disableAutoCwd: "true"
-    cwd: "$(Build.Repository.LocalPath)"
-    args: '$(SDKVersionForBuild)'
-
-- task: PowerShell@2
-  displayName: "Define variables"
-  inputs:
-    targetType: "inline"
-    script: |
-      Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
-
 - task: PowerShell@2
   displayName: "Update Build Number"
   inputs:

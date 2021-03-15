@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.UI
         protected List<(NuGetVersion version, bool isDeprecated)> _allPackageVersions;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected PackageItemListViewModel _searchResultPackage;
+        protected PackageItemViewModel _searchResultPackage;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected ItemFilter _filter;
@@ -116,9 +116,9 @@ namespace NuGet.PackageManagement.UI
         /// <param name="searchResultPackage">The package to be displayed.</param>
         /// <param name="filter">The current filter. This will used to select the default action.</param>
         public async virtual Task SetCurrentPackageAsync(
-            PackageItemListViewModel searchResultPackage,
+            PackageItemViewModel searchResultPackage,
             ItemFilter filter,
-            Func<PackageItemListViewModel> getPackageItemListViewModel)
+            Func<PackageItemViewModel> getPackageItemViewModel)
         {
             // Clear old data
             PackageMetadata = null;
@@ -218,7 +218,7 @@ namespace NuGet.PackageManagement.UI
 
             // GetVersionAsync can take long time to finish, user might changed selected package.
             // Check selected package.
-            if (getPackageItemListViewModel() != searchResultPackage)
+            if (getPackageItemViewModel() != searchResultPackage)
             {
                 return;
             }
@@ -238,7 +238,7 @@ namespace NuGet.PackageManagement.UI
             if (packageSearchMetadata != null)
             {
                 // Getting the metadata can take awhile, check to see if its still selected
-                if (getPackageItemListViewModel() != searchResultPackage)
+                if (getPackageItemViewModel() != searchResultPackage)
                 {
                     return;
                 }
@@ -565,14 +565,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async ValueTask SelectedVersionChangedAsync(PackageItemListViewModel packageItemListViewModel, NuGetVersion nugetVersion, CancellationToken cancellationToken)
+        private async ValueTask SelectedVersionChangedAsync(PackageItemViewModel packageItemViewModel, NuGetVersion nugetVersion, CancellationToken cancellationToken)
         {
             // Load the detailed metadata that we already have and check to see if this matches what is selected, we cannot use the _metadataDict here unfortunately as it won't be populated yet
             (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
-                await packageItemListViewModel.GetDetailedPackageSearchMetadataAsync();
+                await packageItemViewModel.GetDetailedPackageSearchMetadataAsync();
             if (packageSearchMetadata != null && packageSearchMetadata.Identity.Version.Equals(nugetVersion))
             {
-                if (_searchResultPackage != packageItemListViewModel)
+                if (_searchResultPackage != packageItemViewModel)
                 {
                     return;
                 }
@@ -580,18 +580,18 @@ namespace NuGet.PackageManagement.UI
                 PackageMetadata = new DetailedPackageMetadata(
                     packageSearchMetadata,
                     packageDeprecationMetadata,
-                    packageItemListViewModel.DownloadCount);
+                    packageItemViewModel.DownloadCount);
             }
             else
             {
                 // We don't have the data readily available, we need to query the server
                 using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
                 {
-                    var packageIdentity = new PackageIdentity(packageItemListViewModel.Id, nugetVersion);
+                    var packageIdentity = new PackageIdentity(packageItemViewModel.Id, nugetVersion);
                     (PackageSearchMetadataContextInfo searchMetadata, PackageDeprecationMetadataContextInfo deprecationData) =
-                        await searchService.GetPackageMetadataAsync(packageIdentity, packageItemListViewModel.Sources, includePrerelease: true, cancellationToken);
+                        await searchService.GetPackageMetadataAsync(packageIdentity, packageItemViewModel.Sources, includePrerelease: true, cancellationToken);
 
-                    if (cancellationToken.IsCancellationRequested || _searchResultPackage != packageItemListViewModel)
+                    if (cancellationToken.IsCancellationRequested || _searchResultPackage != packageItemViewModel)
                     {
                         return;
                     }
