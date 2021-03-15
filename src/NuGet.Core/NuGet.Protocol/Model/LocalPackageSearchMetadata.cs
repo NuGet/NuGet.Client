@@ -49,6 +49,11 @@ namespace NuGet.Protocol
         public DateTimeOffset? Published => _package.LastWriteTimeUtc;
 
         /// <remarks>
+        /// There is no readme url for local packages. Later releases may display the readme file in a VS window.
+        /// </remarks>
+        public Uri ReadmeUrl => null;
+
+        /// <remarks>
         /// There is no report abuse url for local packages.
         /// </remarks>
         public Uri ReportAbuseUrl => null;
