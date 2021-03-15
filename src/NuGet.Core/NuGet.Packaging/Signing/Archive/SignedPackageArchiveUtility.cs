@@ -409,7 +409,7 @@ namespace NuGet.Packaging.Signing
             byte[] array = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian)
             {
-                    Array.Reverse(array);
+                Array.Reverse(array);
             }
             SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, array);
         }
@@ -419,7 +419,7 @@ namespace NuGet.Packaging.Signing
             byte[] array = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian)
             {
-                    Array.Reverse(array);
+                Array.Reverse(array);
             }
             SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, array);
         }
@@ -571,7 +571,7 @@ namespace NuGet.Packaging.Signing
             byte[] array = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian)
             {
-                    Array.Reverse(array);
+                Array.Reverse(array);
             }
             SignedPackageArchiveIOUtility.HashBytes(hashFunc, array);
         }
@@ -581,7 +581,7 @@ namespace NuGet.Packaging.Signing
             byte[] array = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian)
             {
-                    Array.Reverse(array);
+                Array.Reverse(array);
             }
             SignedPackageArchiveIOUtility.HashBytes(hashFunc, array);
         }
