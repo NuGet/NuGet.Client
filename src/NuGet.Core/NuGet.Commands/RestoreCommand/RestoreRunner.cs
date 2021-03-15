@@ -247,7 +247,7 @@ namespace NuGet.Commands
             // Run the restore
             var request = summaryRequest.Request;
 
-            var command = new RestoreCommand(request, lockFileBuilderCache);
+            var command = new RestoreCommand(request);
             var result = await command.ExecuteAsync(token);
 
             return new RestoreResultPair(summaryRequest, result);

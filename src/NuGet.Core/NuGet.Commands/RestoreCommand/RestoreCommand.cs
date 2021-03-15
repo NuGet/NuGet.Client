@@ -75,14 +75,10 @@ namespace NuGet.Commands
         // names for central package management version information
         private const string IsCentralVersionManagementEnabled = "IsCentralVersionManagementEnabled";
 
-        public RestoreCommand(RestoreRequest request) : this(request, new LockFileBuilderCache())
-        {
-        }
-
-        public RestoreCommand(RestoreRequest request, LockFileBuilderCache lockFileBuilderCache)
+        public RestoreCommand(RestoreRequest request)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
-            _lockFileBuilderCache = lockFileBuilderCache ?? throw new ArgumentNullException(nameof(lockFileBuilderCache));
+            _lockFileBuilderCache = request.LockFileBuilderCache;
 
             // Validate the lock file version requested
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
