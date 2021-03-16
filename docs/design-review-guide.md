@@ -38,7 +38,7 @@ The core participation rules are as follows:
 
 ## Design rules
 
-1. Use the [template](https://github.com/NuGet/Home/blob/dev/designs/SPEC_TEMPLATE.md).
+1. Use the template detailed [here](https://github.com/NuGet/Home/tree/dev/meta).
 1. All public facing designs live in the [Home](https://github.com/NuGet/Home/blob/dev/designs/) repo.
 1. Designs that do not affect the product, guides, etc, live in the private [Client.Engineering](https://github.com/NuGet/Client.Engineering/blob/master/designs/)) repo. Sometimes early iterations of a design stay private, and the Client.Engineering repository can be used for that.
 1. Follow the usual PR lifecycle to get the design to the best state that it can be and merge when accepted. See the workflow below.
