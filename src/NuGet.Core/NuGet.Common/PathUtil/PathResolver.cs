@@ -23,7 +23,7 @@ namespace NuGet.Common
             Func<T, string> getPath,
             IEnumerable<string> wildcards)
         {
-            IEnumerable<Regex> filters = wildcards.Select(WildcardToRegex).ToList();
+            List<Regex> filters = wildcards.Select(WildcardToRegex).ToList();
 
             return source.AsParallel().Where(item =>
             {
