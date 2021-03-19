@@ -1,0 +1,2 @@
+NuGet.Commands.PackageSourceBuilder
+static NuGet.Commands.PackageSourceBuilder.CreateSourceProvider(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageSourceProvider

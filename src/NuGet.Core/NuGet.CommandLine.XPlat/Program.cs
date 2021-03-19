@@ -11,6 +11,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Commands;
+using NuGet.CommandLine.XPlat.Commands.Signing;
 
 #if DEBUG
 using Microsoft.Build.Locator;
@@ -195,6 +196,7 @@ namespace NuGet.CommandLine.XPlat
                 PushCommand.Register(app, getHidePrefixLogger);
                 LocalsCommand.Register(app, getHidePrefixLogger);
                 VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
+                TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
             }
 
             app.FullName = Strings.App_FullName;
