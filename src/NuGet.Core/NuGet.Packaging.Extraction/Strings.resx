@@ -341,7 +341,7 @@ Valid from:</comment>
     <value>The package hash uses an unsupported hash algorithm.</value>
   </data>
   <data name="SignaturePackageIntegrityFailure" xml:space="preserve">
-    <value>The package integrity check failed.</value>
+    <value>The package integrity check failed. The package has been tampered with since being signed.</value>
   </data>
   <data name="SignatureHashAlgorithm" xml:space="preserve">
     <value>Signature Hash Algorithm: {0}</value>
@@ -544,11 +544,11 @@ Valid from:</comment>
     <value>The package signature contains multiple repository countersignatures.</value>
   </data>
   <data name="NuGetPackageOwners" xml:space="preserve">
-    <value>nuget-package-owners: {0}</value>
+    <value>Owners: {0}</value>
     <comment>0 - The nuget-package-owners value</comment>
   </data>
   <data name="NuGetV3ServiceIndexUrl" xml:space="preserve">
-    <value>nuget-v3-service-index-url: {0}</value>
+    <value>Service index: {0}</value>
     <comment>0- The nuget-v3-service-index-url value</comment>
   </data>
   <data name="Error_RepositorySignatureMustNotHaveARepositoryCountersignature" xml:space="preserve">

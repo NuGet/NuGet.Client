@@ -11,3 +11,5 @@ NuGet.Packaging.ManifestMetadata.Readme.set -> void
 NuGet.Packaging.NuspecReader.GetReadme() -> string
 NuGet.Packaging.PackageBuilder.Readme.get -> string
 NuGet.Packaging.PackageBuilder.Readme.set -> void
+static NuGet.Packaging.Signing.CertificateUtility.X509Certificate2ToLogMessages(System.Security.Cryptography.X509Certificates.X509Certificate2 cert, NuGet.Common.HashAlgorithmName fingerprintAlgorithm, string indentation = "  ") -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Signing.SignatureLog>
+static NuGet.Packaging.Signing.SignatureLog.MinimalLog(string message) -> NuGet.Packaging.Signing.SignatureLog

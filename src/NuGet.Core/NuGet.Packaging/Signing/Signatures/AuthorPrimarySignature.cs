@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -31,6 +32,7 @@ namespace NuGet.Packaging.Signing
             var issues = new List<SignatureLog>();
             settings = settings ?? SignatureVerifySettings.Default;
 
+            issues.Add(SignatureLog.MinimalLog(Environment.NewLine));
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
 
             var summary = base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore);

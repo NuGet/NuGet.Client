@@ -33,6 +33,30 @@ namespace NuGet.Packaging.Signing
             return certStringBuilder.ToString();
         }
 
+        /// <summary>
+        /// Converts a X509Certificate2 to a collection of log messages for various verbosity levels -
+        /// Subject Name: CN=name
+        /// SHA1 hash: hash
+        /// Issued by: CN=issuer
+        /// Valid from: issue date time to expiry date time in local time
+        /// </summary>
+        /// <param name="cert">X509Certificate2 to be converted to string.</param>
+        /// <param name="fingerprintAlgorithm">Algorithm used to calculate certificate fingerprint</param>
+        /// <returns>string representation of the X509Certificate2.</returns>
+        public static IReadOnlyList<SignatureLog> X509Certificate2ToLogMessages(X509Certificate2 cert, HashAlgorithmName fingerprintAlgorithm, string indentation = "  ")
+        {
+            var certificateFingerprint = GetHashString(cert, fingerprintAlgorithm);
+            var issues = new List<SignatureLog>();
+
+            issues.Add(SignatureLog.MinimalLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}"));
+            issues.Add(SignatureLog.InformationLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint)}"));
+            issues.Add(SignatureLog.MinimalLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(), certificateFingerprint)}"));
+            issues.Add(SignatureLog.InformationLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}"));
+            issues.Add(SignatureLog.MinimalLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}"));
+
+            return issues;
+        }
+
         private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, HashAlgorithmName fingerprintAlgorithm, string indentation)
         {
             var certificateFingerprint = GetHashString(cert, fingerprintAlgorithm);
@@ -93,7 +117,6 @@ namespace NuGet.Packaging.Signing
             for (var i = 1; i < Math.Min(_limit, chainElementsCount); i++)
             {
                 X509Certificate2ToString(chain.ChainElements[i].Certificate, collectionStringBuilder, fingerprintAlgorithm, indentation);
-                collectionStringBuilder.AppendLine();
                 indentation += indentationLevel;
             }
 

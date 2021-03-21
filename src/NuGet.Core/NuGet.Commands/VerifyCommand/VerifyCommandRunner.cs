@@ -92,7 +92,7 @@ namespace NuGet.Commands
 
                 var packageIdentity = packageReader.GetIdentity();
 
-                logger.LogInformation(Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
+                logger.LogMinimal(Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
                     Strings.VerifyCommand_VerifyingPackage,
                     packageIdentity.ToString()));
                 logger.LogInformation($"{packagePath}{Environment.NewLine}");

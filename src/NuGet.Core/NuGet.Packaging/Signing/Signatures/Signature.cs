@@ -162,7 +162,10 @@ namespace NuGet.Packaging.Signing
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
                 Strings.VerificationCertDisplay,
                 FriendlyName,
-                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate, fingerprintAlgorithm)}")));
+                $"{Environment.NewLine}")));
+
+            // Debug log any errors
+            issues.AddRange(CertificateUtility.X509Certificate2ToLogMessages(certificate, fingerprintAlgorithm));
 
             try
             {

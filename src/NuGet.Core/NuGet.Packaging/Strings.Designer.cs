@@ -1069,7 +1069,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget-package-owners: {0}.
+        ///   Looks up a localized string similar to Owners: {0}.
         /// </summary>
         internal static string NuGetPackageOwners {
             get {
@@ -1096,7 +1096,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget-v3-service-index-url: {0}.
+        ///   Looks up a localized string similar to Service index: {0}.
         /// </summary>
         internal static string NuGetV3ServiceIndexUrl {
             get {
@@ -1303,7 +1303,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package integrity check failed..
+        ///   Looks up a localized string similar to The package integrity check failed. The package has been tampered with since being signed..
         /// </summary>
         internal static string SignaturePackageIntegrityFailure {
             get {

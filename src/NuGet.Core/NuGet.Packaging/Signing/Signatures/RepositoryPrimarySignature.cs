@@ -37,6 +37,7 @@ namespace NuGet.Packaging.Signing
             var issues = new List<SignatureLog>();
             settings = settings ?? SignatureVerifySettings.Default;
 
+            issues.Add(SignatureLog.MinimalLog(Environment.NewLine));
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));
 
