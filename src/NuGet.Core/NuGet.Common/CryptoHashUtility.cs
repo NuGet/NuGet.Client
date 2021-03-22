@@ -203,6 +203,7 @@ namespace NuGet.Common
                 nameof(hashAlgorithmName));
         }
 
+#if !IS_CORECLR
         // Read this value once.
         private static Lazy<bool> AllowFipsAlgorithmsOnly = new Lazy<bool>(() => ReadFipsConfigValue());
 
@@ -214,7 +215,6 @@ namespace NuGet.Common
         /// </remarks>
         private static bool ReadFipsConfigValue()
         {
-#if !IS_CORECLR
             // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
             var cryptoConfig = typeof(CryptoConfig);
 
@@ -229,10 +229,8 @@ namespace NuGet.Common
             }
 
             return false;
-#else
-            return false;
-#endif
         }
+#endif
 
 #if !NET45
         /// <summary>
