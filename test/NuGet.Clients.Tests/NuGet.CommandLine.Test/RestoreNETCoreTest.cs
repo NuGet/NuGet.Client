@@ -6776,8 +6776,6 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
-
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
@@ -6831,8 +6829,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -6903,8 +6899,6 @@ namespace NuGet.CommandLine.Test
 
                 xml.Save(projectA.ProjectPath);
 
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
-
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
@@ -6964,8 +6958,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7031,8 +7023,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7147,8 +7137,6 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
-
                 var r = Util.RestoreSolution(pathContext);
 
                 // Preconditions
@@ -7206,8 +7194,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 var r = Util.RestoreSolution(pathContext);
 
@@ -7268,8 +7254,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7334,8 +7318,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7410,8 +7392,6 @@ namespace NuGet.CommandLine.Test
                                     attributes);
 
                 xml.Save(projectB.ProjectPath);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7503,8 +7483,6 @@ namespace NuGet.CommandLine.Test
                                     attributes);
 
                 xml.Save(projectA.ProjectPath);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
