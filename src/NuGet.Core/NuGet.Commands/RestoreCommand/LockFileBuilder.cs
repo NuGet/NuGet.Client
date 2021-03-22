@@ -288,21 +288,15 @@ namespace NuGet.Commands
         {
             ILookup<Tuple<string, Versioning.NuGetVersion>, LockFileLibrary> librariesByNameAndVersion = libraries.ToLookup(lib => Tuple.Create(lib.Name, lib.Version));
 
-            foreach (var item in librariesByNameAndVersion)
+            foreach (IGrouping<Tuple<string, Versioning.NuGetVersion>, LockFileLibrary> item in librariesByNameAndVersion)
             {
-                int count = item.Count();
-
-                if (count == 2)
+                if (item.Count() == 2)
                 {
-                    var first = item.First();
-                    var second = item.Last();
+                    LockFileLibrary first = item.First();
+                    LockFileLibrary second = item.Last();
 
                     // Prefer project reference over package reference, so remove the the package reference.
                     libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
-                }
-                else if (count > 2)
-                {
-                    throw new Exception($"Multiple conflicting references detected for {item.First().Name} {item.First().Version}");
                 }
             }
         }
@@ -311,21 +305,15 @@ namespace NuGet.Commands
         {
             ILookup<Tuple<string, Versioning.NuGetVersion>, LockFileTargetLibrary> librariesByNameAndVersion = libraries.ToLookup(lib => Tuple.Create(lib.Name, lib.Version));
 
-            foreach (var item in librariesByNameAndVersion)
+            foreach (IGrouping<Tuple<string, Versioning.NuGetVersion>, LockFileTargetLibrary> item in librariesByNameAndVersion)
             {
-                int count = item.Count();
-
-                if (count == 2)
+                if (item.Count() == 2)
                 {
-                    var first = item.First();
-                    var second = item.Last();
+                    LockFileTargetLibrary first = item.First();
+                    LockFileTargetLibrary second = item.Last();
 
                     // Prefer project reference over package reference, so remove the the package reference.
                     libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
-                }
-                else if (count > 2)
-                {
-                    throw new Exception($"Multiple conflicting references detected for {item.First().Name} {item.First().Version}");
                 }
             }
         }
