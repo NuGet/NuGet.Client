@@ -26,7 +26,7 @@ namespace Dotnet.Integration.Test
             _msbuildFixture = fixture;
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task Verify_UnSignedPackage_Fails()
         {
             using (var packageDir = TestDirectory.Create())
@@ -34,12 +34,11 @@ namespace Dotnet.Integration.Test
                 var packageId = "Unsigned.PackageX";
                 var packageVersion = "1.0.0";
                 var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
-                var path = @"C:\Users\kapenaga\Downloads\signed-packages\AuthorExpired.1.0.0.nupkg";
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     packageDir,
-                    $"nuget verify {path} -v d",
+                    $"nuget verify {packageFile.FullName}",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeFalse(because: result.AllOutput);

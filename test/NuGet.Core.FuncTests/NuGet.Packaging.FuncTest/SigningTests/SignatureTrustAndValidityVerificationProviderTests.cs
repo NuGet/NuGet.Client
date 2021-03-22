@@ -553,9 +553,11 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 result.Trust.Should().Be(SignatureVerificationStatus.Disallowed);
-                errorIssues.Count().Should().Be(1);
-                errorIssues.First().Code.Should().Be(NuGetLogCode.NU3036);
-                errorIssues.First().Message.Should().Contain("signature's timestamp's generalized time is outside the timestamping certificate's validity period.");
+                errorIssues.Count().Should().Be(3);
+                Assert.Contains(errorIssues, error => error.Code.Equals(NuGetLogCode.NU3036) &&
+                                        error.Message.Contains("signature's timestamp's generalized time is outside the timestamping certificate's validity period."));
+
+
             }
         }
 
@@ -1148,8 +1150,8 @@ namespace NuGet.Packaging.FuncTest
                     Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
                     Assert.Collection(
                         status.GetWarningIssues(),
-                        logMessage => Assert.Equal(NuGetLogCode.NU3027, logMessage.Code),
-                        logMessage => Assert.Equal(NuGetLogCode.NU3037, logMessage.Code));
+                        logMessage => Assert.Equal(NuGetLogCode.NU3037, logMessage.Code),
+                        logMessage => Assert.Equal(NuGetLogCode.NU3027, logMessage.Code));
                     Assert.Empty(status.GetErrorIssues());
                 }
             }

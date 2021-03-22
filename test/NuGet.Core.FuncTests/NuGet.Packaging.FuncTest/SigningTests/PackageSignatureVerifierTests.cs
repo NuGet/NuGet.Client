@@ -765,7 +765,7 @@ namespace NuGet.Packaging.FuncTest
                     // Assert
                     result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
-                    totalErrorIssues.Count().Should().Be(1);
+                    totalErrorIssues.Count().Should().Be(3);
                     SigningTestUtility.AssertUntrustedRoot(totalErrorIssues, NuGetLogCode.NU3028, LogLevel.Error);
                 }
             }
