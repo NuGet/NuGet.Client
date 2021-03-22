@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <Target Name="CopyToDropFolder" AfterTargets="Build" Condition="'$(IsVsixBuild)' == 'true'">
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsix" DestinationFolder="$(DropFolder)" />
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(DropFolder)" />
+    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsix" DestinationFolder="$(DropFolder)" UseHardlinksIfPossible="true" />
+    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(DropFolder)" UseHardlinksIfPossible="true" />
   </Target>
 
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />

@@ -48,7 +48,7 @@
       </_LocalizedFilePaths>
     </ItemGroup>
 
-    <Copy SourceFiles="@(_LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(_LocalizedFilePaths->'%(TargetPath)')" />
+    <Copy SourceFiles="@(_LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(_LocalizedFilePaths->'%(TargetPath)')" UseHardlinksIfPossible="true" />
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

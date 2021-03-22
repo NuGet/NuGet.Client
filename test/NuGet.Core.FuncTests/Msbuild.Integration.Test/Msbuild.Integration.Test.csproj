@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Build.Tasks" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Console\NuGet.Build.Tasks.Console.csproj" />
@@ -34,10 +34,13 @@
     </None>
   </ItemGroup>
   <Target Name="CopyTargets" AfterTargets="AfterBuild">
-    <Copy Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'" SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\Roslyn\" />
+    <Copy Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'"
+          SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets"
+          DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\Roslyn\"
+          UseHardlinksIfPossible="true" />
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  
+
 </Project>

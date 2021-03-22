@@ -37,10 +37,16 @@
     <PackageReference Include="Microsoft.Net.Compilers.netcore" />
   </ItemGroup>
   <Target Name="CopyTargets" AfterTargets="AfterBuild">
-    <Copy Condition=" '$(IsCore)' == 'true' " SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\Roslyn\" />
-    <Copy Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'" SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\..\..\$(VisualStudioVersion)\Bin\Roslyn\" />
+    <Copy Condition=" '$(IsCore)' == 'true' "
+          SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets"
+          DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\Roslyn\"
+          UseHardlinksIfPossible="true" />
+    <Copy Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'"
+          SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets"
+          DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\..\..\$(VisualStudioVersion)\Bin\Roslyn\"
+          UseHardlinksIfPossible="true" />
   </Target>
-  
+
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

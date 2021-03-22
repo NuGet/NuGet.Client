@@ -50,7 +50,7 @@
     <Message Text="FilesToCopy:  %(FilesToCopy.Identity)" Importance="high" />
     <Message Text="Publishing test extension artifacts..." Importance="high" />
     <Message Text="$(TargetPath) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" UseHardlinksIfPossible="true" />
   </Target>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

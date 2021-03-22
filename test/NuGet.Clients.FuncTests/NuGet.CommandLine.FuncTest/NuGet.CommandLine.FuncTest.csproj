@@ -11,7 +11,7 @@
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\*" />
   </ItemGroup>
- 
+
   <ItemGroup>
     <None Remove="compiler\resources\pc.packages.lock.json" />
   </ItemGroup>
@@ -32,9 +32,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
   <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build" Condition="'$(SkipILMergeOfNuGetExe)' != 'true'">
-      <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe" DestinationFolder="$(OutputPath)NuGet\" />
+      <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe" DestinationFolder="$(OutputPath)NuGet\" UseHardlinksIfPossible="true" />
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

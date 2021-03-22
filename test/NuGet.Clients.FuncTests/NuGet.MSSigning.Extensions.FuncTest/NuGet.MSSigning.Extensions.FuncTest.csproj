@@ -19,7 +19,8 @@
 
   <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build" Condition="'$(SkipILMergeOfNuGetExe)' != 'true'">
       <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe"
-            DestinationFolder="$(OutputPath)NuGet\" />
+            DestinationFolder="$(OutputPath)NuGet\"
+            UseHardlinksIfPossible="true" />
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

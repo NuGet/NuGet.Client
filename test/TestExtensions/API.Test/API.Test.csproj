@@ -37,7 +37,7 @@
     </PropertyGroup>
     <Message Text="Publishing test extension artifacts..." Importance="high" />
     <Message Text="$(TargetPath) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" UseHardlinksIfPossible="true" />
   </Target>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

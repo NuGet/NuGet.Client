@@ -386,14 +386,14 @@
     </ItemGroup>
     <Message Text="Publishing VS VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(VsixPublishDestination)\NuGet.Tools.vsix" Importance="high" />
-    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(VsixPublishDestination)NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(VsixPublishDestination)NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" UseHardlinksIfPossible="true" />
     <Message Text="@(PackageManifest) -&gt; $(VsixPublishDestination)" Importance="high" />
-    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(VsixPublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(VsixPublishDestination)" OverwriteReadOnlyFiles="true" UseHardlinksIfPossible="true" />
     <ItemGroup Condition="'$(IsCIBuild)' !='true'">
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" />
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" UseHardlinksIfPossible="true" />
   </Target>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">

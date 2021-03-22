@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="GetSymbolsAndAssembliesToIndex" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  
+
   <!-- Configuration/global properties -->
   <PropertyGroup>
     <CommonMSBuildProperties>
@@ -28,7 +28,7 @@
           <DestinationDir>$(ArtifactsDirectory)symbolstoindex\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(SymbolsToIndex.Identity)))</DestinationDir>
       </FilteredSymbolsToIndex>
     </ItemGroup>
-    <Copy SourceFiles="@(FilteredSymbolsToIndex->'%(Identity)')" DestinationFiles="@(FilteredSymbolsToIndex->'%(DestinationDir)')"/>
+    <Copy SourceFiles="@(FilteredSymbolsToIndex->'%(Identity)')" DestinationFiles="@(FilteredSymbolsToIndex->'%(DestinationDir)')" UseHardlinksIfPossible="true" />
     <Message Text="SymbolsToIndex: @(FilteredSymbolsToIndex, '%0a')" Importance="High"/>
   </Target>
 </Project>
