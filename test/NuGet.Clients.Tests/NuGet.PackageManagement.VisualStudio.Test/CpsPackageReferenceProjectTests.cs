@@ -17,6 +17,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -3249,6 +3250,31 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 cache_packages.TransitivePackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageB", new NuGetVersion("1.0.0"))));
                 Assert.True(lastWriteTime == File.GetLastWriteTimeUtc(lockFilePath));
             }
+        }
+
+        [Fact]
+        public async Task GetPackageSpecsAndAdditionalMessagesAsync_NoRestoreInfoInSolutionManager_ThrowsProjectNotNominatedException()
+        {
+            // Arrange
+            var projectSystemCache = new Mock<IProjectSystemCache>();
+            var unconfiguredProject = new Mock<UnconfiguredProject>();
+            var nugetProjectServices = new Mock<INuGetProjectServices>();
+            var projectGuid = Guid.NewGuid();
+            var cacheContext = new DependencyGraphCacheContext();
+
+            // Act & Assert
+            var target = new CpsPackageReferenceProject(
+                "TestProject",
+                @"src\TestProject\TestProject.csproj",
+                @"c:\repo\src\TestProject\TestProject.csproj",
+                projectSystemCache.Object,
+                unconfiguredProject.Object,
+                nugetProjectServices.Object,
+                projectGuid.ToString());
+
+            // VS extensibility APIs depend on this specific exception type, so if CpsPackageReferenceProject is refactored, either
+            // this exception type needs to be maintained, or the VS API implementations need to be updated as well.
+            await Assert.ThrowsAnyAsync<ProjectNotNominatedException>(() => target.GetPackageSpecsAndAdditionalMessagesAsync(cacheContext));
         }
 
         private TestCpsPackageReferenceProject CreateTestCpsPackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
