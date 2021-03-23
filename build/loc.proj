@@ -87,11 +87,11 @@
   <Target Name="CopyBinariesToLocalizationArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <_EnglishBinaries Include="@(FilesToLocalize)" Condition="'%(FilesToLocalize.Extension)'== '.dll'">
-        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
+        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
       </_EnglishBinaries>
       <_LocalizeFolder Include="$(ArtifactsDirectory)localize\**\*" />
       <_LocalizeFiles Include="@(_LocalizeFolder)">
-        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(_LocalizeFolder.Identity)))</DestinationPath>
+        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(_LocalizeFolder.Identity)))</DestinationPath>
       </_LocalizeFiles>
     </ItemGroup>
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
