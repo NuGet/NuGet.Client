@@ -185,6 +185,15 @@ namespace NuGet.Versioning
                     }
                 }
 
+                if (partsLength == 1)
+                {
+                    // (1.0.0] and [1.0.0),(1.0.0) are invalid.
+                    if (!(isMinInclusive && isMaxInclusive))
+                    {
+                        return false;
+                    }
+                }
+
                 // If there is only one piece, we use it for both min and max
                 minVersionString = parts[0];
                 maxVersionString = (parts.Length == 2) ? parts[1] : parts[0];
@@ -237,31 +246,20 @@ namespace NuGet.Versioning
             }
 
             // Illogical version range detection
-            if (minVersion != null && maxVersion != null)  // Exclude (9.0.0,9.0.0) since it's used as empty version range.
+            if (minVersion != null && maxVersion != null)
             {
-                if (partsLength == 1)
+                int result = minVersion.CompareTo(maxVersion);
+
+                // minVersion > maxVersion
+                if (result > 0)
                 {
-                    // (1.0.0] and [1.0.0),(1.0.0) are invalid.
-                    if (!(isMinInclusive && isMaxInclusive))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
-                else
+
+                // [1.0.0, 1.0.0),(1.0.0, 1.0.0] and [1.0.0, 1.0.0] are invalid.
+                if (result == 0 && (isMinInclusive ^ isMaxInclusive))
                 {
-                    int result = minVersion.CompareTo(maxVersion);
-
-                    // minVersion > maxVersion
-                    if (result > 0)
-                    {
-                        return false;
-                    }
-
-                    // [1.0.0, 1.0.0),(1.0.0, 1.0.0] and [1.0.0, 1.0.0] are invalid.
-                    if (result ==0 && (isMinInclusive ^ isMaxInclusive))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
