@@ -117,7 +117,7 @@ namespace NuGet.VisualStudio.Implementation.Test
             {
                 _writeKey = registryHive == RegistryHive.CurrentUser;
 
-                _repoKey = RegistryKey.OpenBaseKey(registryHive, RegistryView.Registry32).OpenSubKey(
+                _repoKey = RegistryKey.OpenBaseKey(registryHive, RegistryView.Registry32).CreateSubKey(
                     PreinstalledRepositoryProvider.DefaultRegistryKeyRoot, writable: _writeKey);
 
                 if (_writeKey)
