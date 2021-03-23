@@ -185,13 +185,11 @@ namespace NuGet.Versioning
                     }
                 }
 
-                if (partsLength == 1)
+                // (1.0.0] and [1.0.0),(1.0.0) are invalid.
+                if (partsLength == 1
+                    && !(isMinInclusive && isMaxInclusive))
                 {
-                    // (1.0.0] and [1.0.0),(1.0.0) are invalid.
-                    if (!(isMinInclusive && isMaxInclusive))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
 
                 // If there is only one piece, we use it for both min and max
@@ -245,7 +243,6 @@ namespace NuGet.Versioning
                 }
             }
 
-            // Illogical version range detection
             if (minVersion != null && maxVersion != null)
             {
                 int result = minVersion.CompareTo(maxVersion);
@@ -256,8 +253,9 @@ namespace NuGet.Versioning
                     return false;
                 }
 
-                // [1.0.0, 1.0.0),(1.0.0, 1.0.0] and [1.0.0, 1.0.0] are invalid.
-                if (result == 0 && (isMinInclusive ^ isMaxInclusive))
+                // minVersion is equal to maxVersion (1.0.0, 1.0.0], [1.0.0, 1.0.0)
+                if (result == 0
+                    && (isMinInclusive ^ isMaxInclusive))
                 {
                     return false;
                 }
