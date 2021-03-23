@@ -238,8 +238,7 @@ namespace NuGet.Versioning
 
             // Illogical version range detection
             if (minVersion != null && maxVersion != null
-                && minVersion >= maxVersion
-                && !(minVersion == maxVersion && isMinInclusive && isMaxInclusive))  // Exclude (9.0.0,9.0.0) since it's used as empty version range.
+                && minVersion >= maxVersion)  // Exclude (9.0.0,9.0.0) since it's used as empty version range.
             {
                 if (partsLength == 1)
                 {
@@ -251,16 +250,14 @@ namespace NuGet.Versioning
                 }
                 else
                 {
-                    int result = minVersion.CompareTo(maxVersion);
-
                     // minVersion > maxVersion
-                    if (result > 0)
+                    if (minVersion > maxVersion)
                     {
                         return false;
                     }
 
                     // [1.0.0, 1.0.0),(1.0.0, 1.0.0] and [1.0.0, 1.0.0] are invalid.
-                    if (isMinInclusive || isMaxInclusive)
+                    if (!(isMinInclusive && isMaxInclusive) && (isMinInclusive || isMaxInclusive))
                     {
                         return false;
                     }
