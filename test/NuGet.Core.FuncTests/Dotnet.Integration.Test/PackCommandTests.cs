@@ -2976,7 +2976,7 @@ namespace ClassLibrary
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
-                File.WriteAllBytes(Path.Combine(workingDirectory, "abc.png"), new byte[0]);
+                File.WriteAllBytes(Path.Combine(workingDirectory, "abc.png"), Array.Empty<byte>());
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
