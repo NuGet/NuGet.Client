@@ -31,6 +31,9 @@ if (( $? )); then
 	exit 1
 fi
 
+# Disable .NET CLI Install Lookup
+DOTNET_MULTILEVEL_LOOKUP=0
+
 DOTNET="$(pwd)/cli/dotnet"
 
 # Let the dotnet cli expand and decompress first if it's a first-run
