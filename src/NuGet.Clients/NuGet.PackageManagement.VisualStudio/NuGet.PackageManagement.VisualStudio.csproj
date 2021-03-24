@@ -17,6 +17,11 @@
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <LangVersion>8</LangVersion>
   </PropertyGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '17.0'">
+    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '16.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -29,14 +34,6 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Runtime.Caching" />
-    <Reference Include="VSLangProj140">
-      <HintPath>$(NuGetPackageRoot)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="VSLangProj150">
-      <HintPath>$(NuGetPackageRoot)vslangproj150\1.0.0\lib\net46\VSLangProj150.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -305,14 +302,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageDownload Include="Microsoft.Build" />
-    <PackageDownload Include="VSLangProj140" />
-    <PackageDownload Include="VSLangProj150" />
     <PackageReference Include="Microsoft.DataAI.NuGetRecommender.Contracts" />
     <PackageReference Include="Microsoft.VisualStudio.Composition" />
+    <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="VSLangProj" />
-    <PackageReference Include="VSLangProj80" />
-    <PackageReference Include="VSLangProj157" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />

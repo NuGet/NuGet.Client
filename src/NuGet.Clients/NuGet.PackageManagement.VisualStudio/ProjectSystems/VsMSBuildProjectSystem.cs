@@ -683,7 +683,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             if (StringComparer.OrdinalIgnoreCase.Equals(item.Name, fileName))
                             {
-                                paths.Add(item.FileNames[1]);
+                                paths.Add(item.get_FileNames(1));
                             }
                         }
                         else if (item.Kind == VsProjectTypes.VsProjectItemKindPhysicalFolder)

@@ -12,14 +12,14 @@
   <PropertyGroup>
     <!-- **  Change for each new version -->
     <!-- when changing any of the NuGetVersion props below, update ProductVersion in src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs and run tools-local\ship-public-apis -->
-    <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">5</MajorNuGetVersion>
-    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">10</MinorNuGetVersion>
+    <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">6</MajorNuGetVersion>
+    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">0</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
 
     <!-- ** Change for each new preview/rc -->
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.2</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.0</ReleaseLabel>
 
     <IsEscrowMode>false</IsEscrowMode>
 
@@ -31,7 +31,7 @@
     <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
-    <!-- Specifies the SDK version to download to use for testing. The first value represents the channel, the second value represents the exact SDK version to be download. If a version is not specified, the latest version from the channel will be downloaded. 
+    <!-- Specifies the SDK version to download to use for testing. The first value represents the channel, the second value represents the exact SDK version to be download. If a version is not specified, the latest version from the channel will be downloaded.
     Note that multiple SDKs can be downloaded by using `;` as a separator.
     -->
     <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">release/5.0.2xx 5.0.200-servicing.21120.4</CliBranchForTesting>

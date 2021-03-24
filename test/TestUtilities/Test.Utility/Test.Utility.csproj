@@ -58,6 +58,10 @@
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" PrivateAssets="All" />
+
+    <!-- 6.0 workarounds until final 17.0-* packages are published-->
+    <PackageReference Include="Microsoft.VisualStudio.ProjectAggregator" ExcludeAssets="compile" PrivateAssets="compile" />
+    <PackageReference Include="Microsoft.VisualStudio.Designer.Interfaces" ExcludeAssets="compile" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">

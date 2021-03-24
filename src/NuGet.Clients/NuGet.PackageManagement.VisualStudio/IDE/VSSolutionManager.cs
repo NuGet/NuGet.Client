@@ -203,11 +203,11 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
 
             var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B");
-            var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
-            var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
+            var solutionSaveID = (uint)VSConstants.VSStd97CmdID.SaveSolution;
+            var solutionSaveAsID = (uint)VSConstants.VSStd97CmdID.SaveSolutionAs;
 
-            _solutionSaveEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveID];
-            _solutionSaveAsEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveAsID];
+            _solutionSaveEvent = dte.Events.get_CommandEvents(vSStd97CmdIDGUID, solutionSaveID);
+            _solutionSaveAsEvent = dte.Events.get_CommandEvents(vSStd97CmdIDGUID, solutionSaveAsID);
 
             _solutionSaveEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
             _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;

@@ -24,7 +24,8 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="VSSDK.TemplateWizardInterface" />
+    <PackageReference Include="Microsoft.VisualStudio.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />
   </ItemGroup>
 
   <ItemGroup>
