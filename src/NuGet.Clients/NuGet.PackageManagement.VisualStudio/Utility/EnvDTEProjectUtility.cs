@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return ErrorHandler.Succeeded(hr) && pFound == 1 && priority[0] >= VSDOCUMENTPRIORITY.DP_Standard;
             }
 
-            var hres = vsProject.IsDocumentInProject(path, out pFound, new VSDOCUMENTPRIORITY[0], out itemId);
+            var hres = vsProject.IsDocumentInProject(path, out pFound, Array.Empty<VSDOCUMENTPRIORITY>(), out itemId);
             return ErrorHandler.Succeeded(hres) && pFound == 1;
         }
 

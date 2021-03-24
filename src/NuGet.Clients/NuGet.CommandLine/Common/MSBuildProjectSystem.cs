@@ -431,7 +431,7 @@ namespace NuGet.Common
                 dynamic globalProjectCollection = _projectCollectionType
                     .GetProperty("GlobalProjectCollection")
                     .GetMethod
-                    .Invoke(null, new object[] { });
+                    .Invoke(null, Array.Empty<object>());
                 var loadedProjects = globalProjectCollection.GetLoadedProjects(projectFile);
                 if (loadedProjects.Count > 0)
                 {

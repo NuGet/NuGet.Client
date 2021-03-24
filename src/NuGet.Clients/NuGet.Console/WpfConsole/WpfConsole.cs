@@ -585,7 +585,7 @@ namespace NuGetConsole.Implementation.Console
                 _historyInputs = InputHistory.History;
                 if (_historyInputs == null)
                 {
-                    _historyInputs = new string[] { };
+                    _historyInputs = Array.Empty<string>();
                 }
 
                 _currentHistoryInputIndex = _historyInputs.Count;
