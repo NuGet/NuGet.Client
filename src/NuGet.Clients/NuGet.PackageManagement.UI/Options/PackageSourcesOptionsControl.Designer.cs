@@ -45,12 +45,12 @@ namespace NuGet.Options
             this.NewPackageSource = new System.Windows.Forms.TextBox();
             this.NewPackageNameLabel = new System.Windows.Forms.Label();
             this.NewPackageName = new System.Windows.Forms.TextBox();
-            this.PackageSourcesListBox = new PackageSourceCheckedListBox();
+            this.PackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.addButton = new System.Windows.Forms.Button();
             this.MachineWideSourcesLabel = new System.Windows.Forms.Label();
-            this.MachineWidePackageSourcesListBox = new PackageSourceCheckedListBox();
+            this.MachineWidePackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
             this.images32px = new System.Windows.Forms.ImageList(this.components);
             this.images64px = new System.Windows.Forms.ImageList(this.components);
             this.PackageSourcesContextMenu.SuspendLayout();
@@ -145,9 +145,9 @@ namespace NuGet.Options
             // 
             resources.ApplyResources(this.PackageSourcesListBox, "PackageSourcesListBox");
             this.PackageSourcesListBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.PackageSourcesListBox.CheckBoxSize = new System.Drawing.Size(0, 0);
             this.tableLayoutPanel1.SetColumnSpan(this.PackageSourcesListBox, 4);
             this.PackageSourcesListBox.ContextMenuStrip = this.PackageSourcesContextMenu;
-            this.PackageSourcesListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
             this.PackageSourcesListBox.FormattingEnabled = true;
             this.PackageSourcesListBox.Name = "PackageSourcesListBox";
             this.PackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
@@ -191,18 +191,17 @@ namespace NuGet.Options
             // 
             // MachineWideSourcesLabel
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.MachineWideSourcesLabel, 4);
             resources.ApplyResources(this.MachineWideSourcesLabel, "MachineWideSourcesLabel");
+            this.tableLayoutPanel1.SetColumnSpan(this.MachineWideSourcesLabel, 4);
             this.MachineWideSourcesLabel.Name = "MachineWideSourcesLabel";
-            this.MachineWideSourcesLabel.AutoSize = true;
             // 
             // MachineWidePackageSourcesListBox
             // 
             resources.ApplyResources(this.MachineWidePackageSourcesListBox, "MachineWidePackageSourcesListBox");
             this.MachineWidePackageSourcesListBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.MachineWidePackageSourcesListBox.CheckBoxSize = new System.Drawing.Size(0, 0);
             this.tableLayoutPanel1.SetColumnSpan(this.MachineWidePackageSourcesListBox, 4);
             this.MachineWidePackageSourcesListBox.ContextMenuStrip = this.PackageSourcesContextMenu;
-            this.MachineWidePackageSourcesListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
             this.MachineWidePackageSourcesListBox.FormattingEnabled = true;
             this.MachineWidePackageSourcesListBox.Name = "MachineWidePackageSourcesListBox";
             this.MachineWidePackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
