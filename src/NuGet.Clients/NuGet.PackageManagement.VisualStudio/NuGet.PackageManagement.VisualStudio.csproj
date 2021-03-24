@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -18,14 +18,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Runtime.Caching" />
-    <Reference Include="VSLangProj140">
-      <HintPath>$(NuGetPackageRoot)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="VSLangProj150">
-      <HintPath>$(NuGetPackageRoot)vslangproj150\1.0.0\lib\net46\VSLangProj150.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -235,6 +227,7 @@
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -292,15 +285,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageDownload Include="Microsoft.Build" />
-    <PackageDownload Include="VSLangProj140" />
-    <PackageDownload Include="VSLangProj150" />
+    <PackageReference Include="EnvDTE" ExcludeAssets="all" PrivateAssets="all" />
     <PackageReference Include="Microsoft.DataAI.NuGetRecommender.Contracts" />
     <PackageReference Include="Microsoft.VisualStudio.Composition" />
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
+    <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="VSLangProj" />
-    <PackageReference Include="VSLangProj80" />
-    <PackageReference Include="VSLangProj157" />
     <PackageReference Include="VsWebSite.Interop" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />

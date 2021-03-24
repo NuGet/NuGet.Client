@@ -592,7 +592,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     // Get the referenced project from the reference if any
                     // C++ projects will throw on reference.SourceProject if reference3.Resolved is false.
-                    // It's also possible that the referenced project is the project itself 
+                    // It's also possible that the referenced project is the project itself
                     // for C++ projects. In this case this reference should be skipped to avoid circular
                     // references.
                     if (reference3 != null

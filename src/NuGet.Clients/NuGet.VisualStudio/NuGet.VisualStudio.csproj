@@ -24,7 +24,10 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="VSSDK.TemplateWizardInterface" />
+    <PackageReference Include="EnvDTE" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
+    <PackageReference Include="Microsoft.VisualStudio.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />
   </ItemGroup>
 
   <ItemGroup>
