@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Interaction logic for PackageManagerProvidersLabel.xaml. Its DataContext is
-    /// PackageItemListViewModel.
+    /// <see cref="PackageItemViewModel"/>.
     /// </summary>
     public partial class PackageManagerProvidersLabel : UserControl
     {

@@ -6776,8 +6776,6 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
-
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
@@ -6831,8 +6829,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -6903,8 +6899,6 @@ namespace NuGet.CommandLine.Test
 
                 xml.Save(projectA.ProjectPath);
 
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
-
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
@@ -6964,8 +6958,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7031,8 +7023,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7147,8 +7137,6 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
-
                 var r = Util.RestoreSolution(pathContext);
 
                 // Preconditions
@@ -7206,8 +7194,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 var r = Util.RestoreSolution(pathContext);
 
@@ -7268,8 +7254,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7334,8 +7318,6 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7410,8 +7392,6 @@ namespace NuGet.CommandLine.Test
                                     attributes);
 
                 xml.Save(projectB.ProjectPath);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7503,8 +7483,6 @@ namespace NuGet.CommandLine.Test
                                     attributes);
 
                 xml.Save(projectA.ProjectPath);
-
-                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -9224,8 +9202,8 @@ namespace NuGet.CommandLine.Test
                     Id = "x",
                     Version = null
                 };
-                packageX100.Files.Clear();
-                packageX100.AddFile("lib/net46/x.dll");
+                packageX100NullVersion.Files.Clear();
+                packageX100NullVersion.AddFile("lib/net46/x.dll");
 
                 var packageX200 = new SimpleTestPackageContext()
                 {
@@ -9275,7 +9253,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: The package reference x version has changed from [1.0.0, ) to [2.0.0, )."));
             }
         }
 
@@ -9357,7 +9335,8 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. " +
+                    "Lock file version [1.0.0, ), central package management version [2.0.0, )."));
             }
         }
 
@@ -9391,8 +9370,8 @@ namespace NuGet.CommandLine.Test
                     Id = "x",
                     Version = null
                 };
-                packageX100.Files.Clear();
-                packageX100.AddFile("lib/net46/x.dll");
+                packageX100NullVersion.Files.Clear();
+                packageX100NullVersion.AddFile("lib/net46/x.dll");
 
                 var packageY100 = new SimpleTestPackageContext()
                 {
@@ -9431,7 +9410,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: The package reference x version has changed from [1.0.0, ) to (, )."));
             }
         }
 
@@ -9505,7 +9484,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: Central package management file(s) doesn't contain version range for y package which is specified as CentralTransitive dependency in the lock file."));
             }
         }
 
@@ -9578,7 +9557,7 @@ namespace NuGet.CommandLine.Test
 
                 // Expect exit code 1 on this restore
                 r = Util.RestoreSolution(pathContext, 1);
-                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+                Assert.True(r.AllOutput.Contains("NU1004: Transitive dependency y moved to be centraly managed invalidated the lock file."));
             }
         }
 
@@ -10042,17 +10021,13 @@ namespace NuGet.CommandLine.Test
                 var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     "proj",
                     pathContext.SolutionRoot,
-                    "net5.0-windows",
-                    "net50-android");
+                    "net5.0-windows");
 
                 // Workaround: Set all the TFM properties ourselves.
                 // We can't rely on the SDK setting them, as only .NET 5 SDK P8 and later applies these correctly.
                 var net50windowsTFM = project.Frameworks.Where(f => f.TargetAlias.Equals("net5.0-windows")).Single();
-                var net50AndroidTFM = project.Frameworks.Where(f => f.TargetAlias.Equals("net50-android")).Single();
                 net50windowsTFM.Properties.Add("TargetFrameworkMoniker", ".NETCoreApp, Version=v5.0");
                 net50windowsTFM.Properties.Add("TargetPlatformMoniker", "Windows, Version=7.0");
-                net50AndroidTFM.Properties.Add("TargetFrameworkMoniker", ".NETCoreApp, Version=v5.0");
-                net50AndroidTFM.Properties.Add("TargetPlatformMoniker", "Android,Version=21.0");
 
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
@@ -10072,7 +10047,6 @@ namespace NuGet.CommandLine.Test
                 var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
 
                 Assert.Contains("'$(TargetFramework)' == 'net5.0-windows' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
-                Assert.Contains("'$(TargetFramework)' == 'net50-android' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 

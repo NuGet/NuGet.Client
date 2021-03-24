@@ -3692,8 +3692,14 @@ namespace NuGet.PackageManagement
                 PackagesFolderSourceRepository
             };
 
-            effectiveSources.AddRange(primarySources);
-            effectiveSources.AddRange(secondarySources);
+            if (primarySources != null)
+            {
+                effectiveSources.AddRange(primarySources);
+            }
+            if (secondarySources != null)
+            {
+                effectiveSources.AddRange(secondarySources);
+            }
 
             return new HashSet<SourceRepository>(effectiveSources, new SourceRepositoryComparer());
         }

@@ -88,7 +88,7 @@ namespace NuGet.Commands.Test
                 spec2 = spec2.WithTestRestoreMetadata();
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -177,7 +177,7 @@ namespace NuGet.Commands.Test
                 spec2 = spec2.WithTestRestoreMetadata();
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -273,7 +273,7 @@ namespace NuGet.Commands.Test
                 spec2 = spec2.WithTestRestoreMetadata();
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -363,7 +363,7 @@ namespace NuGet.Commands.Test
                 spec2 = spec2.WithTestRestoreMetadata();
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -525,7 +525,7 @@ namespace NuGet.Commands.Test
                 spec2 = spec2.WithTestRestoreMetadata();
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act

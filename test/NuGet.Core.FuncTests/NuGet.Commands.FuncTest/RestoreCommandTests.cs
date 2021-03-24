@@ -112,7 +112,7 @@ namespace NuGet.Commands.FuncTest
                 referenceSpec = referenceSpec.WithTestRestoreMetadata();
                 projectSpec = projectSpec.WithTestRestoreMetadata().WithTestProjectReference(referenceSpec);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, projectSpec, referenceSpec);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, projectSpec, referenceSpec);
 
                 var command = new RestoreCommand(request);
 
@@ -251,7 +251,7 @@ namespace NuGet.Commands.FuncTest
                 specB = specB.WithTestRestoreMetadata();
                 specA = specA.WithTestRestoreMetadata().WithTestProjectReference(specB);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, specA, specB);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, specA, specB);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1451,7 +1451,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, logger.Warnings); // Warnings are combined on message
-                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Contains("NU1603: TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
             }
         }
 
@@ -1493,7 +1493,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, logger.Warnings); // Warnings for all graphs are combined
-                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Contains("NU1603: TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
             }
         }
 

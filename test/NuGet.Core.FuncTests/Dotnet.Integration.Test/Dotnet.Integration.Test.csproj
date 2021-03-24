@@ -4,7 +4,6 @@
   
   <PropertyGroup>
     <TargetFrameworks>$(NETCoreTestTargetFramework)</TargetFrameworks>
-    <TestProject>true</TestProject>
     <Description>Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.</Description>
   </PropertyGroup>
   

@@ -14,6 +14,7 @@ using System.Text;
 using System.Xml.Linq;
 using NuGet.Client;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -256,6 +257,8 @@ namespace NuGet.Packaging
             private set;
         }
 
+        public string Readme { get; set; }
+
         /// <summary>
         /// Exposes the additional properties extracted by the metadata
         /// extractor or received from the command line.
@@ -407,11 +410,13 @@ namespace NuGet.Packaging
             }
 
             ValidateDependencies(Version, DependencyGroups);
+            ValidateFilesUnique(Files);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
             ValidateFrameworkAssemblies(FrameworkReferences, FrameworkReferenceGroups);
             ValidateLicenseFile(Files, LicenseMetadata);
             ValidateIconFile(Files, Icon);
             ValidateFileFrameworks(Files);
+            ValidateReadmeFile(Files, Readme);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -681,6 +686,24 @@ namespace NuGet.Packaging
             return null;
         }
 
+        private void ValidateFilesUnique(IEnumerable<IPackageFile> files)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var duplicates = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string destination in files.Where(t => t.Path != null).Select(t => PathUtility.GetPathWithDirectorySeparator(t.Path)))
+            {
+                if (!seen.Add(destination))
+                {
+                    duplicates.Add(destination);
+                }
+            }
+            if (duplicates.Any())
+            {
+                throw new PackagingException(NuGetLogCode.NU5050, string.Format(CultureInfo.CurrentCulture, NuGetResources.FoundDuplicateFile, string.Join(", ", duplicates)));
+            }
+
+        }
+
         private void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)
         {
             if (!PackageTypes.Contains(PackageType.SymbolsPackage) && licenseMetadata?.Type == LicenseType.File)
@@ -835,6 +858,69 @@ namespace NuGet.Packaging
             }
         }
 
+        /// <summary>
+        /// Validate that the readme file is of the correct size/type and can be opened properly.
+        /// </summary>
+        /// <param name="files">Files resolved from the file entries in the nuspec</param>
+        /// <param name="readmePath">readmepath found in the .nuspec</param>
+        /// <exception cref="PackagingException">When a validation rule is not met</exception>
+        private void ValidateReadmeFile(IEnumerable<IPackageFile> files, string readmePath)
+        {
+            if (!string.IsNullOrEmpty(readmePath))
+            {
+                // Validate readme extension
+                var extension = Path.GetExtension(readmePath);
+
+                if (!string.IsNullOrEmpty(extension) &&
+                    !extension.Equals(NuGetConstants.ReadmeExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5038,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeFileExtensionIsInvalid, readmePath));
+                }
+
+                // Validate entry
+                var readmePathStripped = PathUtility.StripLeadingDirectorySeparators(readmePath);
+
+                var readmeFileList = files.Where(f =>
+                        readmePathStripped.Equals(
+                            PathUtility.StripLeadingDirectorySeparators(f.Path),
+                            PathUtility.GetStringComparisonBasedOnOS()));
+
+                if (!readmeFileList.Any())
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5039,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeNoFileElement, readmePath));
+                }
+
+                IPackageFile readmeFile = readmeFileList.First();
+
+                try
+                {
+                    // Validate Readme open file
+                    using (var readmeStream = readmeFile.GetStream())
+                    {
+                        // Validate file size is not 0
+                        long fileSize = readmeStream.Length;
+
+                        if (fileSize == 0)
+                        {
+                            throw new PackagingException(
+                                NuGetLogCode.NU5040,
+                                string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeErrorEmpty, readmePath));
+                        }
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5041,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.ReadmeCannotOpenFile, readmePath, e.Message));
+                }
+            }
+        }
+
         private void ReadManifest(Stream stream, string basePath, Func<string, string> propertyProvider)
         {
             // Deserialize the document and extract the metadata
@@ -880,6 +966,7 @@ namespace NuGet.Packaging
             ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles.ToList());
             LicenseMetadata = metadata.LicenseMetadata;
             Icon = metadata.Icon;
+            Readme = metadata.Readme;
 
             if (metadata.Tags != null)
             {
@@ -1016,7 +1103,8 @@ namespace NuGet.Packaging
         {
             exclude = exclude?.Replace('\\', Path.DirectorySeparatorChar);
 
-            List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source.Replace('\\', Path.DirectorySeparatorChar), destination, _includeEmptyDirectories).ToList();
+            // Ensure that the 'source' path uses only the OS-specific directory separating character
+            List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar), destination, _includeEmptyDirectories).ToList();
 
             if (_includeEmptyDirectories)
             {

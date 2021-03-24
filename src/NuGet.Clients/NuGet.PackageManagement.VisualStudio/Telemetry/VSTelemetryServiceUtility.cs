@@ -12,6 +12,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.Telemetry
 {
@@ -66,24 +67,33 @@ namespace NuGet.PackageManagement.Telemetry
 
         public static async Task<ProjectTelemetryEvent> GetProjectTelemetryEventAsync(NuGetProject nuGetProject)
         {
-            // Get the project details.
-            string projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+            if (nuGetProject == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProject));
+            }
+            string projectUniqueName = string.Empty;
+            ProjectTelemetryEvent returnValue = null;
 
-            // Emit the project information.
             try
             {
+                // Get the project details.
+                projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
                 string projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
                 NuGetProjectType projectType = GetProjectType(nuGetProject);
                 bool isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
+                string fullPath = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
 
-                return new ProjectTelemetryEvent(
+                returnValue = new ProjectTelemetryEvent(
                     NuGetVersion.Value,
                     projectId,
                     projectType,
-                    isUpgradable);
+                    isUpgradable,
+                    fullPath);
             }
             catch (Exception ex)
             {
+                // ArgumentException means project metadata is empty
+                // DTE exceptions could mean VS process has a severe failure
                 string message =
                     $"Failed to emit project information for project '{projectUniqueName}'. Exception:" +
                     Environment.NewLine +
@@ -91,8 +101,11 @@ namespace NuGet.PackageManagement.Telemetry
 
                 ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, message);
                 Debug.Fail(message);
-                return null;
+
+                await TelemetryUtility.PostFaultAsync(ex, nameof(VSTelemetryServiceUtility), nameof(GetProjectTelemetryEventAsync));
             }
+
+            return returnValue;
         }
 
         public static NuGetProjectType GetProjectType(NuGetProject nuGetProject)

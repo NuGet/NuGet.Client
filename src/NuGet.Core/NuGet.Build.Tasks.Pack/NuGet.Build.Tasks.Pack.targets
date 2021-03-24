@@ -275,6 +275,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               PackageLicenseFile="$(PackageLicenseFile)"
               PackageLicenseExpression="$(PackageLicenseExpression)"
               PackageLicenseExpressionVersion="$(PackageLicenseExpressionVersion)"
+              Readme="$(PackageReadmeFile)"
               Deterministic="$(Deterministic)"
               PackageIcon="$(PackageIcon)"
               />

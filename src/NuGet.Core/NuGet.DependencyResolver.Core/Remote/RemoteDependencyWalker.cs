@@ -444,27 +444,27 @@ namespace NuGet.DependencyResolver
         internal class TransitiveCentralPackageVersions
         {
             private ConcurrentQueue<LibraryDependency> _toBeProcessedTransitiveCentralPackageVersions;
-            private ConcurrentDictionary<string, List<GraphNode<RemoteResolveResult>>> _transitiveCentralPackageVersions;
+            private Dictionary<string, List<GraphNode<RemoteResolveResult>>> _transitiveCentralPackageVersions;
 
             internal TransitiveCentralPackageVersions()
             {
                 _toBeProcessedTransitiveCentralPackageVersions = new ConcurrentQueue<LibraryDependency>();
-                _transitiveCentralPackageVersions = new ConcurrentDictionary<string, List<GraphNode<RemoteResolveResult>>>(StringComparer.OrdinalIgnoreCase);
+                _transitiveCentralPackageVersions = new Dictionary<string, List<GraphNode<RemoteResolveResult>>>(StringComparer.OrdinalIgnoreCase);
             }
 
             internal void Add(LibraryDependency centralPackageVersionDependency, GraphNode<RemoteResolveResult> parentNode)
             {
-                _transitiveCentralPackageVersions.AddOrUpdate(centralPackageVersionDependency.Name,
-                    (key) =>
+                lock (_transitiveCentralPackageVersions)
+                {
+                    if (!_transitiveCentralPackageVersions.TryGetValue(centralPackageVersionDependency.Name, out var list))
                     {
+                        list = new List<GraphNode<RemoteResolveResult>>();
+                        _transitiveCentralPackageVersions.Add(centralPackageVersionDependency.Name, list);
                         _toBeProcessedTransitiveCentralPackageVersions.Enqueue(centralPackageVersionDependency);
-                        return new List<GraphNode<RemoteResolveResult>>() { parentNode };
-                    },
-                    (key, value) =>
-                    {
-                        value.Add(parentNode);
-                        return value;
-                    });
+                    }
+
+                    list.Add(parentNode);
+                }
             }
 
             internal bool TryTake(out LibraryDependency centralPackageVersionDependency)
@@ -475,9 +475,12 @@ namespace NuGet.DependencyResolver
 
             internal void AddParentsToNode(GraphNode<RemoteResolveResult> node)
             {
-                foreach (var parent in _transitiveCentralPackageVersions[node.Item.Key.Name])
+                lock (_transitiveCentralPackageVersions)
                 {
-                    node.ParentNodes.Add(parent);
+                    foreach (var parent in _transitiveCentralPackageVersions[node.Item.Key.Name])
+                    {
+                        node.ParentNodes.Add(parent);
+                    }
                 }
             }
         }

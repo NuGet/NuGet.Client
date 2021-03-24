@@ -528,7 +528,7 @@ namespace NuGet.Commands.Test
                 spec1.RestoreMetadata.ProjectPath = project1Path;
                 spec1.RestoreMetadata.ProjectUniqueName = project1Path;
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2, spec3);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2, spec3);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.assets.json");
                 var format = new LockFileFormat();

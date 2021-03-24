@@ -36,6 +36,7 @@ namespace NuGetConsole.Host
 
         private static string GetSubKeyValue(string keyPath, string valueName)
         {
+            // Registration exists in both 32bit and 64bit localmachine keys, no need for explicit use of RegistryHive.
             RegistryKey currentKey = Registry.LocalMachine;
 
             foreach (string subKeyName in keyPath.Split('\\'))

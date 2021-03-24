@@ -1,20 +1,4 @@
 steps:
-- task: ShellScript@2
-  displayName: "Install .NET 5.0 for build"
-  continueOnError: "true"
-  inputs:
-    scriptPath: "scripts/utils/InstallCLIforBuild.sh"
-    disableAutoCwd: "true"
-    cwd: "$(Build.Repository.LocalPath)"
-    args: '$(SDKVersionForBuild)'
-
-- task: PowerShell@2
-  displayName: "Define variables"
-  inputs:
-    targetType: "inline"
-    script: |
-      Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
-
 - task: PowerShell@2
   displayName: "Update Build Number"
   inputs:
@@ -64,9 +48,8 @@ steps:
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
     targetType: "inline"
-    arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
     script: |
       . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"
     failOnStderr: "true"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"

@@ -6,6 +6,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -21,6 +22,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using NuGetConsole.Implementation.Console;
 using NuGetConsole.Implementation.PowerConsole;
 using Task = System.Threading.Tasks.Task;
@@ -47,11 +49,6 @@ namespace NuGetConsole.Implementation
         private PowerConsoleWindow PowerConsoleWindow
         {
             get { return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow; }
-        }
-
-        private IVsUIShell VsUIShell
-        {
-            get { return this.GetService<IVsUIShell>(typeof(SVsUIShell)); }
         }
 
         private bool IsToolbarEnabled
@@ -472,7 +469,8 @@ namespace NuGetConsole.Implementation
                 {
                     if (WpfConsole.Dispatcher.IsStartCompleted)
                     {
-                        OnDispatcherStartCompleted();
+                        NuGetUIThreadHelper.JoinableTaskFactory.Run(OnDispatcherStartCompletedAsync);
+
                         // if the dispatcher was started before we reach here,
                         // it means the dispatcher has been in read-only mode (due to _startedWritingOutput = false).
                         // enable key input now.
@@ -480,7 +478,7 @@ namespace NuGetConsole.Implementation
                     }
                     else
                     {
-                        WpfConsole.Dispatcher.StartCompleted += (sender, args) => OnDispatcherStartCompleted();
+                        WpfConsole.Dispatcher.StartCompleted += OnDispatcherStartCompleted;
                         WpfConsole.Dispatcher.StartWaitingKey += OnDispatcherStartWaitingKey;
                         WpfConsole.Dispatcher.Start();
                     }
@@ -507,19 +505,25 @@ namespace NuGetConsole.Implementation
             ConsoleParentPane.NotifyInitializationCompleted();
         }
 
-        private void OnDispatcherStartCompleted()
+        private void OnDispatcherStartCompleted(object sender, EventArgs args)
+        {
+            WpfConsole.Dispatcher.StartCompleted -= OnDispatcherStartCompleted;
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnDispatcherStartCompletedAsync)
+                .PostOnFailure(nameof(PowerConsoleToolWindow), nameof(OnDispatcherStartCompleted));
+        }
+
+        private async Task OnDispatcherStartCompletedAsync()
         {
             WpfConsole.Dispatcher.StartWaitingKey -= OnDispatcherStartWaitingKey;
 
             ConsoleParentPane.NotifyInitializationCompleted();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                // force the UI to update the toolbar
-                VsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
-            });
+            // force the UI to update the toolbar
+            IVsUIShell vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+            vsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleLoaded);
         }

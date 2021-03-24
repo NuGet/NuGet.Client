@@ -56,12 +56,10 @@
     <Compile Include="Automation\ISelectableItem.cs" />
     <Compile Include="Automation\ISelectableItemsControl.cs" />
     <Compile Include="Automation\ListBoxToggleableItemsAutomationPeer.cs" />
-    <Compile Include="Automation\TabItemButtonAutomationPeer.cs" />
     <Compile Include="Automation\ToggleableItemAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
-    <Compile Include="Controls\TabItemButton.cs" />
     <Compile Include="Converters\AdditionConverter.cs" />
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
     <Compile Include="Converters\AccessibleConverter.cs" />
@@ -75,6 +73,7 @@
     <Compile Include="Converters\EnumDescriptionValueConverter.cs" />
     <Compile Include="Converters\NotNullOrTrueToBooleanConverter.cs" />
     <Compile Include="DisplayVersion.cs" />
+    <Compile Include="Experimentation\ExperimentationConstants.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IPackageItemLoader.cs" />
     <Compile Include="Models\FreeText.cs" />
@@ -82,7 +81,7 @@
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
-    <Compile Include="Models\LoadingStatusViewModel.cs" />
+    <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
     <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
     <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
@@ -200,7 +199,7 @@
     <Compile Include="InfiniteScrollListItemStyleSelector.cs" />
     <Compile Include="LoadingStatusIndicator.cs" />
     <Compile Include="Models\AlternativePackageManagerProviders.cs" />
-    <Compile Include="Models\PackageItemListViewModel.cs" />
+    <Compile Include="ViewModels\PackageItemViewModel.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Converters\NotNullToBooleanConverter.cs" />
     <Compile Include="PackageInstallationInfo.cs" />

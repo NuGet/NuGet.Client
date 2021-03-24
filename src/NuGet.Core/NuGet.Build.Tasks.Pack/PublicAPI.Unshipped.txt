@@ -1,0 +1,5 @@
+NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.Readme.get -> string
+NuGet.Build.Tasks.Pack.PackTask.Readme.get -> string
+NuGet.Build.Tasks.Pack.PackTask.Readme.set -> void
+NuGet.Build.Tasks.Pack.PackTaskRequest.Readme.get -> string
+NuGet.Build.Tasks.Pack.PackTaskRequest.Readme.set -> void

@@ -583,7 +583,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The following sources were used:</value>
   </data>
   <data name="ListPkg_InvalidOptions" xml:space="preserve">
-    <value>Option '{0}' and '{1}' cannot be combined.</value>
+    <value>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</value>
   </data>
   <data name="ListPkg_NoDeprecatedPackagesForProject" xml:space="preserve">
     <value>The given project `{0}` has no deprecated packages given the current sources.</value>

@@ -17,7 +17,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      CheckVstsPersonalAccessToken -VstsPersonalAccessToken $(VstsPersonalAccessToken)
+      CheckVstsPersonalAccessToken -VstsPersonalAccessToken $(System.AccessToken)
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
@@ -50,16 +50,6 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set build number"
         exit 1
       }
-
-- task: PowerShell@1
-  displayName: "Get SDK Version For Build"
-  name: "getSDKVersionForBuild"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
-      $SDKVersionForBuild = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliVersionForBuilding
-      Write-Host "##vso[task.setvariable variable=SDKVersionForBuild;isOutput=true]$SDKVersionForBuild"
 
 - task: PowerShell@1
   displayName: "Add Build Tags"

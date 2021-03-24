@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
     public abstract class LocalDetailControlModelTestBase : IClassFixture<LocalPackageSearchMetadataFixture>
     {
         protected readonly LocalPackageSearchMetadataFixture _testData;
-        protected readonly PackageItemListViewModel _testViewModel;
+        protected readonly PackageItemViewModel _testViewModel;
         protected readonly JoinableTaskContext _joinableTaskContext;
         protected bool disposedValue = false;
 
@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             sp.Reset();
             _testData = testData;
             var testVersion = new NuGetVersion(0, 0, 1);
-            _testViewModel = new PackageItemListViewModel()
+            _testViewModel = new PackageItemViewModel()
             {
                 PackagePath = _testData.TestData.PackagePath,
                 Version = testVersion,
@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
             await model.SetCurrentPackageAsync(
-                new PackageItemListViewModel()
+                new PackageItemViewModel()
                 {
                     InstalledVersion = installedVersion,
                     Version = installedVersion
@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
             await model.SetCurrentPackageAsync(
-                new PackageItemListViewModel()
+                new PackageItemViewModel()
                 {
                     InstalledVersion = installedVersion,
                     Version = installedVersion

@@ -17,7 +17,6 @@ namespace NuGet.Versioning
         // store as array to avoid enumerator allocations
         internal readonly string[] _releaseLabels;
         internal readonly string _metadata;
-        internal readonly Version _version;
 
         /// <summary>
         /// Creates a SemanticVersion from an existing SemanticVersion
@@ -129,7 +128,11 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException(nameof(version));
             }
 
-            _version = NormalizeVersionValue(version);
+            var normalizedVersion = NormalizeVersionValue(version);
+            Major = normalizedVersion.Major;
+            Minor = normalizedVersion.Minor;
+            Patch = normalizedVersion.Build;
+
             _metadata = metadata;
 
             if (releaseLabels != null)
@@ -158,26 +161,17 @@ namespace NuGet.Versioning
         /// <summary>
         /// Major version X (X.y.z)
         /// </summary>
-        public int Major
-        {
-            get { return _version.Major; }
-        }
+        public int Major { get; }
 
         /// <summary>
         /// Minor version Y (x.Y.z)
         /// </summary>
-        public int Minor
-        {
-            get { return _version.Minor; }
-        }
+        public int Minor { get; }
 
         /// <summary>
         /// Patch version Z (x.y.Z)
         /// </summary>
-        public int Patch
-        {
-            get { return _version.Build; }
-        }
+        public int Patch { get; }
 
         /// <summary>
         /// A collection of pre-release labels attached to the version.

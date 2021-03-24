@@ -42,6 +42,7 @@ namespace NuGet.Commands
         private const string ErrorCodes = "ErrorCodes";
         private const string WarningCodes = "WarningCodes";
         private const string RestoreSuccess = "RestoreSuccess";
+        private const string ProjectFilePath = nameof(ProjectFilePath);
 
         // names for child events for ProjectRestoreInformation
         private const string GenerateRestoreGraph = "GenerateRestoreGraph";
@@ -107,6 +108,8 @@ namespace NuGet.Commands
         {
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
+                telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
+
                 _operationId = telemetry.OperationId;
 
                 var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
@@ -558,7 +561,10 @@ namespace NuGet.Commands
                 {
                     // check if lock file is out of sync with project data
                     lockFileTelemetry.StartIntervalMeasure();
-                    isLockFileValid = PackagesLockFileUtilities.IsLockFileStillValid(_request.DependencyGraphSpec, packagesLockFile);
+
+                    LockFileValidationResult lockFileResult = PackagesLockFileUtilities.IsLockFileValid(_request.DependencyGraphSpec, packagesLockFile);
+                    isLockFileValid = lockFileResult.IsValid;
+
                     lockFileTelemetry.EndIntervalMeasure(ValidateLockFileDuration);
 
                     if (isLockFileValid)
@@ -578,9 +584,16 @@ namespace NuGet.Commands
                     else if (_request.IsRestoreOriginalAction && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode)
                     {
                         success = false;
+                        var invalidReasons = string.Join(Environment.NewLine, lockFileResult.InvalidReasons);
 
                         // bail restore since it's the locked mode but required to update the lock file.
-                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
+                        var message = RestoreLogMessage.CreateError(NuGetLogCode.NU1004,
+                                                string.Format(
+                                                CultureInfo.CurrentCulture,
+                                                string.Concat(invalidReasons,
+                                                Strings.Error_RestoreInLockedMode)));
+
+                        await _logger.LogAsync(message);
                     }
                 }
             }

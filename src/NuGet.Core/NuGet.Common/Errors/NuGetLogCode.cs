@@ -10,7 +10,7 @@ namespace NuGet.Common
     /// <para>
     /// Format - NUxyzw where NU is the prefix indicating NuGet and xyzw is a 4 digit code
     /// </para>
-    /// 
+    ///
     /// Numbers - xyzw
     ///     x - 'x' is the largest digit and should be used to quantify a set of errors.
     ///         For example 1yzw are set of restore related errors and no other code path should use the range 1000 to 1999 for errors or warnings.
@@ -22,7 +22,7 @@ namespace NuGet.Common
     ///
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
-    /// 
+    ///
     /// <para>
     /// Groups:
     /// 1000-1999 - Restore
@@ -693,6 +693,26 @@ namespace NuGet.Common
         NU5037 = 5037,
 
         /// <summary>
+        /// Error_ReadmeFileExtensionIsInvalid
+        /// </summary>
+        NU5038 = 5038,
+
+        /// <summary>
+        /// Error_ReadmeNoFileElement
+        /// </summary>
+        NU5039 = 5039,
+
+        /// <summary>
+        /// Error_ReadmeErrorEmpty
+        /// </summary>
+        NU5040 = 5040,
+
+        /// <summary>
+        /// Error_ReadmeCannotOpenFile
+        /// </summary>
+        NU5041 = 5041,
+
+        /// <summary>
         /// Invalid icon extension error
         /// </summary>
         NU5045 = 5045,
@@ -716,6 +736,11 @@ namespace NuGet.Common
         /// IconUrlAndIconWarning
         /// </summary>
         NU5049 = 5049,
+
+        /// <summary>
+        /// Attempted to write files from multiple sources into the same location
+        /// </summary>
+        NU5050 = 5050,
 
         /// <summary>
         /// AssemblyOutsideLibWarning

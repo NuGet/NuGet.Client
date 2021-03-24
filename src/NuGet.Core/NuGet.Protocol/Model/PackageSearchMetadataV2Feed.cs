@@ -100,6 +100,8 @@ namespace NuGet.Protocol
 
         public DateTimeOffset? Published { get; private set; }
 
+        public Uri ReadmeUrl { get; } = null; // The ReadmeUrl has not been added to the V2 feed.
+
         public Uri ReportAbuseUrl { get; private set; }
 
         public Uri PackageDetailsUrl { get; private set; }

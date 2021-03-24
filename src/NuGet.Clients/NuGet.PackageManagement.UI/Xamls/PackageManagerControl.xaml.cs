@@ -891,6 +891,13 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 FlagTabDataAsLoaded(filterToRender);
+
+                // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
+                // UI filtering for Updates is ready.
+                if (filterToRender == ItemFilter.Installed)
+                {
+                    FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -1066,7 +1073,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         internal async Task UpdateDetailPaneAsync(CancellationToken cancellationToken)
         {
-            PackageItemListViewModel selectedItem = _packageList.SelectedItem;
+            PackageItemViewModel selectedItem = _packageList.SelectedItem;
             IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
             int selectedIndex = _packageList.SelectedIndex;
             int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
@@ -1094,7 +1101,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void EmitSearchSelectionTelemetry(PackageItemListViewModel selectedPackage)
+        private void EmitSearchSelectionTelemetry(PackageItemViewModel selectedPackage)
         {
             var operationId = _packageList.OperationId;
             var selectedIndex = _packageList.SelectedIndex;
@@ -1396,9 +1403,16 @@ namespace NuGet.PackageManagement.UI
             else if (updatePackageOptions.PackagesToUpdate.Any())
             {
                 var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate);
+                PackageItemViewModel firstSelectedItem = null;
                 foreach (var packageItem in _packageList.PackageItems)
                 {
                     packageItem.IsSelected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
+
+                    if (packageItem.IsSelected && firstSelectedItem is null)
+                    {
+                        firstSelectedItem = packageItem;
+                        _packageList._list.ScrollIntoView(firstSelectedItem);
+                    }
                 }
             }
         }
@@ -1505,7 +1519,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteUninstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            var package = e.Parameter as PackageItemListViewModel;
+            var package = e.Parameter as PackageItemViewModel;
             if (Model.IsSolution
                 || package == null
                 || package.Status == PackageStatus.NotInstalled)
@@ -1533,7 +1547,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            var package = e.Parameter as PackageItemListViewModel;
+            var package = e.Parameter as PackageItemViewModel;
             if (package == null || Model.IsSolution)
             {
                 return;
@@ -1543,7 +1557,7 @@ namespace NuGet.PackageManagement.UI
             InstallPackage(package.Id, versionToInstall);
         }
 
-        private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
+        private void PackageList_UpdateButtonClicked(PackageItemViewModel[] selectedPackages)
         {
             var packagesToUpdate = selectedPackages
                 .Select(package => new PackageIdentity(package.Id, package.Version))
