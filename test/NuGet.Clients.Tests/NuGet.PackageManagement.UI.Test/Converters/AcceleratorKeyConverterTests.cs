@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
+using Moq;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Converters
@@ -17,11 +15,13 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         [InlineData("No to _All", "A")]
         [InlineData("Нет для в_сех", "с")]
         [InlineData("", "")]
-        public void AcceleratorKeyConverter_Localized_ReturnsNotEmpty(string input, string expected)
+        [InlineData(null, "")]
+        [InlineData(1, "")]
+        public void AcceleratorKeyConverter_Localized_ReturnsNotEmpty(object input, object expected)
         {
             var converter = new AcceleratorKeyConverter();
 
-            var actual = converter.Convert(input, null, null, null);
+            var actual = converter.Convert(input, It.IsAny<Type>(), It.IsAny<object>(), It.IsAny<CultureInfo>());
 
             Assert.Equal(expected, actual);
         }

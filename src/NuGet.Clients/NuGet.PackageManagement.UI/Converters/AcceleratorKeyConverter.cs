@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Globalization;
 using System.Windows.Data;
 
@@ -26,6 +25,12 @@ namespace NuGet.PackageManagement.UI
             }
 
             string input = value as string;
+
+            if (input == null)
+            {
+                return string.Empty;
+            }
+
             bool captureNext = false;
             string captured = string.Empty;
 
