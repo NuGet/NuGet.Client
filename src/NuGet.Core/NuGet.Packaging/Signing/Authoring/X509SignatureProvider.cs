@@ -20,10 +20,11 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class X509SignatureProvider : ISignatureProvider
     {
+#if IS_SIGNING_SUPPORTED
         // Occurs when SignedCms.ComputeSignature cannot read the certificate private key
         // "Invalid provider type specified." (INVALID_PROVIDER_TYPE)
         private const int INVALID_PROVIDER_TYPE_HRESULT = unchecked((int)0x80090014);
-
+#endif
         private readonly ITimestampProvider _timestampProvider;
 
         public X509SignatureProvider(ITimestampProvider timestampProvider)

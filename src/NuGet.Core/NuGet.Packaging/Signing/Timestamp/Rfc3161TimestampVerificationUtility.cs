@@ -17,8 +17,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal static class Rfc3161TimestampVerificationUtility
     {
-        private const double _millisecondsPerMicrosecond = 0.001;
-
 #if IS_SIGNING_SUPPORTED
 
         internal static bool ValidateSignerCertificateAgainstTimestamp(
@@ -48,6 +46,7 @@ namespace NuGet.Packaging.Signing
 
         internal static double GetAccuracyInMilliseconds(IRfc3161TimestampTokenInfo tstInfo)
         {
+            const double _millisecondsPerMicrosecond = 0.001;
             double accuracyInMilliseconds;
 
             if (!tstInfo.AccuracyInMicroseconds.HasValue)
