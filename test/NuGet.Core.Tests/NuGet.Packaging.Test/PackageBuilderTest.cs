@@ -345,7 +345,7 @@ namespace NuGet.Packaging.Test
                 builder.AddFiles(directory.Path, source, destination, exclude);
 
                 // Assert
-                Assert.Collection(builder.Files,
+                Assert.Collection(builder.Files.OrderBy(f => f.Path.Length),
                     file =>
                     {
                         Assert.Equal(string.Format("Content{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
