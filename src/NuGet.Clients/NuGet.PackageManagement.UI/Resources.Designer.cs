@@ -412,7 +412,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No.
+        ///   Looks up a localized string similar to _No.
         /// </summary>
         public static string Button_No {
             get {
@@ -421,7 +421,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No to All.
+        ///   Looks up a localized string similar to No to A_ll.
         /// </summary>
         public static string Button_NoToAll {
             get {
@@ -502,7 +502,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Yes.
+        ///   Looks up a localized string similar to _Yes.
         /// </summary>
         public static string Button_Yes {
             get {
@@ -511,7 +511,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Yes to All.
+        ///   Looks up a localized string similar to Yes to _All.
         /// </summary>
         public static string Button_YesToAll {
             get {

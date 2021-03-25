@@ -265,16 +265,20 @@
     <value>File Conflict</value>
   </data>
   <data name="Button_No" xml:space="preserve">
-    <value>No</value>
+    <value>_No</value>
+    <comment>Button_Yes, Button_No, ButtonYesToAll, Button_NoToAll should have underscore in different letters. See https://docs.microsoft.com/en-us/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_NoToAll" xml:space="preserve">
-    <value>No to All</value>
+    <value>No to A_ll</value>
+    <comment>Button_Yes, Button_No, ButtonYesToAll, Button_NoToAll should have underscore in different letters. See https://docs.microsoft.com/en-us/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>_Yes</value>
+    <comment>Button_Yes, Button_No, ButtonYesToAll, Button_NoToAll should have underscore in different letters. See https://docs.microsoft.com/en-us/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_YesToAll" xml:space="preserve">
-    <value>Yes to All</value>
+    <value>Yes to _All</value>
+    <comment>Button_Yes, Button_No, ButtonYesToAll, Button_NoToAll should have underscore in different letters. See https://docs.microsoft.com/en-us/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="FileConflictAction_Prompt" xml:space="preserve">
     <value>Prompt</value>

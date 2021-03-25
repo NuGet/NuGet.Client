@@ -30,6 +30,7 @@
     <Compile Include="Actions\AccessiblePackageIdentityTests.cs" />
     <Compile Include="Actions\UIActionEngineTests.cs" />
     <Compile Include="Actions\UpdatePreviewResultTests.cs" />
+    <Compile Include="Converters\AcceleratorKeyConverterTests.cs" />
     <Compile Include="Converters\DateTimeConverterTests.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverterTests.cs" />
     <Compile Include="Converters\FormattedStringPartConverterTests.cs" />

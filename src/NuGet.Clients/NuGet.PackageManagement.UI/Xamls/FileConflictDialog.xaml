@@ -33,6 +33,7 @@
         Property="MinWidth"
         Value="75" />
     </Style>
+    <ui:AcceleratorKeyConverter x:Key="AcceleratorKeyConverter" />
   </Window.Resources>
 
   <DockPanel
@@ -46,23 +47,27 @@
         Content="{x:Static resx:Resources.Button_Yes}"
         Tag="Overwrite"
         AutomationProperties.AutomationId="YesButton"
+        AutomationProperties.AcceleratorKey="{Binding Source={x:Static resx:Resources.Button_Yes}, Mode=OneWay, Converter={StaticResource AcceleratorKeyConverter}}"
         Click="Button_Click" />
       <Button
         Content="{x:Static resx:Resources.Button_YesToAll}"
         Tag="OverwriteAll"
         AutomationProperties.AutomationId="YesToAllButton"
+        AutomationProperties.AcceleratorKey="{Binding Source={x:Static resx:Resources.Button_YesToAll}, Mode=OneWay, Converter={StaticResource AcceleratorKeyConverter}}"
         Click="Button_Click" />
       <Button
         x:Name="NoButton"
         Content="{x:Static resx:Resources.Button_No}"
         Tag="Ignore"
         AutomationProperties.AutomationId="NoButton"
+        AutomationProperties.AcceleratorKey="{Binding Source={x:Static resx:Resources.Button_No}, Mode=OneWay, Converter={StaticResource AcceleratorKeyConverter}}"
         IsDefault="True"
         Click="Button_Click" />
       <Button
         Content="{x:Static resx:Resources.Button_NoToAll}"
         Tag="IgnoreAll"
         AutomationProperties.AutomationId="NoToAllButton"
+        AutomationProperties.AcceleratorKey="{Binding Source={x:Static resx:Resources.Button_NoToAll}, Mode=OneWay, Converter={StaticResource AcceleratorKeyConverter}}"
         Click="Button_Click" />
     </StackPanel>
 
