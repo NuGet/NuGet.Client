@@ -39,8 +39,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     ActivityLog.LogError(NuGetUI.LogEntrySource, ex.Message);
                 }
-
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.LinkOpened);
             }
         }
 

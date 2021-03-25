@@ -135,7 +135,6 @@ NuGet.PackageManagement.InstallationCompatibility.EnsurePackageCompatibility(NuG
 NuGet.PackageManagement.InstallationCompatibility.EnsurePackageCompatibilityAsync(NuGet.ProjectManagement.NuGetProject nuGetProject, NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Protocol.Core.Types.DownloadResourceResult resourceResult, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 NuGet.PackageManagement.InstallationCompatibility.InstallationCompatibility() -> void
 NuGet.PackageManagement.LogUtility
-NuGet.PackageManagement.NuGetEvent
 NuGet.PackageManagement.NuGetEventArgs<T>
 NuGet.PackageManagement.NuGetEventArgs<T>.Arg.get -> T
 NuGet.PackageManagement.NuGetEventArgs<T>.NuGetEventArgs(T arg) -> void
@@ -881,21 +880,6 @@ static NuGet.ProjectManagement.XmlUtility.LoadSafe(System.IO.Stream input, Syste
 static NuGet.ProjectManagement.XmlUtility.LoadSafe(System.IO.Stream input, bool ignoreWhiteSpace) -> System.Xml.Linq.XDocument
 static NuGet.ProjectManagement.XmlUtility.LoadSafe(string filePath) -> System.Xml.Linq.XDocument
 static NuGet.ProjectManagement.XmlUtility.TryParseDocument(string content, out System.Xml.Linq.XDocument document) -> bool
-static readonly NuGet.PackageManagement.NuGetEvent.LicenseWindowBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.LicenseWindowEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.LinkOpened -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageLoadBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageLoadEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageManagerConsoleCommandExecutionBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageManagerConsoleCommandExecutionEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageManagerConsoleLoaded -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageOperationBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageOperationEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageRestoreCompleted -> int
-static readonly NuGet.PackageManagement.NuGetEvent.ProgressDialogBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.ProgressDialogEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.SelectProjectDialogBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.SelectProjectDialogEnd -> int
 static readonly NuGet.PackageManagement.PackageManagementConstants.DefaultMaxDegreeOfParallelism -> int
 static readonly NuGet.PackageManagement.PackageManagementConstants.DefaultRequestTimeout -> System.TimeSpan
 static readonly NuGet.PackageManagement.TelemetryConstants.ExecuteActionStepName -> string
