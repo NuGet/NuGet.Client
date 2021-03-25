@@ -711,11 +711,6 @@ namespace NuGetConsole.Implementation.Console
         }
 
         [SuppressMessage(
-            "Microsoft.Usage",
-            "CA2213:DisposableFieldsShouldBeDisposed",
-            MessageId = "_marshaler",
-            Justification = "The Dispose() method on _marshaler is called when the tool window is closed.")]
-        [SuppressMessage(
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We don't want to crash VS when it exits.")]

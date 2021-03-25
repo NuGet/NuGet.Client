@@ -146,6 +146,8 @@ namespace NuGetConsole
             {
                 if (disposing)
                 {
+                    _pipeLock.Dispose();
+
                     if (_serviceBrokerClient.IsValueCreated)
                     {
                         _serviceBrokerClient.GetValue().Dispose();

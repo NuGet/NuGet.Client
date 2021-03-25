@@ -601,6 +601,8 @@ namespace NuGet.Packaging
 
             if (disposing)
             {
+                _stream.Dispose();
+
                 if (!string.IsNullOrEmpty(_filePath))
                 {
                     WriteFile(_filePath);

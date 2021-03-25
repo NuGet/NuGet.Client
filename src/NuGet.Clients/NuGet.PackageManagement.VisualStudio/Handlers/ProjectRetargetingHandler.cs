@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private DTE _dte;
         private ISolutionManager _solutionManager;
         private IVsTrackProjectRetargeting _vsTrackProjectRetargeting;
-        private ErrorListProvider _errorListProvider;
+        private readonly ErrorListProvider _errorListProvider;
         private IVsMonitorSelection _vsMonitorSelection;
         private string _platformRetargetingProject;
 
