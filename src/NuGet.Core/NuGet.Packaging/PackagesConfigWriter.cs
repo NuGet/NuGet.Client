@@ -609,8 +609,6 @@ namespace NuGet.Packaging
                 {
                     WriteFile();
                 }
-
-                _stream?.Dispose();
             }
 
             _disposed = true;
