@@ -484,6 +484,21 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
+        private const string ContentFilesTestTemplate = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>crumpet</id>
+                    <version>0.0.1</version>
+                    <title>crumpet package</title>
+                    <authors>tim, eric</authors>
+                    <owners>tim, eric</owners>
+                    <description>This is a package with content files, ostensibly.</description>
+                    <contentFiles>
+                      <files include=""cs/**/*.*"" buildAction=""Compile"" {0} />
+                    </contentFiles>
+                  </metadata>
+                </package>";
+
         public static IEnumerable<object[]> GetValidVersions()
         {
             return GetVersionRange(validVersions: true);
@@ -1161,6 +1176,40 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.Equal(readmePath, expectedRead);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_ContentFiles()
+        {
+            // Arrange
+            string nuspec = string.Format(ContentFilesTestTemplate, string.Empty);
+            var reader = GetReader(nuspec);
+
+            // Act
+            var contentFiles = reader.GetContentFiles().ToList();
+
+            // Assert
+            var contentFile = Assert.Single(contentFiles);
+            Assert.Equal("cs/**/*.*", contentFile.Include);
+            Assert.Equal("Compile", contentFile.BuildAction);
+            Assert.Null(contentFile.CopyToOutput);
+            Assert.Null(contentFile.Exclude);
+            Assert.Null(contentFile.Flatten);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_InvalidContentFilesBool()
+        {
+            // Arrange
+            var badBool = @"flatten=""bad""";
+            string nuspec = string.Format(ContentFilesTestTemplate, badBool);
+            var reader = GetReader(nuspec);
+
+            // Act & Assert
+            var ex = Assert.Throws<PackagingException>(() => reader.GetContentFiles().ToList());
+            Assert.StartsWith("The nuspec contains an invalid entry", ex.Message);
+            Assert.Contains(badBool, ex.Message);
+            Assert.Contains(reader.GetIdentity().ToString(), ex.Message);
         }
 
         private static NuspecReader GetReader(string nuspec)
