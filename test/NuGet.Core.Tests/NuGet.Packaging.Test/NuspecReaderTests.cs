@@ -1201,12 +1201,15 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_InvalidContentFilesBool()
         {
             // Arrange
-            string nuspec = string.Format(ContentFilesTestTemplate, @"flatten=""bad""");
+            var badBool = @"flatten=""bad""";
+            string nuspec = string.Format(ContentFilesTestTemplate, badBool);
             var reader = GetReader(nuspec);
 
             // Act & Assert
             var ex = Assert.Throws<PackagingException>(() => reader.GetContentFiles().ToList());
             Assert.StartsWith("The nuspec contains an invalid entry", ex.Message);
+            Assert.Contains(badBool, ex.Message);
+            Assert.Contains(reader.GetIdentity().ToString(), ex.Message);
         }
 
         private static NuspecReader GetReader(string nuspec)
