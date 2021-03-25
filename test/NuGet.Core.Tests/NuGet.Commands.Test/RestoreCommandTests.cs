@@ -1973,7 +1973,7 @@ namespace NuGet.Commands.Test
                    projectName2,
                    packageSpec2,
                    projectPath2,
-                   new string[] { }));
+                   Array.Empty<string>()));
 
                 var restoreCommand = new RestoreCommand(request);
                 var result = await restoreCommand.ExecuteAsync();

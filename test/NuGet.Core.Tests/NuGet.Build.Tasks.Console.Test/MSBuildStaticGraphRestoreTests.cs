@@ -524,7 +524,7 @@ namespace NuGet.Build.Tasks.Console.Test
                         new MockSettingSection(
                             ConfigurationConstants.Config,
                             repositoryPath == null
-                                ? new SettingItem[0]
+                                ? Array.Empty<SettingItem>()
                                 : new SettingItem[] { new AddItem(ConfigurationConstants.RepositoryPath, UriUtility.GetAbsolutePath(testDirectory, repositoryPath)) })
                     }
                 };

@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 Common.NullLogger.Instance,
                 cancellationToken);
 
-            var items = searchResults?.ToArray() ?? new IPackageSearchMetadata[] { };
+            var items = searchResults?.ToArray() ?? Array.Empty<IPackageSearchMetadata>();
 
             var hasMoreItems = items.Length > pageSize;
             if (hasMoreItems)

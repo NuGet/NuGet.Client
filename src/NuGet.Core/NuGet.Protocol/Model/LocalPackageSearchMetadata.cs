@@ -68,7 +68,7 @@ namespace NuGet.Protocol
         {
             get
             {
-                var tags = _nuspec.GetTags()?.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[] { };
+                var tags = _nuspec.GetTags()?.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
                 return string.Join(" ", tags);
             }
         }
