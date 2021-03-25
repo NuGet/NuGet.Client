@@ -146,8 +146,6 @@ namespace NuGetConsole
             {
                 if (disposing)
                 {
-                    _pipeLock.Dispose();
-
                     if (_serviceBrokerClient.IsValueCreated)
                     {
                         _serviceBrokerClient.GetValue().Dispose();
@@ -160,6 +158,8 @@ namespace NuGetConsole
                     {
                         // Ignore exceptions
                     }
+
+                    _pipeLock.Dispose();
                 }
                 _disposedValue = true;
             }
