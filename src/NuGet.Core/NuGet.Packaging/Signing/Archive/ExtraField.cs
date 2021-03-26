@@ -37,7 +37,6 @@ namespace NuGet.Packaging.Signing
 
             return TryRead(
                 header.ExtraField,
-                header.ExtraFieldLength,
                 readUncompressedFileSize,
                 readCompressedFileSize,
                 readRelativeOffsetOfLocalHeader,
@@ -59,7 +58,6 @@ namespace NuGet.Packaging.Signing
 
             return TryRead(
                 header.ExtraField,
-                header.ExtraFieldLength,
                 readUncompressedFileSize,
                 readCompressedFileSize,
                 readRelativeOffsetOfLocalHeader: false,
@@ -69,7 +67,6 @@ namespace NuGet.Packaging.Signing
 
         private static bool TryRead(
             byte[] extraFieldBytes,
-            ushort extraFieldLength,
             bool readUncompressedFileSize,
             bool readCompressedFileSize,
             bool readRelativeOffsetOfLocalHeader,

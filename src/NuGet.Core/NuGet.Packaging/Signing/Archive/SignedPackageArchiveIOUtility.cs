@@ -385,7 +385,6 @@ namespace NuGet.Packaging.Signing
             // check central directory file header
             AssertSignatureEntryCommonHeaderFields(
                 reader,
-                signatureCentralDirectoryHeader,
                 Strings.InvalidPackageSignatureFileEntry,
                 Strings.InvalidPackageSignatureFileEntryCentralDirectoryHeader);
 
@@ -408,14 +407,12 @@ namespace NuGet.Packaging.Signing
             // check local file header
             AssertSignatureEntryCommonHeaderFields(
                 reader,
-                signatureCentralDirectoryHeader,
                 Strings.InvalidPackageSignatureFileEntry,
                 Strings.InvalidPackageSignatureFileEntryLocalFileHeader);
         }
 
         private static void AssertSignatureEntryCommonHeaderFields(
             BinaryReader reader,
-            CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader,
             string errorPrefix,
             string errorSuffix)
         {

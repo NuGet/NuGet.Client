@@ -28,11 +28,11 @@ namespace NuGet.Packaging.Signing
 
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
-            return Task.FromResult(VerifyAllowList(package, signature, settings));
+            return Task.FromResult(VerifyAllowList(signature, settings));
         }
 
 #if IS_SIGNING_SUPPORTED
-        private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyAllowList(PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var treatIssuesAsErrors = !settings.AllowUntrusted;
             var status = SignatureVerificationStatus.Valid;
@@ -169,7 +169,7 @@ namespace NuGet.Packaging.Signing
         }
 
 #else
-        private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyAllowList(PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

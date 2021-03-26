@@ -346,7 +346,7 @@ namespace NuGet.Build.Tasks
         /// <param name="projectJsonPath">An optional path to the project's project.json file.</param>
         /// <param name="projectDirectory">The full path to the project directory.</param>
         /// <param name="projectName">The name of the project file.</param>
-        /// <param name="log">An <see cref="NuGet.Common.ILogger"/> object used to log messages.</param>
+        /// <param name="log">An <see cref="NuGet.Common.ILogger"/> object used to log messages. Never used</param>
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
         public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
@@ -478,7 +478,7 @@ namespace NuGet.Build.Tasks
 
                 firstPackagesConfigPath = firstPackagesConfigPath ?? packagesConfigPath;
 
-                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true, log));
+                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true));
             }
 
             if (string.IsNullOrEmpty(repositoryPath))
@@ -615,7 +615,7 @@ namespace NuGet.Build.Tasks
         }
 
 
-        private static IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds, Common.ILogger log)
+        private static IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
         {
             if (File.Exists(projectConfigFilePath))
             {

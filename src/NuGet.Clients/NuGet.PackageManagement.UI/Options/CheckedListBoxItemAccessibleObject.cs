@@ -150,7 +150,7 @@ namespace NuGet.Options
 
         public override void Select(AccessibleSelection flags)
         {
-            (ParentCheckedListBox.AccessibilityObject as CheckedListBoxAccessibleObject)?.SelectChild(flags, _index);
+            (ParentCheckedListBox.AccessibilityObject as CheckedListBoxAccessibleObject)?.SelectChild(_index);
         }
     }
 }

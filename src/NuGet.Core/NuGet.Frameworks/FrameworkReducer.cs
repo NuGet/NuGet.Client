@@ -423,7 +423,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Create lookup of the given PCLs to their actual frameworks
         /// </summary>
-        private Dictionary<NuGetFramework, IEnumerable<NuGetFramework>> ExplodePortableFrameworks(IEnumerable<NuGetFramework> pcls, bool includeOptional = true)
+        private Dictionary<NuGetFramework, IEnumerable<NuGetFramework>> ExplodePortableFrameworks(IEnumerable<NuGetFramework> pcls)
         {
             var result = new Dictionary<NuGetFramework, IEnumerable<NuGetFramework>>();
 
