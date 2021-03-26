@@ -88,7 +88,7 @@ namespace NuGet.Protocol.Tests
             IEnumerable<string> packages = await resource.IdStartsWith("elm", true, Common.NullLogger.Instance, cancellationTokenSource.Token);
 
             // Assert
-            Assert.True(packages != null & packages.Count() > 0);
+            Assert.True(packages != null & packages.Any());
             Assert.Contains("elmah", packages);
         }
 

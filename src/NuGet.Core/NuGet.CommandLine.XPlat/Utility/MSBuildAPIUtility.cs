@@ -160,7 +160,7 @@ namespace NuGet.CommandLine.XPlat
         {
             var itemGroups = GetItemGroups(project);
 
-            if (existingPackageReferences.Count() == 0)
+            if (!existingPackageReferences.Any())
             {
                 // Add packageReference only if it does not exist.
                 var itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
@@ -597,7 +597,7 @@ namespace NuGet.CommandLine.XPlat
                 .Where(p => p.Name.Equals(FRAMEWORK_TAG, StringComparison.OrdinalIgnoreCase))
                 .Select(p => p.EvaluatedValue);
 
-            if (frameworks.Count() == 0)
+            if (!frameworks.Any())
             {
                 var frameworksString = project
                     .AllEvaluatedProperties
