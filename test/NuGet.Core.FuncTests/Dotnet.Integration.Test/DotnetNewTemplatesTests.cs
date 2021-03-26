@@ -182,542 +182,367 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory]
-        [InlineData("", "", "", false)]
-        [InlineData("", "", "C#", true)]
-        [InlineData("ProjectA", "Myoutput", "VB", true)]
-        public void Dotnet_New_Wpf_Success(string projectName, string output, string lang, bool norestore)
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_Wpf_NoRestore_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                string effectiveOutput = output;
-                var effectiveProjectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-
-                if (string.IsNullOrEmpty(projectName))
-                {
-                    if (!string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveProjectName = effectiveOutput;
-                    }
-                }
-                else
-                {
-                    effectiveProjectName = projectName;
-
-                    if (string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveOutput = projectName;
-                    }
-                }
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
 
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string nameArg = string.IsNullOrEmpty(projectName) ? string.Empty : "-n " + projectName;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
-                string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
-                string norestoreArg = norestore ? "--no-restore" : string.Empty;
-                var projectFilePath = string.Empty;
-                var applicationXamlPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    switch (lang)
-                    {
-                        case "C#":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                            applicationXamlPath = Path.Combine(projectDirectory, "App.xaml.cs");
-                            break;
-                        case "VB":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
-                            applicationXamlPath = Path.Combine(projectDirectory, "Application.xaml.vb");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                    applicationXamlPath = Path.Combine(projectDirectory, "App.xaml.cs");
-                }
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string norestoreArg = "--no-restore";
+                var projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
+                var applicationXamlPath = Path.Combine(projectDirectory, "App.xaml.cs");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpf {nameArg} {outputArg} {langArg} {norestoreArg}");
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpf {nameArg} {outputArg} {norestoreArg}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 Assert.True(File.Exists(projectFilePath));
                 Assert.True(File.Exists(applicationXamlPath));
-
-                if (norestore)
-                {
-                    Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
-                }
-                else
-                {
-                    Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                }
+                Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
             }
         }
 
-        [Theory]
-        [InlineData("", "", "", false)]
-        [InlineData("", "", "C#", true)]
-        [InlineData("ProjectA", "Myoutput", "VB", true)]
-        public void Dotnet_New_Wpflib_Success(string projectName, string output, string lang, bool norestore)
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_Wpf_Restore_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                string effectiveOutput = output;
-                var effectiveProjectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-
-                if (string.IsNullOrEmpty(projectName))
-                {
-                    if (!string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveProjectName = effectiveOutput;
-                    }
-                }
-                else
-                {
-                    effectiveProjectName = projectName;
-
-                    if (string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveOutput = projectName;
-                    }
-                }
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
 
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string nameArg = string.IsNullOrEmpty(projectName) ? string.Empty : "-n " + projectName;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
-                string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
-                string norestoreArg = norestore ? "--no-restore" : string.Empty;
-                var projectFilePath = string.Empty;
-                var libPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    switch (lang)
-                    {
-                        case "C#":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                            libPath = Path.Combine(projectDirectory, "Class1.cs");
-                            break;
-                        case "VB":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
-                            libPath = Path.Combine(projectDirectory, "Class1.vb");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                    libPath = Path.Combine(projectDirectory, "Class1.cs");
-                }
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string langArg = "-lang VB";
+                var projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
+                var applicationXamlPath = Path.Combine(projectDirectory, "Application.xaml.vb");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpflib {nameArg} {outputArg} {langArg} {norestoreArg}");
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpf {nameArg} {outputArg} {langArg}");
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                Assert.True(File.Exists(projectFilePath));
+                Assert.True(File.Exists(applicationXamlPath));
+                Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_Wpflib_NoRestore_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string norestoreArg = "--no-restore";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
+                string libPath = Path.Combine(projectDirectory, "Class1.cs");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpflib {nameArg} {outputArg} {norestoreArg}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 Assert.True(File.Exists(projectFilePath));
                 Assert.True(File.Exists(libPath));
-
-                if (norestore)
-                {
-                    Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
-                }
-                else
-                {
-                    Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                }
+                Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
             }
         }
 
-        [Theory]
-        [InlineData("", "", "", false)]
-        [InlineData("", "", "C#", true)]
-        [InlineData("ProjectA", "Myoutput", "VB", true)]
-        public void Dotnet_New_WpfCustomControlLib_Success(string projectName, string output, string lang, bool norestore)
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_Wpflib_Restore_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                string effectiveOutput = output;
-                var effectiveProjectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-
-                if (string.IsNullOrEmpty(projectName))
-                {
-                    if (!string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveProjectName = effectiveOutput;
-                    }
-                }
-                else
-                {
-                    effectiveProjectName = projectName;
-
-                    if (string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveOutput = projectName;
-                    }
-                }
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
 
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string nameArg = string.IsNullOrEmpty(projectName) ? string.Empty : "-n " + projectName;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
-                string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
-                string norestoreArg = norestore ? "--no-restore" : string.Empty;
-                var projectFilePath = string.Empty;
-                var customControlPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    switch (lang)
-                    {
-                        case "C#":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                            customControlPath = Path.Combine(projectDirectory, "CustomControl1.cs");
-                            break;
-                        case "VB":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
-                            customControlPath = Path.Combine(projectDirectory, "CustomControl1.vb");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                    customControlPath = Path.Combine(projectDirectory, "CustomControl1.cs");
-                }
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string langArg = "-lang VB";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
+                string libPath = Path.Combine(projectDirectory, "Class1.vb");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpfcustomcontrollib {nameArg} {outputArg} {langArg} {norestoreArg}");
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpflib {nameArg} {outputArg} {langArg}");
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                Assert.True(File.Exists(projectFilePath));
+                Assert.True(File.Exists(libPath));
+                Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_WpfCustomControlLib_NoRestore_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string norestoreArg = "--no-restore";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
+                string customControlPath = Path.Combine(projectDirectory, "CustomControl1.cs");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpfcustomcontrollib {nameArg} {outputArg} {norestoreArg}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 Assert.True(File.Exists(projectFilePath));
                 Assert.True(File.Exists(customControlPath));
-
-                if (norestore)
-                {
-                    Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
-                }
-                else
-                {
-                    Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                }
+                Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
             }
         }
 
-        [Theory]
-        [InlineData("", "", "", false)]
-        [InlineData("", "", "C#", true)]
-        [InlineData("ProjectA", "Myoutput", "VB", true)]
-        public void Dotnet_New_WpfUserControlLib_Success(string projectName, string output, string lang, bool norestore)
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_WpfCustomControlLib_Restore_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                string effectiveOutput = output;
-                var effectiveProjectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-
-                if (string.IsNullOrEmpty(projectName))
-                {
-                    if (!string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveProjectName = effectiveOutput;
-                    }
-                }
-                else
-                {
-                    effectiveProjectName = projectName;
-
-                    if (string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveOutput = projectName;
-                    }
-                }
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
 
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string nameArg = string.IsNullOrEmpty(projectName) ? string.Empty : "-n " + projectName;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
-                string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
-                string norestoreArg = norestore ? "--no-restore" : string.Empty;
-                var projectFilePath = string.Empty;
-                var userControlPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    switch (lang)
-                    {
-                        case "C#":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                            userControlPath = Path.Combine(projectDirectory, "UserControl1.xaml.cs");
-                            break;
-                        case "VB":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
-                            userControlPath = Path.Combine(projectDirectory, "UserControl1.xaml.vb");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                    userControlPath = Path.Combine(projectDirectory, "UserControl1.xaml.cs");
-                }
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string langArg = "-lang VB";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
+                string customControlPath = Path.Combine(projectDirectory, "CustomControl1.vb");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpfusercontrollib {nameArg} {outputArg} {langArg} {norestoreArg}");
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpfcustomcontrollib {nameArg} {outputArg} {langArg}");
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                Assert.True(File.Exists(projectFilePath));
+                Assert.True(File.Exists(customControlPath));
+                Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_WpfUserControlLib_NoRestore_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string norestoreArg = "--no-restore";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
+                string userControlPath = Path.Combine(projectDirectory, "UserControl1.xaml.cs");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpfusercontrollib {nameArg} {outputArg} {norestoreArg}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 Assert.True(File.Exists(projectFilePath));
                 Assert.True(File.Exists(userControlPath));
-
-                if (norestore)
-                {
-                    Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
-                }
-                else
-                {
-                    Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                }
+                Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
             }
         }
 
-        [Theory]
-        [InlineData("", "", "", false)]
-        [InlineData("", "", "C#", true)]
-        [InlineData("ProjectA", "Myoutput", "VB", true)]
-        public void Dotnet_New_Winforms_Success(string projectName, string output, string lang, bool norestore)
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_WpfUserControlLib_Restore_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                string effectiveOutput = output;
-                var effectiveProjectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-
-                if (string.IsNullOrEmpty(projectName))
-                {
-                    if (!string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveProjectName = effectiveOutput;
-                    }
-                }
-                else
-                {
-                    effectiveProjectName = projectName;
-
-                    if (string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveOutput = projectName;
-                    }
-                }
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
 
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string nameArg = string.IsNullOrEmpty(projectName) ? string.Empty : "-n " + projectName;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
-                string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
-                string norestoreArg = norestore ? "--no-restore" : string.Empty;
-                var projectFilePath = string.Empty;
-                var formPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    switch (lang)
-                    {
-                        case "C#":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                            formPath = Path.Combine(projectDirectory, "Form1.cs");
-                            break;
-                        case "VB":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
-                            formPath = Path.Combine(projectDirectory, "Form1.vb");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                    formPath = Path.Combine(projectDirectory, "Form1.cs");
-                }
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string langArg = "-lang VB";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
+                string userControlPath = Path.Combine(projectDirectory, "UserControl1.xaml.vb");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winforms {nameArg} {outputArg} {langArg} {norestoreArg}");
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpfusercontrollib {nameArg} {outputArg} {langArg}");
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                Assert.True(File.Exists(projectFilePath));
+                Assert.True(File.Exists(userControlPath));
+                Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_Winforms_NoRestore_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string norestoreArg = "--no-restore";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
+                string formPath = Path.Combine(projectDirectory, "Form1.cs");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winforms {nameArg} {outputArg} {norestoreArg}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 Assert.True(File.Exists(projectFilePath));
                 Assert.True(File.Exists(formPath));
-
-                if (norestore)
-                {
-                    Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
-                }
-                else
-                {
-                    Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                }
+                Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
             }
         }
 
-        [Theory]
-        [InlineData("", "", "", false)]
-        [InlineData("", "", "C#", true)]
-        [InlineData("ProjectA", "Myoutput", "VB", true)]
-        public void Dotnet_New_WinformsControlLib_Success(string projectName, string output, string lang, bool norestore)
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_Winforms_Restore_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                string effectiveOutput = output;
-                var effectiveProjectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-
-                if (string.IsNullOrEmpty(projectName))
-                {
-                    if (!string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveProjectName = effectiveOutput;
-                    }
-                }
-                else
-                {
-                    effectiveProjectName = projectName;
-
-                    if (string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveOutput = projectName;
-                    }
-                }
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
 
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string nameArg = string.IsNullOrEmpty(projectName) ? string.Empty : "-n " + projectName;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
-                string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
-                string norestoreArg = norestore ? "--no-restore" : string.Empty;
-                var projectFilePath = string.Empty;
-                var userControlPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    switch (lang)
-                    {
-                        case "C#":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                            userControlPath = Path.Combine(projectDirectory, "UserControl1.cs");
-                            break;
-                        case "VB":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
-                            userControlPath = Path.Combine(projectDirectory, "UserControl1.vb");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                    userControlPath = Path.Combine(projectDirectory, "UserControl1.cs");
-                }
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string langArg = "-lang VB";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
+                string formPath = Path.Combine(projectDirectory, "Form1.vb");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformscontrollib {nameArg} {outputArg} {langArg} {norestoreArg}");
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winforms {nameArg} {outputArg} {langArg}");
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                Assert.True(File.Exists(projectFilePath));
+                Assert.True(File.Exists(formPath));
+                Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_WinformsControlLib_NoRestore_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string norestoreArg = "--no-restore";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
+                string userControlPath = Path.Combine(projectDirectory, "UserControl1.cs");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformscontrollib {nameArg} {outputArg} {norestoreArg}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 Assert.True(File.Exists(projectFilePath));
                 Assert.True(File.Exists(userControlPath));
-
-                if (norestore)
-                {
-                    Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
-                }
-                else
-                {
-                    Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                }
+                Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
             }
         }
 
-        [Theory]
-        [InlineData("", "", "", false)]
-        [InlineData("", "", "C#", true)]
-        [InlineData("ProjectA", "Myoutput", "VB", true)]
-        public void Dotnet_New_WinformsLib_Success(string projectName, string output, string lang, bool norestore)
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_WinformsControlLib_Restore_Success()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                string effectiveOutput = output;
-                var effectiveProjectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-
-                if (string.IsNullOrEmpty(projectName))
-                {
-                    if (!string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveProjectName = effectiveOutput;
-                    }
-                }
-                else
-                {
-                    effectiveProjectName = projectName;
-
-                    if (string.IsNullOrEmpty(effectiveOutput))
-                    {
-                        effectiveOutput = projectName;
-                    }
-                }
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
 
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
-                string nameArg = string.IsNullOrEmpty(projectName) ? string.Empty : "-n " + projectName;
-                string outputArg = string.IsNullOrEmpty(effectiveOutput) ? string.Empty : "-o " + effectiveOutput;
-                string langArg = string.IsNullOrEmpty(lang) ? string.Empty : "-lang " + lang;
-                string norestoreArg = norestore ? "--no-restore" : string.Empty;
-                var projectFilePath = string.Empty;
-                var libPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    switch (lang)
-                    {
-                        case "C#":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                            libPath = Path.Combine(projectDirectory, "Class1.cs");
-                            break;
-                        case "VB":
-                            projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
-                            libPath = Path.Combine(projectDirectory, "Class1.vb");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
-                    libPath = Path.Combine(projectDirectory, "Class1.cs");
-                }
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string langArg = "-lang VB";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
+                string userControlPath = Path.Combine(projectDirectory, "UserControl1.vb");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformslib {nameArg} {outputArg} {langArg} {norestoreArg}");
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformscontrollib {nameArg} {outputArg} {langArg}");
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                Assert.True(File.Exists(projectFilePath));
+                Assert.True(File.Exists(userControlPath));
+                Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_WinformsLib_NoRestore_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string norestoreArg = "--no-restore";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.csproj");
+                string libPath = Path.Combine(projectDirectory, "Class1.cs");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformslib {nameArg} {outputArg} {norestoreArg}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 Assert.True(File.Exists(projectFilePath));
                 Assert.True(File.Exists(libPath));
+                Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
+            }
+        }
 
-                if (norestore)
-                {
-                    Assert.False(Directory.Exists(Path.Combine(projectDirectory, "obj")));
-                }
-                else
-                {
-                    Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                }
+        [PlatformFact(Platform.Windows)]
+        public void Dotnet_New_WinformsLib_Restore_Success()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var effectiveOutput = "Myoutput";
+                var effectiveProjectName = "ProjectA";
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, string.IsNullOrEmpty(effectiveOutput) ? string.Empty : effectiveOutput);
+                string nameArg = "-n " + effectiveProjectName;
+                string outputArg = "-o " + effectiveOutput;
+                string langArg = "-lang VB";
+                string projectFilePath = Path.Combine(projectDirectory, $"{effectiveProjectName}.vbproj");
+                string libPath = Path.Combine(projectDirectory, "Class1.vb");
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformslib {nameArg} {outputArg} {langArg}");
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                Assert.True(File.Exists(projectFilePath));
+                Assert.True(File.Exists(libPath));
+                Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
             }
         }
 
