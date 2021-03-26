@@ -31,6 +31,8 @@ namespace NuGet.Packaging
             DateTimeOffset signVerifyEndTime) :
             this(cached, signVerifyDelay, packageType, success, TimeSpan.Zero)
         {
+            SignVerifyStartTime = signVerifyStartTime;
+            SignVerifyEndTime = signVerifyEndTime;
         }
 
 

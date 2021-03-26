@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using NuGet.Packaging.Licenses;
 using NuGet.Shared;
 
@@ -101,7 +100,7 @@ namespace NuGet.Packaging
                         return LicenseFileDeprecationUrl;
 
                     case LicenseType.Expression:
-                        return new Uri(GenerateLicenseServiceLink(License));
+                        return new Uri(GenerateLicenseServiceLink());
 
                     default:
                         return null;
@@ -109,7 +108,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private string GenerateLicenseServiceLink(string license)
+        private string GenerateLicenseServiceLink()
         {
             return new Uri(string.Format(LicenseServiceLinkTemplate, License)).AbsoluteUri;
         }

@@ -32,7 +32,7 @@ namespace NuGet.Frameworks
         {
             _compat = compat;
             _mappings = mappings;
-            _table = GetTable(frameworks, _mappings, _compat);
+            _table = GetTable(frameworks, _compat);
             _reducer = new FrameworkReducer(_mappings, _compat);
         }
 
@@ -71,7 +71,7 @@ namespace NuGet.Frameworks
             return false;
         }
 
-        private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> GetTable(IEnumerable<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat)
+        private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> GetTable(IEnumerable<NuGetFramework> frameworks, IFrameworkCompatibilityProvider compat)
         {
             // get the distinct set of frameworks, ignoring all special frameworks like Any, and Unsupported
             var input = new HashSet<NuGetFramework>(frameworks.Where(f => f.IsSpecificFramework));

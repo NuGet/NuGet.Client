@@ -143,19 +143,19 @@ namespace NuGet.ProjectModel
             var msbuildPath = externalReference?.MSBuildProjectPath;
             if (msbuildPath != null)
             {
-                library[KnownLibraryProperties.MSBuildProjectPath] = msbuildPath;
+                library[KnownLibraryProperties.MSBuildProjectPath] = msbuildPath; 
             }
 
             if (packageSpec != null)
             {
                 // Additional library properties
-                AddLibraryProperties(library, packageSpec, targetFramework, msbuildPath);
+                AddLibraryProperties(library, packageSpec, targetFramework); // use library if you need msbuildpath
             }
 
             return library;
         }
 
-        private static void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework, string msbuildPath)
+        private static void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework)
         {
             var projectStyle = packageSpec.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
