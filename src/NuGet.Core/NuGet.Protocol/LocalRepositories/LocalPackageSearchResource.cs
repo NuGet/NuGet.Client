@@ -111,7 +111,7 @@ namespace NuGet.Protocol
             var metadata = new LocalPackageSearchMetadata(package);
 
             return metadata
-                .WithVersions(() => GetVersions(_localResource, package, filter, log, CancellationToken.None));
+                .WithVersions(() => GetVersions(_localResource, package, filter, log, cancellationToken));
         }
 
         private static List<VersionInfo> GetVersions(

@@ -77,7 +77,7 @@ namespace NuGet.Protocol
                 if (regInfo != null)
                 {
                     // Parse package and dependeny info from the blob
-                    result = GetPackagesFromRegistration(regInfo, token).FirstOrDefault();
+                    result = GetPackagesFromRegistration(regInfo).FirstOrDefault();
                 }
 
                 return result;
@@ -115,7 +115,7 @@ namespace NuGet.Protocol
                 if (regInfo != null)
                 {
                     // Parse package and dependeny info from the blob
-                    var packages = GetPackagesFromRegistration(regInfo, token);
+                    var packages = GetPackagesFromRegistration(regInfo);
 
                     // Filter on prerelease
                     results.AddRange(packages);
@@ -162,8 +162,7 @@ namespace NuGet.Protocol
         /// Retrieve dependency info from a registration blob
         /// </summary>
         private IEnumerable<SourcePackageDependencyInfo> GetPackagesFromRegistration(
-            RegistrationInfo registration,
-            CancellationToken token)
+            RegistrationInfo registration)
         {
             foreach (var pkgInfo in registration.Packages)
             {

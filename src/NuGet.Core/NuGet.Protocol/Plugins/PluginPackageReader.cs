@@ -1040,7 +1040,7 @@ namespace NuGet.Protocol.Plugins
             var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<CopyFilesInPackageRequest, CopyFilesInPackageResponse>(
                 MessageMethod.CopyFilesInPackage,
                 payload,
-                CancellationToken.None);
+                cancellationToken);
 
             if (response != null)
             {
