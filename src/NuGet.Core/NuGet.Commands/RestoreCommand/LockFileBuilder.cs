@@ -12,6 +12,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
+using NuGetVersion = NuGet.Versioning.NuGetVersion;
 
 namespace NuGet.Commands
 {
@@ -286,35 +287,51 @@ namespace NuGet.Commands
 
         private void ValidateLockFileLibrary(IList<LockFileLibrary> libraries)
         {
-            ILookup<Tuple<string, Versioning.NuGetVersion>, LockFileLibrary> librariesByNameAndVersion = libraries.ToLookup(lib => Tuple.Create(lib.Name, lib.Version));
+            var libNameVersion = libraries.Select(l => l.Name + " " + l.Version);
 
-            foreach (IGrouping<Tuple<string, Versioning.NuGetVersion>, LockFileLibrary> item in librariesByNameAndVersion)
+            // If there is no duplicate then early return.
+            if (libNameVersion.Distinct().Count() == libNameVersion.Count())
             {
-                if (item.Count() == 2)
-                {
-                    LockFileLibrary first = item.First();
-                    LockFileLibrary second = item.Last();
+                return;
+            }
 
-                    // Prefer project reference over package reference, so remove the the package reference.
-                    libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
-                }
+            var librariesByNameAndVersion = libraries
+                                                    .ToLookup(lib => Tuple.Create(lib.Name, lib.Version))
+                                                    .Where(nv => nv.Count() == 2)
+                                                    .ToList();
+
+            foreach (IGrouping<Tuple<string, NuGetVersion>, LockFileLibrary> item in librariesByNameAndVersion)
+            {
+                LockFileLibrary first = item.First();
+                LockFileLibrary second = item.Last();
+
+                // Prefer project reference over package reference, so remove the the package reference.
+                libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
             }
         }
 
         private void ValidateLockFileTargetLibrary(IList<LockFileTargetLibrary> libraries)
         {
-            ILookup<Tuple<string, Versioning.NuGetVersion>, LockFileTargetLibrary> librariesByNameAndVersion = libraries.ToLookup(lib => Tuple.Create(lib.Name, lib.Version));
+            var libNameVersion = libraries.Select(l => l.Name + " " + l.Version);
 
-            foreach (IGrouping<Tuple<string, Versioning.NuGetVersion>, LockFileTargetLibrary> item in librariesByNameAndVersion)
+            // If there is no duplicate then early return.
+            if (libNameVersion.Distinct().Count() == libNameVersion.Count())
             {
-                if (item.Count() == 2)
-                {
-                    LockFileTargetLibrary first = item.First();
-                    LockFileTargetLibrary second = item.Last();
+                return;
+            }
 
-                    // Prefer project reference over package reference, so remove the the package reference.
-                    libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
-                }
+            var librariesByNameAndVersion = libraries
+                                                .ToLookup(lib => Tuple.Create(lib.Name, lib.Version))
+                                                .Where(nv => nv.Count() == 2)
+                                                .ToList();
+
+            foreach (IGrouping<Tuple<string, NuGetVersion>, LockFileTargetLibrary> item in librariesByNameAndVersion)
+            {
+                LockFileTargetLibrary first = item.First();
+                LockFileTargetLibrary second = item.Last();
+
+                // Prefer project reference over package reference, so remove the the package reference.
+                libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
             }
         }
 
