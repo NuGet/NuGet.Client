@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -288,7 +287,7 @@ namespace NuGet.Protocol.Core.Types
             else
             {
                 var length = new FileInfo(packageToPush).Length;
-                showPushCommandPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, length, noServiceEndpoint, skipDuplicate
+                showPushCommandPackagePushed = await PushPackageToServerAsync(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate
                                                     , requestTimeout, log, token);
 
             }
@@ -334,10 +333,9 @@ namespace NuGet.Protocol.Core.Types
         /// Pushes a package to the Http server.
         /// </summary>
         /// <returns>Indicator of whether to show PushCommandPackagePushed message.</returns>
-        private async Task<bool> PushPackageToServer(string source,
+        private async Task<bool> PushPackageToServerAsync(string source,
             string apiKey,
             string pathToPackage,
-            long packageSize,
             bool noServiceEndpoint,
             bool skipDuplicate,
             TimeSpan requestTimeout,
@@ -366,7 +364,7 @@ namespace NuGet.Protocol.Core.Types
                             retry++;
                             success = true;
                             // If user push to https://nuget.smbsrc.net/, use temp api key.
-                            var tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token);
+                            var tmpApiKey = await GetSecureApiKeyAsync(packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token);
 
                             await _httpSource.ProcessResponseAsync(
                                 new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, tmpApiKey, logger))
@@ -639,7 +637,7 @@ namespace NuGet.Protocol.Core.Types
             var sourceUri = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
             if (sourceUri.IsFile)
             {
-                DeletePackageFromFileSystem(source, packageId, packageVersion, logger);
+                DeletePackageFromFileSystem(source, packageId, packageVersion);
             }
             else
             {
@@ -692,7 +690,7 @@ namespace NuGet.Protocol.Core.Types
         }
 
         // Deletes a package from a FileSystem.
-        private void DeletePackageFromFileSystem(string source, string packageId, string packageVersion, ILogger logger)
+        private void DeletePackageFromFileSystem(string source, string packageId, string packageVersion)
         {
             var sourceuri = UriUtility.CreateSourceUri(source);
             var root = sourceuri.LocalPath;
@@ -805,7 +803,7 @@ namespace NuGet.Protocol.Core.Types
         }
 
         // Get a temp API key from nuget.org for pushing to https://nuget.smbsrc.net/
-        private async Task<string> GetSecureApiKey(
+        private async Task<string> GetSecureApiKeyAsync(
             PackageIdentity packageIdentity,
             string apiKey,
             bool noServiceEndpoint,

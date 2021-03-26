@@ -49,6 +49,6 @@ static internal class ODataServiceDocumentUtils
         var builder = new UriBuilder(lastRequestUri) { Query = null };
         var baseAddress = builder.Uri.AbsoluteUri.Trim('/');
 
-        return new ODataServiceDocumentResourceV2(baseAddress, DateTime.UtcNow);
+        return new ODataServiceDocumentResourceV2(baseAddress, utcNow);
     }
 }
