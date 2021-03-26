@@ -439,6 +439,7 @@ namespace NuGet.SolutionRestoreManager
                 case LogLevel.Warning:
                     return MSBuildVerbosityLevel.Quiet;
                 case LogLevel.Minimal:
+                    return MSBuildVerbosityLevel.Minimal;
                 case LogLevel.Information:
                     return MSBuildVerbosityLevel.Normal;
                 case LogLevel.Verbose:

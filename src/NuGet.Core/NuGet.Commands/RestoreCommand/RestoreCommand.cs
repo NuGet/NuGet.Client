@@ -116,7 +116,7 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
                 if (isCpvmEnabled)
                 {
-                    _logger.LogInformation(string.Format(
+                    _logger.LogMinimal(string.Format(
                           CultureInfo.CurrentCulture,
                           Strings.CentralPackageVersionManagementInPreview,
                           _request.Project.FilePath));
