@@ -181,8 +181,6 @@ namespace NuGet.PackageManagement.UI
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
-
             await UpdateStateAndReportAsync(
                 new SearchResultContextInfo(Array.Empty<PackageSearchMetadataContextInfo>(),
                     ImmutableDictionary<string, LoadingStatus>.Empty,
@@ -195,23 +193,17 @@ namespace NuGet.PackageManagement.UI
             cancellationToken.ThrowIfCancellationRequested();
 
             await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
-
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
         public async Task UpdateStateAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
-
             progress?.Report(_state);
 
             SearchResultContextInfo searchResult = await _searchService.RefreshSearchAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
-
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
         public async Task<SearchResultContextInfo> SearchAsync(CancellationToken cancellationToken)

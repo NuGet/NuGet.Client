@@ -45,12 +45,7 @@ namespace NuGet.PackageManagement.UI
                             () => { return licenseFile.LoadLicenseFileAsync(); }
                     ).PostOnFailure(nameof(LicenseAcceptanceWindow), nameof(ViewLicense_Click));
 
-                    using (NuGetEventTrigger.TriggerEventBeginEnd(
-                            NuGetEvent.EmbeddedLicenseWindowBegin,
-                            NuGetEvent.EmbeddedLicenseWindowEnd))
-                    {
-                        window.ShowModal();
-                    }
+                    window.ShowModal();
                 }
             }
         }

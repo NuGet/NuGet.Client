@@ -58,8 +58,6 @@
     <Compile Include="Automation\ListBoxToggleableItemsAutomationPeer.cs" />
     <Compile Include="Automation\ToggleableItemAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
-    <Compile Include="Common\NuGetEvent.cs" />
-    <Compile Include="Common\NuGetEventTrigger.cs" />
     <Compile Include="Converters\AdditionConverter.cs" />
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
     <Compile Include="Converters\AccessibleConverter.cs" />
@@ -171,7 +169,6 @@
     <Compile Include="Xamls\ProductUpdateBar.xaml.cs">
       <DependentUpon>ProductUpdateBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\TriggerEventMethod.cs" />
     <Compile Include="Converters\MessageLevelToBrushConverter.cs" />
     <Compile Include="Converters\NotEqualConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />

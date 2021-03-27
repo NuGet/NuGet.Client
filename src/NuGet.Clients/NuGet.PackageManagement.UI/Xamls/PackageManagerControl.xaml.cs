@@ -1476,7 +1476,6 @@ namespace NuGet.PackageManagement.UI
                 IsEnabled = false;
                 _isExecutingAction = true;
 
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
                 {
                     var nugetUi = Model.UIController as NuGetUI;
@@ -1511,7 +1510,6 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     _actionCompleted?.Invoke(this, EventArgs.Empty);
-                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                 }
             })
             .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteAction));

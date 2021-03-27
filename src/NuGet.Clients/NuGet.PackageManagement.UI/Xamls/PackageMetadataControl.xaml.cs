@@ -48,12 +48,7 @@ namespace NuGet.PackageManagement.UI
                     (window.DataContext as LicenseFileData).LicenseText = flowDoc;
                 }).PostOnFailure(nameof(PackageMetadataControl), nameof(ViewLicense_Click));
 
-                using (NuGetEventTrigger.TriggerEventBeginEnd(
-                    NuGetEvent.EmbeddedLicenseWindowBegin,
-                    NuGetEvent.EmbeddedLicenseWindowEnd))
-                {
-                    window.ShowModal();
-                }
+                window.ShowModal();
             }
         }
 
