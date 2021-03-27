@@ -1665,19 +1665,19 @@ namespace NuGet.Commands.Test
                     ""net472"": {
                         ""dependencies"": {
                                 ""packageA"": {
-                                    ""version"": ""[2.0.0)"",
+                                    ""version"": ""[2.0.0]"",
                                     ""target"": ""Package"",
                                     ""versionCentrallyManaged"": true
                                 },
                                 ""packageB"": {
-                                    ""version"": ""[1.0.0)"",
+                                    ""version"": ""[1.0.0]"",
                                     ""target"": ""Package"",
                                     ""versionCentrallyManaged"": true
                                 }
                         },
                         ""centralPackageVersions"": {
-                            ""packageA"": ""[2.0.0)"",
-                            ""packageB"": ""[1.0.0)""
+                            ""packageA"": ""[2.0.0]"",
+                            ""packageB"": ""[1.0.0]""
                         }
                     }
                   }
@@ -1855,27 +1855,27 @@ namespace NuGet.Commands.Test
                     ""net472"": {
                         ""dependencies"": {
                                 ""packageA"": {
-                                    ""version"": ""[2.0.0)"",
+                                    ""version"": ""[2.0.0]"",
                                     ""target"": ""Package"",
                                     ""versionCentrallyManaged"": true
                                 }
                         },
                         ""centralPackageVersions"": {
-                            ""packageA"": ""[2.0.0)"",
-                            ""packageB"": ""[2.0.0)""
+                            ""packageA"": ""[2.0.0]"",
+                            ""packageB"": ""[2.0.0]""
                         }
                     },
                     ""netstandard1.1"": {
                         ""dependencies"": {
                                 ""packageB"": {
-                                    ""version"": ""[2.0.0)"",
+                                    ""version"": ""[2.0.0]"",
                                     ""target"": ""Package"",
                                     ""versionCentrallyManaged"": true
                                 }
                         },
                         ""centralPackageVersions"": {
-                            ""packageA"": ""[2.0.0)"",
-                            ""packageB"": ""[2.0.0)""
+                            ""packageA"": ""[2.0.0]"",
+                            ""packageB"": ""[2.0.0]""
                         }
                     }
                   }
