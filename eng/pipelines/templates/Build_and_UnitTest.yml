@@ -212,7 +212,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       dotnet format --check --exclude submodules --verbosity diagnostic
-  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
+  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"   #skip this task for nonRTM in private build
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
@@ -513,7 +513,7 @@ steps:
   displayName: "Upload VSTS Drop"
   inputs:
     DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false')) "
 
 - task: PowerShell@1
   displayName: "LocValidation: Verify VSIX"
@@ -534,7 +534,7 @@ steps:
   inputs:
     artifactName: LocValidationLogs
     targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
-  condition: "eq(variables['BuildRTM'], 'false')"
+  condition: "and(eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
   # Use dotnet msbuild instead of MSBuild CLI.
   # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
@@ -549,7 +549,7 @@ steps:
   env:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_MULTILEVEL_LOOKUP: true
-  condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
+  condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false')) "
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"
@@ -563,4 +563,4 @@ steps:
       param([string]$BuildOutputTargetPath)
       Get-ChildItem $(BuildOutputTargetPath) -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
       Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
-  condition: "eq(variables['Agent.JobStatus'], 'Failed')"
+  condition: "and(eq(variables['Agent.JobStatus'], 'Failed'), eq(variables['BuildPackagesOnly'], 'false'))"
