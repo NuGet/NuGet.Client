@@ -120,12 +120,12 @@ steps:
   condition: "and(succeeded(), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
-  displayName: "Build for VS2019"
+  displayName: "Build NuGet.VisualStudio project"
   inputs:
     solution: "src\\nuget.clients\\nuget.visualstudio\\nuget.visualstudio.csproj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
+    msbuildArguments: "/p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
     maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['BuildPackagesOnly'], 'true'))"
 

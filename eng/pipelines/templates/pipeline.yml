@@ -59,6 +59,7 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     LocalizedLanguageCount: "13"
     BuildRTM: "true"
+    BuildPackagesOnly: "true"
 
   pool:
     name: VSEng-MicroBuildVS2019
