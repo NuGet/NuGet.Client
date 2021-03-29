@@ -24,6 +24,7 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="EnvDTE" ExcludeAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />
   </ItemGroup>

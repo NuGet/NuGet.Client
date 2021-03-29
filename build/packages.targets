@@ -78,15 +78,16 @@
         <PackageReference Update="Microsoft.Internal.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
 
         <!-- TODO: PIA workaround, move to $(VSFrameworkVersion) -->
-        <PackageReference Update="Microsoft.VisualStudio.TemplateWizardInterface" Version="17.0.0-preview-1-31123-336" />
+        <PackageReference Update="Microsoft.VisualStudio.TemplateWizardInterface" Version="17.0.0-preview-1-30928-1111" />
 
-        <PackageReference Update="Microsoft.VisualStudio.Text.Data" Version="16.10.31" />
+        <PackageReference Update="Microsoft.VisualStudio.Text.Data" Version="16.10.2-g28e6b9a119" />
         <PackageReference Update="Microsoft.VisualStudio.Text.Logic" Version="16.10.31" />
         <PackageReference Update="Microsoft.VisualStudio.Text.UI" Version="16.10.31" />
         <PackageReference Update="Microsoft.VisualStudio.Text.UI.Wpf" Version="16.10.31" />
         <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="10.0.30319" />
-        <PackageReference Update="Microsoft.VisualStudio.Threading" Version="16.9.39-alpha" />
+        <PackageReference Update="Microsoft.VisualStudio.Threading" Version="16.10.41-alpha" />
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
+        <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="17.0.0-preview-1-31108-209" />
         <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="16.8.3038" />
         <PackageReference Update="Microsoft.Web.Xdt" Version="3.0.0" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
@@ -101,6 +102,7 @@
         <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
         <PackageReference Update="System.Threading.Tasks.Dataflow" Version="4.9.0" />
+        <PackageReference Update="VsWebSite.Interop" Version="17.0.0-preview-1-31108-209" />
 
         <!-- Need to remove these once we've cleaned up all our package references -->
         <PackageReference Update="VSSDK.DTE" Version="[7.0.4,8.0.0)" ExcludeAssets="all" PrivateAssets="all" />

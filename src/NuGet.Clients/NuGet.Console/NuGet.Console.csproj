@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <PropertyGroup>
@@ -157,7 +157,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" />
     <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" />
     <PackageReference Include="Microsoft.VisualStudio.Interop" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Data" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Data" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.VisualStudio.Text.Logic" />
     <PackageReference Include="Microsoft.VisualStudio.Text.UI" />
     <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" />

@@ -36,9 +36,6 @@
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" />
     <PackageReference Include="Microsoft.VisualStudio.Composition" />
     <PackageReference Include="Microsoft.VisualStudio.Interop" />
-    <!-- 6.0 workaround until 17.0-* packages published -->
-    <PackageReference Include="VSSDK.DTE" ExcludeAssets="Compile" />
-
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>

@@ -74,7 +74,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Shell.Embeddable" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities" />
+    <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="VsWebSite.Interop" />
   </ItemGroup>
 
   <ItemGroup>
