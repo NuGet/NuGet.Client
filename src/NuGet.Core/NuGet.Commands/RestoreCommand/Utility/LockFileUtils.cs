@@ -308,13 +308,9 @@ namespace NuGet.Commands
             lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
         }
 
-        private static void AddToolsAssets(LockFileLibrary library,
-            LocalPackageInfo package,
+        private static void AddToolsAssets(
             RestoreTargetGraph targetGraph,
-            LibraryIncludeFlags dependencyType,
             LockFileTargetLibrary lockFileLib,
-            NuGetFramework framework,
-            string runtimeIdentifier,
             ContentItemCollection contentItems,
             NuspecReader nuspec,
             IReadOnlyList<SelectionCriteria> orderedCriteria,
@@ -338,13 +334,11 @@ namespace NuGet.Commands
             {
                 // Multiple groups can match the same framework, find all of them
                 var contentFileGroupsForFramework = ContentFileUtils.GetContentGroupsForFramework(
-                    lockFileLib,
                     framework,
                     contentFileGroups,
                     maccatalystFallback);
 
                 lockFileLib.ContentFiles = ContentFileUtils.GetContentFileGroup(
-                    framework,
                     nuspec,
                     contentFileGroupsForFramework);
             }

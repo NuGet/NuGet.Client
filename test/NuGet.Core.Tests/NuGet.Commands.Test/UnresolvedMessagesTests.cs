@@ -172,7 +172,8 @@ namespace NuGet.Commands.Test
 
             var versions2 = new[]
             {
-                NuGetVersion.Parse("1.0.0")
+                NuGetVersion.Parse("1.0.0"),
+                NuGetVersion.Parse("2.0.0"),
             };
 
             var provider1 = GetProvider("http://nuget.org/a/", versions1);
@@ -181,7 +182,7 @@ namespace NuGet.Commands.Test
             var cacheContext = new Mock<SourceCacheContext>();
             var remoteLibraryProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
 
-            var infos = await UnresolvedMessages.GetSourceInfosForIdAsync("a", VersionRange.Parse("1.0.0"), remoteLibraryProviders, cacheContext.Object, NullLogger.Instance, CancellationToken.None);
+            var infos = await UnresolvedMessages.GetSourceInfosForIdAsync("a", remoteLibraryProviders, cacheContext.Object, NullLogger.Instance, CancellationToken.None);
 
             infos.Count.Should().Be(2);
             infos[0].Value.Should().BeEquivalentTo(versions1);

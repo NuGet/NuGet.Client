@@ -192,6 +192,8 @@ namespace NuGet.Commands
             bool toolCommit,
             CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             // Commit targets/props to disk before the assets file.
             // Visual Studio typically watches the assets file for changes
             // and begins a reload when that file changes.
