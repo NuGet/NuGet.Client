@@ -241,13 +241,13 @@
 
   <!-- All projects in the repository -->
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
-    <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj"
+    <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj2"
                       Exclude="$(RepositoryRootDirectory)test\NuGet.Clients\*\*.csproj;
                                $(RepositoryRootDirectory)test\EndToEnd\*\*.csproj;
                                $(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\NuGet.Tests.Apex.csproj"
                       Condition=" '$(ExcludeTestProjects)' != 'true' " />
 
-    <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj"
+    <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\NuGet.VisualStudio.csproj"
                       Exclude="$(RepositoryRootDirectory)src\NuGet.Clients\NuGet.Console\*.csproj;
                                $(RepositoryRootDirectory)src\NuGet.Clients\NuGet.MSSigning.Extensions\*.csproj;
                                $(RepositoryRootDirectory)src\NuGet.Clients\NuGet.PackageManagement.PowerShellCmdlets\*.csproj;
