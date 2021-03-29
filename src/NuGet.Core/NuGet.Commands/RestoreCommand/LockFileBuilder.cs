@@ -32,6 +32,15 @@ namespace NuGet.Commands
             _includeFlagGraphs = includeFlagGraphs;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="previousLockFile"></param>
+        /// <param name="project"></param>
+        /// <param name="targetGraphs"></param>
+        /// <param name="localRepositories"></param>
+        /// <param name="context">Not used</param>
+        /// <returns></returns>
         public LockFile CreateLockFile(LockFile previousLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,

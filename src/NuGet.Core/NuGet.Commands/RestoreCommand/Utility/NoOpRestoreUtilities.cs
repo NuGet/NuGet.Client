@@ -44,6 +44,12 @@ namespace NuGet.Commands
             return null;
         }
 
+        /// <summary>
+        /// cacheRoot + "project.nuget.cache"
+        /// </summary>
+        /// <param name="cacheRoot">Path to cache root</param>
+        /// <param name="projectPath">Not used</param>
+        /// <returns></returns>
         public static string GetProjectCacheFilePath(string cacheRoot, string projectPath)
         {
             return GetProjectCacheFilePath(cacheRoot);

@@ -57,6 +57,12 @@ namespace NuGet.Commands
 
         public IMachineWideSettings MachineWideSettings { get; set; }
 
+        /// <summary>
+        /// Creates a MSBuild project factory with data from NuGet <see cref="Commands.PackArgs"/> object
+        /// </summary>
+        /// <param name="packArgs">NuGet arguments to create a package</param>
+        /// <param name="path">Not used</param>
+        /// <returns>A <see cref="MSBuildProjectFactory"/> object</returns>
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
             return new MSBuildProjectFactory()
@@ -78,7 +84,7 @@ namespace NuGet.Commands
             Files.Clear();
             builder.Files.Clear();
 
-            AddOutputFiles(builder);
+            AddOutputFiles();
 
             // Add content files if there are any. They could come from a project or nuspec file
             AddContentFiles(builder);
@@ -114,7 +120,7 @@ namespace NuGet.Commands
             return builder;
         }
 
-        private void AddOutputFiles(PackageBuilder builder)
+        private void AddOutputFiles()
         {
             if (PackTargetArgs.IncludeBuildOutput)
             {

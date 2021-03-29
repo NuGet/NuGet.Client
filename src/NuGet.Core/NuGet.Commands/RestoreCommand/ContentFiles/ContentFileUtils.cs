@@ -25,7 +25,6 @@ namespace NuGet.Commands
         /// Get all content groups that have the nearest TxM
         /// </summary>
         internal static List<ContentItemGroup> GetContentGroupsForFramework(
-            LockFileTargetLibrary lockFileLib,
             NuGetFramework framework,
             IEnumerable<ContentItemGroup> contentGroups)
         {
@@ -71,7 +70,6 @@ namespace NuGet.Commands
         /// Apply build actions from the nuspec to items from the contentFiles folder.
         /// </summary>
         internal static List<LockFileContentFile> GetContentFileGroup(
-            NuGetFramework framework,
             NuspecReader nuspec,
             List<ContentItemGroup> contentFileGroups)
         {

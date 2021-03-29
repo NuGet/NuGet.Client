@@ -90,6 +90,16 @@ namespace NuGet.Commands
             return Create(RuntimeGraph.Empty, graphs, context, logger, framework, runtimeIdentifier: null);
         }
 
+        /// <summary>
+        /// Factory method
+        /// </summary>
+        /// <param name="runtimeGraph"></param>
+        /// <param name="graphs"></param>
+        /// <param name="context"></param>
+        /// <param name="log">Not used</param>
+        /// <param name="framework"></param>
+        /// <param name="runtimeIdentifier"></param>
+        /// <returns></returns>
         public static RestoreTargetGraph Create(
             RuntimeGraph runtimeGraph,
             IEnumerable<GraphNode<RemoteResolveResult>> graphs,

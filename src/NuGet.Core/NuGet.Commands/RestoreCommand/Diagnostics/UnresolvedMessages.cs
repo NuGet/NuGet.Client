@@ -95,7 +95,7 @@ namespace NuGet.Commands
             {
                 // Package
                 var range = unresolved.VersionRange ?? VersionRange.All;
-                var sourceInfo = await GetSourceInfosForIdAsync(unresolved.Name, range, remoteLibraryProviders, sourceCacheContext, logger, token);
+                var sourceInfo = await GetSourceInfosForIdAsync(unresolved.Name, remoteLibraryProviders, sourceCacheContext, logger, token);
                 var allVersions = new SortedSet<NuGetVersion>(sourceInfo.SelectMany(e => e.Value));
 
                 if (allVersions.Count == 0)
@@ -200,7 +200,6 @@ namespace NuGet.Commands
         /// </summary>
         internal static async Task<List<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>>> GetSourceInfosForIdAsync(
             string id,
-            VersionRange range,
             IList<IRemoteDependencyProvider> remoteLibraryProviders,
             SourceCacheContext sourceCacheContext,
             ILogger logger,
@@ -219,7 +218,8 @@ namespace NuGet.Commands
             }
 
             // Sort by most package versions, then by source path.
-            return sources.OrderByDescending(e => e.Value.Count)
+            return sources
+                .OrderByDescending(e => e.Value.Count)
                 .ThenBy(e => e.Key.Source, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }

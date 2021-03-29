@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -225,8 +224,11 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Log upgrade warnings from the graphs.
+        /// Logs upgrade warnings from the graphs.
         /// </summary>
+        /// <param name="graphs">Flattened restore graphs with error and warning info</param>
+        /// <param name="logger">Not used</param>
+        /// <returns>A collection of log messages</returns>
         public static IEnumerable<RestoreLogMessage> GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph> graphs, ILogger logger)
         {
             var messages = new List<RestoreLogMessage>();

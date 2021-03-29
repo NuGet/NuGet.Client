@@ -421,6 +421,18 @@ namespace NuGet.Commands
             return Path.Combine(project.RestoreMetadata.OutputPath, $"{projFileName}.nuget.g{extension}");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="assetsFile"></param>
+        /// <param name="targetGraphs"></param>
+        /// <param name="repositories"></param>
+        /// <param name="request"></param>
+        /// <param name="assetsFilePath"></param>
+        /// <param name="restoreSuccess"></param>
+        /// <param name="log">Not used</param>
+        /// <returns></returns>
         public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
             LockFile assetsFile,
             IEnumerable<RestoreTargetGraph> targetGraphs,

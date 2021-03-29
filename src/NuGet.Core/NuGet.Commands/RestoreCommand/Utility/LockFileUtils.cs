@@ -105,7 +105,7 @@ namespace NuGet.Commands
 
                 if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
                 {
-                    AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                    AddToolsAssets(targetGraph, lockFileLib, contentItems, orderedCriteriaSets[i]);
                     if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
                     {
                         break;
@@ -304,15 +304,10 @@ namespace NuGet.Commands
             lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
         }
 
-        private static void AddToolsAssets(LockFileLibrary library,
-            LocalPackageInfo package,
+        private static void AddToolsAssets(
             RestoreTargetGraph targetGraph,
-            LibraryIncludeFlags dependencyType,
             LockFileTargetLibrary lockFileLib,
-            NuGetFramework framework,
-            string runtimeIdentifier,
             ContentItemCollection contentItems,
-            NuspecReader nuspec,
             IReadOnlyList<SelectionCriteria> orderedCriteria)
         {
             var toolsGroup = GetLockFileItems(
@@ -332,12 +327,10 @@ namespace NuGet.Commands
             {
                 // Multiple groups can match the same framework, find all of them
                 var contentFileGroupsForFramework = ContentFileUtils.GetContentGroupsForFramework(
-                    lockFileLib,
                     framework,
                     contentFileGroups);
 
                 lockFileLib.ContentFiles = ContentFileUtils.GetContentFileGroup(
-                    framework,
                     nuspec,
                     contentFileGroupsForFramework);
             }

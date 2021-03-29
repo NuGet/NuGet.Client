@@ -322,6 +322,17 @@ namespace NuGet.Commands
             ExcludeFiles(builder.Files);
         }
 
+        /// <summary>
+        /// Loads project.json info to create a package
+        /// </summary>
+        /// <remarks>It's strongly encourage to use PackageReference over project.json</remarks>
+        /// <param name="builder">Builder object to fill in with project.json info (side effects)</param>
+        /// <param name="basePath"></param>
+        /// <param name="id">Package id of the package to be generated</param>
+        /// <param name="version">Package version of the package to be to be generated</param>
+        /// <param name="suffix">Package suffix (i.e. 1.0.0-suffix)</param>
+        /// <param name="propertyProvider">Not used</param>
+        /// <returns><code>true</code> if a project.json file is found, <code>false</code> otherwise</returns>
         public static bool ProcessProjectJsonFile(
             PackageBuilder builder,
             string basePath,
