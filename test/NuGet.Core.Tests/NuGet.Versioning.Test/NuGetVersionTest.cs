@@ -82,7 +82,7 @@ namespace NuGet.Versioning.Test
         public void ParseThrowsIfStringIsNullOrEmpty()
         {
             ExceptionAssert.ThrowsArgNullOrEmpty(() => NuGetVersion.Parse(null), "value");
-            ExceptionAssert.ThrowsArgNullOrEmpty(() => NuGetVersion.Parse(String.Empty), "value");
+            ExceptionAssert.ThrowsArgNullOrEmpty(() => NuGetVersion.Parse(string.Empty), "value");
         }
 
         [Theory]
@@ -106,7 +106,7 @@ namespace NuGet.Versioning.Test
         {
             ExceptionAssert.ThrowsArgumentException(() => NuGetVersion.Parse(versionString),
                 "value",
-                String.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid version string.", versionString));
+                string.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid version string.", versionString));
         }
 
         [Theory]
@@ -326,7 +326,7 @@ namespace NuGet.Versioning.Test
             var semVer = new NuGetVersion(version, specialVersion);
 
             // Assert
-            Assert.Equal(expected, String.Format("{0}", semVer));
+            Assert.Equal(expected, string.Format("{0}", semVer));
         }
 
         [Fact]

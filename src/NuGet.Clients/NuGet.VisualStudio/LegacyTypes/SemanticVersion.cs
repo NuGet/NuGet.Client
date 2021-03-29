@@ -55,7 +55,7 @@ namespace NuGet
         {
             if (version == null)
             {
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
             }
             Version = NormalizeVersionValue(version);
             SpecialVersion = specialVersion ?? string.Empty;
@@ -137,13 +137,15 @@ namespace NuGet
         {
             if (string.IsNullOrEmpty(version))
             {
-                throw new ArgumentException("Value cannot be null or an empty string.", "version");
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(version));
             }
 
             SemanticVersion semVer;
             if (!TryParse(version, out semVer))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "'{0}' is not a valid version string.", version), "version");
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.SemanticVersionStringInvalid, version),
+                    paramName: nameof(version));
             }
             return semVer;
         }
@@ -267,7 +269,7 @@ namespace NuGet
         {
             if (version1 == null)
             {
-                throw new ArgumentNullException("version1");
+                throw new ArgumentNullException(nameof(version1));
             }
             return version1.CompareTo(version2) < 0;
         }
@@ -281,7 +283,7 @@ namespace NuGet
         {
             if (version1 == null)
             {
-                throw new ArgumentNullException("version1");
+                throw new ArgumentNullException(nameof(version1));
             }
             return version2 < version1;
         }
