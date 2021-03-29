@@ -520,14 +520,14 @@ steps:
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
     arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs -TmpPath $(Agent.TempDirectory) -ValidateVsix"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PowerShell@1
   displayName: "LocValidation: Verify Artifacts"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
     arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PublishPipelineArtifact@1
   displayName: "LocValidation: Publish Logs as an artifact"
