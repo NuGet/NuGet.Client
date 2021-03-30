@@ -72,6 +72,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Embeddable" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities" />
     <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine" />

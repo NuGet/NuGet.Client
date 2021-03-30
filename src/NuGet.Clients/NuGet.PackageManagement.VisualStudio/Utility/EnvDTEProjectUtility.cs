@@ -410,15 +410,15 @@ namespace NuGet.PackageManagement.VisualStudio
             return nuGetProject;
         }
 
-        internal static AssemblyReferences GetAssemblyReferences(EnvDTE.Project project)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
+        //internal static AssemblyReferences GetAssemblyReferences(EnvDTE.Project project)
+        //{
+        //    ThreadHelper.ThrowIfNotOnUIThread();
 
-            dynamic projectObj = project.Object;
-            var references = (AssemblyReferences)projectObj.References;
-            projectObj = null;
-            return references;
-        }
+        //    dynamic projectObj = project.Object;
+        //    var references = (AssemblyReferences)projectObj.References;
+        //    projectObj = null;
+        //    return references;
+        //}
 
         /// <summary>
         /// Recursively retrieves all supported child projects of a virtual folder.
@@ -524,29 +524,29 @@ namespace NuGet.PackageManagement.VisualStudio
             return assemblies;
         }
 
-        private static async Task<HashSet<string>> GetWebsiteLocalAssembliesAsync(EnvDTE.Project envDTEProject)
+        private static Task<HashSet<string>> GetWebsiteLocalAssembliesAsync(EnvDTE.Project envDTEProject)
         {
             var assemblies = new HashSet<string>(PathComparer.Default);
-            var references = GetAssemblyReferences(envDTEProject);
-            foreach (AssemblyReference reference in references)
-            {
-                // For websites only include bin assemblies
-                if (reference.ReferencedProject == null
-                    &&
-                    reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceBin
-                    &&
-                    File.Exists(reference.FullPath))
-                {
-                    assemblies.Add(reference.FullPath);
-                }
-            }
+            //var references = GetAssemblyReferences(envDTEProject);
+            //foreach (AssemblyReference reference in references)
+            //{
+            //    // For websites only include bin assemblies
+            //    if (reference.ReferencedProject == null
+            //        &&
+            //        reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceBin
+            //        &&
+            //        File.Exists(reference.FullPath))
+            //    {
+            //        assemblies.Add(reference.FullPath);
+            //    }
+            //}
 
-            // For website projects, we always add .refresh files that point to the corresponding binaries in packages. In the event of bin deployed assemblies that are also GACed,
-            // the ReferenceKind is not AssemblyReferenceBin. Consequently, we work around this by looking for any additional assembly declarations specified via .refresh files.
-            var envDTEProjectPath = await envDTEProject.GetFullPathAsync();
-            CollectionsUtility.AddRange(assemblies, RefreshFileUtility.ResolveRefreshPaths(envDTEProjectPath));
+            //// For website projects, we always add .refresh files that point to the corresponding binaries in packages. In the event of bin deployed assemblies that are also GACed,
+            //// the ReferenceKind is not AssemblyReferenceBin. Consequently, we work around this by looking for any additional assembly declarations specified via .refresh files.
+            //var envDTEProjectPath = await envDTEProject.GetFullPathAsync();
+            //CollectionsUtility.AddRange(assemblies, RefreshFileUtility.ResolveRefreshPaths(envDTEProjectPath));
 
-            return assemblies;
+            return System.Threading.Tasks.Task.FromResult(assemblies);
         }
 
         private class PathComparer : IEqualityComparer<string>
@@ -574,50 +574,50 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var envDTEProjects = new List<EnvDTE.Project>();
-            References references;
-            try
-            {
-                references = GetReferences(envDTEProject);
-            }
-            catch (RuntimeBinderException)
-            {
-                //References property doesn't exist, project does not have references
-                references = null;
-            }
-            if (references != null)
-            {
-                foreach (Reference reference in references)
-                {
-                    var reference3 = reference as Reference3;
+            //References references;
+            //try
+            //{
+            //    references = GetReferences(envDTEProject);
+            //}
+            //catch (RuntimeBinderException)
+            //{
+            //    //References property doesn't exist, project does not have references
+            //    references = null;
+            //}
+            //if (references != null)
+            //{
+            //    foreach (Reference reference in references)
+            //    {
+            //        var reference3 = reference as Reference3;
 
-                    // Get the referenced project from the reference if any
-                    // C++ projects will throw on reference.SourceProject if reference3.Resolved is false.
-                    // It's also possible that the referenced project is the project itself 
-                    // for C++ projects. In this case this reference should be skipped to avoid circular
-                    // references.
-                    if (reference3 != null
-                        && reference3.Resolved
-                        && reference.SourceProject != null
-                        && reference.SourceProject != envDTEProject)
-                    {
-                        envDTEProjects.Add(reference.SourceProject);
-                    }
-                }
-            }
+            //        // Get the referenced project from the reference if any
+            //        // C++ projects will throw on reference.SourceProject if reference3.Resolved is false.
+            //        // It's also possible that the referenced project is the project itself 
+            //        // for C++ projects. In this case this reference should be skipped to avoid circular
+            //        // references.
+            //        if (reference3 != null
+            //            && reference3.Resolved
+            //            && reference.SourceProject != null
+            //            && reference.SourceProject != envDTEProject)
+            //        {
+            //            envDTEProjects.Add(reference.SourceProject);
+            //        }
+            //    }
+            //}
             return envDTEProjects;
         }
 
         private static IList<EnvDTE.Project> GetWebsiteReferencedProjects(EnvDTE.Project envDTEProject)
         {
             var envDTEProjects = new List<EnvDTE.Project>();
-            var references = GetAssemblyReferences(envDTEProject);
-            foreach (AssemblyReference reference in references)
-            {
-                if (reference.ReferencedProject != null)
-                {
-                    envDTEProjects.Add(reference.ReferencedProject);
-                }
-            }
+            //var references = GetAssemblyReferences(envDTEProject);
+            //foreach (AssemblyReference reference in references)
+            //{
+            //    if (reference.ReferencedProject != null)
+            //    {
+            //        envDTEProjects.Add(reference.ReferencedProject);
+            //    }
+            //}
             return envDTEProjects;
         }
 
