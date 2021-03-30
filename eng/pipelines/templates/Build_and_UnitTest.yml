@@ -384,7 +384,7 @@ steps:
     manifests: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)\Microsoft.VisualStudio.NuGet.Core.vsman'
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)'
   continueOnError: true
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PublishBuildArtifacts@1
   displayName: 'OptProfV2:  publish BootstrapperInfo.json as a build artifact'
@@ -406,7 +406,7 @@ steps:
       [string] $testDropPath = $buildDropPath.Replace('/Products/', '/Tests/').Substring('https://vsdrop.corp.microsoft.com/file/v1/'.Length)
       Write-Host "Test drop:  $testDropPath"
       Write-Host "##vso[task.setvariable variable=TestDrop]$testDropPath"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: 'OptProfV2:  generate a .runsettings file'
@@ -414,7 +414,7 @@ steps:
     solution: 'build\NuGet.OptProfV2.runsettingsproj'
     msbuildVersion: '16.0'
     msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="$(TestDrop)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
   displayName: 'OptProfV2:  publish the .runsettings file to artifact services'
@@ -425,7 +425,7 @@ steps:
     toLowerCase: false
     usePat: false
     dropMetadataContainerName: RunSettings
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
   displayName: 'OptProfV2:  publish profiling inputs to artifact services'
@@ -435,7 +435,7 @@ steps:
     sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
     toLowerCase: false
     usePat: false
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
