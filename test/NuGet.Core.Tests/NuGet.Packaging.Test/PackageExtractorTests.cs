@@ -1783,7 +1783,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_SuccessAsync()
         {
             var extractionContext = new PackageExtractionContext(
@@ -1872,7 +1872,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_SuccessAsync()
         {
             var extractionContext = new PackageExtractionContext(
@@ -2111,7 +2111,6 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     exception.Should().BeNull();
-                    exception.Results.Count.Should().Be(0);
                 }
             }
         }
@@ -2169,7 +2168,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsNoWarning()
         {
             // Arrange
@@ -2275,7 +2274,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_SuccessAsync()
         {
             // Arrange
@@ -3000,7 +2999,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithUnzip_Success()
         {
             // Arrange
@@ -3266,7 +3265,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithUnzip_Success()
         {
             // Arrange
@@ -3416,7 +3415,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_Success()
         {
             // Arrange
@@ -3696,7 +3695,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzipAsync_Success()
         {
             // Arrange
@@ -3791,7 +3790,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_NoSigningVerify_Success()
         {
             // Arrange

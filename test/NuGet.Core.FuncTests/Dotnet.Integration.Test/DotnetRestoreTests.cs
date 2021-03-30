@@ -121,7 +121,7 @@ EndGlobal";
         }
 
 #if IS_SIGNING_SUPPORTED
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_Fails()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -187,81 +187,9 @@ EndGlobal";
                 // Act                
                 var result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
-                // Assert
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
                 result.Success.Should().BeFalse();
                 result.ExitCode.Should().Be(1, because: "error text should be displayed as restore failed");
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_Success()
-        {
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
-            {
-                //Setup packages and feed
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.0.0"
-                };
-                packageX.Files.Clear();
-                packageX.AddFile("lib/netcoreapp2.0/x.dll");
-                packageX.AddFile("ref/netcoreapp2.0/x.dll");
-                packageX.AddFile("lib/net472/x.dll");
-                packageX.AddFile("ref/net472/x.dll");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
-
-                // Set up solution, and project
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var projectName = "ClassLibrary1";
-                var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-
-                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib");
-
-                using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    var xml = XDocument.Load(stream);
-
-                    var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
-
-                    ProjectFileUtils.AddItem(
-                        xml,
-                        "PackageReference",
-                        packageX.Id,
-                        string.Empty,
-                        new Dictionary<string, string>(),
-                        attributes);
-
-                    ProjectFileUtils.WriteXmlToFile(xml, stream);
-                }
-
-                //set nuget.config properties
-                var doc = new XDocument();
-                var configuration = new XElement(XName.Get("configuration"));
-                doc.Add(configuration);
-
-                var config = new XElement(XName.Get("config"));
-                configuration.Add(config);
-
-                var signatureValidationMode = new XElement(XName.Get("add"));
-                signatureValidationMode.Add(new XAttribute(XName.Get("key"), "signatureValidationMode"));
-                signatureValidationMode.Add(new XAttribute(XName.Get("value"), "require"));
-                config.Add(signatureValidationMode);
-
-                File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
-
-                // Act                
-                var result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
-
-                // Assert
-                result.Success.Should().BeTrue();
             }
         }
 

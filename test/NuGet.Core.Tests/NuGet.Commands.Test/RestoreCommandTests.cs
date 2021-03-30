@@ -1044,7 +1044,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task RestoreCommand_InvalidSignedPackageAsync_Success()
         {
             // Arrange

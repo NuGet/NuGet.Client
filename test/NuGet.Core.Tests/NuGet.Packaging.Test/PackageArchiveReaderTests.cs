@@ -1966,7 +1966,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_Fails()
         {
             // Arrange
