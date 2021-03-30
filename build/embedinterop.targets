@@ -49,6 +49,8 @@
            or '%(FileName)' == 'Microsoft.VisualStudio.LicenseManagement.Interop.12.1.DesignTime'
            or '%(FileName)' == 'Microsoft.VisualStudio.LicenseManagement.Interop.14.0.DesignTime'
            or '%(FileName)' == 'Microsoft.DataAI.NuGetRecommender.Contracts'
+           or '%(FileName)' == 'Microsoft.VisualStudio.VCProjectEngine'
+           or '%(FileName)' == 'VsWebSite.Interop'
               ">
         <EmbedInteropTypes>true</EmbedInteropTypes>
       </ReferencePath>

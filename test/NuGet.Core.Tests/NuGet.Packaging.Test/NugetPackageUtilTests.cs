@@ -359,17 +359,17 @@ namespace Commands.Test
                     {
                         var cts = new CancellationTokenSource(DefaultTimeOut);
 
-                        Func<CancellationToken, Task<bool>> action = (ct) =>
+                        Func<CancellationToken, Task<bool>> action = async (ct) =>
                         {
-                            Assert.ThrowsAnyAsync<IOException>(async () =>
-                                await PackageExtractor.InstallFromSourceAsync(
+                            await Assert.ThrowsAnyAsync<IOException>(() =>
+                                PackageExtractor.InstallFromSourceAsync(
                                     identity,
                                     packageDownloader,
                                     versionFolderPathResolver,
                                     packageExtractionContext,
                                     token));
 
-                            return Task.FromResult(true);
+                            return true;
                         };
 
                         await ConcurrencyUtilities.ExecuteWithFileLockedAsync(filePathToLock, action, cts.Token);

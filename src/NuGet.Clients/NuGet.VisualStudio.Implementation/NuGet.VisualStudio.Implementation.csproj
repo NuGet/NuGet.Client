@@ -35,6 +35,7 @@
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed" />
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" />
     <PackageReference Include="Microsoft.VisualStudio.Composition" />
+    <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
