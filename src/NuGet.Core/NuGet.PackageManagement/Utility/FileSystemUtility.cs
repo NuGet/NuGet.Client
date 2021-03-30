@@ -48,7 +48,7 @@ namespace NuGet.ProjectManagement
         {
             if (stream == null)
             {
-                throw new ArgumentNullException("stream");
+                throw new ArgumentNullException(nameof(stream));
             }
 
             AddFileCore(root, path, targetStream => stream.CopyTo(targetStream), nuGetProjectContext);
@@ -58,7 +58,7 @@ namespace NuGet.ProjectManagement
         {
             if (writeToStream == null)
             {
-                throw new ArgumentNullException("writeToStream");
+                throw new ArgumentNullException(nameof(writeToStream));
             }
 
             AddFileCore(root, path, writeToStream, nuGetProjectContext);

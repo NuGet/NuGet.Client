@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (nuGetProject == null)
             {
-                throw new ArgumentNullException("nuGetProject");
+                throw new ArgumentNullException(nameof(nuGetProject));
             }
 
             await EnsureInitializeAsync();

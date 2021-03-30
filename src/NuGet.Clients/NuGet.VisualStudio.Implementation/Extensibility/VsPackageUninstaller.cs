@@ -51,7 +51,7 @@ namespace NuGet.VisualStudio
         {
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             if (string.IsNullOrEmpty(packageId))

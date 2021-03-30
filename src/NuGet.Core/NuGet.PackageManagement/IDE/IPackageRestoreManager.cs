@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             Package = packageIdentity;

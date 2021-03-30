@@ -25,7 +25,7 @@ namespace NuGet.Packaging.Core
         {
             if (id == null)
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             _id = id;

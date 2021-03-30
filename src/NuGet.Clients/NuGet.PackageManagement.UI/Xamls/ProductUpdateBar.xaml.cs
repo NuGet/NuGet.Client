@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI
 
             if (productUpdateService == null)
             {
-                throw new ArgumentNullException("productUpdateService");
+                throw new ArgumentNullException(nameof(productUpdateService));
             }
 
             _productUpdateService = productUpdateService;
