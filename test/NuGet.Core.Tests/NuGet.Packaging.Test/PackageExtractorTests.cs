@@ -1921,7 +1921,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsync_RequireMode_EmptyRepoAllowList_SuccessAsync()
         {
             using (var dir = TestDirectory.Create())
@@ -1971,7 +1971,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Windows)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_SuccessAsync()
         {
             using (var dir = TestDirectory.Create())
@@ -2063,7 +2063,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
+        [PlatformTheory(Platform.Linux, Platform.Darwin)]
         [MemberData(nameof(KnownClientPoliciesList))]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertNotFromRepositoryAllowList_SuccessAsync(ClientPolicyContext clientPolicy)
         {
@@ -2156,14 +2156,14 @@ namespace NuGet.Packaging.Test
                         CancellationToken.None);
 
                     // Assert
-                    var aa = logger.Invocations[0];
-
                     logger.Verify(l => l.LogAsync(It.Is<ILogMessage>(m =>
                         m.Level == LogLevel.Warning &&
                         m.Code != NuGetLogCode.NU3018 &&
-                        !m.Message.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."))));
+                        !m.Message.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."))), Times.AtLeastOnce);
 
-
+                    logger.Verify(l => l.LogAsync(It.Is<ILogMessage>(m =>
+                        m.Code == NuGetLogCode.NU3018 &&
+                        (m.Level == LogLevel.Warning || m.Level == LogLevel.Error))), Times.Never);
                 }
             }
         }
@@ -2210,7 +2210,7 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     logger.Verify(l => l.LogAsync(It.Is<ILogMessage>(m =>
-                        m.Level == LogLevel.Warning || m.Level == LogLevel.Error)), Times.Never); ;
+                        m.Level == LogLevel.Warning || m.Level == LogLevel.Error)), Times.Never);
                 }
             }
         }
@@ -3840,9 +3840,9 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
+        [PlatformTheory(Platform.Linux, Platform.Darwin)]
         [MemberData(nameof(KnownClientPoliciesList))]
-        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultSettingsAsync(ClientPolicyContext clientPolicyContext)
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultSettings_DoesntVerifyAsync(ClientPolicyContext clientPolicyContext)
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -3913,9 +3913,82 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
+        [PlatformTheory(Platform.Windows)]
         [MemberData(nameof(KnownClientPoliciesList))]
-        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettingsAsync_NoSigningVerify_Success(ClientPolicyContext clientPolicyContext)
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultSettings_DoVerifyAsync(ClientPolicyContext clientPolicyContext)
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>();
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<SignedPackageVerifierSettings>(),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
+                    ReturnsAsync(new VerifySignaturesResult(isValid: true, isSigned: true));
+
+                var repositorySignatureInfoAndAllowList = CreateTestRepositorySignatureInfoAndExpectedAllowList();
+                var repositorySignatureInfo = repositorySignatureInfoAndAllowList.Item1;
+                var expectedAllowList = repositorySignatureInfoAndAllowList.Item2;
+                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
+                var signedPackageVerifierSettings = clientPolicyContext.VerifierSettings;
+
+                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(root, repositorySignatureInfo);
+
+                var expectedVerifierSettings = new SignedPackageVerifierSettings(
+                    allowUnsigned: false,
+                    allowIllegal: signedPackageVerifierSettings.AllowIllegal,
+                    allowUntrusted: false,
+                    allowIgnoreTimestamp: signedPackageVerifierSettings.AllowIgnoreTimestamp,
+                    allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
+                    allowNoTimestamp: signedPackageVerifierSettings.AllowNoTimestamp,
+                    allowUnknownRevocation: signedPackageVerifierSettings.AllowUnknownRevocation,
+                    reportUnknownRevocation: signedPackageVerifierSettings.ReportUnknownRevocation,
+                    verificationTarget: signedPackageVerifierSettings.VerificationTarget,
+                    signaturePlacement: signedPackageVerifierSettings.SignaturePlacement,
+                    repositoryCountersignatureVerificationBehavior: signedPackageVerifierSettings.RepositoryCountersignatureVerificationBehavior,
+                    revocationMode: signedPackageVerifierSettings.RevocationMode);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        clientPolicyContext,
+                        NullLogger.Instance)
+                    {
+                        SignedPackageVerifier = signedPackageVerifier.Object
+                    };
+
+                    // Act
+                    await PackageExtractor.ExtractPackageAsync(
+                        root,
+                        packageReader,
+                        packageStream,
+                        resolver,
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    signedPackageVerifier.Verify(mock => mock.VerifySignaturesAsync(
+                        It.Is<ISignedPackageReader>(p => p.Equals(packageReader)),
+                        It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, expectedVerifierSettings)),
+                        It.Is<CancellationToken>(t => t.Equals(CancellationToken.None)),
+                        It.IsAny<Guid>()), Times.AtLeastOnce);
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Linux, Platform.Darwin)]
+        [MemberData(nameof(KnownClientPoliciesList))]
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettingsAsync_NoSigningVerify_DonotVerifyAsync(ClientPolicyContext clientPolicyContext)
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -3981,6 +4054,78 @@ namespace NuGet.Packaging.Test
                         It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, expectedVerifierSettings)),
                         It.Is<CancellationToken>(t => t.Equals(CancellationToken.None)),
                         It.IsAny<Guid>()), Times.Never);
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [MemberData(nameof(KnownClientPoliciesList))]
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettingsAsync_NoSigningVerify_DoVerifyAsync(ClientPolicyContext clientPolicyContext)
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>();
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<SignedPackageVerifierSettings>(),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
+                    ReturnsAsync(new VerifySignaturesResult(isValid: true, isSigned: true));
+
+                var repositorySignatureInfoAndAllowList = CreateTestRepositorySignatureInfoAndExpectedAllowList();
+                var repositorySignatureInfo = repositorySignatureInfoAndAllowList.Item1;
+                var expectedAllowList = repositorySignatureInfoAndAllowList.Item2;
+                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
+                var signedPackageVerifierSettings = clientPolicyContext.VerifierSettings;
+                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(root, repositorySignatureInfo);
+
+                var expectedVerifierSettings = new SignedPackageVerifierSettings(
+                    allowUnsigned: false,
+                    allowIllegal: signedPackageVerifierSettings.AllowIllegal,
+                    allowUntrusted: false,
+                    allowIgnoreTimestamp: signedPackageVerifierSettings.AllowIgnoreTimestamp,
+                    allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
+                    allowNoTimestamp: signedPackageVerifierSettings.AllowNoTimestamp,
+                    allowUnknownRevocation: signedPackageVerifierSettings.AllowUnknownRevocation,
+                    reportUnknownRevocation: signedPackageVerifierSettings.ReportUnknownRevocation,
+                    verificationTarget: signedPackageVerifierSettings.VerificationTarget,
+                    signaturePlacement: signedPackageVerifierSettings.SignaturePlacement,
+                    repositoryCountersignatureVerificationBehavior: signedPackageVerifierSettings.RepositoryCountersignatureVerificationBehavior,
+                    revocationMode: signedPackageVerifierSettings.RevocationMode);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        clientPolicyContext,
+                        NullLogger.Instance)
+                    {
+                        SignedPackageVerifier = signedPackageVerifier.Object
+                    };
+
+                    // Act
+                    await PackageExtractor.ExtractPackageAsync(
+                        root,
+                        packageReader,
+                        packageStream,
+                        resolver,
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    signedPackageVerifier.Verify(mock => mock.VerifySignaturesAsync(
+                        It.Is<ISignedPackageReader>(p => p.Equals(packageReader)),
+                        It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, expectedVerifierSettings)),
+                        It.Is<CancellationToken>(t => t.Equals(CancellationToken.None)),
+                        It.IsAny<Guid>()), Times.AtLeastOnce);
                 }
             }
         }
