@@ -59,7 +59,8 @@ echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 IFS=$'\n'
 CMD_OUT_LINES=(`dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting`)
 # Take only last the line which has the version information and strip all the spaces
-DOTNET_BRANCHES=${CMD_OUT_LINES[-1]//[[:space:]]}
+CMD_LAST_LINE=${CMD_OUT_LINES[@]:(-1)}
+DOTNET_BRANCHES=${CMD_LAST_LINE//[[:space:]]}
 unset IFS
 
 IFS=$';'
