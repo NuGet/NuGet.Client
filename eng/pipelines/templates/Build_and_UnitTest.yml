@@ -446,9 +446,7 @@ steps:
       **\*.lcg
       !localize\**\*
     TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
-  # TODO: reinstate official build after testing
-  #condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 
 - task: CopyFiles@2
@@ -470,9 +468,7 @@ steps:
   inputs:
     targetPath: "$(Build.ArtifactStagingDirectory)\\PLOC"
     artifactName: "legacy localizeInputs"
-  # TODO: reinstate official build after testing
-  #condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
@@ -492,8 +488,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
     maximumCpuCount: true
-  # TODO: reinstate official build after testing
-  #condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: CopyFiles@2
   displayName: "Copy Symbols (non-rtm)"
@@ -516,8 +511,7 @@ steps:
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
     artifactName: "symbols - $(RtmLabel)"
-  # TODO: reinstate official build after testing
-  #condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
   displayName: "Publish Symbols on Symweb"
