@@ -492,7 +492,8 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
     maximumCpuCount: true
-  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+  # TODO: reinstate official build after testing
+  #condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: CopyFiles@2
   displayName: "Copy Symbols (non-rtm)"
