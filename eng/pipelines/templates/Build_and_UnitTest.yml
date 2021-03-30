@@ -439,12 +439,22 @@ steps:
     ArtifactType: "Container"
 
 - task: CopyFiles@2
-  displayName: "Copy LCG Files (deprecated)"
+  displayName: "Copy LCG Files to staging (deprecated)"
   inputs:
     SourceFolder: "artifacts\\"
     Contents: |
       **\*.lcg
       !localize\**\*
+    TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
+  # TODO: reinstate official build after testing
+  #condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+
+- task: CopyFiles@2
+  displayName: "Copy LCG Files to destination (deprecated)"
+  inputs:
+    SourceFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -458,8 +468,10 @@ steps:
 - task: PublishPipelineArtifact@1
   displayName: "Upload legacy localizeInputs artifact"
   inputs:
-    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\**\\*.lcg;!$(Build.Repository.LocalPath)\\artifacts\\localize\\**\\*"
+    targetPath: "$(Build.ArtifactStagingDirectory)\\PLOC"
     artifactName: "legacy localizeInputs"
+  # TODO: reinstate official build after testing
+  #condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: NuGetCommand@2
@@ -503,6 +515,8 @@ steps:
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
     artifactName: "symbols - $(RtmLabel)"
+  # TODO: reinstate official build after testing
+  #condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
   displayName: "Publish Symbols on Symweb"
