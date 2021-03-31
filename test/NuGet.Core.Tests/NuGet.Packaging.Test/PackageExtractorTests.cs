@@ -1802,25 +1802,15 @@ namespace NuGet.Packaging.Test
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(test.Source, repositorySignatureInfo);
                 test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
 
-                SignatureException exception = null;
-                IEnumerable<string> files = null;
-
-                try
-                {
-                    files = await PackageExtractor.ExtractPackageAsync(
-                         test.Source,
-                         test.Stream,
-                         test.Resolver,
-                         test.Context,
-                         CancellationToken.None);
-                }
-                catch (SignatureException e)
-                {
-                    exception = e;
-                }
+                // Act
+                IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
+                     test.Source,
+                     test.Stream,
+                     test.Resolver,
+                     test.Context,
+                     CancellationToken.None);
 
                 // Assert
-                exception.Should().BeNull();
                 files.Should().NotBeNull();
                 Directory.Exists(Path.Combine(test.DestinationDirectory.FullName,
                     $"{test.PackageIdentity.Id}.{test.PackageIdentity.Version.ToNormalizedString()}")).Should().BeTrue();
@@ -1898,30 +1888,16 @@ namespace NuGet.Packaging.Test
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(test.Source, repositorySignatureInfo);
                 test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
 
-                SignatureException exception = null;
-
-                try
-                {
-                    await PackageExtractor.ExtractPackageAsync(
-                         test.Source,
-                         test.Stream,
-                         test.Resolver,
-                         test.Context,
-                         CancellationToken.None);
-                }
-                catch (SignatureException e)
-                {
-                    exception = e;
-                }
+                // Act
+                IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
+                     test.Source,
+                     test.Stream,
+                     test.Resolver,
+                     test.Context,
+                     CancellationToken.None);
 
                 // Assert
-                exception.Should().NotBeNull();
-                exception.Results.Count.Should().Be(1);
-
-                exception.Results.First().Issues.Count().Should().Be(1);
-                exception.Results.First().Issues.First().Code.Should().Be(NuGetLogCode.NU3004);
-                exception.Results.First().Issues.First().Message.Should()
-                    .Be(SigningTestUtility.AddSignatureLogPrefix(_notSignedPackageRequire, test.Reader.GetIdentity(), test.Source));
+                files.Should().NotBeNull();
             }
         }
 
@@ -1952,24 +1928,20 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(repoSignedPackagePath))
                 {
-                    SignatureException exception = null;
-
-                    try
-                    {
-                        await PackageExtractor.ExtractPackageAsync(
-                             dir,
-                             packageStream,
-                             resolver,
-                             extractionContext,
-                             CancellationToken.None);
-                    }
-                    catch (SignatureException e)
-                    {
-                        exception = e;
-                    }
+                    // Act
+                    IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
+                         dir,
+                         packageStream,
+                         resolver,
+                         extractionContext,
+                         CancellationToken.None);
 
                     // Assert
-                    exception.Should().BeNull();
+                    files.Should().NotBeNull();
+                    Directory.Exists(Path.Combine(dir.Path,
+                        $"{nupkg.Identity.Id}.{nupkg.Identity.Version.ToNormalizedString()}"))
+                        .Should()
+                        .BeTrue();
                 }
             }
         }
@@ -2000,25 +1972,15 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(repoSignedPackagePath))
                 {
-                    SignatureException exception = null;
-                    IEnumerable<string> files = null;
-
-                    try
-                    {
-                        files = await PackageExtractor.ExtractPackageAsync(
-                             dir,
-                             packageStream,
-                             resolver,
-                             extractionContext,
-                             CancellationToken.None);
-                    }
-                    catch (SignatureException e)
-                    {
-                        exception = e;
-                    }
+                    // Act
+                    IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
+                         dir,
+                         packageStream,
+                         resolver,
+                         extractionContext,
+                         CancellationToken.None);
 
                     // Assert
-                    exception.Should().BeNull();
                     files.Should().NotBeNull();
                     Directory.Exists(Path.Combine(dir.Path,
                         $"{nupkg.Identity.Id}.{nupkg.Identity.Version.ToNormalizedString()}")).Should().BeTrue();
@@ -2098,25 +2060,20 @@ namespace NuGet.Packaging.Test
                         NullLogger.Instance);
 
                     // Act
-                    SignatureException exception = null;
-
-                    try
-                    {
-                        await PackageExtractor.ExtractPackageAsync(
+                    IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
                             dir,
                             packageReader,
                             packageStream,
                             resolver,
                             packageExtractionContext,
                             CancellationToken.None);
-                    }
-                    catch (SignatureException e)
-                    {
-                        exception = e;
-                    }
 
                     // Assert
-                    exception.Should().BeNull();
+                    files.Should().NotBeNull();
+                    Directory.Exists(Path.Combine(dir.Path,
+                        $"{nupkg.Identity.Id}.{nupkg.Identity.Version.ToNormalizedString()}"))
+                        .Should()
+                        .BeTrue();
                 }
             }
         }
@@ -2315,25 +2272,14 @@ namespace NuGet.Packaging.Test
                 using (var packageStream = File.OpenRead(packageFile.FullName))
                 {
                     // Act
-                    SignatureException exception = null;
-                    IEnumerable<string> files = null;
-
-                    try
-                    {
-                        files = await PackageExtractor.ExtractPackageAsync(
+                    IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
                             test.Source,
                             packageStream,
                             test.Resolver,
                             test.Context,
                             CancellationToken.None);
-                    }
-                    catch (SignatureException e)
-                    {
-                        exception = e;
-                    }
 
                     // Assert
-                    exception.Should().BeNull();
                     files.Should().NotBeNull();
                     Directory.Exists(Path.Combine(test.DestinationDirectory.FullName,
                         $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}"))
@@ -2382,25 +2328,14 @@ namespace NuGet.Packaging.Test
                 using (var packageReader = new PackageFolderReader(packageDir))
                 {
                     // Act
-                    SignatureException exception = null;
-                    IEnumerable<string> files = null;
-
-                    try
-                    {
-                        files = await PackageExtractor.ExtractPackageAsync(
+                    IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
                             test.Source,
                             packageReader,
                             test.Resolver,
                             test.Context,
                             CancellationToken.None);
-                    }
-                    catch (SignatureException e)
-                    {
-                        exception = e;
-                    }
 
                     // Assert
-                    exception.Should().BeNull();
                     files.Should().NotBeNull();
                     files.Count().Should().Be(8);
                     var packagePath = Path.Combine(test.DestinationDirectory.FullName,
@@ -2573,25 +2508,14 @@ namespace NuGet.Packaging.Test
                 using (var packageReader = new PackageArchiveReader(File.OpenRead(packageFile.FullName)))
                 {
                     // Act
-                    SignatureException exception = null;
-                    IEnumerable<string> files = null;
-
-                    try
-                    {
-                        files = await PackageExtractor.ExtractPackageAsync(
+                    IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
                             test.Source,
                             packageReader,
                             test.Resolver,
                             test.Context,
                             CancellationToken.None);
-                    }
-                    catch (SignatureException e)
-                    {
-                        exception = e;
-                    }
 
                     // Assert
-                    exception.Should().BeNull();
                     files.Should().NotBeNull();
                     files.Count().Should().Be(8);
                     var packagePath = Path.Combine(test.DestinationDirectory.FullName,
@@ -3564,7 +3488,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_Succeed()
         {
             // Arrange
@@ -3586,7 +3510,6 @@ namespace NuGet.Packaging.Test
                 var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
-                using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     var packageExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Nupkg,
@@ -3597,14 +3520,18 @@ namespace NuGet.Packaging.Test
                         SignedPackageVerifier = signedPackageVerifier.Object
                     };
 
-                    // Act & Assert
-                    await Assert.ThrowsAsync<SignatureException>(
-                        () => PackageExtractor.ExtractPackageAsync(
+                    // Act
+                    IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
                             root,
-                            packageReader,
+                            packageStream,
                             resolver,
                             packageExtractionContext,
-                            CancellationToken.None));
+                            CancellationToken.None);
+
+                    // Assert
+                    files.Should().NotBeNull();
+                    Directory.Exists(Path.Combine(root.Path,
+                        $"{nupkg.Identity.Id}.{nupkg.Identity.Version.ToNormalizedString()}")).Should().BeTrue();
                 }
             }
         }
