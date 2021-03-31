@@ -1080,7 +1080,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
+                PackageSpec spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
 
@@ -1093,7 +1093,7 @@ namespace NuGet.Commands.Test
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(isValid: false, isSigned: true));
 
-                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger);
+                ClientPolicyContext clientPolicyContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger);
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, clientPolicyContext, logger)
                 {
                     LockFilePath = Path.Combine(project1.FullName, "project.lock.json"),
@@ -1107,7 +1107,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
+                RestoreResult result = await command.ExecuteAsync();
 
                 // Assert
                 Assert.True(result.Success);

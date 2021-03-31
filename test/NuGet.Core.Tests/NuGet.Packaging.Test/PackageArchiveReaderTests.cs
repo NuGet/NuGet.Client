@@ -1974,7 +1974,7 @@ namespace NuGet.Packaging.Test
             using (var packageArchiveReader = new PackageArchiveReader(test))
             {
                 // Act
-                var result = packageArchiveReader.CanVerifySignedPackages(null);
+                bool result = packageArchiveReader.CanVerifySignedPackages(null);
                 // Assert
                 Assert.False(result);
             }

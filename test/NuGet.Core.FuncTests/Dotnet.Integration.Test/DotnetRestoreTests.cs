@@ -224,9 +224,9 @@ EndGlobal";
 
                 _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib");
 
-                using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                using (FileStream stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
-                    var xml = XDocument.Load(stream);
+                    XDocument xml = XDocument.Load(stream);
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
 
@@ -257,7 +257,7 @@ EndGlobal";
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
                 // Act                
-                var result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
                 result.AllOutput.Should().NotContain($"error NU3004");
                 result.Success.Should().BeTrue();
