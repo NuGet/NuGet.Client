@@ -1238,8 +1238,6 @@ EndProject");
             Assert.Contains("usage:", result.Item2);
         }
 
-        #region helper methods for .NET nanoFramework tests
-
         /// <summary>
         /// Create a basic nfproj file for .NET nanoFramework.
         /// </summary>
@@ -1385,7 +1383,5 @@ $@"        <Reference Include=""{package.Item1}, Version={package.Item2}, Cultur
 
             return configContent.ToString();
         }
-
-        #endregion
     }
 }
