@@ -1803,12 +1803,13 @@ namespace NuGet.Packaging.Test
                 test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
 
                 SignatureException exception = null;
+                IEnumerable<string> files = null;
 
                 try
                 {
-                    await PackageExtractor.ExtractPackageAsync(
+                    files = await PackageExtractor.ExtractPackageAsync(
                          test.Source,
-                         test.Reader,
+                         test.Stream,
                          test.Resolver,
                          test.Context,
                          CancellationToken.None);
@@ -1820,6 +1821,9 @@ namespace NuGet.Packaging.Test
 
                 // Assert
                 exception.Should().BeNull();
+                files.Should().NotBeNull();
+                Directory.Exists(Path.Combine(test.DestinationDirectory.FullName,
+                    $"{test.PackageIdentity.Id}.{test.PackageIdentity.Version.ToNormalizedString()}")).Should().BeTrue();
             }
         }
 
@@ -1900,7 +1904,7 @@ namespace NuGet.Packaging.Test
                 {
                     await PackageExtractor.ExtractPackageAsync(
                          test.Source,
-                         test.Reader,
+                         test.Stream,
                          test.Resolver,
                          test.Context,
                          CancellationToken.None);
@@ -1947,7 +1951,6 @@ namespace NuGet.Packaging.Test
                     logger: NullLogger.Instance);
 
                 using (var packageStream = File.OpenRead(repoSignedPackagePath))
-                using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     SignatureException exception = null;
 
@@ -1955,7 +1958,7 @@ namespace NuGet.Packaging.Test
                     {
                         await PackageExtractor.ExtractPackageAsync(
                              dir,
-                             packageReader,
+                             packageStream,
                              resolver,
                              extractionContext,
                              CancellationToken.None);
@@ -1971,7 +1974,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Windows)]
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_SuccessAsync()
         {
             using (var dir = TestDirectory.Create())
@@ -1996,15 +1999,15 @@ namespace NuGet.Packaging.Test
                     logger: NullLogger.Instance);
 
                 using (var packageStream = File.OpenRead(repoSignedPackagePath))
-                using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     SignatureException exception = null;
+                    IEnumerable<string> files = null;
 
                     try
                     {
-                        await PackageExtractor.ExtractPackageAsync(
+                        files = await PackageExtractor.ExtractPackageAsync(
                              dir,
-                             packageReader,
+                             packageStream,
                              resolver,
                              extractionContext,
                              CancellationToken.None);
@@ -2016,6 +2019,9 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     exception.Should().BeNull();
+                    files.Should().NotBeNull();
+                    Directory.Exists(Path.Combine(dir.Path,
+                        $"{nupkg.Identity.Id}.{nupkg.Identity.Version.ToNormalizedString()}")).Should().BeTrue();
                 }
             }
         }
@@ -2269,7 +2275,9 @@ namespace NuGet.Packaging.Test
                     exception.Should().NotBeNull();
                     files.Should().BeNull();
                     Directory.Exists(Path.Combine(test.DestinationDirectory.FullName,
-                        $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}")).Should().BeFalse();
+                        $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}"))
+                        .Should()
+                        .BeFalse();
                 }
             }
         }
@@ -2304,7 +2312,7 @@ namespace NuGet.Packaging.Test
                 var packageFile = new FileInfo(Path.Combine(test.Source,
                     $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}.nupkg"));
 
-                using (var packageReader = new PackageArchiveReader(File.OpenRead(packageFile.FullName)))
+                using (var packageStream = File.OpenRead(packageFile.FullName))
                 {
                     // Act
                     SignatureException exception = null;
@@ -2314,7 +2322,7 @@ namespace NuGet.Packaging.Test
                     {
                         files = await PackageExtractor.ExtractPackageAsync(
                             test.Source,
-                            packageReader,
+                            packageStream,
                             test.Resolver,
                             test.Context,
                             CancellationToken.None);
@@ -2328,7 +2336,9 @@ namespace NuGet.Packaging.Test
                     exception.Should().BeNull();
                     files.Should().NotBeNull();
                     Directory.Exists(Path.Combine(test.DestinationDirectory.FullName,
-                        $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}")).Should().BeTrue();
+                        $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}"))
+                        .Should()
+                        .BeTrue();
                 }
             }
         }
@@ -4531,6 +4541,7 @@ namespace NuGet.Packaging.Test
             internal DirectoryInfo DestinationDirectory { get; }
             internal FileInfo Package { get; private set; }
             internal PackageIdentity PackageIdentity { get; }
+            internal Stream Stream { get; private set; }
             internal PackageReader Reader { get; private set; }
             internal PackagePathResolver Resolver { get; }
 
@@ -4598,6 +4609,7 @@ namespace NuGet.Packaging.Test
                         Source,
                         $"{PackageIdentity.Id}.{PackageIdentity.Version.ToNormalizedString()}.nupkg"));
 
+                Stream = File.OpenRead(Package.FullName);
                 Reader = new PackageReader(File.OpenRead(Package.FullName));
             }
         }
