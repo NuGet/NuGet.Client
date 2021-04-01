@@ -3945,7 +3945,7 @@ namespace NuGet.Packaging.Test
 
         [PlatformTheory(Platform.Windows)]
         [MemberData(nameof(KnownClientPoliciesList))]
-        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettingsAsync_DoVerifyAsync(ClientPolicyContext clientPolicyContext)
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettings_DoVerifyAsync(ClientPolicyContext clientPolicyContext)
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -4017,7 +4017,7 @@ namespace NuGet.Packaging.Test
 
         [PlatformTheory(Platform.Linux, Platform.Darwin)]
         [MemberData(nameof(KnownClientPoliciesList))]
-        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettingsAsync_DonotVerifyAsync(ClientPolicyContext clientPolicyContext)
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettings_DonotVerifyAsync(ClientPolicyContext clientPolicyContext)
         {
             // Arrange
             using (var root = TestDirectory.Create())

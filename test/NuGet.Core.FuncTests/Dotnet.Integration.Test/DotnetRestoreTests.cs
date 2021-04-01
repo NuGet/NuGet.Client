@@ -122,7 +122,7 @@ EndGlobal";
 
 #if IS_SIGNING_SUPPORTED
         [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_Fails()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_FailsAsync()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -194,7 +194,7 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_Succeed()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_SucceedAsync()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {

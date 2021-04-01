@@ -975,7 +975,7 @@ namespace NuGet.Commands.Test
 
 #if IS_SIGNING_SUPPORTED
         [PlatformFact(Platform.Windows)]
-        public async Task RestoreCommand_InvalidSignedPackageAsync_Fails()
+        public async Task RestoreCommand_InvalidSignedPackageAsync_FailsAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -1045,7 +1045,7 @@ namespace NuGet.Commands.Test
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task RestoreCommand_InvalidSignedPackageAsync_Success()
+        public async Task RestoreCommand_InvalidSignedPackageAsync_SuccessAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
