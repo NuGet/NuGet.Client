@@ -244,7 +244,8 @@
     <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj"
                       Exclude="$(RepositoryRootDirectory)test\NuGet.Clients\*\*.csproj;
                                $(RepositoryRootDirectory)test\EndToEnd\*\*.csproj;
-                               $(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\NuGet.Tests.Apex.csproj"
+                               $(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\NuGet.Tests.Apex.csproj;
+                               $(RepositoryRootDirectory)test\NuGet.Clients.Tests\NuGet.PackageManagement.UI.Test\NuGet.PackageManagement.UI.Test.csproj"
                       Condition=" '$(ExcludeTestProjects)' != 'true' " />
 
     <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj"
