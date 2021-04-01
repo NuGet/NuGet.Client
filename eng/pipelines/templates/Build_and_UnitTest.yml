@@ -322,6 +322,13 @@ steps:
     TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
+- task: PublishPipelineArtifact@1
+  displayName: "Publish nupkgs"
+  inputs: 
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
+    artifactName: "nupkgs - $(RtmLabel)"
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
+
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
   inputs:
@@ -443,15 +450,31 @@ steps:
     PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
     ArtifactName: "$(VsixPublishDir)"
     ArtifactType: "Container"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: CopyFiles@2
-  displayName: "Copy LCG Files"
+  displayName: "Copy LCG Files to staging (deprecated)"
   inputs:
     SourceFolder: "artifacts\\"
-    Contents: "**\\*.lcg"
+    Contents: |
+      **\*.lcg
+      !localize\**\*
+    TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+
+
+- task: CopyFiles@2
+  displayName: "Copy LCG Files to destination (deprecated)"
+  inputs:
+    SourceFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+
+- task: PublishPipelineArtifact@1
+  displayName: "Upload legacy localizeInputs artifact"
+  inputs:
+    targetPath: "$(Build.ArtifactStagingDirectory)\\PLOC"
+    artifactName: "legacy localizeInputs"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
@@ -487,6 +510,13 @@ steps:
     Contents: "**\\*"
     TargetFolder: "$(BuildOutputTargetPath)\\symbols-rtm"
   condition: " and(succeeded(), not(eq(variables['BuildRTM'], 'false')), eq(variables['IsOfficialBuild'], 'true')) "
+
+- task: PublishPipelineArtifact@1
+  displayName: "Publish symbols as pipeline artifacts"
+  inputs:
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
+    artifactName: "symbols - $(RtmLabel)"
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
   displayName: "Publish Symbols on Symweb"
