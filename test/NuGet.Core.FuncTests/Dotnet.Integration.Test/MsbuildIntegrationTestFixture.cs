@@ -39,7 +39,9 @@ namespace Dotnet.Integration.Test
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
-            var sdkPath = Directory.EnumerateDirectories(Path.Combine(_cliDirectory, "sdk")).Single();
+            var sdkPath = Directory.EnumerateDirectories(Path.Combine(_cliDirectory, "sdk"))
+                            .Where(d => !string.Equals(Path.GetFileName(d), "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase))
+                            .Single();
 
             MsBuildSdksPath = Path.Combine(sdkPath, "Sdks");
 
@@ -442,6 +444,7 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(sdkDir).Select(Pat
             var artifactsDirectory = DotnetCliUtil.GetArtifactsDirectoryInRepo();
             var pathToSdkInCli = Path.Combine(
                     Directory.EnumerateDirectories(Path.Combine(cliDirectory, "sdk"))
+                        .Where(d => !string.Equals(Path.GetFileName(d), "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase))
                         .First());
             const string configuration =
 #if DEBUG

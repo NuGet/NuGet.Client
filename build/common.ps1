@@ -155,8 +155,10 @@ Function Install-DotnetCLI {
     )
     $vsMajorVersion = Get-VSMajorVersion
     $MSBuildExe = Get-MSBuildExe $vsMajorVersion
-    $CliBranchListForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
-    $CliBranchList = $CliBranchListForTesting.Trim().Split(';');
+
+    $CmdOutLines = ((& $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting) | Out-String).Trim()
+    $CliBranchListForTesting = ($CmdOutLines -split [Environment]::NewLine)[-1]
+    $CliBranchList = $CliBranchListForTesting -split ';'
 
     $DotNetInstall = Join-Path $CLIRoot 'dotnet-install.ps1'
 
@@ -171,7 +173,7 @@ Function Install-DotnetCLI {
 
     ForEach ($CliBranch in $CliBranchList) {
         $CliBranch = $CliBranch.trim()
-        $CliChannelAndVersion = $CliBranch -split "\s+"
+        $CliChannelAndVersion = $CliBranch -split ":"
 
         $Channel = $CliChannelAndVersion[0].trim()
         if ($CliChannelAndVersion.count -eq 1) {
