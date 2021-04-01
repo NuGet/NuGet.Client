@@ -71,6 +71,12 @@
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.8.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.10.0" Version="16.9.30921.310" ExcludeAssets="all" PrivateAssets="all" />
 
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30320" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61031" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30111" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50728" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6072" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
+
         <!-- TODO: PIA workaround, move to $(VSFrameworkVersion) -->
         <PackageReference Update="Microsoft.VisualStudio.Interop" Version="$(VSFrameworkVersion)" />
 
