@@ -19,11 +19,11 @@
         <PackageDownload Update="Microsoft.Build" Version="[15.1.262-preview5]" />
 
         <!-- Move to VSFrameworkVersion after PIA effort -->
-        <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="17.0.31-pre-gb02aac2f54" />
+        <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="17.0.47-pre-g86c9a030f1" />
 
         <!-- TODO: Need PIA update-->
-        <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed" Version="[16.7.0-beta1-65318-02]" />
-        <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="[16.7.0-beta1-65318-02]" />
+        <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed" Version="[16.8.1-beta1-10327-06]" />
+        <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="[16.8.1-beta1-10327-06]" />
 
         <PackageDownload Update="NuGet.Core" Version="[$(NuGetCoreV2Version)]" />
         <PackageDownload Update="VSLangProj140" Version="[14.0.25029]" />
@@ -43,12 +43,12 @@
         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
         <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.7.327-preview" />
         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.18-g637bb03c64" />
+        <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.21-g76e5c064cb" />
         <PackageReference Update="Microsoft.VisualStudio.Composition" Version="16.4.11" />
         <PackageReference Update="Microsoft.VisualStudio.Editor" Version="17.0.24-g4265d215ae" />
         <PackageReference Update="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" Version="14.3.26931" NoWarn="NU1605" />
-        <PackageReference Update="Microsoft.VisualStudio.Language.Intellisense" Version="16.10.31" />
-        <PackageReference Update="Microsoft.VisualStudio.Language.StandardClassification" Version="16.10.31" />
+        <PackageReference Update="Microsoft.VisualStudio.Language.Intellisense" Version="17.0.24-g4265d215ae" />
+        <PackageReference Update="Microsoft.VisualStudio.Language.StandardClassification" Version="17.0.24-g4265d215ae" />
 
         <!-- Workaround until final shell.15.0 package is published-->
         <PackageReference Update="Microsoft.VisualStudio.ProjectAggregator" Version="17.0.0-preview-1-31108-209" />
@@ -63,7 +63,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Embeddable" Version="17.0.0-preview-1-30928-1111" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
+        <!--PackageReference Update="Microsoft.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" /-->
         <PackageReference Update="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview" />
         <!-- 6.0 temp workaround -->
         <PackageReference Update="Microsoft.VisualStudio.OLE.Interop" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
@@ -98,7 +98,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="17.0.0-preview-1-31108-209" />
         <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
-        <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="16.8.3038" />
+        <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.50-dev17-g2de5c827" />
         <PackageReference Update="Microsoft.Web.Xdt" Version="3.0.0" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
         <PackageReference Update="System.ComponentModel.Composition" Version="4.5.0" />

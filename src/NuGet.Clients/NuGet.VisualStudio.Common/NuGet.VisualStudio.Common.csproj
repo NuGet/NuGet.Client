@@ -39,9 +39,9 @@
     <PackageReference Include="VSSDK.DTE" ExcludeAssets="all" PrivateAssets="all" />
     <PackageReference Include="EnvDTE" ExcludeAssets="all" PrivateAssets="all" />
 
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Framework" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" ExcludeAssets="all" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Interop" />
+    <PackageReference Include="Microsoft.Internal.VisualStudio.Interop" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
