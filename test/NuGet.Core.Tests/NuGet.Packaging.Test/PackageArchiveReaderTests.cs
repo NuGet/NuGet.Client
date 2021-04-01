@@ -1946,7 +1946,7 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework()
         {
             // Arrange
@@ -1963,6 +1963,20 @@ namespace NuGet.Packaging.Test
                 // Cannot verify package signature when signing is not supported
                 Assert.False(result);
 #endif
+            }
+        }
+
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_Fails()
+        {
+            // Arrange
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test))
+            {
+                // Act
+                bool result = packageArchiveReader.CanVerifySignedPackages(null);
+                // Assert
+                Assert.False(result);
             }
         }
 

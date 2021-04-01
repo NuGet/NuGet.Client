@@ -452,6 +452,10 @@ namespace NuGet.Packaging
             {
                 return false;
             }
+            else if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                return false;
+            }
             else
             {
                 return true;
