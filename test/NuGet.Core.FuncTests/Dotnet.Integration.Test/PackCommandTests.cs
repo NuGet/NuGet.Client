@@ -3810,6 +3810,44 @@ namespace ClassLibrary
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_BuildOutput_DoesNotContainDefaultExtensions()
+        {
+            // Arrange
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net5.0");
+                    ProjectFileUtils.AddProperty(xml, "DefaultAllowedOutputExtensionsInPackageBuildOutputFolder", ".dll");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var buildItems = nupkgReader.GetBuildItems().ToList();
+                    Assert.Equal(1, buildItems.Count);
+                }
+            }
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData("MIT")]
         [InlineData("MIT OR Apache-2.0 WITH 389-exception")]
