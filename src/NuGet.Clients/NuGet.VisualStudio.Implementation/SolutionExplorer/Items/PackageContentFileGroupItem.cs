@@ -4,10 +4,10 @@
 #nullable enable
 
 using Microsoft.VisualStudio.Imaging;
-using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
+using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
