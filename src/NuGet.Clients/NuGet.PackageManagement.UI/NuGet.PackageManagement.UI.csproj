@@ -512,10 +512,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" ExcludeAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\UpgradeReport.xslt">
