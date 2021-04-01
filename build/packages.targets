@@ -69,7 +69,7 @@
         <PackageReference Update="Microsoft.VisualStudio.OLE.Interop" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.8.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.10.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.10.0" Version="16.9.30921.310" ExcludeAssets="all" PrivateAssets="all" />
 
         <!-- TODO: PIA workaround, move to $(VSFrameworkVersion) -->
         <PackageReference Update="Microsoft.VisualStudio.Interop" Version="$(VSFrameworkVersion)" />
@@ -85,8 +85,9 @@
         <PackageReference Update="Microsoft.VisualStudio.Text.Logic" Version="16.10.31" />
         <PackageReference Update="Microsoft.VisualStudio.Text.UI" Version="16.10.31" />
         <PackageReference Update="Microsoft.VisualStudio.Text.UI.Wpf" Version="16.10.31" />
-        <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop" Version="17.0.0-preview-1-31108-209" />
-        <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="17.0.0-preview-1-31108-209" />
+        <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
+        <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.8.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
+        <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
         <PackageReference Update="Microsoft.VisualStudio.Threading" Version="16.10.41-alpha" />
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="17.0.0-preview-1-31108-209" />
