@@ -63,6 +63,23 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
+Function Set-RtmLabel {
+    param(
+        [string]$BuildRTM
+    )
+
+    if ($BuildRTM -eq $true) {
+        $label = "RTM"
+    } else {
+        $label = "NonRTM"
+    }
+
+    Write-Host "RTM Label: $label"
+    Write-Host "##vso[task.setvariable variable=RtmLabel;]$label"
+}
+
+Set-RtmLabel -BuildRTM $BuildRTM
+
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
 
 # Disable strong name verification of common public keys so that scenarios like building the VSIX or running unit tests
