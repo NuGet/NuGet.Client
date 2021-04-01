@@ -3698,7 +3698,7 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfoAsync()
+        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_DoVerifyAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -3748,7 +3748,7 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_DonotVerify_SuccessAsync()
+        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_DonotVerifyAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
