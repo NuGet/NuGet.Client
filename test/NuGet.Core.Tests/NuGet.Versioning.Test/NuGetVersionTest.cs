@@ -322,7 +322,7 @@ namespace NuGet.Versioning.Test
             // Arrange 
             var version = new Version(versionString);
 
-               // Act
+            // Act
             var semVer = new NuGetVersion(version, specialVersion);
 
             // Assert
