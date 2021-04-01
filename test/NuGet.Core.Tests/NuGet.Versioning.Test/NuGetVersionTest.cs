@@ -322,11 +322,11 @@ namespace NuGet.Versioning.Test
             // Arrange 
             var version = new Version(versionString);
 
-            // Act
+               // Act
             var semVer = new NuGetVersion(version, specialVersion);
 
             // Assert
-            Assert.Equal(expected, string.Format("{0}", semVer));
+            Assert.Equal(expected, semVer.ToString());
         }
 
         [Fact]

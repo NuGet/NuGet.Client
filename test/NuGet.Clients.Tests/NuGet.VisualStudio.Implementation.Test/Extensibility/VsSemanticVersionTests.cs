@@ -8,14 +8,14 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 {
     public class VsSemanticVersionTests
     {
-        [Fact]
-        public void SemanticVersion_ParseVersion_ThrowsIfNullOrEmpty()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void SemanticVersion_ParseVersion_ThrowsIfNullOrEmpty(string version)
         {
-            var nullException = Assert.Throws<ArgumentException>(paramName: "version", () => SemanticVersion.Parse(null));
-            var emptyException = Assert.Throws<ArgumentException>(paramName: "version", () => SemanticVersion.Parse(string.Empty));
+            var exception = Assert.Throws<ArgumentException>(paramName: "version", () => SemanticVersion.Parse(version));
 
-            Assert.StartsWith("Value cannot be null or an empty string.", nullException.Message);
-            Assert.StartsWith("Value cannot be null or an empty string.", emptyException.Message);
+            Assert.StartsWith("Value cannot be null or an empty string.", exception.Message);
         }
 
         [Theory]
