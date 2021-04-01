@@ -3826,6 +3826,7 @@ namespace ClassLibrary
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net5.0");
                     ProjectFileUtils.AddProperty(xml, "DefaultAllowedOutputExtensionsInPackageBuildOutputFolder", ".dll");
+                    ProjectFileUtils.AddProperty(xml, "GenerateDocumentationFile", "true");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
