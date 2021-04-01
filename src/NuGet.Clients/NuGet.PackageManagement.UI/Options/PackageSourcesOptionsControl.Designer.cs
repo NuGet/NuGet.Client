@@ -1,4 +1,4 @@
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 namespace NuGet.Options
 {
     partial class PackageSourcesOptionsControl
