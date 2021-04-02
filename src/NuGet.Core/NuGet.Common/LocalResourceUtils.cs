@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace NuGet.Common
 {
-    public class LocalResourceUtils
+    public static class LocalResourceUtils
     {
         public static void DeleteDirectoryTree(string folderPath, List<string> failedDeletes)
         {

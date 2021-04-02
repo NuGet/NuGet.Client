@@ -13,7 +13,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class VSRestoreSettingsUtilities
+    public static class VSRestoreSettingsUtilities
     {
         public static string AdditionalValue = "$Additional$";
 

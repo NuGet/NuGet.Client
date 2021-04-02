@@ -6,7 +6,7 @@ using System.IO;
 
 namespace NuGet.Common
 {
-    public class ProjectJsonPathUtilities
+    public static class ProjectJsonPathUtilities
     {
         /// <summary>
         /// project.json

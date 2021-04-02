@@ -248,7 +248,6 @@ NuGet.Build.Tasks.NuGetMessageTask.Name.get -> string
 NuGet.Build.Tasks.NuGetMessageTask.Name.set -> void
 NuGet.Build.Tasks.NuGetMessageTask.NuGetMessageTask() -> void
 NuGet.Build.Tasks.RestoreSettingsUtils
-NuGet.Build.Tasks.RestoreSettingsUtils.RestoreSettingsUtils() -> void
 NuGet.Build.Tasks.RestoreTask
 NuGet.Build.Tasks.RestoreTask.Cancel() -> void
 NuGet.Build.Tasks.RestoreTask.Dispose() -> void

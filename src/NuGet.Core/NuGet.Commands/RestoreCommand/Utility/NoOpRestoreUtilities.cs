@@ -14,7 +14,7 @@ using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
-    public class NoOpRestoreUtilities
+    public static class NoOpRestoreUtilities
     {
         /// <summary>
         /// The name of the file to use.  When changing this, you should also change <see cref="LockFileFormat.AssetsFileName"/>.

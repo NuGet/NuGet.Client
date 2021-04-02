@@ -10,7 +10,7 @@ using NuGet.Common;
 
 namespace NuGet.ProjectModel
 {
-    public class CacheFileFormat
+    public static class CacheFileFormat
     {
         private const string VersionProperty = "version";
         private const string DGSpecHashProperty = "dgSpecHash";

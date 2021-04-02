@@ -25,7 +25,6 @@ NuGet.Protocol.CachingSourceProvider.CreateRepository(string source) -> NuGet.Pr
 NuGet.Protocol.CachingSourceProvider.GetRepositories() -> System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository>
 NuGet.Protocol.CachingSourceProvider.PackageSourceProvider.get -> NuGet.Configuration.IPackageSourceProvider
 NuGet.Protocol.CachingUtility
-NuGet.Protocol.CachingUtility.CachingUtility() -> void
 NuGet.Protocol.Core.Types.AutoCompleteResource
 NuGet.Protocol.Core.Types.AutoCompleteResource.AutoCompleteResource() -> void
 NuGet.Protocol.Core.Types.DependencyInfoResource
@@ -1457,7 +1456,6 @@ NuGet.Protocol.V2FeedQueryBuilder.BuildGetPackagesUri(string searchTerm, NuGet.P
 NuGet.Protocol.V2FeedQueryBuilder.BuildSearchUri(string searchTerm, NuGet.Protocol.Core.Types.SearchFilter filters, int skip, int take) -> string
 NuGet.Protocol.V2FeedQueryBuilder.V2FeedQueryBuilder() -> void
 NuGet.Protocol.V2FeedUtilities
-NuGet.Protocol.V2FeedUtilities.V2FeedUtilities() -> void
 NuGet.Protocol.V3FeedListResourceProvider
 NuGet.Protocol.V3FeedListResourceProvider.V3FeedListResourceProvider() -> void
 NuGet.Protocol.VersionInfoConverter

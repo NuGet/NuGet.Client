@@ -13,9 +13,7 @@ NuGet.Credentials.CredentialStatus.ProviderNotApplicable = 1 -> NuGet.Credential
 NuGet.Credentials.CredentialStatus.Success = 0 -> NuGet.Credentials.CredentialStatus
 NuGet.Credentials.CredentialStatus.UserCanceled = 2 -> NuGet.Credentials.CredentialStatus
 NuGet.Credentials.CredentialsConstants
-NuGet.Credentials.CredentialsConstants.CredentialsConstants() -> void
 NuGet.Credentials.DefaultCredentialServiceUtility
-NuGet.Credentials.DefaultCredentialServiceUtility.DefaultCredentialServiceUtility() -> void
 NuGet.Credentials.DefaultNetworkCredentialsCredentialProvider
 NuGet.Credentials.DefaultNetworkCredentialsCredentialProvider.DefaultNetworkCredentialsCredentialProvider() -> void
 NuGet.Credentials.DefaultNetworkCredentialsCredentialProvider.GetAsync(System.Uri uri, System.Net.IWebProxy proxy, NuGet.Configuration.CredentialRequestType type, string message, bool isRetry, bool nonInteractive, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Credentials.CredentialResponse>
