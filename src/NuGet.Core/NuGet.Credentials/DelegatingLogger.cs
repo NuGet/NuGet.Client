@@ -71,7 +71,7 @@ namespace NuGet.Credentials
 
             if (disposing)
             {
-                _semaphore.Dispose();                
+                _semaphore.Dispose();
             }
 
             _disposed = true;
