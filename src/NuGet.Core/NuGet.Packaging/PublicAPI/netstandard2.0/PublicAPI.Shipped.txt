@@ -380,7 +380,6 @@ NuGet.Packaging.Licenses.NuGetLicense.Identifier.get -> string
 NuGet.Packaging.Licenses.NuGetLicense.IsStandardLicense.get -> bool
 NuGet.Packaging.Licenses.NuGetLicense.Plus.get -> bool
 NuGet.Packaging.Licenses.NuGetLicenseData
-NuGet.Packaging.Licenses.NuGetLicenseData.NuGetLicenseData() -> void
 NuGet.Packaging.Licenses.NuGetLicenseException
 NuGet.Packaging.Licenses.NuGetLicenseException.Identifier.get -> string
 NuGet.Packaging.Licenses.NuGetLicenseExpression
@@ -511,7 +510,6 @@ NuGet.Packaging.NupkgMetadataFile.Source.set -> void
 NuGet.Packaging.NupkgMetadataFile.Version.get -> int
 NuGet.Packaging.NupkgMetadataFile.Version.set -> void
 NuGet.Packaging.NupkgMetadataFileFormat
-NuGet.Packaging.NupkgMetadataFileFormat.NupkgMetadataFileFormat() -> void
 NuGet.Packaging.NuspecReader
 NuGet.Packaging.NuspecReader.GetAuthors() -> string
 NuGet.Packaging.NuspecReader.GetContentFiles() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.ContentFilesEntry>

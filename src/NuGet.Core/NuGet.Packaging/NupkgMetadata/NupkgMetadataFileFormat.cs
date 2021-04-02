@@ -9,7 +9,7 @@ using NuGet.Common;
 
 namespace NuGet.Packaging
 {
-    public class NupkgMetadataFileFormat
+    public static class NupkgMetadataFileFormat
     {
         public static readonly int Version = 2;
 

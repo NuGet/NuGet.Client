@@ -3,7 +3,7 @@
 
 namespace NuGet.Common
 {
-    public class LogMessageProperties
+    public static class LogMessageProperties
     {
 
         public const string LEVEL = "level";

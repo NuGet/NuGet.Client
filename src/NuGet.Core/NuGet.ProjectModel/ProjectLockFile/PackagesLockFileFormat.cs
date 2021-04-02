@@ -13,7 +13,7 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public class PackagesLockFileFormat
+    public static class PackagesLockFileFormat
     {
         public static readonly int Version = 1;
 

@@ -12,7 +12,7 @@ namespace NuGet.Common
     /// <summary>
     /// Simple token replacement system for content files.
     /// </summary>
-    public class Preprocessor
+    public static class Preprocessor
     {
         /// <summary>
         /// Asynchronously performs token replacement on a file stream.
