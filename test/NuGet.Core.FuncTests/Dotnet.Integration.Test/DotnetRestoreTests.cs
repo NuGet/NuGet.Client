@@ -329,7 +329,7 @@ EndGlobal";
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
                 // Act                
-                CommandRunnerResult result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true, additionalEnvVars: new Dictionary<string, string>() { { "dotnet_package_verification", "true" } });
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true, additionalEnvVars: new Dictionary<string, string>() { { "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION", "truE" } });
 
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
                 result.Success.Should().BeFalse();

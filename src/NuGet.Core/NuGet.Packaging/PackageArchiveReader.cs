@@ -454,8 +454,9 @@ namespace NuGet.Packaging
             }
             else if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX)
             {
-                // Conditionally enable back package sign verification disabled due to Mozilla drop Symantec as CA on Linux/MAC.
-                string signVerifyEnvVariable = Environment.GetEnvironmentVariable("DOTNET_PACKAGE_VERIFICATION");
+                // Conditionally enable back package sign verification temporary disabled due to Mozilla drop Symantec as CA on Linux/MAC.
+                // Please note: Linux/MAC case sensitive for env var.
+                string signVerifyEnvVariable = Environment.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION");
 
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable) && signVerifyEnvVariable.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
