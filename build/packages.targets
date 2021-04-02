@@ -62,7 +62,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Embeddable" Version="17.0.0-preview-1-30928-1111" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Embeddable" Version="17.0.0-preview-1-30928-1112" />
         <!--PackageReference Update="Microsoft.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" /-->
         <PackageReference Update="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview" />
         <!-- 6.0 temp workaround -->
