@@ -9,6 +9,7 @@ namespace NuGet.Protocol
     /// <summary>
     /// Failure due to an invalid cache.
     /// </summary>
+    [SerializableAttribute]
     public abstract class InvalidCacheProtocolException : FatalProtocolException
     {
         public InvalidCacheProtocolException(string message)

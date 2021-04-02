@@ -5,6 +5,7 @@ using System;
 
 namespace NuGet.Frameworks
 {
+    [SerializableAttribute]
 #if NUGET_FRAMEWORKS_INTERNAL
     internal
 #else

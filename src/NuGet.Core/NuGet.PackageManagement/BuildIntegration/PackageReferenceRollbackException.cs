@@ -13,6 +13,7 @@ namespace NuGet.PackageManagement
     /// and additional log messages with specific information on
     /// what caused the rollback.
     /// </summary>
+    [SerializableAttribute]
     public class PackageReferenceRollbackException : InvalidOperationException
     {
         /// <summary>

@@ -6,6 +6,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
+    [SerializableAttribute]
     public class PackagesConfigReaderException : PackagingException
     {
         public PackagesConfigReaderException(string message)

@@ -9,6 +9,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Holds an <see cref="ILogMessage"/> and returns the message for the exception.
     /// </summary>
+    [SerializableAttribute]
     public sealed class SignCommandException : Exception, ILogMessageException
     {
         private readonly ILogMessage _logMessage;

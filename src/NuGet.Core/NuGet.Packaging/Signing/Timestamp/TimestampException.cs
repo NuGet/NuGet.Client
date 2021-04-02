@@ -9,6 +9,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Exceptions that are generated while creating a package timestamp.
     /// </summary>
+    [SerializableAttribute]
     public class TimestampException : SignatureException
     {
         public TimestampException()

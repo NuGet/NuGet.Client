@@ -12,6 +12,7 @@ namespace NuGet.Commands
     /// <summary>
     /// DG v2 related validation error.
     /// </summary>
+    [SerializableAttribute]
     public class RestoreSpecException : Exception
     {
         public IEnumerable<string> Files { get; }

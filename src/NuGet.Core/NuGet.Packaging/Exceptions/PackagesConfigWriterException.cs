@@ -6,6 +6,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
+    [SerializableAttribute]
     public class PackagesConfigWriterException : PackagingException
     {
         public PackagesConfigWriterException(string message)

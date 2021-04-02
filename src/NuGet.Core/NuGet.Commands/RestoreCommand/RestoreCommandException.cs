@@ -9,6 +9,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Holds an <see cref="IRestoreLogMessage"/> and returns the message for the exception.
     /// </summary>
+    [SerializableAttribute]
     public class RestoreCommandException : Exception, ILogMessageException
     {
         private readonly IRestoreLogMessage _logMessage;

@@ -5,6 +5,7 @@ using System;
 
 namespace NuGet.Common
 {
+    [SerializableAttribute]
     public class CommandLineArgumentCombinationException : Exception, ILogMessageException
     {
         private readonly ILogMessage _logMessage;
