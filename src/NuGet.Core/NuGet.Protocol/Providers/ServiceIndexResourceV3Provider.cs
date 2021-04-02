@@ -18,11 +18,12 @@ namespace NuGet.Protocol
     /// Retrieves and caches service index.json files
     /// ServiceIndexResourceV3 stores the json, all work is done in the provider
     /// </summary>
-    public class ServiceIndexResourceV3Provider : ResourceProvider
+    public class ServiceIndexResourceV3Provider : ResourceProvider, IDisposable
     {
         private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
         private readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private bool _disposed = false;
 
         /// <summary>
         /// Maximum amount of time to store index.json
@@ -205,6 +206,27 @@ namespace NuGet.Protocol
             {
                 throw new InvalidDataException(Strings.Protocol_MissingVersion);
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _semaphore.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         protected class ServiceIndexCacheInfo

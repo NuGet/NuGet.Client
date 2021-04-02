@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (_content != null)
             {
-                _content.CleanUp();
+                _content.Dispose();
                 _content = null;
             }
         }
