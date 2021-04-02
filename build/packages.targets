@@ -7,6 +7,7 @@
         <VSServicesVersion>16.153.0</VSServicesVersion>
         <CryptographyPackagesVersion>5.0.0</CryptographyPackagesVersion>
         <NuGetCoreV2Version>2.14.0-rtm-832</NuGetCoreV2Version>
+        <ProjectSystemManagedVersion>16.8.1-beta1-10327-06</ProjectSystemManagedVersion>
     </PropertyGroup>
 
     <!-- Test and package versions -->
@@ -22,8 +23,8 @@
         <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="17.0.47-pre-g86c9a030f1" />
 
         <!-- TODO: Need PIA update-->
-        <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed" Version="[16.8.1-beta1-10327-06]" />
-        <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="[16.8.1-beta1-10327-06]" />
+        <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed" Version="[$(ProjectSystemManagedVersion)]" />
+        <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="[$(ProjectSystemManagedVersion)]" />
 
         <PackageDownload Update="NuGet.Core" Version="[$(NuGetCoreV2Version)]" />
         <PackageDownload Update="VSLangProj140" Version="[14.0.25029]" />
@@ -62,8 +63,8 @@
         <PackageReference Update="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Embeddable" Version="17.0.0-preview-1-30928-1111" />
-        <!--PackageReference Update="Microsoft.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" /-->
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Embeddable" Version="17.0.0-preview-1-30928-1112" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview" />
         <!-- 6.0 temp workaround -->
         <PackageReference Update="Microsoft.VisualStudio.OLE.Interop" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
@@ -78,10 +79,10 @@
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6072" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
 
         <!-- TODO: PIA workaround, move to $(VSFrameworkVersion) -->
-        <PackageReference Update="Microsoft.VisualStudio.Interop" Version="$(VSFrameworkVersion)" />
+        <PackageReference Update="Microsoft.VisualStudio.Interop" Version="17.0.0-preview-1-30928-1112" NoWarn="NU1605" />
 
         <PackageReference Update="Microsoft.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.Internal.VisualStudio.Interop" Version="17.0.0-preview-1-30928-1111" />
+        <PackageReference Update="Microsoft.Internal.VisualStudio.Interop" Version="17.0.0-preview-1-30928-1113" NoWarn="NU1605" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
 
         <!-- TODO: PIA workaround, move to $(VSFrameworkVersion) -->

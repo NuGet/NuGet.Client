@@ -136,6 +136,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Internal.VisualStudio.Interop" />
     <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
+    <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" NoWarn="NU1605" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>

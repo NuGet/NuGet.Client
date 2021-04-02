@@ -46,10 +46,10 @@
       <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.VS.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed">
-      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed\16.8.1-beta1-10327-06\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed\$(ProjectSystemManagedVersion)\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS">
-      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed.vs\16.8.1-beta1-10327-06\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed.vs\$(ProjectSystemManagedVersion)\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
