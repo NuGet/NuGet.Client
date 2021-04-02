@@ -1342,7 +1342,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void CleanUp()
+        private void CleanUp()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
