@@ -15,7 +15,7 @@ namespace NuGet.Credentials
     {
         private readonly SemaphoreSlim _semaphore;
         private ILogger _delegateLogger;
-        private bool _disposed = false;
+        private bool _disposed;
 
         internal DelegatingLogger(ILogger delegateLogger) : base()
         {

@@ -80,7 +80,7 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.PackageFileServiceName, BrokeredServicesUtilities.PackageFileServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [Guid(GuidList.guidNuGetPkgString)]
-    public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
+    public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts, IDisposable
     {
         // It is displayed in the Help - About box of Visual Studio
         public const string ProductVersion = "5.10.0";
@@ -102,6 +102,8 @@ namespace NuGetVSExtension
         private bool _powerConsoleCommandExecuting;
         private bool _initialized;
         private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
+
+        private bool _disposed;
 
         public NuGetPackage()
         {
@@ -1312,5 +1314,32 @@ namespace NuGetVSExtension
         }
 
         #endregion IVsPersistSolutionOpts
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                _mcs?.Dispose();
+                _nuGetPowerShellUsageCollector?.Dispose();
+                _semaphore.Dispose();
+                ProjectRetargetingHandler?.Dispose();
+                ProjectUpgradeHandler?.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
