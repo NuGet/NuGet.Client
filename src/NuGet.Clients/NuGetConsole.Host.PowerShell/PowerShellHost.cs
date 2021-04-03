@@ -926,6 +926,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
+            _tokenSource?.Dispose();
         }
 
         #endregion

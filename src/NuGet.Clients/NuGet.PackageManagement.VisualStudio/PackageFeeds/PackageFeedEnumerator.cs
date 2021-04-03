@@ -22,6 +22,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private Task<SearchResult<IPackageSearchMetadata>> _searchTask;
         private IEnumerator<IPackageSearchMetadata> _current;
 
+        private bool _isDisposed;
+
         private PackageFeedEnumerator(
             IPackageFeed packageFeed,
             Task<SearchResult<IPackageSearchMetadata>> searchTask,
@@ -72,6 +74,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void Dispose()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _current?.Dispose();
+            GC.SuppressFinalize(this);
+
+            _isDisposed = true;
         }
 
         public bool MoveNext()

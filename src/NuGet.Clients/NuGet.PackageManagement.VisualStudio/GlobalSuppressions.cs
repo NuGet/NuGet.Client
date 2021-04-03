@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// This file is used by Code Analysis to maintain SuppressMessage 
+// This file is used by Code Analysis to maintain SuppressMessage
 // attributes that are applied to this project.
-// Project-level suppressions either have no target or are given 
+// Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
 
 using System.Diagnostics.CodeAnalysis;
@@ -14,8 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Usage", "VSTHRD011:Use AsyncLazy<T>", Justification = "https://github.com/NuGet/Home/issues/7675", Scope = "member", Target = "~M:NuGet.PackageManagement.VisualStudio.VSSolutionManager.InitializeAsync~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Home/issues/7674", Scope = "member", Target = "~M:NuGet.PackageManagement.VisualStudio.RuntimeHelpers.QueueUnloadAndForget(System.AppDomain)")]
 [assembly: SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "All these methods are free threaded.", Scope = "member", Target = "~M:NuGet.PackageManagement.VisualStudio.MultiSourcePackageMetadataProvider.GetLocalPackageMetadataAsync(NuGet.Packaging.Core.PackageIdentity,System.Boolean,System.Threading.CancellationToken)~System.Threading.Tasks.Task{NuGet.Protocol.Core.Types.IPackageSearchMetadata}")]
-[assembly: SuppressMessage("Build", "CA2213:'PackageFeedEnumerator' contains field '_current' that is of IDisposable type 'IEnumerator<IPackageSearchMetadata>', but it is never disposed. Change the Dispose method on 'PackageFeedEnumerator' to call Close or Dispose on this field.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.PackageManagement.VisualStudio.PackageFeedEnumerator._current")]
-[assembly: SuppressMessage("Build", "CA2213:'ProjectRetargetingHandler' contains field '_errorListProvider' that is of IDisposable type 'ErrorListProvider', but it is never disposed. Change the Dispose method on 'ProjectRetargetingHandler' to call Close or Dispose on this field.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.PackageManagement.VisualStudio.ProjectRetargetingHandler._errorListProvider")]
+[assembly: SuppressMessage("Build", "CA2213:'ProjectRetargetingHandler' contains field '_errorListProvider' that is of IDisposable type 'ErrorListProvider', but it is never disposed. Change the Dispose method on 'ProjectRetargetingHandler' to call Close or Dispose on this field.", Justification = "'_errorListProvider' field is disposed in the Dispose method after switching to the main thread in JTF context.", Scope = "member", Target = "~F:NuGet.PackageManagement.VisualStudio.ProjectRetargetingHandler._errorListProvider")]
 [assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.PackageManagement.VisualStudio.VSRestoreSettingsUtilities.AdditionalValue")]
 [assembly: SuppressMessage("Build", "CA1802:Field 'VSNuGetClientName' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.PackageManagement.VisualStudio.VSSolutionManager.VSNuGetClientName")]
 [assembly: SuppressMessage("Build", "CA1062:In externally visible method 'SearchPageTelemetryEvent.SearchPageTelemetryEvent(Guid parentId, int pageIndex, int resultCount, TimeSpan duration, IEnumerable<TimeSpan> sourceTimings, TimeSpan aggregationTime, LoadingStatus loadingStatus)', validate parameter 'sourceTimings' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.PackageManagement.Telemetry.SearchPageTelemetryEvent.#ctor(System.Guid,System.Int32,System.Int32,System.TimeSpan,System.Collections.Generic.IEnumerable{System.TimeSpan},System.TimeSpan,NuGet.PackageManagement.VisualStudio.LoadingStatus)")]
