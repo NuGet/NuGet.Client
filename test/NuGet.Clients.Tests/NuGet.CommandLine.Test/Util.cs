@@ -1318,52 +1318,6 @@ $@"        <Reference Include=""{package.Item1}, Version={package.Item2}, Cultur
         }
 
         /// <summary>
-        /// Creates a test package for .NET nanoFramework.
-        /// </summary>
-        /// <param name="packageId">Package ID</param>
-        /// <param name="version">Package version</param>
-        /// <param name="path">Path where the package will be saved</param>
-        /// <param name="contentFiles">Content file(s) to be added to the package</param>
-        /// <returns></returns>
-        public static string CreateNFTestPackage(
-            string packageId,
-            string version,
-            string path,
-            params string[] contentFiles)
-        {
-            var packageBuilder = new PackageBuilder
-            {
-                Id = packageId,
-                Version = new SemanticVersion(version)
-            };
-
-            packageBuilder.Description = $"desc of {packageId} {version}";
-
-            var libPath = $"lib/{packageId}.dll";
-
-            packageBuilder.Files.Add(CreatePackageFile(libPath));
-
-            foreach (string contentFile in contentFiles)
-            {
-                string packageFilePath = Path.Combine("content", contentFile);
-                IPackageFile packageFile = CreatePackageFile(packageFilePath);
-                packageBuilder.Files.Add(packageFile);
-            }
-
-            packageBuilder.Authors.Add("test author");
-
-            string packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
-            string packageFileFullPath = Path.Combine(path, packageFileName);
-
-            using (FileStream fileStream = File.Create(packageFileFullPath))
-            {
-                packageBuilder.Save(fileStream);
-            }
-
-            return packageFileFullPath;
-        }
-
-        /// <summary>
         /// Build packages.config from list of NuGet packages for .NET nanoFramework.
         /// </summary>
         /// <param name="packages">List of NuGet packages for .NET nanoFramework</param>
