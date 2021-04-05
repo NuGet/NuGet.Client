@@ -1706,7 +1706,7 @@ namespace NuGet.CommandLine.Test
                 a1Package.Files.Clear();
                 a1Package.AddFile($"lib/{a1.Id}.dll");
 
-                var a1File = await a1Package.CreateAsFileAsync(packagesSourceDirectory, a1Package.PackageName);
+                FileInfo a1File = await a1Package.CreateAsFileAsync(packagesSourceDirectory, a1Package.PackageName);
 
                 var a2Package = new SimpleTestPackageContext()
                 {
@@ -1726,7 +1726,7 @@ namespace NuGet.CommandLine.Test
                 b1Package.Files.Clear();
                 b1Package.AddFile($"lib/{b1.Id}.dll");
 
-                var b1File = await a1Package.CreateAsFileAsync(packagesSourceDirectory, b1Package.PackageName);
+                FileInfo b1File = await a1Package.CreateAsFileAsync(packagesSourceDirectory, b1Package.PackageName);
 
                 var b2Package = new SimpleTestPackageContext()
                 {
