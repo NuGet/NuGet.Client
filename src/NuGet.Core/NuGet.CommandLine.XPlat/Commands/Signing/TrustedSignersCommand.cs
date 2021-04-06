@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -88,15 +89,15 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
                     string fingerPrint = null;
                     if (command.Values.Count() > 2)
                     {
-                        if(action == TrustCommand.Author || action == TrustCommand.Repository)
+                        if (action == TrustCommand.Author || action == TrustCommand.Repository)
                         {
                             packagePath = command.Values[2];
                         }
-                        else if(action == TrustCommand.Source)
+                        else if (action == TrustCommand.Source)
                         {
                             sourceUrl = command.Values[2];
                         }
-                        else if(action == TrustCommand.Certificate)
+                        else if (action == TrustCommand.Certificate)
                         {
                             fingerPrint = command.Values[2];
                         }
@@ -122,7 +123,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
                     // MSbuild doesn't pass verbosity parameter means it's normal verbosity for NuGet.
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(string.IsNullOrWhiteSpace(verbosity.Value()) ? "N" : verbosity.Value()));
 
-                    var sourceProvider = PackageSourceBuilder.CreateSourceProvider(settings);
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
+#pragma warning restore CS0618 // Type or member is obsolete
                     var trustedSignersProvider = new TrustedSignersProvider(settings);
 
                     var runner = new TrustedSignersCommandRunner(trustedSignersProvider, sourceProvider);
@@ -147,7 +150,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
 
         private static TrustedSignersAction MapTrustEnumAction(TrustCommand trustCommand)
         {
-            switch(trustCommand)
+            switch (trustCommand)
             {
                 case TrustCommand.List:
                     return TrustedSignersAction.List;

@@ -3,11 +3,11 @@
 
 using NuGet.Configuration;
 
-namespace NuGet.Commands
+namespace NuGet.CommandLine
 {
-    public static class PackageSourceBuilder
+    internal static class PackageSourceBuilder
     {
-        public static PackageSourceProvider CreateSourceProvider(ISettings settings)
+        internal static PackageSourceProvider CreateSourceProvider(ISettings settings)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             return new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
