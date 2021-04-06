@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -69,7 +70,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
                 trustedSignersCmd.OnExecute(async () =>
                 {
                     TrustCommand action;
-
+                    Debugger.Launch();
                     if (!command.Values.Any() || string.IsNullOrEmpty(command.Values[0]))
                     {
                         action = TrustCommand.List;
