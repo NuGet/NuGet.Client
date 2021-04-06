@@ -41,13 +41,20 @@ namespace NuGet.Packaging
         /// Nupkg package reader
         /// </summary>
         /// <param name="stream">Nupkg data stream.</param>
-        /// <param name="environmentVariableReader">Pass environmental variable reader to pass for unit tests.</param>
+        /// <param name="environmentVariableReader">Environmental variable reader for unit tests.</param>
         internal PackageArchiveReader(Stream stream, IEnvironmentVariableReader environmentVariableReader)
             : this(stream, false, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
             _environmentVariableReader = environmentVariableReader;
         }
 
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="filePath">File path for Nupkg data stream.</param>
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
+        /// <param name="environmentVariableReader">Environmental variable reader for unit tests.</param>
         internal PackageArchiveReader(string filePath, IEnvironmentVariableReader environmentVariableReader, IFrameworkNameProvider frameworkProvider = null, IFrameworkCompatibilityProvider compatibilityProvider = null)
             : this(filePath, frameworkProvider, compatibilityProvider)
         {

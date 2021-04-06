@@ -1885,7 +1885,7 @@ namespace NuGet.Packaging.Test
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
             environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
 
-            using (var test = new ExtractPackageAsyncTest(extractionContext))
+            using (var test = new ExtractPackageAsyncTest(extractionContext, environmentVariableReader: environment.Object))
             {
                 await test.CreatePackageAsync();
 
@@ -1898,6 +1898,7 @@ namespace NuGet.Packaging.Test
                 // Act
                 IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
                      test.Source,
+                     test.Reader,
                      test.Stream,
                      test.Resolver,
                      test.Context,
@@ -1924,7 +1925,7 @@ namespace NuGet.Packaging.Test
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
             environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
 
-            using (var test = new ExtractPackageAsyncTest(extractionContext))
+            using (var test = new ExtractPackageAsyncTest(extractionContext, environmentVariableReader: environment.Object))
             {
                 await test.CreatePackageAsync();
 
@@ -1937,6 +1938,7 @@ namespace NuGet.Packaging.Test
                 // Act
                 IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
                      test.Source,
+                     test.Reader,
                      test.Stream,
                      test.Resolver,
                      test.Context,
@@ -1960,10 +1962,10 @@ namespace NuGet.Packaging.Test
                 new ClientPolicyContext(SignatureValidationMode.Accept, new List<TrustedSignerAllowListEntry>()),
                 logger: NullLogger.Instance);
 
-            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Loose);
             environment.Setup(s => s.GetEnvironmentVariable(envVarName)).Returns("true");
 
-            using (var test = new ExtractPackageAsyncTest(extractionContext))
+            using (var test = new ExtractPackageAsyncTest(extractionContext, environmentVariableReader: environment.Object))
             {
                 await test.CreatePackageAsync();
 
@@ -1976,6 +1978,7 @@ namespace NuGet.Packaging.Test
                 // Act
                 IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
                      test.Source,
+                     test.Reader,
                      test.Stream,
                      test.Resolver,
                      test.Context,
@@ -3576,63 +3579,6 @@ namespace NuGet.Packaging.Test
         public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithoutUnzipAsync()
         {
             // Arrange
-            using (var root = TestDirectory.Create())
-            {
-                var resolver = new VersionFolderPathResolver(root);
-
-                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
-                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
-                    It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultContext.VerifierSettings)),
-                    It.IsAny<CancellationToken>(),
-                    It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(isValid: false, isSigned: true));
-
-                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
-
-                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-
-                using (var fileStream = File.OpenRead(packageFileInfo.FullName))
-                {
-                    var extractionContext = new PackageExtractionContext(
-                         packageSaveMode: PackageSaveMode.Nupkg,
-                         xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                         clientPolicyContext: _defaultContext,
-                         logger: NullLogger.Instance)
-                    {
-                        SignedPackageVerifier = signedPackageVerifier.Object
-                    };
-
-                    // Act
-                    await PackageExtractor.InstallFromSourceAsync(
-                        root,
-                        identity,
-                        (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                        resolver,
-                        extractionContext,
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
-                    Assert.False(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
-                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "a.dll")), "The asset should exist.");
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        [InlineData("TRUe")]
-        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithoutUnzipAsync_OptInEnvVar(string envVar)
-        {
-            // Arrange
-            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
-
             using (var root = TestDirectory.Create())
             {
                 var resolver = new VersionFolderPathResolver(root);

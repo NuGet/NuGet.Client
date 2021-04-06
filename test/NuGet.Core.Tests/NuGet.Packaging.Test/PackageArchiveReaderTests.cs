@@ -2012,12 +2012,12 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             string envVar = "false";
-            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
-            using (var packageArchiveReader = new PackageArchiveReader(test))
-            {
-                var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-                environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
 
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
+            {
                 // Act
                 bool result = packageArchiveReader.CanVerifySignedPackages(null);
                 // Assert
@@ -2030,12 +2030,12 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             string envVar = null;
-            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
-            using (var packageArchiveReader = new PackageArchiveReader(test))
-            {
-                var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-                environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
 
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
+            {
                 // Act
                 bool result = packageArchiveReader.CanVerifySignedPackages(null);
                 // Assert
@@ -2049,12 +2049,12 @@ namespace NuGet.Packaging.Test
             // Arrange
             string envVarName = "dOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
             string envVarValue = "true";
-            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
-            using (var packageArchiveReader = new PackageArchiveReader(test))
-            {
-                var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-                environment.Setup(s => s.GetEnvironmentVariable(envVarName)).Returns(envVarValue);
+            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Loose);
+            environment.Setup(s => s.GetEnvironmentVariable(envVarName)).Returns(envVarValue);
 
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
+            {
                 // Act
                 bool result = packageArchiveReader.CanVerifySignedPackages(null);
                 // Assert
