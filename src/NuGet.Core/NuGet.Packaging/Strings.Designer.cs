@@ -1303,7 +1303,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package integrity check failed. The package has been tampered with since being signed..
+        ///   Looks up a localized string similar to The package integrity check failed. The package has changed since it was signed. Try clearing the local cache and run nuget operation again..
         /// </summary>
         internal static string SignaturePackageIntegrityFailure {
             get {

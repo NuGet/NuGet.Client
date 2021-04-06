@@ -341,7 +341,7 @@ Valid from:</comment>
     <value>The package hash uses an unsupported hash algorithm.</value>
   </data>
   <data name="SignaturePackageIntegrityFailure" xml:space="preserve">
-    <value>The package integrity check failed. The package has been tampered with since being signed.</value>
+    <value>The package integrity check failed. The package has changed since it was signed. Try clearing the local cache and run nuget operation again.</value>
   </data>
   <data name="SignatureHashAlgorithm" xml:space="preserve">
     <value>Signature Hash Algorithm: {0}</value>

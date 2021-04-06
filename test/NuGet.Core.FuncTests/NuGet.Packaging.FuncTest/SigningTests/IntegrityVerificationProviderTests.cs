@@ -26,7 +26,7 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class IntegrityVerificationProviderTests
     {
-        private const string _packageTamperedError = "The package integrity check failed. The package has been tampered with since being signed.";
+        private const string _packageTamperedError = "The package integrity check failed. The package has changed since it was signed. Try clearing the local cache and run nuget operation again.";
         private const string _packageUnsignedError = "The package is not signed.";
         private const string _packageInvalidSignatureError = "The package signature is invalid or cannot be verified on this platform.";
 

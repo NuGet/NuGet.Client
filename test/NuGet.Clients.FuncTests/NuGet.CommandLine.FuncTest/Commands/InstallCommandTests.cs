@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class InstallCommandTests
     {
-        private static readonly string _NU3008Message = "The package integrity check failed. The package has been tampered with since being signed.";
+        private static readonly string _NU3008Message = "The package integrity check failed. The package has changed since it was signed. Try clearing the local cache and run nuget operation again.";
         private static readonly string _NU3008 = "NU3008: {0}";
         private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
         private static readonly string _NU3027 = "NU3027: {0}";
