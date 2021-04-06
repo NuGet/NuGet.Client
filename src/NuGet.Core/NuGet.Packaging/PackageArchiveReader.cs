@@ -481,7 +481,9 @@ namespace NuGet.Packaging
             {
                 // Conditionally enable back package sign verification temporary disabled due to Mozilla drop Symantec as CA on Linux/MAC.
                 // Please note: Linux/MAC case sensitive for env var.
-                string signVerifyEnvVariable = _environmentVariableReader?.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION");
+                string signVerifyEnvVariable = _environmentVariableReader == null ?
+                    Environment.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION") :
+                    _environmentVariableReader.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION");
 
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable) && signVerifyEnvVariable.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
