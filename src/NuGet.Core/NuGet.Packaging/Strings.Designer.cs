@@ -1789,7 +1789,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} found a chain building issue: {1}.
+        ///   Looks up a localized string similar to The {0}&apos;s certificate validation failed. {1}.
         /// </summary>
         internal static string VerifyChainBuildingIssue {
             get {
@@ -1951,7 +1951,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp found a chain building issue: {1}.
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp certificate validation failed. {1}.
         /// </summary>
         internal static string VerifyError_TimestampVerifyChainBuildingIssue {
             get {
