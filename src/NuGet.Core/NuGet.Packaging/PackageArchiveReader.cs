@@ -24,7 +24,7 @@ namespace NuGet.Packaging
     {
         private readonly ZipArchive _zipArchive;
         private readonly SigningSpecifications _signingSpecifications = SigningSpecifications.V1;
-        private IEnvironmentVariableReader _environmentVariableReader;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         /// <summary>
         /// Signature specifications.
@@ -481,9 +481,10 @@ namespace NuGet.Packaging
             {
                 // Conditionally enable back package sign verification temporary disabled due to Mozilla drop Symantec as CA on Linux/MAC.
                 // Please note: Linux/MAC case sensitive for env var.
+                var envVarName = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
                 string signVerifyEnvVariable = _environmentVariableReader == null ?
-                    Environment.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION") :
-                    _environmentVariableReader.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION");
+                    EnvironmentVariableWrapper.Instance.GetEnvironmentVariable(envVarName) :
+                    _environmentVariableReader.GetEnvironmentVariable(envVarName);
 
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable) && signVerifyEnvVariable.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
