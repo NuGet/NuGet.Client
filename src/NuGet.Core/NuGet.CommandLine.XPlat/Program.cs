@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Commands;
 using NuGet.CommandLine.XPlat.Commands.Signing;

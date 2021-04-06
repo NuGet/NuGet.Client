@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -36,22 +35,22 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
             {
                 CommandArgument command = trustedSignersCmd.Argument(
                     "command",
-                    Strings.VerifyCommandPackagePathDescription,
+                    Strings.TrustCommandActionDescription,
                     multipleValues: true);
 
                 CommandOption algorithm = trustedSignersCmd.Option(
                     "--algorithm",
-                    Strings.VerifyCommandAllDescription, // TrustedSignersCommandFingerprintAlgorithmDescription
+                    Strings.TrustCommandAlgorithm,
                     CommandOptionType.SingleValue);
 
                 CommandOption allowuntrustedrootOption = trustedSignersCmd.Option(
                     "--allow-untrusted-root",
-                    Strings.VerifyCommandAllDescription, //TrustedSignersCommandAllowUntrustedRootDescription
+                    Strings.TrustCommandAllowUntrustedRoot,
                     CommandOptionType.NoValue);
 
                 CommandOption owners = trustedSignersCmd.Option(
                     "--owners",
-                    Strings.VerifyCommandAllDescription, //TrustedSignersCommandAllowUntrustedRootDescription
+                    Strings.TrustCommandOwners,
                     CommandOptionType.MultipleValue);
 
                 CommandOption verbosity = trustedSignersCmd.Option(
@@ -65,17 +64,19 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
                     CommandOptionType.SingleValue);
 
                 trustedSignersCmd.HelpOption(XPlatUtility.HelpOption);
-                trustedSignersCmd.Description = Strings.VerifyCommandDescription;
+                trustedSignersCmd.Description = Strings.TrustCommandDescription;
 
                 trustedSignersCmd.OnExecute(async () =>
                 {
-                    ValidateCommand(command);
-
                     TrustCommand action;
 
-                    if (!Enum.TryParse(command.Values[0], ignoreCase: true, result: out action))
+                    if (!command.Values.Any() || string.IsNullOrEmpty(command.Values[0]))
                     {
-                        throw new CommandLineArgumentCombinationException(string.Format(CultureInfo.CurrentCulture, "Unknowcommand", command.Values[0]));
+                        action = TrustCommand.List;
+                    }
+                    else if (!Enum.TryParse(command.Values[0], ignoreCase: true, result: out action))
+                    {
+                        throw new CommandLineArgumentCombinationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnknownAction, command.Values[0]));
                     }
 
                     string name = null;
@@ -135,17 +136,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
                     return trustedSignTask.Result;
                 });
             });
-        }
-
-        private static void ValidateCommand(CommandArgument argument)
-        {
-            if (argument.Values.Count == 0 ||
-                argument.Values.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PkgMissingArgument,
-                    "trust",
-                    argument.Name));
-            }
         }
 
         private static TrustedSignersAction MapTrustEnumAction(TrustCommand trustCommand)
