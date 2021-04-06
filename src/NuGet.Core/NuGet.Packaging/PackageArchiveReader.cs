@@ -24,6 +24,7 @@ namespace NuGet.Packaging
     {
         private readonly ZipArchive _zipArchive;
         private readonly SigningSpecifications _signingSpecifications = SigningSpecifications.V1;
+        private IEnvironmentVariableReader _environmentVariableReader;
 
         /// <summary>
         /// Signature specifications.
@@ -35,6 +36,23 @@ namespace NuGet.Packaging
         /// If this is null then we cannot perform signature verification.
         /// </summary>
         protected Stream ZipReadStream { get; set; }
+
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="stream">Nupkg data stream.</param>
+        /// <param name="environmentVariableReader">Pass environmental variable reader to pass for unit tests.</param>
+        internal PackageArchiveReader(Stream stream, IEnvironmentVariableReader environmentVariableReader)
+            : this(stream, false, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
+        {
+            _environmentVariableReader = environmentVariableReader;
+        }
+
+        internal PackageArchiveReader(string filePath, IEnvironmentVariableReader environmentVariableReader, IFrameworkNameProvider frameworkProvider = null, IFrameworkCompatibilityProvider compatibilityProvider = null)
+            : this(filePath, frameworkProvider, compatibilityProvider)
+        {
+            _environmentVariableReader = environmentVariableReader;
+        }
 
         /// <summary>
         /// Nupkg package reader
@@ -456,7 +474,7 @@ namespace NuGet.Packaging
             {
                 // Conditionally enable back package sign verification temporary disabled due to Mozilla drop Symantec as CA on Linux/MAC.
                 // Please note: Linux/MAC case sensitive for env var.
-                string signVerifyEnvVariable = Environment.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION");
+                string signVerifyEnvVariable = _environmentVariableReader?.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION");
 
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable) && signVerifyEnvVariable.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {

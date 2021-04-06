@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -1973,6 +1974,87 @@ namespace NuGet.Packaging.Test
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
             using (var packageArchiveReader = new PackageArchiveReader(test))
             {
+                // Act
+                bool result = packageArchiveReader.CanVerifySignedPackages(null);
+                // Assert
+                Assert.False(result);
+            }
+        }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("TRUE")]
+        [InlineData("TRUe")]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar(string envVar)
+        {
+            // Arrange
+            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
+            {
+                // Act
+                var result = packageArchiveReader.CanVerifySignedPackages(null);
+                // Assert
+#if IS_SIGNING_SUPPORTED
+                // Verify package signature when signing is supported
+                Assert.True(result);
+#else
+                // Cannot verify package signature when signing is not supported
+                Assert.False(result);
+#endif
+            }
+        }
+
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar_False_Fails()
+        {
+            // Arrange
+            string envVar = "false";
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test))
+            {
+                var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+                environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+
+                // Act
+                bool result = packageArchiveReader.CanVerifySignedPackages(null);
+                // Assert
+                Assert.False(result);
+            }
+        }
+
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar_Null_Fails()
+        {
+            // Arrange
+            string envVar = null;
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test))
+            {
+                var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+                environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+
+                // Act
+                bool result = packageArchiveReader.CanVerifySignedPackages(null);
+                // Assert
+                Assert.False(result);
+            }
+        }
+
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_WrongName_OptInEnvVar_Fails()
+        {
+            // Arrange
+            string envVarName = "dOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+            string envVarValue = "true";
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test))
+            {
+                var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+                environment.Setup(s => s.GetEnvironmentVariable(envVarName)).Returns(envVarValue);
+
                 // Act
                 bool result = packageArchiveReader.CanVerifySignedPackages(null);
                 // Assert
