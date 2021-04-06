@@ -4,19 +4,62 @@
 #nullable enable
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
-using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
+// ERIKD TODO REENABLE
+// using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
 using LogLevel = NuGet.Common.LogLevel;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
+    internal abstract class ReplacementBaseClass : IRelatableItem//, ITreeDisplayItem, ITreeDisplayItemWithImages, IPrioritizedComparable, IComparable, IInteractionPatternProvider, IBrowsablePattern, IContextMenuPattern, INotifyPropertyChanged
+    {
+        public ReplacementBaseClass(string foo)
+        { }
+
+        public string Text { get; set; } = "Default";
+
+        public abstract object Identity { get; }
+
+        public abstract int Priority { get; }
+
+        public AggregateContainsRelationCollection? ContainsCollection { get; }
+
+        public AggregateContainedByRelationCollection? ContainedByCollection { get; set; }
+
+        protected virtual IContextMenuController? ContextMenuController => null;
+
+        public virtual object? GetBrowseObject() { return null; }
+
+        public bool TryGetOrCreateContainsCollection(IRelationProvider relationProvider, [NotNullWhen(returnValue: true)] out AggregateContainsRelationCollection? relationCollection)
+        {
+            relationCollection = null;
+            return false;
+        }
+
+        protected virtual bool TryGetProjectNode(IProjectTree targetRootNode, IRelatableItem item, [NotNullWhen(returnValue: true)] out IProjectTree? projectTree)
+        {
+            projectTree = null;
+            return false;
+        }
+
+        bool IRelatableItem.TryGetProjectNode(IProjectTree targetRootNode, IRelatableItem item, [NotNullWhen(returnValue: true)] out IProjectTree? projectTree)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+
     /// <summary>
     /// Backing object for diagnostic message items within a package within the dependencies tree.
     /// </summary>
-    internal sealed class DiagnosticItem : RelatableItemBase
+    internal sealed class DiagnosticItem : ReplacementBaseClass
     {
         public AssetsFileTarget Target { get; private set; }
         public AssetsFileTargetLibrary Library { get; private set; }
@@ -34,12 +77,13 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override int Priority => AttachedItemPriority.Diagnostic;
 
-        public override ImageMoniker IconMoniker => Log.Level switch
-        {
-            LogLevel.Error => KnownMonikers.StatusError,
-            LogLevel.Warning => KnownMonikers.StatusWarning,
-            _ => KnownMonikers.StatusInformation
-        };
+        // ERIKD TODO REENABLE
+        // public override ImageMoniker IconMoniker => Log.Level switch
+        //{
+        //    LogLevel.Error => KnownMonikers.StatusError,
+        //    LogLevel.Warning => KnownMonikers.StatusWarning,
+        //    _ => KnownMonikers.StatusInformation
+        //};
 
         public bool TryUpdateState(AssetsFileTarget target, AssetsFileTargetLibrary library, in AssetsFileLogMessage log)
         {

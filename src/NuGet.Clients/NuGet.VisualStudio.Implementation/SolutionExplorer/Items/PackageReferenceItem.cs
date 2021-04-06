@@ -11,14 +11,15 @@ using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
-using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
+// ERIKD TODO REENABLE
+// using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
     /// <summary>
     /// Backing object for transitive package reference nodes in the dependencies tree.
     /// </summary>
-    internal sealed class PackageReferenceItem : RelatableItemBase
+    internal sealed class PackageReferenceItem : ReplacementBaseClass
     {
         public AssetsFileTarget Target { get; private set; }
         public AssetsFileTargetLibrary Library { get; private set; }
@@ -49,7 +50,8 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override int Priority => AttachedItemPriority.Package;
 
-        public override ImageMoniker IconMoniker => KnownMonikers.NuGetNoColor;
+        // ERIKD TODO REENABLE
+        // public override ImageMoniker IconMoniker => KnownMonikers.NuGetNoColor;
 
         protected override IContextMenuController? ContextMenuController => MenuController.TransitivePackage;
 

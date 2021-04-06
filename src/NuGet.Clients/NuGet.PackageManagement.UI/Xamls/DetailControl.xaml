@@ -88,8 +88,8 @@
             VerticalAlignment="Top"
             AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PrefixReserved}"
             Visibility="{Binding Path=PrefixReserved, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-            ToolTip="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
-            Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
+            ToolTip="{x:Static nuget:Resources.Tooltip_PrefixReserved}" />
+            <!-- ERIKD TODO REENABLE Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" / -->
         </Grid>
         <Grid
           Grid.Column="2"

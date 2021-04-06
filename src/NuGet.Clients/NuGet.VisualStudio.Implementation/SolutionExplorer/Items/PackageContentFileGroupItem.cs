@@ -7,7 +7,8 @@ using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
-using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
+// ERIKD TODO REENABLE
+// using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
@@ -17,7 +18,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
     /// <remarks>
     /// Items within this group have type <see cref="PackageContentFileItem"/>.
     /// </remarks>
-    internal sealed class PackageContentFileGroupItem : RelatableItemBase
+    internal sealed class PackageContentFileGroupItem : ReplacementBaseClass
     {
         public AssetsFileTarget Target { get; }
         public AssetsFileTargetLibrary Library { get; }
@@ -33,8 +34,10 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override int Priority => AttachedItemPriority.ContentFilesGroup;
 
-        public override ImageMoniker IconMoniker => KnownMonikers.PackageFolderClosed;
+        // ERIKD TODO REENABLE
+        // public override ImageMoniker IconMoniker => KnownMonikers.PackageFolderClosed;
 
-        public override ImageMoniker ExpandedIconMoniker => KnownMonikers.PackageFolderOpened;
+        // ERIKD TODO REENABLE
+        // public override ImageMoniker ExpandedIconMoniker => KnownMonikers.PackageFolderOpened;
     }
 }

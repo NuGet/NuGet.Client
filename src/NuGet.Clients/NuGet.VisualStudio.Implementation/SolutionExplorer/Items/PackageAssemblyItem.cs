@@ -9,7 +9,8 @@ using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
-using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
+// ERIKD TODO REENABLE
+// using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
@@ -19,7 +20,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
     /// <remarks>
     /// Items of this type are grouped within <see cref="PackageAssemblyGroupItem"/>.
     /// </remarks>
-    internal sealed class PackageAssemblyItem : RelatableItemBase
+    internal sealed class PackageAssemblyItem : ReplacementBaseClass
     {
         public AssetsFileTarget Target { get; }
         public AssetsFileTargetLibrary Library { get; }
@@ -40,7 +41,8 @@ namespace NuGet.VisualStudio.SolutionExplorer
         // All siblings are assemblies, so no prioritization needed (sort alphabetically)
         public override int Priority => 0;
 
-        public override ImageMoniker IconMoniker => KnownMonikers.Reference;
+        // ERIKD TODO REENABLE
+        // public override ImageMoniker IconMoniker => KnownMonikers.Reference;
 
         protected override IContextMenuController? ContextMenuController => MenuController.TransitiveAssembly;
 
