@@ -98,7 +98,12 @@ namespace NuGet.Commands
                 logger.LogInformation($"{packagePath}{Environment.NewLine}");
 
                 var logMessages = verificationResult.Results.SelectMany(p => p.Issues).ToList();
-                await logger.LogMessagesAsync(logMessages);
+
+                //log issues first
+                IEnumerable<SignatureLog> issues = logMessages.Where(m => m.Level < LogLevel.Warning);
+                await logger.LogMessagesAsync(issues);
+
+                logger.LogMinimal(Environment.NewLine);
 
                 if (logMessages.Any(m => m.Level >= LogLevel.Warning))
                 {
@@ -110,13 +115,17 @@ namespace NuGet.Commands
                     result = errors;
                 }
 
+                // log errors at the end
+                issues = logMessages.Where(m => m.Level >= LogLevel.Warning);
+                await logger.LogMessagesAsync(issues);
+
                 if (verificationResult.IsValid)
                 {
                     logger.LogInformation(Environment.NewLine + string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_Success, packageIdentity.ToString()));
                 }
                 else
                 {
-                    logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
+                    logger.LogMinimal(Environment.NewLine + Strings.VerifyCommand_Failed);
                 }
 
                 return result;
