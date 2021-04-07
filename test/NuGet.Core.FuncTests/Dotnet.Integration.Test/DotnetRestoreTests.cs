@@ -22,6 +22,9 @@ namespace Dotnet.Integration.Test
     [Collection("Dotnet Integration Tests")]
     public class DotnetRestoreTests
     {
+        private const string OptInPackageVerification = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
+        private const string OptInPackageVerificationTypo = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+
         private MsbuildIntegrationTestFixture _msbuildFixture;
 
         public DotnetRestoreTests(MsbuildIntegrationTestFixture fixture)
@@ -269,12 +272,16 @@ EndGlobal";
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_True_FailsAsync(string envVar)
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Arrange
-                var envVarName = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
+                var envVarName = OptInPackageVerification;
                 var envVarValue = envVar;
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()
@@ -356,90 +363,8 @@ EndGlobal";
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Arrange
-                var envVarName = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
-                var envVarValue = "false";
-                //Setup packages and feed
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.0.0"
-                };
-                packageX.Files.Clear();
-                packageX.AddFile("lib/netcoreapp2.0/x.dll");
-                packageX.AddFile("ref/netcoreapp2.0/x.dll");
-                packageX.AddFile("lib/net472/x.dll");
-                packageX.AddFile("ref/net472/x.dll");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
-
-                // Set up solution, and project
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var projectName = "ClassLibrary1";
-                var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-
-                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib");
-
-                using (FileStream stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    XDocument xml = XDocument.Load(stream);
-
-                    var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
-
-                    ProjectFileUtils.AddItem(
-                        xml,
-                        "PackageReference",
-                        packageX.Id,
-                        string.Empty,
-                        new Dictionary<string, string>(),
-                        attributes);
-
-                    ProjectFileUtils.WriteXmlToFile(xml, stream);
-                }
-
-                //set nuget.config properties
-                var doc = new XDocument();
-                var configuration = new XElement(XName.Get("configuration"));
-                doc.Add(configuration);
-
-                var config = new XElement(XName.Get("config"));
-                configuration.Add(config);
-
-                var signatureValidationMode = new XElement(XName.Get("add"));
-                signatureValidationMode.Add(new XAttribute(XName.Get("key"), "signatureValidationMode"));
-                signatureValidationMode.Add(new XAttribute(XName.Get("value"), "require"));
-                config.Add(signatureValidationMode);
-
-                File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
-
-                // Act                
-                CommandRunnerResult result = _msbuildFixture.RunDotnet(
-                    workingDirectory, "restore",
-                    ignoreExitCode: true,
-                    additionalEnvVars: new Dictionary<string, string>()
-                        {
-                            { envVarName, envVarValue }
-                        }
-                    );
-
-                result.AllOutput.Should().NotContain($"error NU3004");
-                result.Success.Should().BeTrue();
-                result.ExitCode.Should().Be(0);
-            }
-        }
-
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_Null_SucceedAsync()
-        {
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
-            {
-                //Arrange
-                var envVarName = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
-                string envVarValue = null;
+                var envVarName = OptInPackageVerificationTypo;
+                var envVarValue = "xyz";
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -520,7 +445,7 @@ EndGlobal";
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Arrange
-                var envVarName = "dOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+                var envVarName = OptInPackageVerificationTypo;
                 var envVarValue = "true";
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()

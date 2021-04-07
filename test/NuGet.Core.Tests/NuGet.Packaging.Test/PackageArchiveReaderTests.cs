@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -23,6 +22,9 @@ namespace NuGet.Packaging.Test
 {
     public class PackageArchiveReaderTests
     {
+        private const string OptInPackageVerification = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
+        private const string OptInPackageVerificationTypo = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+
         [Fact]
         public void Constructor_WithStringPathParameter_DisposesInvalidStream()
         {
@@ -1985,11 +1987,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
             using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
@@ -2008,46 +2014,10 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar_False_Fails()
-        {
-            // Arrange
-            string envVar = "false";
-            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
-
-            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
-            using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
-            {
-                // Act
-                bool result = packageArchiveReader.CanVerifySignedPackages(null);
-                // Assert
-                Assert.False(result);
-            }
-        }
-
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar_Null_Fails()
-        {
-            // Arrange
-            string envVar = null;
-            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
-
-            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
-            using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
-            {
-                // Act
-                bool result = packageArchiveReader.CanVerifySignedPackages(null);
-                // Assert
-                Assert.False(result);
-            }
-        }
-
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_WrongName_OptInEnvVar_Fails()
         {
             // Arrange
-            string envVarName = "dOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+            string envVarName = OptInPackageVerificationTypo;
             string envVarValue = "true";
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Loose);
             environment.Setup(s => s.GetEnvironmentVariable(envVarName)).Returns(envVarValue);

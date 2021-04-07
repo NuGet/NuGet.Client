@@ -39,6 +39,8 @@ namespace NuGet.Packaging.Test
         private const string _noMatchInRepoAllowList = "This package was not repository signed with a certificate listed by this repository.";
         private const string _notSignedPackageRepo = "This repository indicated that all its packages are repository signed; however, this package is unsigned.";
         private const string _notSignedPackageRequire = "signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.";
+        private const string OptInPackageVerification = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
+        private const string OptInPackageVerificationTypo = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTestAsync()
@@ -1821,11 +1823,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_ErrorAsync(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
@@ -1872,90 +1878,10 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_False_SuccessAsync()
-        {
-            // Arrange
-            string envVar = "false";
-            var extractionContext = new PackageExtractionContext(
-                PackageSaveMode.Defaultv2,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                new ClientPolicyContext(SignatureValidationMode.Accept, new List<TrustedSignerAllowListEntry>()),
-                logger: NullLogger.Instance);
-
-            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
-
-            using (var test = new ExtractPackageAsyncTest(extractionContext, environmentVariableReader: environment.Object))
-            {
-                await test.CreatePackageAsync();
-
-                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>(), allSigned: true);
-                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-
-                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(test.Source, repositorySignatureInfo);
-                test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
-
-                // Act
-                IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
-                     test.Source,
-                     test.Reader,
-                     test.Stream,
-                     test.Resolver,
-                     test.Context,
-                     CancellationToken.None);
-
-                // Assert
-                files.Should().NotBeNull();
-                Directory.Exists(Path.Combine(test.DestinationDirectory.FullName,
-                    $"{test.PackageIdentity.Id}.{test.PackageIdentity.Version.ToNormalizedString()}")).Should().BeTrue();
-            }
-        }
-
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_Null_SuccessAsync()
-        {
-            // Arrange
-            string envVar = null;
-            var extractionContext = new PackageExtractionContext(
-                PackageSaveMode.Defaultv2,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                new ClientPolicyContext(SignatureValidationMode.Accept, new List<TrustedSignerAllowListEntry>()),
-                logger: NullLogger.Instance);
-
-            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
-
-            using (var test = new ExtractPackageAsyncTest(extractionContext, environmentVariableReader: environment.Object))
-            {
-                await test.CreatePackageAsync();
-
-                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>(), allSigned: true);
-                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-
-                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(test.Source, repositorySignatureInfo);
-                test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
-
-                // Act
-                IEnumerable<string> files = await PackageExtractor.ExtractPackageAsync(
-                     test.Source,
-                     test.Reader,
-                     test.Stream,
-                     test.Resolver,
-                     test.Context,
-                     CancellationToken.None);
-
-                // Assert
-                files.Should().NotBeNull();
-                Directory.Exists(Path.Combine(test.DestinationDirectory.FullName,
-                    $"{test.PackageIdentity.Id}.{test.PackageIdentity.Version.ToNormalizedString()}")).Should().BeTrue();
-            }
-        }
-
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
         public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_WrongName_OptInEnvVar_SuccessAsync()
         {
             // Arrange
-            string envVarName = "dOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+            string envVarName = OptInPackageVerificationTypo;
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
@@ -2079,11 +2005,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_OptInEnvVar_ErrorAsync(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
@@ -2281,11 +2211,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_OptInEnvVar_ErrorAsync(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var dir = TestDirectory.Create())
             using (TrustedTestCert<TestCertificate> repoCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
@@ -2490,11 +2424,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrorsAsync_OptInEnvVar(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var dir = TestDirectory.Create())
             using (var repoCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false))
@@ -2707,11 +2645,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_OptInEnvVar_ErrorsAsync(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
             var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
             signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
@@ -3890,11 +3832,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var root = TestDirectory.Create())
             {
@@ -4086,11 +4032,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var root = TestDirectory.Create())
             {
@@ -4285,11 +4235,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var root = TestDirectory.Create())
             {
@@ -4437,11 +4391,15 @@ namespace NuGet.Packaging.Test
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
+        [InlineData("FALSE")]
+        [InlineData("xyz")]
+        [InlineData("")]
+        [InlineData(null)]
         public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_OptInEnvVar_DoVerifyAsync(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION")).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var root = TestDirectory.Create())
             {
