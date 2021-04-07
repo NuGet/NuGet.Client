@@ -274,8 +274,6 @@ EndGlobal";
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_True_FailsAsync(string envVar)
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())

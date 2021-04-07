@@ -1989,8 +1989,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar(string envVar)
         {
             // Arrange

@@ -1825,8 +1825,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_ErrorAsync(string envVar)
         {
             // Arrange
@@ -2007,8 +2005,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_OptInEnvVar_ErrorAsync(string envVar)
         {
             // Arrange
@@ -2213,8 +2209,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_OptInEnvVar_ErrorAsync(string envVar)
         {
             // Arrange
@@ -2426,8 +2420,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrorsAsync_OptInEnvVar(string envVar)
         {
             // Arrange
@@ -2647,8 +2639,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_OptInEnvVar_ErrorsAsync(string envVar)
         {
             // Arrange
@@ -3834,8 +3824,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
         {
             // Arrange
@@ -4034,8 +4022,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
         {
             // Arrange
@@ -4237,8 +4223,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
         {
             // Arrange
@@ -4393,8 +4377,6 @@ namespace NuGet.Packaging.Test
         [InlineData("TRUe")]
         [InlineData("FALSE")]
         [InlineData("xyz")]
-        [InlineData("")]
-        [InlineData(null)]
         public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_OptInEnvVar_DoVerifyAsync(string envVar)
         {
             // Arrange

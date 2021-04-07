@@ -48,7 +48,7 @@ namespace NuGet.Packaging
             _environmentVariableReader = EnvironmentVariableWrapper.Instance;
         }
 
-        // Nupkg package reader only for unit test
+        // For testing purposes only
         internal PackageArchiveReader(Stream stream, IEnvironmentVariableReader environmentVariableReader)
             : this(stream)
         {
@@ -58,7 +58,7 @@ namespace NuGet.Packaging
             }
         }
 
-        // Nupkg package reader only for unit test
+        // For testing purposes only
         internal PackageArchiveReader(string filePath, IEnvironmentVariableReader environmentVariableReader)
             : this(filePath)
         {
