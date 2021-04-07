@@ -15,7 +15,7 @@ namespace NuGet.CommandLine
         {
             if (resourceType == null)
             {
-                throw new ArgumentNullException("resourceType");
+                throw new ArgumentNullException(nameof(resourceType));
             }
 
             if (_cachedManagers == null)

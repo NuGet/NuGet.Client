@@ -88,7 +88,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             if (string.IsNullOrEmpty(command))
             {
-                throw new ArgumentNullException("command");
+                throw new ArgumentNullException(nameof(command));
             }
 
             using (var pipeline = CreatePipeline(command, outputResults))
@@ -109,7 +109,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             if (String.IsNullOrEmpty(command))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, command), "command");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, command), nameof(command));
             }
 
             Pipeline pipeline = CreatePipeline(command, outputResults);

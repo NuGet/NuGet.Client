@@ -12,7 +12,7 @@ namespace NuGetConsole
         {
             if (arg == null)
             {
-                throw new ArgumentNullException("arg");
+                throw new ArgumentNullException(nameof(arg));
             }
         }
 
@@ -24,7 +24,7 @@ namespace NuGetConsole
         {
             if (string.IsNullOrEmpty(arg))
             {
-                throw new ArgumentException("Invalid argument", "arg");
+                throw new ArgumentException("Invalid argument", nameof(arg));
             }
         }
     }

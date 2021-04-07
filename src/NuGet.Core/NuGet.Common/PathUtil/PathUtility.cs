@@ -103,7 +103,7 @@ namespace NuGet.Common
         {
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // if the path is empty, we want to return the original string instead of a single trailing character.
@@ -319,7 +319,7 @@ namespace NuGet.Common
         {
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // The and [ the ] characters are interpreted as wildcard delimiters. Escape them first.
@@ -341,12 +341,12 @@ namespace NuGet.Common
             if (maxWidth < 6)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Argument_Must_Be_GreaterThanOrEqualTo, 6);
-                throw new ArgumentOutOfRangeException("maxWidth", message);
+                throw new ArgumentOutOfRangeException(nameof(maxWidth), message);
             }
 
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (path.Length <= maxWidth)
@@ -385,11 +385,11 @@ namespace NuGet.Common
         {
             if (basePath == null)
             {
-                throw new ArgumentNullException("basePath");
+                throw new ArgumentNullException(nameof(basePath));
             }
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             basePath = basePath.TrimEnd(Path.DirectorySeparatorChar);
             return path.StartsWith(basePath, StringComparison.OrdinalIgnoreCase);

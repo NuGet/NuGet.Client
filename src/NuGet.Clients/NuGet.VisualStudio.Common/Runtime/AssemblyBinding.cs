@@ -156,7 +156,7 @@ namespace NuGet.VisualStudio
         {
             if (dependentAssembly == null)
             {
-                throw new ArgumentNullException("dependentAssembly");
+                throw new ArgumentNullException(nameof(dependentAssembly));
             }
             // This code parses a <dependentAssembly /> element of an <assemblyBinding /> section in config
 

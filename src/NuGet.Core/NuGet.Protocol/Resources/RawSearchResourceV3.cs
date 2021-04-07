@@ -30,7 +30,7 @@ namespace NuGet.Protocol
 
             if (searchEndpoints == null)
             {
-                throw new ArgumentNullException("searchEndpoints");
+                throw new ArgumentNullException(nameof(searchEndpoints));
             }
 
             _client = client;

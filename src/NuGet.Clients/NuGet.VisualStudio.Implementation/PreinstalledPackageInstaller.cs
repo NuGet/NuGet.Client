@@ -331,12 +331,12 @@ namespace NuGet.VisualStudio
         {
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             if (repositoryPath == null)
             {
-                throw new ArgumentNullException("repositoryPath");
+                throw new ArgumentNullException(nameof(repositoryPath));
             }
 
             if (!packageNames.Any())

@@ -97,7 +97,7 @@ namespace NuGet.Configuration
         {
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // if the path is empty, we want to return the original string instead of a single trailing character.

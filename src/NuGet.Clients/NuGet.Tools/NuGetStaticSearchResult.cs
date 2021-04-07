@@ -20,15 +20,15 @@ namespace NuGetVSExtension
         {
             if (searchText == null)
             {
-                throw new ArgumentNullException("searchText");
+                throw new ArgumentNullException(nameof(searchText));
             }
             if (provider == null)
             {
-                throw new ArgumentNullException("provider");
+                throw new ArgumentNullException(nameof(provider));
             }
             if (supportedManagePackageCommand == null)
             {
-                throw new ArgumentNullException("supportedManagePackageCommand");
+                throw new ArgumentNullException(nameof(supportedManagePackageCommand));
             }
 
             if (searchText.StartsWith(provider.Shortcut + " "))

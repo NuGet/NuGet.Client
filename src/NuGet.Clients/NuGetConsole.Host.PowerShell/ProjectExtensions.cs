@@ -31,7 +31,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             if (string.IsNullOrEmpty(projectName))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "projectName");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectName));
             }
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
