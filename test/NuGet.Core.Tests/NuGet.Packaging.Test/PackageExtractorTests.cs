@@ -1817,7 +1817,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
@@ -2075,7 +2075,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
@@ -2277,7 +2277,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
@@ -2486,7 +2486,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
@@ -2703,7 +2703,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
@@ -3886,7 +3886,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
@@ -4082,7 +4082,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
@@ -4281,7 +4281,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]
@@ -4433,7 +4433,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("true")]
         [InlineData("TRUE")]
         [InlineData("TRUe")]

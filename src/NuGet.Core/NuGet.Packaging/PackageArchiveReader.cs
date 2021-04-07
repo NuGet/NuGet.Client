@@ -40,25 +40,34 @@ namespace NuGet.Packaging
         /// <summary>
         /// Nupkg package reader
         /// </summary>
-        /// <param name="stream">Nupkg data stream.</param>
-        /// <param name="environmentVariableReader">Environmental variable reader for unit tests.</param>
-        internal PackageArchiveReader(Stream stream, IEnvironmentVariableReader environmentVariableReader)
-            : this(stream, false, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
+        private PackageArchiveReader(IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+            : base(frameworkProvider, compatibilityProvider)
         {
-            _environmentVariableReader = environmentVariableReader;
+            _environmentVariableReader = EnvironmentVariableWrapper.Instance;
+        }
+
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="stream">Nupkg data stream.</param>
+        /// <param name="environmentVariableReader">Environmental variable reader.</param>
+        internal PackageArchiveReader(Stream stream, IEnvironmentVariableReader environmentVariableReader)
+            : this(stream)
+        {
+            _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
         }
 
         /// <summary>
         /// Nupkg package reader
         /// </summary>
         /// <param name="filePath">File path for Nupkg data stream.</param>
-        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
-        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
-        /// <param name="environmentVariableReader">Environmental variable reader for unit tests.</param>
-        internal PackageArchiveReader(string filePath, IEnvironmentVariableReader environmentVariableReader, IFrameworkNameProvider frameworkProvider = null, IFrameworkCompatibilityProvider compatibilityProvider = null)
-            : this(filePath, frameworkProvider, compatibilityProvider)
+        /// <param name="environmentVariableReader">Environmental variable reader.</param>
+        internal PackageArchiveReader(string filePath, IEnvironmentVariableReader environmentVariableReader)
+            : this(filePath)
         {
-            _environmentVariableReader = environmentVariableReader;
+            _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
         }
 
         /// <summary>
@@ -121,13 +130,13 @@ namespace NuGet.Packaging
         /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
         /// <param name="compatibilityProvider">Framework compatibility provider.</param>
         public PackageArchiveReader(ZipArchive zipArchive, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
-            : base(frameworkProvider, compatibilityProvider)
+            : this(frameworkProvider, compatibilityProvider)
         {
             _zipArchive = zipArchive ?? throw new ArgumentNullException(nameof(zipArchive));
         }
 
         public PackageArchiveReader(string filePath, IFrameworkNameProvider frameworkProvider = null, IFrameworkCompatibilityProvider compatibilityProvider = null)
-            : base(frameworkProvider ?? DefaultFrameworkNameProvider.Instance, compatibilityProvider ?? DefaultCompatibilityProvider.Instance)
+            : this(frameworkProvider ?? DefaultFrameworkNameProvider.Instance, compatibilityProvider ?? DefaultCompatibilityProvider.Instance)
         {
             if (filePath == null)
             {
@@ -481,10 +490,7 @@ namespace NuGet.Packaging
             {
                 // Conditionally enable back package sign verification temporary disabled due to Mozilla drop Symantec as CA on Linux/MAC.
                 // Please note: Linux/MAC case sensitive for env var.
-                var envVarName = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
-                string signVerifyEnvVariable = _environmentVariableReader == null ?
-                    EnvironmentVariableWrapper.Instance.GetEnvironmentVariable(envVarName) :
-                    _environmentVariableReader.GetEnvironmentVariable(envVarName);
+                string signVerifyEnvVariable = _environmentVariableReader.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION");
 
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable) && signVerifyEnvVariable.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
