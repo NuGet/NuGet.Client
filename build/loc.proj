@@ -98,9 +98,14 @@
       <_LocalizeFiles Include="$(ArtifactsDirectory)localize\ResponseFiles\*.loc.002\ENU\LocProject.json">
         <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\ENU\LocProject.json</DestinationPath>
       </_LocalizeFiles>
+      <_SubmoduleRepo Include="$(LocalizationRootDirectory)\**\*" />
+      <_SubmoduleFiles Include="@(_SubmoduleRepo)">
+        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\submodules\NuGet.Build.Localization\$([MSBuild]::MakeRelative($(LocalizationRootDirectory), %(_SubmoduleRepo.Identity)))</DestinationPath>
+      </_SubmoduleFiles>
     </ItemGroup>
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
     <Copy SourceFiles="@(_LocalizeFiles)" DestinationFiles="@(_LocalizeFiles->'%(DestinationPath)')" />
+    <Copy SourceFiles="@(_SubmoduleFiles)" DestinationFiles="@(_SubmoduleFiles->'%(DestinationPath)')" />
   </Target>
 
   <Target Name="AfterBuild" DependsOnTargets="LocalizeNonProjectFiles;BatchLocalize"/>
