@@ -490,7 +490,18 @@ namespace NuGet.Packaging
                 string signVerifyEnvVariable = _environmentVariableReader.GetEnvironmentVariable("DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION");
 
                 // Not opt-out option, only opt-in feature.
-                return !string.IsNullOrEmpty(signVerifyEnvVariable);
+                if (!string.IsNullOrEmpty(signVerifyEnvVariable))
+                {
+                    if (signVerifyEnvVariable.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    // warn that other values are unsupported
+                    return false;
+                }
+
+                return false;
             }
             else
             {
