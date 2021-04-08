@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="AfterBuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="AfterBuild">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.props"/>
 
@@ -50,7 +49,9 @@
           TaskParameter="TargetOutputs"
           ItemName="FilesToLocalize" />
     </MSBuild>
-    <Message Text="Files to localize : @(FilesToLocalize, '%0a')" Importance="High"/>
+
+    <!-- Delete previous lsbuild.exe response outputs, so we keep last two ResponseFiles folders -->
+    <RemoveDir Directories="$(ArtifactsDirectory)localize\ResponseFiles\" />
   </Target>
 
   <Target Name="MoveLocalizedFilesToProjectSpecificArtifacts" AfterTargets="Localize">
@@ -89,9 +90,13 @@
       <_EnglishBinaries Include="@(FilesToLocalize)" Condition="'%(FilesToLocalize.Extension)'== '.dll'">
         <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
       </_EnglishBinaries>
-      <_LocalizeFolder Include="$(ArtifactsDirectory)localize\**\*" />
+      <_LocalizeFolder Include="$(ArtifactsDirectory)localize\**\*" Exclude="$(ArtifactsDirectory)localize\ResponseFiles\**\*" />
       <_LocalizeFiles Include="@(_LocalizeFolder)">
         <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(_LocalizeFolder.Identity)))</DestinationPath>
+      </_LocalizeFiles>
+      <!-- Second Localize run creates appropiate LocProject.json -->
+      <_LocalizeFiles Include="$(ArtifactsDirectory)localize\ResponseFiles\*.loc.002\ENU\LocProject.json">
+        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\ENU\LocProject.json</DestinationPath>
       </_LocalizeFiles>
     </ItemGroup>
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
