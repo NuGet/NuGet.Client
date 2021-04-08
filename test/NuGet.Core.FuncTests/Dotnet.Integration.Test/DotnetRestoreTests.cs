@@ -22,8 +22,8 @@ namespace Dotnet.Integration.Test
     [Collection("Dotnet Integration Tests")]
     public class DotnetRestoreTests
     {
-        private const string OptInPackageVerification = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
-        private const string OptInPackageVerificationTypo = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+        private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
+        private const string OptInPackageVerificationTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
 
         private MsbuildIntegrationTestFixture _msbuildFixture;
 

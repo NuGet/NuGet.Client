@@ -39,8 +39,8 @@ namespace NuGet.Packaging.Test
         private const string _noMatchInRepoAllowList = "This package was not repository signed with a certificate listed by this repository.";
         private const string _notSignedPackageRepo = "This repository indicated that all its packages are repository signed; however, this package is unsigned.";
         private const string _notSignedPackageRequire = "signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.";
-        private const string OptInPackageVerification = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
-        private const string OptInPackageVerificationTypo = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+        private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
+        private const string OptInPackageVerificationTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTestAsync()

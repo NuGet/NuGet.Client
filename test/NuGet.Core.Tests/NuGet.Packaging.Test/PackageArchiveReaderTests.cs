@@ -22,8 +22,8 @@ namespace NuGet.Packaging.Test
 {
     public class PackageArchiveReaderTests
     {
-        private const string OptInPackageVerification = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATION";
-        private const string OptInPackageVerificationTypo = "DOTNET_OPT_IN_SECURE_PACKAGE_VERIFICATIOn";
+        private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
+        private const string OptInPackageVerificationTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
 
         [Fact]
         public void Constructor_WithStringPathParameter_DisposesInvalidStream()
