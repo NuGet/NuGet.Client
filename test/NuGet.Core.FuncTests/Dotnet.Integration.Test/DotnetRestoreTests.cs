@@ -268,16 +268,14 @@ EndGlobal";
             }
         }
 
-        [Theory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_True_FailsAsync(string envVar)
+        [Fact]
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_True_FailsAsync()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Arrange
                 var envVarName = OptInPackageVerification;
-                var envVarValue = envVar;
+                var envVarValue = "TRUE";
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -353,7 +351,7 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_False_SucceedAsync()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_NameCaseSensitive_SucceedAsync()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -435,12 +433,12 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_WrongName_OptInEnvVar_SucceedAsync()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_ValueCaseSensitive_OptInEnvVar_SucceedAsync()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Arrange
-                var envVarName = OptInPackageVerificationTypo;
+                var envVarName = OptInPackageVerification;
                 var envVarValue = "true";
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()

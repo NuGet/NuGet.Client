@@ -1983,14 +1983,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar(string envVar)
+        [Fact]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
             using (var packageStream = File.OpenRead(test))
@@ -2010,7 +2008,7 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_WrongName_OptInEnvVar_Fails()
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar_NameCaseSensitive_Fails()
         {
             // Arrange
             string envVarName = OptInPackageVerificationTypo;

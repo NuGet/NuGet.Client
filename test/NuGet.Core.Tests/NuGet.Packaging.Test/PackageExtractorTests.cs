@@ -1819,14 +1819,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_ErrorAsync(string envVar)
+        [CIOnlyFact]
+        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_ErrorAsync()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
@@ -1873,7 +1871,7 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_WrongName_OptInEnvVar_SuccessAsync()
+        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_Name_CaseSensitive_SuccessAsync()
         {
             // Arrange
             string envVarName = OptInPackageVerificationTypo;
@@ -1996,14 +1994,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_OptInEnvVar_ErrorAsync(string envVar)
+        [CIOnlyFact]
+        public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_OptInEnvVar_ErrorAsync()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
@@ -2197,14 +2193,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_OptInEnvVar_ErrorAsync(string envVar)
+        [CIOnlyFact]
+        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_OptInEnvVar_ErrorAsync()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             using (var dir = TestDirectory.Create())
             using (TrustedTestCert<TestCertificate> repoCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
@@ -2405,14 +2399,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrorsAsync_OptInEnvVar(string envVar)
+        [CIOnlyFact]
+        public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrorsAsync_OptInEnvVar()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             using (var dir = TestDirectory.Create())
             using (var repoCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false))
@@ -2621,14 +2613,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_OptInEnvVar_ErrorsAsync(string envVar)
+        [CIOnlyFact]
+        public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_OptInEnvVar_ErrorsAsync()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
             var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
             signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
@@ -3803,14 +3793,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
+        [CIOnlyFact]
+        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             using (var root = TestDirectory.Create())
             {
@@ -3998,14 +3986,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
+        [CIOnlyFact]
+        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             using (var root = TestDirectory.Create())
             {
@@ -4196,14 +4182,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync(string envVar)
+        [CIOnlyFact]
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             using (var root = TestDirectory.Create())
             {
@@ -4347,14 +4331,12 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_OptInEnvVar_DoVerifyAsync(string envVar)
+        [CIOnlyFact]
+        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_OptInEnvVar_DoVerifyAsync()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
 
             using (var root = TestDirectory.Create())
             {
