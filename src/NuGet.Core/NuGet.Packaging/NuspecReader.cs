@@ -41,6 +41,7 @@ namespace NuGet.Packaging
         private const string LicenseUrl = "licenseUrl";
         private const string Repository = "repository";
         private const string Icon = "icon";
+        private const string Readme = "readme";
 
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
@@ -582,7 +583,17 @@ namespace NuGet.Packaging
             return node?.Value;
         }
 
-        private static bool? AttributeAsNullableBool(XElement element, string attributeName)
+        /// <summary>
+        /// Gets the readme metadata from the .nuspec
+        /// </summary>
+        /// <returns>A string containing the readme path or null if no readme entry is found</returns>
+        public string GetReadme()
+        {
+            var node = MetadataNode.Elements(XName.Get(Readme, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+            return node?.Value;
+        }
+
+        private bool? AttributeAsNullableBool(XElement element, string attributeName)
         {
             bool? result = null;
 
@@ -603,7 +614,8 @@ namespace NuGet.Packaging
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.InvalidNuspecEntry,
-                            element.ToString().Trim());
+                            element.ToString().Trim(),
+                            GetIdentity());
 
                     throw new PackagingException(message);
                 }

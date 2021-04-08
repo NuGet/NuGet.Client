@@ -247,6 +247,7 @@
               <StackPanel Orientation="Horizontal">
                 <CheckBox
                   AutomationProperties.LabeledBy="{Binding ElementName=_topLevelColumnHeader}"
+                  AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PromoteAllToTopLevel}"
                   IsChecked="False"
                   Checked="PromoteAllToTopLevel_Checked"
                   Unchecked="PromoteAllToTopLevel_Checked"

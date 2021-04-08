@@ -64,6 +64,10 @@ namespace NuGet.Protocol
         [JsonProperty(PropertyName = JsonProperties.Published)]
         public DateTimeOffset? Published { get; private set; }
 
+        [JsonProperty(PropertyName = JsonProperties.ReadmeUrl)]
+        [JsonConverter(typeof(SafeUriConverter))]
+        public Uri ReadmeUrl { get; private set; }
+
         [JsonIgnore]
         public Uri ReportAbuseUrl { get; set; }
 

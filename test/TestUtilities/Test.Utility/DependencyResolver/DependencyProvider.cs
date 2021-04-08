@@ -35,7 +35,7 @@ namespace Test.Utility
             throw new NotImplementedException();
         }
 
-        public Task<LibraryIdentity> FindLibraryAsync(
+        public async Task<LibraryIdentity> FindLibraryAsync(
             LibraryRange libraryRange,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
@@ -44,7 +44,10 @@ namespace Test.Utility
         {
             var packages = _graph.Keys.Where(p => p.Name == libraryRange.Name);
 
-            return Task.FromResult(packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version));
+            // Yield the task to help uncovering concurrency issues in tests
+            await Task.Yield();
+
+            return packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version);
         }
 
         public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
@@ -52,7 +55,7 @@ namespace Test.Utility
             throw new NotImplementedException();
         }
 
-        public Task<LibraryDependencyInfo> GetDependenciesAsync(
+        public async Task<LibraryDependencyInfo> GetDependenciesAsync(
             LibraryIdentity match,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
@@ -60,12 +63,16 @@ namespace Test.Utility
             CancellationToken cancellationToken)
         {
             List<LibraryDependency> dependencies;
+
+            // Yield the task to help uncovering concurrency issues in tests
+            await Task.Yield();
+
             if (_graph.TryGetValue(match, out dependencies))
             {
-                return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, dependencies));
+                return LibraryDependencyInfo.Create(match, targetFramework, dependencies);
             }
 
-            return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
+            return LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>());
         }
 
         public bool SupportsType(LibraryDependencyTarget libraryType)

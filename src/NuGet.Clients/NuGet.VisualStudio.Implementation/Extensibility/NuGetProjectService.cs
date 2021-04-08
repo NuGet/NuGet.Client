@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -95,7 +96,19 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             IReadOnlyCollection<NuGetInstalledPackage> installedPackages;
 
             var cacheContext = new DependencyGraphCacheContext();
-            var (packageSpecs, messages) = await project.GetPackageSpecsAndAdditionalMessagesAsync(cacheContext);
+            IReadOnlyList<ProjectModel.PackageSpec> packageSpecs;
+            IReadOnlyList<ProjectModel.IAssetsLogMessage> messages;
+            try
+            {
+                (packageSpecs, messages) = await project.GetPackageSpecsAndAdditionalMessagesAsync(cacheContext);
+            }
+            catch (ProjectNotNominatedException)
+            {
+                status = InstalledPackageResultStatus.ProjectNotReady;
+                installedPackages = null;
+                return (status, installedPackages);
+            }
+
             if (messages?.Any(m => m.Level == LogLevel.Error) == true)
             {
                 // Although we know that the project will fail to restore, we may still know about some direct dependencies, so let's return the packages that we know about.

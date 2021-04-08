@@ -23,7 +23,6 @@ namespace NuGet.Commands
     public class TrustedSignersCommandRunner : ITrustedSignersCommandRunner
     {
         private const int SuccessCode = 0;
-        private const int FailureCode = 1;
 
         private readonly ITrustedSignersProvider _trustedSignersProvider;
         private readonly IPackageSourceProvider _packageSourceProvider;

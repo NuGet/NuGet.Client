@@ -23,6 +23,7 @@ namespace NuGet.Protocol.Core.Types
         PackageIdentity Identity { get; }
         Uri LicenseUrl { get; }
         Uri ProjectUrl { get; }
+        Uri ReadmeUrl { get; }
         Uri ReportAbuseUrl { get; }
         Uri PackageDetailsUrl { get; }
         DateTimeOffset? Published { get; }

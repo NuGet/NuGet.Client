@@ -32,6 +32,8 @@ namespace NuGet.PackageManagement.UI.Test
 
         public Uri ProjectUrl { get; set; }
 
+        public Uri ReadmeUrl { get; set; }
+
         public Uri ReportAbuseUrl { get; set; }
 
         public Uri PackageDetailsUrl { get; set; }

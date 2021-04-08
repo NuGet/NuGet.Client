@@ -12,8 +12,11 @@ namespace NuGet.Common
         private const string DotNet = "dotnet";
         private const string DotNetExe = "dotnet.exe";
         private const string Home = "HOME";
-        private const string DotNetHome = "DOTNET_CLI_HOME";
         private const string UserProfile = "USERPROFILE";
+#if IS_CORECLR
+        private const string DotNetHome = "DOTNET_CLI_HOME";
+#endif
+
         private static readonly Lazy<string> _getHome = new Lazy<string>(() => GetHome());
 
         public static string GetFolderPath(NuGetFolderPath folder)

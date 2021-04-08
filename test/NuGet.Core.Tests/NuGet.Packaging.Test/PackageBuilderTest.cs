@@ -345,22 +345,29 @@ namespace NuGet.Packaging.Test
                 builder.AddFiles(directory.Path, source, destination, exclude);
 
                 // Assert
-                Assert.Collection(builder.Files,
-                    file =>
+                var expectedResults = new[]
+                {
+                    new
                     {
-                        Assert.Equal(string.Format("Content{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
-                        Assert.Equal("file1.txt", file.EffectivePath);
+                        Path = string.Format("Content{0}file1.txt", Path.DirectorySeparatorChar),
+                        EffectivePath = "file1.txt"
                     },
-                    file =>
+                    new
                     {
-                        Assert.Equal(string.Format("Content{0}dir1{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
-                        Assert.Equal(string.Format("dir1{0}file1.txt", Path.DirectorySeparatorChar), file.EffectivePath);
+                        Path = string.Format("Content{0}dir1{0}file1.txt", Path.DirectorySeparatorChar),
+                        EffectivePath = string.Format("dir1{0}file1.txt", Path.DirectorySeparatorChar)
                     },
-                    file =>
+                    new
                     {
-                        Assert.Equal(string.Format("Content{0}dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
-                        Assert.Equal(string.Format("dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar), file.EffectivePath);
-                    });
+                        Path = string.Format("Content{0}dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar),
+                        EffectivePath = string.Format("dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar)
+                    }
+                };
+
+                var orderedExpectedResults = expectedResults.OrderBy(i => i.Path);
+                var orderedActualResults = builder.Files.Select(f => new { f.Path, f.EffectivePath }).OrderBy(i => i.Path);
+
+                Assert.Equal(orderedExpectedResults, orderedActualResults);
             }
         }
 

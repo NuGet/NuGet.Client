@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (installedPackages == null)
             {
-                return new LibraryDependency[] { };
+                return Array.Empty<LibraryDependency>();
             }
 
             bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (AsVSProject4.References == null)
             {
-                return new ProjectRestoreReference[] { };
+                return Array.Empty<ProjectRestoreReference>();
             }
 
             var references = new List<ProjectRestoreReference>();

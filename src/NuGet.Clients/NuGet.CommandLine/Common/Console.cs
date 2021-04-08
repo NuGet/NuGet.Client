@@ -195,7 +195,7 @@ namespace NuGet.CommandLine
 
         public void WriteError(string value)
         {
-            WriteError(value, new object[0]);
+            WriteError(value, Array.Empty<object>());
         }
 
         public void WriteError(string format, params object[] args)
@@ -205,12 +205,12 @@ namespace NuGet.CommandLine
 
         public void WriteWarning(string value)
         {
-            WriteWarning(prependWarningText: true, value: value, args: new object[0]);
+            WriteWarning(prependWarningText: true, value: value, args: Array.Empty<object>());
         }
 
         public void WriteWarning(bool prependWarningText, string value)
         {
-            WriteWarning(prependWarningText, value, new object[0]);
+            WriteWarning(prependWarningText, value, Array.Empty<object>());
         }
 
         public void WriteWarning(string value, params object[] args)

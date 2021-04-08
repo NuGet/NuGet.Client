@@ -891,6 +891,13 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 FlagTabDataAsLoaded(filterToRender);
+
+                // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
+                // UI filtering for Updates is ready.
+                if (filterToRender == ItemFilter.Installed)
+                {
+                    FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -1469,7 +1476,6 @@ namespace NuGet.PackageManagement.UI
                 IsEnabled = false;
                 _isExecutingAction = true;
 
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
                 {
                     var nugetUi = Model.UIController as NuGetUI;
@@ -1504,7 +1510,6 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     _actionCompleted?.Invoke(this, EventArgs.Empty);
-                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                 }
             })
             .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteAction));

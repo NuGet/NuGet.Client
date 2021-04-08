@@ -172,7 +172,6 @@ namespace NuGet.PackageManagement.UI
                 _restoreException = null;
             }
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);
             return true;
         }
 
