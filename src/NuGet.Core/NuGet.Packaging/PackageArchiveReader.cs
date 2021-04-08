@@ -58,16 +58,6 @@ namespace NuGet.Packaging
             }
         }
 
-        // For testing purposes only
-        internal PackageArchiveReader(string filePath, IEnvironmentVariableReader environmentVariableReader)
-            : this(filePath)
-        {
-            if (environmentVariableReader != null)
-            {
-                _environmentVariableReader = environmentVariableReader;
-            }
-        }
-
         /// <summary>
         /// Nupkg package reader
         /// </summary>

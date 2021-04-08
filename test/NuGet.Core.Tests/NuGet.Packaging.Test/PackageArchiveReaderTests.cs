@@ -1993,7 +1993,8 @@ namespace NuGet.Packaging.Test
             environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
-            using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
+            using (var packageStream = File.OpenRead(test))
+            using (var packageArchiveReader = new PackageArchiveReader(packageStream, environmentVariableReader: environment.Object))
             {
                 // Act
                 var result = packageArchiveReader.CanVerifySignedPackages(null);
@@ -2018,7 +2019,8 @@ namespace NuGet.Packaging.Test
             environment.Setup(s => s.GetEnvironmentVariable(envVarName)).Returns(envVarValue);
 
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
-            using (var packageArchiveReader = new PackageArchiveReader(test, environmentVariableReader: environment.Object))
+            using (var packageStream = File.OpenRead(test))
+            using (var packageArchiveReader = new PackageArchiveReader(packageStream, environmentVariableReader: environment.Object))
             {
                 // Act
                 bool result = packageArchiveReader.CanVerifySignedPackages(null);
