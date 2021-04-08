@@ -7,28 +7,29 @@ using System.Collections.Generic;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.Shared;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
+
     /// <summary>
     /// Cache objects used for building the lock file.
     /// </summary>
     public class LockFileBuilderCache
     {
         // Package files
-        private readonly ConcurrentDictionary<PackageIdentity, ContentItemCollection> _contentItems
-            = new ConcurrentDictionary<PackageIdentity, ContentItemCollection>();
+        private readonly ConcurrentDictionary<(string Id, NuGetVersion Version, string sha512), ContentItemCollection> _contentItems
+            = new ConcurrentDictionary<(string Id, NuGetVersion Version, string sha512), ContentItemCollection>();
 
         // OrderedCriteria is stored per target graph + override framework.
         private readonly ConcurrentDictionary<CriteriaKey, List<List<SelectionCriteria>>> _criteriaSets =
             new ConcurrentDictionary<CriteriaKey, List<List<SelectionCriteria>>>();
 
-        private readonly ConcurrentDictionary<(CriteriaKey, LockFileLibrary, LibraryDependency, LibraryIncludeFlags), LockFileTargetLibrary> _lockFileTargetLibraryCache =
-            new ConcurrentDictionary<(CriteriaKey, LockFileLibrary, LibraryDependency, LibraryIncludeFlags), LockFileTargetLibrary>();
+        private readonly ConcurrentDictionary<(CriteriaKey, (string Id, NuGetVersion Version, string sha512), LibraryDependency, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>> _lockFileTargetLibraryCache =
+            new ConcurrentDictionary<(CriteriaKey, (string Id, NuGetVersion Version, string sha512), LibraryDependency, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>>();
 
         /// <summary>
         /// Get ordered selection criteria.
@@ -51,9 +52,7 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(package));
             }
 
-            var identity = new PackageIdentity(package.Id, package.Version);
-
-            return _contentItems.GetOrAdd(identity, _ =>
+            return _contentItems.GetOrAdd((package.Id, package.Version, package.Sha512), _ =>
             {
                 var collection = new ContentItemCollection();
 
@@ -75,24 +74,13 @@ namespace NuGet.Commands
         /// <summary>
         /// Try to get a LockFileTargetLibrary from the cache.
         /// </summary>
-        public LockFileTargetLibrary TryGetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LockFileLibrary lockFileLibrary, LibraryDependency libraryDependency, LibraryIncludeFlags libraryIncludeFlags)
+        public LockFileTargetLibrary GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, LibraryDependency libraryDependency, LibraryIncludeFlags libraryIncludeFlags, Func<LockFileTargetLibrary> valueFactory)
         {
+            localPackageInfo = localPackageInfo ?? throw new ArgumentNullException(nameof(localPackageInfo));
             var criteriaKey = new CriteriaKey(graph.TargetGraphName, framework);
-            if (_lockFileTargetLibraryCache.TryGetValue((criteriaKey, lockFileLibrary, libraryDependency, libraryIncludeFlags), out var lockFileTargetLibrary))
-            {
-                return lockFileTargetLibrary;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Add the LockFileTargetLibrary to the cache.
-        /// </summary>
-        public bool TryAddLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LockFileLibrary lockFileLibrary, LibraryDependency libraryDependency, LibraryIncludeFlags libraryIncludeFlags, LockFileTargetLibrary lockFileTargetLibrary)
-        {
-            var criteriaKey = new CriteriaKey(graph.TargetGraphName, framework);
-            return _lockFileTargetLibraryCache.TryAdd((criteriaKey, lockFileLibrary, libraryDependency, libraryIncludeFlags), lockFileTargetLibrary);
+            var package = (localPackageInfo.Id, localPackageInfo.Version, localPackageInfo.Sha512);
+            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, package, libraryDependency, libraryIncludeFlags),
+                key => new Lazy<LockFileTargetLibrary>(valueFactory)).Value;
         }
 
         private class CriteriaKey : IEquatable<CriteriaKey>

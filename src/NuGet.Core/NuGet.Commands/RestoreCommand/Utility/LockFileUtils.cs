@@ -77,69 +77,69 @@ namespace NuGet.Commands
                 IEnumerable<LibraryDependency> dependencies,
                 LockFileBuilderCache cache)
         {
-            LockFileTargetLibrary lockFileLib = null;
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
 
-            var cached = cache.TryGetLockFileTargetLibrary(targetGraph, framework, library, libraryDependency, dependencyType);
-            if (cached != null)
-                return cached;
-
-            // This will throw an appropriate error if the nuspec is missing
-            var nuspec = package.Nuspec;
-
-            var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
-            var contentItems = cache.GetContentItems(library, package);
-
-            var packageTypes = nuspec.GetPackageTypes().AsList();
-
-            for (var i = 0; i < orderedCriteriaSets.Count; i++)
-            {
-                // Create a new library each time to avoid
-                // assets being added from other criteria.
-                lockFileLib = new LockFileTargetLibrary()
+            return cache.GetLockFileTargetLibrary(targetGraph, framework, package, libraryDependency, dependencyType,
+                () =>
                 {
-                    Name = package.Id,
-                    Version = package.Version,
-                    Type = LibraryType.Package,
-                    PackageType = packageTypes
-                };
+                    LockFileTargetLibrary lockFileLib = null;
+                    // This will throw an appropriate error if the nuspec is missing
+                    var nuspec = package.Nuspec;
 
-                // Populate assets
+                    var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
+                    var contentItems = cache.GetContentItems(library, package);
 
-                if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
-                {
-                    AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
-                    if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
+                    var packageTypes = nuspec.GetPackageTypes().AsList();
+
+                    for (var i = 0; i < orderedCriteriaSets.Count; i++)
                     {
-                        break;
+                        // Create a new library each time to avoid
+                        // assets being added from other criteria.
+                        lockFileLib = new LockFileTargetLibrary()
+                        {
+                            Name = package.Id,
+                            Version = package.Version,
+                            Type = LibraryType.Package,
+                            PackageType = packageTypes
+                        };
+
+                        // Populate assets
+
+                        if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
+                        {
+                            AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework,
+                                runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                            if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            AddAssets(libraryDependency, library, package, targetGraph, dependencyType, lockFileLib,
+                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                            // Check if compatile assets were found.
+                            // If no compatible assets were found and this is the last check
+                            // continue on with what was given, this will fail in the normal
+                            // compat verification.
+                            if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
+                            {
+                                // Stop when compatible assets are found.
+                                break;
+                            }
+                        }
+
                     }
-                }
-                else
-                {
-                    AddAssets(libraryDependency, library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
-                    // Check if compatile assets were found.
-                    // If no compatible assets were found and this is the last check
-                    // continue on with what was given, this will fail in the normal
-                    // compat verification.
-                    if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
-                    {
-                        // Stop when compatible assets are found.
-                        break;
-                    }
-                }
 
-            }
+                    // Add dependencies
+                    AddDependencies(dependencies, lockFileLib, framework, nuspec);
 
+                    // Exclude items
+                    ExcludeItems(lockFileLib, dependencyType);
 
-            // Add dependencies
-            AddDependencies(dependencies, lockFileLib, framework, nuspec);
-
-            // Exclude items
-            ExcludeItems(lockFileLib, dependencyType);
-
-            cache.TryAddLockFileTargetLibrary(targetGraph, framework, library, libraryDependency, dependencyType, lockFileLib);
-            return lockFileLib;
+                    return lockFileLib;
+                });
         }
 
         internal static List<List<SelectionCriteria>> CreateOrderedCriteriaSets(RestoreTargetGraph targetGraph, NuGetFramework framework)

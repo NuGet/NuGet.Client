@@ -141,19 +141,39 @@ namespace NuGet.Commands.Test
             IEnumerable<string> fallbackPackageFolders,
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
-            ILogger log) : base(
-                project,
-                RestoreCommandProviders.Create(
-                    packagesDirectory,
-                    fallbackPackageFolderPaths: fallbackPackageFolders,
-                    sources: sources,
-                    cacheContext: cacheContext,
-                    packageFileCache: new LocalPackageFileCache(),
-                    log: log),
-                cacheContext,
-                clientPolicyContext,
-                log,
-                new LockFileBuilderCache())
+            ILogger log) : this(
+            project,
+            sources,
+            packagesDirectory,
+            fallbackPackageFolders,
+            new TestSourceCacheContext(),
+            ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
+            log,
+            new LockFileBuilderCache())
+        {
+        }
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<SourceRepository> sources,
+            string packagesDirectory,
+            IEnumerable<string> fallbackPackageFolders,
+            SourceCacheContext cacheContext,
+            ClientPolicyContext clientPolicyContext,
+            ILogger log,
+            LockFileBuilderCache lockFileBuilderCache): base(
+            project,
+            RestoreCommandProviders.Create(
+                packagesDirectory,
+                fallbackPackageFolderPaths: fallbackPackageFolders,
+                sources: sources,
+                cacheContext: cacheContext,
+                packageFileCache: new LocalPackageFileCache(),
+                log: log),
+            cacheContext,
+            clientPolicyContext,
+            log,
+            lockFileBuilderCache)
         {
             // We need the dependency graph spec to go through the proper no-op code paths
             DependencyGraphSpec = new DependencyGraphSpec();
