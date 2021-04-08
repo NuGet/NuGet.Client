@@ -204,3 +204,29 @@ Function DowngradeNuGetVsix()
 {
     & VSIXInstaller.exe /d:NuGet.72c5d240-f742-48d4-a0f1-7016671e405b
 }
+
+<#
+Installs the NuGet extension build in the local repo.
+#>
+Function InstallCustomNuGetVsix()
+{
+    & VSIXInstaller.exe $(Join-Path $NuGetClientRoot "artifacts\VS15\NuGet.Tools.vsix" )
+}
+
+<#
+Enable Visual Studio telemetry file logging.
+#>
+Function EnableVisualStudioTelemetryFileLogging()
+{
+    $command = "reg add HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\Telemetry\Channels /v fileLogger /t reg_dword /f /d 00000001"
+    Invoke-Expression $command
+}
+
+<#
+Disable Visual Studio telemetry file logging
+#>
+Function DisableVisualStudioTelemetryFileLogging()
+{
+    $command = "reg delete HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\Telemetry\Channels /v fileLogger /f"
+    Invoke-Expression $command
+}
