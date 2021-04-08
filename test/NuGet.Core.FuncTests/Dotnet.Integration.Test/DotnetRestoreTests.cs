@@ -269,7 +269,7 @@ EndGlobal";
         }
 
         [Fact]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_True_FailsAsync()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_True_Fails()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -345,13 +345,12 @@ EndGlobal";
                     );
 
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
-                result.Success.Should().BeFalse();
-                result.ExitCode.Should().Be(1, because: "error text should be displayed as restore failed");
+                result.Success.Should().BeFalse(because: "error text should be displayed as restore failed");
             }
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_NameCaseSensitive_SucceedAsync()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_NameCaseSensitive_Succeed()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -433,7 +432,7 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_ValueCaseSensitive_OptInEnvVar_SucceedAsync()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_ValueCaseSensitive_OptInEnvVar_Succeed()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {

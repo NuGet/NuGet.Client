@@ -1820,7 +1820,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_ErrorAsync()
+        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_Error()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -1871,7 +1871,7 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_Name_CaseSensitive_SuccessAsync()
+        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_Name_CaseSensitive_Success()
         {
             // Arrange
             string envVarName = OptInPackageVerificationTypo;
@@ -1995,7 +1995,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_OptInEnvVar_ErrorAsync()
+        public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_OptInEnvVar_Error()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -2093,7 +2093,7 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_ErrorAsync()
+        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_Error()
         {
             // Arrange
             using (var dir = TestDirectory.Create())
@@ -2194,7 +2194,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_OptInEnvVar_ErrorAsync()
+        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_OptInEnvVar_Error()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -2347,7 +2347,7 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrorsAsync()
+        public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrors()
         {
             // Arrange
             using (var dir = TestDirectory.Create())
@@ -2400,7 +2400,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrorsAsync_OptInEnvVar()
+        public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrors_OptInEnvVar()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -2614,7 +2614,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_OptInEnvVar_ErrorsAsync()
+        public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_OptInEnvVar_Errors()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -3794,7 +3794,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync()
+        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_OptInEnvVar_Throws()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -3987,7 +3987,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync()
+        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_OptInEnvVar_Throws()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -4183,7 +4183,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_OptInEnvVar_ThrowsAsync()
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_OptInEnvVar_Throws()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -4332,7 +4332,7 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_OptInEnvVar_DoVerifyAsync()
+        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_OptInEnvVar_DoVerify()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
