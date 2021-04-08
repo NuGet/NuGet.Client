@@ -497,7 +497,7 @@ namespace NuGet.Packaging
                         return true;
                     }
 
-                    // warn that other values are unsupported
+                    // other values are unsupported
                     return false;
                 }
 
