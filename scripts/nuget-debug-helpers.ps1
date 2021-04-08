@@ -4,7 +4,7 @@ $VSVersion = "16.0"
 $Configuration = "Debug"
 $NETFramework = "net472"
 $NETStandard = "netstandard2.0"
-$NETCoreApp = "netcoreapp2.1"
+$NETCoreApp = "netcoreapp5.0"
 
 <#
 Auto bootstraps NuGet for debugging the targets. This includes both restore and pack and is the recommended way to test things :) 
@@ -81,14 +81,14 @@ Function Add-NuGetToCLI {
     $sdk_path = $sdkLocation
     
     $nugetXplatArtifactsPath = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.CommandLine.XPlat', $VSVersion, 'bin', $Configuration, $NETCoreApp)
-    $nugetBuildTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks', $VSVersion, 'bin', $Configuration, $NETStandard, 'NuGet.Build.Tasks.dll')
+    $nugetBuildTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks', $VSVersion, 'bin', $Configuration, $NETCoreApp, 'NuGet.Build.Tasks.dll')
     $nugetBuildTasksConsole = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks.Console', $VSVersion, 'bin', $Configuration, $NETCoreApp, 'NuGet.Build.Tasks.Console.dll')
     $nugetTargets = [System.IO.Path]::Combine($NuGetClientRoot, 'src', 'NuGet.Core', 'NuGet.Build.Tasks', 'NuGet.targets')
     $nugetExTargets = [System.IO.Path]::Combine($NuGetClientRoot, 'src', 'NuGet.Core', 'NuGet.Build.Tasks', 'NuGet.RestoreEx.targets')
     $ilmergedCorePackTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks.Pack', $VSVersion, 'bin', $Configuration, $NETStandard, "ilmerge", "NuGet.Build.Tasks.Pack.dll")
     $ilmergedFrameworkPackTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks.Pack', $VSVersion, 'bin', $Configuration, $NETFramework, "ilmerge",  "NuGet.Build.Tasks.Pack.dll")
     $nugetPackTargets = [System.IO.Path]::Combine($NuGetClientRoot, 'src', 'NuGet.Core', 'NuGet.Build.Tasks.Pack', 'NuGet.Build.Tasks.Pack.targets')
-    $msbuildSdkResolverTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'Microsoft.Build.NuGetSdkResolver', $VSVersion, 'bin', $Configuration, $NETStandard, 'Microsoft.Build.NuGetSdkResolver.dll')
+    $msbuildSdkResolverTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'Microsoft.Build.NuGetSdkResolver', $VSVersion, 'bin', $Configuration, $NETCoreApp, 'Microsoft.Build.NuGetSdkResolver.dll')
 
 
     if (-Not (Test-Path $nugetXplatArtifactsPath)) {
