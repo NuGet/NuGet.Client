@@ -9,8 +9,7 @@ using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
-// ERIKD TODO REENABLE
-// using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
+using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
@@ -20,7 +19,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
     /// <remarks>
     /// Items within this group have type <see cref="PackageAssemblyItem"/>.
     /// </remarks>
-    internal sealed class PackageAssemblyGroupItem : ReplacementBaseClass
+    internal sealed class PackageAssemblyGroupItem : RelatableItemBase
     {
         public AssetsFileTarget Target { get; }
         public AssetsFileTargetLibrary Library { get; }
@@ -53,8 +52,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
             _ => throw new InvalidEnumArgumentException(nameof(GroupType), (int)GroupType, typeof(PackageAssemblyGroupType))
         };
 
-        // ERIKD TODO REENABLE
-        // public override ImageMoniker IconMoniker => KnownMonikers.ReferenceGroup;
+        public override ImageMoniker IconMoniker => KnownMonikers.ReferenceGroup;
 
     }
 }

@@ -69,7 +69,7 @@ namespace NuGetConsole.Implementation
             : base(null)
         {
             Caption = Resources.ToolWindowTitle;
-            //BitmapImageMoniker = KnownMonikers.Console;
+            BitmapImageMoniker = KnownMonikers.Console;
             ToolBar = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.idToolbar);
         }
 

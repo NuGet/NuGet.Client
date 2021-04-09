@@ -8,8 +8,7 @@ using Microsoft.VisualStudio.ProjectSystem.VS.Tree;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
-// ERIKD TODO REENABLE
-// using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
+using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
@@ -19,7 +18,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
     /// <remarks>
     /// Items of this type are grouped within <see cref="PackageContentFileGroupItem"/>.
     /// </remarks>
-    internal sealed class PackageContentFileItem : ReplacementBaseClass
+    internal sealed class PackageContentFileItem : RelatableItemBase
     {
         public AssetsFileTarget Target { get; }
         public AssetsFileTargetLibrary Library { get; }
@@ -48,8 +47,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
         // All siblings are content files, so no prioritization needed (sort alphabetically)
         public override int Priority => 0;
 
-        // ERIKD TODO REENABLE
-        // public override ImageMoniker IconMoniker => _fileIconProvider.GetFileExtensionImageMoniker(Text);
+        public override ImageMoniker IconMoniker => _fileIconProvider.GetFileExtensionImageMoniker(Text);
 
         public override object? GetBrowseObject() => new BrowseObject(this);
 

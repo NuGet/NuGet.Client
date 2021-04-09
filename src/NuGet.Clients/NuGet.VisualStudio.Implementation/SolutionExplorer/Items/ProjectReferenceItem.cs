@@ -10,15 +10,14 @@ using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
-// ERIKD TODO REENABLE
-// using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
+using ImageMoniker = Microsoft.VisualStudio.Imaging.Interop.ImageMoniker;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
     /// <summary>
     /// Backing object for transitive project reference nodes in the dependencies tree.
     /// </summary>
-    internal sealed class ProjectReferenceItem : ReplacementBaseClass
+    internal sealed class ProjectReferenceItem : RelatableItemBase
     {
         public AssetsFileTarget Target { get; private set; }
         public AssetsFileTargetLibrary Library { get; private set; }
@@ -46,8 +45,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override int Priority => AttachedItemPriority.Project;
 
-        // ERIKD TODO REENABLE
-        // public override ImageMoniker IconMoniker => KnownMonikers.Application;
+        public override ImageMoniker IconMoniker => KnownMonikers.Application;
 
         protected override IContextMenuController? ContextMenuController => MenuController.TransitiveProject;
 
