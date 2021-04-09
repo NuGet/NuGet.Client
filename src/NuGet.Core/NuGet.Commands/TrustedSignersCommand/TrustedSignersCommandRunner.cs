@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -38,7 +37,7 @@ namespace NuGet.Commands
         {
             var logger = trustedSignersArgs.Logger ?? NullLogger.Instance;
             var actionsProvider = new TrustedSignerActionsProvider(_trustedSignersProvider, logger);
-            Debugger.Launch();
+
             switch (trustedSignersArgs.Action)
             {
                 case TrustedSignersAction.List:
