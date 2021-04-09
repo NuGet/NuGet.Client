@@ -99,7 +99,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="17.0.0-preview-1-31108-209" />
         <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
-        <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.50-dev17-g2de5c827" />
+        <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.53-Dev17PIAs-g1a257589" />
         <PackageReference Update="Microsoft.Web.Xdt" Version="3.0.0" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
         <PackageReference Update="System.ComponentModel.Composition" Version="4.5.0" />
