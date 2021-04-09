@@ -17,7 +17,6 @@ namespace Dotnet.Integration.Test
     [Collection("Dotnet Integration Tests")]
     public class DotnetTrustTests
     {
-        private const string _successfulActionTrustedSigner = "Successfully {0} the trusted {1} '{2}'.";
         private const string _successfulAddTrustedSigner = "Successfully added a trusted {0} '{1}'.";
         private const string _successfulRemoveTrustedSigner = "Successfully removed the trusted signer '{0}'.";
         private MsbuildIntegrationTestFixture _msbuildFixture;
@@ -27,8 +26,8 @@ namespace Dotnet.Integration.Test
             _msbuildFixture = fixture;
         }
 
-        [Fact]
-        public void Trust_No_ActionCommand_DefaultToList_Success()
+        [CIOnlyFact]
+        public void Trust_No_ActionCommand_DefaultTo_ListAction_Success()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -61,7 +60,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void Trust_List_Emtpy_Success()
         {
             using (TestDirectory packageDir = TestDirectory.Create())
@@ -78,7 +77,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void Trust_List_NotEmpty_Success()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -112,7 +111,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void Trust_List_NotEmpty_WithNugetConfig_Success()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -146,7 +145,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task Trust_Author_RelativePathConfileFile_Success(bool allowUntrustedRoot)
@@ -211,7 +210,7 @@ namespace Dotnet.Integration.Test
 
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task Trust_Author_AbsoluteConfileFile_Success(bool allowUntrustedRoot)
@@ -257,7 +256,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true, null)]
         [InlineData(true, "one;two;three")]
         [InlineData(false, null)]
@@ -315,7 +314,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task Trust_CertificateFingerPrint_Success(bool allowUntrustedRoot)
@@ -364,7 +363,63 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        [CIOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Trust_CertificateFingerPrint_WithExistingSigner_UpdatesItSuccess(bool allowUntrustedRoot)
+        {
+            // Arrange
+            var nugetConfigFileName = "NuGet.Config";
+            var package = new SimpleTestPackageContext();
+
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
+            using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            {
+                var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                var repoServiceIndex = "https://serviceindex.test/v3/index.json";
+                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(trustedTestCert.Source.Cert, package, pathContext.PackageSource, new Uri(repoServiceIndex));
+
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <trustedSigners>
+        <author name=""MyCompanyCert"">
+            <certificate fingerprint=""abcdefg"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+    </trustedSigners>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, pathContext.WorkingDirectory, config);
+                var nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, nugetConfigFileName);
+                var allowUntrustedRootArg = allowUntrustedRoot ? "--allow-untrusted-root" : string.Empty;
+                var allowUntruestedRootValue = allowUntrustedRoot ? "true" : "false";
+                var authorName = "MyCompanyCert";
+
+                // Act
+                var resultAdd = _msbuildFixture.RunDotnet(
+                    pathContext.SolutionRoot,
+                    $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}",
+                    ignoreExitCode: true);
+
+                // Assert
+                resultAdd.Success.Should().BeTrue();
+                resultAdd.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, "Successfully updated the trusted signer '{0}'.", authorName));
+
+                string expectedResult = SettingsTestUtils.RemoveWhitespace($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                <configuration>
+                    < trustedSigners>
+                        <author name = ""{authorName}"">
+                                < certificate fingerprint = ""abcdefg"" hashAlgorithm = ""SHA256"" allowUntrustedRoot = ""false""/>
+                                < certificate fingerprint = ""{certFingerprint}"" hashAlgorithm = ""SHA256"" allowUntrustedRoot = ""{allowUntruestedRootValue}""/>
+                        </author>
+                    </trustedSigners>
+                </configuration>");
+
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath)).Should().Be(expectedResult);
+            }
+        }
+
+        [CIOnlyFact]
         public async Task Trust_Remove_Success()
         {
             // Arrange
@@ -409,7 +464,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task Trust_Remove_WrongName_NoChange()
         {
             // Arrange
