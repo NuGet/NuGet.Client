@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -95,6 +96,11 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             InstalledPackageResultStatus status;
             IReadOnlyCollection<NuGetInstalledPackage> installedPackages;
 
+            (InstalledPackageResultStatus, IReadOnlyCollection<NuGetInstalledPackage>) ErrorResult(InstalledPackageResultStatus status)
+            {
+                return (status, null);
+            }
+
             var cacheContext = new DependencyGraphCacheContext();
             IReadOnlyList<ProjectModel.PackageSpec> packageSpecs;
             IReadOnlyList<ProjectModel.IAssetsLogMessage> messages;
@@ -104,9 +110,11 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             }
             catch (ProjectNotNominatedException)
             {
-                status = InstalledPackageResultStatus.ProjectNotReady;
-                installedPackages = null;
-                return (status, installedPackages);
+                return ErrorResult(InstalledPackageResultStatus.ProjectNotReady);
+            }
+            catch (InvalidDataException)
+            {
+                return ErrorResult(InstalledPackageResultStatus.ProjectInvalid);
             }
 
             if (messages?.Any(m => m.Level == LogLevel.Error) == true)
