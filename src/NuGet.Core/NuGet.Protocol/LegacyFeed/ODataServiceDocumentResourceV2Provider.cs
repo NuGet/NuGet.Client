@@ -12,12 +12,11 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
-    public class ODataServiceDocumentResourceV2Provider : ResourceProvider, IDisposable
+    public class ODataServiceDocumentResourceV2Provider : ResourceProvider
     {
         private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
         private readonly ConcurrentDictionary<string, ODataServiceDocumentCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private bool _disposed = false;
 
         /// <summary>
         /// Maximum amount of time to store index.json
@@ -86,27 +85,6 @@ namespace NuGet.Protocol
             }
 
             return new Tuple<bool, INuGetResource>(serviceDocument != null, serviceDocument);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _semaphore.Dispose();
-            }
-
-            _disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         protected class ODataServiceDocumentCacheInfo

@@ -2,12 +2,6 @@ NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeUrl.set -> void
 NuGet.Protocol.LocalPackageSearchMetadata.ReadmeUrl.get -> System.Uri
-NuGet.Protocol.ODataServiceDocumentResourceV2Provider.Dispose() -> void
 NuGet.Protocol.PackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeUrl.get -> System.Uri
-NuGet.Protocol.RemoteV3FindPackageByIdResource.Dispose() -> void
-NuGet.Protocol.ServiceIndexResourceV3Provider.Dispose() -> void
 const NuGet.Protocol.JsonProperties.ReadmeUrl = "readmeUrl" -> string
-virtual NuGet.Protocol.ODataServiceDocumentResourceV2Provider.Dispose(bool disposing) -> void
-virtual NuGet.Protocol.RemoteV3FindPackageByIdResource.Dispose(bool disposing) -> void
-virtual NuGet.Protocol.ServiceIndexResourceV3Provider.Dispose(bool disposing) -> void

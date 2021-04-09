@@ -20,7 +20,7 @@ namespace NuGet.Protocol
     /// <summary>
     /// A resource capable of fetching packages, package versions and package dependency information.
     /// </summary>
-    public class RemoteV3FindPackageByIdResource : FindPackageByIdResource, IDisposable
+    public class RemoteV3FindPackageByIdResource : FindPackageByIdResource
     {
         private readonly SemaphoreSlim _dependencyInfoSemaphore = new SemaphoreSlim(initialCount: 1);
 
@@ -34,8 +34,6 @@ namespace NuGet.Protocol
 
         private const string ResourceTypeName = nameof(FindPackageByIdResource);
         private const string ThisTypeName = nameof(RemoteV3FindPackageByIdResource);
-
-        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new <see cref="RemoteV3FindPackageByIdResource" /> class.
@@ -474,28 +472,6 @@ namespace NuGet.Protocol
                     _dependencyInfoSemaphore.Release();
                 }
             }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _dependencyInfoSemaphore.Dispose();
-                _httpSource.Dispose();
-            }
-
-            _disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }
