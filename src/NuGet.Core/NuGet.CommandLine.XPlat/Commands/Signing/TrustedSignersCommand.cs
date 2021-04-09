@@ -70,7 +70,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
                 trustedSignersCmd.OnExecute(async () =>
                 {
                     TrustCommand action;
-                    Debugger.Launch();
+
                     if (!command.Values.Any() || string.IsNullOrEmpty(command.Values[0]))
                     {
                         action = TrustCommand.List;

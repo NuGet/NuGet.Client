@@ -77,7 +77,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
+        [Fact]
         public void Trust_List_NotEmpty_Success()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
