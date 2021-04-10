@@ -23,7 +23,6 @@ namespace NuGet.XPlat.FuncTest
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 // Arrange & Act
-                //var ex = Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
                 var result = CommandRunner.Run(
                       DotnetCli,
                       Directory.GetCurrentDirectory(),
@@ -50,7 +49,6 @@ error: Unrecognized option '{unrecognizedOption}'"));
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 // Arrange & Act
-                //var ex = Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
                 var result = CommandRunner.Run(
                       DotnetCli,
                       Directory.GetCurrentDirectory(),
