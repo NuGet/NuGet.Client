@@ -778,7 +778,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Command actions allow you to specify only a specific subset of signers whose signatures will be accepted, while rejecting all others.</value>
   </data>
   <data name="TrustCommandAlgorithm" xml:space="preserve">
-    <value>Specifies the hash algorithm used to calculate the certificate fingerprint. Defaults to SHA256. Values supported are SHA256, SHA384 and SHA512</value>
+    <value>Specifies the hash algorithm used to calculate the certificate fingerprint. Defaults to SHA256. Values supported are SHA256, SHA384 and SHA512.</value>
   </data>
   <data name="TrustCommandAllowUntrustedRoot" xml:space="preserve">
     <value>Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root.</value>

@@ -30,8 +30,8 @@ namespace NuGet.XPlat.FuncTest
                       waitForExit: true);
 
                 // Assert
-                Assert.Equal(1, result.Item1);
-                Assert.True(result.Item2.Contains($@"Specify --help for a list of available options and commands.
+                Assert.Equal(1, result.ExitCode);
+                Assert.True(result.AllOutput.Contains($@"Specify --help for a list of available options and commands.
 error: Unrecognized option '{unrecognizedOption}'"));
             }
         }
@@ -56,8 +56,8 @@ error: Unrecognized option '{unrecognizedOption}'"));
                       waitForExit: true);
 
                 // Assert
-                Assert.Equal(1, result.Item1);
-                Assert.False(string.IsNullOrEmpty(result.Item2));
+                Assert.Equal(1, result.ExitCode);
+                Assert.False(string.IsNullOrEmpty(result.AllOutput));
             }
         }
 
