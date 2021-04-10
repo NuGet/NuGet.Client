@@ -1796,7 +1796,18 @@ namespace NuGet.Packaging {
                 return ResourceManager.GetString("VerifyChainBuildingIssue", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s signing certificate is not trusted by the trust provider..
+        /// </summary>
+        internal static string VerifyChainBuildingIssue_UntrustedRoot
+        {
+            get
+            {
+                return ResourceManager.GetString("VerifyChainBuildingIssue_UntrustedRoot", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to The {0}&apos;s certificate does not meet a minimum public key length requirement..
         /// </summary>
@@ -1967,6 +1978,17 @@ namespace NuGet.Packaging {
             get
             {
                 return ResourceManager.GetString("ZipFileLastWriteTimeStampModifiedMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamping certificate is not trusted by the trust provider..
+        /// </summary>
+        internal static string VerifyTimestampChainBuildingIssue_UntrustedRoot
+        {
+            get
+            {
+                return ResourceManager.GetString("VerifyTimestampChainBuildingIssue_UntrustedRoot", resourceCulture);
             }
         }
 
