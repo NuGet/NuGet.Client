@@ -103,10 +103,10 @@ namespace NuGet.Commands
                 IEnumerable<SignatureLog> issues = logMessages.Where(m => m.Level < LogLevel.Warning);
                 await logger.LogMessagesAsync(issues);
 
-                logger.LogMinimal(Environment.NewLine);
-
                 if (logMessages.Any(m => m.Level >= LogLevel.Warning))
                 {
+                    logger.LogMinimal(Environment.NewLine);
+
                     var errors = logMessages.Count(m => m.Level == LogLevel.Error);
                     var warnings = logMessages.Count(m => m.Level == LogLevel.Warning);
 
