@@ -26,7 +26,7 @@ namespace Dotnet.Integration.Test
             _msbuildFixture = fixture;
         }
 
-        [CIOnlyFact]
+        [Fact]
         public void Trust_No_ActionCommand_DefaultTo_ListAction_Success()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -60,7 +60,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
+        [Fact]
         public void Trust_List_Emtpy_Success()
         {
             using (TestDirectory packageDir = TestDirectory.Create())
@@ -111,7 +111,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
+        [Fact]
         public void Trust_List_NotEmpty_WithNugetConfig_Success()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -145,7 +145,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyTheory]
+        [CIOnlyFact]
         [InlineData(true)]
         [InlineData(false)]
         public async Task Trust_Author_RelativePathConfileFile_Success(bool allowUntrustedRoot)
@@ -210,7 +210,7 @@ namespace Dotnet.Integration.Test
 
         }
 
-        [CIOnlyTheory]
+        [CIOnlyFact]
         [InlineData(true)]
         [InlineData(false)]
         public async Task Trust_Author_AbsoluteConfileFile_Success(bool allowUntrustedRoot)
