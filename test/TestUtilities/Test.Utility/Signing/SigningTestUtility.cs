@@ -722,12 +722,13 @@ namespace Test.Utility.Signing
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, NuGetLogCode code, LogLevel logLevel)
         {
-            const string untrustedRoot = "certificate is not trusted by the trust provider";
+            string untrustedRoot = X509ChainStatusFlags.UntrustedRoot.ToString();
 
             bool isUntrustedRoot = issues.Any(issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(untrustedRoot));
+                (issue.Message.Contains("certificate is not trusted by the trust provider") ||
+                    issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == untrustedRoot).Any()));
 
             Assert.True(isUntrustedRoot);
         }
