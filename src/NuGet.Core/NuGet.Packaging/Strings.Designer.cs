@@ -1798,6 +1798,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s signing certificate is not trusted by the trust provider..
+        /// </summary>
+        internal static string VerifyChainBuildingIssue_UntrustedRoot {
+            get {
+                return ResourceManager.GetString("VerifyChainBuildingIssue_UntrustedRoot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The {0}&apos;s certificate does not meet a minimum public key length requirement..
         /// </summary>
         internal static string VerifyError_CertificateFailsPublicKeyLengthRequirement {
@@ -1956,6 +1965,15 @@ namespace NuGet.Packaging {
         internal static string VerifyError_TimestampVerifyChainBuildingIssue {
             get {
                 return ResourceManager.GetString("VerifyError_TimestampVerifyChainBuildingIssue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamping certificate is not trusted by the trust provider..
+        /// </summary>
+        internal static string VerifyTimestampChainBuildingIssue_UntrustedRoot {
+            get {
+                return ResourceManager.GetString("VerifyTimestampChainBuildingIssue_UntrustedRoot", resourceCulture);
             }
         }
         

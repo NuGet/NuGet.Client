@@ -249,7 +249,7 @@ namespace NuGet.Packaging.Signing
                         {
                             if (settings.ReportUntrustedRoot)
                             {
-                                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, messages.First())));
+                                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue_UntrustedRoot, FriendlyName, messages.First())));
                             }
 
                             if (!settings.AllowUntrusted)

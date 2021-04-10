@@ -874,4 +874,12 @@ Valid from:</comment>
   <data name="ZipFileTimeStampModifiedWarning" xml:space="preserve">
     <value>The zip format supports a limited date range. The following files are outside the supported range:</value>
   </data>
+  <data name="VerifyChainBuildingIssue_UntrustedRoot" xml:space="preserve">
+    <value>The {0}'s signing certificate is not trusted by the trust provider.</value>
+    <comment>0 -Signature friendly name</comment>
+  </data>
+  <data name="VerifyTimestampChainBuildingIssue_UntrustedRoot" xml:space="preserve">
+    <value>The {0}'s timestamping certificate is not trusted by the trust provider.</value>
+    <comment>0 -Signature friendly name</comment>
+  </data>
 </root>

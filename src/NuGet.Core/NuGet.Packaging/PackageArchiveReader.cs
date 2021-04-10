@@ -66,27 +66,6 @@ namespace NuGet.Packaging
         /// <summary>
         /// Nupkg package reader
         /// </summary>
-        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
-        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
-        private PackageArchiveReader(IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
-            : base(frameworkProvider, compatibilityProvider)
-        {
-            _environmentVariableReader = EnvironmentVariableWrapper.Instance;
-        }
-
-        // For testing purposes only
-        internal PackageArchiveReader(Stream stream, IEnvironmentVariableReader environmentVariableReader)
-            : this(stream)
-        {
-            if (environmentVariableReader != null)
-            {
-                _environmentVariableReader = environmentVariableReader;
-            }
-        }
-
-        /// <summary>
-        /// Nupkg package reader
-        /// </summary>
         /// <param name="stream">Nupkg data stream.</param>
         public PackageArchiveReader(Stream stream)
             : this(stream, false, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
