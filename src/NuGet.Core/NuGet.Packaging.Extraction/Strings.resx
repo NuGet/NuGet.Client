@@ -606,7 +606,7 @@ Valid from:</comment>
     <value>This package was not repository signed with a certificate listed by this repository.</value>
   </data>
   <data name="VerifyChainBuildingIssue" xml:space="preserve">
-    <value>The {0}'s certificate validation failed. {1}</value>
+    <value>The {0} found a chain building issue: {1}</value>
     <comment>0 - Signature friendly name
 1 - issue message</comment>
   </data>
@@ -623,7 +623,7 @@ Valid from:</comment>
     <value>The signing certificate is not yet valid.</value>
   </data>
   <data name="VerifyError_TimestampVerifyChainBuildingIssue" xml:space="preserve">
-    <value>The {0}'s timestamp certificate validation failed. {1}</value>
+    <value>The {0}'s timestamp found a chain building issue: {1}</value>
     <comment>0 - Signature friendly name
 1 - issue message</comment>
   </data>

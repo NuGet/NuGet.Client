@@ -40,7 +40,28 @@ namespace NuGet.Packaging
         /// <summary>
         /// True if the package is signed
         /// </summary>
-        private bool _isSigned = false;
+        private bool? _isSigned;
+
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
+        private PackageArchiveReader(IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+            : base(frameworkProvider, compatibilityProvider)
+        {
+            _environmentVariableReader = EnvironmentVariableWrapper.Instance;
+        }
+
+        // For testing purposes only
+        internal PackageArchiveReader(Stream stream, IEnvironmentVariableReader environmentVariableReader)
+            : this(stream)
+        {
+            if (environmentVariableReader != null)
+            {
+                _environmentVariableReader = environmentVariableReader;
+            }
+        }
 
         /// <summary>
         /// Nupkg package reader
@@ -380,7 +401,7 @@ namespace NuGet.Packaging
             ThrowIfZipReadStreamIsNull();
 
 #if IS_SIGNING_SUPPORTED
-            if (!_isSigned)
+            if (!_isSigned.HasValue)
             {
                 using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
                 {
@@ -394,7 +415,7 @@ namespace NuGet.Packaging
                 }
             }
 #endif
-            return Task.FromResult(_isSigned);
+            return Task.FromResult(_isSigned.HasValue ? _isSigned.Value : false);
         }
 
         public override async Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)

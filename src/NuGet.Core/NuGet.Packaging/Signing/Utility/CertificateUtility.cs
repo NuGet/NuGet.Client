@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="cert">X509Certificate2 to be converted to string.</param>
         /// <param name="fingerprintAlgorithm">Algorithm used to calculate certificate fingerprint</param>
         /// <returns>string representation of the X509Certificate2.</returns>
-        public static IReadOnlyList<SignatureLog> X509Certificate2ToLogMessages(X509Certificate2 cert, HashAlgorithmName fingerprintAlgorithm, string indentation = "  ")
+        internal static IReadOnlyList<SignatureLog> X509Certificate2ToLogMessages(X509Certificate2 cert, HashAlgorithmName fingerprintAlgorithm, string indentation = "  ")
         {
             var certificateFingerprint = GetHashString(cert, fingerprintAlgorithm);
             var issues = new List<SignatureLog>();
