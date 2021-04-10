@@ -27,7 +27,7 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class SignatureTrustAndValidityVerificationProviderTests
     {
-        private const string UntrustedChainCertError = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+        private const string UntrustedChainCertError = "The author primary signature's signing certificate is not trusted by the trust provider.";
         private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SigningTestFixture _testFixture;

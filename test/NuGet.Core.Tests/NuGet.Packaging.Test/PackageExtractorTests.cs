@@ -41,6 +41,7 @@ namespace NuGet.Packaging.Test
         private const string _notSignedPackageRequire = "signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.";
         private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
         private const string OptInPackageVerificationTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
+        private const string UntrustedChainCertError = "The author primary signature's signing certificate is not trusted by the trust provider.";
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTestAsync()
@@ -2390,7 +2391,7 @@ namespace NuGet.Packaging.Test
                     logger.Verify(l => l.LogAsync(It.Is<ILogMessage>(m =>
                         m.Level == LogLevel.Warning &&
                         m.Code != NuGetLogCode.NU3018 &&
-                        !m.Message.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."))), Times.AtLeastOnce);
+                        !m.Message.Contains(UntrustedChainCertError))), Times.AtLeastOnce);
 
                     logger.Verify(l => l.LogAsync(It.Is<ILogMessage>(m =>
                         m.Code == NuGetLogCode.NU3018 &&
@@ -2446,7 +2447,7 @@ namespace NuGet.Packaging.Test
                     logger.Verify(l => l.LogAsync(It.Is<ILogMessage>(m =>
                         m.Level == LogLevel.Warning &&
                         m.Code != NuGetLogCode.NU3018 &&
-                        !m.Message.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."))), Times.AtLeastOnce);
+                        !m.Message.Contains(UntrustedChainCertError))), Times.AtLeastOnce);
 
                     logger.Verify(l => l.LogAsync(It.Is<ILogMessage>(m =>
                         m.Code == NuGetLogCode.NU3018 &&
