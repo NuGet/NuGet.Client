@@ -145,7 +145,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
+        [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task Trust_Author_RelativePathConfileFile_Success(bool allowUntrustedRoot)
@@ -210,7 +210,7 @@ namespace Dotnet.Integration.Test
 
         }
 
-        [CIOnlyFact]
+        [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task Trust_Author_AbsoluteConfileFile_Success(bool allowUntrustedRoot)

@@ -87,42 +87,5 @@ error: Unrecognized option '{unrecognizedOption}'"));
                 DotnetCliUtil.VerifyResultSuccess(result, "There are no trusted signers.");
             }
         }
-
-        [Theory]
-        [InlineData("trust")]
-        [InlineData("trust list")]
-        public static void Trust_List_NotEmpty_Succeeds(string args)
-        {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
-
-            using (var mockBaseDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                var mockPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"packages"));
-                // Arrange
-                var nugetConfigContent = $@"<?xml version=""1.0"" encoding=""utf-8""?>
-                    <configuration>
-                        <trustedSigners>
-                            <author name=""signer"">
-                                <certificate fingerprint=""abcdefxyz"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
-                            </author>
-                        </trustedSigners>
-                    </configuration>";
-                var nugetConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "NuGet.Config");
-
-                File.WriteAllText(nugetConfigPath, nugetConfigContent);
-
-                // Act
-                var result = CommandRunner.Run(
-                      DotnetCli,
-                      mockPackagesDirectory.FullName,
-                      $"{XplatDll} {args}  --configfile {nugetConfigPath}",
-                      waitForExit: true);
-
-                // Assert
-                DotnetCliUtil.VerifyResultSuccess(result, "abcdefxyz");
-            }
-        }
     }
 }
