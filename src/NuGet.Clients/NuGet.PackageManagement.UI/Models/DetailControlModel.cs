@@ -172,12 +172,12 @@ namespace NuGet.PackageManagement.UI
                 }
                 else if (project.ProjectKind == NuGetProjectKind.PackageReference)
                 {
-                    if (!projectsToInstalledPackages.TryGetValue(project.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences)
+                    if (!projectsToInstalledPackages.TryGetValue(project.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences) 
                         || packageReferences is null)
                     {
                         continue;
                     }
-
+                    
                     // Find the lowest auto referenced version of this package.
                     IPackageReferenceContextInfo autoReferenced = packageReferences
                         .Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.Identity.Id)
@@ -294,9 +294,8 @@ namespace NuGet.PackageManagement.UI
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        var projects = _nugetProjects.ToList();
                         IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
-                            await projects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
+                            await _nugetProjects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
 
                         return projectsToInstalledPackages.SelectMany(pair => pair.Value).Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
                     });
@@ -314,7 +313,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     var installedPackages = new HashSet<PackageDependency>();
                     IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
-                        await _nugetProjects.ToList().GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
+                        await _nugetProjects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
 
                     foreach (var project in _nugetProjects)
                     {
