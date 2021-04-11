@@ -125,11 +125,27 @@ namespace NuGet.PackageManagement.UI
         {
             var hash = new HashSet<NuGetVersion>();
 
-            foreach (var project in _projects)
+            IEnumerable<IProjectContextInfo> nugetProjects = _projects.Select(p => p.NuGetProject);
+            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectIdsToInstalledPackages =
+                await nugetProjects.GetInstalledPackagesAsync(ServiceBroker, cancellationToken);
+
+            foreach (KeyValuePair<string, IReadOnlyCollection<IPackageReferenceContextInfo>> item in projectIdsToInstalledPackages)
             {
+                string packageId = Id;
+                string projectId = item.Key;
+                IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = item.Value;
+                PackageInstallationInfo project = _projects.FirstOrDefault(installationInfo => StringComparer.OrdinalIgnoreCase.Equals(installationInfo.NuGetProject.ProjectId, projectId));
+
+                if (project == null)
+                {
+                    continue;
+                }
+
                 try
                 {
-                    IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
+                    IPackageReferenceContextInfo installedVersion = packageReferences.FirstOrDefault(
+                        packageReference => StringComparer.OrdinalIgnoreCase.Equals(packageReference.Identity.Id, packageId));
+
                     if (installedVersion != null)
                     {
                         project.InstalledVersion = installedVersion.Identity.Version;
@@ -179,24 +195,6 @@ namespace NuGet.PackageManagement.UI
 
             UpdateCanInstallAndCanUninstall();
             AutoSelectProjects();
-        }
-
-        /// <summary>
-        /// This method is called from several methods that are called from properties and LINQ queries
-        /// It is likely not called more than once in an action.
-        /// </summary>
-        private async Task<IPackageReferenceContextInfo> GetInstalledPackageAsync(
-            IProjectContextInfo project,
-            string packageId,
-            CancellationToken cancellationToken)
-        {
-            IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                ServiceBroker,
-                cancellationToken);
-            IPackageReferenceContextInfo installedPackage = installedPackages
-                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
-                .FirstOrDefault();
-            return installedPackage;
         }
 
         protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)

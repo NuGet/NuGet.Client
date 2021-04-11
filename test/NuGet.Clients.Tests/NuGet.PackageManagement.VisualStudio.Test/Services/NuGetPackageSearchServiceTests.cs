@@ -89,7 +89,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var projectManagerService = new Mock<INuGetProjectManagerService>();
 
-            var installedPackages = new List<IPackageReferenceContextInfo>();
             var projects = new List<IProjectContextInfo>
             {
                 new ProjectContextInfo(
@@ -101,7 +100,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
+                .Returns(It.IsAny<ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>>>());
 
 #pragma warning disable ISB001 // Dispose of proxies
             serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(

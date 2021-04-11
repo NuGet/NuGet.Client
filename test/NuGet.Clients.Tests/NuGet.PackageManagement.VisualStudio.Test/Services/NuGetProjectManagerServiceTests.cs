@@ -372,13 +372,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
 
-                IReadOnlyCollection<IPackageReferenceContextInfo> packages = await _projectManager.GetInstalledPackagesAsync(
+                IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> packages = await _projectManager.GetInstalledPackagesAsync(
                     new[] { projectId },
                     CancellationToken.None);
 
                 Assert.Equal(1, packages.Count);
                 IPackageReferenceContextInfo expected = PackageReferenceContextInfo.Create(packageReference);
-                IPackageReferenceContextInfo actual = packages.Single();
+                IPackageReferenceContextInfo actual = packages.Single().Value.Single();
 
                 Assert.Equal(expected.AllowedVersions, actual.AllowedVersions);
                 Assert.Equal(expected.Framework, actual.Framework);
@@ -530,6 +530,114 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(packageV2.Identity, implicitAction.PackageIdentity);
                     Assert.Equal(NuGetProjectActionType.Install, implicitAction.ProjectActionType);
                 });
+            }
+        }
+
+        [Fact]
+        public async Task GetInstalledPackagesAsync_ForMultipleProjects_ReturnsCorrectPackages()
+        {
+            // Arrange
+            const string projectNameA = "a";
+            const string projectNameB = "b";
+            const string projectNameC = "c";
+            string projectId1 = Guid.NewGuid().ToString();
+            string projectId2 = Guid.NewGuid().ToString();
+            string projectId3 = Guid.NewGuid().ToString();
+
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                Initialize();
+
+                string projectFullPathA = Path.Combine(testDirectory.Path, $"{projectNameA}.csproj");
+                string projectFullPathB = Path.Combine(testDirectory.Path, $"{projectNameB}.csproj");
+                string projectFullPathC = Path.Combine(testDirectory.Path, $"{projectNameC}.csproj");
+                NuGetFramework targetFramework = NuGetFramework.Parse("net46");
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(targetFramework, new TestNuGetProjectContext());
+                var project1 = new TestMSBuildNuGetProject(msBuildNuGetProjectSystem, testDirectory.Path, projectFullPathA, projectId1);
+                var project2 = new TestMSBuildNuGetProject(msBuildNuGetProjectSystem, testDirectory.Path, projectFullPathB, projectId2);
+                var project3 = new TestMSBuildNuGetProject(msBuildNuGetProjectSystem, testDirectory.Path, projectFullPathC, projectId3);
+
+                var packageReferenceA = new PackageReference(
+                    new PackageIdentity(id: "a", NuGetVersion.Parse("1.0.0")),
+                    targetFramework);
+
+                var packageReferenceB = new PackageReference(
+                    new PackageIdentity(id: "b", NuGetVersion.Parse("1.0.0")),
+                    targetFramework);
+
+                var packageReferenceC = new PackageReference(
+                    new PackageIdentity(id: "c", NuGetVersion.Parse("1.0.0")),
+                    targetFramework);
+
+                project1.InstalledPackageReferences = Task.FromResult<IEnumerable<PackageReference>>(new[]
+                {
+                    null,
+                    packageReferenceA
+                });
+                project2.InstalledPackageReferences = Task.FromResult<IEnumerable<PackageReference>>(new[]
+                {
+                    null,
+                    packageReferenceB
+                });
+                project3.InstalledPackageReferences = Task.FromResult<IEnumerable<PackageReference>>(new[]
+                {
+                    null,
+                    packageReferenceC
+                });
+
+                _solutionManager.NuGetProjects.Add(project1);
+                _solutionManager.NuGetProjects.Add(project2);
+                _solutionManager.NuGetProjects.Add(project3);
+
+                var telemetrySession = new Mock<ITelemetrySession>();
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+
+                telemetrySession
+                    .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+                TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+                // Act
+                IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToPackages =
+                    await _projectManager.GetInstalledPackagesAsync(
+                        projectIds: new[] { projectId1, projectId2, projectId3 },
+                        cancellationToken: CancellationToken.None);
+
+                IPackageReferenceContextInfo expectedA = PackageReferenceContextInfo.Create(packageReferenceA);
+                IPackageReferenceContextInfo actualA = projectsToPackages.Single(pair => pair.Key == projectId1).Value.Single();
+
+                IPackageReferenceContextInfo expectedB = PackageReferenceContextInfo.Create(packageReferenceB);
+                IPackageReferenceContextInfo actualB = projectsToPackages.Single(pair => pair.Key == projectId2).Value.Single();
+
+                IPackageReferenceContextInfo expectedC = PackageReferenceContextInfo.Create(packageReferenceC);
+                IPackageReferenceContextInfo actualC = projectsToPackages.Single(pair => pair.Key == projectId3).Value.Single();
+
+                // Assert
+                Assert.Equal(3, projectsToPackages.Count);
+
+                Assert.Equal(expectedA.AllowedVersions, actualA.AllowedVersions);
+                Assert.Equal(expectedA.Framework, actualA.Framework);
+                Assert.Equal(expectedA.Identity, actualA.Identity);
+                Assert.Equal(expectedA.IsAutoReferenced, actualA.IsAutoReferenced);
+                Assert.Equal(expectedA.IsDevelopmentDependency, actualA.IsDevelopmentDependency);
+                Assert.Equal(expectedA.IsUserInstalled, actualA.IsUserInstalled);
+
+                Assert.Equal(expectedB.AllowedVersions, actualB.AllowedVersions);
+                Assert.Equal(expectedB.Framework, actualB.Framework);
+                Assert.Equal(expectedB.Identity, actualB.Identity);
+                Assert.Equal(expectedB.IsAutoReferenced, actualB.IsAutoReferenced);
+                Assert.Equal(expectedB.IsDevelopmentDependency, actualB.IsDevelopmentDependency);
+                Assert.Equal(expectedB.IsUserInstalled, actualB.IsUserInstalled);
+
+                Assert.Equal(expectedC.AllowedVersions, actualC.AllowedVersions);
+                Assert.Equal(expectedC.Framework, actualC.Framework);
+                Assert.Equal(expectedC.Identity, actualC.Identity);
+                Assert.Equal(expectedC.IsAutoReferenced, actualC.IsAutoReferenced);
+                Assert.Equal(expectedC.IsDevelopmentDependency, actualC.IsDevelopmentDependency);
+                Assert.Equal(expectedC.IsUserInstalled, actualC.IsUserInstalled);
+
+                Assert.Equal(1, telemetryEvents.Count);
             }
         }
 

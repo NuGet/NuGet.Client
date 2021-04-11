@@ -132,21 +132,23 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
 
-            var getVersionsTask = searchResultPackage.GetVersionsAsync();
+            Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync();
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
 
             // Filter out projects that are not managed by NuGet.
-            var projects = _nugetProjects.Where(project => project.ProjectKind != NuGetProjectKind.ProjectK).ToArray();
+            IProjectContextInfo[] projects = _nugetProjects.Where(project =>
+                project.ProjectKind == NuGetProjectKind.PackagesConfig || project.ProjectKind == NuGetProjectKind.PackageReference).ToArray();
 
-            foreach (var project in projects)
+            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
+                await projects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
+
+            foreach (IProjectContextInfo project in projects)
             {
                 if (project.ProjectKind == NuGetProjectKind.PackagesConfig)
                 {
                     // cache allowed version range for each nuget project for current selected package
-                    IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                        ServiceBroker,
-                        CancellationToken.None);
+                    IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = projectsToInstalledPackages[project.ProjectId];
                     IPackageReferenceContextInfo packageReference = installedPackages
                         .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, searchResultPackage.Id));
 
@@ -169,9 +171,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 else if (project.ProjectKind == NuGetProjectKind.PackageReference)
                 {
-                    IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = await project.GetInstalledPackagesAsync(
-                        ServiceBroker,
-                        CancellationToken.None);
+                    IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = projectsToInstalledPackages[project.ProjectId];
 
                     // Find the lowest auto referenced version of this package.
                     IPackageReferenceContextInfo autoReferenced = packageReferences
@@ -289,16 +289,10 @@ namespace NuGet.PackageManagement.UI
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        var installedPackages = new List<IPackageReferenceContextInfo>();
-                        foreach (var project in _nugetProjects)
-                        {
-                            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
-                                ServiceBroker,
-                                CancellationToken.None);
+                        IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
+                            await _nugetProjects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
 
-                            installedPackages.AddRange(projectInstalledPackages);
-                        }
-                        return installedPackages.Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
+                        return projectsToInstalledPackages.SelectMany(pair => pair.Value).Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
                     });
             }
         }
@@ -313,9 +307,12 @@ namespace NuGet.PackageManagement.UI
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     var installedPackages = new HashSet<PackageDependency>();
+                    IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
+                        await _nugetProjects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
+
                     foreach (var project in _nugetProjects)
                     {
-                        var dependencies = await GetDependencies(project);
+                        IReadOnlyList<PackageDependency> dependencies = GetDependencies(project, projectsToInstalledPackages);
 
                         installedPackages.UnionWith(dependencies);
                     }
@@ -324,13 +321,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<IReadOnlyList<PackageDependency>> GetDependencies(IProjectContextInfo project)
+        private IReadOnlyList<PackageDependency> GetDependencies(IProjectContextInfo project,
+            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages)
         {
             var results = new List<PackageDependency>();
 
-            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
-                ServiceBroker,
-                CancellationToken.None);
+            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = projectsToInstalledPackages[project.ProjectId];
 
             foreach (IPackageReferenceContextInfo package in projectInstalledPackages)
             {

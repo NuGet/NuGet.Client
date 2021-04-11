@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private readonly MultiSourcePackageMetadataProvider _metadataProvider;
         private readonly PackageMetadataResource _metadataResource;
+        private Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> _projectsToInstalledPackages;
 
         public UpdatePackageFeedTests()
         {
@@ -46,6 +48,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 optionalLocalRepository: null,
                 optionalGlobalLocalRepositories: null,
                 logger: NullLogger.Instance);
+
+            _projectsToInstalledPackages = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
         }
 
         [Fact]
@@ -56,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
-            IProjectContextInfo projectA = SetupProject(projectManagerService, "FakePackage", "1.0.0");
+            IProjectContextInfo projectA = SetupSingleProject(projectManagerService, "FakePackage", "1.0.0");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
             var _target = new UpdatePackageFeed(
@@ -91,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
-            IProjectContextInfo projectA = SetupProject(projectManagerService, "FakePackage", "1.0.0", "[1,2)");
+            IProjectContextInfo projectA = SetupSingleProject(projectManagerService, "FakePackage", "1.0.0", "[1,2)");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
             var _target = new UpdatePackageFeed(
@@ -129,8 +133,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Both projects need to be updated to different versions
             // projectA: 1.0.0 => 2.0.1
             // projectB: 1.0.0 => 1.0.1
-            IProjectContextInfo projectA = SetupProject(projectManagerService, "FakePackage", "1.0.0");
-            IProjectContextInfo projectB = SetupProject(projectManagerService, "FakePackage", "1.0.0", "[1,2)");
+            IProjectContextInfo projectA = SetupProject("FakePackage", "1.0.0");
+            IProjectContextInfo projectB = SetupProject("FakePackage", "1.0.0", "[1,2)");
+            SetupGetInstalledPackagesAsync(projectManagerService);
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
             var _target = new UpdatePackageFeed(
@@ -169,8 +174,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Only one project needs to be updated
             // projectA: 2.0.0 => 2.0.1
             // projectB: 1.0.1 => None
-            IProjectContextInfo projectA = SetupProject(projectManagerService, "FakePackage", "2.0.0");
-            IProjectContextInfo projectB = SetupProject(projectManagerService, "FakePackage", "1.0.1", "[1,2)");
+            IProjectContextInfo projectA = SetupProject("FakePackage", "2.0.0");
+            IProjectContextInfo projectB = SetupProject("FakePackage", "1.0.1", "[1,2)");
+            SetupGetInstalledPackagesAsync(projectManagerService);
+
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
             var _target = new UpdatePackageFeed(
@@ -181,9 +188,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Act
             IEnumerable<IPackageSearchMetadata> packages = await _target.GetPackagesWithUpdatesAsync(
-                searchText: "fake",
-                new SearchFilter(includePrerelease: false),
-                CancellationToken.None);
+               searchText: "fake",
+               new SearchFilter(includePrerelease: false),
+               CancellationToken.None);
 
             // Assert
             // Should retrieve a single update item with the lowest version and full list of available versions
@@ -209,8 +216,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Only one project needs to be updated
             // projectA: 2.0.1 => None
             // projectB: 1.0.0 => 1.0.1
-            IProjectContextInfo projectA = SetupProject(projectManagerService, "FakePackage", "2.0.1");
-            IProjectContextInfo projectB = SetupProject(projectManagerService, "FakePackage", "1.0.0", "[1,2)");
+            IProjectContextInfo projectA = SetupProject("FakePackage", "2.0.1");
+            IProjectContextInfo projectB = SetupProject("FakePackage", "1.0.0", "[1,2)");
+            SetupGetInstalledPackagesAsync(projectManagerService);
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
             var _target = new UpdatePackageFeed(
@@ -246,8 +254,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
-            IProjectContextInfo projectA = SetupProject(projectManagerService, "FakePackage", "2.0.1");
-            IProjectContextInfo projectB = SetupProject(projectManagerService, "FakePackage", "1.0.1", "[1,2)");
+            IProjectContextInfo projectA = SetupProject("FakePackage", "2.0.1");
+            IProjectContextInfo projectB = SetupProject("FakePackage", "1.0.1", "[1,2)");
+            SetupGetInstalledPackagesAsync(projectManagerService);
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
             var _target = new UpdatePackageFeed(
@@ -274,7 +283,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
-            IProjectContextInfo projectA = SetupProject(projectManagerService, "FakePackage", "1.0.0");
+            IProjectContextInfo projectA = SetupSingleProject(projectManagerService, "FakePackage", "1.0.0");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.0");
 
             var _target = new UpdatePackageFeed(
@@ -311,15 +320,42 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 actualVersions.Select(v => v.Version.ToString()).ToArray());
         }
 
-        private IProjectContextInfo SetupProject(
+        /// <summary>
+        /// Creates a project and adds to the global dictionary field, <see cref="_projectsToInstalledPackages"/>,
+        /// and finalizes the Setup for <see cref="INuGetProjectManagerService"/>.
+        /// </summary>
+        /// <param name="projectManagerService"></param>
+        /// <param name="packageId"></param>
+        /// <param name="packageVersion"></param>
+        /// <param name="allowedVersions"></param>
+        /// <returns></returns>
+        private IProjectContextInfo SetupSingleProject(
             Mock<INuGetProjectManagerService> projectManagerService,
             string packageId,
             string packageVersion,
             string allowedVersions = null)
         {
-            var packageIdentity = new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion));
+            var project = SetupProject(packageId, packageVersion, allowedVersions);
+            SetupGetInstalledPackagesAsync(projectManagerService);
+            return project;
+        }
 
-            var installedPackages = new PackageReferenceContextInfo[]
+        /// <summary>
+        /// Creates a project and adds to the global dictionary field, <see cref="_projectsToInstalledPackages"/>.
+        /// </summary>
+        /// <param name="packageId"></param>
+        /// <param name="packageVersion"></param>
+        /// <param name="allowedVersions"></param>
+        /// <returns></returns>
+        private IProjectContextInfo SetupProject(
+            string packageId,
+            string packageVersion,
+            string allowedVersions = null)
+        {
+            PackageReferenceContextInfo[] installedPackages;
+            string projectId = Guid.NewGuid().ToString();
+            var packageIdentity = new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion));
+            installedPackages = new PackageReferenceContextInfo[]
             {
                 PackageReferenceContextInfo.Create(
                     new PackageReference(
@@ -331,20 +367,28 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null))
             };
 
-            string projectId = Guid.NewGuid().ToString();
-
-            projectManagerService.Setup(
-                    x => x.GetInstalledPackagesAsync(
-                        It.Is<IReadOnlyCollection<string>>(projectIds => projectIds.Single() == projectId),
-                        It.IsAny<CancellationToken>()))
-                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
-
             var project = new Mock<IProjectContextInfo>();
-
             project.SetupGet(x => x.ProjectId)
                 .Returns(projectId);
 
+            _projectsToInstalledPackages.Add(projectId, installedPackages);
+
             return project.Object;
+        }
+
+        /// <summary>
+        /// Finalizes the Setup for <see cref="INuGetProjectManagerService"/>. Should be called after all necessary calls to <see cref="SetupProject"/>.
+        /// </summary>
+        /// <param name="projectManagerService"></param>
+        private void SetupGetInstalledPackagesAsync(Mock<INuGetProjectManagerService> projectManagerService)
+        {
+            var expectedResult = new ReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>(_projectsToInstalledPackages);
+
+            projectManagerService.Setup(
+                    x => x.GetInstalledPackagesAsync(
+                        It.IsAny<IReadOnlyCollection<string>>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>>(expectedResult));
         }
 
         private void SetupRemotePackageMetadata(string id, params string[] versions)
@@ -369,9 +413,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var serviceBroker = new Mock<IServiceBroker>();
             Mock<INuGetProjectManagerService> projectManagerService = SetupProjectManagerService(serviceBroker);
 
-            IProjectContextInfo projectA = SetupProject(projectManagerService, "FakePackage", "1.0.0");
-            IProjectContextInfo projectB = SetupProject(projectManagerService, "ZFakePackage", "1.0.0");
-            IProjectContextInfo projectC = SetupProject(projectManagerService, "AFakePackage", "1.0.0");
+            IProjectContextInfo projectA = SetupSingleProject(projectManagerService, "FakePackage", "1.0.0");
+            IProjectContextInfo projectB = SetupSingleProject(projectManagerService, "ZFakePackage", "1.0.0");
+            IProjectContextInfo projectC = SetupSingleProject(projectManagerService, "AFakePackage", "1.0.0");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
             SetupRemotePackageMetadata("ZFakePackage", "0.0.1", "1.0.0", "4.0.0");
             SetupRemotePackageMetadata("AFakePackage", "1.0.0", "3.0.1");

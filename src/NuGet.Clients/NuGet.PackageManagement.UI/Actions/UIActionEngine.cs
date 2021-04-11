@@ -310,12 +310,13 @@ namespace NuGet.PackageManagement.UI
             packageEnumerationTime.Start();
             try
             {
+                IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToPackages =
+                    await uiService.Projects.GetInstalledPackagesAsync(uiService.UIContext.ServiceBroker, cancellationToken);
+
                 // collect the install state of the existing packages
                 foreach (IProjectContextInfo project in uiService.Projects)
                 {
-                    IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                        uiService.UIContext.ServiceBroker,
-                        cancellationToken);
+                    IEnumerable<IPackageReferenceContextInfo> installedPackages = projectsToPackages[project.ProjectId];
 
                     foreach (IPackageReferenceContextInfo package in installedPackages)
                     {

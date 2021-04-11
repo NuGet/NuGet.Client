@@ -234,11 +234,15 @@ namespace NuGet.PackageManagement.UI
             // but for project view, get the allowed version range and pass it to package item view model to choose the latest version based on that
             if (_packageReferences == null && !_context.IsSolution)
             {
-                IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = _context.Projects
-                    .Select(project => project.GetInstalledPackagesAsync(
-                        _context.ServiceBroker,
-                        cancellationToken).AsTask());
-                _packageReferences = (await Task.WhenAll(tasks)).SelectMany(p => p).Where(p => p != null);
+                IProjectContextInfo project = _context.Projects.SingleOrDefault();
+                if (project is null)
+                {
+                    _packageReferences = Enumerable.Empty<IPackageReferenceContextInfo>();
+                }
+                else
+                {
+                    _packageReferences = await project.GetInstalledPackagesAsync(_context.ServiceBroker, cancellationToken);
+                }
             }
 
             var state = new PackageFeedSearchState(searchResult);
