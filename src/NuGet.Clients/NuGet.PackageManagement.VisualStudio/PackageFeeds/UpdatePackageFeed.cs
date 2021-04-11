@@ -89,35 +89,36 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Traverse all projects and determine packages with updates
             var packagesWithUpdates = new List<IPackageSearchMetadata>();
-            foreach (var project in _projects)
+            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectIdToInstalledPackages =
+                await _projects.GetInstalledPackagesAsync(_serviceBroker, cancellationToken);
+
+            IEnumerable<IPackageReferenceContextInfo> installedPackages = projectIdToInstalledPackages.Values.SelectMany(packages => packages);
+
+            foreach (IPackageReferenceContextInfo installedPackage in installedPackages)
             {
-                var installed = await project.GetInstalledPackagesAsync(_serviceBroker, cancellationToken);
-                foreach (var installedPackage in installed)
+                var installedVersion = installedPackage.Identity.Version;
+                var allowedVersions = installedPackage.AllowedVersions ?? VersionRange.All;
+
+                // filter packages based on current package identity
+                var allPackages = prefetchedPackages
+                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(
+                        p.Identity.Id,
+                        installedPackage.Identity.Id))
+                    .ToArray();
+
+                // and allowed versions
+                var allowedPackages = allPackages
+                    .Where(p => allowedVersions.Satisfies(p.Identity.Version));
+
+                // peek the highest available
+                var highest = allowedPackages
+                    .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
+                    .FirstOrDefault();
+
+                if (highest != null &&
+                    VersionComparer.VersionRelease.Compare(installedVersion, highest.Identity.Version) < 0)
                 {
-                    var installedVersion = installedPackage.Identity.Version;
-                    var allowedVersions = installedPackage.AllowedVersions ?? VersionRange.All;
-
-                    // filter packages based on current package identity
-                    var allPackages = prefetchedPackages
-                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(
-                            p.Identity.Id,
-                            installedPackage.Identity.Id))
-                        .ToArray();
-
-                    // and allowed versions
-                    var allowedPackages = allPackages
-                        .Where(p => allowedVersions.Satisfies(p.Identity.Version));
-
-                    // peek the highest available
-                    var highest = allowedPackages
-                        .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
-                        .FirstOrDefault();
-
-                    if (highest != null &&
-                        VersionComparer.VersionRelease.Compare(installedVersion, highest.Identity.Version) < 0)
-                    {
-                        packagesWithUpdates.Add(highest.WithVersions(ToVersionInfo(allPackages)));
-                    }
+                    packagesWithUpdates.Add(highest.WithVersions(ToVersionInfo(allPackages)));
                 }
             }
 
