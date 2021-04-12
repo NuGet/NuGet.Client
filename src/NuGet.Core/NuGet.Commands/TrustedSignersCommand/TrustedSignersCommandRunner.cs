@@ -92,6 +92,13 @@ namespace NuGet.Commands
                         var packagesToTrust = LocalFolderUtility.ResolvePackageFromPath(trustedSignersArgs.PackagePath);
                         LocalFolderUtility.EnsurePackageFileExists(trustedSignersArgs.PackagePath, packagesToTrust);
 
+                        if (packagesToTrust.Count() > 1)
+                        {
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                                Strings.Multiple_Nupkgs_Detected,
+                                trustedSignersArgs.PackagePath));
+                        }
+
                         foreach (var package in packagesToTrust)
                         {
                             using (var packageReader = new PackageArchiveReader(package))

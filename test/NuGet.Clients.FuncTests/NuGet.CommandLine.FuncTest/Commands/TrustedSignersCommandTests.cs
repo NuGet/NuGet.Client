@@ -244,7 +244,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyTheory]
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task TrustedSignersCommand_AddTrustedSigner_WithAuthorSignedPackage_AddsItSuccesfullyToConfigAsync(bool allowUntrustedRoot)
@@ -289,6 +289,48 @@ namespace NuGet.CommandLine.FuncTest.Commands
 </configuration>");
 
                 SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath)).Should().Be(expectedResult);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task TrustedSignersCommand_AddTrustedSigner_WithAuthorSignedPackage_AddsMultipleFilesThrows(bool allowUntrustedRoot)
+        {
+            // Arrange
+            var nugetConfigFileName = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+            // Arrange
+            var nupkgA = new SimpleTestPackageContext("A", "1.0.0");
+            var nupkgB = new SimpleTestPackageContext("B", "1.0.0");
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = await nupkgA.CreateAsStreamAsync())
+            using (var trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            {
+                var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                var signedPackagePathA = await SignedArchiveTestUtility.AuthorSignPackageAsync(trustedTestCert.Source.Cert, nupkgA, dir);
+                var signedPackagePathB = await SignedArchiveTestUtility.AuthorSignPackageAsync(trustedTestCert.Source.Cert, nupkgB, dir);
+
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, dir, config);
+                var nugetConfigPath = Path.Combine(dir, nugetConfigFileName);
+                var allowUntrustedRootArg = allowUntrustedRoot ? "-AllowUntrustedRoot" : string.Empty;
+                var multiplePackagesPath = $"{dir}{Path.DirectorySeparatorChar}*.nupkg";
+
+                // Act
+                var commandResult = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"trusted-signers add {multiplePackagesPath} -Name signer -Author {allowUntrustedRootArg} -Config {nugetConfigPath}",
+                    waitForExit: true);
+
+                // Assert
+                commandResult.Success.Should().BeFalse();
+                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture,
+                    "Multiple nupkg files detected on '{0}' path to trust, only 1 is allowed.",
+                    multiplePackagesPath));
             }
         }
 
