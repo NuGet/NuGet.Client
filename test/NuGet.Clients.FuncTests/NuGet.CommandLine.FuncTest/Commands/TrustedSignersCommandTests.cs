@@ -244,7 +244,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task TrustedSignersCommand_AddTrustedSigner_WithAuthorSignedPackage_AddsItSuccesfullyToConfigAsync(bool allowUntrustedRoot)
@@ -292,7 +292,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task TrustedSignersCommand_AddTrustedSigner_WithAuthorSignedPackage_AddsMultipleFilesThrows(bool allowUntrustedRoot)
