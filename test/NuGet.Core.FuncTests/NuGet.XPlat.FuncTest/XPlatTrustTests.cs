@@ -1,7 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Extensions.CommandLineUtils;
+using Moq;
+using NuGet.CommandLine.XPlat.Commands.Signing;
+using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -84,6 +92,51 @@ error: Unrecognized option '{unrecognizedOption}'"));
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, "There are no trusted signers.");
             }
+        }
+
+        [Theory]
+        [InlineData("--verbosity", "q", LogLevel.Warning)]
+        [InlineData("-v", "quiet", LogLevel.Warning)]
+        [InlineData("--verbosity", "m", LogLevel.Minimal)]
+        [InlineData("-v", "minimal", LogLevel.Minimal)]
+        [InlineData("--verbosity", "something-else", LogLevel.Minimal)]
+        [InlineData("-v", "n", LogLevel.Information)]
+        [InlineData("--verbosity", "normal", LogLevel.Information)]
+        [InlineData("-v", "d", LogLevel.Debug)]
+        [InlineData("-v", "detailed", LogLevel.Debug)]
+        [InlineData("--verbosity", "diag", LogLevel.Debug)]
+        [InlineData("-v", "diagnostic", LogLevel.Debug)]
+        public void Trust_VerbosityOption(string option, string verbosity, LogLevel logLevel)
+        {
+            TrustCommandArgs(
+                (testApp, getLogLevel) =>
+                {
+                    // Arrange                   
+                    var argList = new List<string> { "trust", "list", option, verbosity };
+
+                    // Act
+                    var result = testApp.Execute(argList.ToArray());
+
+                    // Assert
+                    Assert.Equal(logLevel, getLogLevel());
+                    Assert.Equal(0, result);
+                });
+        }
+
+        private void TrustCommandArgs(Action<CommandLineApplication, Func<LogLevel>> verify)
+        {
+            // Arrange
+            var logLevel = LogLevel.Information;
+            var logger = new TestCommandOutputLogger();
+            var testApp = new CommandLineApplication();
+
+            testApp.Name = "dotnet nuget_test";
+            TrustedSignersCommand.Register(testApp,
+                () => logger,
+                ll => logLevel = ll);
+
+            // Act & Assert
+            verify(testApp, () => logLevel);
         }
     }
 }
