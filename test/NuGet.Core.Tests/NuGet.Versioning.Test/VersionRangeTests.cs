@@ -288,12 +288,13 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [InlineData("1", "1.0")]
-        [InlineData("1", "1.0.0.0")]
+        [InlineData("0", "0.0")]
+        [InlineData("1", "1.0.0")]
+        [InlineData("02", "2.0.0.0")]
         [InlineData("123.456", "123.456.0.0")]
         [InlineData("[2021,)", "[2021.0.0.0,)")]
         [InlineData("[,2021)", "[,2021.0.0.0)")]
-        public void VersionRange_MissingVersionComponents_AssumedToBeZero(string shortVersionSpec, string longVersionSpec)
+        public void VersionRange_MissingVersionComponents_DefaultToZero(string shortVersionSpec, string longVersionSpec)
         {
             // Act
             var versionRange1 = VersionRange.Parse(shortVersionSpec);
@@ -459,6 +460,12 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("")]
         [InlineData("      ")]
+        [InlineData("-1")]
+        [InlineData("+1")]
+        [InlineData("1.")]
+        [InlineData(".1")]
+        [InlineData("1,")]
+        [InlineData(",1")]
         public void ParseVersionRangeWithBadVersionThrows(string version)
         {
             // Act & Assert
