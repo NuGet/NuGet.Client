@@ -219,6 +219,11 @@
     <CodeAnalysisRuleSet>$(BuildCommonDirectory)NuGet.Tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
+  <!-- The project that builds the VSIX -->
+  <PropertyGroup>
+    <VSIXProject>$(RepositoryRootDirectory)src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj</VSIXProject>
+  </PropertyGroup>
+
   <!-- Find all test projects  -->
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
     <CoreUnitTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.Tests\*\*.csproj"
