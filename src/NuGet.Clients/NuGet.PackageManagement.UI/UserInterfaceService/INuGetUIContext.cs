@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
-using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -18,8 +17,6 @@ namespace NuGet.PackageManagement.UI
         event EventHandler<IReadOnlyCollection<string>> ProjectActionsExecuted;
 
         IServiceBroker ServiceBroker { get; }
-
-        IReconnectingNuGetSearchService ReconnectingSearchService { get; }
 
         IVsSolutionManager SolutionManager { get; }
 

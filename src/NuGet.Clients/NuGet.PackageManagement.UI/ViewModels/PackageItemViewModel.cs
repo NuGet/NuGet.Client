@@ -16,7 +16,6 @@ using System.Windows.Media.Imaging;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -28,17 +27,16 @@ namespace NuGet.PackageManagement.UI
 {
     // This is the model class behind the package items in the infinite scroll list.
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
-    public sealed class PackageItemViewModel : INotifyPropertyChanged, ISelectableItem, IDisposable
+    public class PackageItemViewModel : INotifyPropertyChanged, ISelectableItem
     {
+        private static readonly Common.AsyncLazy<IReadOnlyCollection<VersionInfoContextInfo>> LazyEmptyVersionInfo =
+            AsyncLazy.New((IReadOnlyCollection<VersionInfoContextInfo>)Array.Empty<VersionInfoContextInfo>());
+        private static readonly Common.AsyncLazy<PackageDeprecationMetadataContextInfo> LazyNullDeprecationMetadata =
+            AsyncLazy.New((PackageDeprecationMetadataContextInfo)null);
+        private static readonly Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> LazyNullDetailedPackageSearchMetadata =
+            AsyncLazy.New(((PackageSearchMetadataContextInfo)null, (PackageDeprecationMetadataContextInfo)null));
+
         internal const int DecodePixelWidth = 32;
-
-        private readonly CancellationTokenSource _cancellationTokenSource;
-
-        public PackageItemViewModel(IReconnectingNuGetSearchService searchService)
-        {
-            _cancellationTokenSource = new CancellationTokenSource();
-            _searchService = searchService;
-        }
 
         // same URIs can reuse the bitmapImage that we've already used.
         private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
@@ -46,8 +44,6 @@ namespace NuGet.PackageManagement.UI
         private static readonly RequestCachePolicy RequestCacheIfAvailable = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
 
         private static readonly ErrorFloodGate ErrorFloodGate = new ErrorFloodGate();
-
-        private IReconnectingNuGetSearchService _searchService;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -58,8 +54,6 @@ namespace NuGet.PackageManagement.UI
         public VersionRange AllowedVersions { get; set; }
 
         public IReadOnlyCollection<PackageSourceContextInfo> Sources { get; set; }
-
-        public bool IncludePrerelease { get; set; }
 
         private string _author;
         public string Author
@@ -246,6 +240,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
+                TriggerStatusLoader();
                 return _status;
             }
 
@@ -465,19 +460,19 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
-        {
-            var identity = new PackageIdentity(Id, Version);
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
-        }
+        public Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>> Versions { get; set; }
+        public Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
 
-        public async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync()
-        {
-            var identity = new PackageIdentity(Id, Version);
-            return await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
-        }
+        public Lazy<Task<PackageDeprecationMetadataContextInfo>> DeprecationMetadata { private get; set; }
+        public Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
+
+        public Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> DetailedPackageSearchMetadata { get; set; }
+        public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync() => (DetailedPackageSearchMetadata ?? LazyNullDetailedPackageSearchMetadata).Value;
 
         public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
+
+        private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
+        private Lazy<Task<PackageDeprecationMetadataContextInfo>> _backgroundDeprecationMetadataLoader;
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
         {
@@ -624,44 +619,42 @@ namespace NuGet.PackageManagement.UI
             BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
         }
 
+
+        private void TriggerStatusLoader()
+        {
+            if (!_backgroundLatestVersionLoader.IsValueCreated)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(ReloadPackageVersionsAsync)
+                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
+            }
+
+
+            if (!_backgroundDeprecationMetadataLoader.IsValueCreated)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(ReloadPackageDeprecationAsync)
+                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageDeprecationAsync));
+            }
+        }
+
         private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
         {
-            try
-            {
-                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
+            var result = await _backgroundLatestVersionLoader.Value;
 
-                // filter package versions based on allowed versions in packages.config
-                packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
-                var result = packageVersions
-                    .Select(p => p.Version)
-                    .MaxOrDefault();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                LatestVersion = result;
-                Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
-            }
-            catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
-            {
-                // UI requested cancellation
-            }
+            LatestVersion = result;
+            Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
         }
 
         private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
         {
-            try
-            {
-                var identity = new PackageIdentity(Id, Version);
-                PackageDeprecationMetadataContextInfo result = await _searchService.GetDeprecationMetadataAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
+            PackageDeprecationMetadataContextInfo result = await _backgroundDeprecationMetadataLoader.Value;
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                IsPackageDeprecated = result != null;
-            }
-            catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
-            {
-                // UI requested cancellation.
-            }
+            IsPackageDeprecated = result != null;
         }
 
         private async System.Threading.Tasks.Task ReloadProvidersAsync()
@@ -683,13 +676,25 @@ namespace NuGet.PackageManagement.UI
             // Set auto referenced to true any reference for the given id contains the flag.
             AutoReferenced = installedPackages.IsAutoReferenced(Id);
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageVersionsAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
+            _backgroundLatestVersionLoader = AsyncLazy.New(
+                async () =>
+                {
+                    IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageDeprecationAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageDeprecationAsync));
+                    // filter package versions based on allowed versions in packages.config
+                    packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
+                    var latestAvailableVersion = packageVersions
+                        .Select(p => p.Version)
+                        .MaxOrDefault();
+
+                    return latestAvailableVersion;
+                });
+
+            _backgroundDeprecationMetadataLoader = AsyncLazy.New(
+                async () =>
+                {
+                    return await GetPackageDeprecationMetadataAsync();
+                });
 
             OnPropertyChanged(nameof(Status));
         }
@@ -718,7 +723,7 @@ namespace NuGet.PackageManagement.UI
             return status;
         }
 
-        private void OnPropertyChanged(string propertyName)
+        protected void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
             {
@@ -733,14 +738,6 @@ namespace NuGet.PackageManagement.UI
         public override string ToString()
         {
             return Id;
-        }
-
-        public void Dispose()
-        {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
-
-            // Don't dispose _searchService. It's a shared instance.
         }
     }
 }
