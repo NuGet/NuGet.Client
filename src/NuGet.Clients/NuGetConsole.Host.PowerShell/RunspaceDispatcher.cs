@@ -37,6 +37,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             get { return _runspace.RunspaceAvailability; }
         }
 
+        public Version PSVersion
+        {
+            get { return _runspace.Version; }
+        }
+
         public RunspaceDispatcher(Runspace runspace)
         {
             _runspace = runspace;
