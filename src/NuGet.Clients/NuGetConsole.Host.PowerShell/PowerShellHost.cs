@@ -317,7 +317,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         if (!PowerShellLoaded)
                         {
-                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc);
+                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc, psVersion: Runspace.PSVersion.ToString());
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                             PowerShellLoaded = true;
                         }

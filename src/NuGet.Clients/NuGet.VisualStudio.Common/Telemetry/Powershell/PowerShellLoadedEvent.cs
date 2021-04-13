@@ -7,10 +7,11 @@ namespace NuGet.VisualStudio.Common.Telemetry.PowerShell
 {
     public class PowerShellLoadedEvent : TelemetryEvent
     {
-        public PowerShellLoadedEvent(bool isPmc)
+        public PowerShellLoadedEvent(bool isPmc, string psVersion)
             : base(NuGetPowerShellUsageCollector.PowerShellLoaded)
         {
             base[NuGetPowerShellUsageCollector.Trigger] = isPmc ? NuGetPowerShellUsageCollector.Pmc : NuGetPowerShellUsageCollector.Pmui;
+            base[NuGetPowerShellUsageCollector.PSVersion] = psVersion;
         }
     }
 }
