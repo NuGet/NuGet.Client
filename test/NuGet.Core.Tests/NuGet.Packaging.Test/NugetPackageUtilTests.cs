@@ -322,8 +322,8 @@ namespace Commands.Test
             }
         }
 
-// ERIKD TODO REENABLE
-//       [Fact]
+        // ERIKD TODO REENABLE
+        // [Fact]
         public async Task PackageExpander_Recovers_WhenFileIsLocked()
         {
             // Arrange
