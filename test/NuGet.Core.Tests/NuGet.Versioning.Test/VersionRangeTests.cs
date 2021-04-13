@@ -466,6 +466,10 @@ namespace NuGet.Versioning.Test
         [InlineData(".1")]
         [InlineData("1,")]
         [InlineData(",1")]
+        [InlineData(",")]
+        [InlineData("-")]
+        [InlineData("+")]
+        [InlineData("a")]
         public void ParseVersionRangeWithBadVersionThrows(string version)
         {
             // Act & Assert
