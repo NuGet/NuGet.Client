@@ -227,6 +227,11 @@
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.PackageManagement.Test\*.csproj" />
   </ItemGroup>
 
+  <!-- The project that builds the VSIX -->
+  <PropertyGroup>
+    <VSIXProject>$(RepositoryRootDirectory)src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj</VSIXProject>
+  </PropertyGroup>
+
   <!-- start with only nuget.versioning for xplat -->
   <ItemGroup Condition=" '$(IsXPlat)' == 'true' ">
     <CoreUnitTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.Tests\*\*.csproj"
