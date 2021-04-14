@@ -109,37 +109,23 @@ namespace NuGet.CommandLine.XPlat
                                 }
 
                                 // Filter packages for dedicated reports, inform user if none
-                                var printPackages = true;
-                                switch (listPackageArgs.ReportType)
+                                var printPackages = FilterPackages(packages, listPackageArgs);
+                                if (listPackageArgs.ReportType != ReportType.Default && !printPackages)
                                 {
-                                    case ReportType.Outdated:
-                                        printPackages = FilterOutdatedPackages(packages);
-                                        if (!printPackages)
-                                        {
+                                    switch (listPackageArgs.ReportType)
+                                    {
+                                        case ReportType.Outdated:
                                             Console.WriteLine(string.Format(Strings.ListPkg_NoUpdatesForProject, projectName));
-                                        }
-
-                                        break;
-                                    case ReportType.Deprecated:
-                                        printPackages = FilterDeprecatedPackages(packages);
-                                        if (!printPackages)
-                                        {
+                                            break;
+                                        case ReportType.Deprecated:
                                             Console.WriteLine(string.Format(Strings.ListPkg_NoDeprecatedPackagesForProject, projectName));
-                                        }
-
-                                        break;
-                                    case ReportType.Vulnerable:
-                                        printPackages = FilterVulnerablePackages(packages);
-                                        if (!printPackages)
-                                        {
+                                            break;
+                                        case ReportType.Vulnerable:
                                             Console.WriteLine(string.Format(Strings.ListPkg_NoVulnerablePackagesForProject, projectName));
-                                        }
-
-                                        break;
+                                            break;
+                                    }
                                 }
 
-                                // Make sure print is still needed, which may be changed in case
-                                // outdated filtered all packages out
                                 if (printPackages)
                                 {
                                     var hasAutoReference = false;
@@ -166,34 +152,33 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static bool FilterOutdatedPackages(IEnumerable<FrameworkPackages> packages)
+        public static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
         {
-            FilterPackages(
-                packages,
-                ListPackageHelper.TopLevelPackagesFilterForOutdated,
-                ListPackageHelper.TransitivePackagesFilterForOutdated);
+            switch (listPackageArgs.ReportType)
+            {
+                case ReportType.Default: break; // We do no filtering in this case
+                case ReportType.Outdated:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.TopLevelPackagesFilterForOutdated,
+                        ListPackageHelper.TransitivePackagesFilterForOutdated);
+                    break;
+                case ReportType.Deprecated:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.PackagesFilterForDeprecated,
+                        ListPackageHelper.PackagesFilterForDeprecated);
+                    break;
+                case ReportType.Vulnerable:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.PackagesFilterForVulnerable,
+                        ListPackageHelper.PackagesFilterForVulnerable);
+                    break;
+            }
 
-            return packages.Any(p => p.TopLevelPackages.Any());
-        }
-
-        private static bool FilterDeprecatedPackages(IEnumerable<FrameworkPackages> packages)
-        {
-            FilterPackages(
-                packages,
-                ListPackageHelper.PackagesFilterForDeprecated,
-                ListPackageHelper.PackagesFilterForDeprecated);
-
-            return packages.Any(p => p.TopLevelPackages.Any());
-        }
-
-        private static bool FilterVulnerablePackages(IEnumerable<FrameworkPackages> packages)
-        {
-            FilterPackages(
-                packages,
-                ListPackageHelper.PackagesFilterForVulnerable,
-                ListPackageHelper.PackagesFilterForVulnerable);
-
-            return packages.Any(p => p.TopLevelPackages.Any());
+            return packages.Any(p => p.TopLevelPackages.Any() ||
+                                     listPackageArgs.IncludeTransitive && p.TransitivePackages.Any());
         }
 
         /// <summary>

@@ -449,7 +449,7 @@ namespace NuGet.CommandLine.XPlat
                     }
                     // If no matching packages were found, then the package is transitive,
                     // and include-transitive must be used to add the package
-                    else if (transitive)
+                    else if (transitive && (library.Type == "package")) // be sure to exclude "project" references here as these are irrelevant
                     {
                         var installedPackage = new InstalledPackageReference(library.Name)
                         {

@@ -305,57 +305,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData(false, false)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
-        public void DotnetListPackage_ProjectReference_Succeeds(bool includeTransitive, bool outdated)
-        {
-            // Arrange
-            using (var pathContext = _fixture.CreateSimpleTestPathContext())
-            {
-                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net46");
-                var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, "net46");
-
-                var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"add {projectA.ProjectPath} reference {projectB.ProjectPath}");
-                Assert.True(addResult.Success);
-
-                var restoreResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"restore {projectA.ProjectName}.csproj");
-                Assert.True(restoreResult.Success);
-
-                var argsBuilder = new StringBuilder();
-                if (includeTransitive)
-                {
-                    argsBuilder.Append(" --include-transitive");
-                }
-                if (outdated)
-                {
-                    argsBuilder.Append(" --outdated");
-                }
-
-                // Act
-                var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"list {projectA.ProjectPath} package {argsBuilder}");
-
-                // Assert
-                if (outdated)
-                {
-                    Assert.Contains("The given project `ProjectA` has no updates given the current sources.", listResult.AllOutput);
-                }
-                else if (includeTransitive)
-                {
-                    Assert.Contains("ProjectB", listResult.AllOutput);
-                }
-                else
-                {
-                    Assert.Contains("No packages were found for this framework.", listResult.AllOutput);
-                }
-            }
-        }
-
         [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_OutdatedWithNoVersionsFound_Succeeds()
         {
