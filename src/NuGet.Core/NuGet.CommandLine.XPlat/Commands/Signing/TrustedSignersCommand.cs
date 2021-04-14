@@ -81,7 +81,8 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
                     }
 
                     string name = null;
-                    if (command.Values.Count() > 1)
+
+                    if (command.Values.Count > 1)
                     {
                         name = command.Values[1];
                     }

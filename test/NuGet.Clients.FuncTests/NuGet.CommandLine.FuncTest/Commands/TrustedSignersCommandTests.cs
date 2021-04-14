@@ -292,7 +292,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true, null)]
         [InlineData(true, "one;two;three")]
         [InlineData(false, null)]
