@@ -101,7 +101,7 @@
       </_LocalizeFiles>
       <_SubmoduleRepo Include="$(LocalizationRootDirectory)\**\*" />
       <_SubmoduleFiles Include="@(_SubmoduleRepo)">
-        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\submodules\NuGet.Build.Localization\$([MSBuild]::MakeRelative($(LocalizationRootDirectory), %(_SubmoduleRepo.Identity)))</DestinationPath>
+        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\submodules\NuGet.Build.Localization\localize\$([MSBuild]::MakeRelative($(LocalizationRootDirectory), %(_SubmoduleRepo.Identity)))</DestinationPath>
       </_SubmoduleFiles>
     </ItemGroup>
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
