@@ -446,7 +446,7 @@ steps:
       **\*.lcg
       !localize\**\*
     TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 
 - task: CopyFiles@2
