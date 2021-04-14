@@ -29,6 +29,8 @@ Param (
     [switch]$RunTest
 )
 
+$ErrorActionPreference = 'Stop'
+
 . "$PSScriptRoot\build\common.ps1"
 
 Trace-Log "Configuring NuGet.Client build environment"
@@ -40,7 +42,7 @@ Invoke-BuildStep 'Configuring git repo' {
 } -ev +BuildErrors
 
 Invoke-BuildStep 'Installing .NET CLI' {
-    Install-DotnetCLI -Force:$Force   
+    Install-DotnetCLI -Force:$Force
 } -ev +BuildErrors
 
 # Restoring tools required for build
@@ -59,7 +61,7 @@ $ConfigureObject = @{
 
 Function New-BuildToolset {
     param(
-        [ValidateSet(15, 16)]
+        [ValidateSet(15, 16, 17)]
         [int]$ToolsetVersion
     )
     $CommonToolsVar = "Env:VS${ToolsetVersion}0COMNTOOLS"
