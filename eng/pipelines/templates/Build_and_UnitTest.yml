@@ -47,11 +47,12 @@ steps:
 - task: MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
 
-- task: ms-vseng.MicroBuildTasks.965C8DC6-1483-45C9-B384-5AC75DA1F1A4.MicroBuildOptProfPlugin@4
+- task: ms-vseng.MicroBuildTasks.965C8DC6-1483-45C9-B384-5AC75DA1F1A4.MicroBuildOptProfPlugin@6
   displayName: 'OptProfV2:  install the plugin'
   inputs:
     getDropNameByDrop: true
     optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
+    AccessToken: $(System.AccessToken)
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PowerShell@1
@@ -303,7 +304,7 @@ steps:
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish nupkgs"
-  inputs: 
+  inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
     artifactName: "nupkgs - $(RtmLabel)"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
