@@ -117,6 +117,17 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
     maximumCpuCount: true
+  condition: "and(succeeded(), eq(variables['BuildPackagesOnly'], 'false'))"
+
+- task: MSBuild@1
+  displayName: "Build NuGet.VisualStudio project"
+  inputs:
+    solution: "src\\nuget.clients\\nuget.visualstudio\\nuget.visualstudio.csproj"
+    msbuildVersion: "16.0"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
+    maximumCpuCount: true
+  condition: "and(succeeded(), eq(variables['BuildPackagesOnly'], 'true'))"
 
 - task: MSBuild@1
   displayName: "Ensure msbuild.exe can parse nuget.sln"
@@ -137,7 +148,6 @@ steps:
     msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution"
   condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
-
 - task: MSBuild@1
   displayName: "Localize Assemblies"
   inputs:
@@ -145,6 +155,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild"
+  condition: "and(succeeded(), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Build Final NuGet.exe (via ILMerge)"
@@ -153,6 +164,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
+  condition: "and(succeeded(), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
@@ -161,7 +173,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Run unit tests (stop on error)"
@@ -171,7 +183,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Run unit tests (continue on error)"
@@ -181,7 +193,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
@@ -192,7 +204,7 @@ steps:
     searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
     mergeTestResults: "true"
     publishRunAttachments: "false"
-  condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+  condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PowerShell@1
   displayName: "Check source file format"
@@ -200,7 +212,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       dotnet format --check --exclude submodules --verbosity diagnostic
-  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
+  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"   #skip this task for nonRTM in private build
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
@@ -217,7 +229,7 @@ steps:
     PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
     ArtifactName: "NuGet.CommandLine.Test"
     ArtifactType: "Container"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Sign Assemblies"
@@ -246,7 +258,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')), eq(variables['BuildPackagesOnly'], 'false'))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
@@ -256,7 +268,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
     maximumCpuCount: true
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
@@ -265,7 +277,7 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
-  condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
@@ -295,7 +307,7 @@ steps:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
     WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')), eq(variables['BuildPackagesOnly'], 'false'))  #skip this task for nonRTM in private build
 
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
@@ -315,7 +327,7 @@ steps:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false')) "
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for Build Tools VSIX"
@@ -323,7 +335,7 @@ steps:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false')) "
 
 - task: PowerShell@1
   displayName: "Create EndToEnd Test Package"
@@ -331,7 +343,7 @@ steps:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
     arguments: "-c $(BuildConfiguration) -tv 16 -out $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
     failOnStandardError: "true"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false')) "
 
 - task: CopyFiles@2
   displayName: "Copy NuGet.exe, VSIX and EndToEnd"
@@ -348,6 +360,7 @@ steps:
       $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.json
       $(VsixPublishDir)\\EndToEnd.zip
     TargetFolder: "$(BuildOutputTargetPath)\\artifacts"
+  condition: " and(succeeded(), eq(variables['BuildPackagesOnly'], 'false')) "
 
 - task: NuGetCommand@2
   displayName: 'OptProfV2:  add the NuGet package source'
@@ -371,7 +384,7 @@ steps:
     manifests: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)\Microsoft.VisualStudio.NuGet.Core.vsman'
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)'
   continueOnError: true
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PublishBuildArtifacts@1
   displayName: 'OptProfV2:  publish BootstrapperInfo.json as a build artifact'
@@ -393,7 +406,7 @@ steps:
       [string] $testDropPath = $buildDropPath.Replace('/Products/', '/Tests/').Substring('https://vsdrop.corp.microsoft.com/file/v1/'.Length)
       Write-Host "Test drop:  $testDropPath"
       Write-Host "##vso[task.setvariable variable=TestDrop]$testDropPath"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: MSBuild@1
   displayName: 'OptProfV2:  generate a .runsettings file'
@@ -401,7 +414,7 @@ steps:
     solution: 'build\NuGet.OptProfV2.runsettingsproj'
     msbuildVersion: '16.0'
     msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="$(TestDrop)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
   displayName: 'OptProfV2:  publish the .runsettings file to artifact services'
@@ -412,7 +425,7 @@ steps:
     toLowerCase: false
     usePat: false
     dropMetadataContainerName: RunSettings
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
   displayName: 'OptProfV2:  publish profiling inputs to artifact services'
@@ -422,7 +435,7 @@ steps:
     sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
     toLowerCase: false
     usePat: false
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
@@ -430,7 +443,7 @@ steps:
     PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
     ArtifactName: "$(VsixPublishDir)"
     ArtifactType: "Container"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: CopyFiles@2
   displayName: "Copy LCG Files (deprecated)"
@@ -440,14 +453,14 @@ steps:
       **\*.lcg
       !localize\**\*
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PublishPipelineArtifact@1
   displayName: "Upload localizeInputs artifact"
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localize\\"
     artifactName: "localizeInputs"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
@@ -500,28 +513,28 @@ steps:
   displayName: "Upload VSTS Drop"
   inputs:
     DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false')) "
 
 - task: PowerShell@1
   displayName: "LocValidation: Verify VSIX"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
     arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs -TmpPath $(Agent.TempDirectory) -ValidateVsix"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PowerShell@1
   displayName: "LocValidation: Verify Artifacts"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
     arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
 - task: PublishPipelineArtifact@1
   displayName: "LocValidation: Publish Logs as an artifact"
   inputs:
     artifactName: LocValidationLogs
     targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
-  condition: "eq(variables['BuildRTM'], 'false')"
+  condition: "and(eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false'))"
 
   # Use dotnet msbuild instead of MSBuild CLI.
   # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
@@ -536,7 +549,7 @@ steps:
   env:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_MULTILEVEL_LOOKUP: true
-  condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
+  condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'), eq(variables['BuildPackagesOnly'], 'false')) "
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"
@@ -550,4 +563,4 @@ steps:
       param([string]$BuildOutputTargetPath)
       Get-ChildItem $(BuildOutputTargetPath) -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
       Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
-  condition: "eq(variables['Agent.JobStatus'], 'Failed')"
+  condition: "and(eq(variables['Agent.JobStatus'], 'Failed'), eq(variables['BuildPackagesOnly'], 'false'))"
