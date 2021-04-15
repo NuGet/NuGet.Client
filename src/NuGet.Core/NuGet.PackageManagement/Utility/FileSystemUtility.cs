@@ -119,6 +119,7 @@ namespace NuGet.ProjectManagement
         /// Creates a file, and adds it to source control.
         /// </summary>
         /// <param name="fullPath">Full path to the suggest file.</param>
+        /// <param name="nuGetProjectContext">Not used</param>
         /// <returns>A writeable filestream.</returns>
         public static Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
