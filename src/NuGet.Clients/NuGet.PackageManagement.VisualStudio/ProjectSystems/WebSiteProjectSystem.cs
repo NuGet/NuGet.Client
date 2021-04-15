@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var name = Path.GetFileNameWithoutExtension(referencePath);
             try
             {
-                EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).AddFromFile(PathUtility.GetAbsolutePath(ProjectFullPath, referencePath));
+                //EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).AddFromFile(PathUtility.GetAbsolutePath(ProjectFullPath, referencePath));
 
                 // Always create a refresh file. Vs does this for us in most cases, however for GACed binaries, it resorts to adding a web.config entry instead.
                 // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).AddFromGAC(name);
+            //EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).AddFromGAC(name);
         }
 
         public override async Task RemoveReferenceAsync(string name)
@@ -92,33 +92,33 @@ namespace NuGet.PackageManagement.VisualStudio
         private void RemoveDTEReference(string name)
         {
             // Get the reference name without extension
-            var referenceName = Path.GetFileNameWithoutExtension(name);
+            //var referenceName = Path.GetFileNameWithoutExtension(name);
 
             // Remove the reference from the project
-            AssemblyReference reference = null;
-            try
-            {
-                reference = EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).Item(referenceName);
-                if (reference != null)
-                {
-                    reference.Remove();
-                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
-                }
-            }
-            catch (Exception ex)
-            {
-                var messageLevel = ProjectManagement.MessageLevel.Warning;
-                if (reference != null
-                    && reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceConfig)
-                {
-                    // Bug 2319: Strong named assembly references are specified via config and may be specified in the root web.config. Attempting to remove these
-                    // references always throws and there isn't an easy way to identify this. Instead, we'll attempt to lower the level of the message so it doesn't
-                    // appear as readily.
+            //AssemblyReference reference = null;
+            //try
+            //{
+            //    //reference = EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).Item(referenceName);
+            //    if (reference != null)
+            //    {
+            //        reference.Remove();
+            //        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    var messageLevel = ProjectManagement.MessageLevel.Warning;
+            //    if (reference != null
+            //        && reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceConfig)
+            //    {
+            //        // Bug 2319: Strong named assembly references are specified via config and may be specified in the root web.config. Attempting to remove these
+            //        // references always throws and there isn't an easy way to identify this. Instead, we'll attempt to lower the level of the message so it doesn't
+            //        // appear as readily.
 
-                    messageLevel = ProjectManagement.MessageLevel.Debug;
-                }
-                NuGetProjectContext.Log(messageLevel, ex.Message);
-            }
+            //        messageLevel = ProjectManagement.MessageLevel.Debug;
+            //    }
+            //    NuGetProjectContext.Log(messageLevel, ex.Message);
+            //}
         }
 
         public override string ResolvePath(string path)

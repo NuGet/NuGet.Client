@@ -75,6 +75,7 @@ Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.resources.dll
 Microsoft.TeamFoundation.WorkItemTracking.WebApi.dll
+Microsoft.Internal.VisualStudio.Interop.dll
 Microsoft.VisualStudio.RpcContracts.dll
 Microsoft.VisualStudio.Services.Client.Interactive.dll
 Microsoft.VisualStudio.Services.Client.Interactive.resources.dll
@@ -88,9 +89,14 @@ Microsoft.VisualStudio.Interop.dll
 Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime.dll
 Microsoft.VisualStudio.Shell.Interop.16.3.DesignTime.dll
 Microsoft.VisualStudio.Shell.Interop.16.6.DesignTime.dll
+Microsoft.VisualStudio.Workspace.dll
+Microsoft.VisualStudio.Workspace.resources.dll
+Microsoft.VisualStudio.Workspace.Extensions.dll
+Microsoft.VisualStudio.Workspace.Extensions.resources.dll
 Microsoft.Win32.Registry.dll
 Nerdbank.Streams.dll
 System.Buffers.dll
+System.Diagnostics.DiagnosticSource.dll
 System.IO.Pipelines.dll
 System.IdentityModel.Tokens.Jwt.dll
 System.Memory.dll

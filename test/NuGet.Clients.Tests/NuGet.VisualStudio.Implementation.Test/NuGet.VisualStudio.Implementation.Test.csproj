@@ -54,6 +54,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" ExcludeAssets="all" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

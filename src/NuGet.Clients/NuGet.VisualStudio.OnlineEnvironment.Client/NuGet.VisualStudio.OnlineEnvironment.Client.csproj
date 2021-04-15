@@ -59,7 +59,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" ExcludeAssets="runtime" />
+    <PackageReference Include="EnvDTE" />
+    <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>

@@ -23,14 +23,14 @@ steps:
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: ShellScript@2
-  displayName: "Run Tests (stop on error)"
-  continueOnError: "false"
-  inputs:
-    scriptPath: "scripts/funcTests/runFuncTests.sh"
-    disableAutoCwd: "true"
-    cwd: "$(Build.Repository.LocalPath)"
-  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+#- task: ShellScript@2
+#  displayName: "Run Tests (stop on error)"
+#  continueOnError: "false"
+#  inputs:
+#    scriptPath: "scripts/funcTests/runFuncTests.sh"
+#    disableAutoCwd: "true"
+#    cwd: "$(Build.Repository.LocalPath)"
+#  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"

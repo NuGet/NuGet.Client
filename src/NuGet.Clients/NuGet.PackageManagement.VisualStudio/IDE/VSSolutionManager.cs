@@ -203,8 +203,8 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
 
             var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B");
-            var solutionSaveID = (uint)VSConstants.VSStd97CmdID.SaveSolution;
-            var solutionSaveAsID = (uint)VSConstants.VSStd97CmdID.SaveSolutionAs;
+            var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
+            var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
 
             _solutionSaveEvent = dte.Events.get_CommandEvents(vSStd97CmdIDGUID, solutionSaveID);
             _solutionSaveAsEvent = dte.Events.get_CommandEvents(vSStd97CmdIDGUID, solutionSaveAsID);
@@ -403,13 +403,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 await EnsureInitializeAsync();
-                var vsSolution4 = _vsSolution as IVsSolution4;
-
-                if (vsSolution4 != null)
-                {
-                    // ignore result and continue. Since results may be incomplete if user canceled.
-                    vsSolution4.EnsureSolutionIsLoaded((uint)__VSBSLFLAGS.VSBSLFLAGS_None);
-                }
             });
         }
 

@@ -331,6 +331,7 @@
   <ItemGroup>
     <!-- This is important because otherwise the VSSDK will include the unsigned version coming from the global packages folder instead of the in-place signed one from the bootstrapped packages folder -->
     <PackageReference Include="Lucene.Net" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" NoWarn="NU1605" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
@@ -362,6 +363,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="$(VSSDKBuildToolsVersion)" PrivateAssets="All" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />

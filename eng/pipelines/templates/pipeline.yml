@@ -37,7 +37,6 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     LocalizedLanguageCount: "13"
     BuildRTM: "false"
-    BuildPackagesOnly: "true"
 
   pool:
     name: VSEng-MicroBuildVS2019
@@ -59,7 +58,6 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     LocalizedLanguageCount: "13"
     BuildRTM: "true"
-    BuildPackagesOnly: "true"
 
   pool:
     name: VSEng-MicroBuildVS2019
@@ -77,7 +75,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'false')) "
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
     name: VSEngSS-MicroBuild2019
     demands:
@@ -100,7 +98,7 @@ jobs:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     MSBUILDDISABLENODEREUSE: 1
-  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'false')) "
+  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
   pool:
     vmImage: ubuntu-latest
     demands: sh
@@ -116,7 +114,7 @@ jobs:
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'false')) "
+  condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   pool:
     vmImage: macos-latest
 
@@ -131,7 +129,7 @@ jobs:
   variables:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'false')) "
+  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
     demands:
@@ -156,7 +154,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunApexTests'], 'false')) "
+  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
     demands:
