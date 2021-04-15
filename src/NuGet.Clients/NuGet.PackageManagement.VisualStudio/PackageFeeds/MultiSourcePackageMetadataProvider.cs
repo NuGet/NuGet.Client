@@ -235,11 +235,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(m => m != null);
 
             return (await MergeVersionsAsync(identity, metadatas),
-<<<<<<< HEAD
-                await MergeDeprecationMetadataAsync(identity, metadatas),
-=======
                 await MergeDeprecationMetadataAsync(metadatas),
->>>>>>> 2a1c5d317... Addressted some fixes in N.PM.VS and N.PM
                 MergeVulnerabilityMetadata(metadatas));
         }
 
