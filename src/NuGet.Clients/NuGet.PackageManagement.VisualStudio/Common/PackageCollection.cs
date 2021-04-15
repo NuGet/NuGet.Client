@@ -50,9 +50,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(projects);
 
             // Read package references from all projects.
-
             IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>? packageReferences =
-                await projects.GetInstalledPackagesAsync(serviceBroker, cancellationToken).ConfigureAwait(true);
+                await projects.ToList().AsReadOnly().GetInstalledPackagesAsync(serviceBroker, cancellationToken).ConfigureAwait(true);
 
             return FromPackageReferences(packageReferences.SelectMany(pair => pair.Value));
         }
