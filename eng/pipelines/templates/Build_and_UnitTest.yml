@@ -457,10 +457,10 @@ steps:
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishPipelineArtifact@1
-  displayName: "Upload localizeInputs artifact"
+  displayName: "Publish localizationArtifacts artifact"
   inputs:
-    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localize\\"
-    artifactName: "localizeInputs"
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
+    artifactName: "localizationArtifacts"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishPipelineArtifact@1
