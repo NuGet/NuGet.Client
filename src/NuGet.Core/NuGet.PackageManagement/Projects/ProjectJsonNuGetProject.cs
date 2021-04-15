@@ -284,6 +284,8 @@ namespace NuGet.ProjectManagement.Projects
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var json = await GetJsonAsync();
 
             JsonConfigUtility.RemoveDependency(json, packageId);
