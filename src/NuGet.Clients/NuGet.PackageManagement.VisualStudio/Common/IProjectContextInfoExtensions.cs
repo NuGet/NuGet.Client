@@ -3,7 +3,9 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -53,11 +55,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> dictionary =
                     await projectManager.GetInstalledPackagesAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
 
-                if (dictionary.TryGetValue(projectContextInfo.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo>? packages))
+                if (dictionary.TryGetValue(projectContextInfo.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo> packages))
                 {
                     return packages;
                 }
-                return new List<IPackageReferenceContextInfo>().AsReadOnly();
+
+                return Array.Empty<IPackageReferenceContextInfo>();
             }
         }
 
@@ -71,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>Dictionary of <see cref="IProjectContextInfo.ProjectId"/> to installed <see cref="IPackageReferenceContextInfo"/>;
         /// otherwise, an empty dictionary.</returns>
         public static async ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>> GetInstalledPackagesAsync(
-            this IEnumerable<IProjectContextInfo> projectContextInfos,
+            this IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
@@ -80,11 +83,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ReadOnlyCollection<string>? projectIds = projectContextInfos.Select(pci => pci.ProjectId).ToList().AsReadOnly();
+            ReadOnlyCollection<string> projectIds = projectContextInfos.Select(pci => pci.ProjectId).ToList().AsReadOnly();
 
-            if (projectIds is null || projectIds.Count == 0)
+            if (projectIds.Count == 0)
             {
-                return new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
+                return ImmutableDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>.Empty;
             }
 
             using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken))

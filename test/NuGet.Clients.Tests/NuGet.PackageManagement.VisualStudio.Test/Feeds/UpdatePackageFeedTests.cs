@@ -335,7 +335,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             string packageVersion,
             string allowedVersions = null)
         {
-            var project = SetupProject(packageId, packageVersion, allowedVersions);
+            IProjectContextInfo project = SetupProject(packageId, packageVersion, allowedVersions);
             SetupGetInstalledPackagesAsync(projectManagerService);
             return project;
         }
