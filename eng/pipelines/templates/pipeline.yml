@@ -39,7 +39,7 @@ jobs:
     BuildRTM: "false"
 
   pool:
-    name: VSEngSS-MicroBuild2019
+    name: VSEng-MicroBuildVS2019
     demands:
       - DotNetFramework
       - msbuild
@@ -60,7 +60,7 @@ jobs:
     BuildRTM: "true"
 
   pool:
-    name: VSEngSS-MicroBuild2019
+    name: VSEng-MicroBuildVS2019
     demands:
       - DotNetFramework
       - msbuild
