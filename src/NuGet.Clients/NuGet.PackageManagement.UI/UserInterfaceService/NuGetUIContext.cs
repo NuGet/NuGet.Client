@@ -11,6 +11,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -34,6 +35,7 @@ namespace NuGet.PackageManagement.UI
         // Non-private only to facilitate testing.
         internal NuGetUIContext(
             IServiceBroker serviceBroker,
+            IReconnectingNuGetSearchService nuGetSearchService,
             IVsSolutionManager solutionManager,
             NuGetSolutionManagerServiceWrapper solutionManagerService,
             NuGetPackageManager packageManager,
@@ -45,6 +47,7 @@ namespace NuGet.PackageManagement.UI
             NuGetSourcesServiceWrapper sourceService)
         {
             ServiceBroker = serviceBroker;
+            ReconnectingSearchService = nuGetSearchService;
             SolutionManager = solutionManager;
             _solutionManagerService = solutionManagerService;
             PackageManager = packageManager;
@@ -61,6 +64,8 @@ namespace NuGet.PackageManagement.UI
         }
 
         public IServiceBroker ServiceBroker { get; }
+
+        public IReconnectingNuGetSearchService ReconnectingSearchService { get; }
 
         public IVsSolutionManager SolutionManager { get; }
 
@@ -101,6 +106,8 @@ namespace NuGet.PackageManagement.UI
 
             _solutionManagerService.Dispose();
             _sourceService.Dispose();
+
+            ReconnectingSearchService.Dispose();
 
             GC.SuppressFinalize(this);
         }
@@ -167,6 +174,8 @@ namespace NuGet.PackageManagement.UI
             {
             }
 
+            var searchService = await ReconnectingNuGetSearchService.CreateAsync(serviceBroker, NuGetUIThreadHelper.JoinableTaskFactory, cancellationToken);
+
             var packageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 settings,
@@ -180,6 +189,7 @@ namespace NuGet.PackageManagement.UI
 
             return new NuGetUIContext(
                 serviceBroker,
+                searchService,
                 solutionManager,
                 solutionManagerServiceWrapper,
                 packageManager,

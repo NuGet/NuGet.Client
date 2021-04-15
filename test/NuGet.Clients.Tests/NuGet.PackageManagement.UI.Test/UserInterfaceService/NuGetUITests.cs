@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
@@ -172,6 +173,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             return new NuGetUIContext(
                 Mock.Of<IServiceBroker>(),
+                Mock.Of<IReconnectingNuGetSearchService>(),
                 Mock.Of<IVsSolutionManager>(),
                 new NuGetSolutionManagerServiceWrapper(),
                 packageManager,
