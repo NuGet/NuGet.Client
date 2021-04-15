@@ -487,6 +487,8 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
+                token.ThrowIfCancellationRequested();
+
                 await jtf.SwitchToMainThreadAsync();
 
                 var waitDialogFactory = await asyncServiceProvider.GetServiceAsync<
@@ -551,6 +553,8 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
+                token.ThrowIfCancellationRequested();
+
                 await jtf.SwitchToMainThreadAsync();
 
                 var statusBar = await asyncServiceProvider.GetServiceAsync<SVsStatusbar, IVsStatusbar>();

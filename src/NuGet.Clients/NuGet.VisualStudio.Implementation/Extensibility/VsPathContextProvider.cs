@@ -279,6 +279,8 @@ namespace NuGet.VisualStudio
         private async Task<IVsPathContext> GetPathContextFromAssetsFileAsync(
             BuildIntegratedNuGetProject buildIntegratedProject, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var lockFile = await _getLockFileOrNullAsync(buildIntegratedProject);
 
             if ((lockFile?.PackageFolders?.Count ?? 0) == 0)

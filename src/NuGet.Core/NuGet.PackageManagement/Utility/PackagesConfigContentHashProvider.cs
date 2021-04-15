@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement
 
         public string GetContentHash(PackageIdentity packageIdentity, CancellationToken token)
         {
-            var nupkgPath = GetNupkgPath(packageIdentity, token);
+            var nupkgPath = GetNupkgPath(packageIdentity);
             var result = TryGetNupkgMetadata(nupkgPath);
 
             if (!result.Found)
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement
             return result.ContentHash;
         }
 
-        private string GetNupkgPath(PackageIdentity packageIdentity, CancellationToken token)
+        private string GetNupkgPath(PackageIdentity packageIdentity)
         {
             var packagePath = _packagesFolder.GetInstalledPackageFilePath(packageIdentity);
             return packagePath;
