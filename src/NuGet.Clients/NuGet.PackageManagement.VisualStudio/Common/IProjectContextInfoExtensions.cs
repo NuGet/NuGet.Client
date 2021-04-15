@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            List<string> projectIds = projectContextInfos.Select(pci => pci.ProjectId).ToList();
+            ReadOnlyCollection<string> projectIds = projectContextInfos.Select(pci => pci.ProjectId).ToList().AsReadOnly();
 
             if (projectIds.Count == 0)
             {
