@@ -346,7 +346,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(_projectFullPath, e))).ToList();
         }
 
-        private IList<string> GetFallbackFolders(ISettings settings, bool shouldThrow = true)
+        private IList<string> GetFallbackFolders(ISettings settings)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

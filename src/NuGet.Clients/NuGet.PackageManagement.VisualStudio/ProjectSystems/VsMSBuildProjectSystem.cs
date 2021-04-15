@@ -708,7 +708,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var childItems = await EnvDTEProjectUtility.GetChildItems(VsProjectAdapter.Project, path, filter, VsProjectTypes.VsProjectItemKindPhysicalFile);
+                var childItems = await EnvDTEProjectUtility.GetChildItems(VsProjectAdapter.Project, path, filter, desiredKind);
                 // Get all physical files
                 return from p in childItems
                        select p.Name;
