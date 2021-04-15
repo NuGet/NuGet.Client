@@ -231,7 +231,6 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 args,
                 waitForExit: true,
-                timeOutInMilliseconds: 60000,
                 environmentVariables: envVars);
 
             if (!ignoreExitCode)

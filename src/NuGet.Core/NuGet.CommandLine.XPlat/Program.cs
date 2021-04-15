@@ -11,6 +11,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Commands;
 using NuGet.CommandLine.XPlat.Commands.Signing;
+using NuGet.Commands.Exceptions;
 
 #if DEBUG
 using Microsoft.Build.Locator;
@@ -100,9 +101,10 @@ namespace NuGet.CommandLine.XPlat
             catch (Exception e)
             {
                 bool handled = false;
-                string verb = null;
+
                 if (args.Length > 1)
                 {
+                    string verb = null;
                     // Redirect users nicely if they do 'dotnet nuget sources add' or 'dotnet nuget add sources'
                     if (StringComparer.OrdinalIgnoreCase.Compare(args[0], "sources") == 0)
                     {
@@ -130,6 +132,12 @@ namespace NuGet.CommandLine.XPlat
                             default:
                                 break;
                         }
+                    }
+
+                    if (!handled && e.GetBaseException() is TrustedSignerAlreadyExistsException)
+                    {
+                        log.LogMinimal(e.GetBaseException().Message);
+                        handled = true;
                     }
                 }
 

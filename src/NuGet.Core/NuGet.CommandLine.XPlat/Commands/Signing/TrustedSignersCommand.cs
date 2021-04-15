@@ -123,8 +123,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Signing
                         Logger = getLogger()
                     };
 
-                    // MSbuild doesn't pass verbosity parameter means it's normal verbosity for NuGet.
-                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(string.IsNullOrWhiteSpace(verbosity.Value()) ? "N" : verbosity.Value()));
+                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
 #pragma warning disable CS0618 // Type or member is obsolete
                     var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);

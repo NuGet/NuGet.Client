@@ -4,11 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
-using Moq;
 using NuGet.CommandLine.XPlat.Commands.Signing;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;

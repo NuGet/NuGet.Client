@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands.Exceptions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -247,7 +248,7 @@ namespace NuGet.Commands
             {
                 if (string.Equals(existingSigner.Name, name, StringComparison.Ordinal))
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name));
+                    throw new TrustedSignerAlreadyExistsException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name));
                 }
 
                 if (validateServiceIndex && existingSigner is RepositoryItem repoItem && string.Equals(repoItem.ServiceIndex, serviceIndex, StringComparison.OrdinalIgnoreCase))
