@@ -289,8 +289,9 @@ namespace NuGet.PackageManagement.UI
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
+                        var projects = _nugetProjects.ToList();
                         IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
-                            await _nugetProjects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
+                            await projects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
 
                         return projectsToInstalledPackages.SelectMany(pair => pair.Value).Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
                     });
