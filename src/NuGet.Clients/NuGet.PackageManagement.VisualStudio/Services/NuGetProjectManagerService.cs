@@ -114,20 +114,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ReadOnlyCollection<string>? distinctProjectIds = projectIds.Distinct().ToList().AsReadOnly();
+            ReadOnlyCollection<string> distinctProjectIds = projectIds.Distinct().ToList().AsReadOnly();
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(distinctProjectIds, cancellationToken);
 
-            Dictionary<NuGetProject, Task<IEnumerable<PackageReference>>>? dict = projects.ToDictionary(
+            Dictionary<NuGetProject, Task<IEnumerable<PackageReference>>> projectsToPackageReferences = projects.ToDictionary(
                 project => project,
                 project => project.GetInstalledPackagesAsync(cancellationToken));
 
             await Task.WhenAll(
-                dict.Select(async pair => await pair.Value));
+                projectsToPackageReferences.Select(async pair => await pair.Value));
 
-            var dictToReturn = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
+            var projectIdsToPackageReferences = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
             GetInstalledPackagesAsyncTelemetryEvent? telemetryEvent = null;
 
-            foreach (KeyValuePair<NuGetProject, Task<IEnumerable<PackageReference>>> pair in dict)
+            foreach (KeyValuePair<NuGetProject, Task<IEnumerable<PackageReference>>> pair in projectsToPackageReferences)
             {
                 var installedPackages = new List<IPackageReferenceContextInfo>();
                 NuGetProject project = pair.Key;
@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     installedPackages.Add(installedPackage);
                 }
 
-                dictToReturn.Add(projectId, installedPackages);
+                projectIdsToPackageReferences.Add(projectId, installedPackages);
 
                 if (nullCount > 0)
                 {
@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
             }
 
-            return dictToReturn;
+            return projectIdsToPackageReferences;
         }
 
         public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
