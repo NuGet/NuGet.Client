@@ -41,11 +41,6 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (parentId == null)
-            {
-                throw new ArgumentNullException(nameof(parentId));
-            }
-
             _request = request;
             ParentId = parentId;
 

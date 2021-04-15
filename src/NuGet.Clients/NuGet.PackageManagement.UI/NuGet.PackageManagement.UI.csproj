@@ -170,7 +170,6 @@
     <Compile Include="Xamls\ProductUpdateBar.xaml.cs">
       <DependentUpon>ProductUpdateBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\TriggerEventMethod.cs" />
     <Compile Include="Converters\NotEqualConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
