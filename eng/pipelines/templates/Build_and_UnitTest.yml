@@ -47,11 +47,12 @@ steps:
 - task: MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
 
-- task: ms-vseng.MicroBuildTasks.965C8DC6-1483-45C9-B384-5AC75DA1F1A4.MicroBuildOptProfPlugin@4
+- task: ms-vseng.MicroBuildTasks.965C8DC6-1483-45C9-B384-5AC75DA1F1A4.MicroBuildOptProfPlugin@6
   displayName: 'OptProfV2:  install the plugin'
   inputs:
     getDropNameByDrop: true
     optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
+    AccessToken: $(System.AccessToken)
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PowerShell@1
@@ -301,17 +302,9 @@ steps:
   displayName: 'Component Detection'
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
-- task: CopyFiles@2
-  displayName: "Copy Nupkgs"
-  inputs:
-    SourceFolder: "artifacts\\$(NupkgOutputDir)"
-    Contents: "*.nupkg"
-    TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
 - task: PublishPipelineArtifact@1
   displayName: "Publish nupkgs"
-  inputs: 
+  inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
     artifactName: "nupkgs - $(RtmLabel)"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
@@ -339,22 +332,6 @@ steps:
     arguments: "-c $(BuildConfiguration) -tv 16 -out $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
     failOnStandardError: "true"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
-
-- task: CopyFiles@2
-  displayName: "Copy NuGet.exe, VSIX and EndToEnd"
-  inputs:
-    SourceFolder: "artifacts"
-    Contents: |
-      $(VsixPublishDir)\\NuGet.exe
-      $(VsixPublishDir)\\NuGet.pdb
-      $(VsixPublishDir)\\NuGet.Mssign.exe
-      $(VsixPublishDir)\\NuGet.Mssign.pdb
-      $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json
-      $(VsixPublishDir)\\NuGet.Tools.vsix
-      $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.vsix
-      $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.json
-      $(VsixPublishDir)\\EndToEnd.zip
-    TargetFolder: "$(BuildOutputTargetPath)\\artifacts"
 
 - task: NuGetCommand@2
   displayName: 'OptProfV2:  add the NuGet package source'
@@ -448,14 +425,6 @@ steps:
     TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-
-- task: CopyFiles@2
-  displayName: "Copy LCG Files to destination (deprecated)"
-  inputs:
-    SourceFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
-    TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
 - task: PublishPipelineArtifact@1
   displayName: "Upload localizeInputs artifact"
   inputs:
@@ -489,22 +458,6 @@ steps:
     msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
     maximumCpuCount: true
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
-
-- task: CopyFiles@2
-  displayName: "Copy Symbols (non-rtm)"
-  inputs:
-    SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    Contents: "**\\*"
-    TargetFolder: "$(BuildOutputTargetPath)\\symbols"
-  condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
-
-- task: CopyFiles@2
-  displayName: "Copy Symbols (rtm)"
-  inputs:
-    SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    Contents: "**\\*"
-    TargetFolder: "$(BuildOutputTargetPath)\\symbols-rtm"
-  condition: " and(succeeded(), not(eq(variables['BuildRTM'], 'false')), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish symbols as pipeline artifacts"
