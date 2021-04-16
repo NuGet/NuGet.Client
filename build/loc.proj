@@ -12,6 +12,7 @@
     </CommonMSBuildProperties>
     <OutDir>$(ArtifactsDirectory)</OutDir>
     <IntermediateOutputPath>$(ArtifactsDirectory)</IntermediateOutputPath>
+    <NuGetBuildLocalizationRepository>$(RepositoryRootDirectory)submodules\NuGet.Build.Localization\</NuGetBuildLocalizationRepository>
   </PropertyGroup>
 
   <Target Name="LocalizeNonProjectFiles">
