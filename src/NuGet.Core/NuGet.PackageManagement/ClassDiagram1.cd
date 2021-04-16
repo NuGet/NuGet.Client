@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="NuGet.ProjectManagement.Projects.BuildIntegratedNuGetProject" Collapsed="true">
+    <Position X="3.75" Y="3.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAACBBAABAAAAACAAAAAiAAAAEAAAA=</HashCode>
+      <FileName>Projects\BuildIntegratedNuGetProject.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="NuGet.ProjectManagement.Projects.ProjectJsonNuGetProject" Collapsed="true">
+    <Position X="6.75" Y="4.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AgEAAAAAAAAAEACACBDAAJAAgAAioAAAAiAgKAEIAEA=</HashCode>
+      <FileName>Projects\ProjectJsonNuGetProject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NuGet.ProjectManagement.NuGetProject">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAQABAAAAAACAADBAAAAAEIAAAAAAQkAAIAAGAAA=</HashCode>
+      <FileName>Projects\NuGetProject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NuGet.ProjectManagement.PackagesConfigNuGetProject" Collapsed="true">
+    <Position X="7.5" Y="3" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>CAEAAAAEDAAAAACAAAAAABAgAAAAAAAAAgFAJAAAIAA=</HashCode>
+      <FileName>Projects\PackagesConfigNuGetProject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -205,7 +205,7 @@
         <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
       </_XmlLocFiles>
 
-      <_TxtLocFiles Include="$(LocalizationRootDirectory)\%(VSLanguage.Identity)\15\about_NuGet.Cmdlets.help.txt">
+      <_TxtLocFiles Include="$(NuGetBuildLocalizationRepository)$(LocalizationRootDirectory)\%(VSLanguage.Identity)\15\about_NuGet.Cmdlets.help.txt">
         <TargetPath>Modules\NuGet\%(VSLanguage.Locale)\about_NuGet.Cmdlets.help.txt</TargetPath>
       </_TxtLocFiles>
 
