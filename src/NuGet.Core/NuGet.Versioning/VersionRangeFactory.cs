@@ -92,12 +92,11 @@ namespace NuGet.Versioning
         {
             versionRange = null;
 
-            if (value == null)
+            var trimmedValue = value?.Trim();
+            if (string.IsNullOrEmpty(trimmedValue))
             {
                 return false;
             }
-
-            var trimmedValue = value.Trim();
 
             var charArray = trimmedValue.ToCharArray();
 
@@ -108,12 +107,6 @@ namespace NuGet.Versioning
             {
                 versionRange = new VersionRange(new NuGetVersion(0, 0, 0), true, null, true, FloatRange.Parse(trimmedValue), originalString: value);
                 return true;
-            }
-
-            // Fail early if the string is too short to be valid
-            if (charArray.Length < 3)
-            {
-                return false;
             }
 
             string minVersionString = null;
