@@ -100,24 +100,24 @@ namespace NuGet.Commands
                 var logMessages = verificationResult.Results.SelectMany(p => p.Issues).ToList();
 
                 //log issues first
-                IEnumerable<SignatureLog> issues = logMessages.Where(m => m.Level < LogLevel.Warning);
-                await logger.LogMessagesAsync(issues);
+                await logger.LogMessagesAsync(logMessages.Where(m => m.Level < LogLevel.Warning));
 
                 if (logMessages.Any(m => m.Level >= LogLevel.Warning))
                 {
                     logger.LogMinimal(Environment.NewLine);
 
-                    var errors = logMessages.Count(m => m.Level == LogLevel.Error);
-                    var warnings = logMessages.Count(m => m.Level == LogLevel.Warning);
+                    IEnumerable<SignatureLog> warnsanderrors = logMessages.Where(m => m.Level >= LogLevel.Warning);
+
+                    var errors = warnsanderrors.Count(m => m.Level == LogLevel.Error);
+                    var warnings = warnsanderrors.Count() - errors;
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_FinishedWithErrors, errors, warnings));
 
+                    // log warnigs and errors at the end
+                    await logger.LogMessagesAsync(warnsanderrors);
+
                     result = errors;
                 }
-
-                // log errors at the end
-                issues = logMessages.Where(m => m.Level >= LogLevel.Warning);
-                await logger.LogMessagesAsync(issues);
 
                 if (verificationResult.IsValid)
                 {
