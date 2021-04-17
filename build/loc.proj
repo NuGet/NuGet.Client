@@ -14,6 +14,7 @@
     <IntermediateOutputPath>$(ArtifactsDirectory)</IntermediateOutputPath>
   </PropertyGroup>
 
+
   <Target Name="LocalizeNonProjectFiles">
     <ItemGroup>
       <NonProjectFilesToMove Include="$(SolutionPackagesFolder)microsoft.web.xdt\3.0.0\lib\netstandard2.0\Microsoft.Web.XmlTransform.dll">
@@ -40,6 +41,16 @@
   </Target>
 
   <Target Name="BatchLocalize">
+    <ItemGroup>
+      <_SubmoduleRepo Include="$(LocalizationSubmoduleRootDirectory)\**\*" />
+      <_SubmoduleFiles Include="@(_SubmoduleRepo)">
+        <DestinationPath>$(RepositoryRootDirectory)$([MSBuild]::MakeRelative($(NuGetBuildLocalizationRepository), %(_SubmoduleRepo.Identity)))</DestinationPath>
+      </_SubmoduleFiles>
+    </ItemGroup>
+
+    <RemoveDir Directories="$(RepositoryRootDirectory)localize" />
+    <Copy SourceFiles="@(_SubmoduleFiles)" DestinationFiles="@(_SubmoduleFiles->'%(DestinationPath)')" />
+
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;"

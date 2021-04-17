@@ -200,3 +200,7 @@ launchSettings.json
 
 .idea
 .ionide
+
+localize
+MicroBuild
+*.out

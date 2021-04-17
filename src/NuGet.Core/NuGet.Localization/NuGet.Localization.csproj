@@ -25,7 +25,7 @@
     ============================================================
   -->
 
-  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' == 'false' AND Exists($(LocalizationRootDirectory)) " BeforeTargets="GenerateNuspec">
+  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' == 'false' AND Exists($(LocalizationSubmoduleRootDirectory)) " BeforeTargets="GenerateNuspec">
     <MakeDir
             Directories="$(LocalizationFilesDirectory)"/>
     <ItemGroup>
