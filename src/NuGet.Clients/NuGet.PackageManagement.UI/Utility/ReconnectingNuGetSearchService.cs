@@ -44,12 +44,14 @@ namespace NuGet.PackageManagement.UI.Utility
 
         private void AvailabilityChanged(object sender, BrokeredServicesChangedEventArgs e)
         {
-            _jtf.RunAsync(async () =>
-                {
-                    _service?.Dispose();
-                    _service = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, _disposedTokenSource.Token);
-                })
-                .PostOnFailure(typeof(ReconnectingNuGetSearchService).FullName);
+            _jtf.RunAsync(AvailabilityChangedAsync)
+                .PostOnFailure(typeof(ReconnectingNuGetSearchService).FullName, nameof(AvailabilityChangedAsync));
+        }
+
+        internal async Task AvailabilityChangedAsync()
+        {
+            _service?.Dispose();
+            _service = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, _disposedTokenSource.Token);
         }
 
         public ValueTask<SearchResultContextInfo> ContinueSearchAsync(CancellationToken cancellationToken)
