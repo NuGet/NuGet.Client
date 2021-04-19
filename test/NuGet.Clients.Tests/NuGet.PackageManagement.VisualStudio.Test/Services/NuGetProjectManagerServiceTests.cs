@@ -641,6 +641,49 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyCollection()
+        {
+            // Arrange
+            const string projectNameA = "a";
+            string projectId1 = Guid.NewGuid().ToString();
+
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                Initialize();
+
+                string projectFullPathA = Path.Combine(testDirectory.Path, $"{projectNameA}.csproj");
+                NuGetFramework targetFramework = NuGetFramework.Parse("net46");
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(targetFramework, new TestNuGetProjectContext());
+                var project1 = new TestMSBuildNuGetProject(msBuildNuGetProjectSystem, testDirectory.Path, projectFullPathA, projectId1);
+
+                project1.InstalledPackageReferences = Task.FromResult<IEnumerable<PackageReference>>(Array.Empty<PackageReference>());
+
+                _solutionManager.NuGetProjects.Add(project1);
+
+                var telemetrySession = new Mock<ITelemetrySession>();
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+
+                telemetrySession
+                    .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+                TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+                // Act
+                IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToPackages =
+                    await _projectManager.GetInstalledPackagesAsync(
+                        projectIds: new[] { projectId1 },
+                        cancellationToken: CancellationToken.None);
+
+                // Assert
+                Assert.Equal(1, projectsToPackages.Count);
+                Assert.Empty(projectsToPackages[projectId1]);
+
+                Assert.Equal(0, telemetryEvents.Count);
+            }
+        }
+
         private static void AddPackageDependency(ProjectSystemCache projectSystemCache, ProjectNames projectNames, PackageSpec packageSpec, SimpleTestPackageContext package)
         {
             var dependency = new LibraryDependency()
