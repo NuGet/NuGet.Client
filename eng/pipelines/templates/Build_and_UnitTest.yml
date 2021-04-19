@@ -573,14 +573,3 @@ steps:
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"
-
-- task: PowerShell@1
-  displayName: "Cleanup on Failure"
-  inputs:
-    scriptType: "inlineScript"
-    arguments: "-BuildOutputTargetPath $(BuildOutputTargetPath)"
-    inlineScript: |
-      param([string]$BuildOutputTargetPath)
-      Get-ChildItem $(BuildOutputTargetPath) -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
-      Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
-  condition: "eq(variables['Agent.JobStatus'], 'Failed')"
