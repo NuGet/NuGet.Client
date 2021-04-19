@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -13,7 +14,7 @@ namespace NuGet.VisualStudio.Common
         void AddNuGetEntries(params ErrorListTableEntry[] entries);
 
         /// <summary> Bring to front if settings permit. </summary>
-        void BringToFrontIfSettingsPermit();
+        Task BringToFrontIfSettingsPermitAsync();
 
         /// <summary> Clear NuGet entries. </summary>
         void ClearNuGetEntries();

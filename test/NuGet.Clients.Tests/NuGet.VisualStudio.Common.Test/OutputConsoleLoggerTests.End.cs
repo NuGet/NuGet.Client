@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio.Common.Test
             [Fact]
             public void Gives_error_list_focus()
             {
-                _errorList.Verify(el => el.BringToFrontIfSettingsPermit());
+                _errorList.Verify(el => el.BringToFrontIfSettingsPermitAsync());
             }
         }
     }
