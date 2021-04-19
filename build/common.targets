@@ -268,7 +268,7 @@
       <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')"
 Condition=" ('%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPlat') AND !($([System.String]::new('%(FullPath)').Contains('\net45\'))) " KeepDuplicates="false">
         <TranslationFile>$(LocalizationRepoRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile>$(LocalizationRepoRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
+        <LciCommentFile>$(LocalizationRepoRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
         <HasLceComments>false</HasLceComments>
       </DllsToLocalizeWithMetadata>
     </ItemGroup>
