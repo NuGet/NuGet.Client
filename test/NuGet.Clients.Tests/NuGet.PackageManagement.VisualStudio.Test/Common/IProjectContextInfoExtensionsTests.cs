@@ -101,6 +101,100 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetInstalledPackagesAsync_WhenProjectContextInfoEmpty_DoesNotInvokeService()
+        {
+            // Arrange
+            var serviceBroker = new Mock<IServiceBroker>();
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            var dictionary = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
+            var expectedResult = new ReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>(dictionary);
+
+            List<IProjectContextInfo> projectList = new List<IProjectContextInfo>();
+
+            projectManagerService.Setup(
+                x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>>(expectedResult));
+
+            serviceBroker.Setup(
+#pragma warning disable ISB001 // Dispose of proxies
+                x => x.GetProxyAsync<INuGetProjectManagerService>(
+                    It.Is<ServiceRpcDescriptor>(descriptor => descriptor == NuGetServices.ProjectManagerService),
+                    It.IsAny<ServiceActivationOptions>(),
+                    It.IsAny<CancellationToken>()))
+#pragma warning restore ISB001 // Dispose of proxies
+                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
+
+            // Act
+            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> actualResult =
+                await IProjectContextInfoExtensions.GetInstalledPackagesAsync(
+                    projectContextInfos: projectList,
+                    serviceBroker.Object,
+                    CancellationToken.None);
+
+            // Assert
+            Assert.Equal(0, actualResult.Count);
+            projectManagerService.Verify(x => x.GetInstalledPackagesAsync(
+                It.IsAny<IReadOnlyCollection<string>>(),
+                It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var serviceBroker = new Mock<IServiceBroker>();
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            var dictionary = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
+
+
+            var project1 = new Mock<IProjectContextInfo>();
+            string projectId1 = Guid.NewGuid().ToString();
+            project1.SetupGet(x => x.ProjectId)
+                .Returns(projectId1);
+
+            List<IProjectContextInfo> projectList = new List<IProjectContextInfo>()
+            {
+                project1.Object,
+            };
+
+            dictionary[projectId1] = null;
+
+            var expectedResult = new ReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>(dictionary);
+            projectManagerService.Setup(
+                x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>>(expectedResult));
+
+            serviceBroker.Setup(
+#pragma warning disable ISB001 // Dispose of proxies
+                x => x.GetProxyAsync<INuGetProjectManagerService>(
+                    It.Is<ServiceRpcDescriptor>(descriptor => descriptor == NuGetServices.ProjectManagerService),
+                    It.IsAny<ServiceActivationOptions>(),
+                    It.IsAny<CancellationToken>()))
+#pragma warning restore ISB001 // Dispose of proxies
+                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
+
+            // Act
+            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> actualResult =
+                await IProjectContextInfoExtensions.GetInstalledPackagesAsync(
+                    projectContextInfos: projectList,
+                    serviceBroker.Object,
+                    CancellationToken.None);
+
+            // Assert
+            Assert.Same(expectedResult, actualResult);
+            Assert.Null(actualResult[projectId1]);
+            projectManagerService.Verify(x => x.GetInstalledPackagesAsync(
+                It.IsAny<IReadOnlyCollection<string>>(),
+                It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task GetInstalledPackagesAsync_ForMultipleProjects_InvokesServiceOnce()
         {
             // Arrange
