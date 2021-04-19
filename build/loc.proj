@@ -14,7 +14,6 @@
     <IntermediateOutputPath>$(ArtifactsDirectory)</IntermediateOutputPath>
   </PropertyGroup>
 
-
   <Target Name="LocalizeNonProjectFiles">
     <ItemGroup>
       <NonProjectFilesToMove Include="$(SolutionPackagesFolder)microsoft.web.xdt\3.0.0\lib\netstandard2.0\Microsoft.Web.XmlTransform.dll">
@@ -30,19 +29,20 @@
     <Copy SourceFiles="@(NonProjectFilesToMove)" DestinationFiles="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
     <ItemGroup>
       <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')">
-        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
-        <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
+        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationRepoRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
+        <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationRepoRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
+        <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationRepoRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
+        <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationRepoRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
         <Parser Condition="'%(Extension)' == '.vsixlangpack'">210</Parser>
         <SettingsFile Condition="'%(Extension)' == '.vsixlangpack'">$(LSBuildRoot)\locxml_teamarch.lss</SettingsFile>
+        <HasLceComments>false</HasLceComments>
       </FilesToLocalize>
     </ItemGroup>
   </Target>
 
   <Target Name="BatchLocalize">
     <ItemGroup>
-      <_SubmoduleRepo Include="$(LocalizationSubmoduleRootDirectory)\**\*" />
+      <_SubmoduleRepo Include="$(LocalizationRootDirectory)\**\*" />
       <_SubmoduleFiles Include="@(_SubmoduleRepo)">
         <DestinationPath>$(RepositoryRootDirectory)$([MSBuild]::MakeRelative($(NuGetBuildLocalizationRepository), %(_SubmoduleRepo.Identity)))</DestinationPath>
       </_SubmoduleFiles>

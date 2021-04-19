@@ -46,7 +46,8 @@
     <ArtifactRoot>$(ArtifactsDirectory)</ArtifactRoot>
     <TestUtilitiesDirectory>$(RepositoryRootDirectory)test\TestUtilities\</TestUtilitiesDirectory>
     <NuGetBuildLocalizationRepository>$(RepositoryRootDirectory)submodules\NuGet.Build.Localization\</NuGetBuildLocalizationRepository>
-    <LocalizationRootDirectory>$(RepositoryRootDirectory)localize</LocalizationRootDirectory>
+    <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
+    <LocalizationRepoRootDirectory>$(RepositoryRootDirectory)localize</LocalizationRepoRootDirectory>
     <LocalizationSubmoduleRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationSubmoduleRootDirectory>
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
     <MicroBuildDirectory>$(SolutionPackagesFolder)microsoft.visualstudioeng.microbuild.core\0.4.1\build\</MicroBuildDirectory>
