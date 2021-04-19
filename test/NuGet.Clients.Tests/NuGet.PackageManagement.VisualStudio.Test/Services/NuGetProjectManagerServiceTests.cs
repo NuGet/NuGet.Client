@@ -645,7 +645,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyDictionary()
+        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyCollection()
         {
             // Arrange
             const string projectNameA = "a";

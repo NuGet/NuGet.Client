@@ -119,7 +119,7 @@ namespace NuGet.PackageManagement.UI
         {
             var hash = new HashSet<NuGetVersion>();
 
-            IReadOnlyCollection<IProjectContextInfo> nugetProjects = _projects.Select(p => p.NuGetProject).ToList();
+            IReadOnlyCollection<IProjectContextInfo> nugetProjects = _projects.Select(p => p.NuGetProject).ToList().AsReadOnly();
             IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectIdsToInstalledPackages =
                 await nugetProjects.GetInstalledPackagesAsync(ServiceBroker, cancellationToken);
 
