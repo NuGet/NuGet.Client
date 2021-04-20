@@ -29,17 +29,28 @@
     <Copy SourceFiles="@(NonProjectFilesToMove)" DestinationFiles="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
     <ItemGroup>
       <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')">
-        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
-        <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
+        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationWorkDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
+        <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationWorkDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
+        <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationWorkDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
+        <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationWorkDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
         <Parser Condition="'%(Extension)' == '.vsixlangpack'">210</Parser>
         <SettingsFile Condition="'%(Extension)' == '.vsixlangpack'">$(LSBuildRoot)\locxml_teamarch.lss</SettingsFile>
+        <HasLceComments>false</HasLceComments>
       </FilesToLocalize>
     </ItemGroup>
   </Target>
 
   <Target Name="BatchLocalize">
+    <ItemGroup>
+      <_SubmoduleRepo Include="$(LocalizationRootDirectory)\**\*" />
+      <_SubmoduleFiles Include="@(_SubmoduleRepo)">
+        <DestinationPath>$(RepositoryRootDirectory)$([MSBuild]::MakeRelative($(NuGetBuildLocalizationRepository), %(_SubmoduleRepo.Identity)))</DestinationPath>
+      </_SubmoduleFiles>
+    </ItemGroup>
+
+    <RemoveDir Directories="$(RepositoryRootDirectory)localize" />
+    <Copy SourceFiles="@(_SubmoduleFiles)" DestinationFiles="@(_SubmoduleFiles->'%(DestinationPath)')" />
+
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;"
@@ -99,14 +110,9 @@
       <_LocalizeFiles Include="$(ArtifactsDirectory)localize\ResponseFiles\*.loc.002\ENU\LocProject.json">
         <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\ENU\LocProject.json</DestinationPath>
       </_LocalizeFiles>
-      <_SubmoduleRepo Include="$(LocalizationRootDirectory)\**\*" />
-      <_SubmoduleFiles Include="@(_SubmoduleRepo)">
-        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\submodules\NuGet.Build.Localization\localize\$([MSBuild]::MakeRelative($(LocalizationRootDirectory), %(_SubmoduleRepo.Identity)))</DestinationPath>
-      </_SubmoduleFiles>
     </ItemGroup>
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
     <Copy SourceFiles="@(_LocalizeFiles)" DestinationFiles="@(_LocalizeFiles->'%(DestinationPath)')" />
-    <Copy SourceFiles="@(_SubmoduleFiles)" DestinationFiles="@(_SubmoduleFiles->'%(DestinationPath)')" />
   </Target>
 
   <Target Name="AfterBuild" DependsOnTargets="LocalizeNonProjectFiles;BatchLocalize"/>
