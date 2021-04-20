@@ -42,11 +42,26 @@ namespace NuGet.Configuration
                         return new CredentialsItem(element, origin);
 
                     case SettingElementType.PackageSources:
+
                         if (elementType == SettingElementType.Add)
                         {
                             return new SourceItem(element, origin);
                         }
+                        break;
 
+                    case SettingElementType.PackageNamespaces:
+                        if (elementType == SettingElementType.PackageSource)
+                        {
+                            return new PackageSourceNamespacesItem(element, origin);
+                        }
+                        break;
+
+                    case SettingElementType.PackageSource:
+
+                        if (elementType == SettingElementType.Namespace)
+                        {
+                            return new NamespaceItem(element, origin);
+                        }
                         break;
                 }
 

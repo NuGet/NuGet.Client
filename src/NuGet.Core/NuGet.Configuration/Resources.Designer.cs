@@ -169,6 +169,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package source namespace &apos;{0}&apos; must have at least one namespace..
+        /// </summary>
+        internal static string Error_ItemNeedsAtLeastOneNamespace {
+            get {
+                return ResourceManager.GetString("Error_ItemNeedsAtLeastOneNamespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot merge two different sections..
         /// </summary>
         internal static string Error_MergeTwoDifferentSections {
@@ -345,6 +354,15 @@ namespace NuGet.Configuration {
         internal static string PackageSource_Invalid {
             get {
                 return ResourceManager.GetString("PackageSource_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path: &apos;{0}&apos;.
+        /// </summary>
+        internal static string Path {
+            get {
+                return ResourceManager.GetString("Path", resourceCulture);
             }
         }
         
