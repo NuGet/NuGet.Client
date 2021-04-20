@@ -14,7 +14,7 @@ namespace NuGet.Configuration
         /// </summary>
         public Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
 
-        public PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
+        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
         }

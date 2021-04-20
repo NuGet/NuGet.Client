@@ -42,7 +42,6 @@ namespace NuGet.Configuration
                         return new CredentialsItem(element, origin);
 
                     case SettingElementType.PackageSources:
-
                         if (elementType == SettingElementType.Add)
                         {
                             return new SourceItem(element, origin);
@@ -57,7 +56,6 @@ namespace NuGet.Configuration
                         break;
 
                     case SettingElementType.PackageSource:
-
                         if (elementType == SettingElementType.Namespace)
                         {
                             return new NamespaceItem(element, origin);

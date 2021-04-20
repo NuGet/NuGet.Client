@@ -25,6 +25,7 @@ namespace NuGet.Configuration.Test
         [InlineData("nuget.common", "NuGet.Common")]
         [InlineData("NuGet.*", "NuGet.*")]
         [InlineData("NuGet.*", "nuget.*")]
+        [InlineData("*", "*")]
         public void Equals_WithEquivalentNamespaces_ReturnsTrue(string first, string second)
         {
             var firstNamespace = new NamespaceItem(first);
