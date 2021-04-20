@@ -85,11 +85,7 @@ namespace NuGet.Configuration
 
             if (parsedNamespaceItems.Count == 0)
             {
-                throw new NuGetConfigurationException(
-                    string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOneNamespace, Key) +
-                    " " +
-                    string.Format(CultureInfo.CurrentCulture, Resources.Path, origin.ConfigFilePath)
-                    );
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOneNamespaceWithPath, Key, origin.ConfigFilePath));
             }
 
             Namespaces = parsedNamespaceItems;

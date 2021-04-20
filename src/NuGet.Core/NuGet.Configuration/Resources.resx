@@ -303,8 +303,7 @@
     <value>Package source namespace '{0}' must have at least one namespace.</value>
     <comment>0 - The name of the item.</comment>
   </data>
-  <data name="Path" xml:space="preserve">
-    <value>Path: '{0}'</value>
-    <comment>0 - path.</comment>
+  <data name="Error_ItemNeedsAtLeastOneNamespaceWithPath" xml:space="preserve">
+    <value>Package source namespace '{0}' must have at least one namespace. Path: '{1}'</value>
   </data>
 </root>
