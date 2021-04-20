@@ -92,20 +92,29 @@ namespace NuGet.Commands
 
                 var packageIdentity = packageReader.GetIdentity();
 
-                logger.LogInformation(Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
+                logger.LogMinimal(Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
                     Strings.VerifyCommand_VerifyingPackage,
                     packageIdentity.ToString()));
                 logger.LogInformation($"{packagePath}{Environment.NewLine}");
 
                 var logMessages = verificationResult.Results.SelectMany(p => p.Issues).ToList();
-                await logger.LogMessagesAsync(logMessages);
+
+                //log issues first
+                await logger.LogMessagesAsync(logMessages.Where(m => m.Level < LogLevel.Warning));
 
                 if (logMessages.Any(m => m.Level >= LogLevel.Warning))
                 {
-                    var errors = logMessages.Count(m => m.Level == LogLevel.Error);
-                    var warnings = logMessages.Count(m => m.Level == LogLevel.Warning);
+                    logger.LogMinimal(Environment.NewLine);
+
+                    IEnumerable<SignatureLog> warnsanderrors = logMessages.Where(m => m.Level >= LogLevel.Warning);
+
+                    var errors = warnsanderrors.Count(m => m.Level == LogLevel.Error);
+                    var warnings = warnsanderrors.Count() - errors;
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_FinishedWithErrors, errors, warnings));
+
+                    // log warnigs and errors at the end
+                    await logger.LogMessagesAsync(warnsanderrors);
 
                     result = errors;
                 }
@@ -116,7 +125,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
+                    logger.LogMinimal(Environment.NewLine + Strings.VerifyCommand_Failed);
                 }
 
                 return result;

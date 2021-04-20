@@ -27,7 +27,7 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class SignatureTrustAndValidityVerificationProviderTests
     {
-        private const string UntrustedChainCertError = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+        private const string UntrustedChainCertError = "The author primary signature's signing certificate is not trusted by the trust provider.";
         private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SigningTestFixture _testFixture;
@@ -553,9 +553,11 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 result.Trust.Should().Be(SignatureVerificationStatus.Disallowed);
-                errorIssues.Count().Should().Be(1);
-                errorIssues.First().Code.Should().Be(NuGetLogCode.NU3036);
-                errorIssues.First().Message.Should().Contain("signature's timestamp's generalized time is outside the timestamping certificate's validity period.");
+                errorIssues.Count().Should().Be(3);
+                Assert.Contains(errorIssues, error => error.Code.Equals(NuGetLogCode.NU3036) &&
+                                        error.Message.Contains("signature's timestamp's generalized time is outside the timestamping certificate's validity period."));
+
+
             }
         }
 
@@ -1148,8 +1150,8 @@ namespace NuGet.Packaging.FuncTest
                     Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
                     Assert.Collection(
                         status.GetWarningIssues(),
-                        logMessage => Assert.Equal(NuGetLogCode.NU3027, logMessage.Code),
-                        logMessage => Assert.Equal(NuGetLogCode.NU3037, logMessage.Code));
+                        logMessage => Assert.Equal(NuGetLogCode.NU3037, logMessage.Code),
+                        logMessage => Assert.Equal(NuGetLogCode.NU3027, logMessage.Code));
                     Assert.Empty(status.GetErrorIssues());
                 }
             }

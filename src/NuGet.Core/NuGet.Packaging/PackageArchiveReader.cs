@@ -37,6 +37,13 @@ namespace NuGet.Packaging
         /// </summary>
         protected Stream ZipReadStream { get; set; }
 
+#if IS_SIGNING_SUPPORTED
+        /// <summary>
+        /// True if the package is signed
+        /// </summary>
+        private bool? _isSigned;
+#endif
+
         /// <summary>
         /// Nupkg package reader
         /// </summary>
@@ -374,21 +381,27 @@ namespace NuGet.Packaging
 
             ThrowIfZipReadStreamIsNull();
 
-            var isSigned = false;
-
 #if IS_SIGNING_SUPPORTED
-            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
+            if (!_isSigned.HasValue)
             {
-                var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+                _isSigned = false;
 
-                if (signatureEntry != null &&
-                   string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
                 {
-                    isSigned = true;
+                    var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+
+                    if (signatureEntry != null &&
+                       string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                    {
+                        _isSigned = true;
+                    }
                 }
             }
+
+            return Task.FromResult(_isSigned.Value);
+#else
+            return Task.FromResult(false);
 #endif
-            return Task.FromResult(isSigned);
         }
 
         public override async Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)

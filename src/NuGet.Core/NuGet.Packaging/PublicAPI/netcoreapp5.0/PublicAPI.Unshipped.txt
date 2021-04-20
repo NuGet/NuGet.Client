@@ -11,3 +11,4 @@ NuGet.Packaging.ManifestMetadata.Readme.set -> void
 NuGet.Packaging.NuspecReader.GetReadme() -> string
 NuGet.Packaging.PackageBuilder.Readme.get -> string
 NuGet.Packaging.PackageBuilder.Readme.set -> void
+static NuGet.Packaging.Signing.SignatureLog.MinimalLog(string message) -> NuGet.Packaging.Signing.SignatureLog
