@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -17,7 +18,7 @@ namespace Test.Utility
     {
         private Guid _operationId;
         public TestExecutionContext TestExecutionContext { get; set; }
-        public Lazy<List<string>> Logs { get; } = new Lazy<List<string>>();
+        public Lazy<ConcurrentBag<string>> Logs { get; } = new Lazy<ConcurrentBag<string>>();
         public bool EnableLogging { get; set; }
 
         public void Log(MessageLevel level, string message, params object[] args)
