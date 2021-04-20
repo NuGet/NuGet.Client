@@ -20,6 +20,8 @@ namespace Test.Utility
         public Lazy<List<string>> Logs { get; } = new Lazy<List<string>>();
         public bool EnableLogging { get; set; }
 
+        private object _lock = new object();
+
         public void Log(MessageLevel level, string message, params object[] args)
         {
             // Uncomment when you want to debug tests.
@@ -27,7 +29,10 @@ namespace Test.Utility
 
             if (EnableLogging)
             {
-                Logs.Value.Add(args != null ? message + " " + string.Join(",", args) : message);
+                lock (_lock)
+                {
+                    Logs.Value.Add(args != null ? message + " " + string.Join(",", args) : message);
+                }
             }
         }
 
@@ -38,7 +43,10 @@ namespace Test.Utility
 
             if (EnableLogging)
             {
-                Logs.Value.Add(message.Message);
+                lock (_lock)
+                {
+                    Logs.Value.Add(message.Message);
+                }
             }
         }
 
