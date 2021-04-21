@@ -57,6 +57,7 @@ Invoke-BuildStep 'Cleaning package cache' {
 $ConfigureObject = @{
     BuildTools = @{}
     Toolsets = @{}
+    EnvVars = @{}
 }
 
 $vsMajorVersion = Get-VSMajorVersion
@@ -66,6 +67,7 @@ Invoke-BuildStep $validateToolsetMessage {
     $vstoolset = New-BuildToolset $vsMajorVersion
     if ($vstoolset) {
         $ConfigureObject.Toolsets.Add('vstoolset', $vstoolset)
+        $ConfigureObject.EnvVars.Add('VisualStudioVersion', "$vsMajorVersion.0")
         $script:MSBuildExe = Get-MSBuildExe $vsMajorVersion
     }
 } -ev +BuildErrors
