@@ -100,10 +100,9 @@ namespace NuGet.CommandLine.XPlat
             catch (Exception e)
             {
                 bool handled = false;
-
+                string verb = null;
                 if (args.Length > 1)
                 {
-                    string verb = null;
                     // Redirect users nicely if they do 'dotnet nuget sources add' or 'dotnet nuget add sources'
                     if (StringComparer.OrdinalIgnoreCase.Compare(args[0], "sources") == 0)
                     {
