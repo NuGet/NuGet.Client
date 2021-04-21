@@ -2749,7 +2749,7 @@ namespace NuGet.Configuration.Test
             var settings = new Settings(new SettingsFile[] { settingsFile });
 
             // Act & 
-            settings.AddOrUpdate(settingsFile, "packageNamespaces", new PackageSourceNamespacesItem("nuget.org", new List<NamespaceItem>() { new NamespaceItem("moreStuff") }));
+            settings.AddOrUpdate(settingsFile, "packageNamespaces", new PackageNamespacesSourceItem("nuget.org", new List<NamespaceItem>() { new NamespaceItem("moreStuff") }));
             settings.SaveToDisk();
 
             var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>

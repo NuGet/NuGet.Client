@@ -183,7 +183,7 @@ namespace NuGet.Configuration.Test
             var contosoNamespace = packageSourceNamespaces.First(e => e.Key.Equals("contoso"));
 
             // Act & Assert
-            namespaceProvider.Remove(new PackageSourceNamespacesItem[] { contosoNamespace });
+            namespaceProvider.Remove(new PackageNamespacesSourceItem[] { contosoNamespace });
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageNamespaces>
@@ -222,7 +222,7 @@ namespace NuGet.Configuration.Test
             packageSourceNamespaces.Should().HaveCount(2);
 
             // Act & Assert
-            namespaceProvider.Remove(new PackageSourceNamespacesItem[] { new PackageSourceNamespacesItem("localConfig", new NamespaceItem[] { new NamespaceItem("item") }) });
+            namespaceProvider.Remove(new PackageNamespacesSourceItem[] { new PackageNamespacesSourceItem("localConfig", new NamespaceItem[] { new NamespaceItem("item") }) });
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageNamespaces>
@@ -268,7 +268,7 @@ namespace NuGet.Configuration.Test
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
             var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            namespaceProvider.Remove(new PackageSourceNamespacesItem[] { packageSourceNamespaces.Last() });
+            namespaceProvider.Remove(new PackageNamespacesSourceItem[] { packageSourceNamespaces.Last() });
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>";
@@ -351,7 +351,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var namespaceToAdd = new PackageSourceNamespacesItem("localSource", new NamespaceItem[] { new NamespaceItem("added") });
+            var namespaceToAdd = new PackageNamespacesSourceItem("localSource", new NamespaceItem[] { new NamespaceItem("added") });
             namespaceProvider.AddOrUpdatePackageSourceNamespace(namespaceToAdd);
 
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -399,7 +399,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var namespaceToAdd = new PackageSourceNamespacesItem("localSource", new NamespaceItem[] { new NamespaceItem("added") });
+            var namespaceToAdd = new PackageNamespacesSourceItem("localSource", new NamespaceItem[] { new NamespaceItem("added") });
             namespaceProvider.AddOrUpdatePackageSourceNamespace(namespaceToAdd);
 
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>

@@ -167,7 +167,7 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var item = (section.Items.First() as PackageSourceNamespacesItem).Namespaces.First();
+            var item = (section.Items.First() as PackageNamespacesSourceItem).Namespaces.First();
 
             var expectedItem = new NamespaceItem("sadas");
             SettingsTestUtils.DeepEquals(item, expectedItem).Should().BeTrue();
@@ -195,10 +195,8 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var packageSourceNamespacesItem = section.Items.First() as PackageSourceNamespacesItem;
-            var updatedItem = packageSourceNamespacesItem.Namespaces.First().Clone() as NamespaceItem;
-            updatedItem.Id = "updated";
-
+            var packageSourceNamespacesItem = section.Items.First() as PackageNamespacesSourceItem;
+            var updatedItem = new NamespaceItem("updated");
             packageSourceNamespacesItem.Namespaces.First().Update(updatedItem);
             SettingsTestUtils.DeepEquals(packageSourceNamespacesItem.Namespaces.First(), updatedItem).Should().BeTrue();
 

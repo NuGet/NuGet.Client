@@ -1,13 +1,12 @@
 NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
-NuGet.Configuration.NamespaceItem.Id.set -> void
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
 NuGet.Configuration.PackageNamespacesConfiguration.Namespaces.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.IReadOnlyList<string>>
-NuGet.Configuration.PackageSourceNamespacesItem
-NuGet.Configuration.PackageSourceNamespacesItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
-NuGet.Configuration.PackageSourceNamespacesItem.PackageSourceNamespacesItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void
-NuGet.Configuration.PackageSourceNamespacesItem.SetKey(string value) -> void
+NuGet.Configuration.PackageNamespacesSourceItem
+NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
+NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void
+NuGet.Configuration.PackageNamespacesSourceItem.SetKey(string value) -> void
 NuGet.Configuration.SettingElementType.Namespace = 19 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageNamespaces = 17 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageSource = 18 -> NuGet.Configuration.SettingElementType
@@ -15,15 +14,15 @@ override NuGet.Configuration.NamespaceItem.Clone() -> NuGet.Configuration.Settin
 override NuGet.Configuration.NamespaceItem.ElementName.get -> string
 override NuGet.Configuration.NamespaceItem.Equals(object other) -> bool
 override NuGet.Configuration.NamespaceItem.GetHashCode() -> int
-override NuGet.Configuration.PackageSourceNamespacesItem.CanHaveChildren.get -> bool
-override NuGet.Configuration.PackageSourceNamespacesItem.Clone() -> NuGet.Configuration.SettingBase
-override NuGet.Configuration.PackageSourceNamespacesItem.ElementName.get -> string
-override NuGet.Configuration.PackageSourceNamespacesItem.Equals(object other) -> bool
-override NuGet.Configuration.PackageSourceNamespacesItem.GetHashCode() -> int
-override NuGet.Configuration.PackageSourceNamespacesItem.RequiredAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
+override NuGet.Configuration.PackageNamespacesSourceItem.CanHaveChildren.get -> bool
+override NuGet.Configuration.PackageNamespacesSourceItem.Clone() -> NuGet.Configuration.SettingBase
+override NuGet.Configuration.PackageNamespacesSourceItem.ElementName.get -> string
+override NuGet.Configuration.PackageNamespacesSourceItem.Equals(object other) -> bool
+override NuGet.Configuration.PackageNamespacesSourceItem.GetHashCode() -> int
+override NuGet.Configuration.PackageNamespacesSourceItem.RequiredAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
 static NuGet.Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageNamespacesConfiguration
 static readonly NuGet.Configuration.ConfigurationConstants.IdAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Namespace -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageNamespaces -> string
 static readonly NuGet.Configuration.NuGetConstants.ReadmeExtension -> string
-virtual NuGet.Configuration.PackageSourceNamespacesItem.Key.get -> string
+virtual NuGet.Configuration.PackageNamespacesSourceItem.Key.get -> string

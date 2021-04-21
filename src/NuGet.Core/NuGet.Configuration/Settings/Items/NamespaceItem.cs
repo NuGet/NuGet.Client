@@ -16,19 +16,7 @@ namespace NuGet.Configuration
     {
         public override string ElementName => ConfigurationConstants.Namespace;
 
-        public string Id
-        {
-            get => Attributes[ConfigurationConstants.IdAttribute];
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNullOrEmpty, nameof(Id)));
-                }
-
-                UpdateAttribute(ConfigurationConstants.IdAttribute, value);
-            }
-        }
+        public string Id => Attributes[ConfigurationConstants.IdAttribute];
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
                 = IReadOnlyCollectionUtility.Create(ConfigurationConstants.IdAttribute);

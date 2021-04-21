@@ -16,25 +16,25 @@ namespace NuGet.Configuration
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public IReadOnlyList<PackageSourceNamespacesItem> GetPackageSourceNamespaces()
+        public IReadOnlyList<PackageNamespacesSourceItem> GetPackageSourceNamespaces()
         {
             var packageNamespacesSection = _settings.GetSection(ConfigurationConstants.PackageNamespaces);
             if (packageNamespacesSection == null)
             {
-                return Enumerable.Empty<PackageSourceNamespacesItem>().ToList();
+                return Enumerable.Empty<PackageNamespacesSourceItem>().ToList();
             }
 
-            return packageNamespacesSection.Items.OfType<PackageSourceNamespacesItem>().ToList();
+            return packageNamespacesSection.Items.OfType<PackageNamespacesSourceItem>().ToList();
         }
 
-        public void Remove(IReadOnlyList<PackageSourceNamespacesItem> packageSourceNamespaces)
+        public void Remove(IReadOnlyList<PackageNamespacesSourceItem> packageNamespacesSource)
         {
-            if (packageSourceNamespaces == null || !packageSourceNamespaces.Any())
+            if (packageNamespacesSource == null || packageNamespacesSource.Count == 0)
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageSourceNamespaces));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageNamespacesSource));
             }
 
-            foreach (var packageSourceNamespace in packageSourceNamespaces)
+            foreach (var packageSourceNamespace in packageNamespacesSource)
             {
                 try
                 {
@@ -47,14 +47,14 @@ namespace NuGet.Configuration
             _settings.SaveToDisk();
         }
 
-        public void AddOrUpdatePackageSourceNamespace(PackageSourceNamespacesItem packageSourceNamespace)
+        public void AddOrUpdatePackageSourceNamespace(PackageNamespacesSourceItem packageNamespacesSource)
         {
-            if (packageSourceNamespace == null)
+            if (packageNamespacesSource == null)
             {
-                throw new ArgumentNullException(nameof(packageSourceNamespace));
+                throw new ArgumentNullException(nameof(packageNamespacesSource));
             }
 
-            _settings.AddOrUpdate(ConfigurationConstants.PackageNamespaces, packageSourceNamespace);
+            _settings.AddOrUpdate(ConfigurationConstants.PackageNamespaces, packageNamespacesSource);
 
             _settings.SaveToDisk();
         }

@@ -132,9 +132,9 @@ namespace NuGet.Configuration.Test
             {
                 return NamespaceItem_DeepEquals(setting1 as NamespaceItem, setting2 as NamespaceItem);
             }
-            else if (setting2 is PackageSourceNamespacesItem)
+            else if (setting2 is PackageNamespacesSourceItem)
             {
-                return PackageSourceNamespaceItem_Equals(setting1 as PackageSourceNamespacesItem, setting2 as PackageSourceNamespacesItem);
+                return PackageSourceNamespaceItem_Equals(setting1 as PackageNamespacesSourceItem, setting2 as PackageNamespacesSourceItem);
             }
 
             return false;
@@ -310,7 +310,7 @@ namespace NuGet.Configuration.Test
             return ItemBase_DeepEquals(item1, item2);
         }
 
-        private static bool PackageSourceNamespaceItem_Equals(PackageSourceNamespacesItem item1, PackageSourceNamespacesItem item2)
+        private static bool PackageSourceNamespaceItem_Equals(PackageNamespacesSourceItem item1, PackageNamespacesSourceItem item2)
         {
             if (!ItemBase_DeepEquals(item1, item2))
             {
