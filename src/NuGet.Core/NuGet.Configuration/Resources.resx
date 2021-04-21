@@ -305,5 +305,7 @@
   </data>
   <data name="Error_ItemNeedsAtLeastOneNamespaceWithPath" xml:space="preserve">
     <value>Package source namespace '{0}' must have at least one namespace. Path: '{1}'</value>
+    <comment>0 - The name of the item
+1 - file path</comment>
   </data>
 </root>

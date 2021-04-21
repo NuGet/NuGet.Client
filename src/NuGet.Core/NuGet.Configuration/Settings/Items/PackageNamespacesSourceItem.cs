@@ -61,7 +61,6 @@ namespace NuGet.Configuration
 
             if (namespaceItems == null || !namespaceItems.Any())
             {
-
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOneNamespace, name));
             }
 
