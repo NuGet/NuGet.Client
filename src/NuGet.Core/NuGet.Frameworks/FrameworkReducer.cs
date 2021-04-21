@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace NuGet.Frameworks
@@ -93,11 +94,31 @@ namespace NuGet.Frameworks
                 // Remove lower versions of compatible frameworks
                 var reduced = ReduceUpwards(compatible);
 
-                // Reduce to the same framework name if possible
-                if (reduced.Count() > 1
-                    && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
+                bool isNet6Era = StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, framework.Framework) && framework.Version.Major >= 6;
+
+                // Reduce to the same framework name if possible, with an exception for Xamarin when net6.0+
+                if (reduced.Count() > 1 && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
                 {
-                    reduced = reduced.Where(f => _fwNameComparer.Equals(f, framework));
+                    reduced = reduced.Where(f =>
+                    {
+                        if (_fwNameComparer.Equals(f, framework))
+                        {
+                            return true;
+                        }
+                        else if (isNet6Era)
+                        {
+                            // Check for Xamarin frameworks. This is a special case we need to handle for net6.0+.
+                            // For more details, see https://github.com/dotnet/designs/blob/main/accepted/2021/net6.0-tfms/net6.0-tfms.md#compatibility-rules
+                            return f.Framework == FrameworkConstants.FrameworkIdentifiers.XamarinIOs ||
+                                f.Framework == FrameworkConstants.FrameworkIdentifiers.XamarinMacCatalyst ||
+                                f.Framework == FrameworkConstants.FrameworkIdentifiers.XamarinTVOS ||
+                                f.Framework == FrameworkConstants.FrameworkIdentifiers.XamarinMac;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    });
                 }
 
                 // PCL reduce
@@ -172,8 +193,34 @@ namespace NuGet.Frameworks
                 if (reduced.Count() > 1
                     && framework.HasPlatform)
                 {
-                    // Prefer the highest framework version, likely to be the non-platform specific option.
-                    reduced = reduced.GroupBy(f => f.Version).OrderByDescending(f => f.Key).First();
+                    if (!isNet6Era || reduced.Any(f => _fwNameComparer.Equals(framework, f) && f.Version.Major >= 6))
+                    {
+                        // Prefer the highest framework version, likely to be the non-platform specific option.
+                        reduced = reduced.GroupBy(f => f.Version).OrderByDescending(f => f.Key).First();
+                    }
+                    else if (isNet6Era && reduced.Any(f => f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        // We have a special case for *some* Xamarin frameworks here. For specific precedence rules, please see:
+                        // https://github.com/dotnet/designs/blob/main/accepted/2021/net6.0-tfms/net6.0-tfms.md#compatibility-rules
+                        reduced = reduced.GroupBy(f => f.Framework).OrderByDescending(f => f.Key).First(f =>
+                        {
+                            NuGetFramework first = f.First();
+                            if (!first.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                string suffix = first.Framework.ToLower(CultureInfo.CurrentCulture).Replace("xamarin.", "");
+                                var comp = StringComparer.OrdinalIgnoreCase;
+                                return (comp.Equals(suffix, "mac") && comp.Equals(framework.Platform, "macos"))
+                                    || (comp.Equals(suffix, "ios") && comp.Equals(framework.Platform, "ios"))
+                                    || (comp.Equals(suffix, "tvos") && comp.Equals(framework.Platform, "tvos"))
+                                    || (comp.Equals(suffix, "ios") && comp.Equals(framework.Platform, "maccatalyst"));
+                            }
+
+                        });
+                    }
                 }
 
                 // if we have reduced down to a single framework, use that

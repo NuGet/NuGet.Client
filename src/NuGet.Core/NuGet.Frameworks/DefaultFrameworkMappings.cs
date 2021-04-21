@@ -363,7 +363,40 @@ namespace NuGet.Frameworks
                     // net463 projects support NetStandard2.0
                     CreateStandardMapping(
                         FrameworkConstants.CommonFrameworks.Net463,
-                        FrameworkConstants.CommonFrameworks.NetStandard20)
+                        FrameworkConstants.CommonFrameworks.NetStandard20),
+
+                    // net6.0 is compatible with various Xamarin frameworks
+                    // See https://github.com/dotnet/designs/blob/main/accepted/2021/net6.0-tfms/net6.0-tfms.md#compatibility-rules
+                    // for more details and explanation.
+                    new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                            // The Platform doesn't really matter here, but I think being more specific is better "documentation". This will NOT be used for filtering.
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(6, 0, 0, 0), "ios", FrameworkConstants.EmptyVersion),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, FrameworkConstants.MaxVersion, "ios", FrameworkConstants.MaxVersion)),
+                        new FrameworkRange(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinIOs),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, FrameworkConstants.MaxVersion))),
+
+                    // net6.0-maccatalyst being compatible with Xamarin.iOS is a special case, and will warn when generating the assets file/lockfile.
+                    new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(6, 0, 0, 0), "maccatalyst", FrameworkConstants.EmptyVersion),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, FrameworkConstants.MaxVersion, "maccatalyst", FrameworkConstants.MaxVersion)),
+                        new FrameworkRange(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinIOs),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, FrameworkConstants.MaxVersion))),
+
+                    new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(6, 0, 0, 0), "macos", FrameworkConstants.EmptyVersion),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, FrameworkConstants.MaxVersion, "macos", FrameworkConstants.MaxVersion)),
+                        new FrameworkRange(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinMac),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinMac, FrameworkConstants.MaxVersion))),
+
+                    new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(6, 0, 0, 0), "tvos", FrameworkConstants.EmptyVersion),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, FrameworkConstants.MaxVersion, "tvos", FrameworkConstants.MaxVersion)),
+                        new FrameworkRange(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinTVOS),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinTVOS, FrameworkConstants.MaxVersion))),
                 }
                 .Concat(new[]
                 {

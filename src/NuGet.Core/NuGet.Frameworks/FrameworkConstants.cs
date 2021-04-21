@@ -60,6 +60,7 @@ namespace NuGet.Frameworks
             public const string MonoMac = "MonoMac";
             public const string XamarinIOs = "Xamarin.iOS";
             public const string XamarinMac = "Xamarin.Mac";
+            public const string XamarinMacCatalyst = "Xamarin.MacCatalyst";
             public const string XamarinPlayStation3 = "Xamarin.PlayStation3";
             public const string XamarinPlayStation4 = "Xamarin.PlayStation4";
             public const string XamarinPlayStationVita = "Xamarin.PlayStationVita";

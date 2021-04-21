@@ -110,6 +110,16 @@ namespace NuGet.Test
         [InlineData("net6.0-ios11.0", "net6.0-ios12.0,net6.0,net6.0-ios13.0", "net6.0")]
         [InlineData("net7.0-ios", "net6.0,net5.0-ios,netstandard2.1", "net6.0")]
         [InlineData("net7.0-ios", "net6.0,net6.0-ios,netstandard2.1", "net6.0-ios")]
+        // Some net6.0 platforms have "special" fallbacks to xamarin over net5.0
+        [InlineData("net6.0-ios", "xamarin.ios,xamarin.mac,net5.0", "xamarin.ios")]
+        [InlineData("net6.0-maccatalyst", "xamarin.ios,xamarin.mac,net5.0", "xamarin.ios")]
+        [InlineData("net6.0-macos", "xamarin.mac,xamarin.ios,net5.0", "xamarin.mac")]
+        [InlineData("net6.0-tvos", "xamarin.tvos,xamarin.ios,net5.0", "xamarin.tvos")]
+        [InlineData("net6.0-ios", "xamarin.mac,xamarin.ios,net5.0", "xamarin.ios")]
+        [InlineData("net6.0-ios", "xamarin.mac,net5.0", "net5.0")]
+        [InlineData("net7.0-ios", "xamarin.mac,net5.0,net6.0", "net6.0")]
+        [InlineData("net7.0-ios", "net6.0,xamarin.ios,xamarin.mac,net5.0", "net6.0")]
+        [InlineData("net7.0-ios", "net7.0-macos,xamarin.mac,net6.0,net6.0-ios,net6.0-macos,net5.0", "net6.0-ios")]
         // Additional tests
         [InlineData("dotnet5.5", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet5.4")]
         [InlineData("dotnet7", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet6.0")]
