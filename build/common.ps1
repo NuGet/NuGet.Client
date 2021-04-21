@@ -306,7 +306,7 @@ Function Get-VSMajorVersion() {
 
 Function Get-MSBuildExe {
     param(
-        [ValidateSet("15", "16", "17", $null)]
+        [ValidateSet("16", "17", $null)]
         [string]$MSBuildVersion
     )
 
@@ -426,7 +426,7 @@ Function Restore-SolutionPackages {
 
 Function New-BuildToolset {
     param(
-        [ValidateSet(15, 16, 17)]
+        [ValidateSet(16, 17)]
         [int]$ToolsetVersion
     )
     $CommonToolsVar = "Env:VS${ToolsetVersion}0COMNTOOLS"
