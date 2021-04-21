@@ -110,6 +110,11 @@ namespace NuGet.Build.Tasks
         /// MSBuildStartupDirectory - Used to calculate relative paths
         /// </summary>
         public string MSBuildStartupDirectory { get; set; }
+        
+        /// <summary>
+        /// The path to the binlog file to generate during restore.
+        ///
+        public string BinlogPath { get; set; }
 
         /// <inheritdoc cref="ICancelableTask.Cancel" />
         public void Cancel() => _cancellationTokenSource.Cancel();
@@ -146,6 +151,12 @@ namespace NuGet.Build.Tasks
                         UseShellExecute = false,
                         WorkingDirectory = Environment.CurrentDirectory,
                     };
+                    
+                    // Add environment variable to generate a restore binlog
+                    if (!string.IsNullOrWhiteSpace(BinlogPath))
+                    {
+                        process.StartInfo.EnvironmentVariables.Add("RESTORE_TASK_BINLOG_PARAMETERS", BinlogPath);
+                    }                    
 
                     // Place the output in the queue which handles logging messages coming through on StdOut
                     process.OutputDataReceived += (sender, args) => loggingQueue.Enqueue(args?.Data);
