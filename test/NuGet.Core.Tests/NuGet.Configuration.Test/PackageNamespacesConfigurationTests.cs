@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -31,7 +32,7 @@ namespace NuGet.Configuration.Test
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
             configuration.Namespaces.Should().HaveCount(1);
-            var namespaceForSource = configuration.Namespaces.First();
+            KeyValuePair<string, IReadOnlyList<string>> namespaceForSource = configuration.Namespaces.First();
             namespaceForSource.Key.Should().Be("nuget.org");
             namespaceForSource.Value.Should().BeEquivalentTo(new string[] { "stuff" });
         }
@@ -59,10 +60,10 @@ namespace NuGet.Configuration.Test
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
             configuration.Namespaces.Should().HaveCount(2);
 
-            var nugetNamespaces = configuration.Namespaces["nuget.org"];
+            IReadOnlyList<string> nugetNamespaces = configuration.Namespaces["nuget.org"];
             nugetNamespaces.Should().BeEquivalentTo(new string[] { "stuff" });
 
-            var contosoNamespace = configuration.Namespaces["contoso"];
+            IReadOnlyList<string> contosoNamespace = configuration.Namespaces["contoso"];
             contosoNamespace.Should().BeEquivalentTo(new string[] { "moreStuff" });
         }
     }

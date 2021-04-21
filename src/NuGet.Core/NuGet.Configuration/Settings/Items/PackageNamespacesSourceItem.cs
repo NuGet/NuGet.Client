@@ -69,7 +69,7 @@ namespace NuGet.Configuration
 
             Namespaces = new List<NamespaceItem>();
 
-            foreach (var @namespace in namespaceItems)
+            foreach (NamespaceItem @namespace in namespaceItems)
             {
                 Namespaces.Add(@namespace);
             }
@@ -95,7 +95,7 @@ namespace NuGet.Configuration
         {
             base.SetOrigin(origin);
 
-            foreach (var @namespace in Namespaces)
+            foreach (NamespaceItem @namespace in Namespaces)
             {
                 @namespace.SetOrigin(origin);
             }
@@ -105,7 +105,7 @@ namespace NuGet.Configuration
         {
             base.RemoveFromSettings();
 
-            foreach (var @namespace in Namespaces)
+            foreach (NamespaceItem @namespace in Namespaces)
             {
                 @namespace.RemoveFromSettings();
             }
@@ -134,13 +134,12 @@ namespace NuGet.Configuration
 
             var element = new XElement(ElementName);
 
-            foreach (var packageNamespaceItem in Namespaces)
+            foreach (NamespaceItem packageNamespaceItem in Namespaces)
             {
                 element.Add(packageNamespaceItem.AsXNode());
             }
 
-            // Does this make sense?
-            foreach (var attr in Attributes)
+            foreach (KeyValuePair<string, string> attr in Attributes)
             {
                 element.SetAttributeValue(attr.Key, attr.Value);
             }
@@ -159,11 +158,11 @@ namespace NuGet.Configuration
 
             base.Update(other);
 
-            var otherNamespaces = packageSourceNamespaces.Namespaces.ToDictionary(c => c, c => c);
+            Dictionary<NamespaceItem, NamespaceItem> otherNamespaces = packageSourceNamespaces.Namespaces.ToDictionary(c => c, c => c);
             var immutableNamespaces = new List<NamespaceItem>(Namespaces);
-            foreach (var namespaceItem in immutableNamespaces)
+            foreach (NamespaceItem namespaceItem in immutableNamespaces)
             {
-                if (otherNamespaces.TryGetValue(namespaceItem, out var otherChild))
+                if (otherNamespaces.TryGetValue(namespaceItem, out NamespaceItem otherChild))
                 {
                     otherNamespaces.Remove(namespaceItem);
                 }
@@ -198,7 +197,6 @@ namespace NuGet.Configuration
                 }
             }
         }
-
 
         public override bool Equals(object other)
         {

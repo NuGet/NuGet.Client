@@ -18,7 +18,7 @@ namespace NuGet.Configuration
 
         public IReadOnlyList<PackageNamespacesSourceItem> GetPackageSourceNamespaces()
         {
-            var packageNamespacesSection = _settings.GetSection(ConfigurationConstants.PackageNamespaces);
+            SettingSection packageNamespacesSection = _settings.GetSection(ConfigurationConstants.PackageNamespaces);
             if (packageNamespacesSection == null)
             {
                 return Enumerable.Empty<PackageNamespacesSourceItem>().ToList();
@@ -34,7 +34,7 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageNamespacesSource));
             }
 
-            foreach (var packageSourceNamespace in packageNamespacesSource)
+            foreach (PackageNamespacesSourceItem packageSourceNamespace in packageNamespacesSource)
             {
                 try
                 {

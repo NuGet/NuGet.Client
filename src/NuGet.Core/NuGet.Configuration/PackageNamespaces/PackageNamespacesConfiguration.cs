@@ -36,7 +36,7 @@ namespace NuGet.Configuration
 
             var namespaces = new Dictionary<string, IReadOnlyList<string>>();
 
-            foreach (var packageSourceNamespaceItem in packageNamespacesProvider.GetPackageSourceNamespaces())
+            foreach (PackageNamespacesSourceItem packageSourceNamespaceItem in packageNamespacesProvider.GetPackageSourceNamespaces())
             {
                 namespaces.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Namespaces.Select(e => e.Id)));
             }

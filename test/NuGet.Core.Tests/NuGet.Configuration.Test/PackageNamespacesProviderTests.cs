@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -37,7 +38,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
+            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
             packageSourceNamespaces.Should().HaveCount(1);
             var packageSourceNamespace = packageSourceNamespaces.First();
             packageSourceNamespace.Key.Should().Be("nuget.org");
@@ -72,7 +73,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
+            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
             packageSourceNamespaces.Should().HaveCount(1);
             var packageSourceNamespace = packageSourceNamespaces.First();
             packageSourceNamespace.Key.Should().Be("nuget.org");
@@ -107,7 +108,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
+            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
             packageSourceNamespaces.Should().HaveCount(2);
 
             var contosoNamespace = packageSourceNamespaces.First();
@@ -149,7 +150,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
+            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
             packageSourceNamespaces.Should().HaveCount(1);
 
             var contosoNamespace = packageSourceNamespaces.First();
@@ -178,7 +179,7 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
+            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
             packageSourceNamespaces.Should().HaveCount(2);
             var contosoNamespace = packageSourceNamespaces.First(e => e.Key.Equals("contoso"));
 
@@ -204,26 +205,7 @@ namespace NuGet.Configuration.Test
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
-            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageNamespaces>
-        <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
-        </packageSource>
-        <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
-        </packageSource>
-    </packageNamespaces>
-</configuration>");
-            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
-
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            packageSourceNamespaces.Should().HaveCount(2);
-
-            // Act & Assert
-            namespaceProvider.Remove(new PackageNamespacesSourceItem[] { new PackageNamespacesSourceItem("localConfig", new NamespaceItem[] { new NamespaceItem("item") }) });
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var configContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageNamespaces>
         <packageSource key=""nuget.org"">
@@ -234,10 +216,19 @@ namespace NuGet.Configuration.Test
         </packageSource>
     </packageNamespaces>
 </configuration>";
+            SettingsTestUtils.CreateConfigurationFile(configPath1, configContent);
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
-            result.Replace("\r\n", "\n")
-                .Should().BeEquivalentTo(
-                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+            var namespaceProvider = new PackageNamespacesProvider(settings);
+            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
+            packageSourceNamespaces.Should().HaveCount(2);
+
+            // Act & Assert
+            namespaceProvider.Remove(new PackageNamespacesSourceItem[] { new PackageNamespacesSourceItem("localConfig", new NamespaceItem[] { new NamespaceItem("item") }) });
+
+
+            File.ReadAllText(configPath1).Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(configContent.Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -267,7 +258,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
+            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
             namespaceProvider.Remove(new PackageNamespacesSourceItem[] { packageSourceNamespaces.Last() });
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -305,7 +296,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var namespaceProvider = new PackageNamespacesProvider(settings);
-            var packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
+            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
             var namespaceToUpdate = packageSourceNamespaces.Last();
             namespaceToUpdate.Namespaces.Add(new NamespaceItem("added"));
             namespaceProvider.AddOrUpdatePackageSourceNamespace(namespaceToUpdate);
