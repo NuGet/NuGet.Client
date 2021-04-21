@@ -11,7 +11,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Commands;
 using NuGet.CommandLine.XPlat.Commands.Signing;
-using NuGet.Commands.Exceptions;
 
 #if DEBUG
 using Microsoft.Build.Locator;
@@ -132,12 +131,6 @@ namespace NuGet.CommandLine.XPlat
                             default:
                                 break;
                         }
-                    }
-
-                    if (!handled && e.GetBaseException() is TrustedSignerAlreadyExistsException)
-                    {
-                        log.LogMinimal(e.GetBaseException().Message);
-                        handled = true;
                     }
                 }
 

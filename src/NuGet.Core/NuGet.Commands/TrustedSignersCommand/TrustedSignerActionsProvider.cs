@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Commands.Exceptions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -59,7 +58,7 @@ namespace NuGet.Commands
 
                     _trustedSignersProvider.AddOrUpdateTrustedSigner(existingRepository);
 
-                    await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullySynchronizedTrustedRepository, name));
+                    await _logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullySynchronizedTrustedRepository, name));
 
                     return;
                 }
@@ -136,7 +135,7 @@ namespace NuGet.Commands
 
                 _trustedSignersProvider.AddOrUpdateTrustedSigner(new RepositoryItem(name, v3ServiceIndex, CreateOwnersList(owners), certificateItem));
 
-                await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
+                await _logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
             }
             else
             {
@@ -149,7 +148,7 @@ namespace NuGet.Commands
 
                 _trustedSignersProvider.AddOrUpdateTrustedSigner(new AuthorItem(name, certificateItem));
 
-                await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedAuthor, name));
+                await _logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedAuthor, name));
             }
         }
 
@@ -209,7 +208,7 @@ namespace NuGet.Commands
 
             _trustedSignersProvider.AddOrUpdateTrustedSigner(signerToAdd);
 
-            _logger.Log(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, logMessage, name));
+            _logger.Log(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, logMessage, name));
         }
 
         /// <summary>
@@ -238,7 +237,7 @@ namespace NuGet.Commands
             _trustedSignersProvider.AddOrUpdateTrustedSigner(
                 new RepositoryItem(name, serviceIndex.AbsoluteUri, CreateOwnersList(owners), certificateItems));
 
-            await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
+            await _logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
         }
 
         private void ValidateNoExistingSigner(string name, string serviceIndex, bool validateServiceIndex = true)
@@ -248,7 +247,7 @@ namespace NuGet.Commands
             {
                 if (string.Equals(existingSigner.Name, name, StringComparison.Ordinal))
                 {
-                    throw new TrustedSignerAlreadyExistsException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name));
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name));
                 }
 
                 if (validateServiceIndex && existingSigner is RepositoryItem repoItem && string.Equals(repoItem.ServiceIndex, serviceIndex, StringComparison.OrdinalIgnoreCase))

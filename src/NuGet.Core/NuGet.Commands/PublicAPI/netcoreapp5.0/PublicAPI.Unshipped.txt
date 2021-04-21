@@ -1,3 +1,0 @@
-NuGet.Commands.Exceptions.TrustedSignerAlreadyExistsException
-NuGet.Commands.Exceptions.TrustedSignerAlreadyExistsException.TrustedSignerAlreadyExistsException() -> void
-NuGet.Commands.Exceptions.TrustedSignerAlreadyExistsException.TrustedSignerAlreadyExistsException(string message) -> void

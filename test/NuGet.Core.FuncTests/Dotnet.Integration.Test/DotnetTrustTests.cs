@@ -51,8 +51,7 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     pathContext.WorkingDirectory,
-                    $"nuget trust",
-                    ignoreExitCode: true);
+                    $"nuget trust");
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -68,8 +67,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 var result = _msbuildFixture.RunDotnet(
                     packageDir,
-                    $"nuget trust",
-                    ignoreExitCode: true);
+                    $"nuget trust");
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -102,8 +100,7 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     pathContext.WorkingDirectory,
-                    $"nuget trust list",
-                    ignoreExitCode: true);
+                    $"nuget trust list");
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -136,8 +133,7 @@ namespace Dotnet.Integration.Test
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust list --configfile ..{Path.DirectorySeparatorChar}nuget.config",
-                    ignoreExitCode: true);
+                    $"nuget trust list --configfile ..{Path.DirectorySeparatorChar}nuget.config");
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -181,8 +177,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 var resultAdd = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}",
-                    ignoreExitCode: true);
+                    $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}");
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -201,6 +196,64 @@ namespace Dotnet.Integration.Test
                       < trustedSigners>
                             <author name = ""nuget"">
                                  <certificate fingerprint = ""{certFingerprint}"" hashAlgorithm = ""SHA256"" allowUntrustedRoot = ""{allowUntruestedRootValue}""/>
+                            </author>
+                      </trustedSigners>
+                    </configuration>");
+
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath)).Should().Be(expectedResult);
+            }
+
+        }
+
+        [CIOnlyFact]
+        public async Task Trust_Author_RelativePathConfileFile_WithoutExistingTrustedSignersSection_Success()
+        {
+            // Arrange
+            var nugetConfigFileName = "NuGet.Config";
+            var package = new SimpleTestPackageContext();
+
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
+            using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            {
+                string certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(trustedTestCert.Source.Cert, package, pathContext.PackageSource);
+                var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                    <configuration>
+                      <packageSources>
+                        <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+                        <clear />
+                        <add key=""NuGetSource"" value=""{pathContext.PackageSource}"" />
+                       </packageSources>
+                      <config>
+                        <add key=""signaturevalidationmode"" value=""accept"" />
+                      </config>
+                    </configuration>";
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, pathContext.WorkingDirectory, config);
+                var nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, nugetConfigFileName);
+
+                // Act
+                var resultAdd = _msbuildFixture.RunDotnet(
+                    pathContext.SolutionRoot,
+                    $"nuget trust author nuget {signedPackagePath} --configfile {nugetConfigPath}");
+
+                // Assert
+                resultAdd.Success.Should().BeTrue();
+                resultAdd.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "author", "nuget"));
+
+                string expectedResult = SettingsTestUtils.RemoveWhitespace($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                    <configuration>
+                      <packageSources>
+                        <!--To inherit the global NuGet package sources remove the < clear /> line below-->
+                        <clear/>
+                        <add key = ""NuGetSource"" value = ""{pathContext.PackageSource}""/>
+                       </packageSources >
+                      <config>
+                        <add key = ""signaturevalidationmode"" value = ""accept""/>
+                      </config>
+                      < trustedSigners>
+                            <author name = ""nuget"">
+                                 <certificate fingerprint = ""{certFingerprint}"" hashAlgorithm = ""SHA256"" allowUntrustedRoot = ""false""/>
                             </author>
                       </trustedSigners>
                     </configuration>");
@@ -236,8 +289,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 var resultAdd = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}",
-                    ignoreExitCode: true);
+                    $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}");
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -294,8 +346,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 var resultAdd = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust repository nuget {signedPackagePath}  {allowUntrustedRootArg} {ownersArgs} --configfile {nugetConfigPath}",
-                    ignoreExitCode: true);
+                    $"nuget trust repository nuget {signedPackagePath}  {allowUntrustedRootArg} {ownersArgs} --configfile {nugetConfigPath}");
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -343,8 +394,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 var resultAdd = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}",
-                    ignoreExitCode: true);
+                    $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}");
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -398,8 +448,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 var resultAdd = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}",
-                    ignoreExitCode: true);
+                    $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}");
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -449,8 +498,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 var resultSync = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust remove {repositoryName} --configfile {nugetConfigPath}",
-                    ignoreExitCode: true);
+                    $"nuget trust remove {repositoryName} --configfile {nugetConfigPath}");
 
                 // Assert
                 resultSync.Success.Should().BeTrue();
@@ -495,8 +543,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 var resultSync = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust remove {repositoryWrongName} --configfile {nugetConfigPath}",
-                    ignoreExitCode: true);
+                    $"nuget trust remove {repositoryWrongName} --configfile {nugetConfigPath}");
 
                 // Assert
                 resultSync.Success.Should().BeTrue();
