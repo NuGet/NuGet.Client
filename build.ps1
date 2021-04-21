@@ -95,7 +95,7 @@ Invoke-BuildStep 'Cleaning artifacts' {
 -skip:$Fast `
 -ev +BuildErrors
 
-if($SkipUnitTest){
+if ($SkipUnitTest) {
     $VSTarget = "BuildVS;Pack";
     $VSMessage = "Running Build"
 }
@@ -105,7 +105,6 @@ else {
 }
 
 Invoke-BuildStep 'Running Restore' {
-
     # Restore
     $args = "build\build.proj", "/t:EnsurePackageReferenceVersionsInSolution", "/p:Configuration=$Configuration"
     if ($Binlog)

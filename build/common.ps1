@@ -266,7 +266,6 @@ Function Install-DotnetCLI {
 }
 
 Function Get-LatestVisualStudioRoot {
-
     if (Test-Path $BuiltInVsWhereExe) {
         $installationPath = & $BuiltInVsWhereExe -latest -prerelease -property installationPath
         $installationVersion = & $BuiltInVsWhereExe -latest -prerelease -property installationVersion
@@ -307,7 +306,7 @@ Function Get-VSMajorVersion() {
 
 Function Get-MSBuildExe {
     param(
-        [ValidateSet("15", "16", $null)]
+        [ValidateSet("16", "17", $null)]
         [string]$MSBuildVersion
     )
 
@@ -423,4 +422,57 @@ Function Restore-SolutionPackages {
     if (-not $?) {
         Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
     }
+}
+
+Function New-BuildToolset {
+    param(
+        [ValidateSet(16, 17)]
+        [int]$ToolsetVersion
+    )
+    $CommonToolsVar = "Env:VS${ToolsetVersion}0COMNTOOLS"
+    if (Test-Path $CommonToolsVar) {
+        $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
+        Verbose-Log "Using environment variable `"$CommonToolsVar`" = `"$CommonToolsValue`""
+        $ToolsetObject = @{
+            VisualStudioInstallDir = [System.IO.Path]::GetFullPath((Join-Path $CommonToolsValue '..\IDE'))
+        }
+    }
+
+    if (-not $ToolsetObject) {
+        $VisualStudioRegistryKey = "HKCU:\SOFTWARE\Microsoft\VisualStudio\${ToolsetVersion}.0_Config"
+        if (Test-Path $VisualStudioRegistryKey) {
+            Verbose-Log "Retrieving Visual Studio installation path from registry '$VisualStudioRegistryKey'"
+            $ToolsetObject = @{
+                VisualStudioInstallDir = gp $VisualStudioRegistryKey | select -expand InstallDir -ea Ignore
+            }
+        }
+    }
+
+    if (-not $ToolsetObject) {
+        $VisualStudioInstallRootDir = Get-LatestVisualStudioRoot
+
+        if ($VisualStudioInstallRootDir) {
+            Verbose-Log "Using willow instance '$VisualStudioInstallRootDir' installation path"
+            $ToolsetObject = @{
+                VisualStudioInstallDir = [System.IO.Path]::GetFullPath((Join-Path $VisualStudioInstallRootDir Common7\IDE\))
+            }
+        }
+    }
+
+    if (-not $ToolsetObject) {
+        $DefaultInstallDir = Join-Path $env:ProgramFiles "Microsoft Visual Studio ${ToolsetVersion}.0\Common7\IDE\"
+        if (Test-Path $DefaultInstallDir) {
+            Verbose-Log "Using default location of Visual Studio installation path"
+            $ToolsetObject = @{
+                VisualStudioInstallDir = $DefaultInstallDir
+            }
+        }
+    }
+
+    if (-not $ToolsetObject) {
+        Warning-Log "Toolset VS${ToolsetVersion} is not found."
+    }
+
+    # return toolset build configuration object
+    $ToolsetObject
 }
