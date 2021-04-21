@@ -31,7 +31,7 @@ namespace NuGet.Configuration.Test
             var firstNamespace = new NamespaceItem(first);
             var secondNamespace = new NamespaceItem(second);
 
-            firstNamespace.Should().Equals(secondNamespace);
+            firstNamespace.Equals(secondNamespace).Should().BeTrue();
         }
 
         [Theory]

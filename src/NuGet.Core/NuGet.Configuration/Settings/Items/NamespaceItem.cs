@@ -58,12 +58,12 @@ namespace NuGet.Configuration
                     return true;
                 }
 
-                return string.Equals(Id, item.Id, StringComparison.Ordinal);
+                return string.Equals(Id, item.Id, StringComparison.OrdinalIgnoreCase);
             }
 
             return false;
         }
 
-        public override int GetHashCode() => Id.GetHashCode();
+        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Id);
     }
 }
