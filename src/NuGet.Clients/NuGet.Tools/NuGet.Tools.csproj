@@ -127,8 +127,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="NuGetTools.vsct">
