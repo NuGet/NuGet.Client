@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,7 +12,7 @@ using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 using static NuGet.Commands.TrustedSignersArgs;
 
-namespace NuGet.CommandLine.XPlat.Commands.Signing
+namespace NuGet.CommandLine.XPlat
 {
     internal static class TrustedSignersCommand
     {

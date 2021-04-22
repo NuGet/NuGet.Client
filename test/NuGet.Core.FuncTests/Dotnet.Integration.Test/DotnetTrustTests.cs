@@ -27,7 +27,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public void Trust_No_ActionCommand_DefaultTo_ListAction_Success()
+        public void Implicit_ListAction_Succeeds()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -60,7 +60,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public void Trust_List_Emtpy_Success()
+        public void Implicity_ListAction_EmptySettings_Succeeds()
         {
             using (TestDirectory packageDir = TestDirectory.Create())
             {
@@ -76,7 +76,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public void Trust_List_NotEmpty_Success()
+        public void ListAction_Succeeds()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -109,7 +109,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public void Trust_List_NotEmpty_WithNugetConfig_Success()
+        public void ListAction_WithRelativePathNugetConfig_Succeeds()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -144,7 +144,7 @@ namespace Dotnet.Integration.Test
         [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task Trust_Author_RelativePathConfileFile_Success(bool allowUntrustedRoot)
+        public async Task Trust_AuthorAction_RelativePathConfileFile_Succeeds(bool allowUntrustedRoot)
         {
             // Arrange
             var nugetConfigFileName = "NuGet.Config";
@@ -206,7 +206,7 @@ namespace Dotnet.Integration.Test
         }
 
         [CIOnlyFact]
-        public async Task Trust_Author_RelativePathConfileFile_WithoutExistingTrustedSignersSection_Success()
+        public async Task Trust_AuthorAction_RelativePathConfileFile_WithoutExistingTrustedSignersSection_Succeeds()
         {
             // Arrange
             var nugetConfigFileName = "NuGet.Config";
@@ -266,7 +266,7 @@ namespace Dotnet.Integration.Test
         [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task Trust_Author_AbsoluteConfileFile_Success(bool allowUntrustedRoot)
+        public async Task Trust_AuthorAction_AbsolutePathConfileFile_Succeeds(bool allowUntrustedRoot)
         {
             // Arrange
             var nugetConfigFileName = "NuGet.Config";
@@ -313,7 +313,7 @@ namespace Dotnet.Integration.Test
         [InlineData(true, "one;two;three")]
         [InlineData(false, null)]
         [InlineData(false, "one;two;three")]
-        public async Task Trust_Repository_Success(bool allowUntrustedRoot, string owners)
+        public async Task Trust_RepositoryAction_Succeeds(bool allowUntrustedRoot, string owners)
         {
             // Arrange
             var nugetConfigFileName = "NuGet.Config";
@@ -368,7 +368,7 @@ namespace Dotnet.Integration.Test
         [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task Trust_CertificateFingerPrint_Success(bool allowUntrustedRoot)
+        public async Task Trust_CertificateFingerPrintAction_Succeeds(bool allowUntrustedRoot)
         {
             // Arrange
             var nugetConfigFileName = "NuGet.Config";
@@ -416,7 +416,7 @@ namespace Dotnet.Integration.Test
         [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task Trust_CertificateFingerPrint_WithExistingSigner_UpdatesItSuccess(bool allowUntrustedRoot)
+        public async Task Trust_CertificateFingerPrintAction_WithExistingSigner_AppendSucceeds(bool allowUntrustedRoot)
         {
             // Arrange
             var nugetConfigFileName = "NuGet.Config";
@@ -469,7 +469,7 @@ namespace Dotnet.Integration.Test
         }
 
         [CIOnlyFact]
-        public async Task Trust_Remove_Success()
+        public async Task RemoveAction_Succeeds()
         {
             // Arrange
             var nugetConfigFileName = "NuGet.Config";
@@ -513,7 +513,7 @@ namespace Dotnet.Integration.Test
         }
 
         [CIOnlyFact]
-        public async Task Trust_Remove_WrongName_NoChange()
+        public async Task RemoveAction_WrongName_NoChange()
         {
             // Arrange
             var nugetConfigFileName = "NuGet.Config";

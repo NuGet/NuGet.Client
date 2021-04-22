@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.CommandLine.XPlat.Commands.Signing;
+using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;

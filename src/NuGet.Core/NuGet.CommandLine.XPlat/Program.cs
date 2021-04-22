@@ -10,7 +10,6 @@ using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Commands;
-using NuGet.CommandLine.XPlat.Commands.Signing;
 
 #if DEBUG
 using Microsoft.Build.Locator;
