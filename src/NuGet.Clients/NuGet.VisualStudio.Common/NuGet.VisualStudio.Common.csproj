@@ -19,8 +19,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" />
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Embeddable" ExcludeAssets="build" />
     <PackageReference Include="Microsoft.Internal.VisualStudio.Interop" />
+    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Framework" />
     <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
     <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
