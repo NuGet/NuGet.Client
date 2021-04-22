@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -123,10 +123,14 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="skipBindingRedirects.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 96</value>
+    <value>38, 220</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="skipBindingRedirects.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 6, 6, 6</value>
   </data>
   <data name="skipBindingRedirects.Size" type="System.Drawing.Size, System.Drawing">
-    <value>169, 17</value>
+    <value>325, 29</value>
   </data>
   <data name="skipBindingRedirects.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -153,11 +157,10 @@
     <value>Microsoft Sans Serif, 8.25pt, style=Bold</value>
   </data>
   <data name="PackageRestoreHeader.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 12</value>
+    <value>4, 23</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="PackageRestoreHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 2, 0</value>
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="PackageRestoreHeader.Size" type="System.Drawing.Size, System.Drawing">
     <value>105, 13</value>
@@ -184,13 +187,13 @@
     <value>True</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 32</value>
+    <value>38, 62</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>233, 17</value>
+    <value>449, 29</value>
   </data>
   <data name="packageRestoreConsentCheckBox.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -214,13 +217,13 @@
     <value>NoControl</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 51</value>
+    <value>38, 98</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>355, 22</value>
+    <value>710, 70</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -250,10 +253,10 @@
     <value>NoControl</value>
   </data>
   <data name="BindingRedirectsHeader.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 77</value>
+    <value>4, 183</value>
   </data>
   <data name="BindingRedirectsHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 2, 0</value>
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="BindingRedirectsHeader.Size" type="System.Drawing.Size, System.Drawing">
     <value>107, 13</value>
@@ -283,10 +286,13 @@
     <value>System</value>
   </data>
   <data name="localsCommandButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 182</value>
+    <value>10, 385</value>
+  </data>
+  <data name="localsCommandButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 6, 6, 6</value>
   </data>
   <data name="localsCommandButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 23</value>
+    <value>276, 44</value>
   </data>
   <data name="localsCommandButton.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -310,10 +316,13 @@
     <value>True</value>
   </data>
   <data name="localsCommandStatusText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 213</value>
+    <value>10, 445</value>
+  </data>
+  <data name="localsCommandStatusText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 6, 6, 6</value>
   </data>
   <data name="localsCommandStatusText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>369, 67</value>
+    <value>738, 129</value>
   </data>
   <data name="localsCommandStatusText.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -346,10 +355,10 @@
     <value>NoControl</value>
   </data>
   <data name="PackageManagementHeader.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 119</value>
+    <value>4, 264</value>
   </data>
   <data name="PackageManagementHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 2, 0</value>
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="PackageManagementHeader.Size" type="System.Drawing.Size, System.Drawing">
     <value>133, 13</value>
@@ -379,10 +388,13 @@
     <value>Left</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 0</value>
+    <value>6, 0</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 0, 6, 0</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>185, 27</value>
+    <value>370, 45</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -409,10 +421,13 @@
     <value>True</value>
   </data>
   <data name="showPackageManagementChooser.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 160</value>
+    <value>38, 343</value>
+  </data>
+  <data name="showPackageManagementChooser.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 6, 6, 6</value>
   </data>
   <data name="showPackageManagementChooser.Size" type="System.Drawing.Size, System.Drawing">
-    <value>236, 17</value>
+    <value>461, 29</value>
   </data>
   <data name="showPackageManagementChooser.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -441,6 +456,27 @@
   <data name="tableLayoutPanel1.ColumnCount" type="System.Int32, mscorlib">
     <value>2</value>
   </data>
+  <data name="defaultPackageManagementFormatItems.AccessibleName" xml:space="preserve">
+    <value>Default Package Management Format</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Items" xml:space="preserve">
+    <value>Packages.config</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Items1" xml:space="preserve">
+    <value>PackageReference</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Location" type="System.Drawing.Point, System.Drawing">
+    <value>388, 6</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 6, 6, 6</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 33</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
   <data name="&gt;&gt;defaultPackageManagementFormatItems.Name" xml:space="preserve">
     <value>defaultPackageManagementFormatItems</value>
   </data>
@@ -454,13 +490,16 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>15, 133</value>
+    <value>30, 291</value>
+  </data>
+  <data name="tableLayoutPanel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 6, 6, 6</value>
   </data>
   <data name="tableLayoutPanel1.RowCount" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
   <data name="tableLayoutPanel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>318, 27</value>
+    <value>394, 45</value>
   </data>
   <data name="tableLayoutPanel1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -478,49 +517,19 @@
     <value>6</value>
   </data>
   <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="defaultPackageManagementFormatItems" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="defaultPackageManagementFormatLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="Percent,100,Absolute,27" /&gt;&lt;/TableLayoutSettings&gt;</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.AccessibleName" xml:space="preserve">
-    <value>Default Package Management Format</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Items" xml:space="preserve">
-    <value>Packages.config</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Items1" xml:space="preserve">
-    <value>PackageReference</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Location" type="System.Drawing.Point, System.Drawing">
-    <value>194, 3</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 21</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;defaultPackageManagementFormatItems.Name" xml:space="preserve">
-    <value>defaultPackageManagementFormatItems</value>
-  </data>
-  <data name="&gt;&gt;defaultPackageManagementFormatItems.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;defaultPackageManagementFormatItems.Parent" xml:space="preserve">
-    <value>tableLayoutPanel1</value>
-  </data>
-  <data name="&gt;&gt;defaultPackageManagementFormatItems.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="defaultPackageManagementFormatItems" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="defaultPackageManagementFormatLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="Percent,100,Absolute,45" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>6, 13</value>
+    <value>12, 25</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="$this.Size" type="System.Drawing.Size, System.Drawing">
-    <value>463, 365</value>
+    <value>926, 702</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>GeneralOptionControl</value>
