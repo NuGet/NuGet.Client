@@ -2728,6 +2728,43 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Fact]
+        public void SettingsFileParse_WithUnknownElements_IgnoredWhenNamespacesAreUpdated()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageNamespaces>
+        <packageSource key=""nuget.org"">
+            <yay/>
+            <namespace id=""stuff"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>";
+
+            using var mockBaseDirectory = TestDirectory.Create();
+            SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+            var settingsFile = new SettingsFile(mockBaseDirectory);
+            var settings = new Settings(new SettingsFile[] { settingsFile });
+
+            // Act & 
+            settings.AddOrUpdate(settingsFile, "packageNamespaces", new PackageNamespacesSourceItem("nuget.org", new List<NamespaceItem>() { new NamespaceItem("moreStuff") }));
+            settings.SaveToDisk();
+
+            var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageNamespaces>
+        <packageSource key=""nuget.org"">
+            <yay/>
+            <namespace id=""moreStuff"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+            SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
+        }
+
         private static string GetOriginDirectoryPath()
         {
             if (RuntimeEnvironmentHelper.IsWindows)

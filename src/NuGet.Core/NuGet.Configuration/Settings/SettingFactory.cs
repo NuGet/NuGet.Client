@@ -46,7 +46,20 @@ namespace NuGet.Configuration
                         {
                             return new SourceItem(element, origin);
                         }
+                        break;
 
+                    case SettingElementType.PackageNamespaces:
+                        if (elementType == SettingElementType.PackageSource)
+                        {
+                            return new PackageNamespacesSourceItem(element, origin);
+                        }
+                        break;
+
+                    case SettingElementType.PackageSource:
+                        if (elementType == SettingElementType.Namespace)
+                        {
+                            return new NamespaceItem(element, origin);
+                        }
                         break;
                 }
 

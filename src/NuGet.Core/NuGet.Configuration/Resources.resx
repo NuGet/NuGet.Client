@@ -299,4 +299,13 @@
   <data name="CannotUpdateReadOnlyConfig" xml:space="preserve">
     <value>Unable to update setting since it is in an uneditable config file.</value>
   </data>
+  <data name="Error_ItemNeedsAtLeastOneNamespace" xml:space="preserve">
+    <value>Package source namespace '{0}' must have at least one namespace.</value>
+    <comment>0 - The name of the item.</comment>
+  </data>
+  <data name="Error_ItemNeedsAtLeastOneNamespaceWithPath" xml:space="preserve">
+    <value>Package source namespace '{0}' must have at least one namespace. Path: '{1}'</value>
+    <comment>0 - The name of the item
+1 - file path</comment>
+  </data>
 </root>
