@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
@@ -16,17 +17,6 @@ namespace NuGet.CommandLine.XPlat
 {
     internal static class TrustedSignersCommand
     {
-        public enum TrustCommand
-        {
-            List,
-            Author,
-            Repository,
-            Source,
-            Certificate,
-            Remove,
-            Sync
-        }
-
         internal static void Register(CommandLineApplication app,
                       Func<ILogger> getLogger,
                       Action<LogLevel> setLogLevel)
@@ -34,7 +24,7 @@ namespace NuGet.CommandLine.XPlat
             app.Command("trust", trustedSignersCmd =>
             {
                 CommandArgument command = trustedSignersCmd.Argument(
-                    "command",
+                    "<command>",
                     Strings.TrustCommandActionDescription,
                     multipleValues: true);
 
@@ -43,7 +33,7 @@ namespace NuGet.CommandLine.XPlat
                     Strings.TrustCommandAlgorithm,
                     CommandOptionType.SingleValue);
 
-                CommandOption allowuntrustedrootOption = trustedSignersCmd.Option(
+                CommandOption allowUntrustedRootOption = trustedSignersCmd.Option(
                     "--allow-untrusted-root",
                     Strings.TrustCommandAllowUntrustedRoot,
                     CommandOptionType.NoValue);
@@ -58,7 +48,7 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Verbosity_Description,
                     CommandOptionType.SingleValue);
 
-                CommandOption configfile = trustedSignersCmd.Option(
+                CommandOption configFile = trustedSignersCmd.Option(
                     "--configfile",
                     Strings.Option_ConfigFile,
                     CommandOptionType.SingleValue);
@@ -88,7 +78,7 @@ namespace NuGet.CommandLine.XPlat
 
                     string packagePath = null;
                     string sourceUrl = null;
-                    string fingerPrint = null;
+                    string fingerprint = null;
                     if (command.Values.Count() > 2)
                     {
                         if (action == TrustCommand.Author || action == TrustCommand.Repository)
@@ -101,11 +91,11 @@ namespace NuGet.CommandLine.XPlat
                         }
                         else if (action == TrustCommand.Certificate)
                         {
-                            fingerPrint = command.Values[2];
+                            fingerprint = command.Values[2];
                         }
                     }
 
-                    ISettings settings = ProcessConfigFile(configfile.Value());
+                    ISettings settings = ProcessConfigFile(configFile.Value());
 
                     var trustedSignersArgs = new TrustedSignersArgs()
                     {
@@ -113,9 +103,9 @@ namespace NuGet.CommandLine.XPlat
                         PackagePath = packagePath,
                         Name = name,
                         ServiceIndex = sourceUrl,
-                        CertificateFingerprint = fingerPrint,
+                        CertificateFingerprint = fingerprint,
                         FingerprintAlgorithm = algorithm.Value(),
-                        AllowUntrustedRoot = allowuntrustedrootOption.HasValue(),
+                        AllowUntrustedRoot = allowUntrustedRootOption.HasValue(),
                         Author = action == TrustCommand.Author,
                         Repository = action == TrustCommand.Repository,
                         Owners = CommandLineUtility.SplitAndJoinAcrossMultipleValues(owners.Values),
@@ -130,10 +120,8 @@ namespace NuGet.CommandLine.XPlat
                     var trustedSignersProvider = new TrustedSignersProvider(settings);
 
                     var runner = new TrustedSignersCommandRunner(trustedSignersProvider, sourceProvider);
-                    var trustedSignTask = runner.ExecuteCommandAsync(trustedSignersArgs);
-                    await trustedSignTask;
-
-                    return trustedSignTask.Result;
+                    Task<int> trustedSignTask = runner.ExecuteCommandAsync(trustedSignersArgs);
+                    return await trustedSignTask;
                 });
             });
         }

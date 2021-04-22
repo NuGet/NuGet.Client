@@ -28,7 +28,7 @@ namespace NuGet.XPlat.FuncTest
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 // Arrange & Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                       DotnetCli,
                       Directory.GetCurrentDirectory(),
                       $"{XplatDll} trust {unrecognizedOption}",
@@ -54,7 +54,7 @@ error: Unrecognized option '{unrecognizedOption}'"));
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 // Arrange & Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                       DotnetCli,
                       Directory.GetCurrentDirectory(),
                       $"{XplatDll} trust {unrecognizedOption}",
@@ -80,7 +80,7 @@ error: Unrecognized option '{unrecognizedOption}'"));
                 var mockPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"packages"));
 
                 // Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                       DotnetCli,
                       mockPackagesDirectory.FullName,
                       $"{XplatDll} {args}",
@@ -112,7 +112,7 @@ error: Unrecognized option '{unrecognizedOption}'"));
                     var argList = new List<string> { "trust", "list", option, verbosity };
 
                     // Act
-                    var result = testApp.Execute(argList.ToArray());
+                    int result = testApp.Execute(argList.ToArray());
 
                     // Assert
                     Assert.Equal(logLevel, getLogLevel());
