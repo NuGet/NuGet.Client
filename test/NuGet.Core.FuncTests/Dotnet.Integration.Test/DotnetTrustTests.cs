@@ -213,7 +213,6 @@ namespace Dotnet.Integration.Test
 
                 SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath)).Should().Be(expectedResult);
             }
-
         }
 
         [CIOnlyFact]
@@ -271,7 +270,6 @@ namespace Dotnet.Integration.Test
 
                 SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath)).Should().Be(expectedResult);
             }
-
         }
 
         [CIOnlyTheory]
@@ -403,13 +401,13 @@ namespace Dotnet.Integration.Test
                 var authorName = "MyCompanyCert";
 
                 // Act
-                CommandRunnerResult resultAdd = _msbuildFixture.RunDotnet(
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
                     $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}");
 
                 // Assert
-                resultAdd.Success.Should().BeTrue();
-                resultAdd.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "author", authorName));
+                result.Success.Should().BeTrue();
+                result.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "author", authorName));
 
                 string expectedResult = SettingsTestUtils.RemoveWhitespace($@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
@@ -507,7 +505,7 @@ namespace Dotnet.Integration.Test
                 var nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, nugetConfigFileName);
 
                 // Act
-                var resultSync = _msbuildFixture.RunDotnet(
+                CommandRunnerResult resultSync = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
                     $"nuget trust remove {repositoryName} --configfile {nugetConfigPath}");
 
@@ -552,7 +550,7 @@ namespace Dotnet.Integration.Test
                 var nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, nugetConfigFileName);
 
                 // Act
-                var resultSync = _msbuildFixture.RunDotnet(
+                CommandRunnerResult resultSync = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
                     $"nuget trust remove {repositoryWrongName} --configfile {nugetConfigPath}");
 
