@@ -56,7 +56,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Designer.Interfaces" Version="17.0.0-preview-1-31108-209" />
 
         <!-- Workaround until final sdk package is published-->
-        <PackageReference Update="Microsoft.VisualStudio.SDK" Version="17.0.0-preview-1-31109-394" />
+        <PackageReference Update="Microsoft.VisualStudio.SDK" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.34" />
 
         <PackageReference Update="Microsoft.VisualStudio.Services.Client" Version="$(VSServicesVersion)" />
@@ -81,7 +81,7 @@
         <PackageReference Update="Microsoft.Internal.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
 
         <!-- TODO: PIA workaround, move to $(VSFrameworkVersion) -->
-        <PackageReference Update="Microsoft.VisualStudio.TemplateWizardInterface" Version="17.0.0-preview-1-30928-1111" />
+        <PackageReference Update="Microsoft.VisualStudio.TemplateWizardInterface" Version="$(VSFrameworkVersion)" />
 
         <PackageReference Update="Microsoft.VisualStudio.Text.Data" Version="17.0.24-g4265d215ae" />
         <PackageReference Update="Microsoft.VisualStudio.Text.Logic" Version="17.0.24-g4265d215ae" />
@@ -92,7 +92,7 @@
         <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
         <PackageReference Update="Microsoft.VisualStudio.Threading" Version="16.10.53-alpha" />
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="17.0.0-preview-1-31108-209" />
+        <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
         <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.63-dev17-g3f11f5ab" />
         <PackageReference Update="Microsoft.Web.Xdt" Version="3.0.0" />
