@@ -11,7 +11,7 @@ Microsoft.IdentityModel.Clients.ActiveDirectory.dll
 Microsoft.IdentityModel.JsonWebTokens.dll
 Microsoft.IdentityModel.Logging.dll
 Microsoft.IdentityModel.Tokens.dll
-Microsoft.Internal.VisualStudio.Shell.Embeddable.dll
+Microsoft.Internal.VisualStudio.Shell.Framework.dll
 Microsoft.Internal.VisualStudio.Shell.Interop.10.0.DesignTime.dll
 Microsoft.NET.StringTools.dll
 Microsoft.ServiceHub.Client.dll
