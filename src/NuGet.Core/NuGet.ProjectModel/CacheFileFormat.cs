@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
@@ -87,15 +88,19 @@ namespace NuGet.ProjectModel
             if (version >= 2)
             {
                 cacheFile.ProjectFilePath = ReadString(cursor[ProjectFilePathProperty]);
-
+                cacheFile.ExpectedPackageFilePaths = new List<string>();
                 foreach (JToken expectedFile in cursor[ExpectedPackageFilesProperty])
                 {
                     string path = ReadString(expectedFile);
 
-                    if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
+                    if (!string.IsNullOrWhiteSpace(path))
                     {
-                        cacheFile.HasAnyMissingPackageFiles = true;
-                        break;
+                        cacheFile.ExpectedPackageFilePaths.Add(path);
+
+                        if (!cacheFile.HasAnyMissingPackageFiles && !File.Exists(path))
+                        {
+                            cacheFile.HasAnyMissingPackageFiles = true;
+                        }
                     }
                 }
 

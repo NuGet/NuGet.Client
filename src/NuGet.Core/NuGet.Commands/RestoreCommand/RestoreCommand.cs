@@ -45,8 +45,8 @@ namespace NuGet.Commands
         private const string RestoreSuccess = nameof(RestoreSuccess);
         private const string ProjectFilePath = nameof(ProjectFilePath);
         private const string IsCentralVersionManagementEnabled = nameof(IsCentralVersionManagementEnabled);
-        private const string UniquePackageCount = nameof(UniquePackageCount);
-        private const string NewPackagesInstallCount = nameof(NewPackagesInstallCount);
+        private const string TotalUniquePackagesCount = nameof(TotalUniquePackagesCount);
+        private const string NewPackagesInstalledCount = nameof(NewPackagesInstalledCount);
 
         // no-op data names
         private const string NoOpDuration = nameof(NoOpDuration);
@@ -58,7 +58,7 @@ namespace NuGet.Commands
         private const string NoOpReplayLogsDuration = nameof(NoOpReplayLogsDuration);
 
         // lock file data names
-        private const string EvaluateRestoreLockFileDuration = nameof(EvaluateRestoreLockFileDuration);
+        private const string EvaluateLockFileDuration = nameof(EvaluateLockFileDuration);
         private const string ValidatePackagesShaDuration = nameof(ValidatePackagesShaDuration);
         private const string IsLockFileEnabled = nameof(IsLockFileEnabled);
         private const string ReadLockFileDuration = nameof(ReadLockFileDuration);
@@ -171,8 +171,8 @@ namespace NuGet.Commands
                                 restoreTime.Stop();
                                 telemetry.TelemetryEvent[NoOpResult] = true;
                                 telemetry.TelemetryEvent[RestoreSuccess] = _success;
-                                telemetry.TelemetryEvent[UniquePackageCount] = cacheFile.ExpectedPackageFilePaths;
-                                telemetry.TelemetryEvent[NewPackagesInstallCount] = 0;
+                                telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths?.Count;
+                                telemetry.TelemetryEvent[NewPackagesInstalledCount] = 0;
 
                                 return new NoOpRestoreResult(
                                     _success,
@@ -202,7 +202,7 @@ namespace NuGet.Commands
                 PackagesLockFile packagesLockFile = null;
                 var regenerateLockFile = true;
 
-                using (telemetry.StartIndependentInterval(EvaluateRestoreLockFileDuration))
+                using (telemetry.StartIndependentInterval(EvaluateLockFileDuration))
                 {
                     telemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
 
@@ -381,9 +381,9 @@ namespace NuGet.Commands
                         telemetry.TelemetryEvent[WarningCodes] = warningCodes;
                     }
 
-                    telemetry.TelemetryEvent[UniquePackageCount] = cacheFile.ExpectedPackageFilePaths;
+                    telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths.Count;
 
-                    telemetry.TelemetryEvent[NewPackagesInstallCount] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
+                    telemetry.TelemetryEvent[NewPackagesInstalledCount] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
 
                     telemetry.TelemetryEvent[RestoreSuccess] = _success;
                 }

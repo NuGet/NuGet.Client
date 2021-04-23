@@ -302,6 +302,25 @@ namespace NuGet.Commands.Test
             return packageSpec;
         }
 
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net5.0", string dependencyName = "a")
+        {
+            const string referenceSpec = @"
+                {
+                    ""frameworks"": {
+                        ""TARGET_FRAMEWORK"": {
+                            ""dependencies"": {
+                                ""DEPENDENCY_NAME"" : ""1.0.0""
+                            }
+                        }
+                    }
+                }";
+
+            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework).Replace("DEPENDENCY_NAME", dependencyName);
+            var packageSpec = JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithTestRestoreMetadata();
+            packageSpec.RestoreSettings.HideWarningsAndErrors = true; // Pretend this is running in VS and this is a .NET Core project.
+            return packageSpec;
+        }
+
         public static PackageSpec GetPackagesConfigPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net472")
         {
             const string referenceSpec = @"
