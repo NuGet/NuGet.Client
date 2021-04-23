@@ -363,6 +363,7 @@ namespace NuGet.Commands
                         cacheFile.ProjectFilePath = _request.Project.FilePath;
                         cacheFile.LogMessages = assetsFile.LogMessages;
                         cacheFile.ExpectedPackageFilePaths = NoOpRestoreUtilities.GetRestoreOutput(_request, assetsFile);
+                        telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile?.ExpectedPackageFilePaths.Count;
                     }
 
                     var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));
@@ -378,7 +379,6 @@ namespace NuGet.Commands
                         telemetry.TelemetryEvent[WarningCodes] = warningCodes;
                     }
 
-                    telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths.Count;
 
                     telemetry.TelemetryEvent[NewPackagesInstalledCount] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
 
@@ -648,7 +648,6 @@ namespace NuGet.Commands
             else
             {
                 cacheFile = new CacheFile(newDgSpecHash);
-
             }
 
             // DotnetCliTool restores are special because the the assets file location is not known until after the restore itself. So we just clean up.

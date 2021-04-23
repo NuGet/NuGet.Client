@@ -302,7 +302,7 @@ namespace NuGet.Commands.Test
             return packageSpec;
         }
 
-        public static PackageSpec GetPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net5.0", string dependencyName = "a")
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName)
         {
             const string referenceSpec = @"
                 {
