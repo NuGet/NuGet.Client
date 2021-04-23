@@ -384,7 +384,8 @@ namespace NuGet.Commands.Test
                     logger)
                 {
                     LockFilePath = lockFilePath,
-                    IsLowercasePackagesDirectory = !isLowercase
+                    IsLowercasePackagesDirectory = !isLowercase,
+                    AllowNoOp = false,
                 };
                 var commandA = new RestoreCommand(requestA);
                 var resultA = await commandA.ExecuteAsync();
@@ -400,7 +401,8 @@ namespace NuGet.Commands.Test
                 {
                     LockFilePath = lockFilePath,
                     IsLowercasePackagesDirectory = isLowercase,
-                    ExistingLockFile = lockFileFormat.Read(lockFilePath)
+                    ExistingLockFile = lockFileFormat.Read(lockFilePath),
+                    AllowNoOp = false,
                 };
                 var commandB = new RestoreCommand(requestB);
                 var resultB = await commandB.ExecuteAsync();
@@ -2080,7 +2082,7 @@ namespace NuGet.Commands.Test
             var request = new TestRestoreRequest(packageSpec, new PackageSource[] { new PackageSource(pathContext.PackageSource) }, pathContext.UserPackagesFolder, logger)
             {
                 LockFilePath = Path.Combine(projectPath, "project.assets.json"),
-                ProjectStyle = ProjectStyle.PackageReference
+                ProjectStyle = ProjectStyle.PackageReference,
             };
 
             // Set-up telemetry service - Important to set-up the service *after* the package source creation call as that emits telemetry!
@@ -2097,10 +2099,8 @@ namespace NuGet.Commands.Test
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            telemetryEvents.Should().HaveCount(3, because: string.Join(Environment.NewLine, telemetryEvents.Select(e => e.Name)));
             IEnumerable<string> telEventNames = telemetryEvents.Select(e => e.Name);
-            telEventNames.Should().Contain("PackageExtractionInformation");
-            telEventNames.Should().Contain("SigningInformation");
+            telemetryEvents.Should().HaveCountLessOrEqualTo(3);
             telEventNames.Should().Contain("ProjectRestoreInformation");
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
@@ -2167,13 +2167,11 @@ namespace NuGet.Commands.Test
             await result.CommitAsync(logger, CancellationToken.None);
             // Pre-conditions
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            telemetryEvents.Should().HaveCount(3, because: string.Join(Environment.NewLine, telemetryEvents.Select(e => e.Name)));
-            var telEventNames = telemetryEvents.Select(e => e.Name);
-            telEventNames.Should().Contain("PackageExtractionInformation");
-            telEventNames.Should().Contain("SigningInformation");
+            IEnumerable<string> telEventNames = telemetryEvents.Select(e => e.Name);
+            telemetryEvents.Should().HaveCountLessOrEqualTo(3);
             telEventNames.Should().Contain("ProjectRestoreInformation");
 
-            while(telemetryEvents.TryDequeue(out _))
+            while (telemetryEvents.TryDequeue(out _))
             {
                 // Clear telemetry
             }
@@ -2253,10 +2251,8 @@ namespace NuGet.Commands.Test
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            telemetryEvents.Should().HaveCount(3, because: string.Join(Environment.NewLine, telemetryEvents.Select(e => e.Name)));
-            var telEventNames = telemetryEvents.Select(e => e.Name);
-            telEventNames.Should().Contain("PackageExtractionInformation");
-            telEventNames.Should().Contain("SigningInformation");
+            IEnumerable<string> telEventNames = telemetryEvents.Select(e => e.Name);
+            telemetryEvents.Should().HaveCountLessOrEqualTo(3);
             telEventNames.Should().Contain("ProjectRestoreInformation");
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
@@ -2269,7 +2265,7 @@ namespace NuGet.Commands.Test
         }
 
         private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string referenceSpec)
-        { 
+        {
             return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
         }
 
