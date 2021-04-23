@@ -96,27 +96,34 @@ namespace NuGet.Frameworks
 
                 bool isNet6Era = StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, framework.Framework) && framework.Version.Major >= 6;
 
+                // Eliminate non-compatible xamarin frameworks
+                if (isNet6Era && framework.HasPlatform && reduced.Any(f => f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)))
+                {
+                    reduced = reduced.Where(f =>
+                    {
+                        string suffix = f.Framework.ToLower(CultureInfo.CurrentCulture).Replace("xamarin.", "");
+                        var comp = StringComparer.OrdinalIgnoreCase;
+                        return _fwNameComparer.Equals(f, framework)
+                            || (comp.Equals(suffix, "mac") && comp.Equals(framework.Platform, "macos"))
+                            || (comp.Equals(suffix, "ios") && comp.Equals(framework.Platform, "ios"))
+                            || (comp.Equals(suffix, "tvos") && comp.Equals(framework.Platform, "tvos"))
+                            || (comp.Equals(suffix, "ios") && comp.Equals(framework.Platform, "maccatalyst"));
+
+                    });
+                }
+
                 // Reduce to the same framework name if possible, with an exception for Xamarin when net6.0+
                 if (reduced.Count() > 1 && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
                 {
                     reduced = reduced.Where(f =>
                     {
-                        if (_fwNameComparer.Equals(f, framework))
+                        if (isNet6Era && framework.HasPlatform && f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
                         {
                             return true;
                         }
-                        else if (isNet6Era)
-                        {
-                            // Check for Xamarin frameworks. This is a special case we need to handle for net6.0+.
-                            // For more details, see https://github.com/dotnet/designs/blob/main/accepted/2021/net6.0-tfms/net6.0-tfms.md#compatibility-rules
-                            return f.Framework == FrameworkConstants.FrameworkIdentifiers.XamarinIOs ||
-                                f.Framework == FrameworkConstants.FrameworkIdentifiers.XamarinMacCatalyst ||
-                                f.Framework == FrameworkConstants.FrameworkIdentifiers.XamarinTVOS ||
-                                f.Framework == FrameworkConstants.FrameworkIdentifiers.XamarinMac;
-                        }
                         else
                         {
-                            return false;
+                            return _fwNameComparer.Equals(f, framework);
                         }
                     });
                 }
@@ -205,20 +212,7 @@ namespace NuGet.Frameworks
                         reduced = reduced.GroupBy(f => f.Framework).OrderByDescending(f => f.Key).First(f =>
                         {
                             NuGetFramework first = f.First();
-                            if (!first.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                string suffix = first.Framework.ToLower(CultureInfo.CurrentCulture).Replace("xamarin.", "");
-                                var comp = StringComparer.OrdinalIgnoreCase;
-                                return (comp.Equals(suffix, "mac") && comp.Equals(framework.Platform, "macos"))
-                                    || (comp.Equals(suffix, "ios") && comp.Equals(framework.Platform, "ios"))
-                                    || (comp.Equals(suffix, "tvos") && comp.Equals(framework.Platform, "tvos"))
-                                    || (comp.Equals(suffix, "ios") && comp.Equals(framework.Platform, "maccatalyst"));
-                            }
-
+                            return first.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase);
                         });
                     }
                 }

@@ -117,6 +117,8 @@ namespace NuGet.Test
         [InlineData("net6.0-tvos", "xamarin.tvos,xamarin.ios,net5.0", "xamarin.tvos")]
         [InlineData("net6.0-ios", "xamarin.mac,xamarin.ios,net5.0", "xamarin.ios")]
         [InlineData("net6.0-ios", "xamarin.mac,net5.0", "net5.0")]
+        [InlineData("net6.0-ios", "xamarin.mac", null)]
+        [InlineData("net6.0-maccatalyst", "xamarin.mac", null)]
         [InlineData("net7.0-ios", "xamarin.mac,net5.0,net6.0", "net6.0")]
         [InlineData("net7.0-ios", "net6.0,xamarin.ios,xamarin.mac,net5.0", "net6.0")]
         [InlineData("net7.0-ios", "net7.0-macos,xamarin.mac,net6.0,net6.0-ios,net6.0-macos,net5.0", "net6.0-ios")]
