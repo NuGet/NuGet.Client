@@ -602,7 +602,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         ""James Newton-King""
                         ],
 
-                        ""totalDownloads"": 2147483657,
+                        ""totalDownloads"": 531607259,
                         ""verified"": true,
 
                         ""packageTypes"": [

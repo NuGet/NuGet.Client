@@ -111,6 +111,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageSearchResourceV3_GetMetadataAsync_VersionsDownloadCount()
         {
             // Arrange
+            long largerThanIntMax = 2147483657; // int.MaxValue + 10
             var responses = new Dictionary<string, string>();
             responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
                 ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.EntityFrameworkSearch.json", GetType()));
@@ -137,6 +138,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(28390569, package.DownloadCount);
             Assert.Equal(14, versions.Count());
             Assert.Equal(64099, versions.First().DownloadCount);
+            Assert.Equal(largerThanIntMax, versions.Skip(1).First().DownloadCount);
         }
 
         [Fact]
