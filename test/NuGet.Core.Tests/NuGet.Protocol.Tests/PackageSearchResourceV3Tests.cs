@@ -111,7 +111,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageSearchResourceV3_GetMetadataAsync_VersionsDownloadCount()
         {
             // Arrange
-            long largerThanIntMax = 2147483657; // int.MaxValue + 10
+            long largerThanIntMax = (long)int.MaxValue + 10;
             var responses = new Dictionary<string, string>();
             responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
                 ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.EntityFrameworkSearch.json", GetType()));
@@ -132,13 +132,15 @@ namespace NuGet.Protocol.Tests
 
             var package = packages.SingleOrDefault();
 
-            var versions = await package.GetVersionsAsync();
+            var versions = (await package.GetVersionsAsync()).ToList();
 
             // Assert
             Assert.Equal(28390569, package.DownloadCount);
             Assert.Equal(14, versions.Count());
-            Assert.Equal(64099, versions.First().DownloadCount);
-            Assert.Equal(largerThanIntMax, versions.Skip(1).First().DownloadCount);
+            Assert.Equal(64099, versions[0].DownloadCount);
+            // Make sure NuGet can handle package download count larger than int.MaxValue
+            // EntityFrameworkSearch.json has a 2nd version with download count that is too large for an int32
+            Assert.Equal(largerThanIntMax, versions[1].DownloadCount);
         }
 
         [Fact]

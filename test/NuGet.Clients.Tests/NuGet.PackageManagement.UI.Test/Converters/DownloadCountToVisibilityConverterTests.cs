@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         {
             var converter = new DownloadCountToVisibilityConverter();
 
-            var converted = converter.Convert(
+            object converted = converter.Convert(
                 downloadCount,
                 typeof(Visibility),
                 null,
@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         {
             var converter = new DownloadCountToVisibilityConverter();
 
-            var converted = converter.Convert(
+            object converted = converter.Convert(
                 downloadCount,
                 typeof(Visibility),
                 null,
