@@ -165,7 +165,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 string outputDir = output.Value();
 
-                if (!!Directory.Exists(outputDir))
+                if (!Directory.Exists(outputDir))
                 {
                     Directory.CreateDirectory(outputDir);
                 }
@@ -221,8 +221,8 @@ namespace NuGet.CommandLine.XPlat
                 throw new ArgumentException(Strings.SignCommandNoCertificateException);
             }
             else if (!string.IsNullOrEmpty(path.Value()) &&
-                ((!string.IsNullOrEmpty(fingerPrint.Value()) ||
-                 !string.IsNullOrEmpty(subject.Value())) ||
+                (!string.IsNullOrEmpty(fingerPrint.Value()) ||
+                 !string.IsNullOrEmpty(subject.Value()) ||
                  !string.IsNullOrEmpty(location.Value()) ||
                  !string.IsNullOrEmpty(store.Value())))
             {

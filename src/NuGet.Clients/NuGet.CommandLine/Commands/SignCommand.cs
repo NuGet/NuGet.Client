@@ -175,8 +175,8 @@ namespace NuGet.CommandLine
                 throw new ArgumentException(NuGetCommand.SignCommandNoCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificatePath) &&
-                ((!string.IsNullOrEmpty(CertificateFingerprint) ||
-                 !string.IsNullOrEmpty(CertificateSubjectName)) ||
+                (!string.IsNullOrEmpty(CertificateFingerprint) ||
+                 !string.IsNullOrEmpty(CertificateSubjectName) ||
                  !string.IsNullOrEmpty(CertificateStoreLocation) ||
                  !string.IsNullOrEmpty(CertificateStoreName)))
             {

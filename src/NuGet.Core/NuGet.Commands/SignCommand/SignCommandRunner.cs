@@ -25,7 +25,7 @@ namespace NuGet.Commands
             // resolve path into multiple packages if needed.
             var packagesToSign = signArgs.PackagePaths.SelectMany(packagePath =>
             {
-                var packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
+                IEnumerable<string> packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
                 LocalFolderUtility.EnsurePackageFileExists(packagePath, packages);
                 return packages;
             });

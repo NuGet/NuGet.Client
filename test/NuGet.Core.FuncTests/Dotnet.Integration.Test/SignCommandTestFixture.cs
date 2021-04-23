@@ -47,7 +47,7 @@ namespace Dotnet.Integration.Test
             {
                 if (_trustedTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path);
+                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path);
 
                     _trustedTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -68,7 +68,7 @@ namespace Dotnet.Integration.Test
                 if (_trustedTestCertWithInvalidEku == null)
                 {
                     var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForInvalidEkuCert;
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
+                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
 
                     TrustedTestCertificateChain _trustedTestLeafCertWithInvalidEkuChain = new TrustedTestCertificateChain()
                     {
@@ -92,7 +92,7 @@ namespace Dotnet.Integration.Test
                 if (_trustedTestCertExpired == null)
                 {
                     var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCertificateThatOnlyValidInSpecifiedPeriod(notBefore: DateTime.UtcNow.AddSeconds(-10), notAfter: DateTime.UtcNow.AddSeconds(-9));
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
+                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
 
                     TrustedTestCertificateChain _trustedTestLeafCertExpiredChain = new TrustedTestCertificateChain()
                     {
@@ -115,8 +115,7 @@ namespace Dotnet.Integration.Test
                 if (_trustedTestCertNotYetValid == null)
                 {
                     var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCertificateThatOnlyValidInSpecifiedPeriod(notBefore: DateTime.UtcNow.AddMinutes(10), notAfter: DateTime.UtcNow.AddMinutes(15));
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
-                    var time2 = DateTime.UtcNow;
+                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
 
                     TrustedTestCertificateChain _trustedTestLeafCertNotYetValidChain = new TrustedTestCertificateChain()
                     {
@@ -138,7 +137,7 @@ namespace Dotnet.Integration.Test
             {
                 if (_revokedTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
+                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
 
                     _revokedTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -161,7 +160,7 @@ namespace Dotnet.Integration.Test
             {
                 if (_revocationUnknownTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: false);
+                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: false);
 
                     _revocationUnknownTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -181,7 +180,7 @@ namespace Dotnet.Integration.Test
             {
                 if (_untrustedSelfIssuedCertificateInCertificateStore == null)
                 {
-                    var certificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false);
+                    X509Certificate2 certificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false);
 
                     _untrustedSelfIssuedCertificateInCertificateStore = TrustedTestCert.Create(
                         certificate,

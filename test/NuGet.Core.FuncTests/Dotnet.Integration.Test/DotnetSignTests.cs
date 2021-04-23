@@ -2,14 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-#if IS_SIGNING_SUPPORTED
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
@@ -51,7 +46,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
@@ -76,7 +71,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var invalidEkuCert = _signFixture.TrustedTestCertificateWithInvalidEku;
+                TrustedTestCert<TestCertificate> invalidEkuCert = _signFixture.TrustedTestCertificateWithInvalidEku;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
@@ -102,7 +97,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var expiredCert = _signFixture.TrustedTestCertificateExpired;
+                TrustedTestCert<TestCertificate> expiredCert = _signFixture.TrustedTestCertificateExpired;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
@@ -128,7 +123,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var notYetValidCert = _signFixture.TrustedTestCertificateNotYetValid;
+                TrustedTestCert<TestCertificate> notYetValidCert = _signFixture.TrustedTestCertificateNotYetValid;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
@@ -143,7 +138,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task DotnetSign_SignPackageWithTimestamping_SuccceedsAsync()
+        public async Task DotnetSign_SignPackageWithTimestamping_SucceedsAsync()
         {
             // Arrange
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -155,7 +150,7 @@ namespace Dotnet.Integration.Test
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
                 var timestampService = await _signFixture.GetDefaultTrustedTimestampServiceAsync();
-                var trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
@@ -165,31 +160,6 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
-            }
-        }
-
-        [Fact]
-        public async Task DotnetSign_SignPackageWithValidCertChain_SuccceedsAsync()
-        {
-            // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
-            {
-                await SimpleTestPackageUtility.CreatePackagesAsync(
-                    pathContext.PackageSource,
-                    new SimpleTestPackageContext("PackageA", "1.0.0"));
-
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
-
-                var trustedLeafCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {trustedLeafCert.Source.Cert.Thumbprint} --certificate-store-name {trustedLeafCert.StoreName} --certificate-store-location {trustedLeafCert.StoreLocation}",
-                        ignoreExitCode: true);
-
-                // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
 
@@ -205,7 +175,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var revokedCert = _signFixture.RevokedTestCertificateWithChain;
+                TrustedTestCert<TestCertificate> revokedCert = _signFixture.RevokedTestCertificateWithChain;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
@@ -231,7 +201,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var revocationUnknownCert = _signFixture.RevocationUnknownTestCertificateWithChain;
+                TrustedTestCert<TestCertificate> revocationUnknownCert = _signFixture.RevocationUnknownTestCertificateWithChain;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
@@ -261,7 +231,7 @@ namespace Dotnet.Integration.Test
                 var outputDir = Path.Combine(pathContext.WorkingDirectory, "Output");
                 Directory.CreateDirectory(outputDir);
 
-                var trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
@@ -289,7 +259,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
                 var firstResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
@@ -321,7 +291,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
                 var firstResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
@@ -353,7 +323,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
                 var result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
@@ -378,7 +348,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
 
                 var pfxPath = Path.Combine(pathContext.WorkingDirectory, Guid.NewGuid().ToString());
                 var password = Guid.NewGuid().ToString();
@@ -409,7 +379,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 var pfxPath = Path.Combine(pathContext.WorkingDirectory, Guid.NewGuid().ToString());
 
                 var password = Guid.NewGuid().ToString();
@@ -441,7 +411,7 @@ namespace Dotnet.Integration.Test
 
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
 
-                var untrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
+                X509Certificate2 untrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -468,10 +438,10 @@ namespace Dotnet.Integration.Test
                 var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
                 var originalFile = File.ReadAllBytes(packageFilePath);
 
-                var testServer = await _signFixture.GetSigningTestServerAsync();
-                var certificateAuthority = await _signFixture.GetDefaultTrustedCertificateAuthorityAsync();
+                ISigningTestServer testServer = await _signFixture.GetSigningTestServerAsync();
+                CertificateAuthority certificateAuthority = await _signFixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var options = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
-                var timestampService = TimestampService.Create(certificateAuthority, options);
+                TimestampService timestampService = TimestampService.Create(certificateAuthority, options);
 
                 using (testServer.RegisterResponder(timestampService))
                 using (var UntrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore)
@@ -494,4 +464,3 @@ namespace Dotnet.Integration.Test
         }
     }
 }
-#endif
