@@ -37,41 +37,45 @@ namespace NuGet.Commands
 
         public Guid ParentId { get; }
 
-        // names for ProjectRestoreInformation and intervals
-        private const string ProjectRestoreInformation = "ProjectRestoreInformation";
-        private const string ErrorCodes = "ErrorCodes";
-        private const string WarningCodes = "WarningCodes";
-        private const string RestoreSuccess = "RestoreSuccess";
+        private const string ProjectRestoreInformation = nameof(ProjectRestoreInformation);
+
+        // status names for ProjectRestoreInformation
+        private const string ErrorCodes = nameof(ErrorCodes);
+        private const string WarningCodes = nameof(WarningCodes);
+        private const string RestoreSuccess = nameof(RestoreSuccess);
         private const string ProjectFilePath = nameof(ProjectFilePath);
+        private const string IsCentralVersionManagementEnabled = nameof(IsCentralVersionManagementEnabled);
+        private const string UniquePackageCount = nameof(UniquePackageCount);
+        private const string NewPackagesInstallCount = nameof(NewPackagesInstallCount);
 
-        // names for child events for ProjectRestoreInformation
-        private const string GenerateRestoreGraph = "GenerateRestoreGraph";
-        private const string GenerateAssetsFile = "GenerateAssetsFile";
-        private const string ValidateRestoreGraphs = "ValidateRestoreGraphs";
-        private const string CreateRestoreResult = "CreateRestoreResult";
-        private const string RestoreNoOpInformation = "RestoreNoOpInformation";
-        private const string RestoreLockFileInformation = "RestoreLockFileInformation";
-        private const string ValidatePackagesSha = "ValidatePackagesSha";
+        // no-op data names
+        private const string NoOpDuration = nameof(NoOpDuration);
+        private const string NoOpResult = nameof(NoOpResult);
+        private const string NoOpCacheFileEvaluateDuration = nameof(NoOpCacheFileEvaluateDuration);
+        private const string NoOpCacheFileEvaluationResult = nameof(NoOpCacheFileEvaluationResult);
+        private const string NoOpRestoreOutputEvaluationDuration = nameof(NoOpRestoreOutputEvaluationDuration);
+        private const string NoOpRestoreOutputEvaluationResult = nameof(NoOpRestoreOutputEvaluationResult);
+        private const string NoOpReplayLogsDuration = nameof(NoOpReplayLogsDuration);
 
-        // names for intervals in RestoreNoOpInformation
-        private const string CacheFileEvaluateDuration = "CacheFileEvaluateDuration";
-        private const string MsbuildAssetsVerificationDuration = "MsbuildAssetsVerificationDuration";
-        private const string MsbuildAssetsVerificationResult = "MsbuildAssetsVerificationResult";
-        private const string ReplayLogsDuration = "ReplayLogsDuration";
+        // lock file data names
+        private const string EvaluateRestoreLockFileDuration = nameof(EvaluateRestoreLockFileDuration);
+        private const string ValidatePackagesShaDuration = nameof(ValidatePackagesShaDuration);
+        private const string IsLockFileEnabled = nameof(IsLockFileEnabled);
+        private const string ReadLockFileDuration = nameof(ReadLockFileDuration);
+        private const string ValidateLockFileDuration = nameof(ValidateLockFileDuration);
+        private const string IsLockFileValidForRestore = nameof(IsLockFileValidForRestore);
+        private const string LockFileEvaluationResult = nameof(LockFileEvaluationResult);
 
-        //names for child events for GenerateRestoreGraph
-        private const string CreateRestoreTargetGraph = "CreateRestoreTargetGraph";
-        private const string RestoreAdditionalCompatCheck = "RestoreAdditionalCompatCheck";
+        // core restore data names
+        private const string GenerateRestoreGraphDuration = nameof(GenerateRestoreGraphDuration);
+        private const string CreateRestoreTargetGraphDuration = nameof(CreateRestoreTargetGraphDuration);
+        private const string CreateAdditionalRestoreTargetGraphDuration = nameof(CreateAdditionalRestoreTargetGraphDuration);
+        private const string GenerateAssetsFileDuration = nameof(GenerateAssetsFileDuration);
+        private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
+        private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
 
-        // names for intervals in RestoreLockFileInformation
-        private const string IsLockFileEnabled = "IsLockFileEnabled";
-        private const string ReadLockFileDuration = "ReadLockFileDuration";
-        private const string ValidateLockFileDuration = "ValidateLockFileDuration";
-        private const string IsLockFileValidForRestore = "IsLockFileValidForRestore";
-        private const string LockFileEvaluationResult = "LockFileEvaluationResult";
-
-        // names for central package management version information
-        private const string IsCentralVersionManagementEnabled = "IsCentralVersionManagementEnabled";
+        // TODO NK
+        // Add the number of packages that were installed.
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -136,36 +140,39 @@ namespace NuGet.Commands
 
                 CacheFile cacheFile = null;
 
-                using (var noOpTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: RestoreNoOpInformation))
+                using (telemetry.StartIndependentInterval(NoOpDuration))
                 {
                     if (NoOpRestoreUtilities.IsNoOpSupported(_request))
                     {
-                        noOpTelemetry.StartIntervalMeasure();
-
+                        telemetry.StartIntervalMeasure();
                         bool noOp;
                         (cacheFile, noOp) = EvaluateCacheFile();
-
-                        noOpTelemetry.EndIntervalMeasure(CacheFileEvaluateDuration);
+                        telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
+                        telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
 
                         if (noOp)
                         {
-                            noOpTelemetry.StartIntervalMeasure();
+                            telemetry.StartIntervalMeasure();
 
                             var noOpSuccess = NoOpRestoreUtilities.VerifyRestoreOutput(_request, cacheFile);
 
-                            noOpTelemetry.EndIntervalMeasure(MsbuildAssetsVerificationDuration);
-                            noOpTelemetry.TelemetryEvent[MsbuildAssetsVerificationResult] = noOpSuccess;
+                            telemetry.EndIntervalMeasure(NoOpRestoreOutputEvaluationDuration);
+                            telemetry.TelemetryEvent[NoOpRestoreOutputEvaluationResult] = noOpSuccess;
 
                             if (noOpSuccess)
                             {
-                                noOpTelemetry.StartIntervalMeasure();
+                                telemetry.StartIntervalMeasure();
 
                                 // Replay Warnings and Errors from an existing lock file in case of a no-op.
                                 await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(cacheFile.LogMessages, _logger);
 
-                                noOpTelemetry.EndIntervalMeasure(ReplayLogsDuration);
+                                telemetry.EndIntervalMeasure(NoOpReplayLogsDuration);
 
                                 restoreTime.Stop();
+                                telemetry.TelemetryEvent[NoOpResult] = true;
+                                telemetry.TelemetryEvent[RestoreSuccess] = _success;
+                                telemetry.TelemetryEvent[UniquePackageCount] = cacheFile.ExpectedPackageFilePaths;
+                                telemetry.TelemetryEvent[NewPackagesInstallCount] = 0;
 
                                 return new NoOpRestoreResult(
                                     _success,
@@ -179,6 +186,7 @@ namespace NuGet.Commands
                         }
                     }
                 }
+                telemetry.TelemetryEvent[NoOpResult] = false; // Getting here means we did not no-op.
 
                 if (isCpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
                 {
@@ -194,15 +202,15 @@ namespace NuGet.Commands
                 PackagesLockFile packagesLockFile = null;
                 var regenerateLockFile = true;
 
-                using (var lockFileTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: RestoreLockFileInformation))
+                using (telemetry.StartIndependentInterval(EvaluateRestoreLockFileDuration))
                 {
-                    lockFileTelemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
+                    telemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
 
                     bool result;
-                    (result, isLockFileValid, packagesLockFile) = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, lockFileTelemetry);
+                    (result, isLockFileValid, packagesLockFile) = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, telemetry);
 
-                    lockFileTelemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
-                    lockFileTelemetry.TelemetryEvent[LockFileEvaluationResult] = result;
+                    telemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
+                    telemetry.TelemetryEvent[LockFileEvaluationResult] = result;
 
                     regenerateLockFile = result; // Ensure that the lock file *does not* get rewritten, when the lock file is out of date and the status is false.
                     _success &= result;
@@ -211,7 +219,7 @@ namespace NuGet.Commands
                 IEnumerable<RestoreTargetGraph> graphs = null;
                 if (_success)
                 {
-                    using (var restoreGraphTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: GenerateRestoreGraph))
+                    using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                     {
                         // Restore
                         graphs = await ExecuteRestoreAsync(
@@ -219,7 +227,7 @@ namespace NuGet.Commands
                         _request.DependencyProviders.FallbackPackageFolders,
                         contextForProject,
                         token,
-                        restoreGraphTelemetry);
+                        telemetry);
                     }
                 }
                 else
@@ -239,25 +247,24 @@ namespace NuGet.Commands
                     });
                 }
 
-                LockFile assetsFile = null;
-                using (TelemetryActivity.Create(parentId: _operationId, eventName: GenerateAssetsFile))
-                {
-                    // Create assets file
-                    assetsFile = BuildAssetsFile(
-                    _request.ExistingLockFile,
-                    _request.Project,
-                    graphs,
-                    localRepositories,
-                    contextForProject);
-                }
+                telemetry.StartIntervalMeasure();
+                // Create assets file
+                LockFile assetsFile = BuildAssetsFile(
+                _request.ExistingLockFile,
+                _request.Project,
+                graphs,
+                localRepositories,
+                contextForProject);
+                telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
                 IList<CompatibilityCheckResult> checkResults = null;
-                using (TelemetryActivity.Create(parentId: _operationId, eventName: ValidateRestoreGraphs))
-                {
-                    _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
 
-                    // Check package compatibility
-                    checkResults = await VerifyCompatibilityAsync(
+                telemetry.StartIntervalMeasure();
+
+                _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
+
+                // Check package compatibility
+                checkResults = await VerifyCompatibilityAsync(
                     _request.Project,
                     _includeFlagGraphs,
                     localRepositories,
@@ -266,18 +273,19 @@ namespace NuGet.Commands
                     _request.ValidateRuntimeAssets,
                     _logger);
 
-                    if (checkResults.Any(r => !r.Success))
-                    {
-                        _success = false;
-                    }
-
+                if (checkResults.Any(r => !r.Success))
+                {
+                    _success = false;
                 }
+                telemetry.EndIntervalMeasure(ValidateRestoreGraphsDuration);
+
 
                 // Generate Targets/Props files
                 var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
                 string assetsFilePath = null;
                 string cacheFilePath = null;
-                using (TelemetryActivity.Create(parentId: _operationId, eventName: CreateRestoreResult))
+
+                using (telemetry.StartIndependentInterval(CreateRestoreResultDuration))
                 {
                     // Determine the lock file output path
                     assetsFilePath = GetAssetsFilePath(assetsFile);
@@ -315,11 +323,10 @@ namespace NuGet.Commands
                     // the file if enabled.
                     if (isLockFileValid)
                     {
-                        using (TelemetryActivity.Create(parentId: _operationId, eventName: ValidatePackagesSha))
-                        {
-                            // validate package's SHA512
-                            _success &= ValidatePackagesSha512(packagesLockFile, assetsFile);
-                        }
+                        telemetry.StartIntervalMeasure();
+                        // validate package's SHA512
+                        _success &= ValidatePackagesSha512(packagesLockFile, assetsFile);
+                        telemetry.EndIntervalMeasure(ValidatePackagesShaDuration);
 
                         // clear out the existing lock file so that we don't over-write the same file
                         packagesLockFile = null;
@@ -373,6 +380,10 @@ namespace NuGet.Commands
                     {
                         telemetry.TelemetryEvent[WarningCodes] = warningCodes;
                     }
+
+                    telemetry.TelemetryEvent[UniquePackageCount] = cacheFile.ExpectedPackageFilePaths;
+
+                    telemetry.TelemetryEvent[NewPackagesInstallCount] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
 
                     telemetry.TelemetryEvent[RestoreSuccess] = _success;
                 }
@@ -695,11 +706,6 @@ namespace NuGet.Commands
 
         private void DowngradeLockFileIfNeeded(LockFile lockFile)
         {
-            if (_request.LockFileVersion <= 2)
-            {
-                DowngradeLockFileToV2(lockFile);
-            }
-
             if (_request.LockFileVersion <= 1)
             {
                 DowngradeLockFileToV1(lockFile);
@@ -986,7 +992,7 @@ namespace NuGet.Commands
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
             Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
-            using (var tryRestoreTelemetry = TelemetryActivity.Create(telemetryActivity.OperationId, CreateRestoreTargetGraph))
+            using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
             {
                 result = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
@@ -997,7 +1003,8 @@ namespace NuGet.Commands
                     context,
                     forceRuntimeGraphCreation: hasSupports,
                     token: token,
-                    telemetryActivity: tryRestoreTelemetry);
+                    telemetryActivity: telemetryActivity,
+                    telemetryPrefix: string.Empty);
             }
 
             var success = result.Item1;
@@ -1035,7 +1042,7 @@ namespace NuGet.Commands
             if (_success && _request.CompatibilityProfiles.Any())
             {
                 Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> compatibilityResult = null;
-                using (var runtimeTryRestoreTelemetry = TelemetryActivity.Create(telemetryActivity.OperationId, RestoreAdditionalCompatCheck))
+                using (telemetryActivity.StartIndependentInterval(CreateAdditionalRestoreTargetGraphDuration))
                 {
                     compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
@@ -1046,8 +1053,8 @@ namespace NuGet.Commands
                     context,
                     forceRuntimeGraphCreation: true,
                     token: token,
-                    telemetryActivity: runtimeTryRestoreTelemetry);
-
+                    telemetryActivity: telemetryActivity,
+                    telemetryPrefix: "Additional-");
                 }
 
                 _success = compatibilityResult.Item1;
@@ -1176,12 +1183,7 @@ namespace NuGet.Commands
             return context;
         }
 
-        private void DowngradeLockFileToV2(LockFile lockFile)
-        {
-            // noop
-        }
-
-        private void DowngradeLockFileToV1(LockFile lockFile)
+        private static void DowngradeLockFileToV1(LockFile lockFile)
         {
             // Remove projects from the library section
             var libraryProjects = lockFile.Libraries.Where(lib => lib.Type == LibraryType.Project).ToArray();

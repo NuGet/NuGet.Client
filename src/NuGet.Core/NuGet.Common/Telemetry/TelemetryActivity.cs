@@ -67,7 +67,10 @@ namespace NuGet.Common
             _intervalList = new List<Tuple<string, TimeSpan>>();
         }
 
-        /// <summary> Start interval measure. </summary>
+        /// <summary> Start interval measure.
+        /// End with <see cref="EndIntervalMeasure(string)"/>
+        /// The intervals cannot overlap. For non-overlapping intervals <see cref="StartIndependentInterval(string)"/>
+        /// </summary>
         public void StartIntervalMeasure()
         {
             _intervalWatch.Restart();
@@ -79,6 +82,32 @@ namespace NuGet.Common
         {
             _intervalWatch.Stop();
             _intervalList.Add(new Tuple<string, TimeSpan>(propertyName, _intervalWatch.Elapsed));
+        }
+
+        public IDisposable StartIndependentInterval(string propertyName)
+        {
+            return new Interval(this, propertyName);
+        }
+
+        private class Interval : IDisposable
+        {
+            private readonly TelemetryActivity _telemetryActivity;
+            private readonly string _propertyName;
+            private readonly Stopwatch _stopwatch;
+
+            internal Interval(TelemetryActivity telemetryActivity, string propertyName)
+            {
+                _telemetryActivity = telemetryActivity;
+                _propertyName = propertyName;
+                _stopwatch = Stopwatch.StartNew();
+
+            }
+
+            void IDisposable.Dispose()
+            {
+                _stopwatch.Stop();
+                _telemetryActivity.TelemetryEvent[_propertyName] = _stopwatch.Elapsed.TotalSeconds;
+            }
         }
 
         /// <summary> Stops tracking the activity and emits a telemetry event. </summary>
