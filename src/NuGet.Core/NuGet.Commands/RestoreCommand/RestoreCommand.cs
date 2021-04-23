@@ -74,9 +74,6 @@ namespace NuGet.Commands
         private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
 
-        // TODO NK
-        // Add the number of packages that were installed.
-
         public RestoreCommand(RestoreRequest request)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
@@ -171,7 +168,7 @@ namespace NuGet.Commands
                                 restoreTime.Stop();
                                 telemetry.TelemetryEvent[NoOpResult] = true;
                                 telemetry.TelemetryEvent[RestoreSuccess] = _success;
-                                telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths?.Count;
+                                telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths?.Count ?? -1;
                                 telemetry.TelemetryEvent[NewPackagesInstalledCount] = 0;
 
                                 return new NoOpRestoreResult(

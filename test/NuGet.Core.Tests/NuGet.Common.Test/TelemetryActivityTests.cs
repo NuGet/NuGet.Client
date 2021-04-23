@@ -12,7 +12,6 @@ using Xunit;
 
 namespace NuGet.Common.Test
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class TelemetryActivityTests
     {
         private readonly Mock<INuGetTelemetryService> _telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Strict);
@@ -198,12 +197,12 @@ namespace NuGet.Common.Test
 
             var independentIntervalValue = _telemetryEvent[independentInterval];
             independentIntervalValue.Should().NotBeNull();
-            var independentActualCount = Convert.ToInt32(independentIntervalValue);
+            int independentActualCount = Convert.ToInt32(independentIntervalValue);
             Assert.True(independentActualCount >= 1, $"The telemetry duration count should at least be 1 seconds.");
 
             var overlappingIntervalValue = _telemetryEvent[nonOverlappingInterval];
             overlappingIntervalValue.Should().NotBeNull();
-            var actualCount = Convert.ToInt32(overlappingIntervalValue);
+            int actualCount = Convert.ToInt32(overlappingIntervalValue);
             Assert.True(actualCount >= 2, $"The telemetry duration count should at least be 2 seconds.");
         }
 

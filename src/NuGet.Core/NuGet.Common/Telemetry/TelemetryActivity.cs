@@ -100,7 +100,6 @@ namespace NuGet.Common
                 _telemetryActivity = telemetryActivity;
                 _propertyName = propertyName;
                 _stopwatch = Stopwatch.StartNew();
-
             }
 
             void IDisposable.Dispose()

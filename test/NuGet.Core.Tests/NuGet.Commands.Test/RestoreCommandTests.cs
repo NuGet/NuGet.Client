@@ -2069,7 +2069,7 @@ namespace NuGet.Commands.Test
             using var pathContext = new SimpleTestPathContext();
             var projectName = "TestProject";
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-            var packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -2093,12 +2093,12 @@ namespace NuGet.Commands.Test
             TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
 
             var restoreCommand = new RestoreCommand(request);
-            var result = await restoreCommand.ExecuteAsync();
+            RestoreResult result = await restoreCommand.ExecuteAsync();
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             telemetryEvents.Should().HaveCount(3, because: string.Join(Environment.NewLine, telemetryEvents.Select(e => e.Name)));
-            var telEventNames = telemetryEvents.Select(e => e.Name);
+            IEnumerable<string> telEventNames = telemetryEvents.Select(e => e.Name);
             telEventNames.Should().Contain("PackageExtractionInformation");
             telEventNames.Should().Contain("SigningInformation");
             telEventNames.Should().Contain("ProjectRestoreInformation");
@@ -2139,7 +2139,7 @@ namespace NuGet.Commands.Test
             using var pathContext = new SimpleTestPathContext();
             var projectName = "TestProject";
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-            var packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -2163,7 +2163,7 @@ namespace NuGet.Commands.Test
             TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
 
             var restoreCommand = new RestoreCommand(request);
-            var result = await restoreCommand.ExecuteAsync();
+            RestoreResult result = await restoreCommand.ExecuteAsync();
             await result.CommitAsync(logger, CancellationToken.None);
             // Pre-conditions
             result.Success.Should().BeTrue(because: logger.ShowMessages());
@@ -2212,7 +2212,7 @@ namespace NuGet.Commands.Test
             using var pathContext = new SimpleTestPathContext();
             var projectName = "TestProject";
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-            var packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             var packageB = new SimpleTestPackageContext("b", "1.0.0");
             packageA.Dependencies.Add(packageB);
@@ -2248,7 +2248,8 @@ namespace NuGet.Commands.Test
             TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
 
             var restoreCommand = new RestoreCommand(request);
-            var result = await restoreCommand.ExecuteAsync();
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
