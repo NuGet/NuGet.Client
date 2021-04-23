@@ -3,7 +3,7 @@
         <MicrosoftBuildPackageVersion Condition="'$(MicrosoftBuildPackageVersion)' == ''">16.8.0</MicrosoftBuildPackageVersion>
         <NewtonsoftJsonPackageVersion Condition="$(NewtonsoftJsonPackageVersion) == ''">9.0.1</NewtonsoftJsonPackageVersion>
         <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
-        <VSFrameworkVersion>17.0.0-preview-1-31204-1114</VSFrameworkVersion>
+        <VSFrameworkVersion>17.0.0-preview-2-31221-277</VSFrameworkVersion>
         <VSServicesVersion>16.153.0</VSServicesVersion>
         <CryptographyPackagesVersion>5.0.0</CryptographyPackagesVersion>
         <NuGetCoreV2Version>2.14.0-rtm-832</NuGetCoreV2Version>
@@ -20,7 +20,7 @@
         <PackageDownload Update="Microsoft.Build" Version="[15.1.262-preview5]" />
 
         <!-- Move to VSFrameworkVersion after PIA effort -->
-        <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="17.0.47-pre-g86c9a030f1" />
+        <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="17.0.77-pre-g62a6cb5699" />
 
         <!-- TODO: Need PIA update-->
         <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed" Version="[$(ProjectSystemManagedVersion)]" />
@@ -40,11 +40,11 @@
         <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
         <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
         <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
-        <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Embeddable" Version="17.0.0-preview-1-30928-1111" />
+        <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
         <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.7.327-preview" />
         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.28-g439d20ddd3" />
+        <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.30-g62d2639511" />
         <PackageReference Update="Microsoft.VisualStudio.Composition" Version="16.4.11" />
         <PackageReference Update="Microsoft.VisualStudio.Editor" Version="17.0.24-g4265d215ae" />
         <PackageReference Update="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" Version="14.3.26931" NoWarn="NU1605" />
@@ -52,18 +52,17 @@
         <PackageReference Update="Microsoft.VisualStudio.Language.StandardClassification" Version="17.0.24-g4265d215ae" />
 
         <!-- Workaround until final shell.15.0 package is published-->
-        <PackageReference Update="Microsoft.VisualStudio.ProjectAggregator" Version="17.0.0-preview-1-31108-209" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.ProjectAggregator" Version="$(VSFrameworkVersion)" NoWarn="NU1605" />
         <PackageReference Update="Microsoft.VisualStudio.Designer.Interfaces" Version="17.0.0-preview-1-31108-209" />
 
         <!-- Workaround until final sdk package is published-->
-        <PackageReference Update="Microsoft.VisualStudio.SDK" Version="17.0.0-preview-1-31109-394" />
+        <PackageReference Update="Microsoft.VisualStudio.SDK" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.34" />
 
         <PackageReference Update="Microsoft.VisualStudio.Services.Client" Version="$(VSServicesVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Embeddable" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview" />
         <!-- 6.0 temp workaround -->
@@ -75,14 +74,14 @@
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30111" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
 
         <!-- TODO: PIA workaround, move to $(VSFrameworkVersion) -->
-        <PackageReference Update="Microsoft.VisualStudio.Interop" Version="17.0.0-preview-1-31207-1111" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.Interop" Version="$(VSFrameworkVersion)" NoWarn="NU1605" />
 
         <PackageReference Update="Microsoft.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Interop" Version="$(VSFrameworkVersion)" NoWarn="NU1605" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
 
         <!-- TODO: PIA workaround, move to $(VSFrameworkVersion) -->
-        <PackageReference Update="Microsoft.VisualStudio.TemplateWizardInterface" Version="17.0.0-preview-1-30928-1111" />
+        <PackageReference Update="Microsoft.VisualStudio.TemplateWizardInterface" Version="$(VSFrameworkVersion)" />
 
         <PackageReference Update="Microsoft.VisualStudio.Text.Data" Version="17.0.24-g4265d215ae" />
         <PackageReference Update="Microsoft.VisualStudio.Text.Logic" Version="17.0.24-g4265d215ae" />
@@ -91,11 +90,11 @@
         <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
         <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.8.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
         <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" />
-        <PackageReference Update="Microsoft.VisualStudio.Threading" Version="16.10.51-alpha" />
+        <PackageReference Update="Microsoft.VisualStudio.Threading" Version="16.10.53-alpha" />
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="17.0.0-preview-1-31108-209" />
+        <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
-        <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.53-Dev17PIAs-g1a257589" />
+        <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.63-dev17-g3f11f5ab" />
         <PackageReference Update="Microsoft.Web.Xdt" Version="3.0.0" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
         <PackageReference Update="System.ComponentModel.Composition" Version="4.5.0" />
@@ -109,7 +108,7 @@
         <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
         <PackageReference Update="System.Threading.Tasks.Dataflow" Version="4.9.0" />
-        <PackageReference Update="VsWebSite.Interop" Version="17.0.0-preview-1-31108-209" />
+        <PackageReference Update="VsWebSite.Interop" Version="$(VSFrameworkVersion)" />
 
         <!-- Need to remove these once we've cleaned up all our package references -->
         <PackageReference Update="VSSDK.DTE" Version="[7.0.4,8.0.0)" ExcludeAssets="all" PrivateAssets="all" />
@@ -129,7 +128,7 @@
         <PackageReference Update="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.5.0" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="16.8.30522.201-pre" />
+        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework" Version="16.5.22-beta" />
         <PackageReference Update="Moq" Version="4.14.5" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />
