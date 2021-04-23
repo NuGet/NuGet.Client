@@ -54,6 +54,10 @@
       <Import Project="$(NuGetBuildTasksPackTargets)" />
   </ImportGroup>
 
+  <ItemGroup Condition=" '$(PackProject)' == 'true' ">
+    <None Include="$(MSBuildThisFileDirectory)..\icon.png" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
   <!-- Projects we pack become public APIs that others can use -->
   <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' != 'true' and '$(PackProject)' == 'true' ">
     <UsePublicApiAnalyzer Condition=" '$(UsePublicApiAnalyzer)' == '' " >true</UsePublicApiAnalyzer>
