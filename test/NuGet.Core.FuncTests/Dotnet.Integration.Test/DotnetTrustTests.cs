@@ -144,7 +144,7 @@ namespace Dotnet.Integration.Test
                 //Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust list --configfile ..{Path.DirectorySeparatorChar}nuget.config");
+                    $"nuget trust list --configfile ..{Path.DirectorySeparatorChar}{nugetConfigFileName}");
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -188,7 +188,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 CommandRunnerResult resultAdd = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}");
+                    $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile ..{Path.DirectorySeparatorChar}{nugetConfigFileName}");
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -245,7 +245,7 @@ namespace Dotnet.Integration.Test
                 // Act
                 CommandRunnerResult resultAdd = _msbuildFixture.RunDotnet(
                     pathContext.SolutionRoot,
-                    $"nuget trust author nuget {signedPackagePath} --configfile {nugetConfigPath}");
+                    $"nuget trust author nuget {signedPackagePath} --configfile ..{Path.DirectorySeparatorChar}{nugetConfigFileName}");
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
