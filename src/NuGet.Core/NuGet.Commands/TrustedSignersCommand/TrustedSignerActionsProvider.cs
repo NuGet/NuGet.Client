@@ -58,7 +58,7 @@ namespace NuGet.Commands
 
                     _trustedSignersProvider.AddOrUpdateTrustedSigner(existingRepository);
 
-                    await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullySynchronizedTrustedRepository, name));
+                    await _logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullySynchronizedTrustedRepository, name));
 
                     return;
                 }
@@ -135,7 +135,7 @@ namespace NuGet.Commands
 
                 _trustedSignersProvider.AddOrUpdateTrustedSigner(new RepositoryItem(name, v3ServiceIndex, CreateOwnersList(owners), certificateItem));
 
-                await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
+                await _logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
             }
             else
             {
@@ -148,7 +148,7 @@ namespace NuGet.Commands
 
                 _trustedSignersProvider.AddOrUpdateTrustedSigner(new AuthorItem(name, certificateItem));
 
-                await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedAuthor, name));
+                await _logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedAuthor, name));
             }
         }
 
@@ -208,7 +208,7 @@ namespace NuGet.Commands
 
             _trustedSignersProvider.AddOrUpdateTrustedSigner(signerToAdd);
 
-            _logger.Log(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, logMessage, name));
+            _logger.Log(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, logMessage, name));
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace NuGet.Commands
             _trustedSignersProvider.AddOrUpdateTrustedSigner(
                 new RepositoryItem(name, serviceIndex.AbsoluteUri, CreateOwnersList(owners), certificateItems));
 
-            await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
+            await _logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
         }
 
         private void ValidateNoExistingSigner(string name, string serviceIndex, bool validateServiceIndex = true)

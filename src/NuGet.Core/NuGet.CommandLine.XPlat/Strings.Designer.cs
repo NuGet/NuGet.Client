@@ -457,6 +457,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The action &apos;{0}&apos; is not recognized..
+        /// </summary>
+        internal static string Error_UnknownAction {
+            get {
+                return ResourceManager.GetString("Error_UnknownAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. The project does not support adding package references through the add package command..
         /// </summary>
         internal static string Error_UnsupportedProject {
@@ -1766,6 +1775,51 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Tool_Description {
             get {
                 return ResourceManager.GetString("Tool_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command actions allow you to specify only a specific subset of signers whose signatures will be accepted, while rejecting all others..
+        /// </summary>
+        internal static string TrustCommandActionDescription {
+            get {
+                return ResourceManager.GetString("TrustCommandActionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the hash algorithm used to calculate the certificate fingerprint. Defaults to SHA256. Values supported are SHA256, SHA384 and SHA512..
+        /// </summary>
+        internal static string TrustCommandAlgorithm {
+            get {
+                return ResourceManager.GetString("TrustCommandAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root..
+        /// </summary>
+        internal static string TrustCommandAllowUntrustedRoot {
+            get {
+                return ResourceManager.GetString("TrustCommandAllowUntrustedRoot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage the trusted signers..
+        /// </summary>
+        internal static string TrustCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semi-colon separated list of trusted owners to further restrict the trust of a repository..
+        /// </summary>
+        internal static string TrustCommandOwners {
+            get {
+                return ResourceManager.GetString("TrustCommandOwners", resourceCulture);
             }
         }
         
