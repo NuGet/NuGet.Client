@@ -1121,4 +1121,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Log_SkippingPackagesLockFileGeneration" xml:space="preserve">
     <value>Skipping the lock file regeneration for '{0}'.</value>
   </data>
+  <data name="Multiple_Nupkgs_Detected" xml:space="preserve">
+    <value>Multiple nupkg files detected on '{0}' path to trust, only 1 is allowed.</value>
+  </data>
 </root>
