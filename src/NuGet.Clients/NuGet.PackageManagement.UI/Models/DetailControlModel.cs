@@ -313,7 +313,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     var installedPackages = new HashSet<PackageDependency>();
                     IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
-                        await _nugetProjects.ToList().AsReadOnly().GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
+                        await _nugetProjects.ToList().GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
 
                     foreach (var project in _nugetProjects)
                     {
