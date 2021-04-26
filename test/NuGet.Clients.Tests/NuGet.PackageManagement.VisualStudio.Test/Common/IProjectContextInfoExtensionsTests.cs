@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyCollection()
+        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyDictionary()
         {
             // Arrange
             var serviceBroker = new Mock<IServiceBroker>();

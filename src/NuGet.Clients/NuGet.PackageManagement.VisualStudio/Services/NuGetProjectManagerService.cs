@@ -109,11 +109,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-<<<<<<< HEAD
-            List<string> distinctProjectIds = projectIds.Distinct().ToList();
-=======
             ReadOnlyCollection<string> distinctProjectIds = projectIds.Distinct().ToList().AsReadOnly();
->>>>>>> 8b1204cb8 (***NO_CI*** address feedback)
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(distinctProjectIds, cancellationToken);
 
             Dictionary<NuGetProject, Task<IEnumerable<PackageReference>>> projectsToPackageReferences = projects.ToDictionary(
