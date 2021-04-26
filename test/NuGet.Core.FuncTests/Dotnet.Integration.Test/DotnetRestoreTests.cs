@@ -1413,6 +1413,72 @@ EndGlobal";
             }
         }
 
+        [Fact]
+        public void CollectFrameworkReferences_WithTransitiveFrameworkReferences_ExcludesTransitiveFrameworkReferences()
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                // Arrange
+                // Library project with Framework Reference
+                var libraryName = "Library";
+                var libraryProjectFilePath = Path.Combine(Path.Combine(pathContext.SolutionRoot, libraryName), $"{libraryName}.csproj");
+                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, libraryName, "classlib");
+
+                using (var stream = File.Open(libraryProjectFilePath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        name: "FrameworkReference",
+                        identity: "Microsoft.AspNetCore.App",
+                        framework: (string)null,
+                        attributes: new Dictionary<string, string>(),
+                        properties: new Dictionary<string, string>()
+                        );
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                var packResult = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"pack {libraryProjectFilePath} /p:PackageOutputPath=\"{pathContext.PackageSource}\"", ignoreExitCode: true);
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+
+                // Consumer project.
+                var consumerName = "Consumer";
+                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, consumerName, "console");
+
+                var consumerProjectFilePath = Path.Combine(Path.Combine(pathContext.SolutionRoot, consumerName), $"{consumerName}.csproj");
+
+                using (var stream = File.Open(consumerProjectFilePath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        name: "PackageReference",
+                        identity: "Library",
+                        framework: (string)null,
+                        attributes: new Dictionary<string, string>() { { "Version", "1.0.0" } },
+                        properties: new Dictionary<string, string>()
+                        );
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Add a DBT.
+
+                var directoryBuildTargetsFilePath = Path.Combine(pathContext.SolutionRoot, "Directory.Build.targets");
+                File.WriteAllText(directoryBuildTargetsFilePath,
+@"<Project>
+    <Target Name=""PrintFrameworkReferences"" AfterTargets=""Build"" DependsOnTargets=""CollectFrameworkReferences"">
+        <Message Text=""Framework References: '@(_FrameworkReferenceForRestore)'"" Importance=""High"" />
+    </Target>
+</Project>");
+
+                var buildResult = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"build {consumerProjectFilePath}", ignoreExitCode: true);
+                buildResult.Success.Should().BeTrue(because: buildResult.AllOutput);
+
+                buildResult.AllOutput.Should().Contain("Microsoft.NETCore.App");
+                buildResult.AllOutput.Should().NotContain("Microsoft.AspNetCore.App");
+            }
+        }
+
         private static SimpleTestPackageContext CreateNetstandardCompatiblePackage(string id, string version)
         {
             var pkgX = new SimpleTestPackageContext(id, version);
