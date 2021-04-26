@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ReadOnlyCollection<string> distinctProjectIds = projectIds.Distinct().ToList().AsReadOnly();
+            List<string> distinctProjectIds = projectIds.Distinct().ToList();
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(distinctProjectIds, cancellationToken);
 
             Dictionary<NuGetProject, Task<IEnumerable<PackageReference>>> projectsToPackageReferences = projects.ToDictionary(

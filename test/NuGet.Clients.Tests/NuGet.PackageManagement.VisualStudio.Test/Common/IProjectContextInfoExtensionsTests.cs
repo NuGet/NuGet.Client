@@ -101,13 +101,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledPackagesAsync_WhenProjectContextInfoEmpty_DoesNotInvokeService()
+        public async Task GetInstalledPackagesAsync_WhenProjectContextInfoIsEmpty_DoesNotInvokeService()
         {
             // Arrange
             var serviceBroker = new Mock<IServiceBroker>();
             var projectManagerService = new Mock<INuGetProjectManagerService>();
-            var dictionary = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
-            var expectedResult = new ReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>(dictionary);
+            var expectedResult = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
 
             List<IProjectContextInfo> projectList = new List<IProjectContextInfo>();
 
@@ -147,7 +146,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             var serviceBroker = new Mock<IServiceBroker>();
             var projectManagerService = new Mock<INuGetProjectManagerService>();
-            var dictionary = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
+            var expectedResult = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
 
 
             var project1 = new Mock<IProjectContextInfo>();
@@ -160,7 +159,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 project1.Object,
             };
 
-            var expectedResult = new ReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>(dictionary);
             projectManagerService.Setup(
                 x => x.GetInstalledPackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),

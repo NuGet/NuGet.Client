@@ -171,7 +171,11 @@ namespace NuGet.PackageManagement.UI
                 }
                 else if (project.ProjectKind == NuGetProjectKind.PackageReference)
                 {
-                    IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = projectsToInstalledPackages[project.ProjectId];
+                    if (!projectsToInstalledPackages.TryGetValue(project.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences)
+                        || packageReferences is null)
+                    {
+                        continue;
+                    }
 
                     // Find the lowest auto referenced version of this package.
                     IPackageReferenceContextInfo autoReferenced = packageReferences
@@ -322,14 +326,25 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// Reads any dependencies for <paramref name="project"/> found in <paramref name="projectsToInstalledPackages"/> and applies
+        /// the <see cref="VersionRange"/> according to the project's allowed range. Defaults to an empty list.
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="projectsToInstalledPackages"></param>
+        /// <returns>Found package dependencies. If the project is not found, or has no installed packages, returns an empty list.</returns>
         private IReadOnlyList<PackageDependency> GetDependencies(IProjectContextInfo project,
             IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages)
         {
             var results = new List<PackageDependency>();
 
-            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = projectsToInstalledPackages[project.ProjectId];
+            if (!projectsToInstalledPackages.TryGetValue(project.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences)
+                || packageReferences is null)
+            {
+                return results;
+            }
 
-            foreach (IPackageReferenceContextInfo package in projectInstalledPackages)
+            foreach (IPackageReferenceContextInfo package in packageReferences)
             {
                 VersionRange range;
 
