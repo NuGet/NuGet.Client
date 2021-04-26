@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading;
 using FluentAssertions;
 using Moq;
-using NuGet.Test.Utility;
 using Test.Utility.Telemetry;
 using Xunit;
 
