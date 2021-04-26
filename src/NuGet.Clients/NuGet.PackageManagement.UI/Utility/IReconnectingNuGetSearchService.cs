@@ -6,11 +6,9 @@ using NuGet.VisualStudio.Internal.Contracts;
 namespace NuGet.PackageManagement.UI.Utility
 {
     /// <summary>
-    /// Interface similar to <see cref="INuGetSearchService"/>, but the implementation is responsible for reconnecting
-    /// when the service broker available changes, so that callers of this interface do not need to handle more than
-    /// transitive failures.
+    /// A <see cref="INuGetSearchService"/>, but the implementation is responsible for reconnecting when the service
+    /// broker availability changes. Therefore, callers of this interface do not need to handle more than transitive failures.
     /// </summary>
-    /// <remarks>Classes using this interface for INuGetSearchService methods should not dispose it.</remarks>
     public interface IReconnectingNuGetSearchService : INuGetSearchService
     {
     }

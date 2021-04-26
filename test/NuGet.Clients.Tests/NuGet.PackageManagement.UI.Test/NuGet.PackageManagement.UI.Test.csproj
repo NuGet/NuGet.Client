@@ -53,6 +53,7 @@
     <Compile Include="TestPackageSearchMetadata.cs" />
     <Compile Include="UserInterfaceService\NuGetUIContextTests.cs" />
     <Compile Include="UserInterfaceService\NuGetUITests.cs" />
+    <Compile Include="Utility\NuGetSearchServiceReconnectorTests.cs" />
     <Compile Include="Utility\ProjectUtilityTests.cs" />
     <Compile Include="WpfFactAttribute.cs" />
     <Compile Include="WpfFactDiscoverer.cs" />

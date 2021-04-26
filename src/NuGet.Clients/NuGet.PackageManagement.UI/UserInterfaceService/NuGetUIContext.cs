@@ -174,7 +174,9 @@ namespace NuGet.PackageManagement.UI
             {
             }
 
-            var searchService = await ReconnectingNuGetSearchService.CreateAsync(serviceBroker, NuGetUIThreadHelper.JoinableTaskFactory, cancellationToken);
+#pragma warning disable CA2000 // Dispose objects before losing scope - NuGetUIContext owns the instance and should dispose it.
+            var searchService = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker, NuGetUIThreadHelper.JoinableTaskFactory, cancellationToken);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             var packageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -189,7 +191,7 @@ namespace NuGet.PackageManagement.UI
 
             return new NuGetUIContext(
                 serviceBroker,
-                searchService,
+                searchService.Object,
                 solutionManager,
                 solutionManagerServiceWrapper,
                 packageManager,
