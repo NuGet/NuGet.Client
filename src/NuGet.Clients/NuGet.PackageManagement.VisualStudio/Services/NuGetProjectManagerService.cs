@@ -101,11 +101,12 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Returns a dictionary of projectId to installed PackageReferences.
+        /// Returns a dictionary of distinct <see cref="NuGetProjectMetadataKeys.ProjectId"/> to installed PackageReferences.
         /// </summary>
         /// <param name="projectIds"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns>Dictionary of projectId to installed PackageReferences.</returns>
+        /// <returns>Dictionary of distinct <see cref="NuGetProjectMetadataKeys.ProjectId"/> to installed PackageReferences.
+        /// Projects without PackageReference will have no entry.</returns>
         public async ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>> GetInstalledPackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken)
@@ -152,7 +153,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     installedPackages.Add(installedPackage);
                 }
 
-                projectIdsToPackageReferences.Add(projectId, installedPackages);
+                if (installedPackages.Count > 0)
+                {
+                    projectIdsToPackageReferences.Add(projectId, installedPackages);
+                }
 
                 if (nullCount > 0)
                 {

@@ -642,7 +642,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyCollection()
+        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyDictionary()
         {
             // Arrange
             const string projectNameA = "a";
@@ -677,9 +677,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         cancellationToken: CancellationToken.None);
 
                 // Assert
-                Assert.Equal(1, projectsToPackages.Count);
-                Assert.Empty(projectsToPackages[projectId1]);
-
+                Assert.Empty(projectsToPackages);
                 Assert.Equal(0, telemetryEvents.Count);
             }
         }

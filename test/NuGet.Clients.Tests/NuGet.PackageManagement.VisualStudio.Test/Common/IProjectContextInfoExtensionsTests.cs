@@ -142,7 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyCollection()
+        public async Task GetInstalledPackagesAsync_ProjectWithoutPackageReferences_ReturnsEmptyDictionary()
         {
             // Arrange
             var serviceBroker = new Mock<IServiceBroker>();
@@ -159,8 +159,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 project1.Object,
             };
-
-            dictionary[projectId1] = null;
 
             var expectedResult = new ReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>(dictionary);
             projectManagerService.Setup(
@@ -187,7 +185,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.Same(expectedResult, actualResult);
-            Assert.Null(actualResult[projectId1]);
+            Assert.Empty(actualResult);
             projectManagerService.Verify(x => x.GetInstalledPackagesAsync(
                 It.IsAny<IReadOnlyCollection<string>>(),
                 It.IsAny<CancellationToken>()),
