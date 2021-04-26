@@ -177,7 +177,11 @@ namespace NuGet.PackageManagement.UI
                     {
                         continue;
                     }
+<<<<<<< HEAD
                     
+=======
+
+>>>>>>> cf4b409ec (Address dictionary feedback)
                     // Find the lowest auto referenced version of this package.
                     IPackageReferenceContextInfo autoReferenced = packageReferences
                         .Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.Identity.Id)
