@@ -299,7 +299,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Get all installed packages across all projects (distinct)
+        /// Get all installed packages across all projects (distinct).
         /// </summary>
         public virtual IEnumerable<PackageDependency> InstalledPackageDependencies
         {
