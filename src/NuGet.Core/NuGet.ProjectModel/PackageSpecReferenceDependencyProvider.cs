@@ -143,7 +143,7 @@ namespace NuGet.ProjectModel
             var msbuildPath = externalReference?.MSBuildProjectPath;
             if (msbuildPath != null)
             {
-                library[KnownLibraryProperties.MSBuildProjectPath] = msbuildPath; 
+                library[KnownLibraryProperties.MSBuildProjectPath] = msbuildPath;
             }
 
             if (packageSpec != null)
