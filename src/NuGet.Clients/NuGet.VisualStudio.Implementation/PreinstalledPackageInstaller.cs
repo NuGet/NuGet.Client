@@ -169,7 +169,6 @@ namespace NuGet.VisualStudio
         /// execution to continue.
         /// </param>
         internal async Task PerformPackageInstallAsync(
-            IVsPackageInstaller packageInstaller,
             EnvDTE.Project project,
             PreinstalledPackageConfiguration configuration,
             bool preferPackageReferenceFormat,

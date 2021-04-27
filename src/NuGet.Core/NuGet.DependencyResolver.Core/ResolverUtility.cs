@@ -330,7 +330,7 @@ namespace NuGet.DependencyResolver
         /// <param name="libraryRange">Desired library</param>
         /// <param name="framework">Target framework for library and </param>
         /// <param name="projectProviders">A collection od</param>
-        /// <param name="cancellationToken">Not used</param>
+        /// <param name="cancellationToken">Token that throws if it is cancelled</param>
         /// <returns>A <see cref="RemoteMatch"/> object with matching details, otherwise <code>null</code></returns>
         public static Task<RemoteMatch> FindProjectMatchAsync(
             LibraryRange libraryRange,
@@ -338,6 +338,8 @@ namespace NuGet.DependencyResolver
             IEnumerable<IDependencyProvider> projectProviders,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             RemoteMatch result = null;
 
             // Check if projects are allowed for this dependency
