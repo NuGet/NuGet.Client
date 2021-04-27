@@ -5,7 +5,12 @@ using System;
 
 namespace NuGet.Packaging
 {
-    [Obsolete("This class is not used anywhere in NuGet.Protocol")]
+
+    /// <summary>
+    /// Represents data from a package extraction operation
+    /// </summary>
+    /// <remarks>This class is not used anywhere in NuGet.Protocol</remarks>
+    /// <seealso cref="NuGet.Packaging.PackageExtractionTelemetryEvent"/>
     public class PackageExtractionResult
     {
         public bool Cached { get; }
