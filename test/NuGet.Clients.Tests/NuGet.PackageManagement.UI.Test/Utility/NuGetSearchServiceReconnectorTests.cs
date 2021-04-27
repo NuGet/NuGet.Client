@@ -19,9 +19,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
 
         public NuGetSearchServiceReconnectorTests()
         {
-#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
-            var jtc = new JoinableTaskContext();
-#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
+            JoinableTaskContext jtc = new();
             _jtf = new JoinableTaskFactory(jtc);
         }
 
@@ -29,7 +27,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         public async Task CreateAsync_NullArguments_ThrowsArgumentNullException()
         {
             // Arrange
-            var serviceBroker = new Mock<IServiceBroker>();
+            Mock<IServiceBroker> serviceBroker = new();
 
             // Act & Assert
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(() => NuGetSearchServiceReconnector.CreateAsync(serviceBroker: null, _jtf, CancellationToken.None));
@@ -40,12 +38,12 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         }
 
         [Fact]
-        public async Task Object_NormalCreation_GetInstanceFromServiceBroker()
+        public async Task Object_NoAvailabilityChanges_WrapsInstanceFromServiceBroker()
         {
             // Arrange
-            var searchService = new Mock<INuGetSearchService>();
+            Mock<INuGetSearchService> searchService = new();
 
-            var serviceBroker = new Mock<IServiceBroker>();
+            Mock<IServiceBroker> serviceBroker = new();
             serviceBroker.Setup(sb =>
 #pragma warning disable ISB001 // Dispose of proxies
             sb.GetProxyAsync<INuGetSearchService>(It.IsAny<ServiceJsonRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>())
@@ -53,11 +51,13 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             )
                 .ReturnsAsync(searchService.Object);
 
-            var target = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker.Object, _jtf, CancellationToken.None);
+            NuGetSearchServiceReconnector target = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker.Object, _jtf, CancellationToken.None);
 
-            var cancellationToken = new CancellationToken();
+            CancellationToken cancellationToken = new();
 
             // Act
+            // searchService.Object is an instance of ManagedNuGetSearchService, not the mocked object above. Hence, we need to call
+            // a method on the managed wrapper, to ensure that it correctly calls the instance from the IServiceBroker.
             await target.Object.ContinueSearchAsync(cancellationToken);
 
             // Assert
@@ -68,11 +68,11 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         public async Task AvailabilityChangedAsync_OnChange_GetsNewInstanceFromServiceBroker()
         {
             // Arrange
-            var searchService1 = new Mock<INuGetSearchService>();
-            var searchService2 = new Mock<INuGetSearchService>();
+            Mock<INuGetSearchService> searchService1 = new();
+            Mock<INuGetSearchService> searchService2 = new();
 
             int getProxyCount = 0;
-            var serviceBroker = new Mock<IServiceBroker>();
+            Mock<IServiceBroker> serviceBroker = new();
             serviceBroker.Setup(sb =>
 #pragma warning disable ISB001 // Dispose of proxies
             sb.GetProxyAsync<INuGetSearchService>(It.IsAny<ServiceJsonRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>())
@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             )
                 .ReturnsAsync(() =>
                 {
-                    var count = Interlocked.Increment(ref getProxyCount);
+                    int count = Interlocked.Increment(ref getProxyCount);
                     switch (count)
                     {
                         case 1:
@@ -95,25 +95,25 @@ namespace NuGet.PackageManagement.UI.Test.Utility
                 });
 
             // Act
-            var target = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker.Object, _jtf, CancellationToken.None);
+            NuGetSearchServiceReconnector target = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker.Object, _jtf, CancellationToken.None);
             await target.AvailabilityChangedAsync();
             await target.Object.ContinueSearchAsync(CancellationToken.None);
 
             // Assert
-            searchService2.Verify(s => s.ContinueSearchAsync(It.IsAny<CancellationToken>()), Times.Once);
-            searchService2.Verify(s => s.Dispose(), Times.Never);
-
             searchService1.Verify(s => s.ContinueSearchAsync(It.IsAny<CancellationToken>()), Times.Never);
             searchService1.Verify(s => s.Dispose(), Times.Once);
+
+            searchService2.Verify(s => s.ContinueSearchAsync(It.IsAny<CancellationToken>()), Times.Once);
+            searchService2.Verify(s => s.Dispose(), Times.Never);
         }
 
         [Fact]
         public async Task Dispose_NormalInstance_DisposesInnerService()
         {
             // Arrange
-            var searchService = new Mock<INuGetSearchService>();
+            Mock<INuGetSearchService> searchService = new();
 
-            var serviceBroker = new Mock<IServiceBroker>();
+            Mock<IServiceBroker> serviceBroker = new();
             serviceBroker.Setup(sb =>
 #pragma warning disable ISB001 // Dispose of proxies
             sb.GetProxyAsync<INuGetSearchService>(It.IsAny<ServiceJsonRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>())
@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             )
                 .ReturnsAsync(searchService.Object);
 
-            var target = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker.Object, _jtf, CancellationToken.None);
+            NuGetSearchServiceReconnector target = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker.Object, _jtf, CancellationToken.None);
 
             // Act
             target.Dispose();
@@ -134,9 +134,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         public async Task Dispose_DisposeInnerService_DoesNotDisposedBrokeredService()
         {
             // Arrange
-            var searchService = new Mock<INuGetSearchService>();
+            Mock<INuGetSearchService> searchService = new();
 
-            var serviceBroker = new Mock<IServiceBroker>();
+            Mock<IServiceBroker> serviceBroker = new();
             serviceBroker.Setup(sb =>
 #pragma warning disable ISB001 // Dispose of proxies
             sb.GetProxyAsync<INuGetSearchService>(It.IsAny<ServiceJsonRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>())
@@ -144,7 +144,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             )
                 .ReturnsAsync(searchService.Object);
 
-            var target = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker.Object, _jtf, CancellationToken.None);
+            NuGetSearchServiceReconnector target = await NuGetSearchServiceReconnector.CreateAsync(serviceBroker.Object, _jtf, CancellationToken.None);
 
             // Act
             target.Object.Dispose();

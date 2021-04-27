@@ -643,7 +643,7 @@ namespace NuGet.PackageManagement.UI
 
                 // filter package versions based on allowed versions in packages.config
                 packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
-                var result = packageVersions
+                NuGetVersion result = packageVersions
                     .Select(p => p.Version)
                     .MaxOrDefault();
 
@@ -661,18 +661,18 @@ namespace NuGet.PackageManagement.UI
 
         private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
         {
+            CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                var cancellationToken = _cancellationTokenSource.Token;
                 var identity = new PackageIdentity(Id, Version);
                 PackageDeprecationMetadataContextInfo result = await _searchService.GetDeprecationMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 IsPackageDeprecated = result != null;
             }
-            catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // UI requested cancellation.
             }
