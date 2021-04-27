@@ -38,7 +38,7 @@ namespace NuGet.CommandLine
         public override void ExecuteCommand()
         {
             string sampleProjectUrl = "http://project_url_here_or_delete_this_line/";
-            string sampleIconUrl = "http://icon_url_here_or_delete_this_line/";
+            string sampleIconPath = "$icon_image_file_path_within_the_package_here_or_delete_this_line$";
             string sampleTags = "Tag1 Tag2";
             string sampleReleaseNotes = "Summary of changes made in this release of the package.";
             string sampleDescription = "Package description";
@@ -110,7 +110,7 @@ namespace NuGet.CommandLine
 
             manifest.Metadata.SetProjectUrl(sampleProjectUrl);
             manifest.Metadata.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), Array.Empty<string>(), LicenseMetadata.CurrentVersion);
-            manifest.Metadata.SetIconUrl(sampleIconUrl);
+            manifest.Metadata.Icon = sampleIconPath;
             manifest.Metadata.Tags = sampleTags;
             manifest.Metadata.Copyright = "$copyright$";
             manifest.Metadata.ReleaseNotes = sampleReleaseNotes;
