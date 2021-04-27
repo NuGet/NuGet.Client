@@ -47,7 +47,7 @@
         <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.30-g62d2639511" />
         <PackageReference Update="Microsoft.VisualStudio.Composition" Version="16.4.11" />
         <PackageReference Update="Microsoft.VisualStudio.Editor" Version="17.0.24-g4265d215ae" />
-        <PackageReference Update="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" Version="14.3.26931" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Language.Intellisense" Version="17.0.24-g4265d215ae" />
         <PackageReference Update="Microsoft.VisualStudio.Language.StandardClassification" Version="17.0.24-g4265d215ae" />
 
