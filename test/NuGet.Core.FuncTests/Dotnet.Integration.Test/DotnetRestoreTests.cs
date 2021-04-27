@@ -1461,19 +1461,18 @@ EndGlobal";
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                // Add a DBT.
-
-                var directoryBuildTargetsFilePath = Path.Combine(pathContext.SolutionRoot, "Directory.Build.targets");
-                File.WriteAllText(directoryBuildTargetsFilePath,
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Build.targets"),
 @"<Project>
     <Target Name=""PrintFrameworkReferences"" AfterTargets=""Build"" DependsOnTargets=""CollectFrameworkReferences"">
         <Message Text=""Framework References: '@(_FrameworkReferenceForRestore)'"" Importance=""High"" />
     </Target>
 </Project>");
 
+                // Act
                 var buildResult = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"build {consumerProjectFilePath}", ignoreExitCode: true);
-                buildResult.Success.Should().BeTrue(because: buildResult.AllOutput);
 
+                // Assert
+                buildResult.Success.Should().BeTrue(because: buildResult.AllOutput);
                 buildResult.AllOutput.Should().Contain("Microsoft.NETCore.App");
                 buildResult.AllOutput.Should().NotContain("Microsoft.AspNetCore.App");
             }
