@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 var nuspec = File.ReadAllText(Path.Combine(workingDirectory, "Package.nuspec"));
-                Assert.Equal($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var expected = $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <package >
   <metadata>
     <id>Package</id>
@@ -44,8 +44,8 @@ namespace NuGet.CommandLine.Test
     <authors>{Environment.UserName}</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
+    <icon>$icon_file_name_within_the_package_here_or_delete_this_line$</icon>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
-    <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>Package description</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>$copyright$</copyright>
@@ -56,7 +56,11 @@ namespace NuGet.CommandLine.Test
       </group>
     </dependencies>
   </metadata>
-</package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
+  <files>
+    <file src=""$icon_file_name_within_the_package_here_or_delete_this_line$"" target="""" />
+  </files>
+</package>".Replace("\r\n", "\n");
+                Assert.Equal(expected, nuspec.Replace("\r\n", "\n"));
             }
         }
 
@@ -86,8 +90,8 @@ namespace NuGet.CommandLine.Test
     <authors>{Environment.UserName}</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
+    <icon>$icon_file_name_within_the_package_here_or_delete_this_line$</icon>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
-    <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>Package description</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>$copyright$</copyright>
@@ -98,6 +102,9 @@ namespace NuGet.CommandLine.Test
       </group>
     </dependencies>
   </metadata>
+  <files>
+    <file src=""$icon_file_name_within_the_package_here_or_delete_this_line$"" target="""" />
+  </files>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }
@@ -141,13 +148,16 @@ namespace NuGet.CommandLine.Test
     <authors>$author$</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
+    <icon>$icon_file_name_within_the_package_here_or_delete_this_line$</icon>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
-    <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>$description$</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>Tag1 Tag2</tags>
   </metadata>
+  <files>
+    <file src=""$icon_file_name_within_the_package_here_or_delete_this_line$"" target="""" />
+  </files>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }
