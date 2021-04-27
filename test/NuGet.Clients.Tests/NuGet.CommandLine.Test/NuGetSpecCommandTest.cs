@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 var nuspec = File.ReadAllText(Path.Combine(workingDirectory, "Package.nuspec"));
-                var expected = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                Assert.Equal($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <package >
   <metadata>
     <id>Package</id>
@@ -59,8 +59,7 @@ namespace NuGet.CommandLine.Test
   <files>
     <file src=""$icon_file_name_within_the_package_here_or_delete_this_line$"" target="""" />
   </files>
-</package>".Replace("\r\n", "\n");
-                Assert.Equal(expected, nuspec.Replace("\r\n", "\n"));
+</package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }
 
