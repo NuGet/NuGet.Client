@@ -58,6 +58,19 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
+        /// <param name="solutionManager">No use</param>
+        /// <param name="dgSpec"></param>
+        /// <param name="context"></param>
+        /// <param name="providerCache"></param>
+        /// <param name="cacheContextModifier"></param>
+        /// <param name="sources"></param>
+        /// <param name="parentId"></param>
+        /// <param name="forceRestore"></param>
+        /// <param name="isRestoreOriginalAction"></param>
+        /// <param name="additionalMessages"></param>
+        /// <param name="log"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             ISolutionManager solutionManager,
             DependencyGraphSpec dgSpec,
@@ -147,13 +160,9 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             Guid parentId,
-            ILogger log,
             CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-
-            // Restoring packages
-            var logger = context.Logger;
 
             // Add the new spec to the dg file and fill in the rest.
             var dgFile = await GetSolutionRestoreSpec(solutionManager, context);
@@ -268,7 +277,6 @@ namespace NuGet.PackageManagement
                 cacheContextModifier,
                 sources,
                 parentId,
-                log,
                 token);
 
             // Throw before writing if this has been canceled

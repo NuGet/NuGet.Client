@@ -415,12 +415,11 @@ namespace NuGet.VisualStudio
             {
                 var packagePath = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
 
-                CopyNativeBinaries(projectSystem, repositoryPath,
-                    Path.Combine(repositoryPath, packagePath));
+                CopyNativeBinaries(projectSystem, Path.Combine(repositoryPath, packagePath));
             }
         }
 
-        private void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string repositoryPath, string packagePath)
+        private void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string packagePath)
         {
             const string nativeBinariesFolder = "NativeBinaries";
             const string binFolder = "bin";

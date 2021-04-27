@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -280,6 +279,10 @@ namespace NuGet.ProjectManagement.Projects
         /// <summary>
         /// Uninstall a package from the config file.
         /// </summary>
+        /// <param name="packageId"></param>
+        /// <param name="nuGetProjectContext">No use</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<bool> RemoveDependencyAsync(string packageId,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
