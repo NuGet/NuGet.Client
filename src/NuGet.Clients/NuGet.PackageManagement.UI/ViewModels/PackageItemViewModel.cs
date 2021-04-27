@@ -636,9 +636,9 @@ namespace NuGet.PackageManagement.UI
 
         private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
         {
+            CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                var cancellationToekn = _cancellationTokenSource.Token;
                 IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
 
                 // filter package versions based on allowed versions in packages.config
@@ -647,13 +647,13 @@ namespace NuGet.PackageManagement.UI
                     .Select(p => p.Version)
                     .MaxOrDefault();
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                cancellationToekn.ThrowIfCancellationRequested();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
 
                 LatestVersion = result;
                 Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
             }
-            catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // UI requested cancellation
             }
