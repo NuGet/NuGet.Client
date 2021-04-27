@@ -2889,7 +2889,6 @@ namespace NuGet.PackageManagement
                         cacheModifier,
                         sources,
                         nuGetProjectContext.OperationId,
-                        logger,
                         token);
 
                     originalLockFile = originalRestoreResult.Result.LockFile;
@@ -2995,7 +2994,6 @@ namespace NuGet.PackageManagement
                         cacheModifier,
                         sources,
                         nuGetProjectContext.OperationId,
-                        logger,
                         token);
                 }
 

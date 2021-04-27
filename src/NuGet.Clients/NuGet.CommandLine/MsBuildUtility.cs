@@ -558,7 +558,7 @@ namespace NuGet.CommandLine
         /// It's marked public so that it can be called by unit tests.
         /// </summary>
         /// <param name="userVersion">version string as passed by user (so may be empty)</param>
-        /// <param name="console">console for status reporting</param>
+        /// <param name="console">console for status reporting. Not used</param>
         /// <param name="installedToolsets">all msbuild toolsets discovered by caller</param>
         /// <param name="getMsBuildPathInPathVar">delegate to provide msbuild exe discovered in path environemtnb var/s
         /// (using a delegate allows for testability)</param>

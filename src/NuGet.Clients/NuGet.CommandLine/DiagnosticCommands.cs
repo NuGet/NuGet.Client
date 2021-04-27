@@ -50,11 +50,18 @@ namespace NuGet.CommandLine
             }
             else
             {
-                return LibraryDetail(project, lockfile, target, library);
+                return LibraryDetail(lockfile, target, library);
             }
         }
 
-        private int LibraryDetail(PackageSpec project, LockFile lockfile, string targetName, string library)
+        /// <summary>
+        /// Logs library details from LockFile object
+        /// </summary>
+        /// <param name="lockfile">LockFile model to analyze</param>
+        /// <param name="targetName">NuGet Target Framework name/Runtime Identifier</param>
+        /// <param name="library">Library name</param>
+        /// <returns>0 if there's no error. Otherwise, returns a valure different than 0</returns>
+        private int LibraryDetail(LockFile lockfile, string targetName, string library)
         {
             var lib = lockfile.Libraries.FirstOrDefault(l => l.Name.Equals(library, StringComparison.OrdinalIgnoreCase));
             if (lib == null)

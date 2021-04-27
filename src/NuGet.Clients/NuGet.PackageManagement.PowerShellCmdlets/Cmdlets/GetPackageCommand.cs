@@ -252,7 +252,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private void WriteInstalledPackages(Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>> dictionary)
         {
             // Get the PowerShellPackageWithProjectView
-            var view = PowerShellInstalledPackage.GetPowerShellPackageView(dictionary, VsSolutionManager, ConfigSettings);
+            var view = PowerShellInstalledPackage.GetPowerShellPackageView(dictionary, ConfigSettings);
             if (view.Any())
             {
                 WriteObject(view, enumerateCollection: true);
