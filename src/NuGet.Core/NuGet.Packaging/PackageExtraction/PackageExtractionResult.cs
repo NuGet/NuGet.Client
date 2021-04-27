@@ -5,6 +5,7 @@ using System;
 
 namespace NuGet.Packaging
 {
+    [Obsolete("This class is not used anywhere in NuGet.Protocol")]
     public class PackageExtractionResult
     {
         public bool Cached { get; }
