@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             var serviceBroker = new Mock<IServiceBroker>();
             serviceBroker.Setup(sb =>
 #pragma warning disable ISB001 // Dispose of proxies
-            sb.GetProxyAsync<INuGetSearchService>(It.IsAny<ServiceJsonRpcDescriptor>(), It.IsAny< ServiceActivationOptions>(), It.IsAny<CancellationToken>())
+            sb.GetProxyAsync<INuGetSearchService>(It.IsAny<ServiceJsonRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>())
 #pragma warning restore ISB001 // Dispose of proxies
             )
                 .ReturnsAsync(searchService.Object);
