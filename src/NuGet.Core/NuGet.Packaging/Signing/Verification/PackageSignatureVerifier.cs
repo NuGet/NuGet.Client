@@ -106,7 +106,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// True if a provider trusts the package signature.
         /// </summary>
-        private static bool IsValid(IEnumerable<PackageVerificationResult> verificationResults, SignedPackageVerifierSettings settings)
+        private static bool IsValid(IEnumerable<PackageVerificationResult> verificationResults)
         {
             return verificationResults.Any() &&
                 verificationResults.All(e => e.Trust == SignatureVerificationStatus.Valid);

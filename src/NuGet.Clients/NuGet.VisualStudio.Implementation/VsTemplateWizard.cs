@@ -281,7 +281,7 @@ namespace NuGet.VisualStudio
                     var packageManagementFormat = new PackageManagementFormat(_settings);
                     // 1 means PackageReference
                     var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat == 1;
-                    await PreinstalledPackageInstaller.PerformPackageInstallAsync(_installer,
+                    await PreinstalledPackageInstaller.PerformPackageInstallAsync(
                         project,
                         configuration,
                         preferPackageReference,
