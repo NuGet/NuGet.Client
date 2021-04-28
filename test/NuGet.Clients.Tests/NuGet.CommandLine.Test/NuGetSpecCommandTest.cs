@@ -44,7 +44,7 @@ namespace NuGet.CommandLine.Test
     <authors>{Environment.UserName}</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
-<!-- <icon>$icon_file_name_within_the_package_here_or_delete_this_line$</icon> -->
+    <!-- <icon>icon.png</icon> -->
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
     <description>Package description</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
@@ -57,7 +57,7 @@ namespace NuGet.CommandLine.Test
     </dependencies>
   </metadata>
   <files>
-    <file src=""$icon_file_name_within_the_package_here_or_delete_this_line$"" target="""" />
+    <!-- <file src=""icon.png"" target="""" /> -->
   </files>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
@@ -89,7 +89,7 @@ namespace NuGet.CommandLine.Test
     <authors>{Environment.UserName}</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
-<!-- <icon>$icon_file_name_within_the_package_here_or_delete_this_line$</icon> -->
+    <!-- <icon>icon.png</icon> -->
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
     <description>Package description</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.Test
     </dependencies>
   </metadata>
   <files>
-    <file src=""$icon_file_name_within_the_package_here_or_delete_this_line$"" target="""" />
+    <!-- <file src=""icon.png"" target="""" /> -->
   </files>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
@@ -147,7 +147,7 @@ namespace NuGet.CommandLine.Test
     <authors>$author$</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
-<!-- <icon>$icon_file_name_within_the_package_here_or_delete_this_line$</icon> -->
+    <!-- <icon>icon.png</icon> -->
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
     <description>$description$</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
@@ -155,7 +155,7 @@ namespace NuGet.CommandLine.Test
     <tags>Tag1 Tag2</tags>
   </metadata>
   <files>
-    <file src=""$icon_file_name_within_the_package_here_or_delete_this_line$"" target="""" />
+    <!-- <file src=""icon.png"" target="""" /> -->
   </files>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }

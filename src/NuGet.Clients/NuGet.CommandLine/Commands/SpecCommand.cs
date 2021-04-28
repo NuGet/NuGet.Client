@@ -38,7 +38,7 @@ namespace NuGet.CommandLine
         public override void ExecuteCommand()
         {
             string sampleProjectUrl = "http://project_url_here_or_delete_this_line/";
-            string sampleIconFile = "$icon_file_name_within_the_package_here_or_delete_this_line$";
+            string sampleIconFile = "icon.png";
             string sampleTags = "Tag1 Tag2";
             string sampleReleaseNotes = "Summary of changes made in this release of the package.";
             string sampleDescription = "Package description";
@@ -113,13 +113,7 @@ namespace NuGet.CommandLine
             manifest.Metadata.Tags = sampleTags;
             manifest.Metadata.Copyright = "$copyright$";
             manifest.Metadata.ReleaseNotes = sampleReleaseNotes;
-            var iconManifestFile = new ManifestFile
-            {
-                Source = sampleIconFile,
-                Target = ""
-            };
 
-            manifest.Files.Add(iconManifestFile);
             string nuspecFile = fileName + PackagingConstants.ManifestExtension;
 
             // Skip the creation if the file exists and force wasn't specified
@@ -175,10 +169,14 @@ namespace NuGet.CommandLine
 
         private static string AddCommentedIconAttribute(string content, string iconFile)
         {
-            string sampleIconFile = string.Format(CultureInfo.CurrentCulture, "<!-- <icon>{0}</icon> -->", iconFile);
+            string sampleIconFile = string.Format("    <!-- <icon>{0}</icon> -->", iconFile);
+            string filesSection = string.Format(@"  <files>
+    <!-- <file src=""{0}"" target="""" /> -->
+  </files>", iconFile);
 
             return content
-                .Replace($"</license>{Environment.NewLine}", string.Format(CultureInfo.CurrentCulture, "</license>{0}{1}{2}", Environment.NewLine, sampleIconFile, Environment.NewLine));
+                .Replace($"</license>{Environment.NewLine}", string.Format("</license>{0}{1}{2}", Environment.NewLine, sampleIconFile, Environment.NewLine))
+                .Replace($"</metadata>{Environment.NewLine}", string.Format("</metadata>{0}{1}{2}", Environment.NewLine, filesSection, Environment.NewLine));
         }
     }
 }
