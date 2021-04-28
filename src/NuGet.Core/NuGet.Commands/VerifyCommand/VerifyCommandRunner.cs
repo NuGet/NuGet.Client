@@ -27,6 +27,12 @@ namespace NuGet.Commands
 
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
+            if (!IsVerifyCommandSupported())
+            {
+                verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_NotSupported));
+                return FailureCode;
+            }
+
             if (verifyArgs.Verifications.Count == 0)
             {
                 verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_VerificationTypeNotSupported));
@@ -135,6 +141,17 @@ namespace NuGet.Commands
         private bool ShouldExecuteVerification(VerifyArgs args, Verification v)
         {
             return args.Verifications.Any(verification => verification == Verification.All || verification == v);
+        }
+
+        private bool IsVerifyCommandSupported()
+        {
+#if IS_DESKTOP
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                return false;
+            }
+#endif
+            return true;
         }
     }
 }
