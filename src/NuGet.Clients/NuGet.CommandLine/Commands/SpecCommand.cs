@@ -113,7 +113,6 @@ namespace NuGet.CommandLine
             manifest.Metadata.Tags = sampleTags;
             manifest.Metadata.Copyright = "$copyright$";
             manifest.Metadata.ReleaseNotes = sampleReleaseNotes;
-
             string nuspecFile = fileName + PackagingConstants.ManifestExtension;
 
             // Skip the creation if the file exists and force wasn't specified
