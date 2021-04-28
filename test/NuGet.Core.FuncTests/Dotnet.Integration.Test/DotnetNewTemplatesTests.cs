@@ -19,8 +19,8 @@ namespace Dotnet.Integration.Test
             _fixture = fixture;
         }
 
-        [Fact]
-        public void Dotnet_New_ConsoleApp_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_ConsoleApp_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -43,8 +43,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
-        public void Dotnet_New_Classlib_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_Classlib_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -67,8 +67,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void Dotnet_New_Wpf_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_Wpf_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -91,8 +91,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void Dotnet_New_Wpflib_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_Wpflib_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -115,8 +115,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void Dotnet_New_WpfCustomControlLib_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_WpfCustomControlLib_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -139,8 +139,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void Dotnet_New_WpfUserControlLib_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_Wpf_UserControlLib_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -163,8 +163,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void Dotnet_New_Winforms_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_Winforms_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -187,8 +187,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void Dotnet_New_WinformsControlLib_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_WinformsControlLib_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -211,8 +211,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void Dotnet_New_WinformsLib_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_WinformsLib_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -235,8 +235,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
-        public void Dotnet_New_Worker_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_Worker_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -256,8 +256,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
-        public void Dotnet_New_MsTest_Success()
+        [PlatformFact(Platform.Linux)]
+        public void Dotnet_New_MsTest_Pack_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
