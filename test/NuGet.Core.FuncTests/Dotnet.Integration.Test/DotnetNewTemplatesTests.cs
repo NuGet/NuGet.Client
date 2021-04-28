@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
@@ -21,233 +22,258 @@ namespace Dotnet.Integration.Test
         [Fact]
         public void Dotnet_New_ConsoleApp_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                var programFilePath = Path.Combine(projectDirectory, "Program.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new console");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new console");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(programFilePath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [Fact]
         public void Dotnet_New_Classlib_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                var classLibFilePath = Path.Combine(projectDirectory, "Class1.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new classlib");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new classlib");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(classLibFilePath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void Dotnet_New_Wpf_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                var applicationXamlPath = Path.Combine(projectDirectory, "App.xaml.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpf");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new wpf");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(applicationXamlPath));
-                Assert.True(Directory.Exists(Path.Combine(projectDirectory, "obj")));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void Dotnet_New_Wpflib_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                string projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                string libPath = Path.Combine(projectDirectory, "Class1.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpflib");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new wpflib");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(libPath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void Dotnet_New_WpfCustomControlLib_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                string projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                string customControlPath = Path.Combine(projectDirectory, "CustomControl1.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpfcustomcontrollib");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new wpfcustomcontrollib");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(customControlPath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void Dotnet_New_WpfUserControlLib_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                string projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                string userControlPath = Path.Combine(projectDirectory, "UserControl1.xaml.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new wpfusercontrollib");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new wpfusercontrollib");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(userControlPath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void Dotnet_New_Winforms_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                string projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                string userControlPath = Path.Combine(projectDirectory, "UserControl1.xaml.cs");
-                string formPath = Path.Combine(projectDirectory, "Form1.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winforms");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new winforms");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(formPath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void Dotnet_New_WinformsControlLib_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                string projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                string userControlPath = Path.Combine(projectDirectory, "UserControl1.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformscontrollib");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new winformscontrollib");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(userControlPath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void Dotnet_New_WinformsLib_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                string projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                string libPath = Path.Combine(projectDirectory, "Class1.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new winformslib");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new winformslib");
+                CommandRunnerResult packResult = _fixture.RunDotnet(pathContext.SolutionRoot, "pack");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(libPath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                packResult.Success.Should().BeTrue(because: packResult.AllOutput);
+                Assert.True(File.Exists(nupkgPath));
             }
         }
 
         [Fact]
         public void Dotnet_New_Worker_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                var workerPath = Path.Combine(projectDirectory, "Worker.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new worker");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, "new worker");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(workerPath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Pack doesn't work here for now.
             }
         }
 
         [Fact]
         public void Dotnet_New_MsTest_Success()
         {
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
                 var projectDirectory = pathContext.SolutionRoot;
-                var projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
-                var unitTestPath = Path.Combine(projectDirectory, "UnitTest1.cs");
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(pathContext.SolutionRoot, $"new mstest");
+                CommandRunnerResult newResult = _fixture.RunDotnet(pathContext.SolutionRoot, $"new mstest");
 
                 // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.True(File.Exists(projectFilePath));
-                Assert.True(File.Exists(unitTestPath));
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
+                // Pack doesn't work here for now.
             }
         }
     }
