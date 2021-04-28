@@ -236,7 +236,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Linux)]
-        public void Dotnet_New_Worker_Pack_Success()
+        public void Dotnet_New_Worker_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -252,12 +252,12 @@ namespace Dotnet.Integration.Test
                 // Make sure restore action was success.
                 newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                // Pack doesn't work here for now.
+                // Pack doesn't work because `IsPackage` is set to false.
             }
         }
 
         [PlatformFact(Platform.Linux)]
-        public void Dotnet_New_MsTest_Pack_Success()
+        public void Dotnet_New_MsTest_Success()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -273,7 +273,7 @@ namespace Dotnet.Integration.Test
                 // Make sure restore action was success.
                 newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-                // Pack doesn't work here for now.
+                // Pack doesn't work because `IsPackage` is set to false.
             }
         }
     }
