@@ -153,9 +153,10 @@ namespace NuGet.Build.Tasks
                     };
                     
                     // Add environment variable to generate a restore binlog
-                    if (!string.IsNullOrWhiteSpace(BinlogPath))
+                    const string BinlogEnvironmentKey = "RESTORE_TASK_BINLOG_PARAMETERS";
+                    if (!string.IsNullOrWhiteSpace(BinlogPath) && !process.StartInfo.EnvironmentVariables.ContainsKey(BinlogEnvironmentKey))
                     {
-                        process.StartInfo.EnvironmentVariables.Add("RESTORE_TASK_BINLOG_PARAMETERS", BinlogPath);
+                        process.StartInfo.EnvironmentVariables.Add(BinlogEnvironmentKey, BinlogPath);
                     }                    
 
                     // Place the output in the queue which handles logging messages coming through on StdOut
