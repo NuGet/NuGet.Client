@@ -96,12 +96,16 @@ namespace NuGet.Frameworks
 
                 bool isNet6Era = framework.IsNet5Era && framework.Version.Major >= 6;
 
-                // Reduce to the same framework name if possible, with an exception for Xamarin when net6.0+
+                // Reduce to the same framework name if possible, with an exception for Xamarin, MonoAndroid and Tizen when net6.0+
                 if (reduced.Count() > 1 && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
                 {
                     reduced = reduced.Where(f =>
                     {
-                        if (isNet6Era && framework.HasPlatform && f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
+                        if (isNet6Era && framework.HasPlatform && (
+                            f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)
+                            || f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
+                            || f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Tizen, StringComparison.OrdinalIgnoreCase)
+                            ))
                         {
                             return true;
                         }
@@ -135,7 +139,7 @@ namespace NuGet.Frameworks
 
                         if (reduced.Count() > 1)
                         {
-                            // For scenarios where we are unable to decide between PCLs, choose the PCL with the 
+                            // For scenarios where we are unable to decide between PCLs, choose the PCL with the
                             // least frameworks. Less frameworks means less compatibility which means it is nearer to the target.
                             reduced = new NuGetFramework[] { GetBestPCL(reduced) };
                         }
@@ -189,14 +193,21 @@ namespace NuGet.Frameworks
                         // Prefer the highest framework version, likely to be the non-platform specific option.
                         reduced = reduced.Where(f => _fwNameComparer.Equals(framework, f)).GroupBy(f => f.Version).OrderByDescending(f => f.Key).First();
                     }
-                    else if (isNet6Era && reduced.Any(f => f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)))
+                    else if (isNet6Era && reduced.Any(f =>
                     {
-                        // We have a special case for *some* Xamarin frameworks here. For specific precedence rules, please see:
+                        return f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)
+                        || f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
+                        || f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Tizen, StringComparison.OrdinalIgnoreCase);
+                    }))
+                    {
+                        // We have a special case for *some* Xamarin-related frameworks here. For specific precedence rules, please see:
                         // https://github.com/dotnet/designs/blob/main/accepted/2021/net6.0-tfms/net6.0-tfms.md#compatibility-rules
                         reduced = reduced.GroupBy(f => f.Framework).OrderByDescending(f => f.Key).First(f =>
                         {
                             NuGetFramework first = f.First();
-                            return first.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase);
+                            return first.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)
+                                || first.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
+                                || first.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Tizen, StringComparison.OrdinalIgnoreCase);
                         });
                     }
                 }
@@ -368,7 +379,7 @@ namespace NuGet.Frameworks
             // each sub-framework vote on which PCL is nearest.
             var subFrameworks = ExplodePortableFramework(framework);
 
-            // reduce the sub frameworks - this would only have an effect if the PCL is 
+            // reduce the sub frameworks - this would only have an effect if the PCL is
             // poorly formed and contains duplicates such as portable-win8+win81
             subFrameworks = ReduceEquivalent(subFrameworks);
 
@@ -484,7 +495,7 @@ namespace NuGet.Frameworks
                 return false;
             }
 
-            // If both frameworks have the same number of frameworks take the framework that has the highest 
+            // If both frameworks have the same number of frameworks take the framework that has the highest
             // overall set of framework versions
 
             // Find Frameworks that both profiles have in common
@@ -540,7 +551,7 @@ namespace NuGet.Frameworks
                 }
             }
 
-            // In the very rare case that both frameworks are still equal, we have to pick one. 
+            // In the very rare case that both frameworks are still equal, we have to pick one.
             // There is nothing but we need to be deterministic, so compare the profiles as strings.
             if (StringComparer.OrdinalIgnoreCase.Compare(considering.GetShortFolderName(_mappings), current.GetShortFolderName(_mappings)) < 0)
             {

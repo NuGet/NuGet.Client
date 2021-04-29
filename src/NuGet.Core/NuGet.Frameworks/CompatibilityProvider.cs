@@ -195,6 +195,14 @@ namespace NuGet.Frameworks
                         || (fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, comp) && (target.Platform.Equals("ios", comp) || target.Platform.Equals("maccatalyst", comp)))
                         || (fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinTVOS, comp) && target.Platform.Equals("tvos", comp)));
                 }
+                else if (candidate.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = result && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, "android");
+                }
+                else if (candidate.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Tizen, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = result && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, "tizen");
+                }
                 else
                 {
                     result = false;
