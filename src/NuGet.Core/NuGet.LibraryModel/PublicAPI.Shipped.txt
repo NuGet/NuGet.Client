@@ -176,10 +176,7 @@ static NuGet.LibraryModel.LibraryDependencyInfo.Create(NuGet.LibraryModel.Librar
 static NuGet.LibraryModel.LibraryDependencyInfo.CreateUnresolved(NuGet.LibraryModel.LibraryIdentity library, NuGet.Frameworks.NuGetFramework framework) -> NuGet.LibraryModel.LibraryDependencyInfo
 static NuGet.LibraryModel.LibraryDependencyTargetUtils.GetFlagString(NuGet.LibraryModel.LibraryDependencyTarget flags) -> string
 static NuGet.LibraryModel.LibraryDependencyTargetUtils.Parse(string flag) -> NuGet.LibraryModel.LibraryDependencyTarget
-static NuGet.LibraryModel.LibraryDependencyType.Build -> NuGet.LibraryModel.LibraryDependencyType
-static NuGet.LibraryModel.LibraryDependencyType.Default -> NuGet.LibraryModel.LibraryDependencyType
 static NuGet.LibraryModel.LibraryDependencyType.Parse(System.Collections.Generic.IEnumerable<string> keywords) -> NuGet.LibraryModel.LibraryDependencyType
-static NuGet.LibraryModel.LibraryDependencyType.Platform -> NuGet.LibraryModel.LibraryDependencyType
 static NuGet.LibraryModel.LibraryDependencyTypeFlag.Declare(string keyword) -> NuGet.LibraryModel.LibraryDependencyTypeFlag
 static NuGet.LibraryModel.LibraryExtensions.GetItem<T>(this NuGet.LibraryModel.Library library, string key) -> T
 static NuGet.LibraryModel.LibraryExtensions.GetRequiredItem<T>(this NuGet.LibraryModel.Library library, string key) -> T
