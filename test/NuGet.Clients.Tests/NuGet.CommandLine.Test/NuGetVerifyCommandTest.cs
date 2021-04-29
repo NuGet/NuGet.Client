@@ -32,17 +32,8 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                if (RuntimeEnvironmentHelper.IsMono)
-                {
-                    Assert.True(_failureCode == result.ExitCode, result.AllOutput);
-                    Assert.False(result.Success);
-                    Assert.Contains("Package signature validation command is not supported on this platform.", result.AllOutput);
-                }
-                else
-                {
-                    Assert.Equal(_failureCode, result.Item1);
-                    Assert.Contains("Verification type not supported.", result.Item3);
-                }
+                Assert.Equal(_failureCode, result.Item1);
+                Assert.Contains("Verification type not supported.", result.Item3);
             }
         }
 
