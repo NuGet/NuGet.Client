@@ -67,7 +67,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Linux)]
+        [PlatformFact(Platform.Windows)]
         public void Dotnet_New_Wpf_Pack_Success()
         {
             // Arrange
@@ -91,7 +91,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Linux)]
+        [PlatformFact(Platform.Windows)]
         public void Dotnet_New_Wpflib_Pack_Success()
         {
             // Arrange
@@ -115,7 +115,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Linux)]
+        [PlatformFact(Platform.Windows)]
         public void Dotnet_New_WpfCustomControlLib_Pack_Success()
         {
             // Arrange
@@ -139,7 +139,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Linux)]
+        [PlatformFact(Platform.Windows)]
         public void Dotnet_New_Wpf_UserControlLib_Pack_Success()
         {
             // Arrange
@@ -163,7 +163,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Linux)]
+        [PlatformFact(Platform.Windows)]
         public void Dotnet_New_Winforms_Pack_Success()
         {
             // Arrange
@@ -187,7 +187,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Linux)]
+        [PlatformFact(Platform.Windows)]
         public void Dotnet_New_WinformsControlLib_Pack_Success()
         {
             // Arrange
@@ -211,7 +211,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Linux)]
+        [PlatformFact(Platform.Windows)]
         public void Dotnet_New_WinformsLib_Pack_Success()
         {
             // Arrange
