@@ -156,6 +156,55 @@ namespace NuGet.Common.Test
             Assert.True(_activityDisposed);
         }
 
+        [Fact]
+        public void Dispose_IndependentInterval_EmitsIntervalMeasure()
+        {
+            const string measureName = nameof(Dispose_IndependentInterval_EmitsIntervalMeasure);
+            var secondsToWait = 1;
+
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
+            {
+                using (telemetry.StartIndependentInterval(measureName))
+                {
+                    Thread.Sleep(secondsToWait * 1000);
+                }
+            }
+
+            var value = _telemetryEvent[measureName];
+            value.Should().NotBeNull();
+            var actualCount = Convert.ToInt32(value);
+            Assert.True(actualCount >= secondsToWait, $"The telemetry duration count should at least be {secondsToWait} seconds.");
+        }
+
+        [Fact]
+        public void Dispose_WithIndependentInterval_DoesNotClashWithNonoverlappingInterval()
+        {
+            const string independentInterval = "independentTestInterval";
+            const string nonOverlappingInterval = "nonOverlappingInterval";
+
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
+            {
+                telemetry.StartIntervalMeasure();
+                Thread.Sleep(1000);
+
+                using (telemetry.StartIndependentInterval(independentInterval))
+                {
+                    Thread.Sleep(1000);
+                }
+                telemetry.EndIntervalMeasure(nonOverlappingInterval);
+            }
+
+            var independentIntervalValue = _telemetryEvent[independentInterval];
+            independentIntervalValue.Should().NotBeNull();
+            int independentActualCount = Convert.ToInt32(independentIntervalValue);
+            Assert.True(independentActualCount >= 1, $"The telemetry duration count should at least be 1 seconds.");
+
+            var overlappingIntervalValue = _telemetryEvent[nonOverlappingInterval];
+            overlappingIntervalValue.Should().NotBeNull();
+            int actualCount = Convert.ToInt32(overlappingIntervalValue);
+            Assert.True(actualCount >= 2, $"The telemetry duration count should at least be 2 seconds.");
+        }
+
         private static TelemetryEvent CreateNewTelemetryEvent()
         {
             return new TelemetryEvent("testEvent", new Dictionary<string, object>());
