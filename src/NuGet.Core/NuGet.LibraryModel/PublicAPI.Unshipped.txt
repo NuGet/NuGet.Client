@@ -1,0 +1,3 @@
+static readonly NuGet.LibraryModel.LibraryDependencyType.Build -> NuGet.LibraryModel.LibraryDependencyType
+static readonly NuGet.LibraryModel.LibraryDependencyType.Default -> NuGet.LibraryModel.LibraryDependencyType
+static readonly NuGet.LibraryModel.LibraryDependencyType.Platform -> NuGet.LibraryModel.LibraryDependencyType

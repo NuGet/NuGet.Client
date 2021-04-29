@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class VSRestoreSettingsUtilities
     {
-        public static string AdditionalValue = "$Additional$";
+        public const string AdditionalValue = "$Additional$";
 
         public static string GetPackagesPath(ISettings settings, PackageSpec project)
         {
