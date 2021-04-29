@@ -56,9 +56,6 @@ namespace NuGet.CommandLine.Test
       </group>
     </dependencies>
   </metadata>
-  <files>
-    <!-- <file src=""icon.png"" target="""" /> -->
-  </files>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }
@@ -101,9 +98,6 @@ namespace NuGet.CommandLine.Test
       </group>
     </dependencies>
   </metadata>
-  <files>
-    <!-- <file src=""icon.png"" target="""" /> -->
-  </files>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }
@@ -154,9 +148,6 @@ namespace NuGet.CommandLine.Test
     <copyright>$copyright$</copyright>
     <tags>Tag1 Tag2</tags>
   </metadata>
-  <files>
-    <!-- <file src=""icon.png"" target="""" /> -->
-  </files>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }

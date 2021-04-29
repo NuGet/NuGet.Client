@@ -169,13 +169,9 @@ namespace NuGet.CommandLine
         private static string AddCommentedIconAttribute(string content, string iconFile)
         {
             string sampleIconFile = string.Format("    <!-- <icon>{0}</icon> -->", iconFile);
-            string filesSection = string.Format(@"  <files>
-    <!-- <file src=""{0}"" target="""" /> -->
-  </files>", iconFile);
 
             return content
-                .Replace($"</license>{Environment.NewLine}", string.Format("</license>{0}{1}{2}", Environment.NewLine, sampleIconFile, Environment.NewLine))
-                .Replace($"</metadata>{Environment.NewLine}", string.Format("</metadata>{0}{1}{2}", Environment.NewLine, filesSection, Environment.NewLine));
+                .Replace($"</license>{Environment.NewLine}", string.Format("</license>{0}{1}{2}", Environment.NewLine, sampleIconFile, Environment.NewLine));
         }
     }
 }

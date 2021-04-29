@@ -7276,6 +7276,148 @@ using System.Runtime.InteropServices;
                 }
             }
         }
+
+        [Fact]
+        public void PackCommand_NoRepo_GlobFiles_WithDefaultNuspec_Succeeds()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "a.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "tools"),
+                    "install.ps1",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "images"),
+                    "1.png",
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "data.txt",
+                    string.Empty);
+
+                // Act
+                CommandRunnerResult specResult = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "spec",
+                    waitForExit: true);
+                CommandRunnerResult packResult = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack Package.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == specResult.ExitCode, specResult.AllOutput);
+                Assert.True(0 == packResult.ExitCode, packResult.AllOutput);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "Package.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        "data.txt",
+                         Path.Combine("images", "1.png"),
+                         Path.Combine("lib", "uap10.0", "a.dll"),
+                         Path.Combine("tools", "install.ps1"),
+                    },
+                    files);
+
+                Assert.False(packResult.Item2.Contains("Assembly outside lib folder"));
+            }
+        }
+
+        [Fact]
+        public void PackCommand_WithRepo_GlobFiles_WithDefaultNuspec_Succeeds()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var projectName = Path.GetFileName(workingDirectory);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "proj1.csproj",
+    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "file1.cs",
+    @"using System;
+using System.Reflection;
+
+[assembly: AssemblyVersion(" + "\"1.0.0.0\"" + @")]
+namespace proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "images"),
+                    "1.png",
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "data.txt",
+                    string.Empty);
+
+                // Act
+                CommandRunnerResult specResult = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "spec",
+                    waitForExit: true);
+                CommandRunnerResult packResult = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    " pack -properties tagVar=CustomTag;author=microsoft.com;Description=aaaaaaa -build",
+                    waitForExit: true);
+                Assert.True(0 == specResult.ExitCode, specResult.AllOutput);
+                Assert.True(0 == packResult.ExitCode, packResult.AllOutput);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "proj1.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        "data.txt",
+                         Path.Combine("lib", "net40", "proj1.dll"),
+                    },
+                    files);
+
+                Assert.False(packResult.Item2.Contains("Assembly outside lib folder"));
+            }
+        }
     }
 
     internal static class PackageArchiveReaderTestExtensions
