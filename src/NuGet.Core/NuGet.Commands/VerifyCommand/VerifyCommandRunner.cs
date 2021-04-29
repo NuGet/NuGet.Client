@@ -27,12 +27,6 @@ namespace NuGet.Commands
 
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
-            if (!IsVerifyCommandSupported())
-            {
-                verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_NotSupported));
-                return FailureCode;
-            }
-
             if (verifyArgs.Verifications.Count == 0)
             {
                 verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_VerificationTypeNotSupported));
@@ -43,6 +37,12 @@ namespace NuGet.Commands
 
             if (ShouldExecuteVerification(verifyArgs, Verification.Signatures))
             {
+                if (!IsSignatureVerifyCommandSupported())
+                {
+                    verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_NotSupported));
+                    return FailureCode;
+                }
+
                 var packagesToVerify = verifyArgs.PackagePaths.SelectMany(packagePath =>
                 {
                     var packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
@@ -143,7 +143,7 @@ namespace NuGet.Commands
             return args.Verifications.Any(verification => verification == Verification.All || verification == v);
         }
 
-        private bool IsVerifyCommandSupported()
+        private bool IsSignatureVerifyCommandSupported()
         {
 #if IS_DESKTOP
             if (RuntimeEnvironmentHelper.IsMono)
