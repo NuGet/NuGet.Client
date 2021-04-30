@@ -7278,7 +7278,7 @@ using System.Runtime.InteropServices;
         }
 
         [Fact]
-        public void PackCommand_NoRepo_GlobFiles_WithDefaultNuspec_Succeeds()
+        public void PackCommand_NoRepo_GlobAllFiles_WithDefaultNuspec_Succeeds()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -7339,7 +7339,7 @@ using System.Runtime.InteropServices;
         }
 
         [Fact]
-        public void PackCommand_WithRepo_GlobFiles_WithDefaultNuspec_Succeeds()
+        public void PackCommand_WithRepo_WithDefaultNuspec_Succeeds()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -7379,11 +7379,6 @@ namespace proj1
     }
 }");
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "images"),
-                    "1.png",
-                    string.Empty);
-
-                Util.CreateFile(
                     workingDirectory,
                     "data.txt",
                     string.Empty);
@@ -7410,7 +7405,6 @@ namespace proj1
                 Assert.Equal(
                     new string[]
                     {
-                        "data.txt",
                          Path.Combine("lib", "net40", "proj1.dll"),
                     },
                     files);
