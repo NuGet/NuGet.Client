@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Test;
 using NuGet.Packaging;
@@ -35,6 +36,7 @@ namespace NuGet.PackageManagement.UI.Test
         private readonly INuGetPackageFileService _packageFileService;
         private Mock<IServiceBroker> _serviceBroker = new Mock<IServiceBroker>();
         private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
+        private Mock<IReconnectingNuGetSearchService> _searchService = new Mock<IReconnectingNuGetSearchService>();
 
         public PackageItemViewModelTests(
             GlobalServiceProvider globalServiceProvider,
@@ -55,7 +57,7 @@ namespace NuGet.PackageManagement.UI.Test
             _packageFileService = new NuGetPackageFileService(_serviceBroker.Object, _telemetryProvider.Object);
 
             _testData = testData;
-            _testInstance = new PackageItemViewModel()
+            _testInstance = new PackageItemViewModel(_searchService.Object)
             {
                 PackagePath = _testData.TestData.PackagePath,
                 PackageFileService = _packageFileService,
@@ -74,7 +76,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var iconUrl = new Uri("httphttphttp://fake.test/image.png");
 
-            var packageItemViewModel = new PackageItemViewModel()
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
             {
                 Id = "PackageId.IconUrl_WithMalformedUrlScheme_ReturnsDefaultInitallyAndFinally",
                 Version = new NuGetVersion("1.0.0"),
@@ -99,7 +101,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var iconUrl = new Uri(@"C:\path\to\image.png");
 
-            var packageItemViewModel = new PackageItemViewModel()
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
             {
                 Id = "PackageId.IconUrl_WhenFileNotFound_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
@@ -118,7 +120,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // relative URIs are not supported in viewmodel.
             var iconUrl = new Uri("resources/testpackageicon.png", UriKind.Relative);
-            var packageItemViewModel = new PackageItemViewModel()
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
             {
                 Id = "PackageId.IconUrl_RelativeUri_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
@@ -151,7 +153,7 @@ namespace NuGet.PackageManagement.UI.Test
                 string grayiccImagePath = Path.Combine(testDir, "grayicc.png");
                 File.WriteAllBytes(grayiccImagePath, bytes);
 
-                var packageItemViewModel = new PackageItemViewModel()
+                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
                 {
                     Id = "PackageId.IconUrl_WithLocalPathAndColorProfile_LoadsImage",
                     Version = new NuGetVersion("1.0.0"),
@@ -173,7 +175,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var iconUrl = new Uri("http://fake.test/image.png");
 
-            var packageItemViewModel = new PackageItemViewModel()
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
             {
                 Id = "PackageId.IconUrl_WithValidImageUrl_FailsDownloadsImage_ReturnsDefault",
                 Version = new NuGetVersion("1.0.0"),
@@ -215,7 +217,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Fragment = iconElement
                 };
 
-                var packageItemViewModel = new PackageItemViewModel()
+                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
                 {
                     Id = "PackageId.IconUrl_EmbeddedIcon_HappyPath_LoadsImage",
                     Version = new NuGetVersion("1.0.0"),
@@ -246,7 +248,7 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 var imagePath = Path.Combine(testDir, "image.png");
                 CreateNoisePngImage(path: imagePath);
-                var packageItemViewModel = new PackageItemViewModel()
+                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
                 {
                     Id = "PackageId.IconUrl_FileUri_LoadsImage",
                     Version = new NuGetVersion("1.0.0"),
@@ -280,7 +282,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Fragment = $"..{separator}icon.png"
                 };
 
-                var packageItemViewModel = new PackageItemViewModel()
+                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
                 {
                     Id = "PackageId.IconUrl_EmbeddedIcon_RelativeParentPath_ReturnsDefault",
                     Version = new NuGetVersion("1.0.0"),
@@ -395,7 +397,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Fragment = iconElement
                 };
 
-                var packageItemViewModel = new PackageItemViewModel()
+                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
                 {
                     Id = "PackageId.IconUrl_FileUri_LoadsImage" + iconElement,
                     Version = new NuGetVersion("1.0.0"),

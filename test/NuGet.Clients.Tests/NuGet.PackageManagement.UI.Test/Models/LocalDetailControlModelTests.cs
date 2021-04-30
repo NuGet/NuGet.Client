@@ -10,6 +10,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -32,8 +33,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             sp.Reset();
             _testData = testData;
             var testVersion = new NuGetVersion(0, 0, 1);
-            _testViewModel = new PackageItemViewModel()
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            _testViewModel = new PackageItemViewModel(searchService.Object)
             {
+                Id = "package",
                 PackagePath = _testData.TestData.PackagePath,
                 Version = testVersion,
                 InstalledVersion = testVersion,
@@ -124,9 +127,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+
             await model.SetCurrentPackageAsync(
-                new PackageItemViewModel()
+                new PackageItemViewModel(searchService.Object)
                 {
+                    Id = "package",
                     InstalledVersion = installedVersion,
                     Version = installedVersion
                 },
@@ -152,9 +158,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+
             await model.SetCurrentPackageAsync(
-                new PackageItemViewModel()
+                new PackageItemViewModel(searchService.Object)
                 {
+                    Id = "package",
                     InstalledVersion = installedVersion,
                     Version = installedVersion
                 },

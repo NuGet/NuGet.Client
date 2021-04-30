@@ -508,6 +508,7 @@ namespace NuGet.PackageManagement.UI
             foreach (var package in PackageItems)
             {
                 package.PropertyChanged -= Package_PropertyChanged;
+                package.Dispose();
             }
 
             Items.Clear();

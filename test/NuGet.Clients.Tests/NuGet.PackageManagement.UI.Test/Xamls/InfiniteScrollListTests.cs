@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -274,6 +275,7 @@ namespace NuGet.PackageManagement.UI.Test
             var testLogger = new TestNuGetUILogger(_output);
             var tcs = new TaskCompletionSource<int>();
             var list = new InfiniteScrollList();
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
 
             var currentStatus = LoadingStatus.Loading;
 
@@ -299,7 +301,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(0));
             loaderMock.Setup(x => x.GetCurrent())
-                .Returns(() => searchItems.Select(x => new PackageItemViewModel()));
+                .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object)));
 
             list.LoadItemsCompleted += (sender, args) =>
             {
