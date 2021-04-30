@@ -7321,20 +7321,22 @@ using System.Runtime.InteropServices;
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "Package.1.0.0.nupkg");
-                var package = new OptimizedZipPackage(path);
-                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+                using (var package = new PackageArchiveReader(path))
+                {
+                    var files = package.GetNonPackageDefiningFiles().OrderBy(s => s).ToArray();
 
-                Assert.Equal(
-                    new string[]
-                    {
+                    Assert.Equal(
+                        new string[]
+                        {
                         "data.txt",
-                         Path.Combine("images", "1.png"),
-                         Path.Combine("lib", "uap10.0", "a.dll"),
-                         Path.Combine("tools", "install.ps1"),
-                    },
-                    files);
+                         "images/1.png",
+                         "lib/uap10.0/a.dll",
+                         "tools/install.ps1",
+                        },
+                        files);
 
-                Assert.False(packResult.Item2.Contains("Assembly outside lib folder"));
+                    Assert.False(packResult.Item2.Contains("Assembly outside lib folder"));
+                }
             }
         }
 
@@ -7399,17 +7401,19 @@ namespace proj1
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "proj1.1.0.0.nupkg");
-                var package = new OptimizedZipPackage(path);
-                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+                using (var package = new PackageArchiveReader(path))
+                {
+                    var files = package.GetNonPackageDefiningFiles().OrderBy(s => s).ToArray();
 
-                Assert.Equal(
-                    new string[]
-                    {
-                         Path.Combine("lib", "net40", "proj1.dll"),
-                    },
-                    files);
+                    Assert.Equal(
+                        new string[]
+                        {
+                          "lib/net40/proj1.dll"
+                        },
+                        files);
 
-                Assert.False(packResult.Item2.Contains("Assembly outside lib folder"));
+                    Assert.False(packResult.Item2.Contains("Assembly outside lib folder"));
+                }
             }
         }
     }
