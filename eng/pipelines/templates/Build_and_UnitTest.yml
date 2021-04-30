@@ -394,7 +394,7 @@ steps:
     buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
     sourcePath: 'artifacts\RunSettings'
     toLowerCase: false
-    usePat: false
+    usePat: true
     dropMetadataContainerName: RunSettings
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -405,7 +405,7 @@ steps:
     buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
     sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
     toLowerCase: false
-    usePat: false
+    usePat: true
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishBuildArtifacts@1
