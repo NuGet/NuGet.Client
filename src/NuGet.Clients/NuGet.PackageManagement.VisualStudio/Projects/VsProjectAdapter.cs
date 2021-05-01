@@ -218,29 +218,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region Getters
 
-        public async Task<string[]> GetProjectTypeGuidsAsync()
+        public Task<string[]> GetProjectTypeGuidsAsync()
         {
-            if (!IsDeferred)
-            {
-                return await Project.GetProjectTypeGuidsAsync();
-            }
-            else
-            {
-                // Get ProjectTypeGuids from msbuild property, if it doesn't exist, fall back to projectTypeGuid.
-                var projectTypeGuids = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.ProjectTypeGuids);
-
-                if (!string.IsNullOrEmpty(projectTypeGuids))
-                {
-                    return MSBuildStringUtility.Split(projectTypeGuids);
-                }
-
-                if (!string.IsNullOrEmpty(_projectTypeGuid))
-                {
-                    return new string[] { _projectTypeGuid };
-                }
-
-                return Array.Empty<string>();
-            }
+            return Project.GetProjectTypeGuidsAsync();
         }
 
         public async Task<FrameworkName> GetDotNetFrameworkNameAsync()

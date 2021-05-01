@@ -56,8 +56,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(context);
 
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             var projectSystem = await MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystemAsync(
                 vsProjectAdapter,
                 context.ProjectContext);
