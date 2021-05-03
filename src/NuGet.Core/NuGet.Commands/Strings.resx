@@ -1124,4 +1124,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Multiple_Nupkgs_Detected" xml:space="preserve">
     <value>Multiple nupkg files detected on '{0}' path to trust, only 1 is allowed.</value>
   </data>
+  <data name="VerifyCommand_NotSupported" xml:space="preserve">
+    <value>Package signature validation command is not supported on this platform.</value>
+  </data>
 </root>

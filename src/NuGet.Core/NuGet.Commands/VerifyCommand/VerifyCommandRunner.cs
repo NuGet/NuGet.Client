@@ -37,6 +37,12 @@ namespace NuGet.Commands
 
             if (ShouldExecuteVerification(verifyArgs, Verification.Signatures))
             {
+                if (!IsSignatureVerifyCommandSupported())
+                {
+                    verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_NotSupported));
+                    return FailureCode;
+                }
+
                 var packagesToVerify = verifyArgs.PackagePaths.SelectMany(packagePath =>
                 {
                     var packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
@@ -135,6 +141,17 @@ namespace NuGet.Commands
         private bool ShouldExecuteVerification(VerifyArgs args, Verification v)
         {
             return args.Verifications.Any(verification => verification == Verification.All || verification == v);
+        }
+
+        private bool IsSignatureVerifyCommandSupported()
+        {
+#if IS_DESKTOP
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                return false;
+            }
+#endif
+            return true;
         }
     }
 }

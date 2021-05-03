@@ -2537,6 +2537,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package signature validation command is not supported on this platform..
+        /// </summary>
+        internal static string VerifyCommand_NotSupported {
+            get {
+                return ResourceManager.GetString("VerifyCommand_NotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid package file..
         /// </summary>
         internal static string VerifyCommand_PackageIsNotValid {
