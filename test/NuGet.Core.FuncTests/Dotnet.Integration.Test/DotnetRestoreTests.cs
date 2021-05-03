@@ -1478,6 +1478,28 @@ EndGlobal";
             }
         }
 
+        [PlatformTheory(Platform.Linux)]
+        [InlineData("worker")]
+        [InlineData("mstest")]
+        public void Dotnet_New_Template_Restore_Success(string template)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
+                var solutionDirectory = pathContext.SolutionRoot;
+
+                // Act
+                CommandRunnerResult newResult = _msbuildFixture.RunDotnet(solutionDirectory, "new " + template);
+
+                // Assert
+                // Make sure restore action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
+                Assert.True(File.Exists(Path.Combine(solutionDirectory, "obj", "project.assets.json")));
+                // Pack doesn't work because `IsPackable` is set to false.
+            }
+        }
+
         private static SimpleTestPackageContext CreateNetstandardCompatiblePackage(string id, string version)
         {
             var pkgX = new SimpleTestPackageContext(id, version);
